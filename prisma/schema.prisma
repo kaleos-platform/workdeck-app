@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 사용자 모델
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  avatarUrl     String?
+
+  // 조직 관계
+  organizationId String?
+  organization   Organization? @relation("OrganizationMembers", fields: [organizationId], references: [id], onDelete: SetNull)
+
+  // 소유한 조직
+  ownedOrganizations Organization[] @relation("OrganizationOwner")
+
+  // 구독
+  subscription   Subscription?
+
+  // 결제 내역
+  payments       Payment[]
+
+  // 타임스탬프
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+// 조직/회사 모델
+model Organization {
+  id        String    @id @default(cuid())
+  name      String
+  logo      String?
+
+  // 멤버
+  members   User[]    @relation("OrganizationMembers")
+
+  // 소유자
+  ownerId   String
+  owner     User      @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // 구독
+  subscription Subscription?
+
+  // 사용량 추적
+  usageMetrics UsageMetric[]
+
+  // 타임스탬프
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// 요금제 모델
+model Plan {
+  id            String    @id @default(cuid())
+  name          String    // 무료, 프로, 엔터프라이즈
+  description   String?
+  price         Int       // 원 단위
+  interval      String    // month, year
+  features      Json      // 기능 배열
+
+  subscriptions Subscription[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// 구독 모델
+model Subscription {
+  id               String    @id @default(cuid())
+
+  // 사용자
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 조직 (선택)
+  organizationId   String?   @unique
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // 플랜
+  planId           String
+  plan             Plan      @relation(fields: [planId], references: [id])
+
+  // 상태
+  status           String    // active, canceled, past_due
+  currentPeriodEnd DateTime?
+
+  // Stripe
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+
+  // Toss Payments
+  tossCustomerId   String?
+  tossSubscriptionId String?
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// 결제 내역 모델
+model Payment {
+  id               String    @id @default(cuid())
+
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount           Int       // 원 단위
+  currency         String    @default("KRW")
+  status           String    // completed, pending, failed
+
+  // Stripe
+  stripePaymentIntentId String?
+
+  // Toss
+  tossOrderId      String?
+  tossPaymentKey   String?
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// 사용량 추적 모델 (비즈니스 의사결정용)
+model UsageMetric {
+  id              String    @id @default(cuid())
+
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  metricType      String    // api_calls, users, storage 등
+  value           Int
+  date            DateTime  @default(now())
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([organizationId])
+  @@index([date])
+}
