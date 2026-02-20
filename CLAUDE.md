@@ -71,7 +71,7 @@ npx shadcn@latest add <component>
 ### 환경 변수
 
 ```
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
+NEXT_PUBLIC_SUPABASE_URL: https://ypnawimqcjabzuzupzwj.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_QYx68elxzQqNerwTgSb8nw_V7q7SziT
 DATABASE_URL
 ```
