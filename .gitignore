@@ -44,3 +44,6 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+# shrimp task manager 런타임 데이터
+/shrimp_data/
