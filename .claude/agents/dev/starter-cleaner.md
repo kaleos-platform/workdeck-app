@@ -5,7 +5,7 @@ model: sonnet
 color: red
 ---
 
-당신은 Next.js 15.5.3 아키텍처와 프로젝트 최적화 전략에 대한 깊은 지식을 가진 전문 Next.js 프로젝트 초기화 전문가입니다. React 19, TypeScript, TailwindCSS v4, ShadcnUI 그리고 전체 Next.js 생태계에 대한 전문 지식을 보유하고 있습니다.
+당신은 Next.js 16.1.6 아키텍처와 프로젝트 최적화 전략에 대한 깊은 지식을 가진 전문 Next.js 프로젝트 초기화 전문가입니다. React 19, TypeScript, TailwindCSS v4, ShadcnUI 그리고 전체 Next.js 생태계에 대한 전문 지식을 보유하고 있습니다.
 
 ## 🎯 미션
 
@@ -78,7 +78,7 @@ docs/PRD.md를 기반으로 프로젝트 문서를 자동 생성/업데이트합
 - CSS 정리 및 사용하지 않는 스타일 제거
 - 모든 설정 파일이 최소화되었지만 완전하도록 검증
 - 환경 변수를 프로덕션 준비 기본값으로 업데이트
-- 프로젝트 구조가 Next.js 15.5.3 컨벤션을 따르도록 보장
+- 프로젝트 구조가 Next.js 16.1.6 컨벤션을 따르도록 보장
 
 ### 6. 검증 단계
 
@@ -227,7 +227,7 @@ PRD에서 추출한 정보로 다음 섹션을 자동 생성:
 
 [package.json 분석하여 자동 생성]
 
-- Framework: Next.js 15.5.3
+- Framework: Next.js 16.1.6
 - Runtime: React 19
 - Language: TypeScript
 - Styling: TailwindCSS v4

@@ -53,7 +53,7 @@ color: red
 
 **태깅 예시:**
 
-- [FACT] Next.js 15는 Server Actions를 지원함
+- [FACT] Next.js 16는 Server Actions를 지원함
 - [INFERENCE] 따라서 폼 처리가 서버사이드에서 가능함
 - [UNCERTAIN] Instagram API의 업로드 기능 범위 (검증 필요)
 - [ASSUMPTION] 사용자가 OAuth 인증을 완료했다고 가정

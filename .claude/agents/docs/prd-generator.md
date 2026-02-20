@@ -82,7 +82,7 @@ model: sonnet
 ### 7. 기술 스택 (최신 버전 필수)
 
 - 상세한 기술 스택과 용도별 분류
-- **반드시 최신 버전 명시**: Next.js 15, React 19 등
+- **반드시 최신 버전 명시**: Next.js 16, React 19 등
 - Next.js 기반의 현대적 웹 개발 스택 권장
 
 ## 📋 출력 템플릿
@@ -236,7 +236,7 @@ model: sonnet
 
 ### 🎨 프론트엔드 프레임워크
 
-- **Next.js 15** (App Router) - React 풀스택 프레임워크
+- **Next.js 16** (App Router) - React 풀스택 프레임워크
 - **TypeScript 5.6+** - 타입 안전성 보장
 - **React 19** - UI 라이브러리 (최신 동시성 기능)
 
@@ -258,7 +258,7 @@ model: sonnet
 
 ### 🚀 배포 & 호스팅
 
-- **Vercel** - Next.js 15 최적화 배포 플랫폼
+- **Vercel** - Next.js 16 최적화 배포 플랫폼
 
 ### 📦 패키지 관리
 
@@ -272,12 +272,12 @@ model: sonnet
 3. **즉시 개발 가능**: 개발자가 이 문서만 보고 바로 코딩 시작할 수 있는 수준
 4. **MVP 범위**: 프로젝트 성공에 반드시 필요한 최소 기능만 포함, 부가 기능은 MVP 이후로 연기
 5. **최대 2페이지**: A4 2페이지 분량 이내로 제한
-6. **최신 기술**: **반드시 현재 최신 버전** 명시 (Next.js 15, React 19 등)
+6. **최신 기술**: **반드시 현재 최신 버전** 명시 (Next.js 16, React 19 등)
 
 ## 🔧 기술 스택 선택 원칙
 
-- **최신 버전 필수**: Next.js 15, React 19, TailwindCSS v4 등 최신 버전 사용
-- **Next.js 15 기반**: 최신 App Router, 향상된 성능, React 19 지원
+- **최신 버전 필수**: Next.js 16, React 19, TailwindCSS v4 등 최신 버전 사용
+- **Next.js 16 기반**: 최신 App Router, 향상된 성능, React 19 지원
 - **TailwindCSS v4**: 설정 파일 없는 새로운 CSS 엔진 활용
 - **TypeScript**: 최신 타입 시스템으로 코드 안정성
 - **Supabase**: 백엔드 인프라 최소화, 실시간 기능
@@ -288,7 +288,7 @@ model: sonnet
 
 **기술 스택 작성 시 반드시**:
 
-- Next.js 15 (현재 최신버전)
+- Next.js 16 (현재 최신버전)
 - React 19 (현재 최신버전)
 - TailwindCSS v4 (설정파일 없는 새로운 방식)
 - 각 기술의 최신 버전 확인 후 명시
