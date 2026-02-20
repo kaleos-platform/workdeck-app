@@ -3,9 +3,7 @@
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "@playwright/mcp@latest"
-      ],
+      "args": ["@playwright/mcp@latest"],
       "env": {}
     },
     "context7": {
@@ -14,17 +12,24 @@
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     },
     "shadcn": {
       "command": "npx",
-      "args": [
-        "shadcn@latest",
-        "mcp"
-      ]
+      "args": ["shadcn@latest", "mcp"]
+    },
+    "mcpServers": {
+      "shrimp-task-manager": {
+        "command": "node",
+        "args": [
+          "/Users/hero4earth/Developer/Workspace/mcp-shrimp-task-manager/dist/index.js"
+        ],
+        "env": {
+          "DATA_DIR": "/Users/hero4earth/Developer/Workspace/coupang-ad-manager/shrimp_data",
+          "TEMPLATES_USE": "en",
+          "ENABLE_GUI": "true"
+        }
+      }
     }
   }
 }
