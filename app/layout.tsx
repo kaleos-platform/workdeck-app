@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SaaS Starter Kit",
-  description: "비즈니스 의사결정을 돕는 SaaS 스타터 킷",
+  title: "쿠팡 광고 리포트 매니저",
+  description: "쿠팡 광고 리포트를 분석하고 ROAS를 개선하세요",
 };
 
 export default function RootLayout({

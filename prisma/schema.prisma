@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// 쿠팡 광고 리포트 매니저 데이터 모델
 
 generator client {
   provider = "prisma-client"
@@ -10,141 +6,109 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-// 사용자 모델
+// 사용자 모델 (Supabase Auth와 연동)
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  avatarUrl     String?
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  avatarUrl String?
 
-  // 조직 관계
-  organizationId String?
-  organization   Organization? @relation("OrganizationMembers", fields: [organizationId], references: [id], onDelete: SetNull)
+  // 소유한 워크스페이스
+  workspace Workspace?
 
-  // 소유한 조직
-  ownedOrganizations Organization[] @relation("OrganizationOwner")
-
-  // 구독
-  subscription   Subscription?
-
-  // 결제 내역
-  payments       Payment[]
-
-  // 타임스탬프
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// 조직/회사 모델
-model Organization {
-  id        String    @id @default(cuid())
-  name      String
-  logo      String?
+// 워크스페이스 (쿠팡 사업자 단위)
+model Workspace {
+  id      String @id @default(cuid())
+  name    String // 쿠팡 사업자명
 
-  // 멤버
-  members   User[]    @relation("OrganizationMembers")
+  // 소유 사용자
+  ownerId String @unique
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  // 소유자
-  ownerId   String
-  owner     User      @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  // 연관 데이터
+  reportUploads ReportUpload[]
+  adRecords     AdRecord[]
+  dailyMemos    DailyMemo[]
 
-  // 구독
-  subscription Subscription?
-
-  // 사용량 추적
-  usageMetrics UsageMetric[]
-
-  // 타임스탬프
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
 }
 
-// 요금제 모델
-model Plan {
-  id            String    @id @default(cuid())
-  name          String    // 무료, 프로, 엔터프라이즈
-  description   String?
-  price         Int       // 원 단위
-  interval      String    // month, year
-  features      Json      // 기능 배열
+// 업로드 이력
+model ReportUpload {
+  id          String   @id @default(cuid())
+  fileName    String
+  uploadedAt  DateTime @default(now())
+  periodStart DateTime
+  periodEnd   DateTime
 
-  subscriptions Subscription[]
+  // 소속 워크스페이스
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  // 이 업로드에서 파싱된 광고 데이터
+  adRecords AdRecord[]
+
+  @@index([workspaceId])
 }
 
-// 구독 모델
-model Subscription {
-  id               String    @id @default(cuid())
+// 광고 데이터 행 (Excel 한 행 = 하나의 AdRecord)
+model AdRecord {
+  id           String   @id @default(cuid())
+  date         DateTime
+  adType       String   // 광고유형 (예: 키워드 광고, 상품 광고)
+  campaignId   String
+  campaignName String
+  keyword      String?  // 키워드 (없을 수 있음)
 
-  // 사용자
-  userId           String    @unique
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 노출·클릭
+  impressions Int
+  clicks      Int
+  adCost      Decimal  @db.Decimal(18, 2) // 광고비
+  ctr         Decimal  @db.Decimal(10, 4) // 클릭률
 
-  // 조직 (선택)
-  organizationId   String?   @unique
-  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // 1일 전환 지표
+  orders1d    Int
+  revenue1d   Decimal  @db.Decimal(18, 2) // 총 전환매출액 (1일)
+  roas1d      Decimal  @db.Decimal(10, 4) // 총 광고수익률 (1일)
 
-  // 플랜
-  planId           String
-  plan             Plan      @relation(fields: [planId], references: [id])
+  // 14일 전환 지표
+  orders14d   Int
+  revenue14d  Decimal  @db.Decimal(18, 2) // 총 전환매출액 (14일)
+  roas14d     Decimal  @db.Decimal(10, 4) // 총 광고수익률 (14일)
 
-  // 상태
-  status           String    // active, canceled, past_due
-  currentPeriodEnd DateTime?
+  // 소속 워크스페이스
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  // Stripe
-  stripeCustomerId String?
-  stripeSubscriptionId String?
+  // 소속 업로드 이력
+  reportId String
+  report   ReportUpload @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
-  // Toss Payments
-  tossCustomerId   String?
-  tossSubscriptionId String?
-
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  @@index([workspaceId, campaignId])
+  @@index([workspaceId, date])
 }
 
-// 결제 내역 모델
-model Payment {
-  id               String    @id @default(cuid())
+// 일자별 메모 (캠페인별 광고 작업 이력)
+model DailyMemo {
+  id         String   @id @default(cuid())
+  campaignId String
+  date       DateTime
+  content    String
 
-  userId           String
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 소속 워크스페이스
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  amount           Int       // 원 단위
-  currency         String    @default("KRW")
-  status           String    // completed, pending, failed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // Stripe
-  stripePaymentIntentId String?
-
-  // Toss
-  tossOrderId      String?
-  tossPaymentKey   String?
-
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
-// 사용량 추적 모델 (비즈니스 의사결정용)
-model UsageMetric {
-  id              String    @id @default(cuid())
-
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  metricType      String    // api_calls, users, storage 등
-  value           Int
-  date            DateTime  @default(now())
-
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@index([organizationId])
-  @@index([date])
+  // 워크스페이스 + 캠페인 + 날짜 조합은 유일
+  @@unique([workspaceId, campaignId, date])
+  @@index([workspaceId, campaignId])
 }

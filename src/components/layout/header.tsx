@@ -27,8 +27,8 @@ export function Header() {
       <div className="flex h-14 items-center justify-between px-4">
         {/* 로고 */}
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-blue-600 to-purple-600" />
-          <span className="hidden font-bold sm:inline-block">SaaS Starter</span>
+          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-orange-500 to-red-600" />
+          <span className="hidden font-bold sm:inline-block">쿠팡 광고 매니저</span>
         </div>
 
         {/* 오른쪽 액션 */}
