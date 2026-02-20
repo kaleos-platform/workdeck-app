@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run dev      # 개발 서버 실행 (localhost:3000)
 npm run build    # 프로덕션 빌드
+npm run start    # 프로덕션 서버 실행
 npm run lint     # ESLint 실행
 ```
 
@@ -50,11 +51,9 @@ npx shadcn@latest add <component>
 
 ### 경로 별칭 (`tsconfig.json` 기준)
 
-- `@/components` → `src/components` 또는 루트 `components/`
+- `@/components` → `src/components/` (shadcn/ui는 `src/components/ui/`에 위치)
 - `@/lib` → `src/lib`
 - `@/hooks` → `src/hooks`
-
-> shadcn/ui 컴포넌트는 루트 `components/ui/`에, 커스텀 컴포넌트는 `src/components/`에 위치합니다.
 
 ### 주요 기술 스택
 
@@ -71,7 +70,7 @@ npx shadcn@latest add <component>
 ### 환경 변수
 
 ```
-NEXT_PUBLIC_SUPABASE_URL: https://ypnawimqcjabzuzupzwj.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_QYx68elxzQqNerwTgSb8nw_V7q7SziT
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
 DATABASE_URL
 ```
