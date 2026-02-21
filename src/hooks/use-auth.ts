@@ -31,6 +31,8 @@ export function useAuth() {
       setUser(session?.user ?? null)
 
       if (event === 'SIGNED_OUT') {
+        // 로그아웃 이벤트 발생 시 캐시를 무효화하고 로그인 페이지로 이동
+        router.refresh()
         router.push('/login')
       }
     })
@@ -48,9 +50,8 @@ export function useAuth() {
       return
     }
 
+    // 로그아웃 성공 토스트만 표시 (리다이렉트는 SIGNED_OUT 이벤트에서 처리)
     toast.success('로그아웃되었습니다')
-    router.push('/login')
-    router.refresh()
   }
 
   return {
