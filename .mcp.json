@@ -28,6 +28,10 @@
         "TEMPLATES_USE": "en",
         "ENABLE_GUI": "true"
       }
+    },
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=ypnawimqcjabzuzupzwj&"
     }
   }
 }
