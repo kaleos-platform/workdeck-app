@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { LayoutDashboard, UploadCloud, BarChart2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,12 +22,18 @@ const mainRoutes = [
   },
 ]
 
-// TODO: 실제 캠페인 목록을 API에서 불러오기 (업로드된 Excel 파싱 후 갱신)
-const campaigns: { id: string; name: string }[] = []
-
 export function Sidebar() {
   const pathname = usePathname()
   const { signOut } = useAuth()
+  const [campaigns, setCampaigns] = useState<{ id: string; name: string }[]>([])
+
+  // 캠페인 목록을 API에서 불러오기
+  useEffect(() => {
+    fetch('/api/campaigns')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((list: Array<{ id: string; name: string }>) => setCampaigns(list))
+      .catch(() => {})
+  }, [])
 
   return (
     <div className="space-y-4 py-4 flex flex-col h-full bg-slate-900 text-white w-64 flex-shrink-0">

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
+import { prisma } from '@/lib/prisma'
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
 
@@ -12,6 +13,16 @@ export default async function DashboardLayout({
 
   if (!user) {
     redirect('/login')
+  }
+
+  // 워크스페이스 존재 여부 확인 - 없으면 최초 설정 페이지로 이동
+  const workspace = await prisma.workspace.findUnique({
+    where: { ownerId: user.id },
+    select: { id: true },
+  })
+
+  if (!workspace) {
+    redirect('/workspace-setup')
   }
 
   return (

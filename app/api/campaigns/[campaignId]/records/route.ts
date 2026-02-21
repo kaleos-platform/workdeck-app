@@ -1,0 +1,89 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { resolveWorkspace } from '@/lib/api-helpers'
+
+// 허용된 정렬 컬럼
+const ALLOWED_SORT_KEYS = ['date', 'adCost', 'clicks', 'impressions', 'roas14d'] as const
+type SortKey = (typeof ALLOWED_SORT_KEYS)[number]
+
+// GET /api/campaigns/[campaignId]/records — 광고 데이터 목록 (페이지네이션 + 정렬)
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ campaignId: string }> }
+) {
+  const resolved = await resolveWorkspace()
+  if ('error' in resolved) return resolved.error
+  const { workspace } = resolved
+
+  const { campaignId } = await params
+  const { searchParams } = request.nextUrl
+
+  const from = searchParams.get('from')
+  const to = searchParams.get('to')
+  const adType = searchParams.get('adType')
+  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
+  const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '25')))
+  const rawSortBy = searchParams.get('sortBy') ?? 'date'
+  const sortKey: SortKey = ALLOWED_SORT_KEYS.includes(rawSortBy as SortKey)
+    ? (rawSortBy as SortKey)
+    : 'date'
+  const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
+
+  // 날짜 필터 조건 구성
+  const dateFilter: { gte?: Date; lte?: Date } = {}
+  if (from) dateFilter.gte = new Date(from + 'T00:00:00+09:00')
+  if (to) dateFilter.lte = new Date(to + 'T23:59:59+09:00')
+
+  const where = {
+    workspaceId: workspace.id,
+    campaignId,
+    ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
+    ...(adType && adType !== 'all' && { adType }),
+  }
+
+  const [total, items] = await prisma.$transaction([
+    prisma.adRecord.count({ where }),
+    prisma.adRecord.findMany({
+      where,
+      orderBy: { [sortKey]: sortOrder },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: {
+        id: true,
+        date: true,
+        adType: true,
+        campaignId: true,
+        campaignName: true,
+        adGroup: true,
+        placement: true,
+        productName: true,
+        optionId: true,
+        keyword: true,
+        impressions: true,
+        clicks: true,
+        adCost: true,
+        ctr: true,
+        orders1d: true,
+        revenue1d: true,
+        roas1d: true,
+        orders14d: true,
+        revenue14d: true,
+        roas14d: true,
+      },
+    }),
+  ])
+
+  // Decimal → Number 변환, 날짜 포맷
+  const normalized = items.map((r) => ({
+    ...r,
+    date: (r.date as Date).toISOString().split('T')[0],
+    adCost: Number(r.adCost),
+    ctr: Number(r.ctr),
+    revenue1d: Number(r.revenue1d),
+    roas1d: Number(r.roas1d),
+    revenue14d: Number(r.revenue14d),
+    roas14d: Number(r.roas14d),
+  }))
+
+  return NextResponse.json({ items: normalized, page, pageSize, total })
+}

@@ -37,45 +37,51 @@
 
 ## 개발 단계
 
-### Phase 1: 애플리케이션 골격 구축
+### Phase 1: 애플리케이션 골격 구축 ✅
 
-- **Task 001: 라우트/레이아웃 골격 구성**
+- **Task 001: 라우트/레이아웃 골격 구성** ✅ - 완료
   - See: `app/layout.tsx`, `app/dashboard/layout.tsx`, `app/(auth)/layout.tsx`
-  - App Router 기반 라우트 그룹/레이아웃 구성
-  - 인증/대시보드/마케팅 영역 진입점 페이지 생성
-  - 공통 헤더/사이드바 골격 반영
+  - ✅ App Router 기반 라우트 그룹/레이아웃 구성
+  - ✅ 인증/대시보드/마케팅 영역 진입점 페이지 생성
+  - ✅ 공통 헤더/사이드바 골격 반영
 
-- **Task 002: 인증 기반 접근 제어 골격 구축**
-  - See: `middleware.ts`, `src/lib/supabase/middleware.ts`
-  - 보호 라우트/비로그인 전용 라우트 리다이렉트 구성
-  - Supabase SSR 세션 갱신 미들웨어 연동
-  - 로그인/회원가입 기본 폼 연결
+- **Task 002: 인증 기반 접근 제어 골격 구축** ✅ - 완료
+  - See: `middleware.ts`, `src/lib/supabase/middleware.ts`, `app/dashboard/layout.tsx`
+  - ✅ 보호 라우트/비로그인 전용 라우트 리다이렉트 구성
+  - ✅ Supabase SSR 세션 갱신 미들웨어 연동
+  - ✅ 로그인/회원가입 기본 폼 연결
+  - ✅ 워크스페이스 미생성 사용자 → /workspace-setup 리다이렉트 구현
 
-- **Task 003: 데이터 모델 초안 및 타입 기반 정렬**
-  - See: `prisma/schema.prisma`
-  - `Workspace`, `ReportUpload`, `AdRecord`, `DailyMemo` 스키마 정의
-  - 1인 1워크스페이스 제약(`ownerId @unique`) 반영
-  - 메모 유니크 키(`workspaceId`, `campaignId`, `date`) 반영
+- **Task 003: 데이터 모델 초안 및 타입 기반 정렬** ✅ - 완료
+  - See: `prisma/schema.prisma`, `src/lib/prisma.ts`
+  - ✅ `Workspace`, `ReportUpload`, `AdRecord`, `DailyMemo` 스키마 정의
+  - ✅ 1인 1워크스페이스 제약(`ownerId @unique`) 반영
+  - ✅ 메모 유니크 키(`workspaceId`, `campaignId`, `date`) 반영
+  - ✅ AdRecord 누락 필드 추가: adGroup, placement, productName, optionId
+  - ✅ 업서트 복합 유니크 인덱스 추가
+  - ✅ User.id를 Supabase Auth UUID와 정합성 맞춤
+  - ✅ Prisma 클라이언트 싱글톤 생성
 
-### Phase 2: UI/UX 완성 (더미 데이터 활용)
+### Phase 2: UI/UX 완성 (더미 데이터 활용) ✅
 
-- **Task 004: 대시보드/업로드/캠페인 상세 UI 완성**
-  - `app/dashboard/page.tsx`, `app/dashboard/upload/page.tsx`, `app/dashboard/campaigns/[campaignId]/page.tsx`의 TODO 제거
-  - F002/F003/F004/F005/F006/F007에 맞춘 사용자 인터랙션 완성
-  - 빈 상태/에러 상태/로딩 상태 UI를 탭별로 명시 구현
-  - 공통 필터 바를 컴포넌트화하여 탭 간 재사용
+- **Task 004: shadcn/ui 컴포넌트 및 더미 데이터/타입 기반 구축** ✅ - 완료
+  - See: `src/components/ui/`, `src/types/index.ts`, `src/lib/dummy-data.ts`
+  - ✅ shadcn/ui 컴포넌트 15종 설치 (button, card, input, select, table, tabs, form, avatar, dropdown-menu, separator, label, checkbox, textarea, badge, progress)
+  - ✅ TypeScript 타입 정의 7종 생성 (`src/types/index.ts`)
+  - ✅ 더미 데이터 모듈 생성 (DUMMY_CAMPAIGNS, DUMMY_METRIC_SERIES, DUMMY_AD_RECORDS, DUMMY_KEYWORDS, DUMMY_MEMOS, DUMMY_KPI, DUMMY_UPLOAD_HISTORY)
 
-- **Task 005: URL 기반 공통 필터 상태 일원화**
-  - `from`, `to`, `adType`를 URL Query 단일 소스로 전환
-  - 탭 이동/새로고침/직접 URL 접근 시 상태 복원 보장
-  - 필터 변경 시 활성 탭 데이터 재조회 트리거 통일
-  - 필터 유효성(기간 역전, 미래 날짜 등) 기본 검증 처리
+- **Task 005: URL 기반 공통 필터 및 캠페인 상세 UI 완성** ✅ - 완료
+  - See: `src/components/dashboard/filter-bar.tsx`, `app/dashboard/campaigns/[campaignId]/page.tsx`
+  - ✅ FilterBar 컴포넌트 구현 (useSearchParams/useRouter 활용, from/to/adType URL 파라미터 동기화)
+  - ✅ 캠페인 상세 페이지 리팩토링 (CampaignChart, FilterBar, DailyMemo 연결)
+  - ✅ 광고 데이터 탭 정렬/페이지네이션 구현
+  - ✅ 키워드 분석 탭 체크박스 선택/복사 기능 구현
 
-- **Task 006: 메모 UI/편집 경험 고도화**
-  - 날짜 선택, 메모 생성/수정/삭제 UI 패턴 고정
-  - 메모 입력 제약(길이/공백)과 사용자 피드백 토스트 정리
-  - 그래프 날짜 포인트와 메모 조회 UX 연동
-  - 모바일 화면에서 입력/조회 동작 최적화
+- **Task 006: 대시보드 UI 및 메모 컴포넌트 완성** ✅ - 완료
+  - See: `src/components/dashboard/daily-memo.tsx`, `app/dashboard/page.tsx`
+  - ✅ DailyMemo 컴포넌트 생성 (날짜 선택, 메모 생성/수정/삭제 UI)
+  - ✅ 대시보드 페이지 업데이트 (KPI 카드, 캠페인 목록, 업로드 이력 표시)
+  - ✅ 더미 데이터 기반 전체 UI 플로우 동작 확인
 
 ### Phase 3: 핵심 기능 구현 - 우선순위
 

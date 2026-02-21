@@ -2,6 +2,7 @@
 
 generator client {
   provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -10,7 +11,7 @@ datasource db {
 
 // 사용자 모델 (Supabase Auth와 연동)
 model User {
-  id        String     @id @default(cuid())
+  id        String     @id // Supabase Auth UUID를 그대로 사용 (no default)
   email     String     @unique
   name      String?
   avatarUrl String?
@@ -64,6 +65,10 @@ model AdRecord {
   adType       String   // 광고유형 (예: 키워드 광고, 상품 광고)
   campaignId   String
   campaignName String
+  adGroup      String?  // 광고그룹
+  placement    String?  // 광고 노출 지면
+  productName  String?  // 광고집행 상품명
+  optionId     String?  // 광고집행 옵션ID
   keyword      String?  // 키워드 (없을 수 있음)
 
   // 노출·클릭
@@ -90,6 +95,7 @@ model AdRecord {
   reportId String
   report   ReportUpload @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
+  @@unique([workspaceId, date, campaignId, adType, keyword, adGroup, optionId])
   @@index([workspaceId, campaignId])
   @@index([workspaceId, date])
 }

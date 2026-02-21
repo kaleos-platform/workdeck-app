@@ -70,29 +70,29 @@ export default function UploadPage() {
     }
 
     try {
-      // TODO: xlsx 파싱 (SheetJS)
-      setStatus('parsing')
-      // const workbook = XLSX.read(await selectedFile.arrayBuffer())
-      // const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-      // const rows = XLSX.utils.sheet_to_json(worksheet)
-
-      // TODO: 파싱된 데이터 API로 저장
+      // 서버가 파싱하므로 직접 multipart/form-data 전송
       setStatus('saving')
-      // const response = await fetch('/api/reports/upload', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ rows, fileName: selectedFile.name }),
-      //   headers: { 'Content-Type': 'application/json' },
-      // })
+      const formData = new FormData()
+      formData.append('file', selectedFile)
 
-      // 임시: 1초 대기 후 성공 시뮬레이션
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const res = await fetch('/api/reports/upload', {
+        method: 'POST',
+        body: formData,
+      })
 
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.message || '업로드에 실패했습니다')
+      }
+
+      const { inserted, updated } = await res.json()
       setStatus('success')
-      toast.success('리포트가 업로드되었습니다!')
+      toast.success(`${inserted + updated}개 행 저장 완료`)
       router.push('/dashboard')
+      router.refresh()
     } catch (error) {
       setStatus('error')
-      toast.error('업로드 중 오류가 발생했습니다')
+      toast.error(error instanceof Error ? error.message : '업로드 중 오류가 발생했습니다')
     }
   }
 

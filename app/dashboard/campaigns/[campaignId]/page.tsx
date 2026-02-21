@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect, use } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -20,85 +21,238 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { BarChart3, TrendingUp, DollarSign, MousePointerClick, Eye, Copy, CheckSquare } from 'lucide-react'
+import {
+  TrendingUp,
+  DollarSign,
+  MousePointerClick,
+  Eye,
+  Copy,
+  AlertTriangle,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-react'
 import { toast } from 'sonner'
+import { FilterBar } from '@/components/dashboard/filter-bar'
+import { CampaignChart } from '@/components/dashboard/campaign-chart'
+import { DailyMemo } from '@/components/dashboard/daily-memo'
+import type { AdRecord, InefficientKeyword, MetricSeries, DailyMemo as DailyMemoType } from '@/types'
 
-type PageProps = {
+type SortKey = keyof Pick<AdRecord, 'date' | 'adCost' | 'clicks' | 'impressions' | 'roas14d'>
+
+export default function CampaignDetailPage({
+  params,
+}: {
   params: Promise<{ campaignId: string }>
-}
+}) {
+  const { campaignId } = use(params)
+  const searchParams = useSearchParams()
 
-// TODO: 실제 데이터 fetching으로 교체
-const kpiCards = [
-  { title: '총 광고비', value: '-', icon: DollarSign, color: 'text-orange-500' },
-  { title: '평균 ROAS (14일)', value: '-', icon: TrendingUp, color: 'text-green-600' },
-  { title: '총 클릭수', value: '-', icon: MousePointerClick, color: 'text-blue-600' },
-  { title: '총 노출수', value: '-', icon: Eye, color: 'text-purple-600' },
-]
+  // URL 필터 읽기
+  const from = searchParams.get('from') ?? ''
+  const to = searchParams.get('to') ?? ''
+  const adTypeFilter = searchParams.get('adType') ?? 'all'
 
-export default function CampaignDetailPage({ params }: PageProps) {
-  // 공통 필터 상태
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const [adType, setAdType] = useState('all')
+  // 캠페인 메타 정보
+  const [campaignName, setCampaignName] = useState('')
+  const [adTypes, setAdTypes] = useState<string[]>([])
 
-  // 키워드 분석 탭 상태
+  // 지표 시계열
+  const [metricSeries, setMetricSeries] = useState<MetricSeries[]>([])
+
+  // 광고 데이터 탭 상태
+  const [records, setRecords] = useState<AdRecord[]>([])
+  const [total, setTotal] = useState(0)
+  const [sortKey, setSortKey] = useState<SortKey>('date')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [pageSize, setPageSize] = useState(25)
+  const [page, setPage] = useState(1)
+
+  // 비효율 키워드
+  const [keywords, setKeywords] = useState<InefficientKeyword[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([])
 
-  // 비효율 키워드 복사
+  // 메모
+  const [memos, setMemos] = useState<DailyMemoType[]>([])
+
+  // 지표 시계열 조회 (필터 변경 시 재조회)
+  useEffect(() => {
+    const q = new URLSearchParams()
+    if (from) q.set('from', from)
+    if (to) q.set('to', to)
+    if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
+
+    fetch(`/api/campaigns/${campaignId}/metrics?${q}`)
+      .then((r) => (r.ok ? r.json() : { series: [] }))
+      .then((d: { series: MetricSeries[] }) => setMetricSeries(d.series))
+      .catch(() => setMetricSeries([]))
+  }, [campaignId, from, to, adTypeFilter])
+
+  // 광고 데이터 조회 (페이지/정렬/필터 변경 시 재조회)
+  useEffect(() => {
+    const q = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+      sortBy: sortKey,
+      sortOrder,
+    })
+    if (from) q.set('from', from)
+    if (to) q.set('to', to)
+    if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
+
+    fetch(`/api/campaigns/${campaignId}/records?${q}`)
+      .then((r) => (r.ok ? r.json() : { items: [], total: 0 }))
+      .then((d: { items: AdRecord[]; total: number }) => {
+        setRecords(d.items)
+        setTotal(d.total)
+        // campaignName과 adTypes 추출 (첫 로드 시)
+        if (d.items.length > 0 && !campaignName) {
+          setCampaignName(d.items[0].campaignName)
+        }
+      })
+      .catch(() => { setRecords([]); setTotal(0) })
+  }, [campaignId, page, pageSize, sortKey, sortOrder, from, to, adTypeFilter]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 비효율 키워드 조회
+  useEffect(() => {
+    const q = new URLSearchParams()
+    if (from) q.set('from', from)
+    if (to) q.set('to', to)
+    if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
+
+    fetch(`/api/campaigns/${campaignId}/inefficient-keywords?${q}`)
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((d: { items: InefficientKeyword[] }) => setKeywords(d.items))
+      .catch(() => setKeywords([]))
+  }, [campaignId, from, to, adTypeFilter])
+
+  // 메모 조회 (campaignId 변경 시)
+  useEffect(() => {
+    fetch(`/api/campaigns/${campaignId}/memos`)
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((d: { items: DailyMemoType[] }) => setMemos(d.items))
+      .catch(() => setMemos([]))
+  }, [campaignId])
+
+  // 캠페인 메타 (adTypes) 조회
+  useEffect(() => {
+    fetch('/api/campaigns')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((list: Array<{ id: string; name: string; adTypes: string[] }>) => {
+        const found = list.find((c) => c.id === campaignId)
+        if (found) {
+          setCampaignName(found.name)
+          setAdTypes(found.adTypes)
+        }
+      })
+      .catch(() => {})
+  }, [campaignId])
+
+  // 페이지네이션
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+
+  function handleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortOrder('desc')
+    }
+    setPage(1)
+  }
+
+  function SortIcon({ column }: { column: SortKey }) {
+    if (sortKey !== column) return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-40" />
+    return sortOrder === 'asc'
+      ? <ArrowUp className="h-3.5 w-3.5 ml-1 text-primary" />
+      : <ArrowDown className="h-3.5 w-3.5 ml-1 text-primary" />
+  }
+
+  // 키워드 다중 선택
+  const allKeywordNames = keywords.map((k) => k.keyword)
+  const allSelected = selectedKeywords.length === allKeywordNames.length && allKeywordNames.length > 0
+
+  function toggleAllKeywords() {
+    setSelectedKeywords(allSelected ? [] : allKeywordNames)
+  }
+
+  function toggleKeyword(keyword: string) {
+    setSelectedKeywords((prev) =>
+      prev.includes(keyword) ? prev.filter((k) => k !== keyword) : [...prev, keyword]
+    )
+  }
+
   function copySelectedKeywords() {
     if (selectedKeywords.length === 0) {
       toast.error('복사할 키워드를 선택해주세요')
       return
     }
-    const text = selectedKeywords.join(', ')
-    navigator.clipboard.writeText(text)
+    navigator.clipboard.writeText(selectedKeywords.join(', '))
     toast.success(`${selectedKeywords.length}개 키워드가 클립보드에 복사되었습니다`)
   }
+
+  // KPI 계산 — metricSeries 합산
+  const kpiData = useMemo(() => {
+    const totalAdCost = metricSeries.reduce((s, r) => s + r.adCost, 0)
+    const totalClicks = metricSeries.reduce((s, r) => s + r.clicks, 0)
+    const totalImpressions = metricSeries.reduce((s, r) => s + r.impressions, 0)
+    const avgRoas14d =
+      metricSeries.length > 0
+        ? metricSeries.reduce((s, r) => s + r.roas14d, 0) / metricSeries.length
+        : 0
+    return { totalAdCost, totalClicks, totalImpressions, avgRoas14d }
+  }, [metricSeries])
+
+  const kpiCards = [
+    {
+      title: '총 광고비',
+      value: `${kpiData.totalAdCost.toLocaleString()}원`,
+      icon: DollarSign,
+      color: 'text-orange-500',
+    },
+    {
+      title: '평균 ROAS (14일)',
+      value: `${kpiData.avgRoas14d.toFixed(1)}%`,
+      icon: TrendingUp,
+      color: 'text-green-600',
+    },
+    {
+      title: '총 클릭수',
+      value: kpiData.totalClicks.toLocaleString(),
+      icon: MousePointerClick,
+      color: 'text-blue-600',
+    },
+    {
+      title: '총 노출수',
+      value: kpiData.totalImpressions.toLocaleString(),
+      icon: Eye,
+      color: 'text-purple-600',
+    },
+  ]
+
+  const adTypeOptions = [
+    { value: 'all', label: '전체' },
+    ...adTypes.map((t) => ({ value: t, label: t })),
+  ]
 
   return (
     <div className="space-y-6">
       {/* 페이지 헤더 */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">캠페인 상세</h1>
-        {/* TODO: 실제 캠페인명으로 교체 */}
-        <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">캠페인 데이터를 분석합니다</p>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {campaignName || campaignId}
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {adTypes.length > 0
+            ? `${adTypes.join(' · ')} 캠페인 데이터를 분석합니다`
+            : '캠페인 데이터를 분석합니다'}
+        </p>
       </div>
 
-      {/* 공통 필터 영역 */}
+      {/* 공통 필터 바 */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">기간</span>
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="w-36"
-              />
-              <span className="text-gray-400">~</span>
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="w-36"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">광고유형</span>
-              <Select value={adType} onValueChange={setAdType}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {/* TODO: 실제 광고유형 목록으로 교체 */}
-                  <SelectItem value="keyword">키워드 광고</SelectItem>
-                  <SelectItem value="display">상품 광고</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <FilterBar adTypeOptions={adTypeOptions} />
         </CardContent>
       </Card>
 
@@ -110,7 +264,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
           <TabsTrigger value="keywords">키워드 분석</TabsTrigger>
         </TabsList>
 
-        {/* 대시보드 탭 */}
+        {/* ── 대시보드 탭 ── */}
         <TabsContent value="dashboard" className="space-y-6">
           {/* KPI 카드 */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -130,17 +284,13 @@ export default function CampaignDetailPage({ params }: PageProps) {
             })}
           </div>
 
-          {/* 차트 영역 */}
+          {/* 시계열 차트 */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">성과 추이</CardTitle>
             </CardHeader>
-            <CardContent className="h-72 flex items-center justify-center text-gray-400">
-              <div className="text-center">
-                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                {/* TODO: Recharts 시계열 차트로 교체 (F002) */}
-                <p className="text-sm">데이터를 업로드하면 차트가 표시됩니다</p>
-              </div>
+            <CardContent>
+              <CampaignChart data={metricSeries} />
             </CardContent>
           </Card>
 
@@ -150,19 +300,26 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <CardTitle className="text-base">일자별 메모</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* TODO: 일자별 메모 CRUD 구현 (F005) */}
-              <p className="text-sm text-gray-500 text-center py-8">
-                날짜를 선택하여 광고 작업 내용을 메모하세요
-              </p>
+              <DailyMemo
+                campaignId={campaignId}
+                initialMemos={memos}
+                onMemosChange={setMemos}
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* 광고 데이터 탭 */}
+        {/* ── 광고 데이터 탭 ── */}
         <TabsContent value="addata" className="space-y-4">
-          <div className="flex justify-end">
-            <Select defaultValue="25">
-              <SelectTrigger className="w-28">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              총 <span className="font-medium text-foreground">{total}</span>개 행
+            </p>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}
+            >
+              <SelectTrigger className="w-24 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -178,33 +335,106 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>날짜</TableHead>
+                    <TableHead
+                      className="cursor-pointer select-none"
+                      onClick={() => handleSort('date')}
+                    >
+                      <span className="flex items-center">날짜<SortIcon column="date" /></span>
+                    </TableHead>
                     <TableHead>광고유형</TableHead>
                     <TableHead>키워드</TableHead>
-                    <TableHead className="text-right">광고비</TableHead>
-                    <TableHead className="text-right">클릭수</TableHead>
-                    <TableHead className="text-right">노출수</TableHead>
-                    <TableHead className="text-right">ROAS (14일)</TableHead>
+                    <TableHead
+                      className="text-right cursor-pointer select-none"
+                      onClick={() => handleSort('adCost')}
+                    >
+                      <span className="flex items-center justify-end">광고비<SortIcon column="adCost" /></span>
+                    </TableHead>
+                    <TableHead
+                      className="text-right cursor-pointer select-none"
+                      onClick={() => handleSort('clicks')}
+                    >
+                      <span className="flex items-center justify-end">클릭수<SortIcon column="clicks" /></span>
+                    </TableHead>
+                    <TableHead
+                      className="text-right cursor-pointer select-none"
+                      onClick={() => handleSort('impressions')}
+                    >
+                      <span className="flex items-center justify-end">노출수<SortIcon column="impressions" /></span>
+                    </TableHead>
+                    <TableHead
+                      className="text-right cursor-pointer select-none"
+                      onClick={() => handleSort('roas14d')}
+                    >
+                      <span className="flex items-center justify-end">ROAS(14일)<SortIcon column="roas14d" /></span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {/* TODO: 실제 광고 데이터로 교체 (F004) */}
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-gray-500 text-sm">
-                      데이터를 업로드하면 광고 데이터가 표시됩니다
-                    </TableCell>
-                  </TableRow>
+                  {records.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground text-sm">
+                        필터 조건에 맞는 데이터가 없습니다
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    records.map((record) => (
+                      <TableRow key={record.id}>
+                        <TableCell className="text-sm">{record.date}</TableCell>
+                        <TableCell className="text-sm">{record.adType}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {record.keyword ?? '-'}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {record.adCost.toLocaleString()}원
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {record.clicks.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {record.impressions.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right text-sm font-medium">
+                          {record.roas14d.toFixed(1)}%
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
+
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                이전
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {page} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                다음
+              </Button>
+            </div>
+          )}
         </TabsContent>
 
-        {/* 키워드 분석 탭 */}
+        {/* ── 키워드 분석 탭 ── */}
         <TabsContent value="keywords" className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <CheckSquare className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
               <span>광고비 지출 & 주문수 0인 비효율 키워드</span>
             </div>
             <Button
@@ -215,7 +445,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               disabled={selectedKeywords.length === 0}
             >
               <Copy className="h-4 w-4" />
-              선택 키워드 복사 ({selectedKeywords.length})
+              선택 복사 ({selectedKeywords.length})
             </Button>
           </div>
 
@@ -224,8 +454,12 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10">
-                      <input type="checkbox" className="rounded" />
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={toggleAllKeywords}
+                        aria-label="전체 선택"
+                      />
                     </TableHead>
                     <TableHead>키워드</TableHead>
                     <TableHead className="text-right">광고비</TableHead>
@@ -234,16 +468,49 @@ export default function CampaignDetailPage({ params }: PageProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {/* TODO: 비효율 키워드 데이터로 교체 (F003) */}
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-12 text-gray-500 text-sm">
-                      데이터를 업로드하면 비효율 키워드가 표시됩니다
-                    </TableCell>
-                  </TableRow>
+                  {keywords.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground text-sm">
+                        비효율 키워드가 없습니다
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    keywords.map((kw) => (
+                      <TableRow
+                        key={kw.keyword}
+                        className="cursor-pointer"
+                        onClick={() => toggleKeyword(kw.keyword)}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedKeywords.includes(kw.keyword)}
+                            onCheckedChange={() => toggleKeyword(kw.keyword)}
+                            aria-label={kw.keyword}
+                          />
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">{kw.keyword}</TableCell>
+                        <TableCell className="text-right text-sm text-orange-600 font-medium">
+                          {kw.adCost.toLocaleString()}원
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {kw.impressions.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {kw.clicks.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
+
+          {selectedKeywords.length > 0 && (
+            <p className="text-xs text-muted-foreground text-center">
+              {selectedKeywords.length}개 키워드 선택됨 · 복사 버튼을 클릭하면 쉼표(,) 구분으로 클립보드에 저장됩니다
+            </p>
+          )}
         </TabsContent>
       </Tabs>
     </div>
