@@ -46,9 +46,9 @@
   - ✅ 공통 헤더/사이드바 골격 반영
 
 - **Task 002: 인증 기반 접근 제어 골격 구축** ✅ - 완료
-  - See: `middleware.ts`, `src/lib/supabase/middleware.ts`, `app/dashboard/layout.tsx`
+  - See: `proxy.ts`, `src/lib/supabase/middleware.ts`, `app/dashboard/layout.tsx`
   - ✅ 보호 라우트/비로그인 전용 라우트 리다이렉트 구성
-  - ✅ Supabase SSR 세션 갱신 미들웨어 연동
+  - ✅ Supabase SSR 세션 갱신 미들웨어 연동 (`proxy.ts`가 Next.js 16 미들웨어 대체)
   - ✅ 로그인/회원가입 기본 폼 연결
   - ✅ 워크스페이스 미생성 사용자 → /workspace-setup 리다이렉트 구현
 
@@ -83,42 +83,41 @@
   - ✅ 대시보드 페이지 업데이트 (KPI 카드, 캠페인 목록, 업로드 이력 표시)
   - ✅ 더미 데이터 기반 전체 UI 플로우 동작 확인
 
-### Phase 3: 핵심 기능 구현 - 우선순위
+### Phase 3: 핵심 기능 구현
 
-- **Task 007: 업로드 API 및 Excel 파싱 파이프라인 구현** - 우선순위
-  - `POST /api/reports/upload` 구현(확장자 검증, 파싱, 저장, 결과 반환)
-  - SheetJS 기반 컬럼 매핑/정규화(`YYYYMMDD`, `%`, 과학표기, 결측값) 구현
-  - 업서트 키(`workspaceId+date+campaignId+adType+keyword+adGroup+optionId`) 기반 idempotent 저장
-  - `ReportUpload` 감사 로그와 `inserted/updated/skipped/errors` 응답 계약 고정
-  - Playwright MCP로 업로드 성공/실패/재업로드 시나리오 검증
+- **Task 007: 업로드 API 및 Excel 파싱 파이프라인 구현** ✅ - 완료
+  - See: `app/api/reports/upload/route.ts`, `src/lib/excel-parser.ts`
+  - ✅ `POST /api/reports/upload` 구현 (확장자 검증, xlsx 파싱, 저장, 결과 반환)
+  - ✅ SheetJS 기반 컬럼 매핑/정규화 (`YYYYMMDD`, `%`, 과학표기, 결측값)
+  - ✅ 업서트 키 (`workspaceId+date+campaignId+adType+keyword+adGroup+optionId`) 기반 idempotent 저장
+  - ✅ 500행 청크 단위 `$transaction` upsert 처리
+  - ✅ `ReportUpload` 감사 로그 생성, `{ uploadId, inserted, updated, skipped, errors }` 응답 계약
 
-- **Task 008: 워크스페이스 생성 및 소유권 API 구현**
-  - `POST /api/workspace` 구현 및 1인 1워크스페이스 충돌(`409`) 처리
-  - 대시보드 접근 시 워크스페이스 미생성 사용자 리다이렉트 로직 완성
-  - workspace 소유권 검증 유틸을 공통 서버 레이어로 분리
-  - 권한 오류 표준 에러(`401/403`) 응답 형태 통일
-  - Playwright MCP로 가입→워크스페이스 생성→대시보드 진입 검증
+- **Task 008: 워크스페이스 생성 및 소유권 API 구현** ✅ - 완료
+  - See: `app/api/workspace/route.ts`, `src/lib/api-helpers.ts`
+  - ✅ `POST /api/workspace` 구현 및 1인 1워크스페이스 충돌(`409`) 처리
+  - ✅ Supabase Auth UUID ↔ Prisma User 자동 동기화 (upsert)
+  - ✅ `resolveWorkspace()` 헬퍼로 소유권 검증 레이어 공통화 (`src/lib/api-helpers.ts`)
+  - ✅ 권한 오류 표준 에러 (`401/404`) 응답 통일
 
-- **Task 009: 캠페인/지표 조회 API 구현**
-  - `GET /api/campaigns`, `GET /api/campaigns/:campaignId/metrics` 구현
-  - 기간/광고유형 필터 조건에 따른 집계 쿼리 작성
-  - 시계열 응답(`series[]`) 정렬/빈 데이터 처리 표준화
-  - UI 차트(F002)와 API 계약 정합성 검증
-  - Playwright MCP로 필터 변경 시 차트 갱신 시나리오 검증
+- **Task 009: 캠페인/지표 조회 API 구현** ✅ - 완료
+  - See: `app/api/campaigns/route.ts`, `app/api/campaigns/[campaignId]/metrics/route.ts`
+  - ✅ `GET /api/campaigns` 구현 (campaignId 기준 distinct 조회, adType 배열 그룹화)
+  - ✅ `GET /api/campaigns/:campaignId/metrics` 구현 (from/to/adType 필터, 날짜별 groupBy 시계열)
+  - ✅ Decimal → Number 변환, YYYY-MM-DD 날짜 포맷 표준화
 
-- **Task 010: 광고 데이터/키워드 분석 API 구현**
-  - `GET /api/campaigns/:campaignId/records` 페이징/정렬 처리
-  - `GET /api/campaigns/:campaignId/inefficient-keywords` 조건 필터 처리
-  - `keyword NOT IN ('-', '', null)` 정규화 결과와 조회 조건 일치 보장
-  - UI 테이블(F004)/키워드 복사(F003)와 데이터 연결
-  - Playwright MCP로 테이블 정렬/페이지 크기/키워드 복사 검증
+- **Task 010: 광고 데이터/키워드 분석 API 구현** ✅ - 완료
+  - See: `app/api/campaigns/[campaignId]/records/route.ts`, `app/api/campaigns/[campaignId]/inefficient-keywords/route.ts`
+  - ✅ `GET /api/campaigns/:campaignId/records` 페이지네이션 (page/pageSize/sortBy/sortOrder)
+  - ✅ `GET /api/campaigns/:campaignId/inefficient-keywords` (orders1d=0 AND adCost>0 조건)
+  - ✅ from/to/adType 공통 필터 파라미터 일관 적용
 
-- **Task 011: 일자별 메모 API 구현**
-  - `POST /api/campaigns/:campaignId/memos` upsert 구현
-  - `DELETE /api/campaigns/:campaignId/memos` 구현 및 재조회 일관성 보장
-  - 메모 조회 API(캠페인/기간 기반) 추가 또는 기존 조회 API에 포함 결정
-  - 유니크 키 충돌/권한 오류/유효성 오류 처리 표준화
-  - Playwright MCP로 메모 CRUD E2E 검증
+- **Task 011: 일자별 메모 API 구현** ✅ - 완료
+  - See: `app/api/campaigns/[campaignId]/memos/route.ts`
+  - ✅ `GET /api/campaigns/:campaignId/memos` 구현 (날짜 기준 내림차순 목록)
+  - ✅ `POST /api/campaigns/:campaignId/memos` upsert 구현 (workspaceId+campaignId+date 복합 unique)
+  - ✅ `DELETE /api/campaigns/:campaignId/memos` 구현 (date 파라미터 기반 삭제)
+  - ✅ Asia/Seoul 자정 기준 UTC 변환 저장
 
 - **Task 012: API 통합 테스트 및 계약 안정화**
   - 단위: 정규화 함수(날짜/퍼센트/결측/과학표기) 테스트
@@ -129,13 +128,24 @@
 
 ### Phase 4: 품질 강화 및 운영 안정화
 
-- **Task 013: 비기능 요구사항 강화**
+- **Task 013: 개발 도구 설정** ✅ - 완료
+  - See: `.prettierrc`, `.prettierignore`, `.editorconfig`, `.husky/`, `eslint.config.mjs`, `package.json`
+  - ✅ Prettier 설정 (singleQuote, 2-space, no semi, `prettier-plugin-tailwindcss`)
+  - ✅ ESLint + `eslint-config-prettier` 통합 (포맷팅 규칙 충돌 방지)
+  - ✅ Husky v9 + lint-staged 설정
+    - `pre-commit`: staged 파일 ESLint 자동 수정 + Prettier 포맷팅
+    - `pre-push`: `tsc --noEmit` 전체 타입 체크
+  - ✅ `.editorconfig` 추가 (에디터 간 일관된 들여쓰기/줄끝/인코딩)
+  - ✅ `package.json` scripts 추가: `lint:fix`, `format`, `format:check`, `typecheck`
+  - ✅ 기존 코드 전체 Prettier 일괄 포맷팅 적용
+
+- **Task 014: 비기능 요구사항 강화**
   - `Asia/Seoul` 시간대 일관성 점검(파싱, 저장, 조회, 렌더링)
   - 대용량 업로드 시 타임아웃/에러 복구 전략 보강
   - 네트워크 실패 시 재시도 UX/메시지 표준화
   - 감사 로그 조회(업로드 이력) 신뢰성 검증
 
-- **Task 014: 배포/운영 체크리스트 정리**
+- **Task 015: 배포/운영 체크리스트 정리**
   - 환경 변수/배포 설정 검증(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `DATABASE_URL`)
   - 운영 전 최종 E2E 스모크 테스트 시나리오 문서화
   - 장애 대응 가이드(업로드 실패/권한 오류/데이터 누락) 작성
