@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
+import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
 
 // 허용된 정렬 컬럼
 const ALLOWED_SORT_KEYS = ['date', 'adCost', 'clicks', 'impressions', 'roas14d'] as const
 type SortKey = (typeof ALLOWED_SORT_KEYS)[number]
+
+// 상품명에서 옵션명 파싱 (구성/사이즈 패턴 추출)
+function parseOptionName(productName: string | null): string | null {
+  if (!productName) return null
+  const matches = productName.matchAll(/(?:구성|사이즈)[:\s]+([^,]+)/g)
+  const values = [...new Set([...matches].map((m) => m[1].trim()))]
+  return values.length > 0 ? values.join(' / ') : null
+}
 
 // GET /api/campaigns/[campaignId]/records — 광고 데이터 목록 (페이지네이션 + 정렬)
 export async function GET(
@@ -62,7 +71,6 @@ export async function GET(
         impressions: true,
         clicks: true,
         adCost: true,
-        ctr: true,
         orders1d: true,
         revenue1d: true,
         roas1d: true,
@@ -73,17 +81,32 @@ export async function GET(
     }),
   ])
 
-  // Decimal → Number 변환, 날짜 포맷
-  const normalized = items.map((r) => ({
-    ...r,
-    date: (r.date as Date).toISOString().split('T')[0],
-    adCost: Number(r.adCost),
-    ctr: Number(r.ctr),
-    revenue1d: Number(r.revenue1d),
-    roas1d: Number(r.roas1d),
-    revenue14d: Number(r.revenue14d),
-    roas14d: Number(r.roas14d),
-  }))
+  // Decimal → Number 변환, 날짜 포맷, CTR/CVR/ROAS 계산 (F008 기준 통일)
+  const normalized = items.map((r) => {
+    const adCost = Number(r.adCost)
+    const clicks = Number(r.clicks)
+    const impressions = Number(r.impressions)
+    const orders1d = Number(r.orders1d)
+    const revenue1d = Number(r.revenue1d)
+    const productName = r.productName
+
+    return {
+      ...r,
+      date: (r.date as Date).toISOString().split('T')[0],
+      adCost,
+      revenue1d,
+      roas1d: Number(r.roas1d),
+      revenue14d: Number(r.revenue14d),
+      roas14d: Number(r.roas14d),
+      // F008: 계산 지표 통일
+      ctr: calculateCTR(clicks, impressions),
+      cvr: calculateCVR(orders1d, clicks),
+      roas: calculateROAS(revenue1d, adCost),
+      // 서버사이드 상품명/옵션명 파싱
+      parsedProductName: productName ? productName.split(',')[0].trim() : null,
+      parsedOptionName: parseOptionName(productName),
+    }
+  })
 
   return NextResponse.json({ items: normalized, page, pageSize, total })
 }

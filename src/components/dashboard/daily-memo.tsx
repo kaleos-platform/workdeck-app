@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Save, Trash2, StickyNote } from 'lucide-react'
+import { Save, Trash2, StickyNote, Plus } from 'lucide-react'
 import type { DailyMemo as DailyMemoType } from '@/types'
 
 const MAX_CONTENT_LENGTH = 500
@@ -15,19 +15,37 @@ interface DailyMemoProps {
   campaignId: string
   initialMemos?: DailyMemoType[]
   onMemosChange?: (memos: DailyMemoType[]) => void
+  from?: string
+  to?: string
+  targetDate?: string | null
 }
 
-export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: DailyMemoProps) {
+export function DailyMemo({
+  campaignId,
+  initialMemos = [],
+  onMemosChange,
+  from,
+  to,
+  targetDate,
+}: DailyMemoProps) {
   const [memos, setMemos] = useState<DailyMemoType[]>(initialMemos)
   const [selectedDate, setSelectedDate] = useState('')
   const [content, setContent] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const forceEditRef = useRef(false)
 
-  // initialMemos 변경 시 동기화 (캠페인 페이지에서 API 조회 후 전달)
+  // initialMemos 변경 시 동기화
   useEffect(() => {
     setMemos(initialMemos)
   }, [initialMemos])
+
+  // 차트 클릭 등 외부에서 날짜 지정 시 자동 선택
+  useEffect(() => {
+    if (targetDate) {
+      setSelectedDate(targetDate)
+    }
+  }, [targetDate])
 
   const currentMemo = memos.find((m) => m.date === selectedDate)
 
@@ -36,13 +54,25 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
     if (selectedDate) {
       const memo = memos.find((m) => m.date === selectedDate)
       setContent(memo?.content ?? '')
-      setIsEditing(false)
+      if (forceEditRef.current) {
+        setIsEditing(true)
+        forceEditRef.current = false
+      } else {
+        setIsEditing(false)
+      }
     }
   }, [selectedDate]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function updateMemos(newMemos: DailyMemoType[]) {
     setMemos(newMemos)
     onMemosChange?.(newMemos)
+  }
+
+  // "메모 추가" 버튼 — 오늘 날짜로 편집 모드 진입
+  function openAddForm() {
+    const today = new Date().toISOString().split('T')[0]
+    forceEditRef.current = true
+    setSelectedDate(today)
   }
 
   async function handleSave() {
@@ -126,31 +156,44 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
   const remaining = MAX_CONTENT_LENGTH - content.length
   const showWarning = remaining < 50
 
+  // 기간 내 메모만 표시 (from/to 필터 적용)
+  const filteredMemos = memos.filter((m) => {
+    if (from && m.date < from) return false
+    if (to && m.date > to) return false
+    return true
+  })
+
   return (
     <div className="space-y-4">
-      {/* 날짜 선택 */}
-      <div className="flex items-center gap-3">
-        <label className="text-sm whitespace-nowrap text-muted-foreground">날짜 선택</label>
-        <Input
-          type="date"
-          value={selectedDate}
-          max={today}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="w-40 text-sm"
-        />
-        {selectedDate && currentMemo && (
-          <Badge variant="secondary" className="text-xs">
-            <StickyNote className="mr-1 h-3 w-3" />
-            메모 있음
-          </Badge>
-        )}
+      {/* 헤더: 날짜 선택 + 메모 추가 버튼 */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <label className="text-sm whitespace-nowrap text-muted-foreground">날짜 선택</label>
+          <Input
+            type="date"
+            value={selectedDate}
+            max={today}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-40 text-sm"
+          />
+          {selectedDate && currentMemo && (
+            <Badge variant="secondary" className="text-xs">
+              <StickyNote className="mr-1 h-3 w-3" />
+              메모 있음
+            </Badge>
+          )}
+        </div>
+        <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={openAddForm}>
+          <Plus className="h-3.5 w-3.5" />
+          메모 추가
+        </Button>
       </div>
 
       {/* 날짜 미선택 안내 */}
       {!selectedDate && (
         <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
           <StickyNote className="h-8 w-8 opacity-30" />
-          <p className="text-sm">날짜를 선택하면 메모를 확인하거나 작성할 수 있습니다</p>
+          <p className="text-sm">날짜를 선택하거나 메모 추가를 눌러 시작하세요</p>
         </div>
       )}
 
@@ -228,12 +271,14 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
         </div>
       )}
 
-      {/* 전체 메모 목록 요약 */}
-      {memos.length > 0 && (
+      {/* 기간 내 메모 목록 요약 */}
+      {filteredMemos.length > 0 && (
         <div className="border-t pt-2">
-          <p className="mb-2 text-xs text-muted-foreground">메모 작성 날짜</p>
+          <p className="mb-2 text-xs text-muted-foreground">
+            메모 작성 날짜{from || to ? ' (기간 내)' : ''}
+          </p>
           <div className="flex flex-wrap gap-1.5">
-            {memos
+            {filteredMemos
               .sort((a, b) => b.date.localeCompare(a.date))
               .map((memo) => (
                 <button

@@ -27,9 +27,9 @@ export const DUMMY_CAMPAIGNS: Campaign[] = [
 export const DUMMY_METRIC_SERIES: MetricSeries[] = Array.from({ length: 14 }, (_, i) => ({
   date: dateStr(13 - i),
   adCost: Math.round(80000 + Math.random() * 120000),
-  clicks: Math.round(300 + Math.random() * 700),
-  impressions: Math.round(8000 + Math.random() * 20000),
-  roas14d: parseFloat((150 + Math.random() * 350).toFixed(1)),
+  ctr: parseFloat((1.5 + Math.random() * 3.5).toFixed(1)),
+  cvr: parseFloat((0.5 + Math.random() * 2.5).toFixed(1)),
+  roas: parseFloat((150 + Math.random() * 350).toFixed(1)),
 }))
 
 // 광고 데이터 행 (camp-001 기준 14일치 × 2 광고유형)
@@ -48,13 +48,17 @@ export const DUMMY_AD_RECORDS: AdRecord[] = [
     impressions: Math.round(1000 + Math.random() * 5000),
     clicks: Math.round(50 + Math.random() * 300),
     adCost: Math.round(10000 + Math.random() * 50000),
-    ctr: parseFloat((0.03 + Math.random() * 0.07).toFixed(4)),
+    ctr: parseFloat((1.5 + Math.random() * 3.5).toFixed(1)),
+    cvr: parseFloat((0.5 + Math.random() * 2.5).toFixed(1)),
+    roas: parseFloat((100 + Math.random() * 400).toFixed(1)),
     orders1d: Math.round(Math.random() * 20),
     revenue1d: Math.round(Math.random() * 500000),
     roas1d: parseFloat((100 + Math.random() * 400).toFixed(1)),
     orders14d: Math.round(Math.random() * 50),
     revenue14d: Math.round(Math.random() * 1500000),
     roas14d: parseFloat((150 + Math.random() * 350).toFixed(1)),
+    parsedProductName: null,
+    parsedOptionName: null,
   })),
   ...Array.from({ length: 14 }, (_, i) => ({
     id: `rec-p-${i + 1}`,
@@ -64,29 +68,33 @@ export const DUMMY_AD_RECORDS: AdRecord[] = [
     campaignName: '봄 시즌 키워드 캠페인',
     adGroup: null,
     placement: '검색 상단',
-    productName: `상품 ${(i % 3) + 1}`,
+    productName: `봄 신상 블라우스 구성: 단품, 사이즈: M`,
     optionId: `OPT-00${(i % 3) + 1}`,
     keyword: null,
     impressions: Math.round(2000 + Math.random() * 8000),
     clicks: Math.round(100 + Math.random() * 400),
     adCost: Math.round(20000 + Math.random() * 80000),
-    ctr: parseFloat((0.02 + Math.random() * 0.06).toFixed(4)),
+    ctr: parseFloat((1.2 + Math.random() * 2.8).toFixed(1)),
+    cvr: parseFloat((0.8 + Math.random() * 3.2).toFixed(1)),
+    roas: parseFloat((120 + Math.random() * 380).toFixed(1)),
     orders1d: Math.round(Math.random() * 30),
     revenue1d: Math.round(Math.random() * 800000),
     roas1d: parseFloat((120 + Math.random() * 380).toFixed(1)),
     orders14d: Math.round(Math.random() * 80),
     revenue14d: Math.round(Math.random() * 2000000),
     roas14d: parseFloat((160 + Math.random() * 340).toFixed(1)),
+    parsedProductName: '봄 신상 블라우스',
+    parsedOptionName: '단품 / M',
   })),
 ]
 
 // 비효율 키워드 (adCost > 0, orders1d = 0)
 export const DUMMY_KEYWORDS: InefficientKeyword[] = [
-  { keyword: '프리미엄 봄 원피스', adCost: 45200, impressions: 3820, clicks: 89, orders1d: 0 },
-  { keyword: '여성 플리츠 스커트', adCost: 32100, impressions: 2150, clicks: 54, orders1d: 0 },
-  { keyword: '봄 신상 블라우스', adCost: 28700, impressions: 1890, clicks: 43, orders1d: 0 },
-  { keyword: '캐주얼 린넨 팬츠', adCost: 19500, impressions: 1240, clicks: 31, orders1d: 0 },
-  { keyword: '오버핏 봄 재킷', adCost: 15800, impressions: 980, clicks: 24, orders1d: 0 },
+  { keyword: '프리미엄 봄 원피스', adCost: 45200, ctr: 2.3, cvr: null, roas: null },
+  { keyword: '여성 플리츠 스커트', adCost: 32100, ctr: 2.5, cvr: null, roas: null },
+  { keyword: '봄 신상 블라우스', adCost: 28700, ctr: 2.3, cvr: null, roas: null },
+  { keyword: '캐주얼 린넨 팬츠', adCost: 19500, ctr: 2.5, cvr: null, roas: null },
+  { keyword: '오버핏 봄 재킷', adCost: 15800, ctr: 2.4, cvr: null, roas: null },
 ]
 
 // 일자별 메모

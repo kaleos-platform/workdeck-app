@@ -4,52 +4,39 @@ import { useState } from 'react'
 import {
   ComposedChart,
   Line,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
+  ReferenceLine,
   ResponsiveContainer,
 } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { BarChart3 } from 'lucide-react'
-import type { MetricSeries } from '@/types'
+import type { MetricSeries, DailyMemo } from '@/types'
 
-type Metric = 'roas14d' | 'adCost' | 'clicks' | 'impressions'
+type Metric = 'adCost' | 'roas' | 'ctr' | 'cvr'
 
 interface MetricConfig {
   key: Metric
   label: string
   color: string
-  type: 'line' | 'bar'
   unit: string
   yAxisId: 'left' | 'right'
 }
 
 const METRIC_CONFIGS: MetricConfig[] = [
-  {
-    key: 'roas14d',
-    label: 'ROAS(14일)',
-    color: '#f97316',
-    type: 'line',
-    unit: '%',
-    yAxisId: 'right',
-  },
-  { key: 'adCost', label: '광고비', color: '#3b82f6', type: 'bar', unit: '원', yAxisId: 'left' },
-  { key: 'clicks', label: '클릭수', color: '#22c55e', type: 'line', unit: '회', yAxisId: 'left' },
-  {
-    key: 'impressions',
-    label: '노출수',
-    color: '#a855f7',
-    type: 'bar',
-    unit: '회',
-    yAxisId: 'left',
-  },
+  { key: 'adCost', label: '총광고비', color: '#3b82f6', unit: '원', yAxisId: 'left' },
+  { key: 'roas', label: '평균ROAS', color: '#f97316', unit: '%', yAxisId: 'right' },
+  { key: 'ctr', label: 'CTR', color: '#22c55e', unit: '%', yAxisId: 'right' },
+  { key: 'cvr', label: 'CVR', color: '#a855f7', unit: '%', yAxisId: 'right' },
 ]
 
 interface CampaignChartProps {
   data: MetricSeries[]
+  memos?: DailyMemo[]
+  onChartClick?: (date: string) => void
 }
 
 function formatValue(value: number, unit: string): string {
@@ -63,8 +50,8 @@ function formatDate(dateStr: string): string {
   return `${month}/${day}`
 }
 
-export function CampaignChart({ data }: CampaignChartProps) {
-  const [activeMetrics, setActiveMetrics] = useState<Metric[]>(['roas14d', 'adCost'])
+export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartProps) {
+  const [activeMetrics, setActiveMetrics] = useState<Metric[]>(['adCost', 'roas'])
 
   function toggleMetric(metric: Metric) {
     setActiveMetrics((prev) =>
@@ -85,7 +72,25 @@ export function CampaignChart({ data }: CampaignChartProps) {
     )
   }
 
-  const chartData = data.map((d) => ({ ...d, date: formatDate(d.date) }))
+  // 메모가 있는 날짜 set (원본 날짜 형식)
+  const memoDateSet = new Set(memos.map((m) => m.date))
+
+  // 차트용 데이터 (날짜 포맷 + 원본 날짜 유지)
+  const chartData = data.map((d) => ({
+    ...d,
+    originalDate: d.date,
+    date: formatDate(d.date),
+  }))
+
+  // 메모 있는 날짜의 포맷된 날짜 목록 (ReferenceLine용)
+  const memoDates = data.filter((d) => memoDateSet.has(d.date)).map((d) => formatDate(d.date))
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function handleChartClick(chartEvent: any) {
+    if (!onChartClick) return
+    const originalDate = chartEvent?.activePayload?.[0]?.payload?.originalDate
+    if (originalDate) onChartClick(originalDate as string)
+  }
 
   return (
     <div className="space-y-4">
@@ -114,7 +119,12 @@ export function CampaignChart({ data }: CampaignChartProps) {
 
       {/* 차트 */}
       <ResponsiveContainer width="100%" height={280}>
-        <ComposedChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+        <ComposedChart
+          data={chartData}
+          margin={{ top: 4, right: 16, left: 0, bottom: 0 }}
+          onClick={handleChartClick}
+          style={onChartClick ? { cursor: 'pointer' } : undefined}
+        >
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
           <YAxis
@@ -146,21 +156,21 @@ export function CampaignChart({ data }: CampaignChartProps) {
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
 
+          {/* 메모 있는 날짜 표시 (노란 점선) */}
+          {memoDates.map((d) => (
+            <ReferenceLine
+              key={`memo-${d}`}
+              x={d}
+              yAxisId="left"
+              stroke="#f59e0b"
+              strokeDasharray="4 3"
+              strokeWidth={1.5}
+              label={{ value: '📌', position: 'top', fontSize: 10 }}
+            />
+          ))}
+
           {METRIC_CONFIGS.map((config) => {
             if (!activeMetrics.includes(config.key)) return null
-            if (config.type === 'bar') {
-              return (
-                <Bar
-                  key={config.key}
-                  dataKey={config.key}
-                  name={config.label}
-                  fill={config.color}
-                  yAxisId={config.yAxisId}
-                  radius={[2, 2, 0, 0]}
-                  opacity={0.8}
-                />
-              )
-            }
             return (
               <Line
                 key={config.key}
@@ -169,13 +179,20 @@ export function CampaignChart({ data }: CampaignChartProps) {
                 stroke={config.color}
                 yAxisId={config.yAxisId}
                 type="monotone"
-                dot={{ r: 3 }}
+                dot={false}
                 strokeWidth={2}
+                connectNulls={false}
               />
             )
           })}
         </ComposedChart>
       </ResponsiveContainer>
+
+      {memos.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          📌 표시된 날짜에 메모가 있습니다. 클릭하면 메모를 확인할 수 있습니다.
+        </p>
+      )}
     </div>
   )
 }

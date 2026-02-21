@@ -20,22 +20,26 @@ export type AdRecord = {
   impressions: number
   clicks: number
   adCost: number
-  ctr: number
+  ctr: number | null
+  cvr: number | null
+  roas: number | null
   orders1d: number
   revenue1d: number
   roas1d: number
   orders14d: number
   revenue14d: number
   roas14d: number
+  parsedProductName: string | null
+  parsedOptionName: string | null
 }
 
-// 비효율 키워드 항목
+// 비효율 키워드 항목 (CTR/CVR/ROAS 계산값 포함)
 export type InefficientKeyword = {
   keyword: string
   adCost: number
-  impressions: number
-  clicks: number
-  orders1d: number
+  ctr: number | null
+  cvr: number | null
+  roas: number | null
 }
 
 // 일자별 메모
@@ -54,13 +58,13 @@ export type KpiSummary = {
   totalImpressions: number
 }
 
-// 시계열 지표 데이터 포인트
+// 시계열 지표 데이터 포인트 (CTR/CVR/ROAS 계산값)
 export type MetricSeries = {
   date: string
   adCost: number
-  clicks: number
-  impressions: number
-  roas14d: number
+  ctr: number | null
+  cvr: number | null
+  roas: number | null
 }
 
 // 업로드 이력
