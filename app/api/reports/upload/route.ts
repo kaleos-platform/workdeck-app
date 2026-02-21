@@ -44,93 +44,65 @@ export async function POST(request: NextRequest) {
 
   const { periodStart, periodEnd } = detectPeriod(rows)
 
-  // 업로드 이력 생성
-  const upload = await prisma.reportUpload.create({
-    data: {
-      fileName: file.name,
-      periodStart,
-      periodEnd,
-      workspaceId: workspace.id,
-    },
-  })
-
-  // 500행 청크로 분할하여 upsert
+  // 500행 청크로 분할하여 삽입 (reportUpload.create도 try-catch 안으로 이동)
   const chunkSize = 500
   let inserted = 0
-  const updated = 0
 
-  for (let i = 0; i < rows.length; i += chunkSize) {
-    const chunk = rows.slice(i, i + chunkSize)
+  try {
+    // 업로드 이력 생성 (실패 시 고아 레코드 없음)
+    const upload = await prisma.reportUpload.create({
+      data: {
+        fileName: file.name,
+        periodStart,
+        periodEnd,
+        workspaceId: workspace.id,
+      },
+    })
 
-    await prisma.$transaction(
-      chunk.map((row) =>
-        prisma.adRecord.upsert({
-          where: {
-            workspaceId_date_campaignId_adType_keyword_adGroup_optionId: {
-              workspaceId: workspace.id,
-              date: row.date,
-              campaignId: row.campaignId,
-              adType: row.adType,
-              // Prisma 7 compound unique 타입이 string을 요구하나 런타임에서 null 정상 처리
-              keyword: row.keyword as string,
-              adGroup: row.adGroup as string,
-              optionId: row.optionId as string,
-            },
-          },
-          create: {
-            workspaceId: workspace.id,
-            reportId: upload.id,
-            date: row.date,
-            adType: row.adType,
-            campaignId: row.campaignId,
-            campaignName: row.campaignName,
-            adGroup: row.adGroup,
-            placement: row.placement,
-            productName: row.productName,
-            optionId: row.optionId,
-            keyword: row.keyword,
-            impressions: row.impressions,
-            clicks: row.clicks,
-            adCost: row.adCost,
-            ctr: row.ctr,
-            orders1d: row.orders1d,
-            revenue1d: row.revenue1d,
-            roas1d: row.roas1d,
-            orders14d: row.orders14d,
-            revenue14d: row.revenue14d,
-            roas14d: row.roas14d,
-          },
-          update: {
-            campaignName: row.campaignName,
-            placement: row.placement,
-            productName: row.productName,
-            impressions: row.impressions,
-            clicks: row.clicks,
-            adCost: row.adCost,
-            ctr: row.ctr,
-            orders1d: row.orders1d,
-            revenue1d: row.revenue1d,
-            roas1d: row.roas1d,
-            orders14d: row.orders14d,
-            revenue14d: row.revenue14d,
-            roas14d: row.roas14d,
-          },
-        })
-      )
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize)
+
+      // upsert 대신 createMany + skipDuplicates 사용
+      // → compound unique where 절에 null 전달 문제 완전히 제거
+      const chunkData = chunk.map((row) => ({
+        workspaceId: workspace.id,
+        reportId: upload.id,
+        date: row.date,
+        adType: row.adType,
+        campaignId: row.campaignId,
+        campaignName: row.campaignName,
+        adGroup: row.adGroup,
+        placement: row.placement,
+        productName: row.productName,
+        optionId: row.optionId,
+        keyword: row.keyword,
+        impressions: row.impressions,
+        clicks: row.clicks,
+        adCost: row.adCost,
+        ctr: row.ctr,
+        orders1d: row.orders1d,
+        revenue1d: row.revenue1d,
+        roas1d: row.roas1d,
+        orders14d: row.orders14d,
+        revenue14d: row.revenue14d,
+        roas14d: row.roas14d,
+      }))
+
+      const result = await prisma.adRecord.createMany({ data: chunkData, skipDuplicates: true })
+      inserted += result.count
+    }
+
+    return NextResponse.json(
+      {
+        uploadId: upload.id,
+        inserted,
+        skipped: 0,
+        errors: [],
+      },
+      { status: 201 }
     )
-
-    // upsert는 inserted/updated 구분이 어려워 전체를 inserted로 계산
-    inserted += chunk.length
+  } catch (err) {
+    console.error('업로드 처리 중 오류:', err)
+    return errorResponse('데이터 저장 중 오류가 발생했습니다', 500)
   }
-
-  return NextResponse.json(
-    {
-      uploadId: upload.id,
-      inserted,
-      updated,
-      skipped: 0,
-      errors: [],
-    },
-    { status: 201 }
-  )
 }

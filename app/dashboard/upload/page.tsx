@@ -86,13 +86,19 @@ export default function UploadPage() {
       })
 
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.message || '업로드에 실패했습니다')
+        let message = '업로드에 실패했습니다'
+        try {
+          const err = await res.json()
+          message = err.message || message
+        } catch {
+          // HTML 응답 등 JSON 파싱 실패 시 기본 메시지 사용
+        }
+        throw new Error(message)
       }
 
-      const { inserted, updated } = await res.json()
+      const { inserted } = await res.json()
       setStatus('success')
-      toast.success(`${inserted + updated}개 행 저장 완료`)
+      toast.success(`${inserted}개 행 저장 완료`)
       router.push('/dashboard')
       router.refresh()
     } catch (error) {
