@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
-import { parseExcelBuffer, detectPeriod } from '@/lib/excel-parser'
+import { parseExcelBuffer, parseCsvBuffer, detectPeriod } from '@/lib/excel-parser'
 
 // POST /api/reports/upload — multipart/form-data 엑셀 업로드
 export async function POST(request: NextRequest) {
@@ -22,17 +22,23 @@ export async function POST(request: NextRequest) {
     return errorResponse('파일을 첨부해주세요', 400)
   }
 
-  if (!file.name.endsWith('.xlsx')) {
-    return errorResponse('.xlsx 파일만 업로드할 수 있습니다', 400)
+  // 허용 확장자: .xlsx, .csv
+  const isXlsx = file.name.endsWith('.xlsx')
+  const isCsv = file.name.endsWith('.csv')
+  if (!isXlsx && !isCsv) {
+    return errorResponse('.xlsx 또는 .csv 파일만 업로드할 수 있습니다', 400)
   }
 
-  // Excel 파싱
+  // 파일 형식에 따라 파서 선택
   let rows
   try {
     const buffer = await file.arrayBuffer()
-    rows = parseExcelBuffer(buffer)
+    rows = isCsv ? parseCsvBuffer(buffer) : parseExcelBuffer(buffer)
   } catch {
-    return errorResponse('Excel 파일 파싱에 실패했습니다', 400)
+    return errorResponse(
+      '파일 파싱에 실패했습니다. 올바른 쿠팡 광고 리포트 파일인지 확인해주세요',
+      400
+    )
   }
 
   if (rows.length === 0) {

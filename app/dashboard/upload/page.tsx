@@ -17,10 +17,10 @@ export default function UploadPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
-  // 파일 유효성 검사
+  // 파일 유효성 검사 (.xlsx, .csv 허용)
   function validateFile(file: File): boolean {
-    if (!file.name.endsWith('.xlsx')) {
-      toast.error('.xlsx 파일만 업로드할 수 있습니다')
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.csv')) {
+      toast.error('.xlsx 또는 .csv 파일만 업로드할 수 있습니다')
       return false
     }
     return true
@@ -111,7 +111,7 @@ export default function UploadPage() {
 
   const statusLabel: Record<UploadStatus, string> = {
     idle: '업로드',
-    parsing: 'Excel 파싱 중...',
+    parsing: '파일 파싱 중...',
     saving: 'DB 저장 중...',
     success: '완료',
     error: '다시 시도',
@@ -132,7 +132,7 @@ export default function UploadPage() {
         <CardHeader>
           <CardTitle>파일 선택</CardTitle>
           <CardDescription>
-            쿠팡 셀러센터에서 다운로드한 광고 리포트 .xlsx 파일을 업로드하세요
+            쿠팡 셀러센터에서 다운로드한 광고 리포트를 업로드하세요 (Excel, CSV 모두 지원)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -152,7 +152,7 @@ export default function UploadPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".xlsx"
+              accept=".xlsx,.csv"
               className="hidden"
               onChange={handleInputChange}
             />
@@ -160,7 +160,9 @@ export default function UploadPage() {
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
               여기에 파일을 드래그하거나 클릭하여 선택하세요
             </p>
-            <p className="mt-1 text-xs text-gray-500">.xlsx 파일만 지원합니다</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Excel (.xlsx), CSV (.csv) 파일을 지원합니다
+            </p>
           </div>
 
           {/* 선택된 파일 표시 */}
@@ -204,7 +206,7 @@ export default function UploadPage() {
           <h3 className="mb-3 text-sm font-semibold">업로드 안내</h3>
           <ul className="list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-gray-400">
             <li>쿠팡 셀러센터 광고 관리 메뉴에서 리포트를 다운로드할 수 있습니다</li>
-            <li>.xlsx 형식의 Excel 파일만 업로드 가능합니다</li>
+            <li>Excel (.xlsx) 및 CSV (.csv) 형식의 파일을 업로드할 수 있습니다</li>
             <li>동일 기간의 데이터를 재업로드하면 기존 데이터와 병합됩니다</li>
           </ul>
         </CardContent>

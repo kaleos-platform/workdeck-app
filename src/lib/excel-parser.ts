@@ -60,12 +60,8 @@ function parseNum(raw: unknown, parser: (s: string) => number): number {
   return isNaN(n) ? 0 : n
 }
 
-// Excel 버퍼를 파싱하여 정규화된 행 배열 반환
-export function parseExcelBuffer(buffer: ArrayBuffer): ParsedRow[] {
-  const workbook = XLSX.read(buffer, { type: 'array' })
-  const sheet = workbook.Sheets[workbook.SheetNames[0]]
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { raw: false })
-
+// 파싱된 sheet 행 배열을 정규화된 ParsedRow 배열로 변환하는 공통 함수
+function normalizeRows(rows: Record<string, unknown>[]): ParsedRow[] {
   return rows
     .map((row) => ({
       date: parseKorDate(row['날짜']),
@@ -89,6 +85,23 @@ export function parseExcelBuffer(buffer: ArrayBuffer): ParsedRow[] {
       roas14d: parsePercent(row['광고수익률(14일)']),
     }))
     .filter((row) => row.campaignId !== '' && !isNaN(row.date.getTime()))
+}
+
+// Excel(.xlsx) 버퍼를 파싱하여 정규화된 행 배열 반환
+export function parseExcelBuffer(buffer: ArrayBuffer): ParsedRow[] {
+  const workbook = XLSX.read(buffer, { type: 'array' })
+  const sheet = workbook.Sheets[workbook.SheetNames[0]]
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { raw: false })
+  return normalizeRows(rows)
+}
+
+// CSV 버퍼를 파싱하여 정규화된 행 배열 반환
+// xlsx 라이브러리의 CSV 파싱 기능을 활용 (BOM 포함 UTF-8 지원)
+export function parseCsvBuffer(buffer: ArrayBuffer): ParsedRow[] {
+  const workbook = XLSX.read(buffer, { type: 'array', codepage: 65001 })
+  const sheet = workbook.Sheets[workbook.SheetNames[0]]
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { raw: false })
+  return normalizeRows(rows)
 }
 
 // 파싱된 행에서 데이터 기간 추출
