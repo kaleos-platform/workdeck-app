@@ -36,7 +36,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (rows.length === 0) {
-    return errorResponse('파싱된 데이터가 없습니다. 쿠팡 광고 리포트 형식의 파일인지 확인해주세요', 400)
+    return errorResponse(
+      '파싱된 데이터가 없습니다. 쿠팡 광고 리포트 형식의 파일인지 확인해주세요',
+      400
+    )
   }
 
   const { periodStart, periodEnd } = detectPeriod(rows)
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
   // 500행 청크로 분할하여 upsert
   const chunkSize = 500
   let inserted = 0
-  let updated = 0
+  const updated = 0
 
   for (let i = 0; i < rows.length; i += chunkSize) {
     const chunk = rows.slice(i, i + chunkSize)

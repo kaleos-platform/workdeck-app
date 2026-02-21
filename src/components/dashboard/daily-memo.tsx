@@ -27,7 +27,7 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
   // initialMemos 변경 시 동기화 (캠페인 페이지에서 API 조회 후 전달)
   useEffect(() => {
     setMemos(initialMemos)
-  }, [initialMemos]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialMemos])
 
   const currentMemo = memos.find((m) => m.date === selectedDate)
 
@@ -93,10 +93,9 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
 
     setIsSaving(true)
     try {
-      const res = await fetch(
-        `/api/campaigns/${campaignId}/memos?date=${selectedDate}`,
-        { method: 'DELETE' }
-      )
+      const res = await fetch(`/api/campaigns/${campaignId}/memos?date=${selectedDate}`, {
+        method: 'DELETE',
+      })
 
       if (!res.ok) {
         toast.error('삭제에 실패했습니다')
@@ -131,7 +130,7 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
     <div className="space-y-4">
       {/* 날짜 선택 */}
       <div className="flex items-center gap-3">
-        <label className="text-sm text-muted-foreground whitespace-nowrap">날짜 선택</label>
+        <label className="text-sm whitespace-nowrap text-muted-foreground">날짜 선택</label>
         <Input
           type="date"
           value={selectedDate}
@@ -141,7 +140,7 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
         />
         {selectedDate && currentMemo && (
           <Badge variant="secondary" className="text-xs">
-            <StickyNote className="h-3 w-3 mr-1" />
+            <StickyNote className="mr-1 h-3 w-3" />
             메모 있음
           </Badge>
         )}
@@ -149,7 +148,7 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
 
       {/* 날짜 미선택 안내 */}
       {!selectedDate && (
-        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
+        <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
           <StickyNote className="h-8 w-8 opacity-30" />
           <p className="text-sm">날짜를 선택하면 메모를 확인하거나 작성할 수 있습니다</p>
         </div>
@@ -161,7 +160,7 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
           {/* 조회 모드 */}
           {!isEditing && currentMemo && (
             <div className="space-y-3">
-              <div className="rounded-md border bg-muted/30 p-3 text-sm whitespace-pre-wrap min-h-[80px]">
+              <div className="min-h-[80px] rounded-md border bg-muted/30 p-3 text-sm whitespace-pre-wrap">
                 {currentMemo.content}
               </div>
               <div className="flex gap-2">
@@ -175,7 +174,7 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
                   onClick={handleDelete}
                   disabled={isSaving}
                 >
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  <Trash2 className="mr-1 h-3.5 w-3.5" />
                   삭제
                 </Button>
               </div>
@@ -186,7 +185,7 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
           {!isEditing && !currentMemo && (
             <div className="space-y-3">
               <div className="rounded-md border border-dashed p-4 text-center">
-                <p className="text-sm text-muted-foreground mb-3">
+                <p className="mb-3 text-sm text-muted-foreground">
                   {selectedDate} 날짜에 메모가 없습니다
                 </p>
                 <Button size="sm" onClick={() => setIsEditing(true)}>
@@ -203,11 +202,13 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="광고 작업 내용, 입찰가 변경 사항, 성과 메모 등을 기록하세요..."
-                className="resize-none text-sm min-h-[120px]"
+                className="min-h-[120px] resize-none text-sm"
                 maxLength={MAX_CONTENT_LENGTH}
               />
               <div className="flex items-center justify-between">
-                <span className={`text-xs ${showWarning ? 'text-orange-500' : 'text-muted-foreground'}`}>
+                <span
+                  className={`text-xs ${showWarning ? 'text-orange-500' : 'text-muted-foreground'}`}
+                >
                   {remaining}자 남음
                 </span>
                 <div className="flex gap-2">
@@ -229,8 +230,8 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
 
       {/* 전체 메모 목록 요약 */}
       {memos.length > 0 && (
-        <div className="pt-2 border-t">
-          <p className="text-xs text-muted-foreground mb-2">메모 작성 날짜</p>
+        <div className="border-t pt-2">
+          <p className="mb-2 text-xs text-muted-foreground">메모 작성 날짜</p>
           <div className="flex flex-wrap gap-1.5">
             {memos
               .sort((a, b) => b.date.localeCompare(a.date))
@@ -238,10 +239,10 @@ export function DailyMemo({ campaignId, initialMemos = [], onMemosChange }: Dail
                 <button
                   key={memo.date}
                   onClick={() => setSelectedDate(memo.date)}
-                  className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                  className={`rounded border px-2 py-0.5 text-xs transition-colors ${
                     selectedDate === memo.date
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background border-border hover:border-primary'
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-background hover:border-primary'
                   }`}
                 >
                   {memo.date}

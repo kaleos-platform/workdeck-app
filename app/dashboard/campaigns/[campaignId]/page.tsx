@@ -36,9 +36,32 @@ import { toast } from 'sonner'
 import { FilterBar } from '@/components/dashboard/filter-bar'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
 import { DailyMemo } from '@/components/dashboard/daily-memo'
-import type { AdRecord, InefficientKeyword, MetricSeries, DailyMemo as DailyMemoType } from '@/types'
+import type {
+  AdRecord,
+  InefficientKeyword,
+  MetricSeries,
+  DailyMemo as DailyMemoType,
+} from '@/types'
 
 type SortKey = keyof Pick<AdRecord, 'date' | 'adCost' | 'clicks' | 'impressions' | 'roas14d'>
+
+// 렌더 함수 외부에 정의해야 상태 초기화 없이 안정적으로 동작
+function SortIcon({
+  column,
+  sortKey,
+  sortOrder,
+}: {
+  column: SortKey
+  sortKey: SortKey
+  sortOrder: 'asc' | 'desc'
+}) {
+  if (sortKey !== column) return <ArrowUpDown className="ml-1 h-3.5 w-3.5 opacity-40" />
+  return sortOrder === 'asc' ? (
+    <ArrowUp className="ml-1 h-3.5 w-3.5 text-primary" />
+  ) : (
+    <ArrowDown className="ml-1 h-3.5 w-3.5 text-primary" />
+  )
+}
 
 export default function CampaignDetailPage({
   params,
@@ -110,7 +133,10 @@ export default function CampaignDetailPage({
           setCampaignName(d.items[0].campaignName)
         }
       })
-      .catch(() => { setRecords([]); setTotal(0) })
+      .catch(() => {
+        setRecords([])
+        setTotal(0)
+      })
   }, [campaignId, page, pageSize, sortKey, sortOrder, from, to, adTypeFilter]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 비효율 키워드 조회
@@ -161,16 +187,10 @@ export default function CampaignDetailPage({
     setPage(1)
   }
 
-  function SortIcon({ column }: { column: SortKey }) {
-    if (sortKey !== column) return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-40" />
-    return sortOrder === 'asc'
-      ? <ArrowUp className="h-3.5 w-3.5 ml-1 text-primary" />
-      : <ArrowDown className="h-3.5 w-3.5 ml-1 text-primary" />
-  }
-
   // 키워드 다중 선택
   const allKeywordNames = keywords.map((k) => k.keyword)
-  const allSelected = selectedKeywords.length === allKeywordNames.length && allKeywordNames.length > 0
+  const allSelected =
+    selectedKeywords.length === allKeywordNames.length && allKeywordNames.length > 0
 
   function toggleAllKeywords() {
     setSelectedKeywords(allSelected ? [] : allKeywordNames)
@@ -239,10 +259,8 @@ export default function CampaignDetailPage({
     <div className="space-y-6">
       {/* 페이지 헤더 */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {campaignName || campaignId}
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
+        <h1 className="text-2xl font-bold tracking-tight">{campaignName || campaignId}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           {adTypes.length > 0
             ? `${adTypes.join(' · ')} 캠페인 데이터를 분석합니다`
             : '캠페인 데이터를 분석합니다'}
@@ -300,11 +318,7 @@ export default function CampaignDetailPage({
               <CardTitle className="text-base">일자별 메모</CardTitle>
             </CardHeader>
             <CardContent>
-              <DailyMemo
-                campaignId={campaignId}
-                initialMemos={memos}
-                onMemosChange={setMemos}
-              />
+              <DailyMemo campaignId={campaignId} initialMemos={memos} onMemosChange={setMemos} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -317,7 +331,10 @@ export default function CampaignDetailPage({
             </p>
             <Select
               value={String(pageSize)}
-              onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}
+              onValueChange={(v) => {
+                setPageSize(Number(v))
+                setPage(1)
+              }}
             >
               <SelectTrigger className="w-24 text-sm">
                 <SelectValue />
@@ -339,40 +356,58 @@ export default function CampaignDetailPage({
                       className="cursor-pointer select-none"
                       onClick={() => handleSort('date')}
                     >
-                      <span className="flex items-center">날짜<SortIcon column="date" /></span>
+                      <span className="flex items-center">
+                        날짜
+                        <SortIcon column="date" sortKey={sortKey} sortOrder={sortOrder} />
+                      </span>
                     </TableHead>
                     <TableHead>광고유형</TableHead>
                     <TableHead>키워드</TableHead>
                     <TableHead
-                      className="text-right cursor-pointer select-none"
+                      className="cursor-pointer text-right select-none"
                       onClick={() => handleSort('adCost')}
                     >
-                      <span className="flex items-center justify-end">광고비<SortIcon column="adCost" /></span>
+                      <span className="flex items-center justify-end">
+                        광고비
+                        <SortIcon column="adCost" sortKey={sortKey} sortOrder={sortOrder} />
+                      </span>
                     </TableHead>
                     <TableHead
-                      className="text-right cursor-pointer select-none"
+                      className="cursor-pointer text-right select-none"
                       onClick={() => handleSort('clicks')}
                     >
-                      <span className="flex items-center justify-end">클릭수<SortIcon column="clicks" /></span>
+                      <span className="flex items-center justify-end">
+                        클릭수
+                        <SortIcon column="clicks" sortKey={sortKey} sortOrder={sortOrder} />
+                      </span>
                     </TableHead>
                     <TableHead
-                      className="text-right cursor-pointer select-none"
+                      className="cursor-pointer text-right select-none"
                       onClick={() => handleSort('impressions')}
                     >
-                      <span className="flex items-center justify-end">노출수<SortIcon column="impressions" /></span>
+                      <span className="flex items-center justify-end">
+                        노출수
+                        <SortIcon column="impressions" sortKey={sortKey} sortOrder={sortOrder} />
+                      </span>
                     </TableHead>
                     <TableHead
-                      className="text-right cursor-pointer select-none"
+                      className="cursor-pointer text-right select-none"
                       onClick={() => handleSort('roas14d')}
                     >
-                      <span className="flex items-center justify-end">ROAS(14일)<SortIcon column="roas14d" /></span>
+                      <span className="flex items-center justify-end">
+                        ROAS(14일)
+                        <SortIcon column="roas14d" sortKey={sortKey} sortOrder={sortOrder} />
+                      </span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {records.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground text-sm">
+                      <TableCell
+                        colSpan={7}
+                        className="py-12 text-center text-sm text-muted-foreground"
+                      >
                         필터 조건에 맞는 데이터가 없습니다
                       </TableCell>
                     </TableRow>
@@ -470,7 +505,10 @@ export default function CampaignDetailPage({
                 <TableBody>
                   {keywords.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground text-sm">
+                      <TableCell
+                        colSpan={5}
+                        className="py-12 text-center text-sm text-muted-foreground"
+                      >
                         비효율 키워드가 없습니다
                       </TableCell>
                     </TableRow>
@@ -489,7 +527,7 @@ export default function CampaignDetailPage({
                           />
                         </TableCell>
                         <TableCell className="text-sm font-medium">{kw.keyword}</TableCell>
-                        <TableCell className="text-right text-sm text-orange-600 font-medium">
+                        <TableCell className="text-right text-sm font-medium text-orange-600">
                           {kw.adCost.toLocaleString()}원
                         </TableCell>
                         <TableCell className="text-right text-sm">
@@ -507,8 +545,9 @@ export default function CampaignDetailPage({
           </Card>
 
           {selectedKeywords.length > 0 && (
-            <p className="text-xs text-muted-foreground text-center">
-              {selectedKeywords.length}개 키워드 선택됨 · 복사 버튼을 클릭하면 쉼표(,) 구분으로 클립보드에 저장됩니다
+            <p className="text-center text-xs text-muted-foreground">
+              {selectedKeywords.length}개 키워드 선택됨 · 복사 버튼을 클릭하면 쉼표(,) 구분으로
+              클립보드에 저장됩니다
             </p>
           )}
         </TabsContent>

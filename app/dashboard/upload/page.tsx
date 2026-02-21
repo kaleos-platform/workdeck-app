@@ -48,12 +48,17 @@ export default function UploadPage() {
     setIsDragOver(false)
   }, [])
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) handleFileSelect(file)
-  }, [])
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setIsDragOver(false)
+      const file = e.dataTransfer.files?.[0]
+      if (file) handleFileSelect(file)
+    },
+    // handleFileSelect는 상태 setter만 사용하므로 렌더마다 재생성되나 로직은 안정적
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
 
   function clearFile() {
     setSelectedFile(null)
@@ -107,11 +112,11 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
       {/* 페이지 헤더 */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">리포트 업로드</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="mt-1 text-gray-600 dark:text-gray-400">
           쿠팡 광고 리포트 Excel 파일을 업로드하세요
         </p>
       </div>
@@ -128,10 +133,10 @@ export default function UploadPage() {
           {/* 드래그앤드롭 영역 */}
           <div
             className={cn(
-              'border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors',
+              'cursor-pointer rounded-lg border-2 border-dashed p-10 text-center transition-colors',
               isDragOver
                 ? 'border-orange-400 bg-orange-50 dark:bg-orange-950/20'
-                : 'border-gray-300 dark:border-gray-700 hover:border-orange-400 hover:bg-gray-50 dark:hover:bg-gray-900/50'
+                : 'border-gray-300 hover:border-orange-400 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900/50'
             )}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -145,19 +150,19 @@ export default function UploadPage() {
               className="hidden"
               onChange={handleInputChange}
             />
-            <UploadCloud className="h-10 w-10 mx-auto mb-4 text-gray-400" />
+            <UploadCloud className="mx-auto mb-4 h-10 w-10 text-gray-400" />
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
               여기에 파일을 드래그하거나 클릭하여 선택하세요
             </p>
-            <p className="text-xs text-gray-500 mt-1">.xlsx 파일만 지원합니다</p>
+            <p className="mt-1 text-xs text-gray-500">.xlsx 파일만 지원합니다</p>
           </div>
 
           {/* 선택된 파일 표시 */}
           {selectedFile && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border">
-              <FileSpreadsheet className="h-5 w-5 text-green-600 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{selectedFile.name}</p>
+            <div className="flex items-center gap-3 rounded-lg border bg-gray-50 p-3 dark:bg-gray-900/50">
+              <FileSpreadsheet className="h-5 w-5 flex-shrink-0 text-green-600" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{selectedFile.name}</p>
                 <p className="text-xs text-gray-500">
                   {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                 </p>
@@ -190,8 +195,8 @@ export default function UploadPage() {
       {/* 안내 사항 */}
       <Card>
         <CardContent className="pt-6">
-          <h3 className="text-sm font-semibold mb-3">업로드 안내</h3>
-          <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
+          <h3 className="mb-3 text-sm font-semibold">업로드 안내</h3>
+          <ul className="list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-gray-400">
             <li>쿠팡 셀러센터 광고 관리 메뉴에서 리포트를 다운로드할 수 있습니다</li>
             <li>.xlsx 형식의 Excel 파일만 업로드 가능합니다</li>
             <li>동일 기간의 데이터를 재업로드하면 기존 데이터와 병합됩니다</li>
