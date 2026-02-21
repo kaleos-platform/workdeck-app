@@ -10,15 +10,15 @@
 
 ## 주요 페이지
 
-| 페이지 | 경로 | 설명 |
-|--------|------|------|
-| 랜딩 페이지 | `/` | 서비스 소개 및 회원가입 CTA |
-| 로그인 | `/login` | 이메일·비밀번호 로그인 |
-| 회원가입 | `/signup` | 신규 계정 생성 |
-| 워크스페이스 설정 | `/workspace-setup` | 쿠팡 사업자명 기반 최초 설정 (1회) |
-| 대시보드 | `/dashboard` | 전체 워크스페이스 성과 요약 |
-| 리포트 업로드 | `/dashboard/upload` | Excel 파일 업로드 및 파싱 |
-| 캠페인 상세 | `/dashboard/campaigns/[campaignId]` | 캠페인별 분석 (3개 탭) |
+| 페이지            | 경로                                | 설명                               |
+| ----------------- | ----------------------------------- | ---------------------------------- |
+| 랜딩 페이지       | `/`                                 | 서비스 소개 및 회원가입 CTA        |
+| 로그인            | `/login`                            | 이메일·비밀번호 로그인             |
+| 회원가입          | `/signup`                           | 신규 계정 생성                     |
+| 워크스페이스 설정 | `/workspace-setup`                  | 쿠팡 사업자명 기반 최초 설정 (1회) |
+| 대시보드          | `/dashboard`                        | 전체 워크스페이스 성과 요약        |
+| 리포트 업로드     | `/dashboard/upload`                 | Excel 파일 업로드 및 파싱          |
+| 캠페인 상세       | `/dashboard/campaigns/[campaignId]` | 캠페인별 분석 (3개 탭)             |
 
 ## 핵심 기능
 
@@ -32,22 +32,22 @@
 
 ## 기술 스택
 
-| 분류 | 기술 |
-|------|------|
-| Framework | Next.js 16 (App Router, RSC) |
-| Runtime | React 19 |
-| Language | TypeScript 5 |
-| Styling | Tailwind CSS v4 |
-| UI Components | shadcn/ui (new-york 스타일) |
-| Icons | Lucide React |
-| Form | React Hook Form + Zod |
-| Chart | Recharts |
-| Auth | Supabase Auth (SSR) |
-| ORM | Prisma 7 |
-| Database | PostgreSQL (Supabase) |
-| State | Zustand |
-| File Parsing | xlsx (SheetJS) |
-| Deployment | Vercel |
+| 분류          | 기술                         |
+| ------------- | ---------------------------- |
+| Framework     | Next.js 16 (App Router, RSC) |
+| Runtime       | React 19                     |
+| Language      | TypeScript 5                 |
+| Styling       | Tailwind CSS v4              |
+| UI Components | shadcn/ui (new-york 스타일)  |
+| Icons         | Lucide React                 |
+| Form          | React Hook Form + Zod        |
+| Chart         | Recharts                     |
+| Auth          | Supabase Auth (SSR)          |
+| ORM           | Prisma 7                     |
+| Database      | PostgreSQL (Supabase)        |
+| State         | Zustand                      |
+| File Parsing  | xlsx (SheetJS)               |
+| Deployment    | Vercel                       |
 
 ## 시작하기
 

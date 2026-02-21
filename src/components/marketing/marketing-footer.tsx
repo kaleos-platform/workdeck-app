@@ -5,16 +5,16 @@ export function MarketingFooter() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-gray-50 dark:bg-gray-900/50 border-t">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="border-t bg-gray-50 dark:bg-gray-900/50">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* 브랜드 */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-red-600">
             <BarChart2 className="h-5 w-5 text-white" />
           </div>
           <span className="font-bold">쿠팡 광고 매니저</span>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">
+        <p className="mb-8 text-sm text-gray-600 dark:text-gray-400">
           쿠팡 광고비를 분석하고 ROAS를 개선하세요
         </p>
 

@@ -2,7 +2,13 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { UploadCloud, DollarSign, TrendingUp, MousePointerClick, FileSpreadsheet } from 'lucide-react'
+import {
+  UploadCloud,
+  DollarSign,
+  TrendingUp,
+  MousePointerClick,
+  FileSpreadsheet,
+} from 'lucide-react'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 
@@ -105,9 +111,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">대시보드</h1>
-          <p className="text-muted-foreground mt-1">
-            워크스페이스 전체 광고 성과를 확인합니다
-          </p>
+          <p className="mt-1 text-muted-foreground">워크스페이스 전체 광고 성과를 확인합니다</p>
         </div>
         <Link href="/dashboard/upload">
           <Button className="gap-2">
@@ -119,22 +123,21 @@ export default async function DashboardPage() {
 
       {/* 데이터 없을 때 CTA 배너 */}
       {!hasData && (
-        <Card className="border-dashed border-2 border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20">
-          <CardContent className="py-12 flex flex-col items-center text-center gap-4">
-            <div className="rounded-full bg-orange-100 dark:bg-orange-900/30 p-4">
+        <Card className="border-2 border-dashed border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
+            <div className="rounded-full bg-orange-100 p-4 dark:bg-orange-900/30">
               <UploadCloud className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">아직 리포트가 없습니다</h3>
-              <p className="text-muted-foreground text-sm max-w-sm">
-                쿠팡 셀러센터에서 광고 리포트 Excel 파일을 다운로드하여 업로드하세요.
-                업로드하면 캠페인별 성과를 바로 분석할 수 있습니다.
+              <h3 className="mb-2 text-lg font-semibold">아직 리포트가 없습니다</h3>
+              <p className="max-w-sm text-sm text-muted-foreground">
+                쿠팡 셀러센터에서 광고 리포트 Excel 파일을 다운로드하여 업로드하세요. 업로드하면
+                캠페인별 성과를 바로 분석할 수 있습니다.
               </p>
             </div>
             <Link href="/dashboard/upload">
               <Button className="gap-2">
-                <UploadCloud className="h-4 w-4" />
-                첫 리포트 업로드하기
+                <UploadCloud className="h-4 w-4" />첫 리포트 업로드하기
               </Button>
             </Link>
           </CardContent>
@@ -153,9 +156,7 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{card.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {card.description}
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{card.description}</p>
               </CardContent>
             </Card>
           )
@@ -174,13 +175,11 @@ export default async function DashboardPage() {
                 <Link
                   key={campaign.id}
                   href={`/dashboard/campaigns/${campaign.id}`}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-md border hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between rounded-md border px-3 py-2.5 transition-colors hover:bg-muted/50"
                 >
                   <div>
                     <p className="text-sm font-medium">{campaign.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {campaign.adTypes.join(' · ')}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{campaign.adTypes.join(' · ')}</p>
                   </div>
                   <span className="text-xs text-muted-foreground">상세 보기 →</span>
                 </Link>
@@ -197,30 +196,38 @@ export default async function DashboardPage() {
         </CardHeader>
         <CardContent>
           {uploadRows.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
+            <p className="py-8 text-center text-sm text-muted-foreground">
               업로드된 리포트가 없습니다
             </p>
           ) : (
             <div className="space-y-1">
-              {uploadRows.map((upload: { id: string; fileName: string; uploadedAt: Date; periodStart: Date; periodEnd: Date }) => (
-                <div
-                  key={upload.id}
-                  className="flex items-center justify-between py-2.5 border-b last:border-0"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <FileSpreadsheet className="h-4 w-4 text-green-600 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium">{upload.fileName}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {fmt(upload.periodStart)} ~ {fmt(upload.periodEnd)}
-                      </p>
+              {uploadRows.map(
+                (upload: {
+                  id: string
+                  fileName: string
+                  uploadedAt: Date
+                  periodStart: Date
+                  periodEnd: Date
+                }) => (
+                  <div
+                    key={upload.id}
+                    className="flex items-center justify-between border-b py-2.5 last:border-0"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FileSpreadsheet className="h-4 w-4 flex-shrink-0 text-green-600" />
+                      <div>
+                        <p className="text-sm font-medium">{upload.fileName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {fmt(upload.periodStart)} ~ {fmt(upload.periodEnd)}
+                        </p>
+                      </div>
                     </div>
+                    <p className="ml-4 text-xs whitespace-nowrap text-muted-foreground">
+                      {fmt(upload.uploadedAt)}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                    {fmt(upload.uploadedAt)}
-                  </p>
-                </div>
-              ))}
+                )
+              )}
             </div>
           )}
         </CardContent>

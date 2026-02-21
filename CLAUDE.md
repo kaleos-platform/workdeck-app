@@ -2,6 +2,13 @@
 
 **쿠팡 광고 리포트 매니저**는 쿠팡 광고 리포트 Excel을 업로드·분석해 비효율 광고비를 절감하고 ROAS를 개선하는 웹 서비스입니다.
 
+@AGENTS.md
+
+## 프로젝트 환경 설정
+
+- 이 프로젝트는 Next.js 최신 버전을 사용합니다.
+- 코딩 전 @AGENTS.md를 통해 문서 참조 규칙을 확인하세요.
+
 상세 요구사항은 @/docs/prd.md 참조
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.

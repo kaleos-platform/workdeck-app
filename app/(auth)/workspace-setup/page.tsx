@@ -9,11 +9,21 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 
 // 워크스페이스 생성 스키마
 const workspaceSetupSchema = z.object({
-  name: z.string().min(1, '사업자명을 입력해주세요').max(100, '사업자명은 100자 이하로 입력해주세요'),
+  name: z
+    .string()
+    .min(1, '사업자명을 입력해주세요')
+    .max(100, '사업자명은 100자 이하로 입력해주세요'),
 })
 
 type WorkspaceSetupInput = z.infer<typeof workspaceSetupSchema>
@@ -58,9 +68,7 @@ export default function WorkspaceSetupPage() {
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">워크스페이스 설정</CardTitle>
-        <CardDescription>
-          쿠팡 사업자명을 입력하여 워크스페이스를 생성하세요
-        </CardDescription>
+        <CardDescription>쿠팡 사업자명을 입력하여 워크스페이스를 생성하세요</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -72,11 +80,7 @@ export default function WorkspaceSetupPage() {
                 <FormItem>
                   <FormLabel>쿠팡 사업자명</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="예: 홍길동 스토어"
-                      disabled={isLoading}
-                      {...field}
-                    />
+                    <Input placeholder="예: 홍길동 스토어" disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

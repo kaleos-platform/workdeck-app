@@ -43,17 +43,19 @@ export async function GET(
   })
 
   // 날짜 포맷 + Decimal → Number 변환
-  const result = series.map((item: {
-    date: Date;
-    _sum: { adCost: unknown; clicks: unknown; impressions: unknown };
-    _avg: { roas14d: unknown };
-  }) => ({
-    date: item.date.toISOString().split('T')[0],
-    adCost: Number(item._sum.adCost ?? 0),
-    clicks: Number(item._sum.clicks ?? 0),
-    impressions: Number(item._sum.impressions ?? 0),
-    roas14d: Number(item._avg.roas14d ?? 0),
-  }))
+  const result = series.map(
+    (item: {
+      date: Date
+      _sum: { adCost: unknown; clicks: unknown; impressions: unknown }
+      _avg: { roas14d: unknown }
+    }) => ({
+      date: item.date.toISOString().split('T')[0],
+      adCost: Number(item._sum.adCost ?? 0),
+      clicks: Number(item._sum.clicks ?? 0),
+      impressions: Number(item._sum.impressions ?? 0),
+      roas14d: Number(item._avg.roas14d ?? 0),
+    })
+  )
 
   return NextResponse.json({ series: result })
 }

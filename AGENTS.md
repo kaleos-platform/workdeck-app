@@ -1,6 +1,15 @@
+<!-- BEGIN:nextjs-agent-rules -->
+
+# Next.js: ALWAYS read docs before coding
+
+Before any Next.js work, find and read the relevant doc in `node_modules/next/dist/docs/`. Your training data is outdated — the docs are the source of truth.
+
+<!-- END:nextjs-agent-rules -->
+
 # Repository Guidelines
 
 ## Project Structure & Module Organization
+
 This repository is a Next.js 16 + TypeScript app-router project.
 
 - `app/`: route groups and page/layout entry points (`(auth)`, `(marketing)`, `dashboard`).
@@ -14,6 +23,7 @@ This repository is a Next.js 16 + TypeScript app-router project.
 Prefer `@/` imports instead of deep relative paths.
 
 ## Build, Test, and Development Commands
+
 - `npm run dev`: start local dev server at `http://localhost:3000`.
 - `npm run build`: create a production build (also catches type/build issues).
 - `npm run start`: run the production server from the built output.
@@ -22,6 +32,7 @@ Prefer `@/` imports instead of deep relative paths.
 If you change DB models, also run Prisma workflows locally (for example: `npx prisma generate`).
 
 ## Coding Style & Naming Conventions
+
 - Language: TypeScript (`.ts`/`.tsx`) with `strict` mode enabled.
 - Indentation: 2 spaces; keep semicolon and double-quote style consistent with existing files.
 - Components: `PascalCase` file/function names (`LoginForm`).
@@ -31,6 +42,7 @@ If you change DB models, also run Prisma workflows locally (for example: `npx pr
 Run `npm run lint` before opening a PR.
 
 ## Testing Guidelines
+
 There is no committed automated test suite yet. For now:
 
 - Validate changes with `npm run lint` and `npm run build`.
@@ -38,6 +50,7 @@ There is no committed automated test suite yet. For now:
 - When adding tests, place them near the feature (for example `src/components/auth/__tests__/login-form.test.tsx`) and use `*.test.ts(x)` naming.
 
 ## Commit & Pull Request Guidelines
+
 Follow the existing commit style from history: optional emoji + Conventional Commit type.
 
 - Examples: `🐛 fix: 푸터 링크 중복 key 오류 수정`, `📝 docs: CLAUDE.md 정리`.

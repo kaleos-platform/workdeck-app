@@ -12,19 +12,14 @@ export default function LoginPage() {
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">로그인</CardTitle>
-        <CardDescription>
-          이메일과 비밀번호를 입력하여 로그인하세요
-        </CardDescription>
+        <CardDescription>이메일과 비밀번호를 입력하여 로그인하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <LoginForm />
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">계정이 없으신가요? </span>
-          <Link
-            href="/signup"
-            className="font-medium text-primary hover:underline"
-          >
+          <Link href="/signup" className="font-medium text-primary hover:underline">
             회원가입
           </Link>
         </div>

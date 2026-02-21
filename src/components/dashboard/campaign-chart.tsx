@@ -28,10 +28,24 @@ interface MetricConfig {
 }
 
 const METRIC_CONFIGS: MetricConfig[] = [
-  { key: 'roas14d', label: 'ROAS(14일)', color: '#f97316', type: 'line', unit: '%', yAxisId: 'right' },
+  {
+    key: 'roas14d',
+    label: 'ROAS(14일)',
+    color: '#f97316',
+    type: 'line',
+    unit: '%',
+    yAxisId: 'right',
+  },
   { key: 'adCost', label: '광고비', color: '#3b82f6', type: 'bar', unit: '원', yAxisId: 'left' },
   { key: 'clicks', label: '클릭수', color: '#22c55e', type: 'line', unit: '회', yAxisId: 'left' },
-  { key: 'impressions', label: '노출수', color: '#a855f7', type: 'bar', unit: '회', yAxisId: 'left' },
+  {
+    key: 'impressions',
+    label: '노출수',
+    color: '#a855f7',
+    type: 'bar',
+    unit: '회',
+    yAxisId: 'left',
+  },
 ]
 
 interface CampaignChartProps {
@@ -55,14 +69,16 @@ export function CampaignChart({ data }: CampaignChartProps) {
   function toggleMetric(metric: Metric) {
     setActiveMetrics((prev) =>
       prev.includes(metric)
-        ? prev.length > 1 ? prev.filter((m) => m !== metric) : prev // 최소 1개 유지
+        ? prev.length > 1
+          ? prev.filter((m) => m !== metric)
+          : prev // 최소 1개 유지
         : [...prev, metric]
     )
   }
 
   if (data.length === 0) {
     return (
-      <div className="h-72 flex flex-col items-center justify-center text-muted-foreground gap-3">
+      <div className="flex h-72 flex-col items-center justify-center gap-3 text-muted-foreground">
         <BarChart3 className="h-12 w-12 opacity-30" />
         <p className="text-sm">데이터를 업로드하면 차트가 표시됩니다</p>
       </div>
@@ -83,11 +99,11 @@ export function CampaignChart({ data }: CampaignChartProps) {
               variant={isActive ? 'default' : 'outline'}
               size="sm"
               onClick={() => toggleMetric(config.key)}
-              className="gap-1.5 text-xs h-7"
+              className="h-7 gap-1.5 text-xs"
               style={isActive ? { backgroundColor: config.color, borderColor: config.color } : {}}
             >
               <span
-                className="inline-block w-2 h-2 rounded-full"
+                className="inline-block h-2 w-2 rounded-full"
                 style={{ backgroundColor: isActive ? 'white' : config.color }}
               />
               {config.label}
@@ -100,18 +116,13 @@ export function CampaignChart({ data }: CampaignChartProps) {
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-          <XAxis
-            dataKey="date"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-            axisLine={false}
-          />
+          <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
           <YAxis
             yAxisId="left"
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+            tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v)}
           />
           <YAxis
             yAxisId="right"

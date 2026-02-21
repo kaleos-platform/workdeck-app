@@ -78,10 +78,10 @@ export function FilterBar({ adTypeOptions = DEFAULT_AD_TYPE_OPTIONS }: FilterBar
   const hasFilter = from || to || (adType && adType !== 'all')
 
   return (
-    <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-wrap items-center gap-3">
       {/* 날짜 범위 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground whitespace-nowrap">기간</span>
+        <span className="text-sm whitespace-nowrap text-muted-foreground">기간</span>
         <Input
           type="date"
           value={from}
@@ -89,7 +89,7 @@ export function FilterBar({ adTypeOptions = DEFAULT_AD_TYPE_OPTIONS }: FilterBar
           onChange={(e) => handleFromChange(e.target.value)}
           className="w-36 text-sm"
         />
-        <span className="text-muted-foreground text-sm">~</span>
+        <span className="text-sm text-muted-foreground">~</span>
         <Input
           type="date"
           value={to}
@@ -102,7 +102,7 @@ export function FilterBar({ adTypeOptions = DEFAULT_AD_TYPE_OPTIONS }: FilterBar
 
       {/* 광고유형 필터 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground whitespace-nowrap">광고유형</span>
+        <span className="text-sm whitespace-nowrap text-muted-foreground">광고유형</span>
         <Select value={adType || 'all'} onValueChange={handleAdTypeChange}>
           <SelectTrigger className="w-36 text-sm">
             <SelectValue />

@@ -12,9 +12,7 @@ export async function proxy(request: NextRequest) {
 
   // 비로그인 전용 라우트 정의
   const authOnlyRoutes = ['/login', '/signup']
-  const isAuthOnlyRoute = authOnlyRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  )
+  const isAuthOnlyRoute = authOnlyRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
 
   // 1. 보호된 라우트인데 로그인 안 되어 있으면 /login으로 이동
   if (isProtectedRoute && !user) {
@@ -36,7 +34,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }

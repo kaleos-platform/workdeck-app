@@ -45,16 +45,18 @@ export async function GET(
     },
   })
 
-  const items = groups.map((g: {
-    keyword: string | null;
-    _sum: { adCost: unknown; impressions: unknown; clicks: unknown };
-  }) => ({
-    keyword: g.keyword!,
-    adCost: Number(g._sum.adCost ?? 0),
-    impressions: Number(g._sum.impressions ?? 0),
-    clicks: Number(g._sum.clicks ?? 0),
-    orders1d: 0,
-  }))
+  const items = groups.map(
+    (g: {
+      keyword: string | null
+      _sum: { adCost: unknown; impressions: unknown; clicks: unknown }
+    }) => ({
+      keyword: g.keyword!,
+      adCost: Number(g._sum.adCost ?? 0),
+      impressions: Number(g._sum.impressions ?? 0),
+      clicks: Number(g._sum.clicks ?? 0),
+      orders1d: 0,
+    })
+  )
 
   return NextResponse.json({ items })
 }

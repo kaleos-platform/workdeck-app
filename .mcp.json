@@ -20,9 +20,7 @@
     },
     "shrimp-task-manager": {
       "command": "node",
-      "args": [
-        "/Users/hero4earth/Developer/Workspace/mcp-shrimp-task-manager/dist/index.js"
-      ],
+      "args": ["/Users/hero4earth/Developer/Workspace/mcp-shrimp-task-manager/dist/index.js"],
       "env": {
         "DATA_DIR": "/Users/hero4earth/Developer/Workspace/coupang-ad-manager/shrimp_data",
         "TEMPLATES_USE": "en",

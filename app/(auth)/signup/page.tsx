@@ -12,19 +12,14 @@ export default function SignupPage() {
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">회원가입</CardTitle>
-        <CardDescription>
-          새 계정을 생성하여 시작하세요
-        </CardDescription>
+        <CardDescription>새 계정을 생성하여 시작하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <SignupForm />
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">이미 계정이 있으신가요? </span>
-          <Link
-            href="/login"
-            className="font-medium text-primary hover:underline"
-          >
+          <Link href="/login" className="font-medium text-primary hover:underline">
             로그인
           </Link>
         </div>

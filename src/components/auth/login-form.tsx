@@ -9,7 +9,14 @@ import { createClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -72,12 +79,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>비밀번호</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="••••••••"
-                  type="password"
-                  disabled={isLoading}
-                  {...field}
-                />
+                <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -9,7 +9,14 @@ import { createClient } from '@/lib/supabase/client'
 import { signupSchema, type SignupInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -59,11 +66,7 @@ export function SignupForm() {
             <FormItem>
               <FormLabel>이름 (선택)</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="홍길동"
-                  disabled={isLoading}
-                  {...field}
-                />
+                <Input placeholder="홍길동" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -96,12 +99,7 @@ export function SignupForm() {
             <FormItem>
               <FormLabel>비밀번호</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="••••••••"
-                  type="password"
-                  disabled={isLoading}
-                  {...field}
-                />
+                <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -115,12 +113,7 @@ export function SignupForm() {
             <FormItem>
               <FormLabel>비밀번호 확인</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="••••••••"
-                  type="password"
-                  disabled={isLoading}
-                  {...field}
-                />
+                <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
