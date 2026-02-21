@@ -44,6 +44,13 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+/src/generated/
+
+# IDE 설정
+.cursor/
+
+# Playwright MCP 런타임 데이터
+.playwright-mcp/
 
 # shrimp task manager 런타임 데이터
 /shrimp_data/
