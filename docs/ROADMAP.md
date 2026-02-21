@@ -119,12 +119,47 @@
   - ✅ `DELETE /api/campaigns/:campaignId/memos` 구현 (date 파라미터 기반 삭제)
   - ✅ Asia/Seoul 자정 기준 UTC 변환 저장
 
-- **Task 012: API 통합 테스트 및 계약 안정화**
-  - 단위: 정규화 함수(날짜/퍼센트/결측/과학표기) 테스트
-  - 통합: 업로드 idempotency, 필터 조합 조회 정확성 검증
-  - 에러 응답 포맷 공통화(`code`, `message`, `details`) 적용
-  - 성능 기준(50k행 60초 목표) 측정 스크립트와 결과 기록
-  - Playwright MCP로 핵심 사용자 여정 전체 회귀 테스트 수행
+- **Task 012: API 통합 테스트 및 계약 안정화** ✅ - 완료
+  - See: `/tasks/012-api-integration-test.md`
+  - ✅ 단위: 정규화 함수(날짜/퍼센트/결측/과학표기) 테스트
+  - ✅ 통합: 업로드 idempotency, 필터 조합 조회 정확성 검증
+  - ✅ 에러 응답 포맷 공통화(`code`, `message`, `details`) 적용
+  - ✅ 성능 기준(50k행 60초 목표) 측정 스크립트와 결과 기록
+  - ✅ Playwright MCP로 핵심 사용자 여정 전체 회귀 테스트 수행
+
+- **Task 012-1: 계산 지표 엔진 및 데이터 추출 개선 (F008)** ✅ - 완료
+  - See: `src/lib/metrics-calculator.ts`, `app/api/campaigns/[campaignId]/metrics/route.ts`
+  - ✅ `calculateCTR(clicks, impressions)`: 소수점 1자리 반올림, 분모 0 → null
+  - ✅ `calculateCVR(orders1d, clicks)`: 소수점 1자리 반올림, 분모 0 → null
+  - ✅ `calculateROAS(revenue1d, adCost)`: 소수점 1자리 반올림, 분모 0 → null
+  - ✅ metrics API 응답에 `ctr`, `cvr`, `roas` 필드 추가 (`orders1d`, `revenue1d` 기준)
+  - ✅ inefficient-keywords API 응답을 `{ keyword, adCost, ctr, cvr, roas }`로 변경
+  - ✅ 분모 0 케이스에서 `null` 반환 검증 필수
+
+- **Task 012-2: 대시보드 탭 차트/메모 고도화 (F002, F005, F006)** ✅ - 완료
+  - See: `src/components/dashboard/campaign-chart.tsx`, `src/components/dashboard/filter-bar.tsx`, `src/components/dashboard/daily-memo.tsx`
+  - ✅ FilterBar에 퀵 기간 버튼 (오늘/7일/14일/30일/90일/180일/이번달/지난달) 추가
+  - ✅ 기본 기간: 오늘 기준 14일 전 ~ 오늘 (초기 URL 파라미터로 설정)
+  - ✅ CampaignChart를 4개 라인 그래프로 전환 (총광고비, 평균ROAS, CTR, CVR)
+  - ✅ 차트 영역 클릭 이벤트 → 해당 날짜 메모 입력창 표시
+  - ✅ 저장된 메모 날짜에 차트 아이콘(마커) 표시, 클릭 시 내용 툴팁
+  - ✅ DailyMemo 컴포넌트: 선택 기간 내 메모만 표시, 우측 상단 "메모 추가" 버튼
+
+- **Task 012-3: 광고 데이터 탭 컬럼 확장 (F004, F008)** ✅ - 완료
+  - See: `app/api/campaigns/[campaignId]/records/route.ts`, `src/components/dashboard/ad-records-table.tsx`
+  - ✅ API 응답에 `placement`, `parsedProductName`, `parsedOptionName`, `ctr`, `cvr`, `roas` 추가
+  - ✅ `parsedProductName`: `productName`에서 첫 번째 쉼표 앞 텍스트 추출
+  - ✅ `parsedOptionName`: `productName`에서 "구성", "사이즈" 값을 "/" 구분, 중복 제거
+  - ✅ UI 테이블에 신규 컬럼 추가 및 컬럼 표시/숨기기 토글 반영
+  - ✅ CTR/CVR/ROAS가 행 단위로 계산되어 표시
+
+- **Task 012-4: 키워드 분석 탭 계산 지표 및 정렬 강화 (F003, F008)** ✅ - 완료
+  - See: `app/api/campaigns/[campaignId]/inefficient-keywords/route.ts`, `src/components/dashboard/keyword-analysis-table.tsx`
+  - ✅ 테이블 컬럼: 키워드, 광고비, CTR, CVR, ROAS
+  - ✅ 각 컬럼 헤더에 오름/내림 정렬 토글 버튼 구현
+  - ✅ 정렬 상태는 URL 파라미터 (`sortBy`, `sortOrder`) 또는 로컬 상태로 관리
+  - ✅ 다중 선택 + 복사 기능은 기존 유지
+  - ✅ 정렬 상태 변경 후 선택된 체크박스 초기화
 
 ### Phase 4: 품질 강화 및 운영 안정화
 
@@ -153,7 +188,8 @@
 
 ## 수락 기준 (로드맵 완료 기준)
 
-- PRD의 MVP 기능(F001~F007, F010, F011)이 모두 API/화면/데이터 모델 레벨에서 연결된다.
+- PRD의 MVP 기능(F001~F008, F010, F011)이 모두 API/화면/데이터 모델 레벨에서 연결된다.
 - 업로드 재실행 시 데이터 중복이 증가하지 않고, 업서트 정책이 유지된다.
 - 공통 필터(`from`, `to`, `adType`)가 3개 탭에서 동일하게 동작한다.
+- CTR/CVR/ROAS 계산 지표가 기간 합산 기반으로 올바르게 산출된다.
 - Playwright MCP 기반 핵심 E2E 플로우가 모두 통과한다.
