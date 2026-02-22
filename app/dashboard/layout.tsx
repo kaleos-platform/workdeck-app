@@ -14,7 +14,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // 워크스페이스 존재 여부 확인 - 없으면 최초 설정 페이지로 이동
   const workspace = await prisma.workspace.findUnique({
     where: { ownerId: user.id },
-    select: { id: true },
+    select: { id: true, name: true },
   })
 
   if (!workspace) {
@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="flex h-screen flex-col">
       <Header />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
+        <Sidebar workspaceName={workspace.name} />
         <main className="flex-1 overflow-y-auto">
           <div className="p-8">{children}</div>
         </main>

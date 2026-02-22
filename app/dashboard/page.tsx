@@ -73,7 +73,7 @@ export default async function DashboardPage() {
 
   const workspace = await prisma.workspace.findUnique({
     where: { ownerId: user.id },
-    select: { id: true },
+    select: { id: true, name: true },
   })
   if (!workspace) redirect('/workspace-setup')
 
@@ -209,8 +209,7 @@ export default async function DashboardPage() {
       {/* 페이지 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">대시보드</h1>
-          <p className="mt-1 text-muted-foreground">워크스페이스 전체 광고 성과를 확인합니다</p>
+          <h1 className="text-3xl font-bold tracking-tight">{workspace.name}</h1>
         </div>
         <Link href="/dashboard/upload">
           <Button className="gap-2">

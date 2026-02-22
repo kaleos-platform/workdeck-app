@@ -9,9 +9,9 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { Separator } from '@/components/ui/separator'
 
-const mainRoutes = [
+const getMainRoutes = (workspaceName: string) => [
   {
-    label: '대시보드',
+    label: workspaceName,
     icon: LayoutDashboard,
     href: '/dashboard',
   },
@@ -30,11 +30,16 @@ type Campaign = {
   adTypes: string[]
 }
 
-export function Sidebar() {
+type SidebarProps = {
+  workspaceName: string
+}
+
+export function Sidebar({ workspaceName }: SidebarProps) {
   const pathname = usePathname()
   const { signOut } = useAuth()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
+  const mainRoutes = getMainRoutes(workspaceName)
 
   // pathname 변경(업로드 완료 등) 시마다 캠페인 목록 재조회
   useEffect(() => {
@@ -86,19 +91,7 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full w-64 flex-shrink-0 flex-col space-y-4 bg-slate-900 py-4 text-white">
-      {/* 로고 */}
       <div className="px-3 py-2">
-        <Link href="/dashboard" className="mb-6 flex items-center gap-2 pl-3">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-red-600">
-            <BarChart2 className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-base leading-tight font-bold">
-            쿠팡 광고
-            <br />
-            매니저
-          </span>
-        </Link>
-
         {/* 메인 메뉴 */}
         <div className="space-y-1">
           {mainRoutes.map((route) => (
@@ -111,7 +104,7 @@ export function Sidebar() {
               )}
             >
               <route.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-              {route.label}
+              <span className="truncate">{route.label}</span>
             </Link>
           ))}
         </div>
