@@ -6,8 +6,13 @@ import {
   UploadCloud,
   DollarSign,
   TrendingUp,
+  ShoppingCart,
   MousePointerClick,
+  Target,
   FileSpreadsheet,
+  ArrowUp,
+  ArrowDown,
+  Minus,
 } from 'lucide-react'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
@@ -26,6 +31,41 @@ function groupByCampaign(rows: { campaignId: string; campaignName: string; adTyp
   }
   return Array.from(map.values())
 }
+
+// 이번주 월요일 00:00 KST (UTC 기준 반환)
+function getThisWeekBoundaries(): { thisWeekStart: Date; thisWeekEnd: Date } {
+  const kstOffset = 9 * 60 * 60 * 1000
+  const nowUtc = Date.now()
+  // KST 기준 현재
+  const nowKstMs = nowUtc + kstOffset
+  const nowKst = new Date(nowKstMs)
+  const dayOfWeek = nowKst.getUTCDay() // 0=일, 1=월, ..., 6=토
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+
+  // 이번주 월요일 (KST 00:00)
+  const thisMondayKst = new Date(nowKstMs)
+  thisMondayKst.setUTCDate(nowKst.getUTCDate() + diffToMonday)
+  thisMondayKst.setUTCHours(0, 0, 0, 0)
+
+  // UTC로 변환
+  const thisWeekStart = new Date(thisMondayKst.getTime() - kstOffset)
+
+  // 오늘 KST 23:59:59 → UTC
+  const todayEndKst = new Date(nowKstMs)
+  todayEndKst.setUTCHours(23, 59, 59, 999)
+  const thisWeekEnd = new Date(todayEndKst.getTime() - kstOffset)
+
+  return { thisWeekStart, thisWeekEnd }
+}
+
+// WoW 증감율 계산 (소수점 1자리, 이전 값이 0이면 null)
+function calcWow(current: number, prev: number): number | null {
+  if (prev === 0) return null
+  return Math.round(((current - prev) / prev) * 1000) / 10
+}
+
+// WoW 뱃지 렌더용 데이터 구조
+type WowBadge = { diff: number | null }
 
 export default async function DashboardPage() {
   const user = await getUser()
@@ -46,11 +86,27 @@ export default async function DashboardPage() {
   })
   const campaigns = groupByCampaign(campaignRows)
 
-  // KPI 전체 합산
-  const kpiAgg = await prisma.adRecord.aggregate({
-    where: { workspaceId: workspace.id },
-    _sum: { adCost: true, clicks: true, impressions: true },
-    _avg: { roas14d: true },
+  // 이번주 / 지난주 날짜 범위
+  const { thisWeekStart, thisWeekEnd } = getThisWeekBoundaries()
+  const lastWeekStart = new Date(thisWeekStart.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const lastWeekEnd = new Date(thisWeekStart.getTime() - 1)
+
+  // 이번주 집계
+  const thisWeekAgg = await prisma.adRecord.aggregate({
+    where: {
+      workspaceId: workspace.id,
+      date: { gte: thisWeekStart, lte: thisWeekEnd },
+    },
+    _sum: { adCost: true, revenue1d: true, orders1d: true, clicks: true, impressions: true },
+  })
+
+  // 지난주 집계
+  const lastWeekAgg = await prisma.adRecord.aggregate({
+    where: {
+      workspaceId: workspace.id,
+      date: { gte: lastWeekStart, lte: lastWeekEnd },
+    },
+    _sum: { adCost: true, revenue1d: true, orders1d: true, clicks: true, impressions: true },
   })
 
   // 업로드 이력 (최근 10건)
@@ -69,12 +125,36 @@ export default async function DashboardPage() {
 
   const hasData = campaigns.length > 0
 
-  const kpi = {
-    totalAdCost: Number(kpiAgg._sum.adCost ?? 0),
-    avgRoas14d: Number(kpiAgg._avg.roas14d ?? 0),
-    totalClicks: Number(kpiAgg._sum.clicks ?? 0),
-    totalImpressions: Number(kpiAgg._sum.impressions ?? 0),
+  // 이번주 수치
+  const twAdCost = Number(thisWeekAgg._sum.adCost ?? 0)
+  const twRevenue = Number(thisWeekAgg._sum.revenue1d ?? 0)
+  const twOrders = Number(thisWeekAgg._sum.orders1d ?? 0)
+  const twClicks = Number(thisWeekAgg._sum.clicks ?? 0)
+  const twImpressions = Number(thisWeekAgg._sum.impressions ?? 0)
+
+  // 지난주 수치
+  const lwAdCost = Number(lastWeekAgg._sum.adCost ?? 0)
+  const lwRevenue = Number(lastWeekAgg._sum.revenue1d ?? 0)
+  const lwOrders = Number(lastWeekAgg._sum.orders1d ?? 0)
+  const lwClicks = Number(lastWeekAgg._sum.clicks ?? 0)
+  const lwImpressions = Number(lastWeekAgg._sum.impressions ?? 0)
+
+  // 5개 KPI 계산
+  const twRoas = twAdCost > 0 ? (twRevenue / twAdCost) * 100 : null
+  const lwRoas = lwAdCost > 0 ? (lwRevenue / lwAdCost) * 100 : null
+  const twCtr = twImpressions > 0 ? (twClicks / twImpressions) * 100 : null
+  const lwCtr = lwImpressions > 0 ? (lwClicks / lwImpressions) * 100 : null
+  const twCvr = twClicks > 0 ? (twOrders / twClicks) * 100 : null
+  const lwCvr = lwClicks > 0 ? (lwOrders / lwClicks) * 100 : null
+
+  // WoW 증감율
+  const wowAdCost: WowBadge = { diff: calcWow(twAdCost, lwAdCost) }
+  const wowRoas: WowBadge = {
+    diff: twRoas !== null && lwRoas !== null ? calcWow(twRoas, lwRoas) : null,
   }
+  const wowRevenue: WowBadge = { diff: calcWow(twRevenue, lwRevenue) }
+  const wowCtr: WowBadge = { diff: twCtr !== null && lwCtr !== null ? calcWow(twCtr, lwCtr) : null }
+  const wowCvr: WowBadge = { diff: twCvr !== null && lwCvr !== null ? calcWow(twCvr, lwCvr) : null }
 
   // 날짜 포맷 헬퍼
   function fmt(d: Date): string {
@@ -84,24 +164,43 @@ export default async function DashboardPage() {
   const kpiCards = [
     {
       title: '총 광고비',
-      value: `${kpi.totalAdCost.toLocaleString()}원`,
-      description: '전체 업로드 데이터 기준',
+      value: `${twAdCost.toLocaleString('ko-KR')}원`,
+      description: '이번 주 기준',
       icon: DollarSign,
       color: 'text-orange-500',
+      wow: wowAdCost,
     },
     {
-      title: '평균 ROAS (14일)',
-      value: `${kpi.avgRoas14d.toFixed(1)}%`,
-      description: '전체 업로드 데이터 기준',
+      title: '평균 ROAS',
+      value: twRoas !== null ? `${twRoas.toFixed(1)}%` : '-',
+      description: '이번 주 기준',
       icon: TrendingUp,
       color: 'text-green-600',
+      wow: wowRoas,
     },
     {
-      title: '총 클릭수',
-      value: kpi.totalClicks.toLocaleString(),
-      description: '전체 업로드 데이터 기준',
+      title: '총 매출액',
+      value: `${twRevenue.toLocaleString('ko-KR')}원`,
+      description: '이번 주 기준',
+      icon: ShoppingCart,
+      color: 'text-emerald-600',
+      wow: wowRevenue,
+    },
+    {
+      title: '평균 CTR',
+      value: twCtr !== null ? `${twCtr.toFixed(2)}%` : '-',
+      description: '이번 주 기준',
       icon: MousePointerClick,
       color: 'text-blue-600',
+      wow: wowCtr,
+    },
+    {
+      title: '평균 CVR',
+      value: twCvr !== null ? `${twCvr.toFixed(2)}%` : '-',
+      description: '이번 주 기준',
+      icon: Target,
+      color: 'text-purple-600',
+      wow: wowCvr,
     },
   ]
 
@@ -144,10 +243,11 @@ export default async function DashboardPage() {
         </Card>
       )}
 
-      {/* KPI 카드 */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* KPI 카드 5개 (이번 주 기준 + WoW 증감) */}
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
         {kpiCards.map((card) => {
           const Icon = card.icon
+          const diff = card.wow.diff
           return (
             <Card key={card.title}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -156,7 +256,29 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{card.value}</div>
-                <p className="mt-1 text-xs text-muted-foreground">{card.description}</p>
+                <div className="mt-1 flex items-center gap-1">
+                  {diff === null ? (
+                    <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                      <Minus className="h-3 w-3" />
+                      지난주 데이터 없음
+                    </span>
+                  ) : diff > 0 ? (
+                    <span className="flex items-center gap-0.5 text-xs text-green-600">
+                      <ArrowUp className="h-3 w-3" />
+                      {diff}% 지난주 대비
+                    </span>
+                  ) : diff < 0 ? (
+                    <span className="flex items-center gap-0.5 text-xs text-red-500">
+                      <ArrowDown className="h-3 w-3" />
+                      {Math.abs(diff)}% 지난주 대비
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                      <Minus className="h-3 w-3" />
+                      변동 없음
+                    </span>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )

@@ -27,6 +27,7 @@ export const DUMMY_CAMPAIGNS: Campaign[] = [
 export const DUMMY_METRIC_SERIES: MetricSeries[] = Array.from({ length: 14 }, (_, i) => ({
   date: dateStr(13 - i),
   adCost: Math.round(80000 + Math.random() * 120000),
+  totalRevenue: Math.round(200000 + Math.random() * 300000),
   ctr: parseFloat((1.5 + Math.random() * 3.5).toFixed(1)),
   cvr: parseFloat((0.5 + Math.random() * 2.5).toFixed(1)),
   roas: parseFloat((150 + Math.random() * 350).toFixed(1)),

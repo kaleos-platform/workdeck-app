@@ -48,6 +48,7 @@ export type DailyMemo = {
   campaignId: string
   date: string
   content: string
+  updatedAt?: string
 }
 
 // 워크스페이스 전체 KPI 요약
@@ -62,6 +63,7 @@ export type KpiSummary = {
 export type MetricSeries = {
   date: string
   adCost: number
+  totalRevenue: number
   ctr: number | null
   cvr: number | null
   roas: number | null

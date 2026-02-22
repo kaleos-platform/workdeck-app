@@ -21,14 +21,18 @@ export async function GET(
       campaignId: true,
       date: true,
       content: true,
+      updatedAt: true,
     },
   })
 
   // 날짜 → YYYY-MM-DD 포맷
-  const items = memos.map((m: { id: string; campaignId: string; date: Date; content: string }) => ({
-    ...m,
-    date: m.date.toISOString().split('T')[0],
-  }))
+  const items = memos.map(
+    (m: { id: string; campaignId: string; date: Date; content: string; updatedAt: Date }) => ({
+      ...m,
+      date: m.date.toISOString().split('T')[0],
+      updatedAt: m.updatedAt.toISOString().split('T')[0],
+    })
+  )
 
   return NextResponse.json({ items })
 }
@@ -84,12 +88,14 @@ export async function POST(
       campaignId: true,
       date: true,
       content: true,
+      updatedAt: true,
     },
   })
 
   return NextResponse.json({
     ...memo,
     date: memo.date.toISOString().split('T')[0],
+    updatedAt: memo.updatedAt.toISOString().split('T')[0],
   })
 }
 

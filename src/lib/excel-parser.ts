@@ -77,11 +77,12 @@ function normalizeRows(rows: Record<string, unknown>[]): ParsedRow[] {
       clicks: parseNum(row['클릭수'], parseInt),
       adCost: parseNum(row['광고비'], parseFloat),
       ctr: parsePercent(row['클릭률']),
-      orders1d: parseNum(row['주문수(1일)'], parseInt),
-      revenue1d: parseNum(row['전환매출액(1일)'], parseFloat),
+      // 쿠팡 Excel 컬럼명 변형 대응: "직접 주문수(1일)" 또는 "주문수(1일)"
+      orders1d: parseNum(row['직접 주문수(1일)'] ?? row['주문수(1일)'], parseInt),
+      revenue1d: parseNum(row['직접 전환매출액(1일)'] ?? row['전환매출액(1일)'], parseFloat),
       roas1d: parsePercent(row['광고수익률(1일)']),
-      orders14d: parseNum(row['주문수(14일)'], parseInt),
-      revenue14d: parseNum(row['전환매출액(14일)'], parseFloat),
+      orders14d: parseNum(row['직접 주문수(14일)'] ?? row['주문수(14일)'], parseInt),
+      revenue14d: parseNum(row['직접 전환매출액(14일)'] ?? row['전환매출액(14일)'], parseFloat),
       roas14d: parsePercent(row['광고수익률(14일)']),
     }))
     .filter((row) => row.campaignId !== '' && !isNaN(row.date.getTime()))

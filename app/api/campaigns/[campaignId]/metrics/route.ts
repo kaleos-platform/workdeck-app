@@ -63,6 +63,7 @@ export async function GET(
       return {
         date: item.date.toISOString().split('T')[0],
         adCost,
+        totalRevenue: revenue1d,
         ctr: calculateCTR(clicks, impressions),
         cvr: calculateCVR(orders1d, clicks),
         roas: calculateROAS(revenue1d, adCost),

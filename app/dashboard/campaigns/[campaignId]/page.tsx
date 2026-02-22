@@ -24,6 +24,7 @@ import {
 import {
   TrendingUp,
   DollarSign,
+  ShoppingCart,
   MousePointerClick,
   Target,
   Copy,
@@ -50,13 +51,15 @@ type SortKey = keyof Pick<AdRecord, 'date' | 'adCost' | 'clicks' | 'impressions'
 // 키워드 탭 정렬 컬럼
 type KeywordSortKey = 'keyword' | 'adCost' | 'ctr' | 'cvr' | 'roas'
 
-// 광고 데이터 탭 표시 가능한 추가 컬럼
+// 광고 데이터 탭 토글 가능한 추가 컬럼
 const TOGGLE_COLUMNS = [
   { key: 'placement', label: '광고 노출 지면' },
   { key: 'parsedProductName', label: '상품명' },
   { key: 'parsedOptionName', label: '옵션명' },
-  { key: 'clicks', label: '클릭수' },
   { key: 'impressions', label: '노출수' },
+  { key: 'clicks', label: '클릭수' },
+  { key: 'orders1d', label: '주문 건수' },
+  { key: 'revenue1d', label: '매출 금액' },
 ] as const
 type ToggleColumnKey = (typeof TOGGLE_COLUMNS)[number]['key']
 
@@ -126,8 +129,10 @@ export default function CampaignDetailPage({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [pageSize, setPageSize] = useState(25)
   const [page, setPage] = useState(1)
-  // 컬럼 표시 토글 (기본 숨김)
-  const [visibleColumns, setVisibleColumns] = useState<Set<ToggleColumnKey>>(new Set())
+  // 컬럼 표시 토글 (기본 전체 선택)
+  const [visibleColumns, setVisibleColumns] = useState<Set<ToggleColumnKey>>(
+    new Set(TOGGLE_COLUMNS.map((c) => c.key))
+  )
   const [showColumnMenu, setShowColumnMenu] = useState(false)
 
   // 비효율 키워드
@@ -296,6 +301,7 @@ export default function CampaignDetailPage({
   // KPI 계산 — metricSeries 합산 (CTR/CVR/ROAS null 제외 평균)
   const kpiData = useMemo(() => {
     const totalAdCost = metricSeries.reduce((s, r) => s + r.adCost, 0)
+    const totalRevenue = metricSeries.reduce((s, r) => s + r.totalRevenue, 0)
     const roasVals = metricSeries.map((r) => r.roas).filter((v): v is number => v !== null)
     const ctrVals = metricSeries.map((r) => r.ctr).filter((v): v is number => v !== null)
     const cvrVals = metricSeries.map((r) => r.cvr).filter((v): v is number => v !== null)
@@ -303,6 +309,7 @@ export default function CampaignDetailPage({
       arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : null
     return {
       totalAdCost,
+      totalRevenue,
       avgRoas: avg(roasVals),
       avgCtr: avg(ctrVals),
       avgCvr: avg(cvrVals),
@@ -312,7 +319,7 @@ export default function CampaignDetailPage({
   const kpiCards = [
     {
       title: '총 광고비',
-      value: `${kpiData.totalAdCost.toLocaleString()}원`,
+      value: `${kpiData.totalAdCost.toLocaleString('ko-KR')}원`,
       icon: DollarSign,
       color: 'text-orange-500',
     },
@@ -321,6 +328,12 @@ export default function CampaignDetailPage({
       value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(1)}%` : '-',
       icon: TrendingUp,
       color: 'text-green-600',
+    },
+    {
+      title: '총 매출액',
+      value: `${kpiData.totalRevenue.toLocaleString('ko-KR')}원`,
+      icon: ShoppingCart,
+      color: 'text-emerald-600',
     },
     {
       title: '평균 CTR',
@@ -371,7 +384,7 @@ export default function CampaignDetailPage({
         {/* ── 대시보드 탭 ── */}
         <TabsContent value="dashboard" className="space-y-6">
           {/* KPI 카드 */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
             {kpiCards.map((card) => {
               const Icon = card.icon
               return (
@@ -483,8 +496,9 @@ export default function CampaignDetailPage({
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      {/* 고정 컬럼 */}
                       <TableHead
-                        className="cursor-pointer select-none"
+                        className="w-24 cursor-pointer select-none"
                         onClick={() => handleSort('date')}
                       >
                         <span className="flex items-center">
@@ -492,11 +506,22 @@ export default function CampaignDetailPage({
                           <SortIcon column="date" sortKey={sortKey} sortOrder={sortOrder} />
                         </span>
                       </TableHead>
-                      <TableHead>광고유형</TableHead>
-                      {visibleColumns.has('placement') && <TableHead>광고 노출 지면</TableHead>}
-                      <TableHead>키워드</TableHead>
-                      {visibleColumns.has('parsedProductName') && <TableHead>상품명</TableHead>}
-                      {visibleColumns.has('parsedOptionName') && <TableHead>옵션명</TableHead>}
+                      <TableHead className="w-28">광고유형</TableHead>
+                      {/* 토글 컬럼 — 순서: 광고노출지면, 상품명, 옵션명 */}
+                      {visibleColumns.has('placement') && (
+                        <TableHead className="w-24 min-w-[6rem]">광고 노출 지면</TableHead>
+                      )}
+                      {visibleColumns.has('parsedProductName') && (
+                        <TableHead className="w-52 min-w-[13rem]">상품명</TableHead>
+                      )}
+                      {visibleColumns.has('parsedOptionName') && (
+                        <TableHead className="w-28 min-w-[7rem]">옵션명</TableHead>
+                      )}
+                      <TableHead className="w-28">키워드</TableHead>
+                      {/* 지표 컬럼 */}
+                      <TableHead className="text-right">ROAS</TableHead>
+                      <TableHead className="text-right">CVR</TableHead>
+                      <TableHead className="text-right">CTR</TableHead>
                       <TableHead
                         className="cursor-pointer text-right select-none"
                         onClick={() => handleSort('adCost')}
@@ -506,20 +531,6 @@ export default function CampaignDetailPage({
                           <SortIcon column="adCost" sortKey={sortKey} sortOrder={sortOrder} />
                         </span>
                       </TableHead>
-                      <TableHead className="text-right">CTR</TableHead>
-                      <TableHead className="text-right">CVR</TableHead>
-                      <TableHead className="text-right">ROAS</TableHead>
-                      {visibleColumns.has('clicks') && (
-                        <TableHead
-                          className="cursor-pointer text-right select-none"
-                          onClick={() => handleSort('clicks')}
-                        >
-                          <span className="flex items-center justify-end">
-                            클릭수
-                            <SortIcon column="clicks" sortKey={sortKey} sortOrder={sortOrder} />
-                          </span>
-                        </TableHead>
-                      )}
                       {visibleColumns.has('impressions') && (
                         <TableHead
                           className="cursor-pointer text-right select-none"
@@ -534,6 +545,23 @@ export default function CampaignDetailPage({
                             />
                           </span>
                         </TableHead>
+                      )}
+                      {visibleColumns.has('clicks') && (
+                        <TableHead
+                          className="cursor-pointer text-right select-none"
+                          onClick={() => handleSort('clicks')}
+                        >
+                          <span className="flex items-center justify-end">
+                            클릭수
+                            <SortIcon column="clicks" sortKey={sortKey} sortOrder={sortOrder} />
+                          </span>
+                        </TableHead>
+                      )}
+                      {visibleColumns.has('orders1d') && (
+                        <TableHead className="text-right">주문 건수</TableHead>
+                      )}
+                      {visibleColumns.has('revenue1d') && (
+                        <TableHead className="text-right">매출 금액</TableHead>
                       )}
                     </TableRow>
                   </TableHeader>
@@ -553,46 +581,65 @@ export default function CampaignDetailPage({
                           <TableCell className="text-sm">{record.date}</TableCell>
                           <TableCell className="text-sm">{record.adType}</TableCell>
                           {visibleColumns.has('placement') && (
-                            <TableCell className="text-sm text-muted-foreground">
+                            <TableCell
+                              className="w-24 min-w-[6rem] truncate text-sm text-muted-foreground"
+                              title={record.placement ?? ''}
+                            >
                               {record.placement ?? '-'}
                             </TableCell>
                           )}
-                          <TableCell className="text-sm text-muted-foreground">
-                            {record.keyword ?? '-'}
-                          </TableCell>
                           {visibleColumns.has('parsedProductName') && (
                             <TableCell
-                              className="max-w-[160px] truncate text-sm"
+                              className="w-52 max-w-[13rem] min-w-[13rem] truncate text-sm"
                               title={record.parsedProductName ?? ''}
                             >
                               {record.parsedProductName ?? '-'}
                             </TableCell>
                           )}
                           {visibleColumns.has('parsedOptionName') && (
-                            <TableCell className="text-sm text-muted-foreground">
+                            <TableCell
+                              className="w-28 min-w-[7rem] truncate text-sm text-muted-foreground"
+                              title={record.parsedOptionName ?? ''}
+                            >
                               {record.parsedOptionName ?? '-'}
                             </TableCell>
                           )}
+                          <TableCell
+                            className="max-w-[7rem] truncate text-sm text-muted-foreground"
+                            title={record.keyword ?? ''}
+                          >
+                            {record.keyword ?? '-'}
+                          </TableCell>
+                          <TableCell className="text-right text-sm font-medium">
+                            {fmt(record.roas, '%')}
+                          </TableCell>
                           <TableCell className="text-right text-sm">
-                            {record.adCost.toLocaleString()}원
+                            {fmt(record.cvr, '%')}
                           </TableCell>
                           <TableCell className="text-right text-sm">
                             {fmt(record.ctr, '%')}
                           </TableCell>
                           <TableCell className="text-right text-sm">
-                            {fmt(record.cvr, '%')}
+                            {record.adCost.toLocaleString('ko-KR')}원
                           </TableCell>
-                          <TableCell className="text-right text-sm font-medium">
-                            {fmt(record.roas, '%')}
-                          </TableCell>
-                          {visibleColumns.has('clicks') && (
-                            <TableCell className="text-right text-sm">
-                              {record.clicks.toLocaleString()}
-                            </TableCell>
-                          )}
                           {visibleColumns.has('impressions') && (
                             <TableCell className="text-right text-sm">
-                              {record.impressions.toLocaleString()}
+                              {record.impressions.toLocaleString('ko-KR')}
+                            </TableCell>
+                          )}
+                          {visibleColumns.has('clicks') && (
+                            <TableCell className="text-right text-sm">
+                              {record.clicks.toLocaleString('ko-KR')}
+                            </TableCell>
+                          )}
+                          {visibleColumns.has('orders1d') && (
+                            <TableCell className="text-right text-sm">
+                              {record.orders1d.toLocaleString('ko-KR')}
+                            </TableCell>
+                          )}
+                          {visibleColumns.has('revenue1d') && (
+                            <TableCell className="text-right text-sm">
+                              {record.revenue1d.toLocaleString('ko-KR')}원
                             </TableCell>
                           )}
                         </TableRow>

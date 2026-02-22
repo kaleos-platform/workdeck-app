@@ -27,13 +27,13 @@ export function Sidebar() {
   const { signOut } = useAuth()
   const [campaigns, setCampaigns] = useState<{ id: string; name: string }[]>([])
 
-  // 캠페인 목록을 API에서 불러오기
+  // pathname 변경(업로드 완료 등) 시마다 캠페인 목록 재조회
   useEffect(() => {
     fetch('/api/campaigns')
       .then((r) => (r.ok ? r.json() : []))
       .then((list: Array<{ id: string; name: string }>) => setCampaigns(list))
       .catch(() => {})
-  }, [])
+  }, [pathname])
 
   return (
     <div className="flex h-full w-64 flex-shrink-0 flex-col space-y-4 bg-slate-900 py-4 text-white">
