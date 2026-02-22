@@ -9,12 +9,13 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ReferenceLine,
+  ReferenceDot,
   ResponsiveContainer,
 } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { BarChart3 } from 'lucide-react'
 import type { MetricSeries, DailyMemo } from '@/types'
+import type { MouseHandlerDataParam } from 'recharts/types/synchronisation/types'
 
 type Metric = 'adCost' | 'roas' | 'ctr' | 'cvr'
 
@@ -95,15 +96,18 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
     memoContent: memoMap.get(d.date) ?? null,
   }))
 
-  // 메모 있는 날짜의 포맷된 날짜 목록 (ReferenceLine용)
-  const memoDates = chartData.filter((d) => d.memoContent).map((d) => d.date)
+  // 메모가 있는 날짜 포인트
+  const memoPoints = chartData.filter((d) => d.memoContent)
 
-  // recharts 이벤트 payload 타입이 광범위하여 필요한 필드만 안전하게 추출
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleChartClick(chartEvent: any) {
+  // 차트 클릭 시 활성화된 tooltip index를 기준으로 원본 날짜를 계산
+  function handleChartClick(nextState: MouseHandlerDataParam) {
     if (!onChartClick) return
-    const originalDate = chartEvent?.activePayload?.[0]?.payload?.originalDate
-    if (originalDate) onChartClick(originalDate)
+    const rawIndex = nextState.activeTooltipIndex
+    const pointIndex = typeof rawIndex === 'number' ? rawIndex : Number(rawIndex)
+    if (!Number.isInteger(pointIndex) || pointIndex < 0 || pointIndex >= chartData.length) return
+
+    const clickedDate = chartData[pointIndex]?.originalDate
+    if (clickedDate) onChartClick(clickedDate)
   }
 
   function renderTooltipContent({
@@ -215,16 +219,19 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
 
-          {/* 메모 있는 날짜 표시 (노란 점선) */}
-          {memoDates.map((d) => (
-            <ReferenceLine
-              key={`memo-${d}`}
-              x={d}
+          {/* 메모가 있는 날짜는 차트 내 핀 아이콘으로 표시 */}
+          {memoPoints.map((point) => (
+            <ReferenceDot
+              key={`memo-${point.originalDate}`}
+              x={point.date}
+              y={point.adCost}
               yAxisId="left"
-              stroke="#f59e0b"
-              strokeDasharray="4 3"
+              ifOverflow="extendDomain"
+              r={4}
+              fill="#f59e0b"
+              stroke="#fff"
               strokeWidth={1.5}
-              label={{ value: '📌', position: 'top', fontSize: 10 }}
+              label={{ value: '📌', position: 'top', fontSize: 12 }}
             />
           ))}
 
