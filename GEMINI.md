@@ -2,6 +2,24 @@
 
 This project is a comprehensive SaaS starter kit designed for building scalable web applications with Next.js, Supabase, and Prisma.
 
+## Initialization (MUST)
+
+### 1. Rule Loading Policy (Token Optimized)
+
+규칙 로딩은 다음 우선순위와 조건을 따른다:
+
+- **기본 로드:** `docs/rules/00-meta.md`, `docs/rules/01-core.md`
+- **조건부 로드:**
+  - Next.js(App Router)/UI 구조/성능/라우팅/컴포넌트 관련: `+ docs/rules/02-architecture.md`
+  - 의존성 업데이트/취약점/권한/민감정보/API 보안/검증: `+ docs/rules/03-security.md`
+
+추가 규칙이 필요한지 불확실하면 추측하지 말고 규칙 파일을 확인하거나 질문한다. 항상 전체 규칙을 로드하지 않는다(토큰 최적화).
+
+### 2. Response Format
+
+- 불필요한 서론/인사 없이 본론부터 응답한다.
+- 구현 전 **3–7개 불릿 계획** 제시 → 구현 → 간단 검증 순서로 진행한다.
+
 ## Project Overview
 
 - **Purpose:** SaaS starter kit featuring multi-tenancy, authentication, and subscription management.

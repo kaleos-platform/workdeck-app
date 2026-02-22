@@ -1,12 +1,16 @@
-<!-- BEGIN:nextjs-agent-rules -->
-
-# Next.js: ALWAYS read docs before coding
-
-Before any Next.js work, find and read the relevant doc in `node_modules/next/dist/docs/`. Your training data is outdated — the docs are the source of truth.
-
-<!-- END:nextjs-agent-rules -->
-
 # Repository Guidelines
+
+## Initialization (MUST)
+
+작업 시작 시 `docs/rules/00-meta.md`를 먼저 열어 Rule Router 기준을 확인한다.
+
+- 기본 로드: `docs/rules/01-core.md`
+- 조건부 로드:
+  - Next.js(App Router)/UI 구조/성능/라우팅/컴포넌트 관련이면: `docs/rules/02-architecture.md` 추가
+  - 의존성 업데이트/취약점/권한/민감정보/API 보안/검증이면: `docs/rules/03-security.md` 추가
+- 불확실하면 추측으로 규칙을 적용하지 말고, 필요한 규칙 파일을 먼저 열어 확인하거나 질문한다.
+
+규칙은 “필요한 것만” 로드한다. 전체 규칙을 매번 로드하지 않는다.
 
 ## Project Structure & Module Organization
 

@@ -4,10 +4,13 @@
 
 @AGENTS.md
 
-## 프로젝트 환경 설정
+## Initialization (MUST)
 
-- 이 프로젝트는 Next.js 최신 버전을 사용합니다.
-- 코딩 전 @AGENTS.md를 통해 문서 참조 규칙을 확인하세요.
+규칙은 다음 순서로 적용한다:
+
+- docs/rules/00-meta.md → docs/rules/01-core.md → (필요 시) 02-architecture.md / 03-security.md
+
+토큰 절약을 위해, meta-rule이 지시하지 않으면 추가 규칙을 읽지 않는다.
 
 상세 요구사항은 @/docs/prd.md 참조
 
