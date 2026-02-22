@@ -31,8 +31,6 @@ export async function GET(
       workspaceId: workspace.id,
       campaignId,
       keyword: { not: null },
-      orders1d: 0,
-      adCost: { gt: 0 },
       ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
       ...(adType && adType !== 'all' && { adType }),
     },
@@ -40,7 +38,13 @@ export async function GET(
       adCost: true,
       impressions: true,
       clicks: true,
+      orders1d: true,
       revenue1d: true,
+    },
+    // 기간 내 총 주문수가 0이고 광고비가 있는 키워드만 추출
+    having: {
+      orders1d: { _sum: { equals: 0 } },
+      adCost: { _sum: { gt: 0 } },
     },
     orderBy: {
       _sum: { adCost: 'desc' },
@@ -50,7 +54,13 @@ export async function GET(
   const items = groups.map(
     (g: {
       keyword: string | null
-      _sum: { adCost: unknown; impressions: unknown; clicks: unknown; revenue1d: unknown }
+      _sum: {
+        adCost: unknown
+        impressions: unknown
+        clicks: unknown
+        orders1d: unknown
+        revenue1d: unknown
+      }
     }) => {
       const adCost = Number(g._sum.adCost ?? 0)
       const impressions = Number(g._sum.impressions ?? 0)

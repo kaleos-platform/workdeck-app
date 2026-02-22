@@ -30,8 +30,8 @@ export async function GET(
   const from = searchParams.get('from')
   const to = searchParams.get('to')
   const adType = searchParams.get('adType')
-  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
-  const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '25')))
+  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1') || 1)
+  const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '25') || 25))
   const rawSortBy = searchParams.get('sortBy') ?? 'date'
   const sortKey: SortKey = ALLOWED_SORT_KEYS.includes(rawSortBy as SortKey)
     ? (rawSortBy as SortKey)

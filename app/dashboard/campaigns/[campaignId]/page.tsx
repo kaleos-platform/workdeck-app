@@ -725,7 +725,7 @@ export default function CampaignDetailPage({
                         className="cursor-pointer"
                         onClick={() => toggleKeyword(kw.keyword)}
                       >
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
                             checked={selectedKeywords.includes(kw.keyword)}
                             onCheckedChange={() => toggleKeyword(kw.keyword)}

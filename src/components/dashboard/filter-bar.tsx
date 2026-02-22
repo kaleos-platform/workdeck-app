@@ -28,16 +28,16 @@ const DEFAULT_AD_TYPE_OPTIONS: AdTypeOption[] = [
   { value: '상품 광고', label: '상품 광고' },
 ]
 
-// 오늘 날짜 문자열
+// 한국 시간(KST, UTC+9) 기준 오늘 날짜 문자열
 function getTodayStr(): string {
-  return new Date().toISOString().split('T')[0]
+  return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
 }
 
-// N일 전 날짜 문자열 (offset = 양수, today-offset일)
+// KST 기준 N일 전 날짜 문자열
 function daysAgo(offset: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() - offset)
-  return d.toISOString().split('T')[0]
+  return new Date(Date.now() + 9 * 60 * 60 * 1000 - offset * 86400 * 1000)
+    .toISOString()
+    .split('T')[0]
 }
 
 // 퀵 기간 옵션 목록
@@ -51,17 +51,17 @@ const QUICK_PERIODS = [
   {
     label: '이번달',
     getRange: () => {
-      const today = new Date()
-      const first = new Date(today.getFullYear(), today.getMonth(), 1)
+      const kst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+      const first = new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), 1))
       return { from: first.toISOString().split('T')[0], to: getTodayStr() }
     },
   },
   {
     label: '지난달',
     getRange: () => {
-      const today = new Date()
-      const first = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-      const last = new Date(today.getFullYear(), today.getMonth(), 0)
+      const kst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+      const first = new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth() - 1, 1))
+      const last = new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), 0))
       return {
         from: first.toISOString().split('T')[0],
         to: last.toISOString().split('T')[0],
