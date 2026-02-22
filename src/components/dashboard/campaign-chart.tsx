@@ -29,8 +29,8 @@ interface MetricConfig {
 
 const METRIC_CONFIGS: MetricConfig[] = [
   { key: 'adCost', label: '광고비', color: '#3b82f6', unit: '원', yAxisId: 'left' },
-  { key: 'totalRevenue', label: '매출액', color: '#14b8a6', unit: '원', yAxisId: 'left' },
   { key: 'roas', label: 'ROAS', color: '#f97316', unit: '%', yAxisId: 'right' },
+  { key: 'totalRevenue', label: '매출액', color: '#e11d48', unit: '원', yAxisId: 'left' },
   { key: 'ctr', label: 'CTR', color: '#22c55e', unit: '%', yAxisId: 'right' },
   { key: 'cvr', label: 'CVR', color: '#a855f7', unit: '%', yAxisId: 'right' },
 ]
@@ -95,6 +95,13 @@ function computeAxisDomain(values: number[], fallback: [number, number]): [numbe
   return [Math.max(0, min - pad), max + pad]
 }
 
+function buildInteriorTicks([min, max]: [number, number], stepCount = 4): number[] {
+  if (!Number.isFinite(min) || !Number.isFinite(max) || stepCount < 1 || min >= max) return []
+
+  const interval = (max - min) / (stepCount + 1)
+  return Array.from({ length: stepCount }, (_, idx) => min + interval * (idx + 1))
+}
+
 export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartProps) {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>(['adCost', 'roas'])
 
@@ -151,6 +158,8 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
     activeRightMetrics.length > 0 ? getMetricValues(activeRightMetrics) : [],
     [0, 100]
   )
+  const leftTicks = buildInteriorTicks(leftDomain)
+  const rightTicks = buildInteriorTicks(rightDomain)
 
   // 차트 클릭 시 활성화된 tooltip index를 기준으로 원본 날짜를 계산
   function handleChartClick(nextState: MouseHandlerDataParam) {
@@ -242,6 +251,7 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
           <YAxis
             yAxisId="left"
             domain={leftDomain}
+            ticks={leftTicks}
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}
@@ -251,6 +261,7 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
             yAxisId="right"
             orientation="right"
             domain={rightDomain}
+            ticks={rightTicks}
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}
