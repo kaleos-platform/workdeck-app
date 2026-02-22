@@ -17,7 +17,7 @@ import { BarChart3 } from 'lucide-react'
 import type { MetricSeries, DailyMemo } from '@/types'
 import type { MouseHandlerDataParam } from 'recharts/types/synchronisation/types'
 
-type Metric = 'adCost' | 'roas' | 'ctr' | 'cvr'
+type Metric = 'adCost' | 'totalRevenue' | 'roas' | 'ctr' | 'cvr'
 
 interface MetricConfig {
   key: Metric
@@ -28,8 +28,9 @@ interface MetricConfig {
 }
 
 const METRIC_CONFIGS: MetricConfig[] = [
-  { key: 'adCost', label: '총광고비', color: '#3b82f6', unit: '원', yAxisId: 'left' },
-  { key: 'roas', label: '평균ROAS', color: '#f97316', unit: '%', yAxisId: 'right' },
+  { key: 'adCost', label: '광고비', color: '#3b82f6', unit: '원', yAxisId: 'left' },
+  { key: 'totalRevenue', label: '매출액', color: '#14b8a6', unit: '원', yAxisId: 'left' },
+  { key: 'roas', label: 'ROAS', color: '#f97316', unit: '%', yAxisId: 'right' },
   { key: 'ctr', label: 'CTR', color: '#22c55e', unit: '%', yAxisId: 'right' },
   { key: 'cvr', label: 'CVR', color: '#a855f7', unit: '%', yAxisId: 'right' },
 ]
@@ -63,16 +64,43 @@ function formatDate(dateStr: string): string {
   return `${month}/${day}`
 }
 
+function formatLeftAxisTick(value: number): string {
+  if (!Number.isFinite(value)) return ''
+  if (Math.abs(value) >= 10000) {
+    const manwon = Math.round(value / 10000)
+    return `${manwon.toLocaleString('ko-KR')}만원`
+  }
+  return `${Math.round(value).toLocaleString('ko-KR')}원`
+}
+
+function formatRightAxisTick(value: number): string {
+  if (!Number.isFinite(value)) return ''
+  const rounded = Math.round(value * 10) / 10
+  if (Number.isInteger(rounded)) return `${rounded.toLocaleString('ko-KR')}%`
+  return `${rounded.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}%`
+}
+
+function computeAxisDomain(values: number[], fallback: [number, number]): [number, number] {
+  if (values.length === 0) return fallback
+
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+
+  if (min === max) {
+    const pad = Math.max(Math.abs(max) * 0.1, 1)
+    return [Math.max(0, min - pad), max + pad]
+  }
+
+  const pad = (max - min) * 0.1
+  return [Math.max(0, min - pad), max + pad]
+}
+
 export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartProps) {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>(['adCost', 'roas'])
 
   function toggleMetric(metric: Metric) {
     setActiveMetrics((prev) =>
-      prev.includes(metric)
-        ? prev.length > 1
-          ? prev.filter((m) => m !== metric)
-          : prev // 최소 1개 유지
-        : [...prev, metric]
+      prev.includes(metric) ? prev.filter((m) => m !== metric) : [...prev, metric]
     )
   }
 
@@ -98,6 +126,31 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
 
   // 메모가 있는 날짜 포인트
   const memoPoints = chartData.filter((d) => d.memoContent)
+
+  const activeConfigMap = METRIC_CONFIGS.filter((config) => activeMetrics.includes(config.key))
+  const activeLeftMetrics = activeConfigMap
+    .filter((config) => config.yAxisId === 'left')
+    .map((config) => config.key)
+  const activeRightMetrics = activeConfigMap
+    .filter((config) => config.yAxisId === 'right')
+    .map((config) => config.key)
+
+  const getMetricValues = (metrics: Metric[]) =>
+    chartData.flatMap((row) =>
+      metrics.flatMap((metric) => {
+        const value = row[metric]
+        return typeof value === 'number' && Number.isFinite(value) ? [value] : []
+      })
+    )
+
+  const leftDomain = computeAxisDomain(
+    getMetricValues(activeLeftMetrics.length > 0 ? activeLeftMetrics : ['adCost']),
+    [0, 100]
+  )
+  const rightDomain = computeAxisDomain(
+    activeRightMetrics.length > 0 ? getMetricValues(activeRightMetrics) : [],
+    [0, 100]
+  )
 
   // 차트 클릭 시 활성화된 tooltip index를 기준으로 원본 날짜를 계산
   function handleChartClick(nextState: MouseHandlerDataParam) {
@@ -153,13 +206,6 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between rounded-md border border-dashed px-3 py-2">
-        <p className="text-xs text-muted-foreground">
-          차트의 날짜 지점을 클릭하면 해당 일자의 메모를 추가/수정할 수 있습니다.
-        </p>
-        <span className="text-[11px] text-amber-700">📌 메모 {memos.length}건</span>
-      </div>
-
       {/* 지표 토글 버튼 */}
       <div className="flex flex-wrap gap-2">
         {METRIC_CONFIGS.map((config) => {
@@ -195,18 +241,20 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
           <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
           <YAxis
             yAxisId="left"
+            domain={leftDomain}
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v)}
+            tickFormatter={formatLeftAxisTick}
           />
           <YAxis
             yAxisId="right"
             orientation="right"
+            domain={rightDomain}
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v) => `${v}%`}
+            tickFormatter={formatRightAxisTick}
           />
           <Tooltip
             content={renderTooltipContent}
