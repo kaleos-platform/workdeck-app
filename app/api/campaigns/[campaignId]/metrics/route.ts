@@ -7,6 +7,7 @@ import {
   calculateROAS,
   calculateEngagementRate,
 } from '@/lib/metrics-calculator'
+import { formatDateToYmdKst } from '@/lib/date-range'
 
 // GET /api/campaigns/[campaignId]/metrics — 날짜별 지표 시계열
 export async function GET(
@@ -69,7 +70,7 @@ export async function GET(
       const engagements = Number(item._sum.engagements ?? 0)
 
       return {
-        date: item.date.toISOString().split('T')[0],
+        date: formatDateToYmdKst(item.date),
         adCost,
         totalRevenue: revenue1d,
         impressions,

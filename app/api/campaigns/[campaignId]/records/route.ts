@@ -7,6 +7,7 @@ import {
   calculateROAS,
   calculateEngagementRate,
 } from '@/lib/metrics-calculator'
+import { formatDateToYmdKst } from '@/lib/date-range'
 
 // 상품명에서 옵션명 파싱 (JSON 형식 '{"구성":"5P"},{"사이즈":"M"}' 패턴 추출)
 function parseOptionName(productName: string | null): string | null {
@@ -103,7 +104,7 @@ export async function GET(
 
     return {
       ...r,
-      date: (r.date as Date).toISOString().split('T')[0],
+      date: formatDateToYmdKst(r.date as Date),
       adCost,
       revenue1d,
       roas1d: Number(r.roas1d),
