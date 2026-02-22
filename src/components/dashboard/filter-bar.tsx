@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RotateCcw } from 'lucide-react'
+import { getLastNDaysRangeKst, getTodayStrKst } from '@/lib/date-range'
 
 interface AdTypeOption {
   value: string
@@ -29,32 +30,20 @@ const DEFAULT_AD_TYPE_OPTIONS: AdTypeOption[] = [
   { value: '상품 광고', label: '상품 광고' },
 ]
 
-// 한국 시간(KST, UTC+9) 기준 오늘 날짜 문자열
-function getTodayStr(): string {
-  return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
-}
-
-// KST 기준 N일 전 날짜 문자열
-function daysAgo(offset: number): string {
-  return new Date(Date.now() + 9 * 60 * 60 * 1000 - offset * 86400 * 1000)
-    .toISOString()
-    .split('T')[0]
-}
-
 // 퀵 기간 옵션 목록
 const QUICK_PERIODS = [
-  { label: '오늘', getRange: () => ({ from: getTodayStr(), to: getTodayStr() }) },
-  { label: '7일', getRange: () => ({ from: daysAgo(6), to: getTodayStr() }) },
-  { label: '14일', getRange: () => ({ from: daysAgo(13), to: getTodayStr() }) },
-  { label: '30일', getRange: () => ({ from: daysAgo(29), to: getTodayStr() }) },
-  { label: '90일', getRange: () => ({ from: daysAgo(89), to: getTodayStr() }) },
-  { label: '180일', getRange: () => ({ from: daysAgo(179), to: getTodayStr() }) },
+  { label: '오늘', getRange: () => ({ from: getTodayStrKst(), to: getTodayStrKst() }) },
+  { label: '7일', getRange: () => getLastNDaysRangeKst(7) },
+  { label: '14일', getRange: () => getLastNDaysRangeKst(14) },
+  { label: '30일', getRange: () => getLastNDaysRangeKst(30) },
+  { label: '90일', getRange: () => getLastNDaysRangeKst(90) },
+  { label: '180일', getRange: () => getLastNDaysRangeKst(180) },
   {
     label: '이번달',
     getRange: () => {
       const kst = new Date(Date.now() + 9 * 60 * 60 * 1000)
       const first = new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), 1))
-      return { from: first.toISOString().split('T')[0], to: getTodayStr() }
+      return { from: first.toISOString().split('T')[0], to: getTodayStrKst() }
     },
   },
   {
@@ -83,7 +72,7 @@ export function FilterBar({
   const from = searchParams.get('from') ?? ''
   const to = searchParams.get('to') ?? ''
   const adType = searchParams.get('adType') ?? 'all'
-  const today = getTodayStr()
+  const today = getTodayStrKst()
 
   // 초기 진입 시 from/to 없으면 14일 기간으로 자동 설정
   useEffect(() => {

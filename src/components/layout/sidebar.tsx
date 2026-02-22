@@ -8,6 +8,7 @@ import { LayoutDashboard, UploadCloud, BarChart2, LogOut, ChevronDown } from 'lu
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { Separator } from '@/components/ui/separator'
+import { getLastNDaysRangeKst } from '@/lib/date-range'
 
 const getMainRoutes = (workspaceName: string) => [
   {
@@ -33,6 +34,8 @@ type Campaign = {
 type SidebarProps = {
   workspaceName: string
 }
+
+const NVB_AD_TYPE = '신규 구매 고객 확보'
 
 export function Sidebar({ workspaceName }: SidebarProps) {
   const pathname = usePathname()
@@ -87,6 +90,16 @@ export function Sidebar({ workspaceName }: SidebarProps) {
       }
       return next
     })
+  }
+
+  function buildCampaignHref(campaign: Campaign): string {
+    const basePath = `/dashboard/campaigns/${campaign.id}`
+    const isNvbCampaign = campaign.adTypes.some((type) => type.trim() === NVB_AD_TYPE)
+    if (!isNvbCampaign) return basePath
+
+    const { from, to } = getLastNDaysRangeKst(14)
+    const query = new URLSearchParams({ from, to })
+    return `${basePath}?${query.toString()}`
   }
 
   return (
@@ -168,7 +181,7 @@ export function Sidebar({ workspaceName }: SidebarProps) {
                           {items.map((campaign) => (
                             <Link
                               key={`${adType}-${campaign.id}`}
-                              href={`/dashboard/campaigns/${campaign.id}`}
+                              href={buildCampaignHref(campaign)}
                               className={cn(
                                 'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-2 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
                                 pathname === `/dashboard/campaigns/${campaign.id}`

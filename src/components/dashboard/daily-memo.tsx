@@ -21,6 +21,7 @@ interface DailyMemoProps {
   from?: string
   to?: string
   targetDate?: string | null
+  targetDateVersion?: number
 }
 
 export function DailyMemo({
@@ -30,6 +31,7 @@ export function DailyMemo({
   from,
   to,
   targetDate,
+  targetDateVersion = 0,
 }: DailyMemoProps) {
   const [memos, setMemos] = useState<DailyMemoType[]>(initialMemos)
 
@@ -55,7 +57,7 @@ export function DailyMemo({
         initialContent: existing?.content ?? '',
       })
     }
-  }, [targetDate]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [targetDate, targetDateVersion]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function updateMemos(newMemos: DailyMemoType[]) {
     setMemos(newMemos)

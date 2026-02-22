@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { formatDateToYmdKst } from '@/lib/date-range'
 
 // GET /api/campaigns/[campaignId]/memos — 메모 목록 조회
 export async function GET(
@@ -12,9 +13,20 @@ export async function GET(
   const { workspace } = resolved
 
   const { campaignId } = await params
+  const { searchParams } = request.nextUrl
+  const from = searchParams.get('from')
+  const to = searchParams.get('to')
+
+  const dateFilter: { gte?: Date; lte?: Date } = {}
+  if (from) dateFilter.gte = new Date(from + 'T00:00:00+09:00')
+  if (to) dateFilter.lte = new Date(to + 'T23:59:59+09:00')
 
   const memos = await prisma.dailyMemo.findMany({
-    where: { workspaceId: workspace.id, campaignId },
+    where: {
+      workspaceId: workspace.id,
+      campaignId,
+      ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
+    },
     orderBy: { date: 'desc' },
     select: {
       id: true,
@@ -29,8 +41,8 @@ export async function GET(
   const items = memos.map(
     (m: { id: string; campaignId: string; date: Date; content: string; updatedAt: Date }) => ({
       ...m,
-      date: m.date.toISOString().split('T')[0],
-      updatedAt: m.updatedAt.toISOString().split('T')[0],
+      date: formatDateToYmdKst(m.date),
+      updatedAt: formatDateToYmdKst(m.updatedAt),
     })
   )
 
@@ -94,8 +106,8 @@ export async function POST(
 
   return NextResponse.json({
     ...memo,
-    date: memo.date.toISOString().split('T')[0],
-    updatedAt: memo.updatedAt.toISOString().split('T')[0],
+    date: formatDateToYmdKst(memo.date),
+    updatedAt: formatDateToYmdKst(memo.updatedAt),
   })
 }
 

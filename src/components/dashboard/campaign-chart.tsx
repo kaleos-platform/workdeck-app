@@ -39,6 +39,18 @@ interface CampaignChartProps {
   onChartClick?: (date: string) => void
 }
 
+type ChartDatum = MetricSeries & {
+  originalDate: string
+  date: string
+  memoContent: string | null
+}
+
+type TooltipEntry = {
+  name?: string
+  value?: number | string | null
+  payload?: ChartDatum
+}
+
 function formatValue(value: number, unit: string): string {
   if (unit === '원') return `${value.toLocaleString()}원`
   if (unit === '%') return `${value}%`
@@ -72,28 +84,78 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
     )
   }
 
-  // 메모가 있는 날짜 set (원본 날짜 형식)
-  const memoDateSet = new Set(memos.map((m) => m.date))
+  // 메모 날짜별 내용 매핑
+  const memoMap = new Map(memos.map((m) => [m.date, m.content]))
 
   // 차트용 데이터 (날짜 포맷 + 원본 날짜 유지)
-  const chartData = data.map((d) => ({
+  const chartData: ChartDatum[] = data.map((d) => ({
     ...d,
     originalDate: d.date,
     date: formatDate(d.date),
+    memoContent: memoMap.get(d.date) ?? null,
   }))
 
   // 메모 있는 날짜의 포맷된 날짜 목록 (ReferenceLine용)
-  const memoDates = data.filter((d) => memoDateSet.has(d.date)).map((d) => formatDate(d.date))
+  const memoDates = chartData.filter((d) => d.memoContent).map((d) => d.date)
 
+  // recharts 이벤트 payload 타입이 광범위하여 필요한 필드만 안전하게 추출
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function handleChartClick(chartEvent: any) {
     if (!onChartClick) return
     const originalDate = chartEvent?.activePayload?.[0]?.payload?.originalDate
-    if (originalDate) onChartClick(originalDate as string)
+    if (originalDate) onChartClick(originalDate)
+  }
+
+  function renderTooltipContent({
+    active,
+    payload,
+  }: {
+    active?: boolean
+    payload?: readonly TooltipEntry[]
+  }) {
+    if (!active || !payload || payload.length === 0) return null
+
+    const point = payload[0]?.payload
+    if (!point) return null
+
+    return (
+      <div className="min-w-44 rounded-md border bg-background p-2 text-xs shadow-sm">
+        <p className="mb-1 font-semibold text-foreground">{point.originalDate}</p>
+        <div className="space-y-0.5">
+          {payload
+            .filter((entry) => typeof entry.value === 'number')
+            .map((entry) => {
+              const config = METRIC_CONFIGS.find((c) => c.label === entry.name)
+              const value = Number(entry.value)
+              return (
+                <p key={`${point.originalDate}-${entry.name}`} className="text-muted-foreground">
+                  {entry.name}: {formatValue(value, config?.unit ?? '')}
+                </p>
+              )
+            })}
+        </div>
+        {point.memoContent ? (
+          <div className="mt-2 rounded-md bg-amber-50 px-2 py-1 text-[11px] text-amber-800">
+            📌 {point.memoContent}
+          </div>
+        ) : (
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            클릭하면 이 날짜의 메모를 작성할 수 있습니다.
+          </p>
+        )}
+      </div>
+    )
   }
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between rounded-md border border-dashed px-3 py-2">
+        <p className="text-xs text-muted-foreground">
+          차트의 날짜 지점을 클릭하면 해당 일자의 메모를 추가/수정할 수 있습니다.
+        </p>
+        <span className="text-[11px] text-amber-700">📌 메모 {memos.length}건</span>
+      </div>
+
       {/* 지표 토글 버튼 */}
       <div className="flex flex-wrap gap-2">
         {METRIC_CONFIGS.map((config) => {
@@ -143,10 +205,7 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
             tickFormatter={(v) => `${v}%`}
           />
           <Tooltip
-            formatter={(value: number | undefined, name: string | undefined) => {
-              const config = METRIC_CONFIGS.find((c) => c.label === name)
-              return [formatValue(value ?? 0, config?.unit ?? ''), name ?? '']
-            }}
+            content={renderTooltipContent}
             contentStyle={{
               fontSize: 12,
               borderRadius: 8,
@@ -190,7 +249,8 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
 
       {memos.length > 0 && (
         <p className="text-xs text-muted-foreground">
-          📌 표시된 날짜에 메모가 있습니다. 클릭하면 메모를 확인할 수 있습니다.
+          📌 아이콘이 있는 날짜는 메모가 저장된 일자입니다. 마우스를 올려 내용을 확인하거나 클릭해
+          수정할 수 있습니다.
         </p>
       )}
     </div>

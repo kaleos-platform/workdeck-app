@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, use } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -51,6 +51,7 @@ import { toast } from 'sonner'
 import { FilterBar } from '@/components/dashboard/filter-bar'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
 import { DailyMemo } from '@/components/dashboard/daily-memo'
+import { getLastNDaysRangeKst, isYmdDateString } from '@/lib/date-range'
 import type {
   AdRecord,
   InefficientKeyword,
@@ -73,6 +74,8 @@ type SortKey =
 
 // 키워드 탭 정렬 컬럼
 type KeywordSortKey = 'keyword' | 'adCost' | 'ctr' | 'cvr' | 'roas'
+type TabValue = 'dashboard' | 'keywords' | 'addata'
+const DEFAULT_RANGE_DAYS = 14
 
 // 광고 데이터 탭 토글 가능한 추가 컬럼
 const TOGGLE_COLUMNS = [
@@ -132,13 +135,19 @@ export default function CampaignDetailPage({
   params: Promise<{ campaignId: string }>
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { campaignId } = use(params)
   const searchParams = useSearchParams()
+  const searchParamsString = searchParams.toString()
 
   // URL 필터 읽기
   const from = searchParams.get('from') ?? ''
   const to = searchParams.get('to') ?? ''
   const adTypeFilter = searchParams.get('adType') ?? 'all'
+  const tab = searchParams.get('tab')
+  const isDateRangeReady = isYmdDateString(from) && isYmdDateString(to)
+  const activeTab: TabValue =
+    tab === 'keywords' || tab === 'addata' || tab === 'dashboard' ? tab : 'dashboard'
 
   // 캠페인 메타 정보
   const [campaignName, setCampaignName] = useState('')
@@ -179,13 +188,30 @@ export default function CampaignDetailPage({
   // 메모
   const [memos, setMemos] = useState<DailyMemoType[]>([])
   // 차트 클릭으로 선택된 날짜
-  const [memoTargetDate, setMemoTargetDate] = useState<string | null>(null)
+  const [memoTarget, setMemoTarget] = useState<{ date: string; version: number } | null>(null)
   const isNcaAdType =
     adTypeFilter === '신규 구매 고객 확보' ||
     (adTypeFilter === 'all' && adTypes.length === 1 && adTypes[0] === '신규 구매 고객 확보')
 
+  // 기간 파라미터가 없거나 비정상인 경우 기본 14일로 보정
+  useEffect(() => {
+    if (isDateRangeReady) return
+
+    const { from: defaultFrom, to: defaultTo } = getLastNDaysRangeKst(DEFAULT_RANGE_DAYS)
+    const params = new URLSearchParams(searchParamsString)
+    params.set('from', defaultFrom)
+    params.set('to', defaultTo)
+
+    router.replace(`${pathname}?${params.toString()}`)
+  }, [isDateRangeReady, pathname, router, searchParamsString])
+
   // 지표 시계열 조회
   useEffect(() => {
+    if (!isDateRangeReady) {
+      setMetricSeries([])
+      return
+    }
+
     const q = new URLSearchParams()
     if (from) q.set('from', from)
     if (to) q.set('to', to)
@@ -195,10 +221,17 @@ export default function CampaignDetailPage({
       .then((r) => (r.ok ? r.json() : { series: [] }))
       .then((d: { series: MetricSeries[] }) => setMetricSeries(d.series))
       .catch(() => setMetricSeries([]))
-  }, [campaignId, from, to, adTypeFilter])
+  }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
 
   // 광고 데이터 조회
   useEffect(() => {
+    if (!isDateRangeReady) {
+      setRecords([])
+      setTotal(0)
+      setPlacementOptions([])
+      return
+    }
+
     const q = new URLSearchParams({
       page: String(page),
       pageSize: String(pageSize),
@@ -226,7 +259,7 @@ export default function CampaignDetailPage({
         setTotal(0)
         setPlacementOptions([])
       })
-  }, [campaignId, page, pageSize, from, to, adTypeFilter, placementFilter])
+  }, [campaignId, page, pageSize, from, to, adTypeFilter, placementFilter, isDateRangeReady])
 
   useEffect(() => {
     setPlacementFilter('all')
@@ -241,6 +274,12 @@ export default function CampaignDetailPage({
 
   // 비효율 키워드 조회
   useEffect(() => {
+    if (!isDateRangeReady) {
+      setKeywords([])
+      setSelectedKeywords([])
+      return
+    }
+
     const q = new URLSearchParams()
     if (from) q.set('from', from)
     if (to) q.set('to', to)
@@ -253,15 +292,28 @@ export default function CampaignDetailPage({
         setSelectedKeywords([]) // 필터 변경 시 선택 초기화
       })
       .catch(() => setKeywords([]))
-  }, [campaignId, from, to, adTypeFilter])
+  }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
 
   // 메모 조회
   useEffect(() => {
-    fetch(`/api/campaigns/${campaignId}/memos`)
+    if (!isDateRangeReady) {
+      setMemos([])
+      return
+    }
+
+    const q = new URLSearchParams()
+    if (from) q.set('from', from)
+    if (to) q.set('to', to)
+    const query = q.toString()
+    const url = query
+      ? `/api/campaigns/${campaignId}/memos?${query}`
+      : `/api/campaigns/${campaignId}/memos`
+
+    fetch(url)
       .then((r) => (r.ok ? r.json() : { items: [] }))
       .then((d: { items: DailyMemoType[] }) => setMemos(d.items))
       .catch(() => setMemos([]))
-  }, [campaignId])
+  }, [campaignId, from, to, isDateRangeReady])
 
   // 캠페인 메타 (adTypes) 조회
   useEffect(() => {
@@ -530,6 +582,17 @@ export default function CampaignDetailPage({
     ...adTypes.filter((t) => t.trim() !== '').map((t) => ({ value: t, label: t })),
   ]
 
+  function handleTabChange(nextTab: string) {
+    if (nextTab !== 'dashboard' && nextTab !== 'keywords' && nextTab !== 'addata') return
+
+    const params = new URLSearchParams(searchParams.toString())
+    if (nextTab === 'dashboard') params.delete('tab')
+    else params.set('tab', nextTab)
+
+    const query = params.toString()
+    router.push(query ? `${pathname}?${query}` : pathname)
+  }
+
   return (
     <div className="space-y-6">
       {/* 페이지 헤더 */}
@@ -608,7 +671,7 @@ export default function CampaignDetailPage({
       </Card>
 
       {/* 탭 영역 */}
-      <Tabs defaultValue="dashboard">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger
             value="dashboard"
@@ -659,7 +722,12 @@ export default function CampaignDetailPage({
               <CampaignChart
                 data={metricSeries}
                 memos={memos}
-                onChartClick={(date) => setMemoTargetDate(date)}
+                onChartClick={(date) =>
+                  setMemoTarget((prev) => ({
+                    date,
+                    version: (prev?.version ?? 0) + 1,
+                  }))
+                }
               />
             </CardContent>
           </Card>
@@ -676,7 +744,8 @@ export default function CampaignDetailPage({
                 onMemosChange={setMemos}
                 from={from || undefined}
                 to={to || undefined}
-                targetDate={memoTargetDate}
+                targetDate={memoTarget?.date ?? null}
+                targetDateVersion={memoTarget?.version ?? 0}
               />
             </CardContent>
           </Card>
