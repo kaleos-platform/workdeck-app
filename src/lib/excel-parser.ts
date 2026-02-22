@@ -18,9 +18,6 @@ export type ParsedRow = {
   orders1d: number
   revenue1d: number
   roas1d: number
-  orders14d: number
-  revenue14d: number
-  roas14d: number
 }
 
 // 퍼센트 문자열 파싱: "12.34%" → 12.34, "5.6689E-4" → 0.00056689 * 100
@@ -77,13 +74,10 @@ function normalizeRows(rows: Record<string, unknown>[]): ParsedRow[] {
       clicks: parseNum(row['클릭수'], parseInt),
       adCost: parseNum(row['광고비'], parseFloat),
       ctr: parsePercent(row['클릭률']),
-      // 쿠팡 Excel 컬럼명 변형 대응: "직접 주문수(1일)" 또는 "주문수(1일)"
-      orders1d: parseNum(row['직접 주문수(1일)'] ?? row['주문수(1일)'], parseInt),
-      revenue1d: parseNum(row['직접 전환매출액(1일)'] ?? row['전환매출액(1일)'], parseFloat),
-      roas1d: parsePercent(row['광고수익률(1일)']),
-      orders14d: parseNum(row['직접 주문수(14일)'] ?? row['주문수(14일)'], parseInt),
-      revenue14d: parseNum(row['직접 전환매출액(14일)'] ?? row['전환매출액(14일)'], parseFloat),
-      roas14d: parsePercent(row['광고수익률(14일)']),
+      // 쿠팡 Excel 직접 전환 1일 지표 (직접광고수익률, 직접 전환매출액, 직접 주문수)
+      orders1d: parseNum(row['직접 주문수(1일)'], parseInt),
+      revenue1d: parseNum(row['직접 전환매출액(1일)'], parseFloat),
+      roas1d: parsePercent(row['직접광고수익률(1일)']),
     }))
     .filter((row) => row.campaignId !== '' && !isNaN(row.date.getTime()))
 }

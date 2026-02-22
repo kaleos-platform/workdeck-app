@@ -89,9 +89,6 @@ export async function POST(request: NextRequest) {
         orders1d: row.orders1d,
         revenue1d: row.revenue1d,
         roas1d: row.roas1d,
-        orders14d: row.orders14d,
-        revenue14d: row.revenue14d,
-        roas14d: row.roas14d,
       }))
 
       const result = await prisma.adRecord.createMany({ data: chunkData, skipDuplicates: true })

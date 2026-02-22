@@ -163,16 +163,17 @@
 
 ### Phase 4: 품질 강화 및 운영 안정화
 
-- **Task 013: 개발 도구 설정** ✅ - 완료
-  - See: `.prettierrc`, `.prettierignore`, `.editorconfig`, `.husky/`, `eslint.config.mjs`, `package.json`
-  - ✅ Prettier 설정 (singleQuote, 2-space, no semi, `prettier-plugin-tailwindcss`)
-  - ✅ ESLint + `eslint-config-prettier` 통합 (포맷팅 규칙 충돌 방지)
-  - ✅ Husky v9 + lint-staged 설정
-    - `pre-commit`: staged 파일 ESLint 자동 수정 + Prettier 포맷팅
-    - `pre-push`: `tsc --noEmit` 전체 타입 체크
-  - ✅ `.editorconfig` 추가 (에디터 간 일관된 들여쓰기/줄끝/인코딩)
-  - ✅ `package.json` scripts 추가: `lint:fix`, `format`, `format:check`, `typecheck`
-  - ✅ 기존 코드 전체 Prettier 일괄 포맷팅 적용
+- **Task 013: UI/UX 개선 및 데이터 정합성 버그 수정** ✅ - 완료
+  - See: `/tasks/013-ui-ux-improvements.md`
+  - ✅ excel-parser: 직접 주문수/매출액 컬럼명 fallback 추가 (ROAS/CVR 0% 버그 수정)
+  - ✅ sidebar: pathname 변경 시 캠페인 목록 자동 갱신
+  - ✅ 메인 대시보드: KPI 5개 확장 + 이번주/지난주 WoW 증감율 표시
+  - ✅ metrics API: totalRevenue 응답 추가
+  - ✅ 캠페인 상세: 총 매출액 KPI 카드 추가
+  - ✅ memo-dialog: 공통 메모 팝업 컴포넌트 신규 생성 (`src/components/dashboard/memo-dialog.tsx`)
+  - ✅ daily-memo: 테이블+팝업 방식으로 전면 개편
+  - ✅ records API: 옵션명 JSON 형식 파싱 정규식 수정
+  - ✅ 광고 데이터 탭: 컬럼 기본 전체 선택, 주문건수/매출금액 추가, 툴팁 적용
 
 - **Task 014: 비기능 요구사항 강화**
   - `Asia/Seoul` 시간대 일관성 점검(파싱, 저장, 조회, 렌더링)

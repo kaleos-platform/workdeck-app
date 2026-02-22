@@ -46,7 +46,7 @@ import type {
 } from '@/types'
 
 // 서버사이드 정렬 가능 컬럼
-type SortKey = keyof Pick<AdRecord, 'date' | 'adCost' | 'clicks' | 'impressions' | 'roas14d'>
+type SortKey = keyof Pick<AdRecord, 'date' | 'adCost' | 'clicks' | 'impressions' | 'roas1d'>
 
 // 키워드 탭 정렬 컬럼
 type KeywordSortKey = 'keyword' | 'adCost' | 'ctr' | 'cvr' | 'roas'

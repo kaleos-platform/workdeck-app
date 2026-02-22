@@ -26,9 +26,6 @@ export type AdRecord = {
   orders1d: number
   revenue1d: number
   roas1d: number
-  orders14d: number
-  revenue14d: number
-  roas14d: number
   parsedProductName: string | null
   parsedOptionName: string | null
 }

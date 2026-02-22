@@ -4,7 +4,7 @@ import { resolveWorkspace } from '@/lib/api-helpers'
 import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
 
 // 허용된 정렬 컬럼
-const ALLOWED_SORT_KEYS = ['date', 'adCost', 'clicks', 'impressions', 'roas14d'] as const
+const ALLOWED_SORT_KEYS = ['date', 'adCost', 'clicks', 'impressions', 'roas1d'] as const
 type SortKey = (typeof ALLOWED_SORT_KEYS)[number]
 
 // 상품명에서 옵션명 파싱 (JSON 형식 '{"구성":"5P"},{"사이즈":"M"}' 패턴 추출)
@@ -74,9 +74,6 @@ export async function GET(
         orders1d: true,
         revenue1d: true,
         roas1d: true,
-        orders14d: true,
-        revenue14d: true,
-        roas14d: true,
       },
     }),
   ])
@@ -96,8 +93,6 @@ export async function GET(
       adCost,
       revenue1d,
       roas1d: Number(r.roas1d),
-      revenue14d: Number(r.revenue14d),
-      roas14d: Number(r.roas14d),
       // F008: 계산 지표 통일
       ctr: calculateCTR(clicks, impressions),
       cvr: calculateCVR(orders1d, clicks),

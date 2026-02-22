@@ -79,13 +79,8 @@ model AdRecord {
 
   // 1일 전환 지표
   orders1d    Int
-  revenue1d   Decimal  @db.Decimal(18, 2) // 총 전환매출액 (1일)
-  roas1d      Decimal  @db.Decimal(10, 4) // 총 광고수익률 (1일)
-
-  // 14일 전환 지표
-  orders14d   Int
-  revenue14d  Decimal  @db.Decimal(18, 2) // 총 전환매출액 (14일)
-  roas14d     Decimal  @db.Decimal(10, 4) // 총 광고수익률 (14일)
+  revenue1d   Decimal  @db.Decimal(18, 2) // 직접 전환매출액 (1일)
+  roas1d      Decimal  @db.Decimal(10, 4) // 직접 광고수익률 (1일)
 
   // 소속 워크스페이스
   workspaceId String
