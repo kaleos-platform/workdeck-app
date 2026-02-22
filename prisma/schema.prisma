@@ -33,9 +33,10 @@ model Workspace {
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   // 연관 데이터
-  reportUploads ReportUpload[]
-  adRecords     AdRecord[]
-  dailyMemos    DailyMemo[]
+  reportUploads  ReportUpload[]
+  adRecords      AdRecord[]
+  dailyMemos     DailyMemo[]
+  campaignMetas  CampaignMeta[]
 
   createdAt DateTime @default(now())
 }
@@ -82,6 +83,20 @@ model AdRecord {
   revenue1d   Decimal  @db.Decimal(18, 2) // 직접 전환매출액 (1일)
   roas1d      Decimal  @db.Decimal(10, 4) // 직접 광고수익률 (1일)
 
+  // NCA 공통 필드
+  material       String?  // 소재 (NCA: 소재 컬럼)
+
+  // NCA 동영상 지표 (없으면 null)
+  videoViews3s   Int?     // 동영상 3초 조회
+  avgPlayTime    Decimal? @db.Decimal(10, 2)  // 평균 재생 시간
+  videoViews25p  Int?     // 25% 재생수
+  videoViews50p  Int?     // 50% 재생수
+  videoViews75p  Int?     // 75% 재생수
+  videoViews100p Int?     // 100% 재생수
+  costPerView3s  Decimal? @db.Decimal(18, 2)  // 동영상 3초 조회당 비용
+  engagements    Int?     // 참여수
+  engagementRate Decimal? @db.Decimal(10, 4)  // 참여율
+
   // 소속 워크스페이스
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -93,6 +108,21 @@ model AdRecord {
   @@unique([workspaceId, date, campaignId, adType, keyword, adGroup, optionId])
   @@index([workspaceId, campaignId])
   @@index([workspaceId, date])
+}
+
+// 캠페인 메타 (표시명 커스터마이징)
+model CampaignMeta {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  campaignId   String
+  displayName  String
+  isCustomName Boolean   @default(false)
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([workspaceId, campaignId])
+  @@index([workspaceId])
 }
 
 // 일자별 메모 (캠페인별 광고 작업 이력)

@@ -33,7 +33,11 @@ import {
   ArrowUp,
   ArrowDown,
   Columns3,
+  Pencil,
+  Check,
+  X,
 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { FilterBar } from '@/components/dashboard/filter-bar'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
@@ -117,7 +121,12 @@ export default function CampaignDetailPage({
 
   // 캠페인 메타 정보
   const [campaignName, setCampaignName] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [adTypes, setAdTypes] = useState<string[]>([])
+
+  // 캠페인명 인라인 편집
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editNameValue, setEditNameValue] = useState('')
 
   // 지표 시계열
   const [metricSeries, setMetricSeries] = useState<MetricSeries[]>([])
@@ -215,13 +224,24 @@ export default function CampaignDetailPage({
   useEffect(() => {
     fetch('/api/campaigns')
       .then((r) => (r.ok ? r.json() : []))
-      .then((list: Array<{ id: string; name: string; adTypes: string[] }>) => {
-        const found = list.find((c) => c.id === campaignId)
-        if (found) {
-          setCampaignName(found.name)
-          setAdTypes(found.adTypes)
+      .then(
+        (
+          list: Array<{
+            id: string
+            name: string
+            displayName: string
+            isCustomName: boolean
+            adTypes: string[]
+          }>
+        ) => {
+          const found = list.find((c) => c.id === campaignId)
+          if (found) {
+            setCampaignName(found.name)
+            setDisplayName(found.displayName)
+            setAdTypes(found.adTypes)
+          }
         }
-      })
+      )
       .catch(() => {})
   }, [campaignId])
 
@@ -288,6 +308,25 @@ export default function CampaignDetailPage({
     toast.success(`${selectedKeywords.length}개 키워드가 클립보드에 복사되었습니다`)
   }
 
+  // 캠페인 표시명 저장
+  async function handleSaveName() {
+    const trimmed = editNameValue.trim()
+    if (!trimmed) return
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: trimmed }),
+      })
+      if (!res.ok) throw new Error('저장에 실패했습니다')
+      setDisplayName(trimmed)
+      setIsEditingName(false)
+      toast.success('캠페인 이름이 변경되었습니다')
+    } catch {
+      toast.error('이름 저장 중 오류가 발생했습니다')
+    }
+  }
+
   // 컬럼 토글
   function toggleColumn(key: ToggleColumnKey) {
     setVisibleColumns((prev) => {
@@ -349,27 +388,75 @@ export default function CampaignDetailPage({
     },
   ]
 
+  // 빈 문자열 adType은 SelectItem value로 허용되지 않으므로 필터링
   const adTypeOptions = [
     { value: 'all', label: '전체' },
-    ...adTypes.map((t) => ({ value: t, label: t })),
+    ...adTypes.filter((t) => t.trim() !== '').map((t) => ({ value: t, label: t })),
   ]
 
   return (
     <div className="space-y-6">
       {/* 페이지 헤더 */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{campaignName || campaignId}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {adTypes.length > 0
-            ? `${adTypes.join(' · ')} 캠페인 데이터를 분석합니다`
-            : '캠페인 데이터를 분석합니다'}
-        </p>
+        {isEditingName ? (
+          <div className="flex items-center gap-2">
+            <Input
+              value={editNameValue}
+              onChange={(e) => setEditNameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveName()
+                if (e.key === 'Escape') setIsEditingName(false)
+              }}
+              className="h-9 max-w-sm text-xl font-bold"
+              autoFocus
+            />
+            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSaveName}>
+              <Check className="h-4 w-4 text-green-600" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={() => setIsEditingName(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight">
+              {displayName || campaignName || campaignId}
+            </h1>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 text-muted-foreground"
+              onClick={() => {
+                setEditNameValue(displayName || campaignName || campaignId)
+                setIsEditingName(true)
+              }}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
+        <div className="mt-1 flex items-center gap-2">
+          {adTypes.map((t) => (
+            <span
+              key={t}
+              className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
+            >
+              {t}
+            </span>
+          ))}
+          <p className="text-sm text-muted-foreground">캠페인 데이터를 분석합니다</p>
+        </div>
       </div>
 
       {/* 공통 필터 바 */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <FilterBar adTypeOptions={adTypeOptions} />
+          <FilterBar adTypeOptions={adTypeOptions} showAdTypeFilter={false} />
         </CardContent>
       </Card>
 
@@ -506,16 +593,15 @@ export default function CampaignDetailPage({
                           <SortIcon column="date" sortKey={sortKey} sortOrder={sortOrder} />
                         </span>
                       </TableHead>
-                      <TableHead className="w-28">광고유형</TableHead>
                       {/* 토글 컬럼 — 순서: 광고노출지면, 상품명, 옵션명 */}
                       {visibleColumns.has('placement') && (
-                        <TableHead className="w-24 min-w-[6rem]">광고 노출 지면</TableHead>
+                        <TableHead className="w-24 min-w-24">광고 노출 지면</TableHead>
                       )}
                       {visibleColumns.has('parsedProductName') && (
-                        <TableHead className="w-52 min-w-[13rem]">상품명</TableHead>
+                        <TableHead className="w-52 min-w-52">상품명</TableHead>
                       )}
                       {visibleColumns.has('parsedOptionName') && (
-                        <TableHead className="w-28 min-w-[7rem]">옵션명</TableHead>
+                        <TableHead className="w-28 min-w-28">옵션명</TableHead>
                       )}
                       <TableHead className="w-28">키워드</TableHead>
                       {/* 지표 컬럼 */}
@@ -579,10 +665,9 @@ export default function CampaignDetailPage({
                       records.map((record) => (
                         <TableRow key={record.id}>
                           <TableCell className="text-sm">{record.date}</TableCell>
-                          <TableCell className="text-sm">{record.adType}</TableCell>
                           {visibleColumns.has('placement') && (
                             <TableCell
-                              className="w-24 min-w-[6rem] truncate text-sm text-muted-foreground"
+                              className="w-24 min-w-24 truncate text-sm text-muted-foreground"
                               title={record.placement ?? ''}
                             >
                               {record.placement ?? '-'}
@@ -590,7 +675,7 @@ export default function CampaignDetailPage({
                           )}
                           {visibleColumns.has('parsedProductName') && (
                             <TableCell
-                              className="w-52 max-w-[13rem] min-w-[13rem] truncate text-sm"
+                              className="w-52 max-w-52 min-w-52 truncate text-sm"
                               title={record.parsedProductName ?? ''}
                             >
                               {record.parsedProductName ?? '-'}
@@ -598,14 +683,14 @@ export default function CampaignDetailPage({
                           )}
                           {visibleColumns.has('parsedOptionName') && (
                             <TableCell
-                              className="w-28 min-w-[7rem] truncate text-sm text-muted-foreground"
+                              className="w-28 min-w-28 truncate text-sm text-muted-foreground"
                               title={record.parsedOptionName ?? ''}
                             >
                               {record.parsedOptionName ?? '-'}
                             </TableCell>
                           )}
                           <TableCell
-                            className="max-w-[7rem] truncate text-sm text-muted-foreground"
+                            className="max-w-28 truncate text-sm text-muted-foreground"
                             title={record.keyword ?? ''}
                           >
                             {record.keyword ?? '-'}

@@ -20,6 +20,7 @@ interface AdTypeOption {
 
 interface FilterBarProps {
   adTypeOptions?: AdTypeOption[]
+  showAdTypeFilter?: boolean // 기본 true, false 시 광고유형 필터 숨김
 }
 
 const DEFAULT_AD_TYPE_OPTIONS: AdTypeOption[] = [
@@ -70,7 +71,10 @@ const QUICK_PERIODS = [
   },
 ]
 
-export function FilterBar({ adTypeOptions = DEFAULT_AD_TYPE_OPTIONS }: FilterBarProps) {
+export function FilterBar({
+  adTypeOptions = DEFAULT_AD_TYPE_OPTIONS,
+  showAdTypeFilter = true,
+}: FilterBarProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -133,7 +137,7 @@ export function FilterBar({ adTypeOptions = DEFAULT_AD_TYPE_OPTIONS }: FilterBar
     return from === f && to === t
   }
 
-  const hasFilter = from || to || (adType && adType !== 'all')
+  const hasFilter = from || to || (showAdTypeFilter && adType && adType !== 'all')
 
   return (
     <div className="space-y-3">
@@ -178,22 +182,26 @@ export function FilterBar({ adTypeOptions = DEFAULT_AD_TYPE_OPTIONS }: FilterBar
           />
         </div>
 
-        {/* 광고유형 필터 */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm whitespace-nowrap text-muted-foreground">광고유형</span>
-          <Select value={adType || 'all'} onValueChange={handleAdTypeChange}>
-            <SelectTrigger className="w-36 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {adTypeOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* 광고유형 필터 (showAdTypeFilter=false면 숨김) */}
+        {showAdTypeFilter && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm whitespace-nowrap text-muted-foreground">광고유형</span>
+            <Select value={adType || 'all'} onValueChange={handleAdTypeChange}>
+              <SelectTrigger className="w-36 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {adTypeOptions
+                  .filter((opt) => opt.value !== '')
+                  .map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* 초기화 버튼 */}
         {hasFilter && (

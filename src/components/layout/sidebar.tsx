@@ -22,18 +22,34 @@ const mainRoutes = [
   },
 ]
 
+type Campaign = {
+  id: string
+  name: string
+  displayName: string
+  isCustomName: boolean
+  adTypes: string[]
+}
+
 export function Sidebar() {
   const pathname = usePathname()
   const { signOut } = useAuth()
-  const [campaigns, setCampaigns] = useState<{ id: string; name: string }[]>([])
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
 
   // pathname 변경(업로드 완료 등) 시마다 캠페인 목록 재조회
   useEffect(() => {
     fetch('/api/campaigns')
       .then((r) => (r.ok ? r.json() : []))
-      .then((list: Array<{ id: string; name: string }>) => setCampaigns(list))
+      .then((list: Campaign[]) => setCampaigns(list))
       .catch(() => {})
   }, [pathname])
+
+  // adTypes[0]을 그룹 키로 사용하여 광고유형별 그룹핑
+  const grouped = campaigns.reduce<Record<string, Campaign[]>>((acc, c) => {
+    const key = c.adTypes[0] ?? '기타'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(c)
+    return acc
+  }, {})
 
   return (
     <div className="flex h-full w-64 flex-shrink-0 flex-col space-y-4 bg-slate-900 py-4 text-white">
@@ -78,24 +94,35 @@ export function Sidebar() {
           </span>
         </div>
 
-        {/* 캠페인 목록 */}
-        <div className="space-y-1">
+        {/* 캠페인 목록 (광고유형별 그룹핑) */}
+        <div className="space-y-3">
           {campaigns.length === 0 ? (
             <p className="px-3 py-2 text-xs text-zinc-600">업로드된 캠페인이 없습니다</p>
           ) : (
-            campaigns.map((campaign) => (
-              <Link
-                key={campaign.id}
-                href={`/dashboard/campaigns/${campaign.id}`}
-                className={cn(
-                  'group flex w-full cursor-pointer justify-start truncate rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                  pathname === `/dashboard/campaigns/${campaign.id}`
-                    ? 'bg-white/10 text-white'
-                    : 'text-zinc-400'
-                )}
-              >
-                {campaign.name}
-              </Link>
+            Object.entries(grouped).map(([adType, items]) => (
+              <div key={adType}>
+                {/* 광고유형 섹션 헤더 */}
+                <p className="px-3 pb-1 text-[10px] font-semibold tracking-wider text-zinc-600 uppercase">
+                  {adType}
+                </p>
+                {/* 해당 adType 캠페인 목록 */}
+                <div className="space-y-1">
+                  {items.map((campaign) => (
+                    <Link
+                      key={campaign.id}
+                      href={`/dashboard/campaigns/${campaign.id}`}
+                      className={cn(
+                        'group flex w-full cursor-pointer justify-start truncate rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                        pathname === `/dashboard/campaigns/${campaign.id}`
+                          ? 'bg-white/10 text-white'
+                          : 'text-zinc-400'
+                      )}
+                    >
+                      {campaign.displayName || campaign.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))
           )}
         </div>
