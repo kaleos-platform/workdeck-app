@@ -21,3 +21,9 @@ export function calculateROAS(revenue1d: number, adCost: number): number | null 
   if (adCost === 0) return null
   return round1((revenue1d / adCost) * 100)
 }
+
+/** 참여율 = 참여수 / 노출수 × 100, 노출수 0이면 null */
+export function calculateEngagementRate(engagements: number, impressions: number): number | null {
+  if (impressions === 0) return null
+  return round1((engagements / impressions) * 100)
+}

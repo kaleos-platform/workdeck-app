@@ -23,9 +23,12 @@ export type AdRecord = {
   ctr: number | null
   cvr: number | null
   roas: number | null
+  engagementRate: number | null
   orders1d: number
   revenue1d: number
   roas1d: number
+  material: string | null
+  engagements: number | null
   parsedProductName: string | null
   parsedOptionName: string | null
 }
@@ -61,9 +64,12 @@ export type MetricSeries = {
   date: string
   adCost: number
   totalRevenue: number
+  impressions: number
+  engagements: number
   ctr: number | null
   cvr: number | null
   roas: number | null
+  engagementRate: number | null
 }
 
 // 업로드 이력

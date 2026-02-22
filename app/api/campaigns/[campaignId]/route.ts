@@ -55,3 +55,50 @@ export async function PATCH(
     isCustomName: meta.isCustomName,
   })
 }
+
+// DELETE /api/campaigns/[campaignId] — 캠페인 삭제
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ campaignId: string }> }
+) {
+  const resolved = await resolveWorkspace()
+  if ('error' in resolved) return resolved.error
+  const { workspace } = resolved
+
+  const { campaignId } = await params
+
+  const exists = await prisma.adRecord.findFirst({
+    where: { workspaceId: workspace.id, campaignId },
+    select: { id: true },
+  })
+  if (!exists) {
+    return errorResponse('캠페인을 찾을 수 없습니다', 404)
+  }
+
+  try {
+    const deleted = await prisma.$transaction(async (tx) => {
+      const adRecordResult = await tx.adRecord.deleteMany({
+        where: { workspaceId: workspace.id, campaignId },
+      })
+      const dailyMemoResult = await tx.dailyMemo.deleteMany({
+        where: { workspaceId: workspace.id, campaignId },
+      })
+      const campaignMetaResult = await tx.campaignMeta.deleteMany({
+        where: { workspaceId: workspace.id, campaignId },
+      })
+
+      return {
+        adRecords: adRecordResult.count,
+        dailyMemos: dailyMemoResult.count,
+        campaignMetas: campaignMetaResult.count,
+      }
+    })
+
+    return NextResponse.json({
+      message: '캠페인이 삭제되었습니다. 삭제된 데이터는 복구할 수 없습니다.',
+      deleted,
+    })
+  } catch {
+    return errorResponse('캠페인 삭제 중 오류가 발생했습니다', 500)
+  }
+}

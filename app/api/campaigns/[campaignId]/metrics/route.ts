@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
-import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
+import {
+  calculateCTR,
+  calculateCVR,
+  calculateROAS,
+  calculateEngagementRate,
+} from '@/lib/metrics-calculator'
 
 // GET /api/campaigns/[campaignId]/metrics — 날짜별 지표 시계열
 export async function GET(
@@ -38,6 +43,7 @@ export async function GET(
       impressions: true,
       orders1d: true,
       revenue1d: true,
+      engagements: true,
     },
     orderBy: { date: 'asc' },
   })
@@ -52,6 +58,7 @@ export async function GET(
         impressions: unknown
         orders1d: unknown
         revenue1d: unknown
+        engagements: unknown
       }
     }) => {
       const adCost = Number(item._sum.adCost ?? 0)
@@ -59,14 +66,18 @@ export async function GET(
       const impressions = Number(item._sum.impressions ?? 0)
       const orders1d = Number(item._sum.orders1d ?? 0)
       const revenue1d = Number(item._sum.revenue1d ?? 0)
+      const engagements = Number(item._sum.engagements ?? 0)
 
       return {
         date: item.date.toISOString().split('T')[0],
         adCost,
         totalRevenue: revenue1d,
+        impressions,
+        engagements,
         ctr: calculateCTR(clicks, impressions),
         cvr: calculateCVR(orders1d, clicks),
         roas: calculateROAS(revenue1d, adCost),
+        engagementRate: calculateEngagementRate(engagements, impressions),
       }
     }
   )

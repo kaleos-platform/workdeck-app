@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
-import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
-
-// 허용된 정렬 컬럼
-const ALLOWED_SORT_KEYS = ['date', 'adCost', 'clicks', 'impressions', 'roas1d'] as const
-type SortKey = (typeof ALLOWED_SORT_KEYS)[number]
+import {
+  calculateCTR,
+  calculateCVR,
+  calculateROAS,
+  calculateEngagementRate,
+} from '@/lib/metrics-calculator'
 
 // 상품명에서 옵션명 파싱 (JSON 형식 '{"구성":"5P"},{"사이즈":"M"}' 패턴 추출)
 function parseOptionName(productName: string | null): string | null {
@@ -15,7 +16,7 @@ function parseOptionName(productName: string | null): string | null {
   return values.length > 0 ? values.join('/') : null
 }
 
-// GET /api/campaigns/[campaignId]/records — 광고 데이터 목록 (페이지네이션 + 정렬)
+// GET /api/campaigns/[campaignId]/records — 광고 데이터 목록 (페이지네이션)
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ campaignId: string }> }
@@ -30,13 +31,9 @@ export async function GET(
   const from = searchParams.get('from')
   const to = searchParams.get('to')
   const adType = searchParams.get('adType')
+  const placement = searchParams.get('placement')
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1') || 1)
   const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '25') || 25))
-  const rawSortBy = searchParams.get('sortBy') ?? 'date'
-  const sortKey: SortKey = ALLOWED_SORT_KEYS.includes(rawSortBy as SortKey)
-    ? (rawSortBy as SortKey)
-    : 'date'
-  const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
 
   // 날짜 필터 조건 구성
   const dateFilter: { gte?: Date; lte?: Date } = {}
@@ -48,13 +45,21 @@ export async function GET(
     campaignId,
     ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
     ...(adType && adType !== 'all' && { adType }),
+    ...(placement && placement !== 'all' && { placement }),
   }
 
-  const [total, items] = await prisma.$transaction([
+  const placementWhere = {
+    workspaceId: workspace.id,
+    campaignId,
+    ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
+    ...(adType && adType !== 'all' && { adType }),
+  }
+
+  const [total, items, placementRows] = await prisma.$transaction([
     prisma.adRecord.count({ where }),
     prisma.adRecord.findMany({
       where,
-      orderBy: { [sortKey]: sortOrder },
+      orderBy: { date: 'desc' },
       skip: (page - 1) * pageSize,
       take: pageSize,
       select: {
@@ -74,7 +79,15 @@ export async function GET(
         orders1d: true,
         revenue1d: true,
         roas1d: true,
+        material: true,
+        engagements: true,
       },
+    }),
+    prisma.adRecord.findMany({
+      where: placementWhere,
+      select: { placement: true },
+      distinct: ['placement'],
+      orderBy: { placement: 'asc' },
     }),
   ])
 
@@ -86,6 +99,7 @@ export async function GET(
     const orders1d = Number(r.orders1d)
     const revenue1d = Number(r.revenue1d)
     const productName = r.productName
+    const engagements = r.engagements ?? 0
 
     return {
       ...r,
@@ -97,11 +111,16 @@ export async function GET(
       ctr: calculateCTR(clicks, impressions),
       cvr: calculateCVR(orders1d, clicks),
       roas: calculateROAS(revenue1d, adCost),
+      engagementRate: calculateEngagementRate(engagements, impressions),
       // 서버사이드 상품명/옵션명 파싱
       parsedProductName: productName ? productName.split(',')[0].trim() : null,
       parsedOptionName: parseOptionName(productName),
     }
   })
 
-  return NextResponse.json({ items: normalized, page, pageSize, total })
+  const placements = placementRows
+    .map((row) => row.placement)
+    .filter((value): value is string => Boolean(value))
+
+  return NextResponse.json({ items: normalized, page, pageSize, total, placements })
 }
