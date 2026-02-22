@@ -9,7 +9,6 @@ import {
   ShoppingCart,
   MousePointerClick,
   Target,
-  FileSpreadsheet,
   ArrowUp,
   ArrowDown,
   Minus,
@@ -109,20 +108,6 @@ export default async function DashboardPage() {
     _sum: { adCost: true, revenue1d: true, orders1d: true, clicks: true, impressions: true },
   })
 
-  // 업로드 이력 (최근 10건)
-  const uploadRows = await prisma.reportUpload.findMany({
-    where: { workspaceId: workspace.id },
-    orderBy: { uploadedAt: 'desc' },
-    take: 10,
-    select: {
-      id: true,
-      fileName: true,
-      uploadedAt: true,
-      periodStart: true,
-      periodEnd: true,
-    },
-  })
-
   const hasData = campaigns.length > 0
 
   // 이번주 수치
@@ -155,11 +140,6 @@ export default async function DashboardPage() {
   const wowRevenue: WowBadge = { diff: calcWow(twRevenue, lwRevenue) }
   const wowCtr: WowBadge = { diff: twCtr !== null && lwCtr !== null ? calcWow(twCtr, lwCtr) : null }
   const wowCvr: WowBadge = { diff: twCvr !== null && lwCvr !== null ? calcWow(twCvr, lwCvr) : null }
-
-  // 날짜 포맷 헬퍼
-  function fmt(d: Date): string {
-    return d.toISOString().split('T')[0]
-  }
 
   const kpiCards = [
     {
@@ -309,50 +289,6 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* 업로드 이력 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">업로드 이력</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {uploadRows.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              업로드된 리포트가 없습니다
-            </p>
-          ) : (
-            <div className="space-y-1">
-              {uploadRows.map(
-                (upload: {
-                  id: string
-                  fileName: string
-                  uploadedAt: Date
-                  periodStart: Date
-                  periodEnd: Date
-                }) => (
-                  <div
-                    key={upload.id}
-                    className="flex items-center justify-between border-b py-2.5 last:border-0"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <FileSpreadsheet className="h-4 w-4 flex-shrink-0 text-green-600" />
-                      <div>
-                        <p className="text-sm font-medium">{upload.fileName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {fmt(upload.periodStart)} ~ {fmt(upload.periodEnd)}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="ml-4 text-xs whitespace-nowrap text-muted-foreground">
-                      {fmt(upload.uploadedAt)}
-                    </p>
-                  </div>
-                )
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }
