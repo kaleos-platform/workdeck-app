@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { UploadCloud, FileSpreadsheet, X, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { UploadResponse, UploadColumnError } from '@/types/api'
 
 type UploadStatus = 'idle' | 'saving' | 'success' | 'error'
 
@@ -97,26 +98,31 @@ export function ReportUploadForm() {
     const data = await res.json()
 
     if (!res.ok) {
-      if (data.missingColumns) {
-        setColumnError({ missingColumns: data.missingColumns, foundColumns: data.foundColumns })
+      const errData = data as UploadColumnError | { message: string }
+      if ('missingColumns' in errData) {
+        setColumnError({
+          missingColumns: errData.missingColumns,
+          foundColumns: errData.foundColumns,
+        })
         setStatus('error')
         return
       }
-      throw new Error(data.message || '업로드에 실패했습니다')
+      throw new Error(errData.message || '업로드에 실패했습니다')
     }
 
-    if (data.requiresConfirmation) {
+    const okData = data as UploadResponse
+    if ('requiresConfirmation' in okData) {
       setDuplicateInfo({
-        duplicateCount: data.duplicateCount,
-        newCount: data.newCount,
-        totalCount: data.totalCount,
+        duplicateCount: okData.duplicateCount,
+        newCount: okData.newCount,
+        totalCount: okData.totalCount,
       })
       setStatus('idle')
       return
     }
 
     setStatus('success')
-    toast.success(`${data.inserted}개 행 저장 완료`)
+    toast.success(`${okData.inserted}개 행 저장 완료`)
     router.push('/dashboard')
     router.refresh()
   }

@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 
-// 에러 응답 생성 헬퍼
-export function errorResponse(message: string, status: number) {
-  return NextResponse.json({ message }, { status })
+// 에러 응답 생성 헬퍼 — extra 필드를 병합해 추가 정보를 포함할 수 있음
+export function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
+  return NextResponse.json({ message, ...extra }, { status })
 }
 
 // 인증 + 워크스페이스 소유권 검증

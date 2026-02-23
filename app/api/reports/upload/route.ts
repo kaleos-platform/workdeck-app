@@ -60,14 +60,10 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     // 컬럼 검증 오류는 별도 응답
     if (err instanceof ColumnValidationError) {
-      return NextResponse.json(
-        {
-          message: '필수 컬럼이 누락되었습니다',
-          missingColumns: err.detail.missingColumns,
-          foundColumns: err.detail.foundColumns,
-        },
-        { status: 400 }
-      )
+      return errorResponse('필수 컬럼이 누락되었습니다', 400, {
+        missingColumns: err.detail.missingColumns,
+        foundColumns: err.detail.foundColumns,
+      })
     }
     return errorResponse(
       '파일 파싱에 실패했습니다. 올바른 쿠팡 광고 리포트 파일인지 확인해주세요',

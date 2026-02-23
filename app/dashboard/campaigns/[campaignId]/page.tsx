@@ -666,7 +666,7 @@ export default function CampaignDetailPage({
       {/* 공통 필터 바 */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <FilterBar adTypeOptions={adTypeOptions} showAdTypeFilter={false} />
+          <FilterBar adTypeOptions={adTypeOptions} showAdTypeFilter={adTypes.length > 1} />
         </CardContent>
       </Card>
 
