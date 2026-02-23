@@ -1,38 +1,39 @@
-# 쿠팡 광고 리포트 매니저 개발 로드맵 v1 (Codex)
+# 쿠팡 광고 리포트 매니저 개발 로드맵 v3
 
-쿠팡 광고 리포트 분석 MVP를 구조 우선으로 완성해 업로드부터 인사이트 도출까지 단일 플로우를 안정화한다.
+기준일: 2026-02-23
+
+현재 코드베이스를 기준으로 실제 완료 상태와 잔여 작업을 재정리한 로드맵이다.
+Phase 3 잔여 처리 방향을 명확화하고, Phase 4로 분석 고도화·배포·운영 안정화 계획을 통합하였다.
 
 ## 개요
 
-쿠팡 광고 리포트 매니저는 쿠팡 광고를 직접 운영하는 1인 셀러/소규모 쇼핑몰 운영자를 위한 데이터 분석 도구로, 다음 핵심 기능을 제공한다.
+쿠팡 광고 리포트 매니저는 1인 셀러/소규모 운영자를 위해 다음 가치를 제공한다.
 
-- **리포트 업로드 및 정규화**: `.xlsx` 파일을 검증/파싱/정규화하여 저장하고 중복 없이 누적한다.
-- **캠페인 성과 분석**: 시계열 지표, 원시 데이터 테이블, 비효율 키워드 분석을 공통 필터로 조회한다.
-- **운영 이력 관리**: 캠페인별 일자 메모를 저장해 광고 작업 맥락을 추적한다.
+- **리포트 수집 자동화의 시작점**: `.xlsx/.csv` 업로드와 정규화 저장
+- **성과 해석**: 캠페인 단위 시계열/원시데이터/비효율 키워드 분석
+- **운영 기록**: 날짜별 메모 및 캠페인 메타 관리
+- **진단 인사이트**: 낭비 예산 식별 및 성과 개선 액션 추천 (Phase 4)
 
 ## 개발 워크플로우
 
 1. **작업 계획**
 
-- 현재 코드베이스(라우트/UI 골격/Prisma 스키마/미들웨어) 상태를 기준선으로 유지한다.
-- 본 로드맵을 단일 우선순위 기준으로 사용하고, 변경 시 Task 순서와 의존성을 함께 갱신한다.
-- 신규 Task는 마지막 번호 다음으로 추가한다.
+- PRD의 기능 ID(F001~F013)와 실제 코드 상태를 대조한다.
+- 신규 작업은 본 문서의 마지막 Task 번호 다음으로 추가한다.
 
 2. **작업 생성**
 
-- `/tasks` 디렉토리를 생성하고 `XXX-description.md` 형식으로 작업 문서를 작성한다.
-- 각 작업 문서에는 목표, 관련 파일, 구현 단계, 수락 기준을 포함한다.
-- API/비즈니스 로직 작업 문서에는 `## 테스트 체크리스트`와 Playwright MCP 시나리오를 필수로 작성한다.
+- `/tasks` 디렉토리를 생성하고 `XXX-설명.md` 문서를 작성한다.
+- 각 문서에 목표, 구현 단계, 관련 파일, 검증 기준을 포함한다.
 
 3. **작업 구현**
 
-- Task 순서대로 구현하되, 병렬 가능한 UI/API 작업은 분리 진행한다.
-- API 연동 및 비즈니스 로직 구현 시 Playwright MCP 기반 통합/E2E 검증을 반드시 수행한다.
-- 단계 완료 시 작업 문서 체크리스트를 갱신하고 결과를 기록한다.
+- 구조/데이터/API/UI/검증 순서로 진행한다.
+- API 및 비즈니스 로직 작업은 최소 단위 검증(단위/통합)과 사용자 플로우 점검을 함께 수행한다.
 
 4. **로드맵 업데이트**
 
-- 완료된 Task는 `✅ - 완료`로 표시하고, 작업 문서 경로를 연결한다.
+- 완료된 Task는 `✅ - 완료`로 표시한다.
 - 완료된 Phase는 제목에 `✅`를 추가한다.
 
 ## 개발 단계
@@ -40,157 +41,112 @@
 ### Phase 1: 애플리케이션 골격 구축 ✅
 
 - **Task 001: 라우트/레이아웃 골격 구성** ✅ - 완료
-  - See: `app/layout.tsx`, `app/dashboard/layout.tsx`, `app/(auth)/layout.tsx`
-  - ✅ App Router 기반 라우트 그룹/레이아웃 구성
-  - ✅ 인증/대시보드/마케팅 영역 진입점 페이지 생성
-  - ✅ 공통 헤더/사이드바 골격 반영
+  - App Router 그룹(`(marketing)`, `(auth)`, `dashboard`) 구성
+  - 공통 헤더/사이드바/레이아웃 연결
 
-- **Task 002: 인증 기반 접근 제어 골격 구축** ✅ - 완료
-  - See: `proxy.ts`, `src/lib/supabase/middleware.ts`, `app/dashboard/layout.tsx`
-  - ✅ 보호 라우트/비로그인 전용 라우트 리다이렉트 구성
-  - ✅ Supabase SSR 세션 갱신 미들웨어 연동 (`proxy.ts`가 Next.js 16 미들웨어 대체)
-  - ✅ 로그인/회원가입 기본 폼 연결
-  - ✅ 워크스페이스 미생성 사용자 → /workspace-setup 리다이렉트 구현
+- **Task 002: 인증/접근 제어 기반 구축** ✅ - 완료
+  - Supabase SSR 세션 갱신(`proxy.ts`)
+  - 보호 라우트/비로그인 전용 라우트 리다이렉트
+  - 워크스페이스 미보유 시 `/workspace-setup` 이동
 
-- **Task 003: 데이터 모델 초안 및 타입 기반 정렬** ✅ - 완료
-  - See: `prisma/schema.prisma`, `src/lib/prisma.ts`
-  - ✅ `Workspace`, `ReportUpload`, `AdRecord`, `DailyMemo` 스키마 정의
-  - ✅ 1인 1워크스페이스 제약(`ownerId @unique`) 반영
-  - ✅ 메모 유니크 키(`workspaceId`, `campaignId`, `date`) 반영
-  - ✅ AdRecord 누락 필드 추가: adGroup, placement, productName, optionId
-  - ✅ 업서트 복합 유니크 인덱스 추가
-  - ✅ User.id를 Supabase Auth UUID와 정합성 맞춤
-  - ✅ Prisma 클라이언트 싱글톤 생성
+- **Task 003: Prisma 스키마/타입 기반 구축** ✅ - 완료
+  - `Workspace`, `ReportUpload`, `AdRecord`, `DailyMemo`, `CampaignMeta` 모델 구성
+  - 핵심 유니크/인덱스 반영
 
-### Phase 2: UI/UX 완성 (더미 데이터 활용) ✅
+### Phase 2: UI/UX 완성 ✅
 
-- **Task 004: shadcn/ui 컴포넌트 및 더미 데이터/타입 기반 구축** ✅ - 완료
-  - See: `src/components/ui/`, `src/types/index.ts`, `src/lib/dummy-data.ts`
-  - ✅ shadcn/ui 컴포넌트 15종 설치 (button, card, input, select, table, tabs, form, avatar, dropdown-menu, separator, label, checkbox, textarea, badge, progress)
-  - ✅ TypeScript 타입 정의 7종 생성 (`src/types/index.ts`)
-  - ✅ 더미 데이터 모듈 생성 (DUMMY_CAMPAIGNS, DUMMY_METRIC_SERIES, DUMMY_AD_RECORDS, DUMMY_KEYWORDS, DUMMY_MEMOS, DUMMY_KPI, DUMMY_UPLOAD_HISTORY)
+- **Task 004: 공통 UI 컴포넌트 구성** ✅ - 완료
+  - shadcn/ui 컴포넌트 셋 구성
+  - 인증/대시보드 공통 화면 스타일 통일
 
-- **Task 005: URL 기반 공통 필터 및 캠페인 상세 UI 완성** ✅ - 완료
-  - See: `src/components/dashboard/filter-bar.tsx`, `app/dashboard/campaigns/[campaignId]/page.tsx`
-  - ✅ FilterBar 컴포넌트 구현 (useSearchParams/useRouter 활용, from/to/adType URL 파라미터 동기화)
-  - ✅ 캠페인 상세 페이지 리팩토링 (CampaignChart, FilterBar, DailyMemo 연결)
-  - ✅ 광고 데이터 탭 정렬/페이지네이션 구현
-  - ✅ 키워드 분석 탭 체크박스 선택/복사 기능 구현
+- **Task 005: 대시보드/업로드 화면 구현** ✅ - 완료
+  - 대시보드 KPI 및 캠페인 목록
+  - 업로드 폼/이력 카드 UI
 
-- **Task 006: 대시보드 UI 및 메모 컴포넌트 완성** ✅ - 완료
-  - See: `src/components/dashboard/daily-memo.tsx`, `app/dashboard/page.tsx`
-  - ✅ DailyMemo 컴포넌트 생성 (날짜 선택, 메모 생성/수정/삭제 UI)
-  - ✅ 대시보드 페이지 업데이트 (KPI 카드, 캠페인 목록, 업로드 이력 표시)
-  - ✅ 더미 데이터 기반 전체 UI 플로우 동작 확인
+- **Task 006: 캠페인 상세 화면 3개 탭 구현** ✅ - 완료
+  - 대시보드 탭(차트/메모)
+  - 키워드 분석 탭(정렬/복사)
+  - 광고 데이터 탭(페이지네이션/컬럼토글/지면필터)
 
-### Phase 3: 핵심 기능 구현
+### Phase 3: 핵심 기능 구현 ✅
 
-- **Task 007: 업로드 API 및 Excel 파싱 파이프라인 구현** ✅ - 완료
-  - See: `app/api/reports/upload/route.ts`, `src/lib/excel-parser.ts`
-  - ✅ `POST /api/reports/upload` 구현 (확장자 검증, xlsx 파싱, 저장, 결과 반환)
-  - ✅ SheetJS 기반 컬럼 매핑/정규화 (`YYYYMMDD`, `%`, 과학표기, 결측값)
-  - ✅ 업서트 키 (`workspaceId+date+campaignId+adType+keyword+adGroup+optionId`) 기반 idempotent 저장
-  - ✅ 500행 청크 단위 `$transaction` upsert 처리
-  - ✅ `ReportUpload` 감사 로그 생성, `{ uploadId, inserted, updated, skipped, errors }` 응답 계약
+- **Task 007: 업로드 API 및 파서 구현** ✅ - 완료
+  - `.xlsx/.csv` 파싱, 컬럼 검증, 저장
+  - 중복 확인 후 `덮어쓰기/중복 제외 저장` 플로우
 
-- **Task 008: 워크스페이스 생성 및 소유권 API 구현** ✅ - 완료
-  - See: `app/api/workspace/route.ts`, `src/lib/api-helpers.ts`
-  - ✅ `POST /api/workspace` 구현 및 1인 1워크스페이스 충돌(`409`) 처리
-  - ✅ Supabase Auth UUID ↔ Prisma User 자동 동기화 (upsert)
-  - ✅ `resolveWorkspace()` 헬퍼로 소유권 검증 레이어 공통화 (`src/lib/api-helpers.ts`)
-  - ✅ 권한 오류 표준 에러 (`401/404`) 응답 통일
+- **Task 008: 캠페인/지표/기록 API 구현** ✅ - 완료
+  - campaigns/metrics/records/inefficient-keywords/memos API 구축
+  - CTR/CVR/ROAS/참여율 계산 엔진 적용
 
-- **Task 009: 캠페인/지표 조회 API 구현** ✅ - 완료
-  - See: `app/api/campaigns/route.ts`, `app/api/campaigns/[campaignId]/metrics/route.ts`
-  - ✅ `GET /api/campaigns` 구현 (campaignId 기준 distinct 조회, adType 배열 그룹화)
-  - ✅ `GET /api/campaigns/:campaignId/metrics` 구현 (from/to/adType 필터, 날짜별 groupBy 시계열)
-  - ✅ Decimal → Number 변환, YYYY-MM-DD 날짜 포맷 표준화
+- **Task 009: 캠페인 메타 관리 기능 구현** ✅ - 완료
+  - 캠페인 표시명 수정(PATCH)
+  - 캠페인 삭제(DELETE)
 
-- **Task 010: 광고 데이터/키워드 분석 API 구현** ✅ - 완료
-  - See: `app/api/campaigns/[campaignId]/records/route.ts`, `app/api/campaigns/[campaignId]/inefficient-keywords/route.ts`
-  - ✅ `GET /api/campaigns/:campaignId/records` 페이지네이션 (page/pageSize/sortBy/sortOrder)
-  - ✅ `GET /api/campaigns/:campaignId/inefficient-keywords` (orders1d=0 AND adCost>0 조건)
-  - ✅ from/to/adType 공통 필터 파라미터 일관 적용
+- **Task 010: 공통 필터 정합성 보완** ✅ - 완료
+  - 광고유형 필터(`F007`) 정책 확정: `showAdTypeFilter={adTypes.length > 1}` 조건부 노출
+  - `page.tsx`에서 캠페인의 `adTypes` 배열을 `FilterBar`에 전달하는 방식으로 구현
+  - 탭 간 필터 유지 정책을 사용자 관점에서 재검증
 
-- **Task 011: 일자별 메모 API 구현** ✅ - 완료
-  - See: `app/api/campaigns/[campaignId]/memos/route.ts`
-  - ✅ `GET /api/campaigns/:campaignId/memos` 구현 (날짜 기준 내림차순 목록)
-  - ✅ `POST /api/campaigns/:campaignId/memos` upsert 구현 (workspaceId+campaignId+date 복합 unique)
-  - ✅ `DELETE /api/campaigns/:campaignId/memos` 구현 (date 파라미터 기반 삭제)
-  - ✅ Asia/Seoul 자정 기준 UTC 변환 저장
+- **Task 011: API 계약/문서 정합성 보강** ✅ - 완료
+  - `errorResponse()` 헬퍼에 `extra` 파라미터 추가, 업로드 컬럼 검증 에러 헬퍼로 통일
+  - `src/types/api.ts` 신규 생성: `UploadColumnError`, `UploadDuplicateConfirmation`, `UploadSuccess`, `UploadResponse` 타입 정의
+  - `report-upload-form.tsx` 응답 필드 접근 타입 안전화
 
-- **Task 012: API 통합 테스트 및 계약 안정화** ✅ - 완료
-  - See: `/tasks/012-api-integration-test.md`
-  - ✅ 단위: 정규화 함수(날짜/퍼센트/결측/과학표기) 테스트
-  - ✅ 통합: 업로드 idempotency, 필터 조합 조회 정확성 검증
-  - ✅ 에러 응답 포맷 공통화(`code`, `message`, `details`) 적용
-  - ✅ 성능 기준(50k행 60초 목표) 측정 스크립트와 결과 기록
-  - ✅ Playwright MCP로 핵심 사용자 여정 전체 회귀 테스트 수행
+### Phase 4: 분석 고도화 & 배포 안정화
 
-- **Task 012-1: 계산 지표 엔진 및 데이터 추출 개선 (F008)** ✅ - 완료
-  - See: `src/lib/metrics-calculator.ts`, `app/api/campaigns/[campaignId]/metrics/route.ts`
-  - ✅ `calculateCTR(clicks, impressions)`: 소수점 1자리 반올림, 분모 0 → null
-  - ✅ `calculateCVR(orders1d, clicks)`: 소수점 1자리 반올림, 분모 0 → null
-  - ✅ `calculateROAS(revenue1d, adCost)`: 소수점 1자리 반올림, 분모 0 → null
-  - ✅ metrics API 응답에 `ctr`, `cvr`, `roas` 필드 추가 (`orders1d`, `revenue1d` 기준)
-  - ✅ inefficient-keywords API 응답을 `{ keyword, adCost, ctr, cvr, roas }`로 변경
-  - ✅ 분모 0 케이스에서 `null` 반환 검증 필수
+> **배포 준비 순서**: Task 010 → 011 → 016 → 017
+> **가치 제공**: Task 015 (분석 고도화)
+> **안정화**: Task 018 → 019
 
-- **Task 012-2: 대시보드 탭 차트/메모 고도화 (F002, F005, F006)** ✅ - 완료
-  - See: `src/components/dashboard/campaign-chart.tsx`, `src/components/dashboard/filter-bar.tsx`, `src/components/dashboard/daily-memo.tsx`
-  - ✅ FilterBar에 퀵 기간 버튼 (오늘/7일/14일/30일/90일/180일/이번달/지난달) 추가
-  - ✅ 기본 기간: 오늘 기준 14일 전 ~ 오늘 (초기 URL 파라미터로 설정)
-  - ✅ CampaignChart를 4개 라인 그래프로 전환 (총광고비, 평균ROAS, CTR, CVR)
-  - ✅ 차트 영역 클릭 이벤트 → 해당 날짜 메모 입력창 표시
-  - ✅ 저장된 메모 날짜에 차트 아이콘(마커) 표시, 클릭 시 내용 툴팁
-  - ✅ DailyMemo 컴포넌트: 선택 기간 내 메모만 표시, 우측 상단 "메모 추가" 버튼
+- **Task 015: 진단 엔진 고도화** - 최우선 가치
+  - `src/lib/diagnosis-engine.ts` 신설
+  - `/api/campaigns/[id]/diagnosis` 엔드포인트 구현
+  - "오늘의 낭비 예산" UI 및 "성과 개선 액션 5선" 카드 표시
+  - **진단 액션 판단 기준**:
+    1. `STOP_KEYWORD`: `adCost > 기준치 AND orders1d = 0`인 키워드 존재 시
+    2. `LOW_CTR`: 캠페인 평균 CTR의 50% 미만 구간이 3일 이상 연속 시
+    3. `HIGH_ROAS`: ROAS > 300% 초과 캠페인 → 예산 증액 제안
+    4. `CHECK_ROAS`: 최근 7일 ROAS가 이전 7일 대비 30% 이상 하락 시
+    5. `ZERO_IMPRESSION`: 최근 3일 `impressions = 0` → 광고 상태 점검 제안
+  - 기존 `inefficient-keywords` 로직(`app/api/campaigns/[campaignId]/inefficient-keywords/route.ts`) 재활용
 
-- **Task 012-3: 광고 데이터 탭 컬럼 확장 (F004, F008)** ✅ - 완료
-  - See: `app/api/campaigns/[campaignId]/records/route.ts`, `src/components/dashboard/ad-records-table.tsx`
-  - ✅ API 응답에 `placement`, `parsedProductName`, `parsedOptionName`, `ctr`, `cvr`, `roas` 추가
-  - ✅ `parsedProductName`: `productName`에서 첫 번째 쉼표 앞 텍스트 추출
-  - ✅ `parsedOptionName`: `productName`에서 "구성", "사이즈" 값을 "/" 구분, 중복 제거
-  - ✅ UI 테이블에 신규 컬럼 추가 및 컬럼 표시/숨기기 토글 반영
-  - ✅ CTR/CVR/ROAS가 행 단위로 계산되어 표시
+- **Task 016: 보안 검토 및 문서화** ✅ - 완료
+  - API 라우트 8개 보안 패턴 검증 (resolveWorkspace() 적용 현황 확인)
+  - `resolveWorkspace()` 보안 레이어 명문화 + 테넌트 격리 메커니즘 문서화
+  - `docs/guides/security.md` 작성 (인증/인가/테넌트격리/RLS/환경변수/민감정보 체크리스트)
 
-- **Task 012-4: 키워드 분석 탭 계산 지표 및 정렬 강화 (F003, F008)** ✅ - 완료
-  - See: `app/api/campaigns/[campaignId]/inefficient-keywords/route.ts`, `src/components/dashboard/keyword-analysis-table.tsx`
-  - ✅ 테이블 컬럼: 키워드, 광고비, CTR, CVR, ROAS
-  - ✅ 각 컬럼 헤더에 오름/내림 정렬 토글 버튼 구현
-  - ✅ 정렬 상태는 URL 파라미터 (`sortBy`, `sortOrder`) 또는 로컬 상태로 관리
-  - ✅ 다중 선택 + 복사 기능은 기존 유지
-  - ✅ 정렬 상태 변경 후 선택된 체크박스 초기화
+- **Task 017: Vercel 배포 설정** ✅ - 완료
+  - `vercel.json` 완성 (buildCommand: `npx prisma generate && next build`, `icn1` 서울 리전)
+  - `docs/guides/deployment.md` 작성 (Supabase 프로덕션 분리, 환경변수 등록, 배포 절차, 도메인 연결, 스모크 테스트, 롤백 가이드)
 
-### Phase 4: 품질 강화 및 운영 안정화
+- **Task 018: 테스트 체계 구축** - 안정화
+  - Jest + ts-jest 단위 테스트: `metrics-calculator`, `excel-parser` 핵심 함수
+  - Playwright E2E: 업로드 → 분석 플로우 1개 시나리오
+  - ```bash
+    # 단위 테스트
+    npm install -D jest @types/jest ts-jest jest-environment-node
+    # E2E 테스트
+    npm install -D @playwright/test
+    npx playwright install
+    ```
 
-- **Task 013: UI/UX 개선 및 데이터 정합성 버그 수정** ✅ - 완료
-  - See: `/tasks/013-ui-ux-improvements.md`
-  - ✅ excel-parser: 직접 주문수/매출액 컬럼명 fallback 추가 (ROAS/CVR 0% 버그 수정)
-  - ✅ sidebar: pathname 변경 시 캠페인 목록 자동 갱신
-  - ✅ 메인 대시보드: KPI 5개 확장 + 이번주/지난주 WoW 증감율 표시
-  - ✅ metrics API: totalRevenue 응답 추가
-  - ✅ 캠페인 상세: 총 매출액 KPI 카드 추가
-  - ✅ memo-dialog: 공통 메모 팝업 컴포넌트 신규 생성 (`src/components/dashboard/memo-dialog.tsx`)
-  - ✅ daily-memo: 테이블+팝업 방식으로 전면 개편
-  - ✅ records API: 옵션명 JSON 형식 파싱 정규식 수정
-  - ✅ 광고 데이터 탭: 컬럼 기본 전체 선택, 주문건수/매출금액 추가, 툴팁 적용
+- **Task 019: 문서 & 운영 체계** - 안정화
+  - `/tasks` 디렉토리 복구 + `000-sample.md` 템플릿 작성
+  - 스모크 테스트 절차 문서화: 회원가입 → 워크스페이스 설정 → 리포트 업로드 → 캠페인 분석
+  - 장애 대응 가이드: 업로드 실패 / 인증 오류 / 데이터 누락 3개 시나리오
 
-- **Task 014: 비기능 요구사항 강화**
-  - `Asia/Seoul` 시간대 일관성 점검(파싱, 저장, 조회, 렌더링)
-  - 대용량 업로드 시 타임아웃/에러 복구 전략 보강
-  - 네트워크 실패 시 재시도 UX/메시지 표준화
-  - 감사 로그 조회(업로드 이력) 신뢰성 검증
+## 현재 상태 스냅샷
 
-- **Task 015: 배포/운영 체크리스트 정리**
-  - 환경 변수/배포 설정 검증(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `DATABASE_URL`)
-  - 운영 전 최종 E2E 스모크 테스트 시나리오 문서화
-  - 장애 대응 가이드(업로드 실패/권한 오류/데이터 누락) 작성
-  - MVP 릴리스 기준선과 제외 범위 재확인
+- **MVP 기능 구현률**: 높음 (Phase 1~3 전체 완료)
+- **릴리스 준비도**: 완료 (즉시 배포 가능 — `vercel --prod` 실행만 남음)
+- **주요 리스크**:
+  - 자동화 테스트 부재 (Task 018에서 해소)
+  - 작업 문서(`/tasks`) 운영 공백 (Task 019에서 해소)
 
-## 수락 기준 (로드맵 완료 기준)
+## 다음 실행 순서 (권장)
 
-- PRD의 MVP 기능(F001~F008, F010, F011)이 모두 API/화면/데이터 모델 레벨에서 연결된다.
-- 업로드 재실행 시 데이터 중복이 증가하지 않고, 업서트 정책이 유지된다.
-- 공통 필터(`from`, `to`, `adType`)가 3개 탭에서 동일하게 동작한다.
-- CTR/CVR/ROAS 계산 지표가 기간 합산 기반으로 올바르게 산출된다.
-- Playwright MCP 기반 핵심 E2E 플로우가 모두 통과한다.
+```
+배포 실행:  vercel --prod (docs/guides/deployment.md 참조)
+가치 제공:  Task 015 (분석 고도화)
+안정화:     Task 018 → 019
+```
