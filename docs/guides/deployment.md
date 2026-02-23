@@ -21,24 +21,46 @@
 
 ---
 
-## 1. 사전 준비: Supabase 프로덕션 프로젝트 생성
+## Supabase 프로젝트 전략
 
-개발용 Supabase 프로젝트와 **분리된 프로덕션 프로젝트**를 생성한다.
+### 현재 전략 (A안): 기존 프로젝트 승격
 
-1. [Supabase 대시보드](https://supabase.com/dashboard) → New Project
-2. 프로젝트명: `coupang-ad-manager-prod` (또는 원하는 이름)
-3. 리전: **Northeast Asia (Seoul)** 선택
-4. 생성 완료 후 다음 정보를 복사:
-   - Project URL: `https://[project-id].supabase.co`
-   - anon public key: Settings → API → Project API keys → `anon public`
-   - Database connection string: Settings → Database → Connection string → URI 모드
+개발에 사용 중인 Supabase 프로젝트를 그대로 프로덕션으로 사용한다.
+별도 프로젝트 생성 없이 `.env.local`의 값을 Vercel 환경변수에 그대로 등록하면 된다.
 
-5. 프로덕션 DB에 마이그레이션 적용:
+**이 방식이 적합한 이유:**
+
+- `coupang-ad-manager`는 Workdeck 플랫폼의 첫 번째 카드 — 향후 기능 확장도 동일 프로젝트에서 진행
+- 초기 단계에서 Supabase 무료 플랜 하나로 충분
+- 인증(Auth) / 워크스페이스 / DB 테이블이 모두 같은 프로젝트에서 누적 관리됨
+
+### 향후 전환 (B안): 개발/프로덕션 분리
+
+유료 구독 연동(Stripe), 멀티테넌시 확장, 또는 팀 협업이 필요한 시점에 분리를 고려한다.
+
+**전환 절차 (필요 시):**
+
+1. Supabase 대시보드에서 신규 프로덕션 프로젝트 생성
+2. 신규 프로젝트 DB에 마이그레이션 적용:
    ```bash
-   # .env.local의 DATABASE_URL을 프로덕션 DB URL로 임시 변경 후
-   npx prisma migrate deploy
-   # 완료 후 로컬 URL로 복원
+   DATABASE_URL=<신규_프로덕션_DB_URL> npx prisma migrate deploy
    ```
+3. Vercel 환경변수를 신규 프로젝트 값으로 교체 후 재배포
+4. 기존 프로젝트는 로컬 개발 전용으로 유지
+
+---
+
+## 1. 사전 준비: Supabase 연결 정보 확인
+
+현재 개발에 사용 중인 Supabase 프로젝트의 정보를 확인한다.
+
+1. [Supabase 대시보드](https://supabase.com/dashboard) → 프로젝트 선택
+2. 다음 값을 복사:
+   - **Project URL**: Settings → API → Project URL
+   - **anon public key**: Settings → API → Project API keys → `anon public`
+   - **Database URL**: Settings → Database → Connection string → URI 모드
+
+> 이 값들이 `.env.local`에 이미 설정되어 있다면 별도로 복사할 필요 없이 해당 파일을 참조한다.
 
 ---
 
@@ -46,13 +68,14 @@
 
 Vercel 프로젝트 생성 후 Settings → Environment Variables에서 등록:
 
-| 변수명                          | 환경                             | 값 출처                                |
-| ------------------------------- | -------------------------------- | -------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Production, Preview, Development | Supabase Project URL                   |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production, Preview, Development | Supabase anon public key               |
-| `DATABASE_URL`                  | Production                       | Supabase 프로덕션 DB connection string |
+| 변수명                          | 환경                             | 값                               |
+| ------------------------------- | -------------------------------- | -------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Production, Preview, Development | Supabase Project URL             |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production, Preview, Development | Supabase anon public key         |
+| `DATABASE_URL`                  | Production                       | Database connection string (URI) |
 
 > **주의**: `DATABASE_URL`은 절대 `NEXT_PUBLIC_` 접두사를 붙이지 않는다 (서버 전용).
+> 브라우저에 노출되면 DB 직접 접근이 가능해지므로 반드시 서버 전용으로 유지한다.
 
 ---
 
@@ -158,8 +181,7 @@ npx prisma migrate dev --name revert_[변경명]
 # 저장소 클론 후
 npm install
 
-# .env.local 생성 (개발용 Supabase 프로젝트 연결)
-cp .env.local.example .env.local  # 또는 직접 작성
+# .env.local 생성 (Supabase 프로젝트 연결 정보 입력)
 # NEXT_PUBLIC_SUPABASE_URL=
 # NEXT_PUBLIC_SUPABASE_ANON_KEY=
 # DATABASE_URL=
