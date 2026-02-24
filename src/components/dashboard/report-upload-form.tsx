@@ -36,6 +36,8 @@ export function ReportUploadForm() {
   const [isDragOver, setIsDragOver] = useState(false)
   const [duplicateInfo, setDuplicateInfo] = useState<DuplicateInfo | null>(null)
   const [columnError, setColumnError] = useState<ColumnError | null>(null)
+  // 중복 확인 후 덮어쓰기 요청 시 Storage 재업로드 방지용
+  const [storagePath, setStoragePath] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
@@ -81,6 +83,7 @@ export function ReportUploadForm() {
     setSelectedFile(null)
     setStatus('idle')
     setColumnError(null)
+    setStoragePath(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -88,13 +91,39 @@ export function ReportUploadForm() {
 
   async function doUpload(file: File, overwrite: 'true' | 'false' | null) {
     setStatus('saving')
-    const formData = new FormData()
-    formData.append('file', file)
 
+    // Step 1: Storage에 아직 업로드 안 됐으면 1회만 업로드
+    let path = storagePath
+    if (!path) {
+      const urlRes = await fetch(
+        `/api/reports/upload-url?fileName=${encodeURIComponent(file.name)}`
+      )
+      if (!urlRes.ok) {
+        throw new Error('업로드 URL 발급에 실패했습니다')
+      }
+      const { signedUrl, storagePath: newPath } = await urlRes.json()
+      // 브라우저에서 Supabase Storage로 직접 PUT (Vercel 4.5MB 제한 우회)
+      const putRes = await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': 'application/octet-stream' },
+      })
+      if (!putRes.ok) {
+        throw new Error('파일 업로드에 실패했습니다')
+      }
+      path = newPath
+      setStoragePath(path)
+    }
+
+    // Step 2: 처리 API 호출 (JSON body — 수 바이트)
     const url =
       overwrite !== null ? `/api/reports/upload?overwrite=${overwrite}` : '/api/reports/upload'
 
-    const res = await fetch(url, { method: 'POST', body: formData })
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storagePath: path, fileName: file.name }),
+    })
     const data = await res.json()
 
     if (!res.ok) {
@@ -122,6 +151,7 @@ export function ReportUploadForm() {
     }
 
     setStatus('success')
+    setStoragePath(null)
     toast.success(`${okData.inserted}개 행 저장 완료`)
     router.push('/dashboard')
     router.refresh()
@@ -155,7 +185,7 @@ export function ReportUploadForm() {
   const isProcessing = status === 'saving'
   const statusLabel: Record<UploadStatus, string> = {
     idle: '업로드',
-    saving: 'DB 저장 중...',
+    saving: storagePath ? 'DB 저장 중...' : '파일 업로드 중...',
     success: '완료',
     error: '다시 시도',
   }

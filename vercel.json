@@ -2,5 +2,10 @@
   "framework": "nextjs",
   "buildCommand": "npx prisma generate && next build",
   "installCommand": "npm install",
-  "regions": ["icn1"]
+  "regions": ["icn1"],
+  "functions": {
+    "app/api/reports/upload/route.ts": {
+      "maxDuration": 60
+    }
+  }
 }

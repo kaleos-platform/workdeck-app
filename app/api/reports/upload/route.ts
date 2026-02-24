@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { createClient } from '@/lib/supabase/server'
 import {
   parseExcelBuffer,
   parseCsvBuffer,
@@ -22,7 +23,8 @@ function buildKey(row: {
   return `${d}|${row.campaignId}|${row.adType}|${row.keyword ?? ''}|${row.adGroup ?? ''}|${row.optionId ?? ''}`
 }
 
-// POST /api/reports/upload — multipart/form-data 엑셀 업로드
+// POST /api/reports/upload — JSON body { storagePath, fileName }
+// 브라우저가 Supabase Storage에 직접 업로드한 파일을 서버에서 다운로드 후 파싱·저장
 export async function POST(request: NextRequest) {
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
@@ -32,39 +34,51 @@ export async function POST(request: NextRequest) {
   const url = new URL(request.url)
   const overwrite = url.searchParams.get('overwrite')
 
-  // multipart/form-data 파싱
-  let formData: FormData
+  // JSON body 파싱
+  let storagePath: string
+  let fileName: string
   try {
-    formData = await request.formData()
+    const body = await request.json()
+    storagePath = body.storagePath
+    fileName = body.fileName
+    if (!storagePath || !fileName) throw new Error('필드 누락')
   } catch {
-    return errorResponse('multipart/form-data 파싱에 실패했습니다', 400)
-  }
-
-  const file = formData.get('file')
-  if (!file || !(file instanceof File)) {
-    return errorResponse('파일을 첨부해주세요', 400)
+    return errorResponse('storagePath와 fileName이 필요합니다', 400)
   }
 
   // 허용 확장자: .xlsx, .csv
-  const isXlsx = file.name.endsWith('.xlsx')
-  const isCsv = file.name.endsWith('.csv')
+  const isXlsx = fileName.endsWith('.xlsx')
+  const isCsv = fileName.endsWith('.csv')
   if (!isXlsx && !isCsv) {
     return errorResponse('.xlsx 또는 .csv 파일만 업로드할 수 있습니다', 400)
+  }
+
+  // Supabase Storage에서 파일 다운로드
+  const supabase = await createClient()
+  const { data: blob, error: downloadError } = await supabase.storage
+    .from('reports')
+    .download(storagePath)
+
+  if (downloadError || !blob) {
+    console.error('Storage 파일 다운로드 오류:', downloadError)
+    return errorResponse('파일 다운로드에 실패했습니다', 500)
   }
 
   // 파일 형식에 따라 파서 선택
   let rows: ParsedRow[]
   try {
-    const buffer = await file.arrayBuffer()
+    const buffer = await blob.arrayBuffer()
     rows = isCsv ? parseCsvBuffer(buffer) : parseExcelBuffer(buffer)
   } catch (err) {
     // 컬럼 검증 오류는 별도 응답
     if (err instanceof ColumnValidationError) {
+      await supabase.storage.from('reports').remove([storagePath])
       return errorResponse('필수 컬럼이 누락되었습니다', 400, {
         missingColumns: err.detail.missingColumns,
         foundColumns: err.detail.foundColumns,
       })
     }
+    await supabase.storage.from('reports').remove([storagePath])
     return errorResponse(
       '파일 파싱에 실패했습니다. 올바른 쿠팡 광고 리포트 파일인지 확인해주세요',
       400
@@ -116,8 +130,9 @@ export async function POST(request: NextRequest) {
     // 중복 없으면 바로 삽입 단계로 진행 (overwrite=false와 동일하게 처리)
   }
 
-  // 500행 청크로 분할하여 삽입
-  const chunkSize = 500
+  // 2000행 청크 × 5개 병렬 처리
+  const CHUNK_SIZE = 2000
+  const PARALLEL = 5
   let inserted = 0
 
   try {
@@ -136,50 +151,57 @@ export async function POST(request: NextRequest) {
     // 업로드 이력 생성
     const upload = await prisma.reportUpload.create({
       data: {
-        fileName: file.name,
+        fileName,
         periodStart,
         periodEnd,
         workspaceId: workspace.id,
       },
     })
 
-    for (let i = 0; i < rows.length; i += chunkSize) {
-      const chunk = rows.slice(i, i + chunkSize)
+    // 전체 데이터를 CHUNK_SIZE 단위로 분할
+    const allData = rows.map((row) => ({
+      workspaceId: workspace.id,
+      reportId: upload.id,
+      date: row.date,
+      adType: row.adType,
+      campaignId: row.campaignId,
+      campaignName: row.campaignName,
+      adGroup: row.adGroup,
+      placement: row.placement,
+      productName: row.productName,
+      optionId: row.optionId,
+      keyword: row.keyword,
+      impressions: row.impressions,
+      clicks: row.clicks,
+      adCost: row.adCost,
+      ctr: row.ctr,
+      orders1d: row.orders1d,
+      revenue1d: row.revenue1d,
+      roas1d: row.roas1d,
+      material: row.material,
+      videoViews3s: row.videoViews3s,
+      avgPlayTime: row.avgPlayTime,
+      videoViews25p: row.videoViews25p,
+      videoViews50p: row.videoViews50p,
+      videoViews75p: row.videoViews75p,
+      videoViews100p: row.videoViews100p,
+      costPerView3s: row.costPerView3s,
+      engagements: row.engagements,
+      engagementRate: row.engagementRate,
+    }))
 
-      const chunkData = chunk.map((row) => ({
-        workspaceId: workspace.id,
-        reportId: upload.id,
-        date: row.date,
-        adType: row.adType,
-        campaignId: row.campaignId,
-        campaignName: row.campaignName,
-        adGroup: row.adGroup,
-        placement: row.placement,
-        productName: row.productName,
-        optionId: row.optionId,
-        keyword: row.keyword,
-        impressions: row.impressions,
-        clicks: row.clicks,
-        adCost: row.adCost,
-        ctr: row.ctr,
-        orders1d: row.orders1d,
-        revenue1d: row.revenue1d,
-        roas1d: row.roas1d,
-        material: row.material,
-        videoViews3s: row.videoViews3s,
-        avgPlayTime: row.avgPlayTime,
-        videoViews25p: row.videoViews25p,
-        videoViews50p: row.videoViews50p,
-        videoViews75p: row.videoViews75p,
-        videoViews100p: row.videoViews100p,
-        costPerView3s: row.costPerView3s,
-        engagements: row.engagements,
-        engagementRate: row.engagementRate,
-      }))
+    const chunks: (typeof allData)[] = []
+    for (let i = 0; i < allData.length; i += CHUNK_SIZE) {
+      chunks.push(allData.slice(i, i + CHUNK_SIZE))
+    }
 
-      // overwrite=true면 이미 삭제했으므로 skipDuplicates 불필요하나 안전하게 유지
-      const result = await prisma.adRecord.createMany({ data: chunkData, skipDuplicates: true })
-      inserted += result.count
+    // PARALLEL개씩 병렬 실행 (DB 커넥션 과부하 방지)
+    for (let i = 0; i < chunks.length; i += PARALLEL) {
+      const group = chunks.slice(i, i + PARALLEL)
+      const results = await Promise.all(
+        group.map((data) => prisma.adRecord.createMany({ data, skipDuplicates: true }))
+      )
+      inserted += results.reduce((sum, r) => sum + r.count, 0)
     }
 
     // ── 캠페인명 변경 감지 ──
@@ -208,12 +230,34 @@ export async function POST(request: NextRequest) {
 
     const dbNameMap = new Map(dbLatest.map((r) => [r.campaignId, r.campaignName]))
 
-    // 변경된 캠페인 처리
-    for (const [campaignId, { date: firstChangeDate, name: newName }] of latestByUpload) {
-      const oldName = dbNameMap.get(campaignId)
-      if (!oldName || oldName === newName) {
-        // 신규 캠페인이거나 이름 변경 없음 → CampaignMeta만 upsert (신규 시)
-        if (!oldName) {
+    // 변경된 캠페인 처리 (병렬)
+    await Promise.all(
+      [...latestByUpload.entries()].map(
+        async ([campaignId, { date: firstChangeDate, name: newName }]) => {
+          const oldName = dbNameMap.get(campaignId)
+          if (!oldName || oldName === newName) {
+            // 신규 캠페인이거나 이름 변경 없음 → CampaignMeta만 upsert (신규 시)
+            if (!oldName) {
+              await prisma.campaignMeta.upsert({
+                where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
+                create: {
+                  workspaceId: workspace.id,
+                  campaignId,
+                  displayName: newName,
+                  isCustomName: false,
+                },
+                update: {},
+              })
+            }
+            return
+          }
+
+          // 캠페인명 변경 감지: CampaignMeta 업데이트 (isCustomName=false인 경우만)
+          const meta = await prisma.campaignMeta.findUnique({
+            where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
+            select: { isCustomName: true },
+          })
+
           await prisma.campaignMeta.upsert({
             where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
             create: {
@@ -222,49 +266,34 @@ export async function POST(request: NextRequest) {
               displayName: newName,
               isCustomName: false,
             },
-            update: {},
+            update: meta?.isCustomName ? {} : { displayName: newName },
+          })
+
+          // 변경 첫 날짜에 자동 메모 생성
+          await prisma.dailyMemo.upsert({
+            where: {
+              workspaceId_campaignId_date: {
+                workspaceId: workspace.id,
+                campaignId,
+                date: firstChangeDate,
+              },
+            },
+            create: {
+              workspaceId: workspace.id,
+              campaignId,
+              date: firstChangeDate,
+              content: `캠페인 이름 변경: ${oldName} → ${newName}`,
+            },
+            update: {
+              content: `캠페인 이름 변경: ${oldName} → ${newName}`,
+            },
           })
         }
-        continue
-      }
+      )
+    )
 
-      // 캠페인명 변경 감지: CampaignMeta 업데이트 (isCustomName=false인 경우만)
-      const meta = await prisma.campaignMeta.findUnique({
-        where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
-        select: { isCustomName: true },
-      })
-
-      await prisma.campaignMeta.upsert({
-        where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
-        create: {
-          workspaceId: workspace.id,
-          campaignId,
-          displayName: newName,
-          isCustomName: false,
-        },
-        update: meta?.isCustomName ? {} : { displayName: newName },
-      })
-
-      // 변경 첫 날짜에 자동 메모 생성
-      await prisma.dailyMemo.upsert({
-        where: {
-          workspaceId_campaignId_date: {
-            workspaceId: workspace.id,
-            campaignId,
-            date: firstChangeDate,
-          },
-        },
-        create: {
-          workspaceId: workspace.id,
-          campaignId,
-          date: firstChangeDate,
-          content: `캠페인 이름 변경: ${oldName} → ${newName}`,
-        },
-        update: {
-          content: `캠페인 이름 변경: ${oldName} → ${newName}`,
-        },
-      })
-    }
+    // 처리 완료 후 Storage 임시 파일 삭제
+    await supabase.storage.from('reports').remove([storagePath])
 
     return NextResponse.json(
       {
