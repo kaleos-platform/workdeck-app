@@ -356,13 +356,13 @@ export function ReportUploadForm() {
           if (!open) setDuplicateInfo(null)
         }}
       >
-        <DialogContent aria-describedby="duplicate-upload-description">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />
               중복 데이터 발견
             </DialogTitle>
-            <DialogDescription id="duplicate-upload-description" className="pt-2">
+            <DialogDescription className="pt-2">
               중복 행이 발견되었습니다. 덮어쓰기 또는 중복 제외 저장 중 하나를 선택하세요.
             </DialogDescription>
           </DialogHeader>
