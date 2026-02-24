@@ -10,6 +10,13 @@ import {
 } from '@/lib/excel-parser'
 import type { ParsedRow } from '@/lib/excel-parser'
 
+type UploadRequestBody = {
+  storagePath: string
+  fileName: string
+}
+
+export const runtime = 'nodejs'
+
 // 중복 감지용 복합 키 생성
 function buildKey(row: {
   date: Date | string
@@ -21,6 +28,18 @@ function buildKey(row: {
 }): string {
   const d = row.date instanceof Date ? row.date.toISOString() : row.date
   return `${d}|${row.campaignId}|${row.adType}|${row.keyword ?? ''}|${row.adGroup ?? ''}|${row.optionId ?? ''}`
+}
+
+function parseUploadBody(body: unknown): UploadRequestBody | null {
+  if (typeof body !== 'object' || body === null) return null
+
+  const storagePath =
+    'storagePath' in body && typeof body.storagePath === 'string' ? body.storagePath.trim() : ''
+  const fileName =
+    'fileName' in body && typeof body.fileName === 'string' ? body.fileName.trim() : ''
+
+  if (!storagePath || !fileName) return null
+  return { storagePath, fileName }
 }
 
 // POST /api/reports/upload — JSON body { storagePath, fileName }
@@ -35,16 +54,20 @@ export async function POST(request: NextRequest) {
   const overwrite = url.searchParams.get('overwrite')
 
   // JSON body 파싱
-  let storagePath: string
-  let fileName: string
+  const contentType = request.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    return errorResponse('요청 형식이 올바르지 않습니다. JSON 본문으로 요청해주세요', 415)
+  }
+
+  let parsedBody: UploadRequestBody | null = null
   try {
     const body = await request.json()
-    storagePath = body.storagePath
-    fileName = body.fileName
-    if (!storagePath || !fileName) throw new Error('필드 누락')
+    parsedBody = parseUploadBody(body)
   } catch {
     return errorResponse('storagePath와 fileName이 필요합니다', 400)
   }
+  if (!parsedBody) return errorResponse('storagePath와 fileName이 필요합니다', 400)
+  const { storagePath, fileName } = parsedBody
 
   // 허용 확장자: .xlsx, .csv
   const isXlsx = fileName.endsWith('.xlsx')

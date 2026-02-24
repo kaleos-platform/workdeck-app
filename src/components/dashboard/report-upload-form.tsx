@@ -30,6 +30,45 @@ type ColumnError = {
   foundColumns: string[]
 }
 
+type ApiMessage = {
+  message: string
+}
+
+function hasMessage(value: unknown): value is ApiMessage {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'message' in value &&
+    typeof (value as ApiMessage).message === 'string'
+  )
+}
+
+function hasColumnError(value: unknown): value is UploadColumnError {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'missingColumns' in value &&
+    'foundColumns' in value
+  )
+}
+
+async function parseApiBody(response: Response): Promise<unknown> {
+  const contentType = response.headers.get('content-type') ?? ''
+
+  if (contentType.includes('application/json')) {
+    return response.json()
+  }
+
+  const raw = await response.text()
+  if (!raw) return {}
+
+  try {
+    return JSON.parse(raw) as unknown
+  } catch {
+    return { message: raw }
+  }
+}
+
 export function ReportUploadForm() {
   const [status, setStatus] = useState<UploadStatus>('idle')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -124,19 +163,29 @@ export function ReportUploadForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ storagePath: path, fileName: file.name }),
     })
-    const data = await res.json()
+    const data = await parseApiBody(res)
 
     if (!res.ok) {
-      const errData = data as UploadColumnError | { message: string }
-      if ('missingColumns' in errData) {
+      if (hasColumnError(data)) {
         setColumnError({
-          missingColumns: errData.missingColumns,
-          foundColumns: errData.foundColumns,
+          missingColumns: data.missingColumns,
+          foundColumns: data.foundColumns,
         })
         setStatus('error')
         return
       }
-      throw new Error(errData.message || '업로드에 실패했습니다')
+
+      if (res.status === 413) {
+        throw new Error(
+          '요청 크기가 서버 제한을 초과했습니다. 최신 배포가 반영되었는지 확인 후 다시 시도해주세요.'
+        )
+      }
+
+      if (hasMessage(data)) {
+        throw new Error(data.message)
+      }
+
+      throw new Error('업로드에 실패했습니다')
     }
 
     const okData = data as UploadResponse
@@ -307,32 +356,31 @@ export function ReportUploadForm() {
           if (!open) setDuplicateInfo(null)
         }}
       >
-        <DialogContent>
+        <DialogContent aria-describedby="duplicate-upload-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />
               중복 데이터 발견
             </DialogTitle>
-            <DialogDescription asChild>
-              <div className="space-y-2 pt-2 text-sm">
-                <p>
-                  전체{' '}
-                  <span className="font-semibold text-foreground">
-                    {duplicateInfo?.totalCount}개
-                  </span>{' '}
-                  행 중{' '}
-                  <span className="font-semibold text-orange-600">
-                    {duplicateInfo?.duplicateCount}개
-                  </span>
-                  가 이미 저장되어 있습니다.
-                </p>
-                <p>
-                  새로운 데이터:{' '}
-                  <span className="font-semibold text-foreground">{duplicateInfo?.newCount}개</span>
-                </p>
-              </div>
+            <DialogDescription id="duplicate-upload-description" className="pt-2">
+              중복 행이 발견되었습니다. 덮어쓰기 또는 중복 제외 저장 중 하나를 선택하세요.
             </DialogDescription>
           </DialogHeader>
+          <div className="space-y-2 text-sm">
+            <p>
+              전체{' '}
+              <span className="font-semibold text-foreground">{duplicateInfo?.totalCount}개</span>{' '}
+              행 중{' '}
+              <span className="font-semibold text-orange-600">
+                {duplicateInfo?.duplicateCount}개
+              </span>
+              가 이미 저장되어 있습니다.
+            </p>
+            <p>
+              새로운 데이터:{' '}
+              <span className="font-semibold text-foreground">{duplicateInfo?.newCount}개</span>
+            </p>
+          </div>
           <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button
               variant="outline"
