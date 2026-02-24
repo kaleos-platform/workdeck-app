@@ -46,7 +46,9 @@ function makeXlsxBuffer(rows: unknown[][]): ArrayBuffer {
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
   const result = XLSX.write(wb, { type: 'array', bookType: 'xlsx' })
-  return result instanceof ArrayBuffer ? result : (result as Uint8Array).buffer
+  if (result instanceof ArrayBuffer) return result
+  const u8 = result as Uint8Array
+  return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength) as ArrayBuffer
 }
 
 // 최소 ParsedRow 생성 헬퍼
