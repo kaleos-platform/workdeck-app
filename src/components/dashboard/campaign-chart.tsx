@@ -55,7 +55,7 @@ type TooltipEntry = {
 
 function formatValue(value: number, unit: string): string {
   if (unit === '원') return `${value.toLocaleString()}원`
-  if (unit === '%') return `${value}%`
+  if (unit === '%') return `${value.toFixed(2)}%`
   return `${value.toLocaleString()}${unit}`
 }
 
@@ -67,17 +67,27 @@ function formatDate(dateStr: string): string {
 function formatLeftAxisTick(value: number): string {
   if (!Number.isFinite(value)) return ''
   if (Math.abs(value) >= 10000) {
-    const manwon = Math.round(value / 10000)
-    return `${manwon.toLocaleString('ko-KR')}만원`
+    return `${Math.round(value / 10000).toLocaleString('ko-KR')}만원`
   }
-  return `${Math.round(value).toLocaleString('ko-KR')}원`
+  if (Math.abs(value) >= 1000) {
+    return `${Math.round(value / 1000)}천원`
+  }
+  return `${Math.round(value / 100) * 100}원`
 }
 
 function formatRightAxisTick(value: number): string {
   if (!Number.isFinite(value)) return ''
-  const rounded = Math.round(value * 10) / 10
-  if (Number.isInteger(rounded)) return `${rounded.toLocaleString('ko-KR')}%`
-  return `${rounded.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}%`
+  return `${value.toFixed(2)}%`
+}
+
+function calcLeftTicks(dataMax: number): number[] {
+  if (dataMax <= 0) return [0]
+  const intervals = [100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000]
+  const interval = intervals.find((i) => dataMax / i <= 5) ?? 100000
+  const max = Math.ceil(dataMax / interval) * interval
+  const result: number[] = []
+  for (let v = 0; v <= max; v += interval) result.push(v)
+  return result
 }
 
 function computeAxisDomain(values: number[], fallback: [number, number]): [number, number] {
@@ -150,15 +160,14 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
       })
     )
 
-  const leftDomain = computeAxisDomain(
-    getMetricValues(activeLeftMetrics.length > 0 ? activeLeftMetrics : ['adCost']),
-    [0, 100]
-  )
+  const leftValues = getMetricValues(activeLeftMetrics.length > 0 ? activeLeftMetrics : ['adCost'])
+  const leftMax = leftValues.length > 0 ? Math.max(...leftValues) : 0
+  const leftTicks = calcLeftTicks(leftMax)
+
   const rightDomain = computeAxisDomain(
     activeRightMetrics.length > 0 ? getMetricValues(activeRightMetrics) : [],
     [0, 100]
   )
-  const leftTicks = buildInteriorTicks(leftDomain)
   const rightTicks = buildInteriorTicks(rightDomain)
 
   // 차트 클릭 시 활성화된 tooltip index를 기준으로 원본 날짜를 계산
@@ -250,7 +259,7 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
           <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
           <YAxis
             yAxisId="left"
-            domain={leftDomain}
+            domain={[0, 'auto']}
             ticks={leftTicks}
             tick={{ fontSize: 11 }}
             tickLine={false}

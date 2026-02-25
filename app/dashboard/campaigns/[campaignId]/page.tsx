@@ -126,7 +126,8 @@ function KwSortIcon({
 
 function fmt(v: number | null, suffix: string): string {
   if (v === null) return '-'
-  return `${v}${suffix}`
+  if (suffix === '%') return `${v.toFixed(2)}%`
+  return `${v.toLocaleString('ko-KR')}${suffix}`
 }
 
 export default function CampaignDetailPage({
@@ -525,20 +526,20 @@ export default function CampaignDetailPage({
         },
         {
           title: '평균 ROAS',
-          value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(1)}%` : '-',
+          value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(2)}%` : '-',
           icon: TrendingUp,
           color: 'text-green-600',
         },
         {
           title: '평균 CTR',
-          value: kpiData.avgCtr !== null ? `${kpiData.avgCtr.toFixed(1)}%` : '-',
+          value: kpiData.avgCtr !== null ? `${kpiData.avgCtr.toFixed(2)}%` : '-',
           icon: MousePointerClick,
           color: 'text-blue-600',
         },
         {
           title: '평균 참여율',
           value:
-            kpiData.avgEngagementRate !== null ? `${kpiData.avgEngagementRate.toFixed(1)}%` : '-',
+            kpiData.avgEngagementRate !== null ? `${kpiData.avgEngagementRate.toFixed(2)}%` : '-',
           icon: Target,
           color: 'text-purple-600',
         },
@@ -558,19 +559,19 @@ export default function CampaignDetailPage({
         },
         {
           title: '평균 ROAS',
-          value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(1)}%` : '-',
+          value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(2)}%` : '-',
           icon: TrendingUp,
           color: 'text-green-600',
         },
         {
           title: '평균 CTR',
-          value: kpiData.avgCtr !== null ? `${kpiData.avgCtr.toFixed(1)}%` : '-',
+          value: kpiData.avgCtr !== null ? `${kpiData.avgCtr.toFixed(2)}%` : '-',
           icon: MousePointerClick,
           color: 'text-blue-600',
         },
         {
           title: '평균 CVR',
-          value: kpiData.avgCvr !== null ? `${kpiData.avgCvr.toFixed(1)}%` : '-',
+          value: kpiData.avgCvr !== null ? `${kpiData.avgCvr.toFixed(2)}%` : '-',
           icon: Target,
           color: 'text-purple-600',
         },
