@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
+import { formatDateToYmdKst } from '@/lib/date-range'
 
 // GET /api/campaigns — 워크스페이스 내 캠페인 목록 (displayName 포함)
 // startDate, endDate 파라미터 제공 시 캠페인별 기간 지표 + 이전 동일 기간 지표 포함
@@ -86,6 +87,29 @@ export async function GET(request: NextRequest) {
     const prevStartObj = new Date(prevStartDate + 'T00:00:00+09:00')
     const prevEndObj = new Date(prevEndDate + 'T23:59:59+09:00')
 
+    // 캠페인별 전체 데이터 기간 (minDate, maxDate)
+    const dateRanges = await prisma.adRecord.groupBy({
+      by: ['campaignId'],
+      where: { workspaceId: workspace.id },
+      _min: { date: true },
+      _max: { date: true },
+    })
+    const dateRangeMap = new Map(
+      (
+        dateRanges as Array<{
+          campaignId: string
+          _min: { date: unknown }
+          _max: { date: unknown }
+        }>
+      ).map((r) => [
+        r.campaignId,
+        {
+          minDate: r._min.date ? formatDateToYmdKst(r._min.date as Date) : null,
+          maxDate: r._max.date ? formatDateToYmdKst(r._max.date as Date) : null,
+        },
+      ])
+    )
+
     // 현재 기간 캠페인별 집계
     const currentAgg = await prisma.adRecord.groupBy({
       by: ['campaignId'],
@@ -117,6 +141,7 @@ export async function GET(request: NextRequest) {
       const prevRoas = prevAdCost > 0 ? (prevRevenue / prevAdCost) * 100 : null
 
       const ct = targetMap.get(c.id) ?? null
+      const dr = dateRangeMap.get(c.id)
       return {
         ...c,
         metrics: { totalAdCost, totalRevenue, avgRoas },
@@ -124,13 +149,46 @@ export async function GET(request: NextRequest) {
           ? { totalAdCost: prevAdCost, totalRevenue: prevRevenue, avgRoas: prevRoas }
           : null,
         currentTarget: ct,
+        minDate: dr?.minDate ?? null,
+        maxDate: dr?.maxDate ?? null,
       }
     })
 
     return NextResponse.json(enriched)
   }
 
+  // 기간 파라미터 없을 때도 minDate/maxDate 포함
+  const allDateRanges = await prisma.adRecord.groupBy({
+    by: ['campaignId'],
+    where: { workspaceId: workspace.id },
+    _min: { date: true },
+    _max: { date: true },
+  })
+  const allDateRangeMap = new Map(
+    (
+      allDateRanges as Array<{
+        campaignId: string
+        _min: { date: unknown }
+        _max: { date: unknown }
+      }>
+    ).map((r) => [
+      r.campaignId,
+      {
+        minDate: r._min.date ? formatDateToYmdKst(r._min.date as Date) : null,
+        maxDate: r._max.date ? formatDateToYmdKst(r._max.date as Date) : null,
+      },
+    ])
+  )
+
   return NextResponse.json(
-    campaigns.map((c) => ({ ...c, currentTarget: targetMap.get(c.id) ?? null }))
+    campaigns.map((c) => {
+      const dr = allDateRangeMap.get(c.id)
+      return {
+        ...c,
+        currentTarget: targetMap.get(c.id) ?? null,
+        minDate: dr?.minDate ?? null,
+        maxDate: dr?.maxDate ?? null,
+      }
+    })
   )
 }

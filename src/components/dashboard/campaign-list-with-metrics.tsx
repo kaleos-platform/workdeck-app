@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
-import { getLastNDaysRangeKst, getTodayStrKst } from '@/lib/date-range'
+import { getLastNDaysRangeKst, getTodayStrKst, getDaysAgoStrKst } from '@/lib/date-range'
 
 const QUICK_PERIODS = [
   { label: '7일', days: 7 },
@@ -28,6 +28,8 @@ type CampaignWithMetrics = {
   metrics: CampaignMetrics
   prevMetrics: CampaignMetrics | null
   currentTarget: { dailyBudget: number | null; targetRoas: number | null } | null
+  minDate: string | null
+  maxDate: string | null
 }
 
 function calcDiff(current: number, prev: number): number | null {
@@ -180,7 +182,7 @@ export function CampaignListWithMetrics() {
                   href={`/dashboard/campaigns/${campaign.id}?from=${from}&to=${to}`}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-3 transition-colors hover:bg-muted/50"
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{campaign.displayName}</p>
                     <p className="text-xs text-muted-foreground">{campaign.adTypes.join(' · ')}</p>
                     {/* 일 예산 / 목표 ROAS */}
@@ -201,31 +203,48 @@ export function CampaignListWithMetrics() {
                         </span>
                       </span>
                     </div>
+                    {/* 데이터 기간 표시 */}
+                    {campaign.maxDate && (
+                      <div className="mt-0.5 flex items-center gap-1.5 text-xs">
+                        <span className="text-muted-foreground">
+                          데이터: {campaign.minDate} ~ {campaign.maxDate}
+                        </span>
+                        {campaign.maxDate < getDaysAgoStrKst(1) && (
+                          <span className="font-medium text-orange-500">· 업로드 필요</span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex flex-wrap items-start gap-6 text-right">
+                  <div className="flex shrink-0 flex-wrap items-center gap-4 text-right">
                     {/* 총 광고비 */}
-                    <div>
+                    <div className="text-right">
                       <p className="text-xs text-muted-foreground">총 광고비</p>
-                      <p className="text-sm font-medium text-orange-600">
-                        {metrics.totalAdCost.toLocaleString('ko-KR')}원
-                      </p>
-                      <DiffBadge diff={adCostDiff} isPositive={false} />
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium text-orange-600">
+                          {metrics.totalAdCost.toLocaleString('ko-KR')}원
+                        </span>
+                        <DiffBadge diff={adCostDiff} isPositive={false} />
+                      </div>
                     </div>
                     {/* 평균 ROAS */}
-                    <div>
+                    <div className="text-right">
                       <p className="text-xs text-muted-foreground">평균 ROAS</p>
-                      <p className="text-sm font-medium">
-                        {metrics.avgRoas !== null ? `${metrics.avgRoas.toFixed(2)}%` : '-'}
-                      </p>
-                      <DiffBadge diff={roasDiff} isPositive={true} />
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium">
+                          {metrics.avgRoas !== null ? `${metrics.avgRoas.toFixed(2)}%` : '-'}
+                        </span>
+                        <DiffBadge diff={roasDiff} isPositive={true} />
+                      </div>
                     </div>
                     {/* 총 매출액 */}
-                    <div>
+                    <div className="text-right">
                       <p className="text-xs text-muted-foreground">총 매출액</p>
-                      <p className="text-sm font-medium text-emerald-600">
-                        {metrics.totalRevenue.toLocaleString('ko-KR')}원
-                      </p>
-                      <DiffBadge diff={revenueDiff} isPositive={true} />
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium text-emerald-600">
+                          {metrics.totalRevenue.toLocaleString('ko-KR')}원
+                        </span>
+                        <DiffBadge diff={revenueDiff} isPositive={true} />
+                      </div>
                     </div>
                   </div>
                 </Link>
