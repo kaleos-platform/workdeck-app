@@ -252,7 +252,6 @@ export function ReportUploadForm() {
         setSingleDuplicate({ entryId: entry.id, info: result.requiresConfirmation })
       } else if (result.inserted !== undefined) {
         toast.success(`${result.inserted}개 행 저장 완료`)
-        router.push('/dashboard')
         router.refresh()
       }
     } catch {
@@ -272,7 +271,6 @@ export function ReportUploadForm() {
       const result = await processOneFile(entryId, overwrite)
       if (result.inserted !== undefined) {
         toast.success(`${result.inserted}개 행 저장 완료`)
-        router.push('/dashboard')
         router.refresh()
       }
     } catch {
@@ -322,9 +320,7 @@ export function ReportUploadForm() {
     if (isProcessing) return
     setIsProgressModalOpen(false)
     setProgressDone(false)
-    const hasDone = files.some((f) => f.status === 'done')
     setFiles((prev) => prev.filter((f) => f.status !== 'done'))
-    if (hasDone) router.push('/dashboard')
   }
 
   const pendingCount = files.filter((f) => f.status === 'pending').length
