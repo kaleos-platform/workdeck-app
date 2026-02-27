@@ -14,6 +14,7 @@ export default async function LoginPage({
 }) {
   const { verified } = await searchParams
   const isVerifyPending = verified === 'pending'
+  const isVerifySuccess = verified === 'success'
 
   return (
     <Card>
@@ -22,7 +23,7 @@ export default async function LoginPage({
         <CardDescription>이메일과 비밀번호를 입력하여 로그인하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <LoginForm isVerifyPending={isVerifyPending} />
+        <LoginForm isVerifyPending={isVerifyPending} isVerifySuccess={isVerifySuccess} />
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">계정이 없으신가요? </span>

@@ -18,7 +18,15 @@ export async function GET(request: NextRequest) {
       } = await supabase.auth.getUser()
 
       if (user) {
-        // Prisma User upsert (최초 구글 로그인 시 User 레코드 생성)
+        const provider = user.app_metadata?.provider as string | undefined
+
+        // 이메일 인증 완료 → 세션 종료 후 로그인 화면으로 리다이렉트
+        if (!provider || provider === 'email') {
+          await supabase.auth.signOut()
+          return NextResponse.redirect(`${origin}/login?verified=success`)
+        }
+
+        // Google OAuth → Prisma User upsert 후 대시보드로
         await prisma.user.upsert({
           where: { id: user.id },
           create: {
