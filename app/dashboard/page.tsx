@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
+import { CampaignListWithMetrics } from '@/components/dashboard/campaign-list-with-metrics'
 
 // campaignId별 캠페인 그룹화
 function groupByCampaign(rows: { campaignId: string; campaignName: string; adType: string }[]) {
@@ -271,31 +272,8 @@ export default async function DashboardPage() {
         })}
       </div>
 
-      {/* 캠페인 목록 요약 */}
-      {hasData && campaigns.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">캠페인 목록</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {campaigns.map((campaign) => (
-                <Link
-                  key={campaign.id}
-                  href={`/dashboard/campaigns/${campaign.id}`}
-                  className="flex items-center justify-between rounded-md border px-3 py-2.5 transition-colors hover:bg-muted/50"
-                >
-                  <div>
-                    <p className="text-sm font-medium">{campaign.name}</p>
-                    <p className="text-xs text-muted-foreground">{campaign.adTypes.join(' · ')}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">상세 보기 →</span>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* 캠페인별 성과 (기간 선택 + 지표/증감) */}
+      {hasData && <CampaignListWithMetrics />}
     </div>
   )
 }
