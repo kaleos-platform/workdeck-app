@@ -24,6 +24,9 @@ export default async function UploadPage() {
       uploadedAt: true,
       periodStart: true,
       periodEnd: true,
+      totalRows: true,
+      insertedRows: true,
+      duplicateRows: true,
     },
   })
 

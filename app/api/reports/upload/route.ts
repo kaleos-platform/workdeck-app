@@ -315,6 +315,18 @@ export async function POST(request: NextRequest) {
       )
     )
 
+    // 처리 결과 통계 계산
+    const totalRows = rows.length
+    const insertedRows = inserted
+    const duplicateRows = overwrite === 'true' ? 0 : totalRows - insertedRows
+    const skippedRows = 0
+
+    // 업로드 이력에 처리 결과 저장
+    await prisma.reportUpload.update({
+      where: { id: upload.id },
+      data: { totalRows, insertedRows, duplicateRows, skippedRows },
+    })
+
     // 처리 완료 후 Storage 임시 파일 삭제
     await supabase.storage.from('reports').remove([storagePath])
 
@@ -323,6 +335,9 @@ export async function POST(request: NextRequest) {
         uploadId: upload.id,
         inserted,
         skipped: rows.length - inserted,
+        totalRows,
+        insertedRows,
+        duplicateRows,
         errors: [],
       },
       { status: 201 }

@@ -101,6 +101,7 @@ export const DUMMY_KEYWORDS: InefficientKeyword[] = [
     impressions: 5200,
     orders1d: 0,
     ctr: 2.3,
+    removedAt: null,
   },
   {
     keyword: '여성 플리츠 스커트',
@@ -109,6 +110,7 @@ export const DUMMY_KEYWORDS: InefficientKeyword[] = [
     impressions: 3800,
     orders1d: 0,
     ctr: 2.5,
+    removedAt: null,
   },
   {
     keyword: '봄 신상 블라우스',
@@ -117,6 +119,7 @@ export const DUMMY_KEYWORDS: InefficientKeyword[] = [
     impressions: 3800,
     orders1d: 0,
     ctr: 2.3,
+    removedAt: null,
   },
   {
     keyword: '캐주얼 린넨 팬츠',
@@ -125,6 +128,7 @@ export const DUMMY_KEYWORDS: InefficientKeyword[] = [
     impressions: 2480,
     orders1d: 0,
     ctr: 2.5,
+    removedAt: null,
   },
   {
     keyword: '오버핏 봄 재킷',
@@ -133,6 +137,7 @@ export const DUMMY_KEYWORDS: InefficientKeyword[] = [
     impressions: 2250,
     orders1d: 0,
     ctr: 2.4,
+    removedAt: null,
   },
 ]
 
@@ -174,6 +179,9 @@ export const DUMMY_UPLOAD_HISTORY: UploadHistory[] = [
     uploadedAt: dateStr(0),
     periodStart: dateStr(14),
     periodEnd: dateStr(0),
+    totalRows: 300,
+    insertedRows: 288,
+    duplicateRows: 12,
   },
   {
     id: 'upload-002',
@@ -181,5 +189,8 @@ export const DUMMY_UPLOAD_HISTORY: UploadHistory[] = [
     uploadedAt: dateStr(15),
     periodStart: dateStr(28),
     periodEnd: dateStr(15),
+    totalRows: 245,
+    insertedRows: 245,
+    duplicateRows: 0,
   },
 ]

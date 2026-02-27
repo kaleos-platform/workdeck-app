@@ -7,6 +7,9 @@ type UploadHistoryRow = {
   uploadedAt: Date
   periodStart: Date
   periodEnd: Date
+  totalRows?: number | null
+  insertedRows?: number | null
+  duplicateRows?: number | null
 }
 
 interface UploadHistoryCardProps {
@@ -46,6 +49,16 @@ export function UploadHistoryCard({
                     <p className="text-xs text-muted-foreground">
                       {formatDate(upload.periodStart)} ~ {formatDate(upload.periodEnd)}
                     </p>
+                    {upload.insertedRows != null && (
+                      <p className="text-xs text-muted-foreground">
+                        저장 {upload.insertedRows.toLocaleString()}건
+                        {upload.duplicateRows != null && upload.duplicateRows > 0 && (
+                          <span className="ml-1">
+                            / 중복 제외 {upload.duplicateRows.toLocaleString()}건
+                          </span>
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <p className="ml-4 text-xs whitespace-nowrap text-muted-foreground">

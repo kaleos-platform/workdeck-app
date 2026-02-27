@@ -33,10 +33,11 @@ model Workspace {
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   // 연관 데이터
-  reportUploads  ReportUpload[]
-  adRecords      AdRecord[]
-  dailyMemos     DailyMemo[]
-  campaignMetas  CampaignMeta[]
+  reportUploads   ReportUpload[]
+  adRecords       AdRecord[]
+  dailyMemos      DailyMemo[]
+  campaignMetas   CampaignMeta[]
+  keywordStatuses KeywordStatus[]
 
   createdAt DateTime @default(now())
 }
@@ -48,6 +49,12 @@ model ReportUpload {
   uploadedAt  DateTime @default(now())
   periodStart DateTime
   periodEnd   DateTime
+
+  // 처리 결과 통계
+  totalRows     Int?
+  insertedRows  Int?
+  duplicateRows Int?
+  skippedRows   Int?
 
   // 소속 워크스페이스
   workspaceId String
@@ -123,6 +130,23 @@ model CampaignMeta {
 
   @@unique([workspaceId, campaignId])
   @@index([workspaceId])
+}
+
+// 키워드 제거 상태 관리
+model KeywordStatus {
+  id          String    @id @default(cuid())
+  workspaceId String
+  campaignId  String
+  keyword     String
+  removedAt   DateTime?
+  removedMemo String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, campaignId, keyword])
+  @@index([workspaceId, campaignId])
 }
 
 // 일자별 메모 (캠페인별 광고 작업 이력)

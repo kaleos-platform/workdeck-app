@@ -518,7 +518,7 @@ export default function CampaignDetailPage({
     return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
   }
 
-  // 키워드 복사 후 메모 저장
+  // 키워드 복사 후 메모 저장 + 제거 상태 기록
   async function handleSaveKeywordMemo() {
     if (isSavingMemo) return
     setIsSavingMemo(true)
@@ -535,11 +535,19 @@ export default function CampaignDetailPage({
 
       const content = existing ? `${existing.content}\n${newEntry}` : newEntry
 
-      const saveRes = await fetch(`/api/campaigns/${campaignId}/memos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: today, content }),
-      })
+      // 메모 저장 + 제거 상태 기록 병렬 처리
+      const [saveRes, statusRes] = await Promise.all([
+        fetch(`/api/campaigns/${campaignId}/memos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: today, content }),
+        }),
+        fetch(`/api/campaigns/${campaignId}/keyword-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keywords: copiedKeywords }),
+        }),
+      ])
       if (!saveRes.ok) throw new Error('메모 저장 실패')
 
       const saved = (await saveRes.json()) as DailyMemoType
@@ -548,12 +556,42 @@ export default function CampaignDetailPage({
         return [saved, ...without]
       })
 
+      // 제거 상태 저장 성공 시 키워드 목록 업데이트
+      if (statusRes.ok) {
+        setKeywords((prev) =>
+          prev.map((kw) => (copiedKeywords.includes(kw.keyword) ? { ...kw, removedAt: today } : kw))
+        )
+      }
+
       toast.success('메모에 키워드가 기록되었습니다')
       setIsCopyDoneOpen(false)
     } catch {
       toast.error('메모 저장 중 오류가 발생했습니다')
     } finally {
       setIsSavingMemo(false)
+    }
+  }
+
+  // 키워드 제거 상태 취소
+  async function handleCancelRemoval() {
+    const removedSelected = selectedKeywords.filter(
+      (kw) => keywords.find((k) => k.keyword === kw)?.removedAt
+    )
+    if (removedSelected.length === 0) return
+
+    try {
+      const res = await fetch(
+        `/api/campaigns/${campaignId}/keyword-status?keywords=${encodeURIComponent(removedSelected.join(','))}`,
+        { method: 'DELETE' }
+      )
+      if (!res.ok) throw new Error('제거 취소 실패')
+
+      setKeywords((prev) =>
+        prev.map((kw) => (removedSelected.includes(kw.keyword) ? { ...kw, removedAt: null } : kw))
+      )
+      toast.success(`${removedSelected.length}개 키워드 제거 상태가 취소되었습니다`)
+    } catch {
+      toast.error('제거 취소 중 오류가 발생했습니다')
     }
   }
 
@@ -982,16 +1020,28 @@ export default function CampaignDetailPage({
               <AlertTriangle className="h-4 w-4 text-orange-500" />
               <span>광고비 지출 & 주문수 0인 비효율 키워드</span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={copySelectedKeywords}
-              disabled={selectedKeywords.length === 0}
-            >
-              <Copy className="h-4 w-4" />
-              선택 복사 ({selectedKeywords.length})
-            </Button>
+            <div className="flex items-center gap-2">
+              {selectedKeywords.some((kw) => keywords.find((k) => k.keyword === kw)?.removedAt) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-muted-foreground"
+                  onClick={handleCancelRemoval}
+                >
+                  제거 취소
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={copySelectedKeywords}
+                disabled={selectedKeywords.length === 0}
+              >
+                <Copy className="h-4 w-4" />
+                선택 복사 ({selectedKeywords.length})
+              </Button>
+            </div>
           </div>
 
           <Card>
@@ -1092,7 +1142,15 @@ export default function CampaignDetailPage({
                           />
                         </TableCell>
                         <TableCell className="text-sm font-medium">{kw.keyword}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">-</TableCell>
+                        <TableCell className="text-sm">
+                          {kw.removedAt ? (
+                            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                              [제거] {kw.removedAt}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right text-sm font-medium text-orange-600">
                           {kw.adCost.toLocaleString()}원
                           {kpiData.totalAdCost > 0 && (

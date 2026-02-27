@@ -41,6 +41,7 @@ export type InefficientKeyword = {
   impressions: number
   orders1d: number
   ctr: number | null
+  removedAt: string | null
 }
 
 // 일자별 메모
@@ -80,4 +81,7 @@ export type UploadHistory = {
   uploadedAt: string
   periodStart: string
   periodEnd: string
+  totalRows: number | null
+  insertedRows: number | null
+  duplicateRows: number | null
 }

@@ -51,6 +51,23 @@ export async function GET(
     },
   })
 
+  const keywordList = groups
+    .map((g: { keyword: string | null }) => g.keyword)
+    .filter((k): k is string => k !== null)
+
+  // 키워드 제거 상태 조회
+  const keywordStatuses = await prisma.keywordStatus.findMany({
+    where: { workspaceId: workspace.id, campaignId, keyword: { in: keywordList } },
+    select: { keyword: true, removedAt: true },
+  })
+
+  const removedAtMap = new Map(
+    keywordStatuses.map((s: { keyword: string; removedAt: Date | null }) => [
+      s.keyword,
+      s.removedAt ? s.removedAt.toISOString().split('T')[0] : null,
+    ])
+  )
+
   const items = groups.map(
     (g: {
       keyword: string | null
@@ -67,14 +84,16 @@ export async function GET(
       const clicks = Number(g._sum.clicks ?? 0)
       // orders1d는 having 조건(=0)으로 필터됐으므로 항상 0
       const orders1d = Number(g._sum.orders1d ?? 0)
+      const keyword = g.keyword!
 
       return {
-        keyword: g.keyword!,
+        keyword,
         adCost,
         clicks,
         impressions,
         orders1d,
         ctr: calculateCTR(clicks, impressions),
+        removedAt: removedAtMap.get(keyword) ?? null,
       }
     }
   )
