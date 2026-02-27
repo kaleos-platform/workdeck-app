@@ -33,11 +33,12 @@ model Workspace {
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   // 연관 데이터
-  reportUploads   ReportUpload[]
-  adRecords       AdRecord[]
-  dailyMemos      DailyMemo[]
-  campaignMetas   CampaignMeta[]
-  keywordStatuses KeywordStatus[]
+  reportUploads    ReportUpload[]
+  adRecords        AdRecord[]
+  dailyMemos       DailyMemo[]
+  campaignMetas    CampaignMeta[]
+  keywordStatuses  KeywordStatus[]
+  campaignTargets  CampaignTarget[]
 
   createdAt DateTime @default(now())
 }
@@ -147,6 +148,23 @@ model KeywordStatus {
 
   @@unique([workspaceId, campaignId, keyword])
   @@index([workspaceId, campaignId])
+}
+
+// 캠페인 일 예산 / 목표 ROAS 설정 이력 (effectiveDate 기반)
+model CampaignTarget {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  campaignId    String
+  effectiveDate DateTime @db.Date // 이 값이 적용되기 시작하는 날짜
+  dailyBudget   Int? // 일 예산 (원), null = 미설정
+  targetRoas    Float? // 목표 ROAS (%), null = 미설정
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, campaignId, effectiveDate])
+  @@index([workspaceId, campaignId, effectiveDate])
 }
 
 // 일자별 메모 (캠페인별 광고 작업 이력)

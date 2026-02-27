@@ -36,7 +36,6 @@ import {
   MousePointerClick,
   Target,
   Copy,
-  AlertTriangle,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -53,6 +52,7 @@ import { toast } from 'sonner'
 import { FilterBar } from '@/components/dashboard/filter-bar'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
 import { DailyMemo } from '@/components/dashboard/daily-memo'
+import { CampaignTargetSection } from '@/components/dashboard/campaign-target-section'
 import { getLastNDaysRangeKst, isYmdDateString } from '@/lib/date-range'
 import type {
   AdRecord,
@@ -231,12 +231,14 @@ export default function CampaignDetailPage({
   const [copiedKeywords, setCopiedKeywords] = useState<string[]>([])
   const [isSavingMemo, setIsSavingMemo] = useState(false)
 
-  // 비효율 키워드
+  // 키워드
   const [keywords, setKeywords] = useState<InefficientKeyword[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([])
   // 키워드 탭 정렬
   const [kwSortBy, setKwSortBy] = useState<KeywordSortKey>('adCost')
   const [kwSortOrder, setKwSortOrder] = useState<'asc' | 'desc'>('desc')
+  // 키워드 탭 필터 ('all' | 'zero': 광고비·주문 수 모두 0 | 'orders': 주문 발생)
+  const [kwFilter, setKwFilter] = useState<'all' | 'zero' | 'orders'>('all')
 
   // 메모
   const [memos, setMemos] = useState<DailyMemoType[]>([])
@@ -366,7 +368,8 @@ export default function CampaignDetailPage({
       .then((r) => (r.ok ? r.json() : { items: [] }))
       .then((d: { items: InefficientKeyword[] }) => {
         setKeywords(d.items)
-        setSelectedKeywords([]) // 필터 변경 시 선택 초기화
+        setSelectedKeywords([])
+        setKwFilter('all') // 날짜/adType 변경 시 필터 초기화
       })
       .catch(() => setKeywords([]))
   }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
@@ -471,9 +474,16 @@ export default function CampaignDetailPage({
     setSelectedKeywords([])
   }
 
+  // 키워드 탭 필터링
+  const filteredKeywords = useMemo(() => {
+    if (kwFilter === 'zero') return keywords.filter((kw) => kw.adCost === 0 && kw.orders1d === 0)
+    if (kwFilter === 'orders') return keywords.filter((kw) => kw.orders1d >= 1)
+    return keywords
+  }, [keywords, kwFilter])
+
   // 키워드 클라이언트 사이드 정렬
   const sortedKeywords = useMemo(() => {
-    return [...keywords].sort((a, b) => {
+    return [...filteredKeywords].sort((a, b) => {
       if (kwSortBy === 'keyword') {
         const cmp = a.keyword.localeCompare(b.keyword, 'ko')
         return kwSortOrder === 'asc' ? cmp : -cmp
@@ -486,10 +496,10 @@ export default function CampaignDetailPage({
         ? (av as number) - (bv as number)
         : (bv as number) - (av as number)
     })
-  }, [keywords, kwSortBy, kwSortOrder])
+  }, [filteredKeywords, kwSortBy, kwSortOrder])
 
-  // 키워드 다중 선택
-  const allKeywordNames = keywords.map((k) => k.keyword)
+  // 키워드 다중 선택 (필터링된 키워드 기준)
+  const allKeywordNames = filteredKeywords.map((k) => k.keyword)
   const allSelected =
     selectedKeywords.length === allKeywordNames.length && allKeywordNames.length > 0
 
@@ -931,6 +941,11 @@ export default function CampaignDetailPage({
 
         {/* ── 대시보드 탭 ── */}
         <TabsContent value="dashboard" className="space-y-6">
+          {/* 광고 관리 현황 (F030/F031/F032) */}
+          {isDateRangeReady && (
+            <CampaignTargetSection campaignId={campaignId} from={from} to={to} />
+          )}
+
           {/* KPI 카드 */}
           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
             {kpiCards.map((card) => {
@@ -1015,10 +1030,34 @@ export default function CampaignDetailPage({
 
         {/* ── 키워드 분석 탭 ── */}
         <TabsContent value="keywords" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <AlertTriangle className="h-4 w-4 text-orange-500" />
-              <span>광고비 지출 & 주문수 0인 비효율 키워드</span>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* 필터 토글 버튼 */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-muted-foreground">전체 {keywords.length}개 키워드</span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant={kwFilter === 'zero' ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    setKwFilter((prev) => (prev === 'zero' ? 'all' : 'zero'))
+                    setSelectedKeywords([])
+                  }}
+                >
+                  광고비·주문 수 0
+                </Button>
+                <Button
+                  variant={kwFilter === 'orders' ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    setKwFilter((prev) => (prev === 'orders' ? 'all' : 'orders'))
+                    setSelectedKeywords([])
+                  }}
+                >
+                  주문 발생
+                </Button>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {selectedKeywords.some((kw) => keywords.find((k) => k.keyword === kw)?.removedAt) && (
@@ -1124,7 +1163,9 @@ export default function CampaignDetailPage({
                         colSpan={8}
                         className="py-12 text-center text-sm text-muted-foreground"
                       >
-                        비효율 키워드가 없습니다
+                        {kwFilter === 'all'
+                          ? '키워드 데이터가 없습니다'
+                          : '필터 조건에 맞는 키워드가 없습니다'}
                       </TableCell>
                     </TableRow>
                   ) : (
