@@ -75,7 +75,7 @@ type SortKey =
   | 'engagements'
 
 // 키워드 탭 정렬 컬럼
-type KeywordSortKey = 'keyword' | 'adCost' | 'clicks' | 'orders1d' | 'impressions'
+type KeywordSortKey = 'keyword' | 'adCost' | 'impressions' | 'clicks' | 'cpc' | 'orders1d'
 type TabValue = 'dashboard' | 'keywords' | 'addata'
 const DEFAULT_RANGE_DAYS = 14
 
@@ -473,8 +473,10 @@ export default function CampaignDetailPage({
         const cmp = a.keyword.localeCompare(b.keyword, 'ko')
         return kwSortOrder === 'asc' ? cmp : -cmp
       }
-      const av = a[kwSortBy] ?? -Infinity
-      const bv = b[kwSortBy] ?? -Infinity
+      // CPC는 파생 값이므로 직접 계산
+      const getCpc = (kw: (typeof keywords)[0]) => (kw.clicks > 0 ? kw.adCost / kw.clicks : 0)
+      const av = kwSortBy === 'cpc' ? getCpc(a) : (a[kwSortBy] ?? -Infinity)
+      const bv = kwSortBy === 'cpc' ? getCpc(b) : (b[kwSortBy] ?? -Infinity)
       return kwSortOrder === 'asc'
         ? (av as number) - (bv as number)
         : (bv as number) - (av as number)
@@ -975,25 +977,6 @@ export default function CampaignDetailPage({
                     </TableHead>
                     <TableHead
                       className="cursor-pointer text-right select-none"
-                      onClick={() => handleKwSort('clicks')}
-                    >
-                      <span className="flex items-center justify-end">
-                        클릭 수
-                        <KwSortIcon column="clicks" sortKey={kwSortBy} sortOrder={kwSortOrder} />
-                      </span>
-                    </TableHead>
-                    <TableHead className="text-right">CPC</TableHead>
-                    <TableHead
-                      className="cursor-pointer text-right select-none"
-                      onClick={() => handleKwSort('orders1d')}
-                    >
-                      <span className="flex items-center justify-end">
-                        주문 수
-                        <KwSortIcon column="orders1d" sortKey={kwSortBy} sortOrder={kwSortOrder} />
-                      </span>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer text-right select-none"
                       onClick={() => handleKwSort('impressions')}
                     >
                       <span className="flex items-center justify-end">
@@ -1003,6 +986,33 @@ export default function CampaignDetailPage({
                           sortKey={kwSortBy}
                           sortOrder={kwSortOrder}
                         />
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer text-right select-none"
+                      onClick={() => handleKwSort('clicks')}
+                    >
+                      <span className="flex items-center justify-end">
+                        클릭 수
+                        <KwSortIcon column="clicks" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer text-right select-none"
+                      onClick={() => handleKwSort('cpc')}
+                    >
+                      <span className="flex items-center justify-end">
+                        CPC
+                        <KwSortIcon column="cpc" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer text-right select-none"
+                      onClick={() => handleKwSort('orders1d')}
+                    >
+                      <span className="flex items-center justify-end">
+                        주문 수
+                        <KwSortIcon column="orders1d" sortKey={kwSortBy} sortOrder={kwSortOrder} />
                       </span>
                     </TableHead>
                   </TableRow>
@@ -1042,6 +1052,9 @@ export default function CampaignDetailPage({
                           )}
                         </TableCell>
                         <TableCell className="text-right text-sm">
+                          {kw.impressions.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
                           {kw.clicks.toLocaleString()}
                         </TableCell>
                         <TableCell className="text-right text-sm">
@@ -1051,9 +1064,6 @@ export default function CampaignDetailPage({
                         </TableCell>
                         <TableCell className="text-right text-sm">
                           {kw.orders1d.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {kw.impressions.toLocaleString()}
                         </TableCell>
                       </TableRow>
                     ))
