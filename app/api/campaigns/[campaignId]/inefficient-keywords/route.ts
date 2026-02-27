@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
-import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
+import { calculateCTR } from '@/lib/metrics-calculator'
 
 // GET /api/campaigns/[campaignId]/inefficient-keywords
 // 광고비 지출 & 주문수(1일) = 0인 비효율 키워드 집계
@@ -65,15 +65,16 @@ export async function GET(
       const adCost = Number(g._sum.adCost ?? 0)
       const impressions = Number(g._sum.impressions ?? 0)
       const clicks = Number(g._sum.clicks ?? 0)
-      const revenue1d = Number(g._sum.revenue1d ?? 0)
+      // orders1d는 having 조건(=0)으로 필터됐으므로 항상 0
+      const orders1d = Number(g._sum.orders1d ?? 0)
 
       return {
         keyword: g.keyword!,
         adCost,
-        // orders1d는 필터 조건(=0)이므로 항상 0 → CVR 계산에만 사용
+        clicks,
+        impressions,
+        orders1d,
         ctr: calculateCTR(clicks, impressions),
-        cvr: calculateCVR(0, clicks),
-        roas: calculateROAS(revenue1d, adCost),
       }
     }
   )

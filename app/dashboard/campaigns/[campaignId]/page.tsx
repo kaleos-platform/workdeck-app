@@ -75,7 +75,7 @@ type SortKey =
   | 'engagements'
 
 // 키워드 탭 정렬 컬럼
-type KeywordSortKey = 'keyword' | 'adCost' | 'ctr' | 'cvr' | 'roas'
+type KeywordSortKey = 'keyword' | 'adCost' | 'clicks' | 'orders1d' | 'impressions'
 type TabValue = 'dashboard' | 'keywords' | 'addata'
 const DEFAULT_RANGE_DAYS = 14
 
@@ -963,6 +963,7 @@ export default function CampaignDetailPage({
                         <KwSortIcon column="keyword" sortKey={kwSortBy} sortOrder={kwSortOrder} />
                       </span>
                     </TableHead>
+                    <TableHead className="text-muted-foreground">제거 상태</TableHead>
                     <TableHead
                       className="cursor-pointer text-right select-none"
                       onClick={() => handleKwSort('adCost')}
@@ -974,29 +975,34 @@ export default function CampaignDetailPage({
                     </TableHead>
                     <TableHead
                       className="cursor-pointer text-right select-none"
-                      onClick={() => handleKwSort('ctr')}
+                      onClick={() => handleKwSort('clicks')}
                     >
                       <span className="flex items-center justify-end">
-                        CTR
-                        <KwSortIcon column="ctr" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                        클릭 수
+                        <KwSortIcon column="clicks" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                      </span>
+                    </TableHead>
+                    <TableHead className="text-right">CPC</TableHead>
+                    <TableHead
+                      className="cursor-pointer text-right select-none"
+                      onClick={() => handleKwSort('orders1d')}
+                    >
+                      <span className="flex items-center justify-end">
+                        주문 수
+                        <KwSortIcon column="orders1d" sortKey={kwSortBy} sortOrder={kwSortOrder} />
                       </span>
                     </TableHead>
                     <TableHead
                       className="cursor-pointer text-right select-none"
-                      onClick={() => handleKwSort('cvr')}
+                      onClick={() => handleKwSort('impressions')}
                     >
                       <span className="flex items-center justify-end">
-                        CVR
-                        <KwSortIcon column="cvr" sortKey={kwSortBy} sortOrder={kwSortOrder} />
-                      </span>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer text-right select-none"
-                      onClick={() => handleKwSort('roas')}
-                    >
-                      <span className="flex items-center justify-end">
-                        ROAS
-                        <KwSortIcon column="roas" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                        노출 수
+                        <KwSortIcon
+                          column="impressions"
+                          sortKey={kwSortBy}
+                          sortOrder={kwSortOrder}
+                        />
                       </span>
                     </TableHead>
                   </TableRow>
@@ -1005,7 +1011,7 @@ export default function CampaignDetailPage({
                   {sortedKeywords.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={8}
                         className="py-12 text-center text-sm text-muted-foreground"
                       >
                         비효율 키워드가 없습니다
@@ -1026,12 +1032,29 @@ export default function CampaignDetailPage({
                           />
                         </TableCell>
                         <TableCell className="text-sm font-medium">{kw.keyword}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">-</TableCell>
                         <TableCell className="text-right text-sm font-medium text-orange-600">
                           {kw.adCost.toLocaleString()}원
+                          {kpiData.totalAdCost > 0 && (
+                            <span className="ml-1 text-xs font-normal text-muted-foreground">
+                              ({((kw.adCost / kpiData.totalAdCost) * 100).toFixed(2)}%)
+                            </span>
+                          )}
                         </TableCell>
-                        <TableCell className="text-right text-sm">{fmt(kw.ctr, '%')}</TableCell>
-                        <TableCell className="text-right text-sm">{fmt(kw.cvr, '%')}</TableCell>
-                        <TableCell className="text-right text-sm">{fmt(kw.roas, '%')}</TableCell>
+                        <TableCell className="text-right text-sm">
+                          {kw.clicks.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {kw.clicks > 0
+                            ? `${Math.round(kw.adCost / kw.clicks).toLocaleString()}원`
+                            : '-'}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {kw.orders1d.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {kw.impressions.toLocaleString()}
+                        </TableCell>
                       </TableRow>
                     ))
                   )}

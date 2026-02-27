@@ -94,11 +94,46 @@ export const DUMMY_AD_RECORDS: AdRecord[] = [
 
 // 비효율 키워드 (adCost > 0, orders1d = 0)
 export const DUMMY_KEYWORDS: InefficientKeyword[] = [
-  { keyword: '프리미엄 봄 원피스', adCost: 45200, ctr: 2.3, cvr: null, roas: null },
-  { keyword: '여성 플리츠 스커트', adCost: 32100, ctr: 2.5, cvr: null, roas: null },
-  { keyword: '봄 신상 블라우스', adCost: 28700, ctr: 2.3, cvr: null, roas: null },
-  { keyword: '캐주얼 린넨 팬츠', adCost: 19500, ctr: 2.5, cvr: null, roas: null },
-  { keyword: '오버핏 봄 재킷', adCost: 15800, ctr: 2.4, cvr: null, roas: null },
+  {
+    keyword: '프리미엄 봄 원피스',
+    adCost: 45200,
+    clicks: 120,
+    impressions: 5200,
+    orders1d: 0,
+    ctr: 2.3,
+  },
+  {
+    keyword: '여성 플리츠 스커트',
+    adCost: 32100,
+    clicks: 95,
+    impressions: 3800,
+    orders1d: 0,
+    ctr: 2.5,
+  },
+  {
+    keyword: '봄 신상 블라우스',
+    adCost: 28700,
+    clicks: 88,
+    impressions: 3800,
+    orders1d: 0,
+    ctr: 2.3,
+  },
+  {
+    keyword: '캐주얼 린넨 팬츠',
+    adCost: 19500,
+    clicks: 62,
+    impressions: 2480,
+    orders1d: 0,
+    ctr: 2.5,
+  },
+  {
+    keyword: '오버핏 봄 재킷',
+    adCost: 15800,
+    clicks: 54,
+    impressions: 2250,
+    orders1d: 0,
+    ctr: 2.4,
+  },
 ]
 
 // 일자별 메모

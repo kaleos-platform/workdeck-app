@@ -33,13 +33,14 @@ export type AdRecord = {
   parsedOptionName: string | null
 }
 
-// 비효율 키워드 항목 (CTR/CVR/ROAS 계산값 포함)
+// 비효율 키워드 항목
 export type InefficientKeyword = {
   keyword: string
   adCost: number
+  clicks: number
+  impressions: number
+  orders1d: number
   ctr: number | null
-  cvr: number | null
-  roas: number | null
 }
 
 // 일자별 메모
