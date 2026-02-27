@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, use } from 'react'
+import { useState, useMemo, useEffect, useLayoutEffect, useRef, use } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -47,6 +47,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
 import { FilterBar } from '@/components/dashboard/filter-bar'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
@@ -89,6 +90,43 @@ const TOGGLE_COLUMNS = [
   { key: 'revenue1d', label: '매출 금액' },
 ] as const
 type ToggleColumnKey = (typeof TOGGLE_COLUMNS)[number]['key']
+
+// 텍스트가 잘릴 때만 shadcn Tooltip을 표시하는 테이블 셀
+function TruncatedCell({
+  text,
+  className,
+}: {
+  text: string | null | undefined
+  className?: string
+}) {
+  const ref = useRef<HTMLTableCellElement>(null)
+  const [showTooltip, setShowTooltip] = useState(false)
+  const display = text ?? '-'
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || !text) return
+    const truncated = el.scrollWidth > el.offsetWidth
+    if (truncated !== showTooltip) setShowTooltip(truncated)
+  })
+
+  const cell = (
+    <TableCell ref={ref} className={className}>
+      {display}
+    </TableCell>
+  )
+
+  if (!showTooltip) return cell
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{cell}</TooltipTrigger>
+      <TooltipContent>
+        <p className="max-w-xs break-words">{text}</p>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 function SortIcon({
   column,
@@ -1190,33 +1228,25 @@ export default function CampaignDetailPage({
                       sortedRecords.map((record) => (
                         <TableRow key={record.id}>
                           <TableCell className="text-sm">{record.date}</TableCell>
-                          <TableCell
+                          <TruncatedCell
+                            text={record.placement}
                             className="w-24 min-w-24 truncate text-sm text-muted-foreground"
-                            title={record.placement ?? ''}
-                          >
-                            {record.placement ?? '-'}
-                          </TableCell>
-                          <TableCell
+                          />
+                          <TruncatedCell
+                            text={record.parsedProductName}
                             className="w-52 max-w-52 min-w-52 truncate text-sm"
-                            title={record.parsedProductName ?? ''}
-                          >
-                            {record.parsedProductName ?? '-'}
-                          </TableCell>
-                          <TableCell
+                          />
+                          <TruncatedCell
+                            text={record.parsedOptionName}
                             className="w-28 min-w-28 truncate text-sm text-muted-foreground"
-                            title={record.parsedOptionName ?? ''}
-                          >
-                            {record.parsedOptionName ?? '-'}
-                          </TableCell>
+                          />
                           <TableCell className="text-sm text-muted-foreground">
                             {record.material ?? '-'}
                           </TableCell>
-                          <TableCell
+                          <TruncatedCell
+                            text={record.keyword}
                             className="max-w-28 truncate text-sm text-muted-foreground"
-                            title={record.keyword ?? ''}
-                          >
-                            {record.keyword ?? '-'}
-                          </TableCell>
+                          />
                           <TableCell className="text-right text-sm font-medium">
                             {fmt(record.roas, '%')}
                           </TableCell>
@@ -1250,35 +1280,27 @@ export default function CampaignDetailPage({
                         <TableRow key={record.id}>
                           <TableCell className="text-sm">{record.date}</TableCell>
                           {visibleColumns.has('placement') && (
-                            <TableCell
+                            <TruncatedCell
+                              text={record.placement}
                               className="w-24 min-w-24 truncate text-sm text-muted-foreground"
-                              title={record.placement ?? ''}
-                            >
-                              {record.placement ?? '-'}
-                            </TableCell>
+                            />
                           )}
                           {visibleColumns.has('parsedProductName') && (
-                            <TableCell
+                            <TruncatedCell
+                              text={record.parsedProductName}
                               className="w-52 max-w-52 min-w-52 truncate text-sm"
-                              title={record.parsedProductName ?? ''}
-                            >
-                              {record.parsedProductName ?? '-'}
-                            </TableCell>
+                            />
                           )}
                           {visibleColumns.has('parsedOptionName') && (
-                            <TableCell
+                            <TruncatedCell
+                              text={record.parsedOptionName}
                               className="w-28 min-w-28 truncate text-sm text-muted-foreground"
-                              title={record.parsedOptionName ?? ''}
-                            >
-                              {record.parsedOptionName ?? '-'}
-                            </TableCell>
+                            />
                           )}
-                          <TableCell
+                          <TruncatedCell
+                            text={record.keyword}
                             className="max-w-28 truncate text-sm text-muted-foreground"
-                            title={record.keyword ?? ''}
-                          >
-                            {record.keyword ?? '-'}
-                          </TableCell>
+                          />
                           <TableCell className="text-right text-sm font-medium">
                             {fmt(record.roas, '%')}
                           </TableCell>
@@ -1329,61 +1351,55 @@ export default function CampaignDetailPage({
 
           {/* 페이지네이션 */}
           {totalPages > 1 && (
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
-              <Button variant="outline" size="sm" onClick={() => setPage(1)} disabled={page === 1}>
-                처음
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(Math.max(1, blockStartPage - blockSize))}
-                disabled={!hasPrevBlock}
-              >
-                이전 10
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                이전
-              </Button>
-              {pageNumbers.map((pageNumber) => (
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-1.5">
                 <Button
-                  key={pageNumber}
-                  variant={pageNumber === page ? 'default' : 'outline'}
+                  variant="outline"
                   size="sm"
-                  className="min-w-9"
-                  onClick={() => setPage(pageNumber)}
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
                 >
-                  {pageNumber}
+                  처음
                 </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                다음
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(Math.min(totalPages, blockEndPage + 1))}
-                disabled={!hasNextBlock}
-              >
-                다음 10
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(totalPages)}
-                disabled={page === totalPages}
-              >
-                마지막
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.max(1, blockStartPage - blockSize))}
+                  disabled={!hasPrevBlock}
+                >
+                  이전 10
+                </Button>
+                {pageNumbers.map((pageNumber) => (
+                  <Button
+                    key={pageNumber}
+                    variant={pageNumber === page ? 'default' : 'outline'}
+                    size="sm"
+                    className="min-w-9 font-medium"
+                    onClick={() => setPage(pageNumber)}
+                  >
+                    {pageNumber}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.min(totalPages, blockEndPage + 1))}
+                  disabled={!hasNextBlock}
+                >
+                  다음 10
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                >
+                  마지막
+                </Button>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {blockStartPage}-{blockEndPage} / 총 {totalPages}페이지
+              </span>
             </div>
           )}
         </TabsContent>
