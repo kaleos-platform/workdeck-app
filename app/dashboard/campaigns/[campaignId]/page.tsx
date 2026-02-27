@@ -836,6 +836,7 @@ export default function CampaignDetailPage({
     else params.set('tab', nextTab)
 
     const query = params.toString()
+    setMemoTarget(null)
     router.push(query ? `${pathname}?${query}` : pathname)
   }
 
