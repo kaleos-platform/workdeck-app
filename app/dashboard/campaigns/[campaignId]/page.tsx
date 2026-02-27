@@ -226,6 +226,11 @@ export default function CampaignDetailPage({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletingCampaign, setIsDeletingCampaign] = useState(false)
 
+  // 키워드 복사 완료 다이얼로그
+  const [isCopyDoneOpen, setIsCopyDoneOpen] = useState(false)
+  const [copiedKeywords, setCopiedKeywords] = useState<string[]>([])
+  const [isSavingMemo, setIsSavingMemo] = useState(false)
+
   // 비효율 키워드
   const [keywords, setKeywords] = useState<InefficientKeyword[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([])
@@ -504,7 +509,52 @@ export default function CampaignDetailPage({
       return
     }
     navigator.clipboard.writeText(selectedKeywords.join(', '))
-    toast.success(`${selectedKeywords.length}개 키워드가 클립보드에 복사되었습니다`)
+    setCopiedKeywords([...selectedKeywords])
+    setIsCopyDoneOpen(true)
+  }
+
+  // 오늘 날짜 KST YYYY-MM-DD
+  function getTodayKst(): string {
+    return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
+  }
+
+  // 키워드 복사 후 메모 저장
+  async function handleSaveKeywordMemo() {
+    if (isSavingMemo) return
+    setIsSavingMemo(true)
+    try {
+      const today = getTodayKst()
+      const newEntry = `키워드 제거: ${copiedKeywords.join(', ')}`
+
+      // 오늘 기존 메모 조회
+      const res = await fetch(`/api/campaigns/${campaignId}/memos?from=${today}&to=${today}`)
+      const data = (res.ok ? await res.json() : { items: [] }) as {
+        items: DailyMemoType[]
+      }
+      const existing = data.items.find((m) => m.date === today)
+
+      const content = existing ? `${existing.content}\n${newEntry}` : newEntry
+
+      const saveRes = await fetch(`/api/campaigns/${campaignId}/memos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: today, content }),
+      })
+      if (!saveRes.ok) throw new Error('메모 저장 실패')
+
+      const saved = (await saveRes.json()) as DailyMemoType
+      setMemos((prev) => {
+        const without = prev.filter((m) => m.date !== today)
+        return [saved, ...without]
+      })
+
+      toast.success('메모에 키워드가 기록되었습니다')
+      setIsCopyDoneOpen(false)
+    } catch {
+      toast.error('메모 저장 중 오류가 발생했습니다')
+    } finally {
+      setIsSavingMemo(false)
+    }
   }
 
   // 캠페인 표시명 저장
@@ -1602,6 +1652,33 @@ export default function CampaignDetailPage({
               disabled={isDeletingCampaign}
             >
               {isDeletingCampaign ? '삭제 중...' : '삭제'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 키워드 복사 완료 다이얼로그 */}
+      <Dialog open={isCopyDoneOpen} onOpenChange={setIsCopyDoneOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>키워드 복사 완료</DialogTitle>
+            <DialogDescription>
+              {copiedKeywords.length}개 키워드가 클립보드에 복사되었습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-48 overflow-y-auto rounded-md border bg-muted/40 px-3 py-2 text-sm">
+            {copiedKeywords.map((kw) => (
+              <p key={kw} className="py-0.5 text-foreground">
+                {kw}
+              </p>
+            ))}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setIsCopyDoneOpen(false)}>
+              닫기
+            </Button>
+            <Button onClick={handleSaveKeywordMemo} disabled={isSavingMemo}>
+              {isSavingMemo ? '저장 중...' : '메모 남기기'}
             </Button>
           </DialogFooter>
         </DialogContent>
