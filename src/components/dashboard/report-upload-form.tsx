@@ -120,20 +120,34 @@ export function ReportUploadForm() {
     return () => window.removeEventListener('beforeunload', handler)
   }, [isProcessing])
 
-  function validateFile(file: File): boolean {
-    return file.name.endsWith('.xlsx') || file.name.endsWith('.csv')
-  }
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
   function addFiles(fileList: FileList | File[]) {
-    const valid: FileEntry[] = []
+    const entries: FileEntry[] = []
     for (const file of Array.from(fileList)) {
-      if (!validateFile(file)) {
-        toast.error(`${file.name}: .xlsx 또는 .csv 파일만 업로드할 수 있습니다`)
+      const isValidFormat = file.name.endsWith('.xlsx') || file.name.endsWith('.csv')
+      if (!isValidFormat) {
+        entries.push({
+          id: `${file.name}-${Date.now()}-${Math.random()}`,
+          file,
+          status: 'error',
+          errorMessage: '.xlsx 또는 .csv 파일만 업로드할 수 있습니다',
+        })
         continue
       }
-      valid.push({ id: `${file.name}-${Date.now()}-${Math.random()}`, file, status: 'pending' })
+      if (file.size > MAX_FILE_SIZE) {
+        entries.push({
+          id: `${file.name}-${Date.now()}-${Math.random()}`,
+          file,
+          status: 'error',
+          errorMessage:
+            '파일 크기가 10MB를 초과합니다. 파일을 분할하거나 용량을 줄인 후 다시 업로드해주세요',
+        })
+        continue
+      }
+      entries.push({ id: `${file.name}-${Date.now()}-${Math.random()}`, file, status: 'pending' })
     }
-    if (valid.length > 0) setFiles((prev) => [...prev, ...valid])
+    if (entries.length > 0) setFiles((prev) => [...prev, ...entries])
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -397,7 +411,7 @@ export function ReportUploadForm() {
                           </span>
                         </p>
                       </div>
-                      {entry.status === 'pending' && (
+                      {(entry.status === 'pending' || entry.status === 'error') && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()

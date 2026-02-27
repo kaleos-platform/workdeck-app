@@ -87,6 +87,16 @@ export async function POST(request: NextRequest) {
     return errorResponse('파일 다운로드에 실패했습니다', 500)
   }
 
+  // 파일 크기 제한: 10MB
+  const MAX_SIZE = 10 * 1024 * 1024
+  if (blob.size > MAX_SIZE) {
+    await supabase.storage.from('reports').remove([storagePath])
+    return errorResponse(
+      '파일 크기가 10MB를 초과합니다. 파일을 분할하거나 용량을 줄인 후 다시 업로드해주세요',
+      400
+    )
+  }
+
   // 파일 형식에 따라 파서 선택
   let rows: ParsedRow[]
   try {
@@ -109,10 +119,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (rows.length === 0) {
-    return errorResponse(
-      '파싱된 데이터가 없습니다. 쿠팡 광고 리포트 형식의 파일인지 확인해주세요',
-      400
-    )
+    return errorResponse('데이터가 없는 파일입니다. 내용을 확인 후 다시 업로드해주세요', 400)
   }
 
   const { periodStart, periodEnd } = detectPeriod(rows)
