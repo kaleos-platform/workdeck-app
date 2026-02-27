@@ -239,6 +239,93 @@ function handleTabChange(nextTab: string) {
 
 ---
 
+### F038 — 캠페인 목록 광고 데이터 입력 기간 표시
+
+**관련 컴포넌트/파일**:
+
+- `src/components/dashboard/campaign-list-with-metrics.tsx`
+- `app/api/campaigns/route.ts`
+
+**요구사항**
+
+- 캠페인 목록 카드에 해당 캠페인의 광고 데이터 최초 등록일(`minDate`)과 최종 등록일(`maxDate`)을 표시한다.
+- 사용자가 마지막 업로드 기준일을 보고 리포트 재업로드가 필요한지 판단할 수 있도록 한다.
+- 최신 상태 기준: `maxDate >= 어제(KST)` → 최신 상태
+- 업로드 필요 기준: `maxDate < 어제(KST)` (즉, 오늘 기준 2일 이상 경과) → 업로드 필요 뱃지 표시
+- 광고 데이터가 전혀 없는 캠페인(`minDate`, `maxDate` 모두 null)은 기간 표시를 생략한다.
+
+**현재 구현 상태**
+
+- `/api/campaigns` 응답에 `minDate`, `maxDate` 필드가 존재하지 않음.
+- `CampaignListWithMetrics` 컴포넌트는 데이터 기간 정보를 전혀 표시하지 않음.
+
+**구현 상세**
+
+API 변경 (`app/api/campaigns/route.ts`)
+
+- `startDate`/`endDate` 파라미터 유무와 무관하게, 모든 응답에 `minDate`/`maxDate`를 포함한다.
+- Prisma `groupBy` + `_min/_max` aggregate로 캠페인별 날짜 범위를 단일 쿼리로 조회한다.
+
+```typescript
+// 캠페인별 날짜 범위 집계 (KST 보정 필요)
+const dateRangeAgg = await prisma.adRecord.groupBy({
+  by: ['campaignId'],
+  where: { workspaceId: workspace.id },
+  _min: { date: true },
+  _max: { date: true },
+})
+```
+
+KST 날짜 복원 주의사항
+
+- `AdRecord.date`는 `T00:00:00+09:00`(KST 자정)으로 저장되어 DB에는 UTC 전날 오후 15:00로 기록됨.
+- Prisma가 반환하는 `Date` 객체를 `.toISOString().split('T')[0]`으로 변환하면 날짜가 하루 앞당겨짐.
+- 반드시 `formatDateToYmdKst(date)` (`src/lib/date-range.ts`) 를 사용해 KST 기준 YYYY-MM-DD 문자열로 복원한다.
+
+```typescript
+// 올바른 날짜 복원 (formatDateToYmdKst 사용)
+minDate: minDateRaw ? formatDateToYmdKst(minDateRaw) : null,
+maxDate: maxDateRaw ? formatDateToYmdKst(maxDateRaw) : null,
+```
+
+업로드 필요 여부 판단 (클라이언트)
+
+- 기준일: KST 어제 = `getDaysAgoStrKst(1)` (`src/lib/date-range.ts`)
+- `maxDate < yesterday` 이면 업로드 필요 상태로 판단한다.
+- 판단 로직은 컴포넌트 렌더링 시 인라인으로 처리하며 별도 API 호출 없음.
+
+UI 표시 (`CampaignListWithMetrics`)
+
+- 표시 위치: 캠페인 카드 내 일 예산·목표 ROAS 줄 아래 (세 번째 줄)
+- 정상 상태: `데이터: 2026-01-01 ~ 2026-02-26` (중립 텍스트 색상)
+- 업로드 필요 상태: `데이터: 2026-01-01 ~ 2026-02-24 · 업로드 필요` (주황색 경고 텍스트)
+- `maxDate`가 null인 경우: 기간 줄 미표시
+
+**API 변경**
+
+응답 타입에 다음 필드 추가:
+
+```typescript
+type CampaignWithMetrics = {
+  // ... 기존 필드 유지 ...
+  minDate: string | null // KST 기준 YYYY-MM-DD, 광고 데이터 최초 등록일
+  maxDate: string | null // KST 기준 YYYY-MM-DD, 광고 데이터 최종 등록일
+}
+```
+
+`startDate`/`endDate` 없이 호출하는 경우에도 동일하게 `minDate`/`maxDate` 포함.
+
+**수락 기준**
+
+- [ ] `/api/campaigns` 응답에 `minDate`, `maxDate` 필드가 포함된다.
+- [ ] `minDate`/`maxDate`는 KST 기준 YYYY-MM-DD 형식 문자열이다 (UTC 시프트 없음).
+- [ ] 캠페인 카드에 `데이터: YYYY-MM-DD ~ YYYY-MM-DD` 형식으로 기간이 표시된다.
+- [ ] `maxDate >= 어제(KST)` 인 경우 중립 텍스트만 표시되고 경고 뱃지가 없다.
+- [ ] `maxDate < 어제(KST)` 인 경우 "업로드 필요" 문구가 주황색으로 표시된다.
+- [ ] 광고 데이터가 없어 `maxDate`가 null인 캠페인은 기간 줄이 표시되지 않는다.
+
+---
+
 ## 3. 데이터 모델 변경 사항
 
 없음 — V4 기능은 모두 기존 API와 데이터 모델을 활용하며 신규 테이블이나 API 생성 없음.
@@ -255,11 +342,12 @@ function handleTabChange(nextTab: string) {
 
 ### 그룹 B — UI 개선 (단일 컴포넌트 수정)
 
-| 기능 ID | 기능명                       | 예상 작업량 | 대상 파일                           |
-| ------- | ---------------------------- | ----------- | ----------------------------------- |
-| F033    | 메모 일자 수정 기능          | 낮음        | `memo-dialog.tsx`, `daily-memo.tsx` |
-| F035    | 키워드 필터 개선             | 낮음        | `[campaignId]/page.tsx`             |
-| F037    | 대시보드 캠페인 목록 UI 개선 | 낮음~중간   | `campaign-list-with-metrics.tsx`    |
+| 기능 ID | 기능명                            | 예상 작업량 | 대상 파일                                              |
+| ------- | --------------------------------- | ----------- | ------------------------------------------------------ |
+| F033    | 메모 일자 수정 기능               | 낮음        | `memo-dialog.tsx`, `daily-memo.tsx`                    |
+| F035    | 키워드 필터 개선                  | 낮음        | `[campaignId]/page.tsx`                                |
+| F037    | 대시보드 캠페인 목록 UI 개선      | 낮음~중간   | `campaign-list-with-metrics.tsx`                       |
+| F038    | 캠페인 목록 광고 데이터 기간 표시 | 낮음~중간   | `campaigns/route.ts`, `campaign-list-with-metrics.tsx` |
 
 ### 그룹 C — 컴포넌트 리팩토링
 
@@ -271,10 +359,11 @@ function handleTabChange(nextTab: string) {
 
 ## 5. V4 기능 명세 요약
 
-| ID       | 기능명                                                   | 관련 페이지                  | 데이터 변경 |
-| -------- | -------------------------------------------------------- | ---------------------------- | ----------- |
-| **F033** | 메모 일자 수정 기능                                      | 캠페인 상세 > 대시보드 탭    | 없음        |
-| **F034** | 일 예산/목표 ROAS 설정 섹션 UI 개편                      | 캠페인 상세 > 대시보드 탭    | 없음        |
-| **F035** | 키워드 필터명 수정 + 제거 키워드 숨기기 필터 + 정렬 개선 | 캠페인 상세 > 키워드 분석 탭 | 없음        |
-| **F036** | 대시보드 탭 메모 팝업 버그 수정                          | 캠페인 상세 > 대시보드 탭    | 없음        |
-| **F037** | 대시보드 캠페인 목록 레이아웃 개선                       | 대시보드                     | 없음        |
+| ID       | 기능명                                                     | 관련 페이지                  | 데이터 변경               |
+| -------- | ---------------------------------------------------------- | ---------------------------- | ------------------------- |
+| **F033** | 메모 일자 수정 기능                                        | 캠페인 상세 > 대시보드 탭    | 없음                      |
+| **F034** | 일 예산/목표 ROAS 설정 섹션 UI 개편                        | 캠페인 상세 > 대시보드 탭    | 없음                      |
+| **F035** | 키워드 필터명 수정 + 제거 키워드 숨기기 필터 + 정렬 개선   | 캠페인 상세 > 키워드 분석 탭 | 없음                      |
+| **F036** | 대시보드 탭 메모 팝업 버그 수정                            | 캠페인 상세 > 대시보드 탭    | 없음                      |
+| **F037** | 대시보드 캠페인 목록 레이아웃 개선                         | 대시보드                     | 없음                      |
+| **F038** | 캠페인 목록 광고 데이터 입력 기간 표시 및 업로드 필요 안내 | 대시보드                     | 없음 (API 응답 필드 추가) |
