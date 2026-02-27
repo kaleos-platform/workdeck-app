@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
+import type { AuthError } from '@supabase/supabase-js'
+import { X, MailCheck, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Form,
   FormControl,
@@ -19,9 +22,32 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 
-export function LoginForm() {
+function getAuthErrorMessage(error: AuthError): string {
+  const msg = error.message.toLowerCase()
+  if (msg.includes('invalid login credentials')) {
+    return '이메일 또는 비밀번호가 올바르지 않습니다.'
+  }
+  if (msg.includes('email not confirmed')) {
+    return '이메일 인증이 완료되지 않았습니다. 가입한 이메일의 인증 링크를 확인해주세요.'
+  }
+  if (msg.includes('user not found')) {
+    return '등록되지 않은 이메일입니다. 회원가입을 진행해주세요.'
+  }
+  if (msg.includes('too many requests')) {
+    return '너무 많은 로그인 시도가 감지되었습니다. 잠시 후 다시 시도해주세요.'
+  }
+  return '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+}
+
+interface LoginFormProps {
+  isVerifyPending?: boolean
+}
+
+export function LoginForm({ isVerifyPending = false }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [showBanner, setShowBanner] = useState(isVerifyPending)
+  const [authError, setAuthError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -35,6 +61,7 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginInput) {
     setIsLoading(true)
+    setAuthError(null)
 
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
@@ -42,7 +69,7 @@ export function LoginForm() {
     })
 
     if (error) {
-      toast.error(error.message)
+      setAuthError(getAuthErrorMessage(error))
       setIsLoading(false)
       return
     }
@@ -73,6 +100,24 @@ export function LoginForm() {
 
   return (
     <div className="space-y-4">
+      {/* 이메일 인증 안내 배너 */}
+      {showBanner && (
+        <Alert className="relative">
+          <MailCheck className="h-4 w-4" />
+          <AlertDescription className="pr-6">
+            가입한 이메일을 확인하고 인증을 완료해주세요. 인증 완료 후 로그인이 가능합니다.
+          </AlertDescription>
+          <button
+            onClick={() => setShowBanner(false)}
+            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+            aria-label="배너 닫기"
+            type="button"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </Alert>
+      )}
+
       {/* 구글 로그인 버튼 */}
       <Button
         variant="outline"
@@ -156,6 +201,14 @@ export function LoginForm() {
               </FormItem>
             )}
           />
+
+          {/* 로그인 에러 인라인 Alert */}
+          {authError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          )}
 
           <Button type="submit" className="w-full" disabled={isAnyLoading} size="lg">
             {isLoading ? '로그인 중...' : '로그인'}

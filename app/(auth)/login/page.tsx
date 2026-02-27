@@ -7,7 +7,14 @@ export const metadata = {
   description: '계정으로 로그인하세요',
 }
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ verified?: string }>
+}) {
+  const { verified } = await searchParams
+  const isVerifyPending = verified === 'pending'
+
   return (
     <Card>
       <CardHeader className="space-y-1">
@@ -15,7 +22,7 @@ export default function LoginPage() {
         <CardDescription>이메일과 비밀번호를 입력하여 로그인하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <LoginForm />
+        <LoginForm isVerifyPending={isVerifyPending} />
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">계정이 없으신가요? </span>
