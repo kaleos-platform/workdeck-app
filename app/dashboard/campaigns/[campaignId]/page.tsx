@@ -239,6 +239,8 @@ export default function CampaignDetailPage({
   const [kwSortOrder, setKwSortOrder] = useState<'asc' | 'desc'>('desc')
   // 키워드 탭 필터 ('all' | 'zero': 광고비·주문 수 모두 0 | 'orders': 주문 발생)
   const [kwFilter, setKwFilter] = useState<'all' | 'zero' | 'orders'>('all')
+  // 제거된 키워드 숨기기 토글
+  const [kwExcludeRemoved, setKwExcludeRemoved] = useState(false)
 
   // 메모
   const [memos, setMemos] = useState<DailyMemoType[]>([])
@@ -370,6 +372,7 @@ export default function CampaignDetailPage({
         setKeywords(d.items)
         setSelectedKeywords([])
         setKwFilter('all') // 날짜/adType 변경 시 필터 초기화
+        setKwExcludeRemoved(false) // 기간 변경 시 제거 제외 토글도 초기화
       })
       .catch(() => setKeywords([]))
   }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
@@ -476,10 +479,12 @@ export default function CampaignDetailPage({
 
   // 키워드 탭 필터링
   const filteredKeywords = useMemo(() => {
-    if (kwFilter === 'zero') return keywords.filter((kw) => kw.adCost === 0 && kw.orders1d === 0)
-    if (kwFilter === 'orders') return keywords.filter((kw) => kw.orders1d >= 1)
-    return keywords
-  }, [keywords, kwFilter])
+    let result = keywords
+    if (kwExcludeRemoved) result = result.filter((kw) => kw.removedAt === null)
+    if (kwFilter === 'zero') return result.filter((kw) => kw.orders1d === 0 && kw.adCost > 0)
+    if (kwFilter === 'orders') return result.filter((kw) => kw.orders1d >= 1)
+    return result
+  }, [keywords, kwFilter, kwExcludeRemoved])
 
   // 키워드 클라이언트 사이드 정렬
   const sortedKeywords = useMemo(() => {
@@ -1041,23 +1046,49 @@ export default function CampaignDetailPage({
                   size="sm"
                   className="h-7 text-xs"
                   onClick={() => {
-                    setKwFilter((prev) => (prev === 'zero' ? 'all' : 'zero'))
+                    const next = kwFilter === 'zero' ? 'all' : 'zero'
+                    setKwFilter(next)
                     setSelectedKeywords([])
+                    if (next === 'zero') {
+                      setKwSortBy('adCost')
+                      setKwSortOrder('desc')
+                    }
                   }}
                 >
-                  광고비·주문 수 0
+                  저효율 키워드 보기
                 </Button>
                 <Button
                   variant={kwFilter === 'orders' ? 'default' : 'outline'}
                   size="sm"
                   className="h-7 text-xs"
                   onClick={() => {
-                    setKwFilter((prev) => (prev === 'orders' ? 'all' : 'orders'))
+                    const next = kwFilter === 'orders' ? 'all' : 'orders'
+                    setKwFilter(next)
                     setSelectedKeywords([])
+                    if (next === 'orders') {
+                      setKwSortBy('orders1d')
+                      setKwSortOrder('desc')
+                    }
                   }}
                 >
-                  주문 발생
+                  주문 발생 키워드
                 </Button>
+                <div className="flex items-center gap-1.5">
+                  <Checkbox
+                    id="kw-exclude-removed"
+                    checked={kwExcludeRemoved}
+                    onCheckedChange={() => {
+                      setKwExcludeRemoved((prev) => !prev)
+                      setSelectedKeywords([])
+                    }}
+                  />
+                  <label
+                    htmlFor="kw-exclude-removed"
+                    className="cursor-pointer text-sm select-none"
+                  >
+                    제거 제외
+                  </label>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
