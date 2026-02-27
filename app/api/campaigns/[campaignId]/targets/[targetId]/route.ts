@@ -36,9 +36,12 @@ export async function PATCH(
     },
   })
 
+  const toKSTDateStr = (date: Date) =>
+    new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
   return NextResponse.json({
     ...updated,
-    effectiveDate: updated.effectiveDate.toISOString().split('T')[0],
+    effectiveDate: toKSTDateStr(updated.effectiveDate),
   })
 }
 

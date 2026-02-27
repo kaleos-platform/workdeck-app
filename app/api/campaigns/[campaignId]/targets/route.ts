@@ -18,10 +18,13 @@ export async function GET(
     orderBy: { effectiveDate: 'desc' },
   })
 
-  // effectiveDate를 YYYY-MM-DD 문자열로 직렬화
+  // KST 날짜 문자열로 복원 (저장 시 T00:00:00+09:00 → UTC 전날로 시프트되므로 +1일 보정)
+  const toKSTDateStr = (date: Date) =>
+    new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
   const result = targets.map((t) => ({
     ...t,
-    effectiveDate: t.effectiveDate.toISOString().split('T')[0],
+    effectiveDate: toKSTDateStr(t.effectiveDate),
   }))
 
   return NextResponse.json(result)
@@ -68,8 +71,11 @@ export async function POST(
     },
   })
 
+  const toKSTDateStr = (date: Date) =>
+    new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
   return NextResponse.json({
     ...target,
-    effectiveDate: target.effectiveDate.toISOString().split('T')[0],
+    effectiveDate: toKSTDateStr(target.effectiveDate),
   })
 }
