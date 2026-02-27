@@ -4,7 +4,7 @@ import { resolveWorkspace } from '@/lib/api-helpers'
 import { calculateCTR } from '@/lib/metrics-calculator'
 
 // GET /api/campaigns/[campaignId]/inefficient-keywords
-// 광고비 지출 & 주문수(1일) = 0인 비효율 키워드 집계
+// 캠페인 키워드 집계 (기본: 전체, filter 파라미터로 필터링 가능)
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ campaignId: string }> }
@@ -40,11 +40,6 @@ export async function GET(
       clicks: true,
       orders1d: true,
       revenue1d: true,
-    },
-    // 기간 내 총 주문수가 0이고 광고비가 있는 키워드만 추출
-    having: {
-      orders1d: { _sum: { equals: 0 } },
-      adCost: { _sum: { gt: 0 } },
     },
     orderBy: {
       _sum: { adCost: 'desc' },
@@ -82,7 +77,6 @@ export async function GET(
       const adCost = Number(g._sum.adCost ?? 0)
       const impressions = Number(g._sum.impressions ?? 0)
       const clicks = Number(g._sum.clicks ?? 0)
-      // orders1d는 having 조건(=0)으로 필터됐으므로 항상 0
       const orders1d = Number(g._sum.orders1d ?? 0)
       const keyword = g.keyword!
 
