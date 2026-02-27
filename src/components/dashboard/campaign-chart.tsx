@@ -77,7 +77,7 @@ function formatLeftAxisTick(value: number): string {
 
 function formatRightAxisTick(value: number): string {
   if (!Number.isFinite(value)) return ''
-  return `${value.toFixed(2)}%`
+  return `${Math.round(value)}%`
 }
 
 function calcLeftTicks(dataMax: number): number[] {
@@ -110,6 +110,13 @@ function buildInteriorTicks([min, max]: [number, number], stepCount = 4): number
 
   const interval = (max - min) / (stepCount + 1)
   return Array.from({ length: stepCount }, (_, idx) => min + interval * (idx + 1))
+}
+
+function buildRightAxisTicks(maxValue: number, step = 50): number[] {
+  const ceiling = Math.ceil(maxValue / step) * step || step
+  const ticks: number[] = []
+  for (let v = 0; v <= ceiling; v += step) ticks.push(v)
+  return ticks
 }
 
 export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartProps) {
@@ -164,11 +171,10 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
   const leftMax = leftValues.length > 0 ? Math.max(...leftValues) : 0
   const leftTicks = calcLeftTicks(leftMax)
 
-  const rightDomain = computeAxisDomain(
-    activeRightMetrics.length > 0 ? getMetricValues(activeRightMetrics) : [],
-    [0, 100]
-  )
-  const rightTicks = buildInteriorTicks(rightDomain)
+  const rightValues = activeRightMetrics.length > 0 ? getMetricValues(activeRightMetrics) : []
+  const rightMax = rightValues.length > 0 ? Math.max(...rightValues) : 100
+  const rightTicks = buildRightAxisTicks(rightMax)
+  const rightDomain: [number, number] = [0, rightTicks[rightTicks.length - 1]]
 
   // 차트 클릭 시 활성화된 tooltip index를 기준으로 원본 날짜를 계산
   function handleChartClick(nextState: MouseHandlerDataParam) {
