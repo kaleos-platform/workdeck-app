@@ -1666,14 +1666,11 @@ export default function CampaignDetailPage({
               {copiedKeywords.length}개 키워드가 클립보드에 복사되었습니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-48 overflow-y-auto rounded-md border bg-muted/40 px-3 py-2 text-sm">
-            {copiedKeywords.map((kw) => (
-              <p key={kw} className="py-0.5 text-foreground">
-                {kw}
-              </p>
-            ))}
+          <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-foreground">
+            {copiedKeywords.join(', ')}
           </div>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <p className="text-sm text-muted-foreground">복사한 키워드를 제거 기록으로 남길까요?</p>
+          <DialogFooter className="gap-3 sm:gap-3">
             <Button variant="outline" onClick={() => setIsCopyDoneOpen(false)}>
               닫기
             </Button>
