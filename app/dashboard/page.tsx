@@ -149,6 +149,7 @@ export default async function DashboardPage() {
       icon: DollarSign,
       color: 'text-orange-500',
       wow: wowAdCost,
+      prevValue: lwAdCost > 0 ? `${lwAdCost.toLocaleString('ko-KR')}원` : null,
     },
     {
       title: '평균 ROAS',
@@ -157,6 +158,7 @@ export default async function DashboardPage() {
       icon: TrendingUp,
       color: 'text-green-600',
       wow: wowRoas,
+      prevValue: lwRoas !== null ? `${lwRoas.toFixed(1)}%` : null,
     },
     {
       title: '총 매출액',
@@ -165,6 +167,7 @@ export default async function DashboardPage() {
       icon: ShoppingCart,
       color: 'text-emerald-600',
       wow: wowRevenue,
+      prevValue: lwRevenue > 0 ? `${lwRevenue.toLocaleString('ko-KR')}원` : null,
     },
     {
       title: '평균 CTR',
@@ -173,6 +176,7 @@ export default async function DashboardPage() {
       icon: MousePointerClick,
       color: 'text-blue-600',
       wow: wowCtr,
+      prevValue: lwCtr !== null ? `${lwCtr.toFixed(2)}%` : null,
     },
     {
       title: '평균 CVR',
@@ -181,6 +185,7 @@ export default async function DashboardPage() {
       icon: Target,
       color: 'text-purple-600',
       wow: wowCvr,
+      prevValue: lwCvr !== null ? `${lwCvr.toFixed(2)}%` : null,
     },
   ]
 
@@ -243,13 +248,12 @@ export default async function DashboardPage() {
                     </span>
                   ) : diff > 0 ? (
                     <span className="flex items-center gap-0.5 text-xs text-green-600">
-                      <ArrowUp className="h-3 w-3" />
-                      {diff}% 지난주 대비
+                      <ArrowUp className="h-3 w-3" />+{diff}% 지난주 대비
                     </span>
                   ) : diff < 0 ? (
                     <span className="flex items-center gap-0.5 text-xs text-red-500">
                       <ArrowDown className="h-3 w-3" />
-                      {Math.abs(diff)}% 지난주 대비
+                      {diff}% 지난주 대비
                     </span>
                   ) : (
                     <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
@@ -258,6 +262,9 @@ export default async function DashboardPage() {
                     </span>
                   )}
                 </div>
+                {card.prevValue !== null && (
+                  <p className="mt-0.5 text-xs text-muted-foreground">지난주: {card.prevValue}</p>
+                )}
               </CardContent>
             </Card>
           )

@@ -40,6 +40,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Minus,
   Columns3,
   Pencil,
   Check,
@@ -90,6 +91,12 @@ const TOGGLE_COLUMNS = [
   { key: 'revenue1d', label: '매출 금액' },
 ] as const
 type ToggleColumnKey = (typeof TOGGLE_COLUMNS)[number]['key']
+
+// 이전 기간 대비 증감율 계산 (소수점 1자리, 이전 값이 0이면 null)
+function calcDiff(current: number, prev: number): number | null {
+  if (prev === 0) return null
+  return Math.round(((current - prev) / prev) * 1000) / 10
+}
 
 // 텍스트가 잘릴 때만 shadcn Tooltip을 표시하는 테이블 셀
 function TruncatedCell({
@@ -199,6 +206,8 @@ export default function CampaignDetailPage({
 
   // 지표 시계열
   const [metricSeries, setMetricSeries] = useState<MetricSeries[]>([])
+  // 이전 동일 기간 시계열
+  const [prevMetricSeries, setPrevMetricSeries] = useState<MetricSeries[]>([])
 
   // 광고 데이터 탭 상태
   const [records, setRecords] = useState<AdRecord[]>([])
@@ -260,6 +269,30 @@ export default function CampaignDetailPage({
       .then((r) => (r.ok ? r.json() : { series: [] }))
       .then((d: { series: MetricSeries[] }) => setMetricSeries(d.series))
       .catch(() => setMetricSeries([]))
+  }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
+
+  // 이전 동일 기간 지표 조회
+  useEffect(() => {
+    if (!isDateRangeReady || !from || !to) {
+      setPrevMetricSeries([])
+      return
+    }
+    // 현재 기간 일수 계산 후 동일 길이만큼 이전 기간 설정
+    const fromMs = new Date(from + 'T00:00:00').getTime()
+    const toMs = new Date(to + 'T00:00:00').getTime()
+    const days = Math.round((toMs - fromMs) / (1000 * 60 * 60 * 24)) + 1
+    const prevToMs = fromMs - 24 * 60 * 60 * 1000
+    const prevFromMs = prevToMs - (days - 1) * 24 * 60 * 60 * 1000
+    const prevFrom = new Date(prevFromMs).toISOString().split('T')[0]
+    const prevTo = new Date(prevToMs).toISOString().split('T')[0]
+
+    const q = new URLSearchParams({ from: prevFrom, to: prevTo })
+    if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
+
+    fetch(`/api/campaigns/${campaignId}/metrics?${q}`)
+      .then((r) => (r.ok ? r.json() : { series: [] }))
+      .then((d: { series: MetricSeries[] }) => setPrevMetricSeries(d.series))
+      .catch(() => setPrevMetricSeries([]))
   }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
 
   // 광고 데이터 조회
@@ -548,6 +581,29 @@ export default function CampaignDetailPage({
     }
   }, [metricSeries])
 
+  // 이전 동일 기간 KPI 집계
+  const prevKpiData = useMemo(() => {
+    if (prevMetricSeries.length === 0) return null
+    const totalAdCost = prevMetricSeries.reduce((s, r) => s + r.adCost, 0)
+    const totalRevenue = prevMetricSeries.reduce((s, r) => s + r.totalRevenue, 0)
+    const roasVals = prevMetricSeries.map((r) => r.roas).filter((v): v is number => v !== null)
+    const ctrVals = prevMetricSeries.map((r) => r.ctr).filter((v): v is number => v !== null)
+    const cvrVals = prevMetricSeries.map((r) => r.cvr).filter((v): v is number => v !== null)
+    const engRateVals = prevMetricSeries
+      .map((r) => r.engagementRate)
+      .filter((v): v is number => v !== null)
+    const avg = (arr: number[]) =>
+      arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : null
+    return {
+      totalAdCost,
+      totalRevenue,
+      avgRoas: avg(roasVals),
+      avgCtr: avg(ctrVals),
+      avgCvr: avg(cvrVals),
+      avgEngagementRate: avg(engRateVals),
+    }
+  }, [prevMetricSeries])
+
   const kpiCards = isNcaAdType
     ? [
         {
@@ -555,24 +611,42 @@ export default function CampaignDetailPage({
           value: `${kpiData.totalAdCost.toLocaleString('ko-KR')}원`,
           icon: DollarSign,
           color: 'text-orange-500',
+          isPositive: false,
+          diff: prevKpiData ? calcDiff(kpiData.totalAdCost, prevKpiData.totalAdCost) : null,
+          prevValue: prevKpiData ? `${prevKpiData.totalAdCost.toLocaleString('ko-KR')}원` : null,
         },
         {
           title: '총 매출액',
           value: `${kpiData.totalRevenue.toLocaleString('ko-KR')}원`,
           icon: ShoppingCart,
           color: 'text-emerald-600',
+          isPositive: true,
+          diff: prevKpiData ? calcDiff(kpiData.totalRevenue, prevKpiData.totalRevenue) : null,
+          prevValue: prevKpiData ? `${prevKpiData.totalRevenue.toLocaleString('ko-KR')}원` : null,
         },
         {
           title: '평균 ROAS',
           value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(2)}%` : '-',
           icon: TrendingUp,
           color: 'text-green-600',
+          isPositive: true,
+          diff:
+            kpiData.avgRoas !== null && prevKpiData?.avgRoas != null
+              ? calcDiff(kpiData.avgRoas, prevKpiData.avgRoas)
+              : null,
+          prevValue: prevKpiData?.avgRoas != null ? `${prevKpiData.avgRoas.toFixed(2)}%` : null,
         },
         {
           title: '평균 CTR',
           value: kpiData.avgCtr !== null ? `${kpiData.avgCtr.toFixed(2)}%` : '-',
           icon: MousePointerClick,
           color: 'text-blue-600',
+          isPositive: true,
+          diff:
+            kpiData.avgCtr !== null && prevKpiData?.avgCtr != null
+              ? calcDiff(kpiData.avgCtr, prevKpiData.avgCtr)
+              : null,
+          prevValue: prevKpiData?.avgCtr != null ? `${prevKpiData.avgCtr.toFixed(2)}%` : null,
         },
         {
           title: '평균 참여율',
@@ -580,6 +654,15 @@ export default function CampaignDetailPage({
             kpiData.avgEngagementRate !== null ? `${kpiData.avgEngagementRate.toFixed(2)}%` : '-',
           icon: Target,
           color: 'text-purple-600',
+          isPositive: true,
+          diff:
+            kpiData.avgEngagementRate !== null && prevKpiData?.avgEngagementRate != null
+              ? calcDiff(kpiData.avgEngagementRate, prevKpiData.avgEngagementRate)
+              : null,
+          prevValue:
+            prevKpiData?.avgEngagementRate != null
+              ? `${prevKpiData.avgEngagementRate.toFixed(2)}%`
+              : null,
         },
       ]
     : [
@@ -588,30 +671,54 @@ export default function CampaignDetailPage({
           value: `${kpiData.totalAdCost.toLocaleString('ko-KR')}원`,
           icon: DollarSign,
           color: 'text-orange-500',
+          isPositive: false,
+          diff: prevKpiData ? calcDiff(kpiData.totalAdCost, prevKpiData.totalAdCost) : null,
+          prevValue: prevKpiData ? `${prevKpiData.totalAdCost.toLocaleString('ko-KR')}원` : null,
         },
         {
           title: '총 매출액',
           value: `${kpiData.totalRevenue.toLocaleString('ko-KR')}원`,
           icon: ShoppingCart,
           color: 'text-emerald-600',
+          isPositive: true,
+          diff: prevKpiData ? calcDiff(kpiData.totalRevenue, prevKpiData.totalRevenue) : null,
+          prevValue: prevKpiData ? `${prevKpiData.totalRevenue.toLocaleString('ko-KR')}원` : null,
         },
         {
           title: '평균 ROAS',
           value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(2)}%` : '-',
           icon: TrendingUp,
           color: 'text-green-600',
+          isPositive: true,
+          diff:
+            kpiData.avgRoas !== null && prevKpiData?.avgRoas != null
+              ? calcDiff(kpiData.avgRoas, prevKpiData.avgRoas)
+              : null,
+          prevValue: prevKpiData?.avgRoas != null ? `${prevKpiData.avgRoas.toFixed(2)}%` : null,
         },
         {
           title: '평균 CTR',
           value: kpiData.avgCtr !== null ? `${kpiData.avgCtr.toFixed(2)}%` : '-',
           icon: MousePointerClick,
           color: 'text-blue-600',
+          isPositive: true,
+          diff:
+            kpiData.avgCtr !== null && prevKpiData?.avgCtr != null
+              ? calcDiff(kpiData.avgCtr, prevKpiData.avgCtr)
+              : null,
+          prevValue: prevKpiData?.avgCtr != null ? `${prevKpiData.avgCtr.toFixed(2)}%` : null,
         },
         {
           title: '평균 CVR',
           value: kpiData.avgCvr !== null ? `${kpiData.avgCvr.toFixed(2)}%` : '-',
           icon: Target,
           color: 'text-purple-600',
+          isPositive: true,
+          diff:
+            kpiData.avgCvr !== null && prevKpiData?.avgCvr != null
+              ? calcDiff(kpiData.avgCvr, prevKpiData.avgCvr)
+              : null,
+          prevValue: prevKpiData?.avgCvr != null ? `${prevKpiData.avgCvr.toFixed(2)}%` : null,
         },
       ]
 
@@ -738,6 +845,14 @@ export default function CampaignDetailPage({
           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
             {kpiCards.map((card) => {
               const Icon = card.icon
+              const { diff, isPositive, prevValue } = card
+              // 색상 결정: isPositive면 상승=녹, 하락=적 / isPositive=false면 반대
+              const diffColor =
+                diff === null || diff === 0
+                  ? 'text-muted-foreground'
+                  : diff > 0 === isPositive
+                    ? 'text-green-600'
+                    : 'text-red-500'
               return (
                 <Card key={card.title}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -746,6 +861,24 @@ export default function CampaignDetailPage({
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">{card.value}</div>
+                    {diff !== null && (
+                      <div className={`mt-1 flex items-center gap-0.5 text-xs ${diffColor}`}>
+                        {diff > 0 ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : diff < 0 ? (
+                          <ArrowDown className="h-3 w-3" />
+                        ) : (
+                          <Minus className="h-3 w-3" />
+                        )}
+                        <span>
+                          {diff > 0 ? `+${diff}` : diff === 0 ? '변동 없음' : `${diff}`}
+                          {diff !== 0 && '%'}
+                        </span>
+                      </div>
+                    )}
+                    {prevValue !== null && (
+                      <p className="mt-0.5 text-xs text-muted-foreground">이전: {prevValue}</p>
+                    )}
                   </CardContent>
                 </Card>
               )
