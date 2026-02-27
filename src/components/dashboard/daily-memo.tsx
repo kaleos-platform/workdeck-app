@@ -35,12 +35,14 @@ export function DailyMemo({
 }: DailyMemoProps) {
   const [memos, setMemos] = useState<DailyMemoType[]>(initialMemos)
 
-  // 팝업 상태: null이면 닫힘, { date, content } 이면 열림
+  // 팝업 상태: open=false면 닫힘
   const [dialogState, setDialogState] = useState<{
     open: boolean
     date: string
     initialContent: string
-  }>({ open: false, date: '', initialContent: '' })
+    isEditing: boolean
+    originalDate: string
+  }>({ open: false, date: '', initialContent: '', isEditing: false, originalDate: '' })
 
   // initialMemos 변경 시 동기화
   useEffect(() => {
@@ -55,6 +57,8 @@ export function DailyMemo({
         open: true,
         date: targetDate,
         initialContent: existing?.content ?? '',
+        isEditing: !!existing,
+        originalDate: existing?.date ?? '',
       })
     }
   }, [targetDate, targetDateVersion]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -67,26 +71,44 @@ export function DailyMemo({
   // "메모 추가" 버튼 — 오늘 날짜, 신규 모드
   function openAddDialog() {
     const today = new Date().toISOString().split('T')[0]
-    setDialogState({ open: true, date: today, initialContent: '' })
+    setDialogState({
+      open: true,
+      date: today,
+      initialContent: '',
+      isEditing: false,
+      originalDate: '',
+    })
   }
 
   // 행 클릭 — 수정 모드
   function openEditDialog(memo: DailyMemoType) {
-    setDialogState({ open: true, date: memo.date, initialContent: memo.content })
+    setDialogState({
+      open: true,
+      date: memo.date,
+      initialContent: memo.content,
+      isEditing: true,
+      originalDate: memo.date,
+    })
   }
 
   // 저장 완료 콜백
   function handleSaved(saved: DailyMemoType) {
-    const exists = memos.find((m) => m.date === saved.date)
+    const isDateChanged =
+      dialogState.isEditing && !!dialogState.originalDate && dialogState.originalDate !== saved.date
+    const baseMemos = isDateChanged
+      ? memos.filter((m) => m.date !== dialogState.originalDate)
+      : memos
+    const exists = baseMemos.find((m) => m.date === saved.date)
     const newMemos = exists
-      ? memos.map((m) => (m.date === saved.date ? saved : m))
-      : [...memos, saved].sort((a, b) => b.date.localeCompare(a.date))
-    updateMemos(newMemos)
+      ? baseMemos.map((m) => (m.date === saved.date ? saved : m))
+      : [...baseMemos, saved]
+    updateMemos(newMemos.sort((a, b) => b.date.localeCompare(a.date)))
   }
 
   // 삭제 완료 콜백
   function handleDeleted() {
-    updateMemos(memos.filter((m) => m.date !== dialogState.date))
+    const deleteDate = dialogState.isEditing ? dialogState.originalDate : dialogState.date
+    updateMemos(memos.filter((m) => m.date !== deleteDate))
   }
 
   // 기간 내 메모만 표시 (from/to 필터)
@@ -97,8 +119,6 @@ export function DailyMemo({
       return true
     })
     .sort((a, b) => b.date.localeCompare(a.date))
-
-  const editingMemo = memos.find((m) => m.date === dialogState.date)
 
   return (
     <div className="space-y-3">
@@ -160,10 +180,12 @@ export function DailyMemo({
         open={dialogState.open}
         onOpenChange={(open) => setDialogState((prev) => ({ ...prev, open }))}
         campaignId={campaignId}
+        isEditing={dialogState.isEditing}
+        originalDate={dialogState.originalDate}
         date={dialogState.date}
         initialContent={dialogState.initialContent}
         onSaved={handleSaved}
-        onDeleted={editingMemo ? handleDeleted : undefined}
+        onDeleted={dialogState.isEditing ? handleDeleted : undefined}
       />
     </div>
   )

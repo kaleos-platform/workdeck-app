@@ -21,8 +21,8 @@ interface MemoDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   campaignId: string
-  // 수정 모드: date 고정 + initialContent 있음
-  // 신규 모드: date 변경 가능 + initialContent 없음
+  isEditing: boolean
+  originalDate: string
   date: string
   initialContent?: string
   onSaved: (memo: DailyMemo) => void
@@ -33,12 +33,14 @@ export function MemoDialog({
   open,
   onOpenChange,
   campaignId,
+  isEditing,
+  originalDate,
   date: dateProp,
   initialContent = '',
   onSaved,
   onDeleted,
 }: MemoDialogProps) {
-  const isEditMode = !!initialContent
+  const isEditMode = isEditing
   const [date, setDate] = useState(dateProp)
   const [content, setContent] = useState(initialContent)
   const [isSaving, setIsSaving] = useState(false)
@@ -60,17 +62,44 @@ export function MemoDialog({
       toast.error('날짜를 선택해주세요')
       return
     }
-    if (!content.trim()) {
+    const trimmedContent = content.trim()
+    if (!trimmedContent) {
       toast.error('메모 내용을 입력해주세요')
+      return
+    }
+    const isDateChanged = isEditMode && date !== originalDate
+    if (isDateChanged && !originalDate) {
+      toast.error('원본 날짜 정보가 없습니다')
       return
     }
 
     setIsSaving(true)
     try {
+      let saveContent = trimmedContent
+
+      if (isDateChanged) {
+        const getRes = await fetch(
+          `/api/campaigns/${campaignId}/memos?from=${encodeURIComponent(date)}&to=${encodeURIComponent(
+            date
+          )}`
+        )
+        if (!getRes.ok) {
+          const err = await getRes.json().catch(() => null)
+          toast.error(err?.message || '기존 메모 조회에 실패했습니다')
+          return
+        }
+
+        const data = (await getRes.json()) as { items?: DailyMemo[] }
+        const existingMemo = data.items?.find((memo) => memo.date === date)
+        if (existingMemo) {
+          saveContent = `${existingMemo.content}\n${trimmedContent}`
+        }
+      }
+
       const res = await fetch(`/api/campaigns/${campaignId}/memos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, content }),
+        body: JSON.stringify({ date, content: saveContent }),
       })
 
       if (!res.ok) {
@@ -78,8 +107,20 @@ export function MemoDialog({
         toast.error(err.message || '저장에 실패했습니다')
         return
       }
-
       const saved: DailyMemo = await res.json()
+
+      if (isDateChanged) {
+        const deleteRes = await fetch(
+          `/api/campaigns/${campaignId}/memos?date=${encodeURIComponent(originalDate)}`,
+          { method: 'DELETE' }
+        )
+        if (!deleteRes.ok) {
+          const err = await deleteRes.json().catch(() => null)
+          toast.error(err?.message || '기존 메모 삭제에 실패했습니다')
+          return
+        }
+      }
+
       onSaved(saved)
       onOpenChange(false)
       toast.success('메모가 저장되었습니다')
@@ -92,12 +133,20 @@ export function MemoDialog({
 
   async function handleDelete() {
     if (!onDeleted) return
+    const deleteDate = isEditMode ? originalDate : date
+    if (!deleteDate) {
+      toast.error('삭제할 날짜 정보가 없습니다')
+      return
+    }
 
     setIsSaving(true)
     try {
-      const res = await fetch(`/api/campaigns/${campaignId}/memos?date=${date}`, {
-        method: 'DELETE',
-      })
+      const res = await fetch(
+        `/api/campaigns/${campaignId}/memos?date=${encodeURIComponent(deleteDate)}`,
+        {
+          method: 'DELETE',
+        }
+      )
 
       if (!res.ok) {
         toast.error('삭제에 실패했습니다')
@@ -125,17 +174,13 @@ export function MemoDialog({
           {/* 날짜 */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium">날짜</label>
-            {isEditMode ? (
-              <p className="text-sm text-muted-foreground">{dateProp}</p>
-            ) : (
-              <Input
-                type="date"
-                value={date}
-                max={today}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-44 text-sm"
-              />
-            )}
+            <Input
+              type="date"
+              value={date}
+              max={today}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-44 text-sm"
+            />
           </div>
 
           {/* 내용 */}
