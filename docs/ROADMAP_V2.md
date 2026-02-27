@@ -83,7 +83,7 @@ PRD V2(F014~F026) 13개 기능을 구현하여 UX를 개선하고 핵심 분석 
 
 ---
 
-- **Task 020 — F014: 랜딩 페이지 버튼 cursor:pointer**
+- **Task 020 — F014: 랜딩 페이지 버튼 cursor:pointer** ✅ - 완료
 
   **대상 파일**: `app/(marketing)/` 랜딩 페이지 컴포넌트, `src/app/globals.css`
 
