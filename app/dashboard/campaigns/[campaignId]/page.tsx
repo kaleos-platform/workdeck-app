@@ -849,7 +849,7 @@ export default function CampaignDetailPage({
     <div className="space-y-6">
       {/* 페이지 헤더 */}
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className={isEditingName ? 'w-1/2' : ''}>
           {isEditingName ? (
             <div className="flex items-center gap-2">
               <Input
