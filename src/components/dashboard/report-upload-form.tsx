@@ -353,9 +353,9 @@ export function ReportUploadForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div
+            <label
               className={cn(
-                'cursor-pointer rounded-lg border-2 border-dashed p-10 text-center transition-colors',
+                'block cursor-pointer rounded-lg border-2 border-dashed p-10 text-center transition-colors',
                 isDragOver
                   ? 'border-orange-400 bg-orange-50 dark:bg-orange-950/20'
                   : 'border-gray-300 hover:border-orange-400 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900/50'
@@ -363,7 +363,6 @@ export function ReportUploadForm() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
             >
               <input
                 ref={fileInputRef}
@@ -380,7 +379,7 @@ export function ReportUploadForm() {
               <p className="mt-1 text-xs text-gray-500">
                 Excel (.xlsx), CSV (.csv) · 여러 파일 동시 선택 가능
               </p>
-            </div>
+            </label>
 
             {files.length > 0 && (
               <div className="space-y-1.5">

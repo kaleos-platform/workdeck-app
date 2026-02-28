@@ -53,7 +53,7 @@ import { FilterBar } from '@/components/dashboard/filter-bar'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
 import { DailyMemo } from '@/components/dashboard/daily-memo'
 import { CampaignTargetSection } from '@/components/dashboard/campaign-target-section'
-import { getLastNDaysRangeKst, isYmdDateString } from '@/lib/date-range'
+import { getDaysAgoStrKst, isYmdDateString } from '@/lib/date-range'
 import type {
   AdRecord,
   InefficientKeyword,
@@ -77,7 +77,6 @@ type SortKey =
 // 키워드 탭 정렬 컬럼
 type KeywordSortKey = 'keyword' | 'adCost' | 'impressions' | 'clicks' | 'cpc' | 'orders1d'
 type TabValue = 'dashboard' | 'keywords' | 'addata'
-const DEFAULT_RANGE_DAYS = 14
 
 // 광고 데이터 탭 토글 가능한 추가 컬럼
 const TOGGLE_COLUMNS = [
@@ -250,14 +249,13 @@ export default function CampaignDetailPage({
     adTypeFilter === '신규 구매 고객 확보' ||
     (adTypeFilter === 'all' && adTypes.length === 1 && adTypes[0] === '신규 구매 고객 확보')
 
-  // 기간 파라미터가 없거나 비정상인 경우 기본 14일로 보정
+  // 기간 파라미터가 없거나 비정상인 경우 기본값(어제 기준 7일)으로 보정
   useEffect(() => {
     if (isDateRangeReady) return
 
-    const { from: defaultFrom, to: defaultTo } = getLastNDaysRangeKst(DEFAULT_RANGE_DAYS)
     const params = new URLSearchParams(searchParamsString)
-    params.set('from', defaultFrom)
-    params.set('to', defaultTo)
+    params.set('from', getDaysAgoStrKst(7))
+    params.set('to', getDaysAgoStrKst(1))
 
     router.replace(`${pathname}?${params.toString()}`)
   }, [isDateRangeReady, pathname, router, searchParamsString])

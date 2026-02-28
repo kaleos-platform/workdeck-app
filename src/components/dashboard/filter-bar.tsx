@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RotateCcw } from 'lucide-react'
-import { getLastNDaysRangeKst, getTodayStrKst } from '@/lib/date-range'
+import { getDaysAgoStrKst, getTodayStrKst } from '@/lib/date-range'
 
 interface AdTypeOption {
   value: string
@@ -30,14 +30,12 @@ const DEFAULT_AD_TYPE_OPTIONS: AdTypeOption[] = [
   { value: '상품 광고', label: '상품 광고' },
 ]
 
-// 퀵 기간 옵션 목록
+// 퀵 기간 옵션 목록 (어제 기준)
 const QUICK_PERIODS = [
-  { label: '오늘', getRange: () => ({ from: getTodayStrKst(), to: getTodayStrKst() }) },
-  { label: '7일', getRange: () => getLastNDaysRangeKst(7) },
-  { label: '14일', getRange: () => getLastNDaysRangeKst(14) },
-  { label: '30일', getRange: () => getLastNDaysRangeKst(30) },
-  { label: '90일', getRange: () => getLastNDaysRangeKst(90) },
-  { label: '180일', getRange: () => getLastNDaysRangeKst(180) },
+  { label: '어제', getRange: () => ({ from: getDaysAgoStrKst(1), to: getDaysAgoStrKst(1) }) },
+  { label: '최근 7일', getRange: () => ({ from: getDaysAgoStrKst(7), to: getDaysAgoStrKst(1) }) },
+  { label: '최근 14일', getRange: () => ({ from: getDaysAgoStrKst(14), to: getDaysAgoStrKst(1) }) },
+  { label: '최근 30일', getRange: () => ({ from: getDaysAgoStrKst(30), to: getDaysAgoStrKst(1) }) },
   {
     label: '이번달',
     getRange: () => {
@@ -74,11 +72,11 @@ export function FilterBar({
   const adType = searchParams.get('adType') ?? 'all'
   const today = getTodayStrKst()
 
-  // 초기 진입 시 from/to 없으면 14일 기간으로 자동 설정
+  // 초기 진입 시 from/to 없으면 최근 14일(어제 기준)로 자동 설정
   useEffect(() => {
     if (!hasInitialized.current && !from && !to) {
       hasInitialized.current = true
-      const { from: f, to: t } = QUICK_PERIODS[2].getRange() // 14일
+      const { from: f, to: t } = QUICK_PERIODS[2].getRange() // 최근 14일
       const params = new URLSearchParams(searchParams.toString())
       params.set('from', f)
       params.set('to', t)
