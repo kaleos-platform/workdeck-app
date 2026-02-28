@@ -38,6 +38,21 @@ type SummaryData = {
   roasAchievement: number | null
 }
 
+function getBudgetStatus(value: number | null) {
+  if (value === null) return null
+  if (value >= 80 && value <= 120)
+    return { label: '정상', textColor: 'text-green-600', bgColor: 'bg-green-50' }
+  if (value > 120) return { label: '초과', textColor: 'text-red-600', bgColor: 'bg-red-50' }
+  return { label: '부족', textColor: 'text-amber-600', bgColor: 'bg-amber-50' }
+}
+
+function getRoasStatus(value: number | null) {
+  if (value === null) return null
+  if (value >= 90) return { label: '좋음', textColor: 'text-green-600', bgColor: 'bg-green-50' }
+  if (value >= 60) return { label: '보통', textColor: 'text-amber-600', bgColor: 'bg-amber-50' }
+  return { label: '손해 위험', textColor: 'text-red-600', bgColor: 'bg-red-50' }
+}
+
 type Props = {
   campaignId: string
   from: string
@@ -318,7 +333,25 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
                     {isLoading ? (
                       <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
                     ) : pct(summary?.budgetUtilization ?? null) !== null ? (
-                      <p className="mt-1 text-xl font-bold">{pct(summary!.budgetUtilization)}</p>
+                      <>
+                        {(() => {
+                          const status = getBudgetStatus(summary!.budgetUtilization)
+                          return (
+                            <div className="mt-1 flex items-center gap-2">
+                              <p className={`text-xl font-bold ${status?.textColor ?? ''}`}>
+                                {pct(summary!.budgetUtilization)}
+                              </p>
+                              {status && (
+                                <span
+                                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.bgColor} ${status.textColor}`}
+                                >
+                                  {status.label}
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })()}
+                      </>
                     ) : (
                       <p className="mt-1 text-sm text-muted-foreground">데이터 없음</p>
                     )}
@@ -336,7 +369,25 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
                     {isLoading ? (
                       <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
                     ) : pct(summary?.roasAchievement ?? null) !== null ? (
-                      <p className="mt-1 text-xl font-bold">{pct(summary!.roasAchievement)}</p>
+                      <>
+                        {(() => {
+                          const status = getRoasStatus(summary!.roasAchievement)
+                          return (
+                            <div className="mt-1 flex items-center gap-2">
+                              <p className={`text-xl font-bold ${status?.textColor ?? ''}`}>
+                                {pct(summary!.roasAchievement)}
+                              </p>
+                              {status && (
+                                <span
+                                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.bgColor} ${status.textColor}`}
+                                >
+                                  {status.label}
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })()}
+                      </>
                     ) : (
                       <p className="mt-1 text-sm text-muted-foreground">데이터 없음</p>
                     )}
@@ -444,7 +495,25 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
                 {isLoading ? (
                   <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
                 ) : pct(summary?.budgetUtilization ?? null) !== null ? (
-                  <p className="mt-1 text-xl font-bold">{pct(summary!.budgetUtilization)}</p>
+                  <>
+                    {(() => {
+                      const status = getBudgetStatus(summary!.budgetUtilization)
+                      return (
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className={`text-xl font-bold ${status?.textColor ?? ''}`}>
+                            {pct(summary!.budgetUtilization)}
+                          </p>
+                          {status && (
+                            <span
+                              className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.bgColor} ${status.textColor}`}
+                            >
+                              {status.label}
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })()}
+                  </>
                 ) : (
                   <p className="mt-1 text-sm text-muted-foreground">
                     해당 기간에 설정된 일 예산이 없습니다.
@@ -456,7 +525,25 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
                 {isLoading ? (
                   <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
                 ) : pct(summary?.roasAchievement ?? null) !== null ? (
-                  <p className="mt-1 text-xl font-bold">{pct(summary!.roasAchievement)}</p>
+                  <>
+                    {(() => {
+                      const status = getRoasStatus(summary!.roasAchievement)
+                      return (
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className={`text-xl font-bold ${status?.textColor ?? ''}`}>
+                            {pct(summary!.roasAchievement)}
+                          </p>
+                          {status && (
+                            <span
+                              className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.bgColor} ${status.textColor}`}
+                            >
+                              {status.label}
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })()}
+                  </>
                 ) : (
                   <p className="mt-1 text-sm text-muted-foreground">
                     해당 기간에 설정된 목표 ROAS가 없습니다.
