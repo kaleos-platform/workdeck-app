@@ -267,13 +267,13 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
           <CardContent className="p-4">
             {/* 행 1: 제목 + 추가 버튼 */}
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-semibold text-muted-foreground">
+              <span className="text-base font-semibold text-muted-foreground">
                 일 예산 / 목표 ROAS 설정
               </span>
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 shrink-0 gap-1 text-xs"
+                className="h-7 shrink-0 gap-1 text-sm"
                 onClick={openNewDialog}
               >
                 <Plus className="h-3.5 w-3.5" />
