@@ -83,35 +83,52 @@ export async function GET(
     return null
   }
 
-  // 일별 소진율 / 달성율 계산
-  const budgetUtilizations: number[] = []
-  const roasAchievements: number[] = []
+  // 기간 전체 집계 변수
+  let totalAdCost = 0
+  let totalApplicableBudget = 0
+  let hasBudget = false
+
+  let totalRevenue = 0
+  let sumTargetRoas = 0
+  let countTargetRoas = 0
 
   for (const dateStr of dates) {
     const target = getEffectiveTarget(dateStr)
-    if (!target) continue
-
     const daily = dailyMap.get(dateStr)
     const adCost = daily?.adCost ?? 0
     const revenue1d = daily?.revenue1d ?? 0
 
-    // 일 예산 소진율
-    if (target.dailyBudget !== null && target.dailyBudget > 0) {
-      budgetUtilizations.push((adCost / target.dailyBudget) * 100)
+    totalAdCost += adCost
+    totalRevenue += revenue1d
+
+    // 일 예산 합산 (carry-forward 포함)
+    if (
+      target?.dailyBudget !== null &&
+      target?.dailyBudget !== undefined &&
+      target.dailyBudget > 0
+    ) {
+      totalApplicableBudget += target.dailyBudget
+      hasBudget = true
     }
 
-    // 목표 ROAS 달성율
-    if (target.targetRoas !== null && target.targetRoas > 0) {
-      const actualRoas = adCost > 0 ? (revenue1d / adCost) * 100 : 0
-      roasAchievements.push((actualRoas / target.targetRoas) * 100)
+    // 목표 ROAS 합산 (평균 계산용)
+    if (target?.targetRoas !== null && target?.targetRoas !== undefined && target.targetRoas > 0) {
+      sumTargetRoas += target.targetRoas
+      countTargetRoas++
     }
   }
 
-  const avg = (arr: number[]) =>
-    arr.length === 0 ? null : Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 100) / 100
+  // 소진율: 전체 광고비 / 전체 적용 일 예산 * 100
+  const budgetUtilization =
+    hasBudget && totalApplicableBudget > 0
+      ? Math.round((totalAdCost / totalApplicableBudget) * 100 * 100) / 100
+      : null
 
-  return NextResponse.json({
-    budgetUtilization: avg(budgetUtilizations),
-    roasAchievement: avg(roasAchievements),
-  })
+  // 달성율: 실제 기간 ROAS / 기간 평균 목표 ROAS * 100
+  const avgTargetRoas = countTargetRoas > 0 ? sumTargetRoas / countTargetRoas : 0
+  const actualRoas = totalAdCost > 0 ? (totalRevenue / totalAdCost) * 100 : 0
+  const roasAchievement =
+    avgTargetRoas > 0 ? Math.round((actualRoas / avgTargetRoas) * 100 * 100) / 100 : null
+
+  return NextResponse.json({ budgetUtilization, roasAchievement })
 }
