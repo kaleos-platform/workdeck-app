@@ -13,7 +13,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from 'lucide-react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getTodayStrKst } from '@/lib/date-range'
 
@@ -34,19 +42,21 @@ type Props = {
   campaignId: string
   from: string
   to: string
+  /** "budget": 일 예산/목표 ROAS compact 카드만 | "metrics": 광고 관리 현황 카드만 */
+  mode?: 'budget' | 'metrics'
 }
 
-export function CampaignTargetSection({ campaignId, from, to }: Props) {
+export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
   const today = getTodayStrKst()
 
   const [targets, setTargets] = useState<CampaignTarget[]>([])
   const [summary, setSummary] = useState<SummaryData | null>(null)
-  const [showHistory, setShowHistory] = useState(false)
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   // 설정 Dialog
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editTarget, setEditTarget] = useState<CampaignTarget | null>(null) // null = 신규
+  const [editTarget, setEditTarget] = useState<CampaignTarget | null>(null)
   const [formDate, setFormDate] = useState(today)
   const [formBudget, setFormBudget] = useState('')
   const [formRoas, setFormRoas] = useState('')
@@ -57,8 +67,6 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
   const [memoDate, setMemoDate] = useState(today)
   const [memoContent, setMemoContent] = useState('')
   const [isSavingMemo, setIsSavingMemo] = useState(false)
-
-  // 직전 저장 내용 (메모 자동 생성용)
   const [savedChangeSummary, setSavedChangeSummary] = useState('')
 
   // 현재 유효한 설정 (가장 최근 effectiveDate ≤ today)
@@ -85,14 +93,24 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
   }, [fetchTargets])
 
   useEffect(() => {
+    // budget 모드에서는 summary 불필요 (기간 독립)
+    if (mode === 'budget') return
     fetchSummary()
-  }, [fetchSummary])
+  }, [fetchSummary, mode])
 
   function openNewDialog() {
     setEditTarget(null)
     setFormDate(today)
-    setFormBudget('')
-    setFormRoas('')
+    setFormBudget(
+      currentTarget?.dailyBudget !== null && currentTarget?.dailyBudget !== undefined
+        ? String(currentTarget.dailyBudget)
+        : ''
+    )
+    setFormRoas(
+      currentTarget?.targetRoas !== null && currentTarget?.targetRoas !== undefined
+        ? String(currentTarget.targetRoas)
+        : ''
+    )
     setDialogOpen(true)
   }
 
@@ -105,8 +123,13 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
   }
 
   async function handleSave() {
-    const dailyBudget = formBudget.trim() !== '' ? Number(formBudget) : null
-    const targetRoas = formRoas.trim() !== '' ? Number(formRoas) : null
+    // 빈 값이면 이전 값 유지:
+    //   수정 모드(editTarget): editTarget의 기존 값
+    //   새 설정 추가: currentTarget의 값 (없으면 null)
+    const prevBudget = editTarget ? editTarget.dailyBudget : (currentTarget?.dailyBudget ?? null)
+    const prevRoas = editTarget ? editTarget.targetRoas : (currentTarget?.targetRoas ?? null)
+    const dailyBudget = formBudget.trim() !== '' ? Number(formBudget) : prevBudget
+    const targetRoas = formRoas.trim() !== '' ? Number(formRoas) : prevRoas
 
     if (!formDate) {
       toast.error('적용 시작일을 입력해주세요.')
@@ -123,7 +146,6 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
 
     setIsSaving(true)
     try {
-      // 변경 내용 요약 (메모 자동 생성용)
       const lines: string[] = []
       if (editTarget) {
         if (editTarget.dailyBudget !== dailyBudget) {
@@ -167,11 +189,10 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
       }
 
       await fetchTargets()
-      await fetchSummary()
+      if (mode !== 'budget') await fetchSummary()
       setDialogOpen(false)
       toast.success('설정이 저장되었습니다.')
 
-      // 변경 내용이 있을 경우 메모 팝업 표시 (F032)
       if (lines.length > 0) {
         setSavedChangeSummary(lines.join('\n'))
         setMemoDate(today)
@@ -189,14 +210,13 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
     })
     if (res.ok) {
       await fetchTargets()
-      await fetchSummary()
+      if (mode !== 'budget') await fetchSummary()
       toast.success('삭제되었습니다.')
     } else {
       toast.error('삭제에 실패했습니다.')
     }
   }
 
-  // F032: 메모 저장 (기존 내용 있으면 줄바꿈 후 추가)
   async function handleSaveMemo() {
     if (!memoContent.trim()) {
       setMemoDialogOpen(false)
@@ -204,16 +224,13 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
     }
     setIsSavingMemo(true)
     try {
-      // 기존 메모 조회
       const getRes = await fetch(
         `/api/campaigns/${campaignId}/memos?from=${memoDate}&to=${memoDate}`
       )
       let existingContent = ''
       if (getRes.ok) {
         const data = await getRes.json()
-        if (data.items?.length > 0) {
-          existingContent = data.items[0].content
-        }
+        if (data.items?.length > 0) existingContent = data.items[0].content
       }
 
       const finalContent = existingContent
@@ -226,11 +243,8 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
         body: JSON.stringify({ date: memoDate, content: finalContent }),
       })
 
-      if (res.ok) {
-        toast.success('메모가 저장되었습니다.')
-      } else {
-        toast.error('메모 저장에 실패했습니다.')
-      }
+      if (res.ok) toast.success('메모가 저장되었습니다.')
+      else toast.error('메모 저장에 실패했습니다.')
     } finally {
       setIsSavingMemo(false)
       setMemoDialogOpen(false)
@@ -238,170 +252,210 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
   }
 
   const pct = (v: number | null) => (v !== null ? `${v.toFixed(2)}%` : null)
+  const formatBudget = (value: number | null) =>
+    value !== null ? `${value.toLocaleString('ko-KR')}원` : '-'
+  const formatRoas = (value: number | null) => (value !== null ? `${value}%` : '-')
+
+  const showBudgetCard = mode !== 'metrics'
+  const showMetricsCard = mode !== 'budget'
 
   return (
     <>
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+      {/* ── 일 예산 / 목표 ROAS 카드 ── */}
+      {showBudgetCard && (
+        <Card>
+          <CardContent className="p-4">
+            {/* 행 1: 제목 + 추가 버튼 */}
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-muted-foreground">
+                일 예산 / 목표 ROAS 설정
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 shrink-0 gap-1 text-xs"
+                onClick={openNewDialog}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                예산/목표 ROAS 추가
+              </Button>
+            </div>
+
+            {/* 행 2: 적용 시작일 + 이력보기 버튼 */}
+            <div className="mt-1 flex items-center justify-between gap-3">
+              {currentTarget !== null ? (
+                <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                  적용 시작일: {currentTarget.effectiveDate}
+                  <button
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                    onClick={() => openEditDialog(currentTarget)}
+                    aria-label="설정 수정"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                </p>
+              ) : (
+                <span />
+              )}
+              {targets.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setHistoryDialogOpen(true)}
+                >
+                  변경 이력 {targets.length}건 보기
+                </Button>
+              )}
+            </div>
+
+            {/* 값 표시 영역 */}
+            {currentTarget !== null ? (
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                {/* 일 예산 */}
+                <div className="rounded-lg border bg-muted/30 px-4 py-3">
+                  <p className="text-xs text-muted-foreground">일 예산</p>
+                  <p className="mt-1 text-2xl font-bold tracking-tight">
+                    {formatBudget(currentTarget.dailyBudget)}
+                  </p>
+                </div>
+
+                {/* 목표 ROAS */}
+                <div className="rounded-lg border bg-muted/30 px-4 py-3">
+                  <p className="text-xs text-muted-foreground">목표 ROAS</p>
+                  <p className="mt-1 text-2xl font-bold tracking-tight">
+                    {formatRoas(currentTarget.targetRoas)}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 rounded-lg border border-dashed p-3 text-center text-sm text-muted-foreground">
+                아직 설정된 예산/목표 ROAS가 없습니다.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── 광고 관리 현황 카드 (기간 종속) ── */}
+      {showMetricsCard && (
+        <Card>
+          <CardHeader className="pb-3">
             <div>
               <CardTitle className="text-base">광고 관리 현황</CardTitle>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 일 예산 소진율 및 목표 ROAS 달성율 (선택 기간 기준)
               </p>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 gap-1 text-xs"
-              onClick={openNewDialog}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              설정 추가
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* 관리 지표 (F031) */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-lg border bg-muted/30 p-3">
-              <p className="text-xs font-medium text-muted-foreground">일 예산 평균 소진율</p>
-              {isLoading ? (
-                <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
-              ) : pct(summary?.budgetUtilization ?? null) !== null ? (
-                <p className="mt-1 text-xl font-bold">{pct(summary!.budgetUtilization)}</p>
-              ) : (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  해당 기간에 설정된 일 예산이 없습니다.
-                </p>
-              )}
-            </div>
-            <div className="rounded-lg border bg-muted/30 p-3">
-              <p className="text-xs font-medium text-muted-foreground">목표 ROAS 평균 달성율</p>
-              {isLoading ? (
-                <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
-              ) : pct(summary?.roasAchievement ?? null) !== null ? (
-                <p className="mt-1 text-xl font-bold">{pct(summary!.roasAchievement)}</p>
-              ) : (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  해당 기간에 설정된 목표 ROAS가 없습니다.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* 현재 유효 설정 표시 (F030) */}
-          {currentTarget === null ? (
-            <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                일 예산 / 목표 ROAS가 설정되지 않았습니다.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-2 h-7 text-xs"
-                onClick={openNewDialog}
-              >
-                설정하기
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between rounded-lg border bg-background px-4 py-3">
-              <div className="flex gap-6 text-sm">
-                <div>
-                  <span className="text-xs text-muted-foreground">현재 일 예산</span>
-                  <p className="font-semibold">
-                    {currentTarget.dailyBudget !== null
-                      ? `${currentTarget.dailyBudget.toLocaleString('ko-KR')}원`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">현재 목표 ROAS</span>
-                  <p className="font-semibold">
-                    {currentTarget.targetRoas !== null ? `${currentTarget.targetRoas}%` : '-'}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">적용 시작일</span>
-                  <p className="font-semibold">{currentTarget.effectiveDate}</p>
-                </div>
-              </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7"
-                onClick={() => openEditDialog(currentTarget)}
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          )}
-
-          {/* 이력 토글 */}
-          {targets.length > 0 && (
-            <div>
-              <button
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                onClick={() => setShowHistory((v) => !v)}
-              >
-                {showHistory ? (
-                  <ChevronUp className="h-3.5 w-3.5" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="text-xs font-medium text-muted-foreground">일 예산 평균 소진율</p>
+                {isLoading ? (
+                  <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
+                ) : pct(summary?.budgetUtilization ?? null) !== null ? (
+                  <p className="mt-1 text-xl font-bold">{pct(summary!.budgetUtilization)}</p>
                 ) : (
-                  <ChevronDown className="h-3.5 w-3.5" />
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    해당 기간에 설정된 일 예산이 없습니다.
+                  </p>
                 )}
-                변경 이력 {showHistory ? '접기' : `보기 (${targets.length}건)`}
-              </button>
-              {showHistory && (
-                <div className="mt-2 space-y-1 rounded-md border p-2">
-                  {targets.map((t) => (
-                    <div
-                      key={t.id}
-                      className="flex items-center justify-between rounded px-2 py-1.5 text-sm hover:bg-muted/50"
-                    >
-                      <span className="text-xs text-muted-foreground">{t.effectiveDate}</span>
-                      <span className="flex gap-4">
-                        <span>
-                          {t.dailyBudget !== null
-                            ? `${t.dailyBudget.toLocaleString('ko-KR')}원`
-                            : '-'}
-                        </span>
-                        <span>{t.targetRoas !== null ? `ROAS ${t.targetRoas}%` : '-'}</span>
-                      </span>
-                      <div className="flex gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6"
-                          onClick={() => openEditDialog(t)}
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(t.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              </div>
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="text-xs font-medium text-muted-foreground">목표 ROAS 평균 달성율</p>
+                {isLoading ? (
+                  <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
+                ) : pct(summary?.roasAchievement ?? null) !== null ? (
+                  <p className="mt-1 text-xl font-bold">{pct(summary!.roasAchievement)}</p>
+                ) : (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    해당 기간에 설정된 목표 ROAS가 없습니다.
+                  </p>
+                )}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* 설정 입력 Dialog (F030) */}
+      {/* ── 이력 Dialog ── */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>일 예산 / 목표 ROAS 변경 이력</DialogTitle>
+            <DialogDescription>
+              적용 시작일 기준으로 저장된 설정 이력을 확인하고 수정/삭제할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>적용 시작일</TableHead>
+                  <TableHead>일 예산</TableHead>
+                  <TableHead>목표 ROAS</TableHead>
+                  <TableHead className="text-right">수정/삭제</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {targets.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      변경 이력이 없습니다.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  targets.map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell>{t.effectiveDate}</TableCell>
+                      <TableCell>{formatBudget(t.dailyBudget)}</TableCell>
+                      <TableCell>{formatRoas(t.targetRoas)}</TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              setHistoryDialogOpen(false)
+                              openEditDialog(t)
+                            }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(t.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHistoryDialogOpen(false)}>
+              닫기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── 설정 입력 Dialog (F030) ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{editTarget ? '설정 수정' : '일 예산 / 목표 ROAS 설정'}</DialogTitle>
             <DialogDescription>
               적용 시작일부터 다음 설정일 전까지 이 값이 사용됩니다.
+              {(editTarget !== null || currentTarget !== null) && ' 비워두면 이전 값을 유지합니다.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -421,7 +475,7 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
                 id="dailyBudget"
                 type="number"
                 min={0}
-                placeholder="예: 50000 (비워두면 미설정)"
+                placeholder="비워두면 이전 값 유지"
                 value={formBudget}
                 onChange={(e) => setFormBudget(e.target.value)}
               />
@@ -433,7 +487,7 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
                 type="number"
                 min={0}
                 step={0.1}
-                placeholder="예: 300 (비워두면 미설정)"
+                placeholder="비워두면 이전 값 유지"
                 value={formRoas}
                 onChange={(e) => setFormRoas(e.target.value)}
               />
@@ -450,7 +504,7 @@ export function CampaignTargetSection({ campaignId, from, to }: Props) {
         </DialogContent>
       </Dialog>
 
-      {/* 메모 저장 팝업 (F032) */}
+      {/* ── 메모 저장 팝업 (F032) ── */}
       <Dialog open={memoDialogOpen} onOpenChange={setMemoDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

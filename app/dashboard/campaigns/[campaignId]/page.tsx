@@ -915,6 +915,9 @@ export default function CampaignDetailPage({
         </Button>
       </div>
 
+      {/* 일 예산 / 목표 ROAS (기간 독립 — 필터 위) */}
+      <CampaignTargetSection campaignId={campaignId} from={from} to={to} mode="budget" />
+
       {/* 공통 필터 바 */}
       <Card>
         <CardContent className="pt-4 pb-4">
@@ -947,9 +950,9 @@ export default function CampaignDetailPage({
 
         {/* ── 대시보드 탭 ── */}
         <TabsContent value="dashboard" className="space-y-6">
-          {/* 광고 관리 현황 (F030/F031/F032) */}
+          {/* 광고 관리 현황 (F031 — 기간 종속) */}
           {isDateRangeReady && (
-            <CampaignTargetSection campaignId={campaignId} from={from} to={to} />
+            <CampaignTargetSection campaignId={campaignId} from={from} to={to} mode="metrics" />
           )}
 
           {/* KPI 카드 */}
