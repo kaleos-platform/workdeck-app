@@ -919,8 +919,8 @@ export default function CampaignDetailPage({
       <CampaignTargetSection campaignId={campaignId} from={from} to={to} mode="budget" />
 
       {/* 공통 필터 바 */}
-      <Card>
-        <CardContent className="pt-4 pb-4">
+      <Card className="py-3">
+        <CardContent>
           <FilterBar adTypeOptions={adTypeOptions} showAdTypeFilter={adTypes.length > 1} />
         </CardContent>
       </Card>

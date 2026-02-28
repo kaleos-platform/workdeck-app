@@ -263,7 +263,7 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
     <>
       {/* ── 일 예산 / 목표 ROAS 카드 ── */}
       {showBudgetCard && (
-        <Card>
+        <Card className="py-0">
           <CardContent className="p-4">
             {/* 행 1: 제목 + 추가 버튼 */}
             <div className="flex items-center justify-between gap-3">
@@ -339,7 +339,7 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
 
       {/* ── 광고 관리 현황 카드 (기간 종속) ── */}
       {showMetricsCard && (
-        <Card>
+        <Card className="gap-2">
           <CardHeader className="pb-3">
             <div>
               <CardTitle className="text-base">광고 관리 현황</CardTitle>

@@ -3,16 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
-import { getLastNDaysRangeKst, getTodayStrKst, getDaysAgoStrKst } from '@/lib/date-range'
-
-const QUICK_PERIODS = [
-  { label: '7일', days: 7 },
-  { label: '14일', days: 14 },
-  { label: '30일', days: 30 },
-]
+import { getDaysAgoStrKst } from '@/lib/date-range'
 
 type CampaignMetrics = {
   totalAdCost: number
@@ -62,12 +54,7 @@ function DiffBadge({ diff, isPositive }: { diff: number | null; isPositive: bool
   )
 }
 
-export function CampaignListWithMetrics() {
-  const today = getTodayStrKst()
-  const defaultRange = getLastNDaysRangeKst(7)
-  const [from, setFrom] = useState(defaultRange.from)
-  const [to, setTo] = useState(defaultRange.to)
-  const [activePreset, setActivePreset] = useState<number | null>(7)
+export function CampaignListWithMetrics({ from, to }: { from: string; to: string }) {
   const [campaigns, setCampaigns] = useState<CampaignWithMetrics[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
@@ -87,25 +74,6 @@ export function CampaignListWithMetrics() {
     fetchCampaigns(from, to)
   }, [from, to, fetchCampaigns])
 
-  function handlePreset(days: number) {
-    const { from: f, to: t } = getLastNDaysRangeKst(days)
-    setFrom(f)
-    setTo(t)
-    setActivePreset(days)
-  }
-
-  function handleFromChange(value: string) {
-    const clamped = value > today ? today : value
-    setFrom(clamped)
-    setActivePreset(null)
-  }
-
-  function handleToChange(value: string) {
-    const clamped = value > today ? today : value
-    setTo(clamped)
-    setActivePreset(null)
-  }
-
   // 해당 기간에 데이터가 있는 캠페인만 표시 (광고비 또는 매출 > 0)
   const activeCampaigns = campaigns.filter(
     (c) => c.metrics.totalAdCost > 0 || c.metrics.totalRevenue > 0
@@ -114,44 +82,7 @@ export function CampaignListWithMetrics() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <CardTitle className="text-base">캠페인별 성과</CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            {/* 퀵 기간 버튼 */}
-            <div className="flex items-center gap-1.5">
-              {QUICK_PERIODS.map((p) => (
-                <Button
-                  key={p.days}
-                  variant={activePreset === p.days ? 'default' : 'outline'}
-                  size="sm"
-                  className="h-7 px-2.5 text-xs"
-                  onClick={() => handlePreset(p.days)}
-                >
-                  {p.label}
-                </Button>
-              ))}
-            </div>
-            {/* 날짜 범위 직접 입력 */}
-            <div className="flex items-center gap-1.5">
-              <Input
-                type="date"
-                value={from}
-                max={today}
-                onChange={(e) => handleFromChange(e.target.value)}
-                className="h-7 w-32 text-xs"
-              />
-              <span className="text-xs text-muted-foreground">~</span>
-              <Input
-                type="date"
-                value={to}
-                min={from}
-                max={today}
-                onChange={(e) => handleToChange(e.target.value)}
-                className="h-7 w-32 text-xs"
-              />
-            </div>
-          </div>
-        </div>
+        <CardTitle className="text-base">캠페인별 성과</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
