@@ -17,19 +17,6 @@ type UploadRequestBody = {
 
 export const runtime = 'nodejs'
 
-// 중복 감지용 복합 키 생성
-function buildKey(row: {
-  date: Date | string
-  campaignId: string
-  adType: string
-  keyword: string | null
-  adGroup: string | null
-  optionId: string | null
-}): string {
-  const d = row.date instanceof Date ? row.date.toISOString() : row.date
-  return `${d}|${row.campaignId}|${row.adType}|${row.keyword ?? ''}|${row.adGroup ?? ''}|${row.optionId ?? ''}`
-}
-
 function parseUploadBody(body: unknown): UploadRequestBody | null {
   if (typeof body !== 'object' || body === null) return null
 
@@ -125,37 +112,25 @@ export async function POST(request: NextRequest) {
   const { periodStart, periodEnd } = detectPeriod(rows)
 
   // ── 첫 번째 요청: 중복 감지 단계 ──
+  // adGroup 값이 null→실제값으로 변경되어도 기간 기준으로 정확히 감지
   if (overwrite === null) {
-    const existing = await prisma.adRecord.findMany({
+    const existingCount = await prisma.adRecord.count({
       where: {
         workspaceId: workspace.id,
         date: { gte: periodStart, lte: periodEnd },
       },
-      select: {
-        date: true,
-        campaignId: true,
-        adType: true,
-        keyword: true,
-        adGroup: true,
-        optionId: true,
-      },
     })
 
-    if (existing.length > 0) {
-      const existingSet = new Set(existing.map(buildKey))
-      const duplicateCount = rows.filter((r) => existingSet.has(buildKey(r))).length
-
-      if (duplicateCount > 0) {
-        return NextResponse.json(
-          {
-            requiresConfirmation: true,
-            duplicateCount,
-            newCount: rows.length - duplicateCount,
-            totalCount: rows.length,
-          },
-          { status: 200 }
-        )
-      }
+    if (existingCount > 0) {
+      return NextResponse.json(
+        {
+          requiresConfirmation: true,
+          duplicateCount: existingCount,
+          newCount: rows.length,
+          totalCount: rows.length,
+        },
+        { status: 200 }
+      )
     }
     // 중복 없으면 바로 삽입 단계로 진행 (overwrite=false와 동일하게 처리)
   }
@@ -166,8 +141,9 @@ export async function POST(request: NextRequest) {
   let inserted = 0
 
   try {
-    // 덮어쓰기 모드: 해당 기간 + campaignIds에 해당하는 기존 레코드 삭제
-    if (overwrite === 'true') {
+    // 덮어쓰기·중복제외 모두: 기간 내 기존 레코드 삭제 후 재삽입
+    // (overwrite=false도 삭제 후 재삽입해야 adGroup 값 불일치로 인한 중복 삽입 방지)
+    if (overwrite === 'true' || overwrite === 'false') {
       const campaignIds = [...new Set(rows.map((r) => r.campaignId))]
       await prisma.adRecord.deleteMany({
         where: {

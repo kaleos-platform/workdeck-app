@@ -80,17 +80,36 @@ export async function DELETE(
       const adRecordResult = await tx.adRecord.deleteMany({
         where: { workspaceId: workspace.id, campaignId },
       })
+
+      // AdRecord 삭제 후 adRecords가 없는 고아 ReportUpload 삭제
+      const orphanedUploads = await tx.reportUpload.findMany({
+        where: { workspaceId: workspace.id, adRecords: { none: {} } },
+        select: { id: true },
+      })
+      const reportUploadResult = await tx.reportUpload.deleteMany({
+        where: { id: { in: orphanedUploads.map((u) => u.id) } },
+      })
+
       const dailyMemoResult = await tx.dailyMemo.deleteMany({
         where: { workspaceId: workspace.id, campaignId },
       })
       const campaignMetaResult = await tx.campaignMeta.deleteMany({
         where: { workspaceId: workspace.id, campaignId },
       })
+      const keywordStatusResult = await tx.keywordStatus.deleteMany({
+        where: { workspaceId: workspace.id, campaignId },
+      })
+      const campaignTargetResult = await tx.campaignTarget.deleteMany({
+        where: { workspaceId: workspace.id, campaignId },
+      })
 
       return {
         adRecords: adRecordResult.count,
+        reportUploads: reportUploadResult.count,
         dailyMemos: dailyMemoResult.count,
         campaignMetas: campaignMetaResult.count,
+        keywordStatuses: keywordStatusResult.count,
+        campaignTargets: campaignTargetResult.count,
       }
     })
 
