@@ -16,7 +16,7 @@ import {
   Minus,
   UploadCloud,
 } from 'lucide-react'
-import { getLastNDaysRangeKst, getTodayStrKst } from '@/lib/date-range'
+import { getLastNDaysRangeKst, getDaysAgoStrKst, getTodayStrKst } from '@/lib/date-range'
 import { CampaignListWithMetrics } from '@/components/dashboard/campaign-list-with-metrics'
 
 const QUICK_PERIODS = [
@@ -75,9 +75,8 @@ function WowBadge({ diff, higherIsBetter }: { diff: number | null; higherIsBette
 
 export function DashboardClient({ hasData }: { hasData: boolean }) {
   const today = getTodayStrKst()
-  const defaultRange = getLastNDaysRangeKst(7)
-  const [from, setFrom] = useState(defaultRange.from)
-  const [to, setTo] = useState(defaultRange.to)
+  const [from, setFrom] = useState(getDaysAgoStrKst(7))
+  const [to, setTo] = useState(getDaysAgoStrKst(1))
   const [activePreset, setActivePreset] = useState<number | null>(7)
   const [kpi, setKpi] = useState<KpiData | null>(null)
   const [kpiLoading, setKpiLoading] = useState(false)
@@ -99,9 +98,8 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
   }, [from, to, fetchKpi])
 
   function handlePreset(days: number) {
-    const { from: f, to: t } = getLastNDaysRangeKst(days)
-    setFrom(f)
-    setTo(t)
+    setFrom(getDaysAgoStrKst(days))
+    setTo(getDaysAgoStrKst(1))
     setActivePreset(days)
   }
 

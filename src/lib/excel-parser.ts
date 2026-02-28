@@ -182,7 +182,7 @@ function normalizeRow(row: Record<string, unknown>, format: AdFileFormat): Parse
     adType: String(row['광고유형'] ?? '').trim(),
     campaignId: String(row['캠페인 ID'] ?? row['캠페인ID'] ?? '').trim(),
     campaignName: String(row['캠페인명'] ?? row['캠페인 이름'] ?? '제목 없는 캠페인').trim(),
-    adGroup: parseNullStr(row['광고그룹명']),
+    adGroup: parseNullStr(row['광고그룹']),
     placement: parseNullStr(row['광고 노출 지면']),
     productName: parseNullStr(row['광고집행 상품명']),
     optionId: parseNullStr(row['광고집행 옵션ID']),

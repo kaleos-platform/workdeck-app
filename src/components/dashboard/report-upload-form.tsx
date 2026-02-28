@@ -266,7 +266,7 @@ export function ReportUploadForm() {
         setSingleDuplicate({ entryId: entry.id, info: result.requiresConfirmation })
       } else if (result.inserted !== undefined) {
         toast.success(`${result.inserted}개 행 저장 완료`)
-        router.refresh()
+        router.push('/dashboard')
       }
     } catch {
       // 오류는 updateFile로 이미 처리됨
@@ -285,7 +285,7 @@ export function ReportUploadForm() {
       const result = await processOneFile(entryId, overwrite)
       if (result.inserted !== undefined) {
         toast.success(`${result.inserted}개 행 저장 완료`)
-        router.refresh()
+        router.push('/dashboard')
       }
     } catch {
       // 오류는 updateFile로 이미 처리됨
