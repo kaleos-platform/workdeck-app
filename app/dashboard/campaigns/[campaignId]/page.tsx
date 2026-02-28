@@ -859,7 +859,7 @@ export default function CampaignDetailPage({
                   if (e.key === 'Enter') handleSaveName()
                   if (e.key === 'Escape') setIsEditingName(false)
                 }}
-                className="h-9 max-w-sm text-xl font-bold"
+                className="h-9 min-w-48 flex-1 text-xl font-bold"
                 autoFocus
               />
               <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSaveName}>
@@ -915,15 +915,15 @@ export default function CampaignDetailPage({
         </Button>
       </div>
 
-      {/* 일 예산 / 목표 ROAS (기간 독립 — 필터 위) */}
-      <CampaignTargetSection campaignId={campaignId} from={from} to={to} mode="budget" />
-
       {/* 공통 필터 바 */}
       <Card className="py-3">
         <CardContent>
           <FilterBar adTypeOptions={adTypeOptions} showAdTypeFilter={adTypes.length > 1} />
         </CardContent>
       </Card>
+
+      {/* 예산/목표 ROAS 현황 (필터 아래) */}
+      <CampaignTargetSection campaignId={campaignId} from={from} to={to} />
 
       {/* 탭 영역 */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -950,11 +950,6 @@ export default function CampaignDetailPage({
 
         {/* ── 대시보드 탭 ── */}
         <TabsContent value="dashboard" className="space-y-6">
-          {/* 광고 관리 현황 (F031 — 기간 종속) */}
-          {isDateRangeReady && (
-            <CampaignTargetSection campaignId={campaignId} from={from} to={to} mode="metrics" />
-          )}
-
           {/* KPI 카드 */}
           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
             {kpiCards.map((card) => {

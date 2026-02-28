@@ -256,20 +256,109 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
     value !== null ? `${value.toLocaleString('ko-KR')}원` : '-'
   const formatRoas = (value: number | null) => (value !== null ? `${value}%` : '-')
 
-  const showBudgetCard = mode !== 'metrics'
-  const showMetricsCard = mode !== 'budget'
+  const showBudgetCard = mode === 'budget'
+  const showMetricsCard = mode === 'metrics'
+  const showCombinedCard = !mode // mode 미지정 시 통합 카드
 
   return (
     <>
+      {/* ── 통합 카드 (mode 미지정 시) ── */}
+      {showCombinedCard && (
+        <Card className="py-0">
+          <CardContent className="p-4">
+            {/* 행 1: 제목 + 추가 버튼 */}
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-base font-semibold">예산/목표 ROAS 현황</span>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 shrink-0 gap-1 text-sm"
+                onClick={openNewDialog}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                예산/목표 ROAS 추가
+              </Button>
+            </div>
+
+            {/* 행 2: 적용 시작일 + 이력보기 버튼 */}
+            <div className="mt-1 flex items-center justify-between gap-3">
+              {currentTarget !== null ? (
+                <p className="text-xs text-muted-foreground">
+                  적용 시작일: {currentTarget.effectiveDate}
+                </p>
+              ) : (
+                <span />
+              )}
+              {targets.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setHistoryDialogOpen(true)}
+                >
+                  변경 이력 {targets.length}건 보기
+                </Button>
+              )}
+            </div>
+
+            {/* 값 표시 영역: 4개 박스 통일 스타일 */}
+            {currentTarget !== null ? (
+              <>
+                <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+                  {/* 일 예산 */}
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-xs font-medium text-muted-foreground">일 예산</p>
+                    <p className="mt-1 text-xl font-bold">
+                      {formatBudget(currentTarget.dailyBudget)}
+                    </p>
+                  </div>
+                  {/* 일 예산 평균 소진율 */}
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-xs font-medium text-muted-foreground">일 예산 평균 소진율</p>
+                    {isLoading ? (
+                      <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
+                    ) : pct(summary?.budgetUtilization ?? null) !== null ? (
+                      <p className="mt-1 text-xl font-bold">{pct(summary!.budgetUtilization)}</p>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground">데이터 없음</p>
+                    )}
+                  </div>
+                  {/* 목표 ROAS */}
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-xs font-medium text-muted-foreground">목표 ROAS</p>
+                    <p className="mt-1 text-xl font-bold">{formatRoas(currentTarget.targetRoas)}</p>
+                  </div>
+                  {/* 목표 ROAS 평균 달성율 */}
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      목표 ROAS 평균 달성율
+                    </p>
+                    {isLoading ? (
+                      <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
+                    ) : pct(summary?.roasAchievement ?? null) !== null ? (
+                      <p className="mt-1 text-xl font-bold">{pct(summary!.roasAchievement)}</p>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground">데이터 없음</p>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="mt-3 rounded-lg border border-dashed p-3 text-center text-sm text-muted-foreground">
+                아직 설정된 예산/목표 ROAS가 없습니다.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* ── 일 예산 / 목표 ROAS 카드 ── */}
       {showBudgetCard && (
         <Card className="py-0">
           <CardContent className="p-4">
             {/* 행 1: 제목 + 추가 버튼 */}
             <div className="flex items-center justify-between gap-3">
-              <span className="text-base font-semibold text-muted-foreground">
-                일 예산 / 목표 ROAS 설정
-              </span>
+              <span className="text-base font-semibold">일 예산 / 목표 ROAS 설정</span>
               <Button
                 size="sm"
                 variant="outline"
