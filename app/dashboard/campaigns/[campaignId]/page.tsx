@@ -1322,7 +1322,7 @@ export default function CampaignDetailPage({
                     }
                   }}
                 >
-                  저효율 키워드 보기
+                  📉저효율 키워드
                 </Button>
                 <Button
                   variant={kwFilter === 'orders' ? 'default' : 'outline'}
@@ -1338,7 +1338,7 @@ export default function CampaignDetailPage({
                     }
                   }}
                 >
-                  주문 발생 키워드
+                  📈주문 발생 키워드
                 </Button>
                 <div className="flex items-center gap-1.5">
                   <Checkbox
@@ -1577,7 +1577,7 @@ export default function CampaignDetailPage({
                   setSelectedProducts([])
                 }}
               >
-                저효율 상품 보기
+                📉저효율 상품
               </Button>
               <Button
                 variant={productFilterMode === 'orders' ? 'default' : 'outline'}
@@ -1593,7 +1593,7 @@ export default function CampaignDetailPage({
                   setSelectedProducts([])
                 }}
               >
-                주문 발생 상품 보기
+                📈주문 발생 상품
               </Button>
               <div className="flex items-center gap-1.5">
                 <Checkbox
