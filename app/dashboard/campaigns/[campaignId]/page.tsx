@@ -1307,15 +1307,6 @@ export default function CampaignDetailPage({
             {/* 검색 + 필터 토글 버튼 */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm text-muted-foreground">전체 {keywords.length}개 키워드</span>
-              <Input
-                placeholder="키워드 검색"
-                value={kwSearch}
-                onChange={(e) => {
-                  setKwSearch(e.target.value)
-                  setSelectedKeywords([])
-                }}
-                className="h-8 w-40 text-sm"
-              />
               <div className="flex items-center gap-1.5">
                 <Button
                   variant={kwFilter === 'zero' ? 'default' : 'outline'}
@@ -1378,6 +1369,15 @@ export default function CampaignDetailPage({
                   제거 취소
                 </Button>
               )}
+              <Input
+                placeholder="키워드 검색"
+                value={kwSearch}
+                onChange={(e) => {
+                  setKwSearch(e.target.value)
+                  setSelectedKeywords([])
+                }}
+                className="h-8 w-40 text-sm"
+              />
               <Button
                 variant="outline"
                 size="sm"
@@ -2394,7 +2394,7 @@ export default function CampaignDetailPage({
             </DialogDescription>
           </DialogHeader>
           {/* 메모 작성 UI */}
-          <p className="text-sm font-medium">메모 작성</p>
+          <p className="text-sm font-medium">제거 키워드를 기록으로 남길까요?</p>
           <div className="space-y-2">
             <Label htmlFor="memo-date">작성 일자</Label>
             <Input
