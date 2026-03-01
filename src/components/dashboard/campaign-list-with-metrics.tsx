@@ -12,6 +12,11 @@ type CampaignMetrics = {
   avgRoas: number | null
 }
 
+type CampaignSummary = {
+  budgetUtilization: number | null
+  roasAchievement: number | null
+}
+
 type CampaignWithMetrics = {
   id: string
   name: string
@@ -22,11 +27,27 @@ type CampaignWithMetrics = {
   currentTarget: { dailyBudget: number | null; targetRoas: number | null } | null
   minDate: string | null
   maxDate: string | null
+  summary?: CampaignSummary
 }
 
 function calcDiff(current: number, prev: number): number | null {
   if (prev === 0) return null
   return Math.round(((current - prev) / prev) * 1000) / 10
+}
+
+function getBudgetStatus(value: number | null) {
+  if (value === null) return null
+  if (value >= 80 && value <= 120)
+    return { label: '정상', textColor: 'text-green-600', bgColor: 'bg-green-50' }
+  if (value > 120) return { label: '초과', textColor: 'text-red-600', bgColor: 'bg-red-50' }
+  return { label: '부족', textColor: 'text-amber-600', bgColor: 'bg-amber-50' }
+}
+
+function getRoasStatus(value: number | null) {
+  if (value === null) return null
+  if (value >= 90) return { label: '좋음', textColor: 'text-green-600', bgColor: 'bg-green-50' }
+  if (value >= 60) return { label: '보통', textColor: 'text-amber-600', bgColor: 'bg-amber-50' }
+  return { label: '손해 위험', textColor: 'text-red-600', bgColor: 'bg-red-50' }
 }
 
 function DiffBadge({ diff, isPositive }: { diff: number | null; isPositive: boolean }) {
@@ -38,7 +59,7 @@ function DiffBadge({ diff, isPositive }: { diff: number | null; isPositive: bool
         ? 'text-green-600'
         : 'text-red-500'
   return (
-    <span className={`flex items-center gap-0.5 text-xs ${color}`}>
+    <div className={`flex items-center justify-end gap-0.5 text-xs ${color}`}>
       {diff > 0 ? (
         <ArrowUp className="h-3 w-3" />
       ) : diff < 0 ? (
@@ -50,7 +71,7 @@ function DiffBadge({ diff, isPositive }: { diff: number | null; isPositive: bool
         {diff > 0 ? `+${diff}` : diff === 0 ? '변동 없음' : `${diff}`}
         {diff !== 0 && '%'}
       </span>
-    </span>
+    </div>
   )
 }
 
@@ -62,9 +83,23 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
     setIsLoading(true)
     try {
       const res = await fetch(`/api/campaigns?startDate=${startDate}&endDate=${endDate}`)
-      if (res.ok) {
-        setCampaigns((await res.json()) as CampaignWithMetrics[])
-      }
+      if (!res.ok) return
+      const data = (await res.json()) as CampaignWithMetrics[]
+
+      // 소진율/달성율 병렬 조회
+      const summaries = await Promise.all(
+        data.map((c) =>
+          fetch(`/api/campaigns/${c.id}/targets/summary?from=${startDate}&to=${endDate}`)
+            .then((r) =>
+              r.ok
+                ? (r.json() as Promise<CampaignSummary>)
+                : { budgetUtilization: null, roasAchievement: null }
+            )
+            .catch(() => ({ budgetUtilization: null, roasAchievement: null }))
+        )
+      )
+
+      setCampaigns(data.map((c, i) => ({ ...c, summary: summaries[i] })))
     } finally {
       setIsLoading(false)
     }
@@ -79,6 +114,16 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
     (c) => c.metrics.totalAdCost > 0 || c.metrics.totalRevenue > 0
   )
 
+  // adType 기준 그룹핑
+  const groups = new Map<string, CampaignWithMetrics[]>()
+  for (const c of activeCampaigns) {
+    const key = c.adTypes[0] ?? '기타'
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(c)
+  }
+
+  const yesterday = getDaysAgoStrKst(1)
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -92,95 +137,122 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
             해당 기간에 데이터가 없습니다
           </p>
         ) : (
-          <div className="space-y-2">
-            {activeCampaigns.map((campaign) => {
-              const { metrics, prevMetrics } = campaign
-              const adCostDiff = prevMetrics
-                ? calcDiff(metrics.totalAdCost, prevMetrics.totalAdCost)
-                : null
-              const roasDiff =
-                metrics.avgRoas !== null && prevMetrics?.avgRoas != null
-                  ? calcDiff(metrics.avgRoas, prevMetrics.avgRoas)
-                  : null
-              const revenueDiff = prevMetrics
-                ? calcDiff(metrics.totalRevenue, prevMetrics.totalRevenue)
-                : null
+          <div className="space-y-1">
+            {Array.from(groups.entries()).map(([adType, groupCampaigns], groupIdx) => (
+              <div key={adType} className={groupIdx > 0 ? 'mt-4 border-t pt-4' : ''}>
+                {/* 광고 유형 그룹 헤더 */}
+                <p className="mb-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  {adType}
+                </p>
 
-              const { currentTarget } = campaign
-              return (
-                <Link
-                  key={campaign.id}
-                  href={`/dashboard/campaigns/${campaign.id}?from=${from}&to=${to}`}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-3 transition-colors hover:bg-muted/50"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{campaign.displayName}</p>
-                    <p className="text-xs text-muted-foreground">{campaign.adTypes.join(' · ')}</p>
-                    {/* 일 예산 / 목표 ROAS */}
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        일 예산:{' '}
-                        <span className="font-medium text-foreground">
-                          {currentTarget?.dailyBudget != null
-                            ? `${currentTarget.dailyBudget.toLocaleString('ko-KR')}원`
-                            : '-'}
-                        </span>
-                      </span>
-                      <span className="text-xs text-muted-foreground">·</span>
-                      <span className="text-xs text-muted-foreground">
-                        목표 ROAS:{' '}
-                        <span className="font-medium text-foreground">
-                          {currentTarget?.targetRoas != null ? `${currentTarget.targetRoas}%` : '-'}
-                        </span>
-                      </span>
-                    </div>
-                    {/* 데이터 기간 표시 */}
-                    {campaign.maxDate && (
-                      <div className="mt-0.5 flex items-center gap-1.5 text-xs">
-                        <span className="text-muted-foreground">
-                          데이터: {campaign.minDate} ~ {campaign.maxDate}
-                        </span>
-                        {campaign.maxDate < getDaysAgoStrKst(1) && (
-                          <span className="font-medium text-orange-500">· 업로드 필요</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-4 text-right">
-                    {/* 총 광고비 */}
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">총 광고비</p>
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm font-medium text-orange-600">
-                          {metrics.totalAdCost.toLocaleString('ko-KR')}원
-                        </span>
-                        <DiffBadge diff={adCostDiff} isPositive={false} />
-                      </div>
-                    </div>
-                    {/* 평균 ROAS */}
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">평균 ROAS</p>
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm font-medium">
-                          {metrics.avgRoas !== null ? `${metrics.avgRoas.toFixed(2)}%` : '-'}
-                        </span>
-                        <DiffBadge diff={roasDiff} isPositive={true} />
-                      </div>
-                    </div>
-                    {/* 총 매출액 */}
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">총 매출액</p>
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm font-medium text-emerald-600">
-                          {metrics.totalRevenue.toLocaleString('ko-KR')}원
-                        </span>
-                        <DiffBadge diff={revenueDiff} isPositive={true} />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
+                <div className="space-y-1.5">
+                  {groupCampaigns.map((campaign) => {
+                    const { metrics, prevMetrics, currentTarget, summary } = campaign
+                    const adCostDiff = prevMetrics
+                      ? calcDiff(metrics.totalAdCost, prevMetrics.totalAdCost)
+                      : null
+                    const roasDiff =
+                      metrics.avgRoas !== null && prevMetrics?.avgRoas != null
+                        ? calcDiff(metrics.avgRoas, prevMetrics.avgRoas)
+                        : null
+                    const revenueDiff = prevMetrics
+                      ? calcDiff(metrics.totalRevenue, prevMetrics.totalRevenue)
+                      : null
+
+                    const budgetStatus = getBudgetStatus(summary?.budgetUtilization ?? null)
+                    const roasStatus = getRoasStatus(summary?.roasAchievement ?? null)
+
+                    return (
+                      <Link
+                        key={campaign.id}
+                        href={`/dashboard/campaigns/${campaign.id}?from=${from}&to=${to}`}
+                        className="grid grid-cols-[1fr_auto_auto] items-center gap-6 rounded-md border px-4 py-2.5 transition-colors hover:bg-muted/50"
+                      >
+                        {/* Col 1: 캠페인명 + 기간/상태 */}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{campaign.displayName}</p>
+                          {campaign.maxDate && (
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <span>
+                                {campaign.minDate} ~ {campaign.maxDate}
+                              </span>
+                              {campaign.maxDate < yesterday && (
+                                <span className="font-medium text-orange-500">· 업로드 필요</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Col 2: 일예산/소진율 + 목표ROAS/달성율 쌍 */}
+                        <div className="flex gap-4 text-xs">
+                          {/* 일예산 + 소진율 */}
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1">
+                              <span className="text-muted-foreground">일 예산</span>
+                              <span className="font-medium">
+                                {currentTarget?.dailyBudget != null
+                                  ? `${currentTarget.dailyBudget.toLocaleString('ko-KR')}원`
+                                  : '-'}
+                              </span>
+                            </div>
+                            {budgetStatus && summary?.budgetUtilization != null ? (
+                              <span className={budgetStatus.textColor}>
+                                소진율 {summary.budgetUtilization.toFixed(1)}%
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">소진율 -</span>
+                            )}
+                          </div>
+                          {/* 목표ROAS + 달성율 */}
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1">
+                              <span className="text-muted-foreground">목표 ROAS</span>
+                              <span className="font-medium">
+                                {currentTarget?.targetRoas != null
+                                  ? `${currentTarget.targetRoas}%`
+                                  : '-'}
+                              </span>
+                            </div>
+                            {roasStatus && summary?.roasAchievement != null ? (
+                              <span className={roasStatus.textColor}>
+                                달성율 {summary.roasAchievement.toFixed(1)}%
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">달성율 -</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Col 3: 지표 3개 — 제목(위) · 값(중) · 증감(아래) */}
+                        <div className="flex items-start gap-5">
+                          <div className="min-w-[72px] text-right">
+                            <p className="text-xs text-muted-foreground">총 광고비</p>
+                            <p className="text-sm font-medium">
+                              {metrics.totalAdCost.toLocaleString('ko-KR')}원
+                            </p>
+                            <DiffBadge diff={adCostDiff} isPositive={false} />
+                          </div>
+                          <div className="min-w-[64px] text-right">
+                            <p className="text-xs text-muted-foreground">평균 ROAS</p>
+                            <p className="text-sm font-medium">
+                              {metrics.avgRoas !== null ? `${metrics.avgRoas.toFixed(2)}%` : '-'}
+                            </p>
+                            <DiffBadge diff={roasDiff} isPositive={true} />
+                          </div>
+                          <div className="min-w-[80px] text-right">
+                            <p className="text-xs text-muted-foreground">총 매출액</p>
+                            <p className="text-sm font-medium">
+                              {metrics.totalRevenue.toLocaleString('ko-KR')}원
+                            </p>
+                            <DiffBadge diff={revenueDiff} isPositive={true} />
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
