@@ -40,7 +40,10 @@ export type InefficientKeyword = {
   clicks: number
   impressions: number
   orders1d: number
+  revenue1d: number
   ctr: number | null
+  cvr: number | null
+  roas: number | null
   removedAt: string | null
 }
 

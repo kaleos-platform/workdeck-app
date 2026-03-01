@@ -3,8 +3,22 @@ import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
 import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
 
-// GET /api/campaigns/[campaignId]/inefficient-keywords
-// 캠페인 키워드 집계 (기본: 전체, filter 파라미터로 필터링 가능)
+// 상품명에서 옵션명 파싱 (JSON 형식 '{"구성":"5P"},{"사이즈":"M"}' 패턴 추출)
+function parseOptionName(productName: string | null): string | null {
+  if (!productName) return null
+  const matches = productName.matchAll(/\{"(?:구성|사이즈)":"([^"]+)"\}/g)
+  const values = [...new Set([...matches].map((m) => m[1].trim()))]
+  return values.length > 0 ? values.join('/') : null
+}
+
+// 상품명에서 순수 상품명 추출 (JSON 부분 제거)
+function parsePureProductName(productName: string | null): string {
+  if (!productName) return ''
+  return productName.split(',')[0].trim()
+}
+
+// GET /api/campaigns/[campaignId]/product-analysis
+// 캠페인 상품별 집계 데이터 반환
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ campaignId: string }> }
@@ -25,12 +39,13 @@ export async function GET(
   if (from) dateFilter.gte = new Date(from + 'T00:00:00+09:00')
   if (to) dateFilter.lte = new Date(to + 'T23:59:59+09:00')
 
+  // 상품별 집계
   const groups = await prisma.adRecord.groupBy({
-    by: ['keyword'],
+    by: ['productName', 'optionId'],
     where: {
       workspaceId: workspace.id,
       campaignId,
-      keyword: { not: null },
+      productName: { not: null },
       ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
       ...(adType && adType !== 'all' && { adType }),
     },
@@ -46,26 +61,30 @@ export async function GET(
     },
   })
 
-  const keywordList = groups
-    .map((g: { keyword: string | null }) => g.keyword)
-    .filter((k): k is string => k !== null)
+  // 전체 광고비 합산
+  const totalAdCost = groups.reduce(
+    (sum: number, g: { _sum: { adCost: unknown } }) => sum + Number(g._sum.adCost ?? 0),
+    0
+  )
 
-  // 키워드 제거 상태 조회
-  const keywordStatuses = await prisma.keywordStatus.findMany({
-    where: { workspaceId: workspace.id, campaignId, keyword: { in: keywordList } },
-    select: { keyword: true, removedAt: true },
+  // 상품 제거 상태 조회
+  const statuses = await prisma.productStatus.findMany({
+    where: { workspaceId: workspace.id, campaignId },
+    select: { productName: true, optionId: true, removedAt: true },
   })
 
-  const removedAtMap = new Map(
-    keywordStatuses.map((s: { keyword: string; removedAt: Date | null }) => [
-      s.keyword,
+  // (productName, optionId) → removedAt 맵
+  const statusMap = new Map(
+    statuses.map((s: { productName: string; optionId: string; removedAt: Date | null }) => [
+      `${s.productName}|${s.optionId}`,
       s.removedAt ? s.removedAt.toISOString().split('T')[0] : null,
     ])
   )
 
   const items = groups.map(
     (g: {
-      keyword: string | null
+      productName: string | null
+      optionId: string | null
       _sum: {
         adCost: unknown
         impressions: unknown
@@ -74,27 +93,35 @@ export async function GET(
         revenue1d: unknown
       }
     }) => {
+      const productName = g.productName ?? ''
+      const optionId = g.optionId ?? null
       const adCost = Number(g._sum.adCost ?? 0)
       const impressions = Number(g._sum.impressions ?? 0)
       const clicks = Number(g._sum.clicks ?? 0)
       const orders1d = Number(g._sum.orders1d ?? 0)
       const revenue1d = Number(g._sum.revenue1d ?? 0)
-      const keyword = g.keyword!
+
+      // ProductStatus는 optionId null → "" 로 정규화됨
+      const statusKey = `${productName}|${optionId ?? ''}`
 
       return {
-        keyword,
+        productName,
+        parsedProductName: parsePureProductName(productName),
+        optionName: parseOptionName(productName),
+        optionId,
         adCost,
-        clicks,
+        adCostShare: totalAdCost > 0 ? Math.round((adCost / totalAdCost) * 10000) / 100 : 0,
         impressions,
-        orders1d,
-        revenue1d,
+        clicks,
         ctr: calculateCTR(clicks, impressions),
         cvr: calculateCVR(orders1d, clicks),
         roas: calculateROAS(revenue1d, adCost),
-        removedAt: removedAtMap.get(keyword) ?? null,
+        revenue1d,
+        orders1d,
+        removedAt: statusMap.get(statusKey) ?? null,
       }
     }
   )
 
-  return NextResponse.json({ items })
+  return NextResponse.json({ items, totalAdCost })
 }

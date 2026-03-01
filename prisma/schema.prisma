@@ -39,6 +39,7 @@ model Workspace {
   campaignMetas    CampaignMeta[]
   keywordStatuses  KeywordStatus[]
   campaignTargets  CampaignTarget[]
+  productStatuses  ProductStatus[]
 
   createdAt DateTime @default(now())
 }
@@ -165,6 +166,23 @@ model CampaignTarget {
 
   @@unique([workspaceId, campaignId, effectiveDate])
   @@index([workspaceId, campaignId, effectiveDate])
+}
+
+// 상품 제거 상태 관리
+model ProductStatus {
+  id          String    @id @default(cuid())
+  workspaceId String
+  campaignId  String
+  productName String
+  optionId    String    @default("")
+  removedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, campaignId, productName, optionId])
+  @@index([workspaceId, campaignId])
 }
 
 // 일자별 메모 (캠페인별 광고 작업 이력)

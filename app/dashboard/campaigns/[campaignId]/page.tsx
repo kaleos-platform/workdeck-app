@@ -47,6 +47,8 @@ import {
   Trash2,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
 import { FilterBar } from '@/components/dashboard/filter-bar'
@@ -75,8 +77,29 @@ type SortKey =
   | 'engagements'
 
 // 키워드 탭 정렬 컬럼
-type KeywordSortKey = 'keyword' | 'adCost' | 'impressions' | 'clicks' | 'cpc' | 'orders1d'
-type TabValue = 'dashboard' | 'keywords' | 'addata'
+type KeywordSortKey = 'keyword' | 'adCost' | 'ctr' | 'cvr' | 'roas' | 'orders1d' | 'revenue1d'
+type TabValue = 'dashboard' | 'keywords' | 'products' | 'addata'
+
+// 상품 분석 탭 아이템 타입
+type ProductItem = {
+  productName: string
+  parsedProductName: string
+  optionName: string | null
+  optionId: string | null
+  adCost: number
+  adCostShare: number
+  impressions: number
+  clicks: number
+  ctr: number | null
+  cvr: number | null
+  roas: number | null
+  revenue1d: number
+  orders1d: number
+  removedAt: string | null
+}
+
+// 상품 분석 탭 정렬 컬럼
+type ProductSortKey = 'adCost' | 'ctr' | 'cvr' | 'roas' | 'orders1d' | 'revenue1d'
 
 // 광고 데이터 탭 토글 가능한 추가 컬럼
 const TOGGLE_COLUMNS = [
@@ -168,6 +191,23 @@ function KwSortIcon({
   )
 }
 
+function ProdSortIcon({
+  column,
+  sortKey,
+  sortOrder,
+}: {
+  column: ProductSortKey
+  sortKey: ProductSortKey
+  sortOrder: 'asc' | 'desc'
+}) {
+  if (sortKey !== column) return <ArrowUpDown className="ml-1 h-3.5 w-3.5 opacity-40" />
+  return sortOrder === 'asc' ? (
+    <ArrowUp className="ml-1 h-3.5 w-3.5 text-primary" />
+  ) : (
+    <ArrowDown className="ml-1 h-3.5 w-3.5 text-primary" />
+  )
+}
+
 function fmt(v: number | null, suffix: string): string {
   if (v === null) return '-'
   if (suffix === '%') return `${v.toFixed(2)}%`
@@ -192,7 +232,9 @@ export default function CampaignDetailPage({
   const tab = searchParams.get('tab')
   const isDateRangeReady = isYmdDateString(from) && isYmdDateString(to)
   const activeTab: TabValue =
-    tab === 'keywords' || tab === 'addata' || tab === 'dashboard' ? tab : 'dashboard'
+    tab === 'keywords' || tab === 'addata' || tab === 'dashboard' || tab === 'products'
+      ? tab
+      : 'dashboard'
 
   // 캠페인 메타 정보
   const [campaignName, setCampaignName] = useState('')
@@ -229,6 +271,22 @@ export default function CampaignDetailPage({
   const [isCopyDoneOpen, setIsCopyDoneOpen] = useState(false)
   const [copiedKeywords, setCopiedKeywords] = useState<string[]>([])
   const [isSavingMemo, setIsSavingMemo] = useState(false)
+  // 메모 작성 UI (날짜/내용 입력)
+  const [memoDate, setMemoDate] = useState('')
+  const [memoContent, setMemoContent] = useState('')
+
+  // 상품 분석 탭 상태
+  const [productItems, setProductItems] = useState<ProductItem[]>([])
+  const [productLoading, setProductLoading] = useState(false)
+  const [productTotalAdCost, setProductTotalAdCost] = useState(0)
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]) // key = "productName|optionId"
+  const [productFilter, setProductFilter] = useState('')
+  const [productExcludeRemoved, setProductExcludeRemoved] = useState(false)
+  const [isProductRemoveDialogOpen, setIsProductRemoveDialogOpen] = useState(false)
+  const [productMemoDate, setProductMemoDate] = useState('')
+  const [productMemoContent, setProductMemoContent] = useState('')
+  const [isSavingProductMemo, setIsSavingProductMemo] = useState(false)
+  const [productRemovingItems, setProductRemovingItems] = useState<ProductItem[]>([])
 
   // 키워드
   const [keywords, setKeywords] = useState<InefficientKeyword[]>([])
@@ -240,6 +298,14 @@ export default function CampaignDetailPage({
   const [kwFilter, setKwFilter] = useState<'all' | 'zero' | 'orders'>('all')
   // 제거된 키워드 숨기기 토글
   const [kwExcludeRemoved, setKwExcludeRemoved] = useState(false)
+  // 키워드 탭 검색
+  const [kwSearch, setKwSearch] = useState('')
+
+  // 상품 탭 정렬
+  const [productSortBy, setProductSortBy] = useState<ProductSortKey>('adCost')
+  const [productSortOrder, setProductSortOrder] = useState<'asc' | 'desc'>('desc')
+  // 상품 탭 필터 모드
+  const [productFilterMode, setProductFilterMode] = useState<'all' | 'zero' | 'orders'>('all')
 
   // 메모
   const [memos, setMemos] = useState<DailyMemoType[]>([])
@@ -475,14 +541,29 @@ export default function CampaignDetailPage({
     setSelectedKeywords([])
   }
 
+  // 상품 탭 정렬
+  function handleProductSort(key: ProductSortKey) {
+    if (productSortBy === key) {
+      setProductSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setProductSortBy(key)
+      setProductSortOrder('desc')
+    }
+    setSelectedProducts([])
+  }
+
   // 키워드 탭 필터링
   const filteredKeywords = useMemo(() => {
     let result = keywords
     if (kwExcludeRemoved) result = result.filter((kw) => kw.removedAt === null)
+    if (kwSearch.trim())
+      result = result.filter((kw) =>
+        kw.keyword.toLowerCase().includes(kwSearch.trim().toLowerCase())
+      )
     if (kwFilter === 'zero') return result.filter((kw) => kw.orders1d === 0 && kw.adCost > 0)
     if (kwFilter === 'orders') return result.filter((kw) => kw.orders1d >= 1)
     return result
-  }, [keywords, kwFilter, kwExcludeRemoved])
+  }, [keywords, kwFilter, kwExcludeRemoved, kwSearch])
 
   // 키워드 클라이언트 사이드 정렬
   const sortedKeywords = useMemo(() => {
@@ -491,15 +572,36 @@ export default function CampaignDetailPage({
         const cmp = a.keyword.localeCompare(b.keyword, 'ko')
         return kwSortOrder === 'asc' ? cmp : -cmp
       }
-      // CPC는 파생 값이므로 직접 계산
-      const getCpc = (kw: (typeof keywords)[0]) => (kw.clicks > 0 ? kw.adCost / kw.clicks : 0)
-      const av = kwSortBy === 'cpc' ? getCpc(a) : (a[kwSortBy] ?? -Infinity)
-      const bv = kwSortBy === 'cpc' ? getCpc(b) : (b[kwSortBy] ?? -Infinity)
-      return kwSortOrder === 'asc'
-        ? (av as number) - (bv as number)
-        : (bv as number) - (av as number)
+      const av = (a[kwSortBy] as number | null) ?? -Infinity
+      const bv = (b[kwSortBy] as number | null) ?? -Infinity
+      return kwSortOrder === 'asc' ? av - bv : bv - av
     })
   }, [filteredKeywords, kwSortBy, kwSortOrder])
+
+  // 상품 탭 필터링 + 정렬
+  const filteredSortedProducts = useMemo(() => {
+    let result = productItems
+    if (productExcludeRemoved) result = result.filter((p) => !p.removedAt)
+    if (productFilter.trim())
+      result = result.filter((p) =>
+        p.parsedProductName.toLowerCase().includes(productFilter.trim().toLowerCase())
+      )
+    if (productFilterMode === 'zero')
+      result = result.filter((p) => p.adCost > 0 && p.orders1d === 0)
+    if (productFilterMode === 'orders') result = result.filter((p) => p.orders1d > 0)
+    return [...result].sort((a, b) => {
+      const av = (a[productSortBy] as number | null) ?? -Infinity
+      const bv = (b[productSortBy] as number | null) ?? -Infinity
+      return productSortOrder === 'asc' ? av - bv : bv - av
+    })
+  }, [
+    productItems,
+    productExcludeRemoved,
+    productFilter,
+    productFilterMode,
+    productSortBy,
+    productSortOrder,
+  ])
 
   // 키워드 다중 선택 (필터링된 키워드 기준)
   const allKeywordNames = filteredKeywords.map((k) => k.keyword)
@@ -523,6 +625,8 @@ export default function CampaignDetailPage({
     }
     navigator.clipboard.writeText(selectedKeywords.join(', '))
     setCopiedKeywords([...selectedKeywords])
+    setMemoDate(getTodayKst())
+    setMemoContent(`키워드 제거: ${selectedKeywords.join(', ')}`)
     setIsCopyDoneOpen(true)
   }
 
@@ -536,15 +640,17 @@ export default function CampaignDetailPage({
     if (isSavingMemo) return
     setIsSavingMemo(true)
     try {
-      const today = getTodayKst()
-      const newEntry = `키워드 제거: ${copiedKeywords.join(', ')}`
+      const dateToUse = memoDate || getTodayKst()
+      const newEntry = memoContent.trim() || `키워드 제거: ${copiedKeywords.join(', ')}`
 
-      // 오늘 기존 메모 조회
-      const res = await fetch(`/api/campaigns/${campaignId}/memos?from=${today}&to=${today}`)
+      // 해당 날짜 기존 메모 조회
+      const res = await fetch(
+        `/api/campaigns/${campaignId}/memos?from=${dateToUse}&to=${dateToUse}`
+      )
       const data = (res.ok ? await res.json() : { items: [] }) as {
         items: DailyMemoType[]
       }
-      const existing = data.items.find((m) => m.date === today)
+      const existing = data.items.find((m) => m.date === dateToUse)
 
       const content = existing ? `${existing.content}\n${newEntry}` : newEntry
 
@@ -553,7 +659,7 @@ export default function CampaignDetailPage({
         fetch(`/api/campaigns/${campaignId}/memos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date: today, content }),
+          body: JSON.stringify({ date: dateToUse, content }),
         }),
         fetch(`/api/campaigns/${campaignId}/keyword-status`, {
           method: 'POST',
@@ -565,14 +671,17 @@ export default function CampaignDetailPage({
 
       const saved = (await saveRes.json()) as DailyMemoType
       setMemos((prev) => {
-        const without = prev.filter((m) => m.date !== today)
+        const without = prev.filter((m) => m.date !== dateToUse)
         return [saved, ...without]
       })
 
       // 제거 상태 저장 성공 시 키워드 목록 업데이트
       if (statusRes.ok) {
+        const removedDate = dateToUse
         setKeywords((prev) =>
-          prev.map((kw) => (copiedKeywords.includes(kw.keyword) ? { ...kw, removedAt: today } : kw))
+          prev.map((kw) =>
+            copiedKeywords.includes(kw.keyword) ? { ...kw, removedAt: removedDate } : kw
+          )
         )
       }
 
@@ -608,6 +717,33 @@ export default function CampaignDetailPage({
     }
   }
 
+  // 개별 키워드 제거 버튼 클릭 → 클립보드 복사 + 팝업 열기
+  function handleSingleKeywordRemove(keyword: string) {
+    navigator.clipboard.writeText(keyword)
+    setCopiedKeywords([keyword])
+    setMemoDate(getTodayKst())
+    setMemoContent(`키워드 제거: ${keyword}`)
+    setIsCopyDoneOpen(true)
+  }
+
+  // 개별 키워드 제거 취소
+  async function handleSingleCancelRemoval(keyword: string) {
+    try {
+      const res = await fetch(
+        `/api/campaigns/${campaignId}/keyword-status?keywords=${encodeURIComponent(keyword)}`,
+        { method: 'DELETE' }
+      )
+      if (!res.ok) throw new Error('제거 취소 실패')
+
+      setKeywords((prev) =>
+        prev.map((kw) => (kw.keyword === keyword ? { ...kw, removedAt: null } : kw))
+      )
+      toast.success('키워드 제거 상태가 취소되었습니다')
+    } catch {
+      toast.error('제거 취소 중 오류가 발생했습니다')
+    }
+  }
+
   // 캠페인 표시명 저장
   async function handleSaveName() {
     const trimmed = editNameValue.trim()
@@ -635,6 +771,129 @@ export default function CampaignDetailPage({
       else next.add(key)
       return next
     })
+  }
+
+  // 상품 분석 데이터 조회
+  useEffect(() => {
+    if (activeTab !== 'products' || !isDateRangeReady) {
+      if (activeTab !== 'products') setProductItems([])
+      return
+    }
+
+    setProductLoading(true)
+    const q = new URLSearchParams()
+    if (from) q.set('from', from)
+    if (to) q.set('to', to)
+    if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
+
+    fetch(`/api/campaigns/${campaignId}/product-analysis?${q}`)
+      .then((r) => (r.ok ? r.json() : { items: [], totalAdCost: 0 }))
+      .then((d: { items: ProductItem[]; totalAdCost: number }) => {
+        setProductItems(d.items)
+        setProductTotalAdCost(d.totalAdCost)
+        setSelectedProducts([])
+      })
+      .catch(() => {
+        setProductItems([])
+        setProductTotalAdCost(0)
+      })
+      .finally(() => setProductLoading(false))
+  }, [activeTab, campaignId, from, to, adTypeFilter, isDateRangeReady])
+
+  // 상품 제거 팝업 열기
+  function openProductRemoveDialog(items: ProductItem[]) {
+    const lines = items.map(
+      (p) => `- ${p.parsedProductName} ${p.optionName ?? '-'}: ${p.optionId ?? '-'}`
+    )
+    const content = `상품 제거:\n${lines.join('\n')}`
+    setProductRemovingItems(items)
+    setProductMemoDate(getTodayKst())
+    setProductMemoContent(content)
+    setIsProductRemoveDialogOpen(true)
+  }
+
+  // 상품 제거 확정 (메모 저장 + product-status POST)
+  async function handleSaveProductMemo() {
+    if (isSavingProductMemo) return
+    setIsSavingProductMemo(true)
+    try {
+      const dateToUse = productMemoDate || getTodayKst()
+      const newEntry = productMemoContent.trim()
+
+      // 해당 날짜 기존 메모 조회
+      const res = await fetch(
+        `/api/campaigns/${campaignId}/memos?from=${dateToUse}&to=${dateToUse}`
+      )
+      const data = (res.ok ? await res.json() : { items: [] }) as { items: DailyMemoType[] }
+      const existing = data.items.find((m) => m.date === dateToUse)
+      const content = existing ? `${existing.content}\n${newEntry}` : newEntry
+
+      const [saveRes, statusRes] = await Promise.all([
+        fetch(`/api/campaigns/${campaignId}/memos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: dateToUse, content }),
+        }),
+        fetch(`/api/campaigns/${campaignId}/product-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: productRemovingItems.map((p) => ({
+              productName: p.productName,
+              optionId: p.optionId ?? '',
+            })),
+          }),
+        }),
+      ])
+
+      if (!saveRes.ok) throw new Error('메모 저장 실패')
+
+      const saved = (await saveRes.json()) as DailyMemoType
+      setMemos((prev) => {
+        const without = prev.filter((m) => m.date !== dateToUse)
+        return [saved, ...without]
+      })
+
+      if (statusRes.ok) {
+        const removedDate = dateToUse
+        setProductItems((prev) =>
+          prev.map((p) => {
+            const isRemoving = productRemovingItems.some(
+              (r) => r.productName === p.productName && (r.optionId ?? '') === (p.optionId ?? '')
+            )
+            return isRemoving ? { ...p, removedAt: removedDate } : p
+          })
+        )
+      }
+
+      toast.success('상품 제거 기록이 저장되었습니다')
+      setIsProductRemoveDialogOpen(false)
+      setSelectedProducts([])
+    } catch {
+      toast.error('저장 중 오류가 발생했습니다')
+    } finally {
+      setIsSavingProductMemo(false)
+    }
+  }
+
+  // 상품 개별 제거 취소
+  async function handleProductCancelRemoval(product: ProductItem) {
+    const url = `/api/campaigns/${campaignId}/product-status?productName=${encodeURIComponent(product.productName)}&optionId=${encodeURIComponent(product.optionId ?? '')}`
+    try {
+      const res = await fetch(url, { method: 'DELETE' })
+      if (!res.ok) throw new Error('제거 취소 실패')
+
+      setProductItems((prev) =>
+        prev.map((p) =>
+          p.productName === product.productName && (p.optionId ?? '') === (product.optionId ?? '')
+            ? { ...p, removedAt: null }
+            : p
+        )
+      )
+      toast.success('상품 제거 상태가 취소되었습니다')
+    } catch {
+      toast.error('제거 취소 중 오류가 발생했습니다')
+    }
   }
 
   async function handleDeleteCampaign() {
@@ -832,7 +1091,13 @@ export default function CampaignDetailPage({
   ]
 
   function handleTabChange(nextTab: string) {
-    if (nextTab !== 'dashboard' && nextTab !== 'keywords' && nextTab !== 'addata') return
+    if (
+      nextTab !== 'dashboard' &&
+      nextTab !== 'keywords' &&
+      nextTab !== 'products' &&
+      nextTab !== 'addata'
+    )
+      return
 
     const params = new URLSearchParams(searchParams.toString())
     if (nextTab === 'dashboard') params.delete('tab')
@@ -925,7 +1190,7 @@ export default function CampaignDetailPage({
 
       {/* 탭 영역 */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger
             value="dashboard"
             className="border border-transparent hover:border-border hover:bg-background/70"
@@ -937,6 +1202,12 @@ export default function CampaignDetailPage({
             className="border border-transparent hover:border-border hover:bg-background/70"
           >
             키워드 분석
+          </TabsTrigger>
+          <TabsTrigger
+            value="products"
+            className="border border-transparent hover:border-border hover:bg-background/70"
+          >
+            상품 분석
           </TabsTrigger>
           <TabsTrigger
             value="addata"
@@ -1033,9 +1304,18 @@ export default function CampaignDetailPage({
         {/* ── 키워드 분석 탭 ── */}
         <TabsContent value="keywords" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* 필터 토글 버튼 */}
+            {/* 검색 + 필터 토글 버튼 */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm text-muted-foreground">전체 {keywords.length}개 키워드</span>
+              <Input
+                placeholder="키워드 검색"
+                value={kwSearch}
+                onChange={(e) => {
+                  setKwSearch(e.target.value)
+                  setSelectedKeywords([])
+                }}
+                className="h-8 w-40 text-sm"
+              />
               <div className="flex items-center gap-1.5">
                 <Button
                   variant={kwFilter === 'zero' ? 'default' : 'outline'}
@@ -1135,42 +1415,29 @@ export default function CampaignDetailPage({
                     <TableHead className="text-muted-foreground">제거 상태</TableHead>
                     <TableHead
                       className="cursor-pointer text-right select-none"
+                      onClick={() => handleKwSort('ctr')}
+                    >
+                      <span className="flex items-center justify-end">
+                        CTR
+                        <KwSortIcon column="ctr" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer text-right select-none"
+                      onClick={() => handleKwSort('cvr')}
+                    >
+                      <span className="flex items-center justify-end">
+                        CVR
+                        <KwSortIcon column="cvr" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer text-right select-none"
                       onClick={() => handleKwSort('adCost')}
                     >
                       <span className="flex items-center justify-end">
-                        광고비
+                        광고비(비중)
                         <KwSortIcon column="adCost" sortKey={kwSortBy} sortOrder={kwSortOrder} />
-                      </span>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer text-right select-none"
-                      onClick={() => handleKwSort('impressions')}
-                    >
-                      <span className="flex items-center justify-end">
-                        노출 수
-                        <KwSortIcon
-                          column="impressions"
-                          sortKey={kwSortBy}
-                          sortOrder={kwSortOrder}
-                        />
-                      </span>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer text-right select-none"
-                      onClick={() => handleKwSort('clicks')}
-                    >
-                      <span className="flex items-center justify-end">
-                        클릭 수
-                        <KwSortIcon column="clicks" sortKey={kwSortBy} sortOrder={kwSortOrder} />
-                      </span>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer text-right select-none"
-                      onClick={() => handleKwSort('cpc')}
-                    >
-                      <span className="flex items-center justify-end">
-                        CPC
-                        <KwSortIcon column="cpc" sortKey={kwSortBy} sortOrder={kwSortOrder} />
                       </span>
                     </TableHead>
                     <TableHead
@@ -1182,13 +1449,31 @@ export default function CampaignDetailPage({
                         <KwSortIcon column="orders1d" sortKey={kwSortBy} sortOrder={kwSortOrder} />
                       </span>
                     </TableHead>
+                    <TableHead
+                      className="cursor-pointer text-right select-none"
+                      onClick={() => handleKwSort('revenue1d')}
+                    >
+                      <span className="flex items-center justify-end">
+                        매출액
+                        <KwSortIcon column="revenue1d" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer text-right select-none"
+                      onClick={() => handleKwSort('roas')}
+                    >
+                      <span className="flex items-center justify-end">
+                        ROAS
+                        <KwSortIcon column="roas" sortKey={kwSortBy} sortOrder={kwSortOrder} />
+                      </span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sortedKeywords.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={8}
+                        colSpan={9}
                         className="py-12 text-center text-sm text-muted-foreground"
                       >
                         {kwFilter === 'all'
@@ -1211,15 +1496,35 @@ export default function CampaignDetailPage({
                           />
                         </TableCell>
                         <TableCell className="text-sm font-medium">{kw.keyword}</TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="text-sm" onClick={(e) => e.stopPropagation()}>
                           {kw.removedAt ? (
-                            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                              [제거] {kw.removedAt}
+                            <span className="inline-flex items-center gap-1">
+                              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                [제거] {kw.removedAt}
+                              </span>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-5 w-5 text-muted-foreground hover:text-red-600"
+                                title="제거 취소"
+                                onClick={() => handleSingleCancelRemoval(kw.keyword)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
                             </span>
                           ) : (
-                            <span className="text-muted-foreground">-</span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 text-xs"
+                              onClick={() => handleSingleKeywordRemove(kw.keyword)}
+                            >
+                              제거
+                            </Button>
                           )}
                         </TableCell>
+                        <TableCell className="text-right text-sm">{fmt(kw.ctr, '%')}</TableCell>
+                        <TableCell className="text-right text-sm">{fmt(kw.cvr, '%')}</TableCell>
                         <TableCell className="text-right text-sm font-medium text-orange-600">
                           {kw.adCost.toLocaleString()}원
                           {kpiData.totalAdCost > 0 && (
@@ -1229,19 +1534,12 @@ export default function CampaignDetailPage({
                           )}
                         </TableCell>
                         <TableCell className="text-right text-sm">
-                          {kw.impressions.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {kw.clicks.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {kw.clicks > 0
-                            ? `${Math.round(kw.adCost / kw.clicks).toLocaleString()}원`
-                            : '-'}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
                           {kw.orders1d.toLocaleString()}
                         </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {kw.revenue1d.toLocaleString()}원
+                        </TableCell>
+                        <TableCell className="text-right text-sm">{fmt(kw.roas, '%')}</TableCell>
                       </TableRow>
                     ))
                   )}
@@ -1254,6 +1552,308 @@ export default function CampaignDetailPage({
             <p className="text-center text-xs text-muted-foreground">
               {selectedKeywords.length}개 키워드 선택됨 · 복사 버튼을 클릭하면 쉼표(,) 구분으로
               클립보드에 저장됩니다
+            </p>
+          )}
+        </TabsContent>
+
+        {/* ── 상품 분석 탭 ── */}
+        <TabsContent value="products" className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                전체 {productItems.length}개 상품 옵션
+              </span>
+              <Button
+                variant={productFilterMode === 'zero' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => {
+                  const next = productFilterMode === 'zero' ? 'all' : 'zero'
+                  setProductFilterMode(next)
+                  if (next === 'zero') {
+                    setProductSortBy('adCost')
+                    setProductSortOrder('desc')
+                  }
+                  setSelectedProducts([])
+                }}
+              >
+                저효율 상품 보기
+              </Button>
+              <Button
+                variant={productFilterMode === 'orders' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => {
+                  const next = productFilterMode === 'orders' ? 'all' : 'orders'
+                  setProductFilterMode(next)
+                  if (next === 'orders') {
+                    setProductSortBy('revenue1d')
+                    setProductSortOrder('desc')
+                  }
+                  setSelectedProducts([])
+                }}
+              >
+                주문 발생 상품 보기
+              </Button>
+              <div className="flex items-center gap-1.5">
+                <Checkbox
+                  id="product-exclude-removed"
+                  checked={productExcludeRemoved}
+                  onCheckedChange={() => {
+                    setProductExcludeRemoved((prev) => !prev)
+                    setSelectedProducts([])
+                  }}
+                />
+                <label
+                  htmlFor="product-exclude-removed"
+                  className="cursor-pointer text-sm select-none"
+                >
+                  제거 제외
+                </label>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="상품명 검색"
+                value={productFilter}
+                onChange={(e) => setProductFilter(e.target.value)}
+                className="h-8 w-40 text-sm"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                disabled={selectedProducts.length === 0}
+                onClick={() => {
+                  const items = productItems.filter((p) =>
+                    selectedProducts.includes(`${p.productName}|${p.optionId ?? ''}`)
+                  )
+                  openProductRemoveDialog(items)
+                }}
+              >
+                상품 제거 ({selectedProducts.length})
+              </Button>
+            </div>
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={
+                            selectedProducts.length > 0 &&
+                            selectedProducts.length === filteredSortedProducts.length
+                          }
+                          onCheckedChange={(checked) => {
+                            const visible = filteredSortedProducts.map(
+                              (p) => `${p.productName}|${p.optionId ?? ''}`
+                            )
+                            setSelectedProducts(checked ? visible : [])
+                          }}
+                          aria-label="전체 선택"
+                        />
+                      </TableHead>
+                      <TableHead className="min-w-48">상품명</TableHead>
+                      <TableHead className="min-w-24">옵션명</TableHead>
+                      <TableHead className="min-w-24">옵션ID</TableHead>
+                      <TableHead className="text-muted-foreground">제거 상태</TableHead>
+                      <TableHead
+                        className="cursor-pointer text-right select-none"
+                        onClick={() => handleProductSort('ctr')}
+                      >
+                        <span className="flex items-center justify-end">
+                          CTR
+                          <ProdSortIcon
+                            column="ctr"
+                            sortKey={productSortBy}
+                            sortOrder={productSortOrder}
+                          />
+                        </span>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer text-right select-none"
+                        onClick={() => handleProductSort('cvr')}
+                      >
+                        <span className="flex items-center justify-end">
+                          CVR
+                          <ProdSortIcon
+                            column="cvr"
+                            sortKey={productSortBy}
+                            sortOrder={productSortOrder}
+                          />
+                        </span>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer text-right select-none"
+                        onClick={() => handleProductSort('adCost')}
+                      >
+                        <span className="flex items-center justify-end">
+                          광고비(비중)
+                          <ProdSortIcon
+                            column="adCost"
+                            sortKey={productSortBy}
+                            sortOrder={productSortOrder}
+                          />
+                        </span>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer text-right select-none"
+                        onClick={() => handleProductSort('orders1d')}
+                      >
+                        <span className="flex items-center justify-end">
+                          주문수
+                          <ProdSortIcon
+                            column="orders1d"
+                            sortKey={productSortBy}
+                            sortOrder={productSortOrder}
+                          />
+                        </span>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer text-right select-none"
+                        onClick={() => handleProductSort('revenue1d')}
+                      >
+                        <span className="flex items-center justify-end">
+                          매출액
+                          <ProdSortIcon
+                            column="revenue1d"
+                            sortKey={productSortBy}
+                            sortOrder={productSortOrder}
+                          />
+                        </span>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer text-right select-none"
+                        onClick={() => handleProductSort('roas')}
+                      >
+                        <span className="flex items-center justify-end">
+                          ROAS
+                          <ProdSortIcon
+                            column="roas"
+                            sortKey={productSortBy}
+                            sortOrder={productSortOrder}
+                          />
+                        </span>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {productLoading ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={11}
+                          className="py-12 text-center text-sm text-muted-foreground"
+                        >
+                          불러오는 중...
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredSortedProducts.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={11}
+                          className="py-12 text-center text-sm text-muted-foreground"
+                        >
+                          상품 데이터가 없습니다
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredSortedProducts.map((p) => {
+                        const key = `${p.productName}|${p.optionId ?? ''}`
+                        const isSelected = selectedProducts.includes(key)
+                        return (
+                          <TableRow
+                            key={key}
+                            className="cursor-pointer"
+                            onClick={() =>
+                              setSelectedProducts((prev) =>
+                                prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+                              )
+                            }
+                          >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={() =>
+                                  setSelectedProducts((prev) =>
+                                    prev.includes(key)
+                                      ? prev.filter((k) => k !== key)
+                                      : [...prev, key]
+                                  )
+                                }
+                                aria-label={p.parsedProductName}
+                              />
+                            </TableCell>
+                            <TableCell className="max-w-48 text-sm font-medium">
+                              <div className="truncate" title={p.parsedProductName}>
+                                {p.parsedProductName || p.productName}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {p.optionName ?? '-'}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {p.optionId ?? '-'}
+                            </TableCell>
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              {p.removedAt ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                    [제거] {p.removedAt}
+                                  </span>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-5 w-5 text-muted-foreground hover:text-red-600"
+                                    title="제거 취소"
+                                    onClick={() => handleProductCancelRemoval(p)}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </span>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 text-xs"
+                                  onClick={() => openProductRemoveDialog([p])}
+                                >
+                                  제거
+                                </Button>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right text-sm">{fmt(p.ctr, '%')}</TableCell>
+                            <TableCell className="text-right text-sm">{fmt(p.cvr, '%')}</TableCell>
+                            <TableCell className="text-right text-sm font-medium text-orange-600">
+                              {p.adCost.toLocaleString('ko-KR')}원
+                              <span className="ml-1 text-xs font-normal text-muted-foreground">
+                                ({p.adCostShare.toFixed(2)}%)
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right text-sm">
+                              {p.orders1d.toLocaleString('ko-KR')}
+                            </TableCell>
+                            <TableCell className="text-right text-sm">
+                              {p.revenue1d.toLocaleString('ko-KR')}원
+                            </TableCell>
+                            <TableCell className="text-right text-sm">{fmt(p.roas, '%')}</TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {selectedProducts.length > 0 && (
+            <p className="text-center text-xs text-muted-foreground">
+              {selectedProducts.length}개 상품 옵션 선택됨 · 상품 제거 버튼을 클릭하면 제거 기록을
+              남길 수 있습니다
             </p>
           )}
         </TabsContent>
@@ -1793,16 +2393,71 @@ export default function CampaignDetailPage({
               {copiedKeywords.length}개 키워드가 클립보드에 복사되었습니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-foreground">
-            {copiedKeywords.join(', ')}
+          {/* 메모 작성 UI */}
+          <p className="text-sm font-medium">메모 작성</p>
+          <div className="space-y-2">
+            <Label htmlFor="memo-date">작성 일자</Label>
+            <Input
+              id="memo-date"
+              type="date"
+              value={memoDate}
+              max={getTodayKst()}
+              onChange={(e) => setMemoDate(e.target.value)}
+            />
+            <Label htmlFor="memo-content">내용</Label>
+            <Textarea
+              id="memo-content"
+              value={memoContent}
+              onChange={(e) => setMemoContent(e.target.value)}
+              rows={3}
+            />
           </div>
-          <p className="text-sm text-muted-foreground">복사한 키워드를 제거 기록으로 남길까요?</p>
           <DialogFooter className="gap-3 sm:gap-3">
             <Button variant="outline" onClick={() => setIsCopyDoneOpen(false)}>
               닫기
             </Button>
-            <Button onClick={handleSaveKeywordMemo} disabled={isSavingMemo}>
+            <Button onClick={handleSaveKeywordMemo} disabled={isSavingMemo || !memoContent.trim()}>
               {isSavingMemo ? '저장 중...' : '메모 남기기'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 상품 제거 다이얼로그 */}
+      <Dialog open={isProductRemoveDialogOpen} onOpenChange={setIsProductRemoveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>상품 제거</DialogTitle>
+            <DialogDescription>
+              상품 옵션을 제거 기록으로 남길까요? ({productRemovingItems.length}개)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="product-memo-date">작성 일자</Label>
+            <Input
+              id="product-memo-date"
+              type="date"
+              value={productMemoDate}
+              max={getTodayKst()}
+              onChange={(e) => setProductMemoDate(e.target.value)}
+            />
+            <Label htmlFor="product-memo-content">내용</Label>
+            <Textarea
+              id="product-memo-content"
+              value={productMemoContent}
+              onChange={(e) => setProductMemoContent(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <DialogFooter className="gap-3 sm:gap-3">
+            <Button variant="outline" onClick={() => setIsProductRemoveDialogOpen(false)}>
+              닫기
+            </Button>
+            <Button
+              onClick={handleSaveProductMemo}
+              disabled={isSavingProductMemo || !productMemoContent.trim()}
+            >
+              {isSavingProductMemo ? '저장 중...' : '메모 남기기'}
             </Button>
           </DialogFooter>
         </DialogContent>
