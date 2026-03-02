@@ -54,3 +54,6 @@ next-env.d.ts
 
 # shrimp task manager 런타임 데이터
 /shrimp_data/
+
+# Office 임시 잠금 파일 (Excel/Word 열려있을 때 생성)
+~$*
