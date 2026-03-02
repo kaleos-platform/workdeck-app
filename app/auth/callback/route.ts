@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const type = searchParams.get('type') // 'email': 이메일 인증 콜백, null: Google OAuth 콜백
   const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
@@ -13,20 +14,19 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      // 이메일 인증 완료 (type=email) → 세션 종료 후 로그인 화면으로 리다이렉트
+      // app_metadata.provider가 아닌 URL 파라미터로 구분 (동일 이메일로 여러 provider 연결 시 오작동 방지)
+      if (type === 'email') {
+        await supabase.auth.signOut()
+        return NextResponse.redirect(`${origin}/login?verified=success`)
+      }
+
+      // Google OAuth → Prisma User upsert 후 대시보드로
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
       if (user) {
-        const provider = user.app_metadata?.provider as string | undefined
-
-        // 이메일 인증 완료 → 세션 종료 후 로그인 화면으로 리다이렉트
-        if (!provider || provider === 'email') {
-          await supabase.auth.signOut()
-          return NextResponse.redirect(`${origin}/login?verified=success`)
-        }
-
-        // Google OAuth → Prisma User upsert 후 대시보드로
         await prisma.user.upsert({
           where: { id: user.id },
           create: {

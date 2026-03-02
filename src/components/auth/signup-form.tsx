@@ -42,7 +42,7 @@ export function SignupForm() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?type=email`,
         data: {
           name: data.name || '',
         },
