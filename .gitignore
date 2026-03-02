@@ -57,3 +57,6 @@ next-env.d.ts
 
 # Office 임시 잠금 파일 (Excel/Word 열려있을 때 생성)
 ~$*
+
+# MCP 설정 (access token 포함 가능 — 개인별 로컬 관리)
+.mcp.json
