@@ -14,7 +14,9 @@ function createPrismaClient(): PrismaInstance {
       '[prisma] DATABASE_URL 환경변수가 설정되지 않았습니다. .env.local 파일을 확인하세요.'
     )
   }
-  const adapter = new PrismaPg({ connectionString })
+  // 프로덕션(Vercel)에서는 Supabase 외부 연결에 SSL 필요
+  const ssl = process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
+  const adapter = new PrismaPg({ connectionString, ssl })
   return new PrismaClient({ adapter })
 }
 
