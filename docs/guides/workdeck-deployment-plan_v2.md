@@ -153,26 +153,49 @@ User
 **목표**: 개인 계정에서 Kaleos 조직 계정으로 프로젝트 이전
 **전제 조건**: DB 데이터 유지 불필요 → 스키마 재적용 방식 채택
 
-#### 현재 계정 구조
+#### 계정 구조 및 역할 정의
 
-| 구분         | 계정                   | 비고                                       |
-| ------------ | ---------------------- | ------------------------------------------ |
-| 개인 계정    | eddy.sangwon@gmail.com | 현재 모든 서비스 소유                      |
-| 조직 계정    | devops@kaleos.co.kr    | Google Workspace (hello@kaleos.co.kr 가입) |
-| 현재 팀 규모 | 1인 (Solo)             | 향후 팀 확장 가능성 대비                   |
+| 구분             | 계정                   | 역할                                   |
+| ---------------- | ---------------------- | -------------------------------------- |
+| 개인 계정        | eddy.sangwon@gmail.com | 개인 개발 작업, Vercel 소유 (1인 단계) |
+| 법인 인프라 계정 | devops@kaleos.co.kr    | 코드·DB·결제 등 법인 인프라 소유권     |
+| 제품 운영 계정   | devops@workdeck.work   | 에러 모니터링·도메인·서비스 운영 관리  |
+| 현재 팀 규모     | 1인 (Solo)             | 향후 팀 확장 가능성 대비               |
+
+> **계정 분리 원칙**: `devops@kaleos.co.kr`(법인)이 인프라 자산을 소유하고, `devops@workdeck.work`(제품)이 서비스를 운영한다. 팀이 생겨도 이 구조가 유지된다.
+
+#### 서비스별 계정 배분
+
+| 서비스                         | 소유 계정                | 이유                                |
+| ------------------------------ | ------------------------ | ----------------------------------- |
+| **GitHub** (`kaleos-platform`) | `devops@kaleos.co.kr`    | 법인 코드 자산 — 이전 완료 ✅       |
+| **Supabase**                   | `devops@kaleos.co.kr`    | DB = 법인 핵심 인프라 자산          |
+| **Stripe**                     | `devops@kaleos.co.kr`    | 결제·정산 = 법인 명의 필수          |
+| **Vercel**                     | `eddy.sangwon@gmail.com` | 1인 단계 무료 유지, 팀 합류 시 이전 |
+| **Sentry**                     | `devops@workdeck.work`   | 에러 모니터링 = 제품 운영 도구      |
+| **도메인** `workdeck.work`     | `devops@workdeck.work`   | 제품 브랜드 도메인                  |
+| **도메인** `kaleos.co.kr`      | `devops@kaleos.co.kr`    | 법인 도메인                         |
+
+#### 실제 로그인 흐름
+
+```
+개발 작업   → eddy.sangwon@gmail.com  (GitHub commit/push, Vercel 확인)
+인프라 관리 → devops@kaleos.co.kr     (Supabase, Stripe, GitHub 조직 설정)
+서비스 운영 → devops@workdeck.work    (Sentry, DNS, 고객 커뮤니케이션)
+```
 
 #### 서비스별 이전 전략 요약
 
-| 서비스   | 전략                                | 이유                                                    |
-| -------- | ----------------------------------- | ------------------------------------------------------- |
-| GitHub   | 조직으로 Transfer                   | 무료, 히스토리 보존, 향후 팀 접근 관리                  |
-| Supabase | 조직으로 새 프로젝트 생성           | 데이터 불필요, 이전보다 새 생성이 단순                  |
-| Vercel   | **개인 계정 유지** + 조직 레포 연결 | 팀 플랜 비용 불필요 (1인 작업), 향후 필요 시 업그레이드 |
-| Sentry   | 조직 계정으로 새 프로젝트 생성      | 이력 불필요, 새 DSN 발급이 더 간단                      |
+| 서비스   | 전략                              | 소유 계정                |
+| -------- | --------------------------------- | ------------------------ |
+| GitHub   | 조직으로 Transfer — **완료** ✅   | `devops@kaleos.co.kr`    |
+| Supabase | 조직에서 새 프로젝트 생성         | `devops@kaleos.co.kr`    |
+| Vercel   | 개인 계정 유지 + 조직 레포 재연결 | `eddy.sangwon@gmail.com` |
+| Sentry   | 조직 계정에서 새 프로젝트 생성    | `devops@workdeck.work`   |
 
-> **Vercel 팀 플랜 기준**: 1인 개발자는 개인 Vercel 계정으로도 GitHub 조직 레포를 배포할 수 있다. Pro 팀 플랜($20/월)은 팀원이 생기거나 조직 공동 접근이 필요할 때 전환한다.
+> **Vercel 업그레이드 시점**: 팀원이 Vercel 대시보드에 직접 접근할 필요가 생길 때 Pro Team($20/월)으로 전환한다.
 
-**이전 순서 원칙**: GitHub → Supabase → Vercel → Sentry
+**이전 순서 원칙**: GitHub ✅ → Supabase → Vercel → Sentry
 (Vercel이 GitHub 레포에 의존하므로 GitHub 이전 선행 필수)
 
 ---
@@ -337,13 +360,15 @@ Settings → General → Project Name → "workdeck-app"
 
 #### 0-A-4. Sentry 조직 프로젝트 생성
 
-현재 Sentry `workdeck` 프로젝트를 조직 계정으로 이전한다.
+현재 Sentry `workdeck` 프로젝트를 제품 운영 계정으로 이전한다.
+
+> **소유 계정**: `devops@workdeck.work` (에러 모니터링 = 제품 운영 도구)
 
 **방법: 조직 계정에서 새 프로젝트 생성** (이력 불필요, 새 DSN 발급):
 
 ```
-sentry.io → devops@kaleos.co.kr 로그인 (또는 조직 Sentry 접근)
-→ 기존 kaleos 조직 선택 (또는 New Organization → "Kaleos")
+sentry.io → devops@workdeck.work 로그인
+→ New Organization → "Workdeck" (또는 기존 조직 선택)
 → Projects → Create Project
 → Platform: Next.js 선택
 → Project name: workdeck
@@ -381,7 +406,7 @@ DIRECT_URL=postgresql://postgres.<workdeck-dev-ref>:<PW>@aws-0-ap-northeast-2.po
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/...
-SENTRY_ORG=kaleos           # 조직 slug
+SENTRY_ORG=workdeck         # devops@workdeck.work 조직 slug
 SENTRY_PROJECT=workdeck
 SENTRY_AUTH_TOKEN=sntrys_...
 ```
