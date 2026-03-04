@@ -4,7 +4,15 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { LayoutDashboard, UploadCloud, BarChart2, LogOut, ChevronDown } from 'lucide-react'
+import {
+  LayoutDashboard,
+  UploadCloud,
+  BarChart2,
+  LogOut,
+  ChevronDown,
+  Home,
+  Settings,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { Separator } from '@/components/ui/separator'
@@ -33,11 +41,12 @@ type Campaign = {
 
 type SidebarProps = {
   workspaceName: string
+  spaceId?: string
 }
 
 const NVB_AD_TYPE = '신규 구매 고객 확보'
 
-export function Sidebar({ workspaceName }: SidebarProps) {
+export function Sidebar({ workspaceName, spaceId }: SidebarProps) {
   const pathname = usePathname()
   const { signOut } = useAuth()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -105,6 +114,22 @@ export function Sidebar({ workspaceName }: SidebarProps) {
   return (
     <div className="flex h-full w-64 flex-shrink-0 flex-col space-y-4 bg-slate-900 py-4 text-white">
       <div className="px-3 py-2">
+        {/* My Deck 홈 */}
+        <div className="mb-2">
+          <Link
+            href="/my-deck"
+            className={cn(
+              'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+              pathname === '/my-deck' ? 'bg-white/10 text-white' : 'text-zinc-400'
+            )}
+          >
+            <Home className="mr-3 h-5 w-5 flex-shrink-0" />
+            <span className="truncate">My Deck 홈</span>
+          </Link>
+        </div>
+
+        <Separator className="mb-3 bg-white/10" />
+
         {/* 메인 메뉴 */}
         <div className="space-y-1">
           {mainRoutes.map((route) => (
@@ -206,8 +231,20 @@ export function Sidebar({ workspaceName }: SidebarProps) {
         </section>
       </div>
 
-      {/* 하단 로그아웃 버튼 */}
-      <div className="mt-auto px-3 py-2">
+      {/* 하단: 공간 설정 + 로그아웃 */}
+      <div className="mt-auto space-y-1 px-3 py-2">
+        {spaceId && (
+          <Link
+            href={`/space/${spaceId}`}
+            className={cn(
+              'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+              pathname.startsWith('/space/') ? 'bg-white/10 text-white' : 'text-zinc-400'
+            )}
+          >
+            <Settings className="mr-3 h-5 w-5 flex-shrink-0" />
+            <span className="truncate">공간 설정</span>
+          </Link>
+        )}
         <Button
           variant="ghost"
           className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"

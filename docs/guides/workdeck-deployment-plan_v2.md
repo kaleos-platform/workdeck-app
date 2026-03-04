@@ -70,8 +70,8 @@ Workspace (기존 — 병행 운영 중, 점진 전환)
 | 0-B   | 도메인 + Vercel 환경변수 분리                             | ✅ 완료     |
 | 1     | Space/SpaceMember/DeckApp/DeckInstance 모델 + 백필        | ✅ 완료     |
 | **2** | **Core OS 레이어 (resolveDeckContext, RBAC, MeterEvent)** | **✅ 완료** |
-| **3** | **앱 셸 UI (/my-deck, /d/[deckKey])**                     | **⬜ 다음** |
-| 4     | RLS 설정                                                  | ⬜          |
+| **3** | **앱 셸 UI (/my-deck, /d/[deckKey])**                     | **✅ 완료** |
+| **4** | **RLS 설정**                                              | **⬜ 다음** |
 | 5     | Stripe 결제 연동 + /billing **(PoC 검증 후)**             | ⬜ 대기     |
 | 6     | 마케팅 사이트 분리 (workdeck.work, 별도 레포)             | ⬜ 별도     |
 
@@ -352,10 +352,10 @@ STRIPE_PRICE_TEAM=
 - [x] `trackMeterEvent()` 구현 (`src/lib/meter.ts`)
 - [x] 업로드 API에 MeterEvent 연동 (`upload_processed`)
 
-### Phase 3 (앱 셸 UI) ⬜
+### Phase 3 (앱 셸 UI) ✅
 
-- [ ] `/my-deck` → 활성 카드 목록 표시
-- [ ] `/d/coupang-ads` → 캠페인 대시보드 정상 진입
+- [x] `/my-deck` → 활성 카드 목록 표시
+- [x] `/d/coupang-ads` → 캠페인 대시보드 정상 진입
 
 ### Phase 4 (RLS) ⬜
 
