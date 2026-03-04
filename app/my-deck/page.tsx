@@ -6,7 +6,7 @@ import { ExternalLink } from 'lucide-react'
 
 // deckKey → 진입 경로 매핑
 const DECK_ENTRY: Record<string, string> = {
-  'coupang-ads': '/dashboard',
+  'coupang-ads': '/d/coupang-ads',
 }
 
 export default async function MyDeckPage() {
@@ -20,7 +20,6 @@ export default async function MyDeckPage() {
         select: {
           id: true,
           name: true,
-          currentPlan: true,
           deckInstances: {
             where: { isActive: true },
             include: {
@@ -44,9 +43,7 @@ export default async function MyDeckPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">My Deck</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          {space.name} · {space.currentPlan} 플랜
-        </p>
+        <p className="mt-1 text-sm text-slate-500">{space.name}</p>
       </div>
 
       {cards.length === 0 ? (

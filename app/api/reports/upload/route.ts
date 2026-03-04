@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
-import { trackMeterEvent } from '@/lib/meter'
 import { createClient } from '@/lib/supabase/server'
 import {
   parseExcelBuffer,
@@ -35,7 +34,7 @@ function parseUploadBody(body: unknown): UploadRequestBody | null {
 export async function POST(request: NextRequest) {
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
-  const { user, workspace } = resolved
+  const { workspace } = resolved
 
   // overwrite 쿼리 파라미터: null(첫 요청), 'true'(덮어쓰기), 'false'(중복 스킵)
   const url = new URL(request.url)
@@ -313,15 +312,6 @@ export async function POST(request: NextRequest) {
 
     // 처리 완료 후 Storage 임시 파일 삭제
     await supabase.storage.from('reports').remove([storagePath])
-
-    // 사용량 미터링 — 실패해도 응답에 영향 없음
-    const spaceMember = await prisma.spaceMember.findFirst({
-      where: { userId: user.id },
-      select: { spaceId: true },
-    })
-    if (spaceMember) {
-      trackMeterEvent(spaceMember.spaceId, 'coupang-ads', 'upload_processed').catch(() => {})
-    }
 
     return NextResponse.json(
       {

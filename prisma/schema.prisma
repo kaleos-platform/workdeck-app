@@ -16,13 +16,6 @@ enum SpaceType {
   ORGANIZATION
 }
 
-enum PlanType {
-  FREE
-  STARTER
-  PRO
-  TEAM
-}
-
 enum SpaceMemberRole {
   OWNER
   ADMIN
@@ -238,14 +231,6 @@ model Space {
 
   members       SpaceMember[]
   deckInstances DeckInstance[]
-  billingEvents BillingEvent[]
-  meterEvents   MeterEvent[]
-
-  // Stripe 과금 정보
-  stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
-  currentPlan          PlanType @default(FREE)
-  planExpiresAt        DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -291,31 +276,4 @@ model DeckInstance {
 
   @@unique([spaceId, deckAppId])
   @@index([spaceId])
-}
-
-// Stripe 과금 이벤트 로그
-model BillingEvent {
-  id            String   @id @default(cuid())
-  spaceId       String
-  stripeEventId String   @unique
-  eventType     String
-  payload       Json
-  processedAt   DateTime @default(now())
-
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-}
-
-// 사용량 미터링 이벤트
-model MeterEvent {
-  id        String   @id @default(cuid())
-  spaceId   String
-  deckAppId String
-  eventType String // "report_generated", "upload_processed", "analysis_run"
-  quantity  Int      @default(1)
-  metadata  Json?
-  createdAt DateTime @default(now())
-
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-
-  @@index([spaceId, deckAppId, createdAt])
 }
