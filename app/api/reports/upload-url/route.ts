@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: NextRequest) {
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
-  const { workspace } = resolved
+  const { user, workspace } = resolved
 
   const url = new URL(request.url)
   const fileName = url.searchParams.get('fileName')
@@ -15,8 +15,9 @@ export async function GET(request: NextRequest) {
     return errorResponse('fileName 파라미터가 필요합니다', 400)
   }
 
-  // 워크스페이스별 경로: {workspaceId}/{timestamp}_{fileName}
-  const storagePath = `${workspace.id}/${Date.now()}_${fileName}`
+  // 스토리지 RLS 호환: 사용자 기준 최상위 경로를 유지
+  // {userId}/{workspaceId}/{timestamp}_{fileName}
+  const storagePath = `${user.id}/${workspace.id}/${Date.now()}_${fileName}`
 
   const supabase = await createClient()
   const { data, error } = await supabase.storage.from('reports').createSignedUploadUrl(storagePath)
