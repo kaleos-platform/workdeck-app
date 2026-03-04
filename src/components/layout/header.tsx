@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Moon, Sun, LogOut, BarChart2 } from 'lucide-react'
+import { Moon, Sun, LogOut, LayoutGrid } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useAuth } from '@/hooks/use-auth'
 
@@ -27,11 +27,11 @@ export function Header() {
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4">
         {/* 로고 */}
-        <Link href="/my-deck" aria-label="My Deck 홈으로 이동" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-red-600">
-            <BarChart2 className="h-5 w-5 text-white" />
+        <Link href="/my-deck" aria-label="Workdeck 홈으로 이동" className="flex items-center gap-2">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-cyan-500">
+            <LayoutGrid className="h-5 w-5 text-white" />
           </div>
-          <span className="text-sm leading-tight font-bold sm:text-base">쿠팡 광고 매니저</span>
+          <span className="text-sm leading-tight font-bold sm:text-base">Workdeck</span>
         </Link>
 
         {/* 오른쪽 액션 */}
@@ -50,7 +50,7 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 rounded-full p-0">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-cyan-500 text-white">
                     {initials}
                   </AvatarFallback>
                 </Avatar>

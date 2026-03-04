@@ -18,7 +18,22 @@ export default async function MyDeckLayout({ children }: { children: React.React
     }),
     prisma.spaceMember.findFirst({
       where: { userId: user.id },
-      select: { spaceId: true },
+      select: {
+        spaceId: true,
+        space: {
+          select: {
+            deckInstances: {
+              where: { isActive: true },
+              include: {
+                deckApp: {
+                  select: { id: true, name: true },
+                },
+              },
+              orderBy: { createdAt: 'asc' },
+            },
+          },
+        },
+      },
     }),
   ])
 
@@ -30,7 +45,12 @@ export default async function MyDeckLayout({ children }: { children: React.React
     <div className="flex h-screen flex-col">
       <Header />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar workspaceName={workspace.name} spaceId={membership?.spaceId} />
+        <Sidebar
+          workspaceName={workspace.name}
+          spaceId={membership?.spaceId}
+          mode="my-deck"
+          activeDecks={membership?.space.deckInstances.map(({ deckApp }) => deckApp) ?? []}
+        />
         <main className="flex-1 overflow-y-auto">
           <div className="p-8">{children}</div>
         </main>

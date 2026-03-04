@@ -40,8 +40,8 @@ export async function resolveWorkspace() {
 
 export type SpaceMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER'
 
-// 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
-export async function resolveDeckContext(deckKey = 'coupang-ads') {
+// 인증 + Space 멤버십 검증 (Deck 활성화 여부와 무관)
+export async function resolveSpaceContext() {
   const user = await getUser()
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
 
@@ -51,12 +51,24 @@ export async function resolveDeckContext(deckKey = 'coupang-ads') {
   })
   if (!membership) return { error: errorResponse('공간이 없습니다', 404) }
 
+  return {
+    user,
+    space: membership.space,
+    role: membership.role as SpaceMemberRole,
+  }
+}
+
+// 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
+export async function resolveDeckContext(deckKey = 'coupang-ads') {
+  const resolved = await resolveSpaceContext()
+  if ('error' in resolved) return resolved
+
   const deckInstance = await prisma.deckInstance.findUnique({
-    where: { spaceId_deckAppId: { spaceId: membership.space.id, deckAppId: deckKey } },
+    where: { spaceId_deckAppId: { spaceId: resolved.space.id, deckAppId: deckKey } },
   })
   if (!deckInstance?.isActive) return { error: errorResponse('카드가 활성화되지 않았습니다', 403) }
 
-  return { user, space: membership.space, role: membership.role as SpaceMemberRole }
+  return resolved
 }
 
 // 역할 계층: OWNER > ADMIN > MEMBER

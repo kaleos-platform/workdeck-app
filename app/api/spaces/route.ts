@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { assertSameSpace, resolveDeckContext } from '@/lib/api-helpers'
+import { assertSameSpace, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 // GET /api/spaces — 현재 사용자의 Space + 활성 DeckInstance 목록 반환
 export async function GET(request: NextRequest) {
-  const resolved = await resolveDeckContext('coupang-ads')
+  const resolved = await resolveSpaceContext()
   if ('error' in resolved) return resolved.error
 
   const requestedSpaceId = request.nextUrl.searchParams.get('spaceId')
@@ -18,16 +18,43 @@ export async function GET(request: NextRequest) {
     select: {
       id: true,
       name: true,
-      deckInstances: {
-        where: { isActive: true },
-        include: {
-          deckApp: {
-            select: { id: true, name: true, description: true },
-          },
-        },
-      },
     },
   })
 
-  return NextResponse.json({ space: space ?? resolved.space, role: resolved.role })
+  if (!space) return NextResponse.json({ space: resolved.space, role: resolved.role })
+
+  const [activeDecks, availableDecks] = await Promise.all([
+    prisma.deckInstance.findMany({
+      where: { spaceId: space.id, isActive: true },
+      include: {
+        deckApp: {
+          select: { id: true, name: true, description: true },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    }),
+    prisma.deckApp.findMany({
+      where: {
+        isActive: true,
+        instances: {
+          none: {
+            spaceId: space.id,
+            isActive: true,
+          },
+        },
+      },
+      select: { id: true, name: true, description: true },
+      orderBy: { name: 'asc' },
+    }),
+  ])
+
+  return NextResponse.json({
+    space: {
+      id: space.id,
+      name: space.name,
+      activeDecks: activeDecks.map(({ deckApp }) => deckApp),
+      availableDecks,
+    },
+    role: resolved.role,
+  })
 }
