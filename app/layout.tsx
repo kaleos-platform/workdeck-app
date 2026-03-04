@@ -7,6 +7,11 @@ import { Toaster } from 'sonner'
 export const metadata: Metadata = {
   title: 'Workdeck',
   description: 'Workdeck에서 Deck을 추가해 업무를 관리하세요',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
