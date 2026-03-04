@@ -27,11 +27,7 @@ export function Header() {
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4">
         {/* 로고 */}
-        <Link
-          href="/dashboard"
-          aria-label="쿠팡 광고 매니저 대시보드로 이동"
-          className="flex items-center gap-2"
-        >
+        <Link href="/my-deck" aria-label="My Deck 홈으로 이동" className="flex items-center gap-2">
           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-red-600">
             <BarChart2 className="h-5 w-5 text-white" />
           </div>

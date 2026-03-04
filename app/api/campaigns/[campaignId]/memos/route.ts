@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { assertRole, resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { formatDateToYmdKst } from '@/lib/date-range'
 
 // GET /api/campaigns/[campaignId]/memos — 메모 목록 조회
@@ -57,6 +57,10 @@ export async function POST(
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
+
+  const role = 'role' in resolved && resolved.role ? resolved.role : 'OWNER'
+  const forbidden = assertRole(role, 'ADMIN')
+  if (forbidden) return forbidden
 
   const { campaignId } = await params
 
@@ -119,6 +123,10 @@ export async function DELETE(
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
+
+  const role = 'role' in resolved && resolved.role ? resolved.role : 'OWNER'
+  const forbidden = assertRole(role, 'ADMIN')
+  if (forbidden) return forbidden
 
   const { campaignId } = await params
   const date = request.nextUrl.searchParams.get('date')

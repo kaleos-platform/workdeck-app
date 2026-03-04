@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { buildAppUrl } from '@/lib/domain'
 import { BarChart2 } from 'lucide-react'
 
 export function MarketingHeader() {
@@ -18,10 +19,10 @@ export function MarketingHeader() {
 
         {/* CTA 버튼 */}
         <div className="flex items-center gap-4">
-          <Link href="/login" className="hidden sm:block">
+          <Link href={buildAppUrl('/login')} className="hidden sm:block">
             <Button variant="ghost">로그인</Button>
           </Link>
-          <Link href="/signup">
+          <Link href={buildAppUrl('/signup')}>
             <Button>무료 시작</Button>
           </Link>
         </div>

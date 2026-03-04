@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { buildAppUrl } from '@/lib/domain'
 import { UploadCloud, TrendingUp, Search, ArrowRight } from 'lucide-react'
 
 const features = [
@@ -43,15 +44,15 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
-            <Link href="/signup">
+            <Link href={buildAppUrl('/signup')}>
               <Button size="lg" className="gap-2">
                 무료로 시작하기
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/login">
+            <Link href="/coupang-ads">
               <Button size="lg" variant="outline">
-                로그인
+                쿠팡 광고 관리자 소개
               </Button>
             </Link>
           </div>
@@ -139,7 +140,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold sm:text-4xl">지금 바로 광고비 낭비를 찾아내세요</h2>
             <p className="text-lg text-orange-100">무료로 시작할 수 있습니다.</p>
           </div>
-          <Link href="/signup">
+          <Link href={buildAppUrl('/signup')}>
             <Button size="lg" variant="secondary" className="gap-2">
               무료로 시작하기
               <ArrowRight className="h-4 w-4" />
