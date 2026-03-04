@@ -140,7 +140,7 @@ export function SignupForm({ redirectTo }: SignupFormProps) {
             control={form.control}
             name="name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem id="signup-name-field">
                 <FormLabel>이름 (선택)</FormLabel>
                 <FormControl>
                   <Input placeholder="홍길동" disabled={isAnyLoading} {...field} />
@@ -154,7 +154,7 @@ export function SignupForm({ redirectTo }: SignupFormProps) {
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem>
+              <FormItem id="signup-email-field">
                 <FormLabel>이메일</FormLabel>
                 <FormControl>
                   <Input
@@ -173,7 +173,7 @@ export function SignupForm({ redirectTo }: SignupFormProps) {
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem>
+              <FormItem id="signup-password-field">
                 <FormLabel>비밀번호</FormLabel>
                 <FormControl>
                   <Input
@@ -192,7 +192,7 @@ export function SignupForm({ redirectTo }: SignupFormProps) {
             control={form.control}
             name="confirmPassword"
             render={({ field }) => (
-              <FormItem>
+              <FormItem id="signup-confirm-password-field">
                 <FormLabel>비밀번호 확인</FormLabel>
                 <FormControl>
                   <Input
