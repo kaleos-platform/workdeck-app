@@ -43,11 +43,11 @@ export default async function MyDeckLayout({ children }: { children: React.React
 
   return (
     <div className="flex h-screen flex-col">
-      <Header />
+      <Header variant="workdeck" />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           workspaceName={workspace.name}
-          spaceId={membership?.spaceId}
+          variant="workdeck"
           mode="my-deck"
           activeDecks={membership?.space.deckInstances.map(({ deckApp }) => deckApp) ?? []}
         />

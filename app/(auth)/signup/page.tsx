@@ -4,8 +4,8 @@ import { SignupForm } from '@/components/auth/signup-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const metadata = {
-  title: '회원가입',
-  description: '새 계정을 생성하세요',
+  title: 'Workdeck 회원가입',
+  description: 'Workdeck 계정을 생성하세요',
 }
 
 export default async function SignupPage({
@@ -22,8 +22,8 @@ export default async function SignupPage({
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">회원가입</CardTitle>
-        <CardDescription>새 계정을 생성하여 시작하세요</CardDescription>
+        <CardTitle className="text-2xl font-bold">Workdeck 회원가입</CardTitle>
+        <CardDescription>가입 후 필요한 Deck을 추가해서 업무를 시작하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <SignupForm redirectTo={safeRedirectTo} />

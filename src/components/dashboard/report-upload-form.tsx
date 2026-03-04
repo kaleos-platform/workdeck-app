@@ -23,6 +23,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
 import type { UploadResponse, UploadColumnError } from '@/types/api'
 
 type FileStatus = 'pending' | 'uploading' | 'saving' | 'done' | 'error'
@@ -266,7 +267,7 @@ export function ReportUploadForm() {
         setSingleDuplicate({ entryId: entry.id, info: result.requiresConfirmation })
       } else if (result.inserted !== undefined) {
         toast.success(`${result.inserted}개 행 저장 완료`)
-        router.push('/dashboard')
+        router.push(COUPANG_ADS_BASE_PATH)
       }
     } catch {
       // 오류는 updateFile로 이미 처리됨
@@ -285,7 +286,7 @@ export function ReportUploadForm() {
       const result = await processOneFile(entryId, overwrite)
       if (result.inserted !== undefined) {
         toast.success(`${result.inserted}개 행 저장 완료`)
-        router.push('/dashboard')
+        router.push(COUPANG_ADS_BASE_PATH)
       }
     } catch {
       // 오류는 updateFile로 이미 처리됨

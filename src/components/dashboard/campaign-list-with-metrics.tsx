@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
 import { getDaysAgoStrKst } from '@/lib/date-range'
+import { getCoupangAdsCampaignPath } from '@/lib/deck-routes'
 
 type CampaignMetrics = {
   totalAdCost: number
@@ -165,7 +166,7 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
                     return (
                       <Link
                         key={campaign.id}
-                        href={`/dashboard/campaigns/${campaign.id}?from=${from}&to=${to}`}
+                        href={`${getCoupangAdsCampaignPath(campaign.id)}?from=${from}&to=${to}`}
                         className="grid grid-cols-[1fr_auto_auto] items-center gap-6 rounded-md border px-4 py-2.5 transition-colors hover:bg-muted/50"
                       >
                         {/* Col 1: 캠페인명 + 기간/상태 */}

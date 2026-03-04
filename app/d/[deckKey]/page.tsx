@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation'
+import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
 
 // deckKey → 실제 앱 경로 매핑
 const DECK_ROUTES: Record<string, string> = {
-  'coupang-ads': '/dashboard',
+  'coupang-ads': COUPANG_ADS_BASE_PATH,
 }
 
 export default async function DeckEntryPage({ params }: { params: Promise<{ deckKey: string }> }) {

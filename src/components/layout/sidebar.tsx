@@ -4,32 +4,16 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  LayoutDashboard,
-  UploadCloud,
-  BarChart2,
-  LogOut,
-  ChevronDown,
-  Home,
-  Settings,
-} from 'lucide-react'
+import { LayoutDashboard, UploadCloud, BarChart2, LogOut, ChevronDown, Home } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { Separator } from '@/components/ui/separator'
 import { getLastNDaysRangeKst } from '@/lib/date-range'
-
-const getMainRoutes = (workspaceName: string) => [
-  {
-    label: workspaceName,
-    icon: LayoutDashboard,
-    href: '/dashboard',
-  },
-  {
-    label: '리포트 업로드',
-    icon: UploadCloud,
-    href: '/dashboard/upload',
-  },
-]
+import {
+  COUPANG_ADS_BASE_PATH,
+  COUPANG_ADS_UPLOAD_PATH,
+  getCoupangAdsCampaignPath,
+} from '@/lib/deck-routes'
 
 type Campaign = {
   id: string
@@ -39,17 +23,32 @@ type Campaign = {
   adTypes: string[]
 }
 
+type SidebarVariant = 'workdeck' | 'coupang-ads'
+
 type SidebarProps = {
   workspaceName: string
-  spaceId?: string
+  variant?: SidebarVariant
   mode?: 'default' | 'my-deck'
   activeDecks?: Array<{ id: string; name: string }>
 }
 
 const NVB_AD_TYPE = '신규 구매 고객 확보'
 const DECK_ENTRY: Record<string, string> = {
-  'coupang-ads': '/d/coupang-ads',
+  'coupang-ads': COUPANG_ADS_BASE_PATH,
 }
+
+const COUPANG_MAIN_ROUTES = [
+  {
+    label: '쿠팡 광고 홈',
+    icon: LayoutDashboard,
+    href: COUPANG_ADS_BASE_PATH,
+  },
+  {
+    label: '리포트 업로드',
+    icon: UploadCloud,
+    href: COUPANG_ADS_UPLOAD_PATH,
+  },
+]
 
 function getDeckHref(deckId: string) {
   return DECK_ENTRY[deckId] ?? `/d/${deckId}`
@@ -57,7 +56,7 @@ function getDeckHref(deckId: string) {
 
 export function Sidebar({
   workspaceName,
-  spaceId,
+  variant = 'workdeck',
   mode = 'default',
   activeDecks = [],
 }: SidebarProps) {
@@ -65,18 +64,17 @@ export function Sidebar({
   const { signOut } = useAuth()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
-  const mainRoutes = getMainRoutes(workspaceName)
+  const isWorkdeckSidebar = variant === 'workdeck'
   const isMyDeckMode = mode === 'my-deck'
 
-  // pathname 변경(업로드 완료 등) 시마다 캠페인 목록 재조회
   useEffect(() => {
-    if (isMyDeckMode) return
+    if (isWorkdeckSidebar) return
 
     fetch('/api/campaigns')
       .then((r) => (r.ok ? r.json() : []))
       .then((list: Campaign[]) => setCampaigns(list))
       .catch(() => {})
-  }, [pathname, isMyDeckMode])
+  }, [pathname, isWorkdeckSidebar])
 
   const groupedCampaigns = useMemo(() => {
     const grouped = campaigns.reduce<Record<string, Campaign[]>>((acc, campaign) => {
@@ -119,7 +117,7 @@ export function Sidebar({
   }
 
   function buildCampaignHref(campaign: Campaign): string {
-    const basePath = `/dashboard/campaigns/${campaign.id}`
+    const basePath = getCoupangAdsCampaignPath(campaign.id)
     const isNvbCampaign = campaign.adTypes.some((type) => type.trim() === NVB_AD_TYPE)
     if (!isNvbCampaign) return basePath
 
@@ -131,84 +129,86 @@ export function Sidebar({
   return (
     <div className="flex h-full w-64 flex-shrink-0 flex-col space-y-4 bg-slate-900 py-4 text-white">
       <div className="px-3 py-2">
-        {/* My Deck 홈 */}
-        <div className="mb-2">
-          <Link
-            href="/my-deck"
-            className={cn(
-              'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-              pathname === '/my-deck' ? 'bg-white/10 text-white' : 'text-zinc-400'
-            )}
-          >
-            <Home className="mr-3 h-5 w-5 flex-shrink-0" />
-            <span className="truncate">My Deck 홈</span>
-          </Link>
-        </div>
-
-        <Separator className="mb-3 bg-white/10" />
-
-        {isMyDeckMode ? (
-          <section className="rounded-xl bg-white/[0.02] px-3 py-3">
-            <div className="mb-3 px-1">
-              <div className="flex items-center gap-2">
-                <BarChart2 className="h-4 w-4 text-zinc-300" />
-                <span className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
-                  사용 중인 Deck
-                </span>
-              </div>
-              <p className="mt-1 text-[11px] text-zinc-500">빠르게 Deck으로 이동하세요</p>
-            </div>
-            {activeDecks.length === 0 ? (
-              <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
-                사용 중인 Deck이 없습니다
-              </p>
-            ) : (
-              <div className="space-y-1">
-                {activeDecks.map((deck) => {
-                  const href = getDeckHref(deck.id)
-                  const isDeckActive = pathname === href || pathname.startsWith(`${href}/`)
-
-                  return (
-                    <Link
-                      key={deck.id}
-                      href={href}
-                      className={cn(
-                        'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-3 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                        isDeckActive ? 'bg-white/10 text-white' : 'text-zinc-400'
-                      )}
-                    >
-                      <span className="mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-600" />
-                      <span className="truncate">{deck.name}</span>
-                    </Link>
-                  )
-                })}
-              </div>
-            )}
-          </section>
-        ) : (
+        {isWorkdeckSidebar && (
           <>
-            {/* 메인 메뉴 */}
-            <div className="space-y-1">
-              {mainRoutes.map((route) => (
-                <Link
-                  key={route.href}
-                  href={route.href}
-                  className={cn(
-                    'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                    pathname === route.href ? 'bg-white/10 text-white' : 'text-zinc-400'
-                  )}
-                >
-                  <route.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  <span className="truncate">{route.label}</span>
-                </Link>
-              ))}
+            <div className="mb-2">
+              <Link
+                href="/my-deck"
+                className={cn(
+                  'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                  pathname === '/my-deck' ? 'bg-white/10 text-white' : 'text-zinc-400'
+                )}
+              >
+                <Home className="mr-3 h-5 w-5 flex-shrink-0" />
+                <span className="truncate">My Deck 홈</span>
+              </Link>
             </div>
 
-            {/* 캠페인 목록 구분선 */}
+            <Separator className="mb-3 bg-white/10" />
+            <section className="rounded-xl bg-white/[0.02] px-3 py-3">
+              <div className="mb-3 px-1">
+                <p className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
+                  {workspaceName}
+                </p>
+                <p className="mt-1 text-[11px] text-zinc-500">사용 중인 Deck 빠른 진입</p>
+              </div>
+              {isMyDeckMode && activeDecks.length > 0 ? (
+                <div className="space-y-1">
+                  {activeDecks.map((deck) => {
+                    const href = getDeckHref(deck.id)
+                    const isDeckActive = pathname === href || pathname.startsWith(`${href}/`)
+
+                    return (
+                      <Link
+                        key={deck.id}
+                        href={href}
+                        className={cn(
+                          'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-3 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                          isDeckActive ? 'bg-white/10 text-white' : 'text-zinc-400'
+                        )}
+                      >
+                        <span className="mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-600" />
+                        <span className="truncate">{deck.name}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
+                  사용 중인 Deck이 없습니다
+                </p>
+              )}
+            </section>
+          </>
+        )}
+
+        {!isWorkdeckSidebar && (
+          <>
+            <div className="space-y-1">
+              {COUPANG_MAIN_ROUTES.map((route) => {
+                const isHomeRoute = route.href === COUPANG_ADS_BASE_PATH
+                const isActive = isHomeRoute
+                  ? pathname === route.href
+                  : pathname === route.href || pathname.startsWith(`${route.href}/`)
+                return (
+                  <Link
+                    key={route.href}
+                    href={route.href}
+                    className={cn(
+                      'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                      isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
+                    )}
+                  >
+                    <route.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    <span className="truncate">{route.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+
             <Separator className="my-4 bg-white/10" />
 
             <section className="rounded-xl bg-white/[0.02] px-3 py-3">
-              {/* 캠페인 섹션 헤더 */}
               <div className="mb-3 px-1">
                 <div className="flex items-center gap-2">
                   <BarChart2 className="h-4 w-4 text-zinc-300" />
@@ -219,7 +219,6 @@ export function Sidebar({
                 <p className="mt-1 text-[11px] text-zinc-500">광고 유형별 캠페인 관리</p>
               </div>
 
-              {/* 캠페인 목록 (광고유형별 그룹핑) */}
               <div className="space-y-3">
                 {groupedCampaigns.length === 0 ? (
                   <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
@@ -260,23 +259,28 @@ export function Sidebar({
                         {isOpen && (
                           <div id={contentId} className="mx-1 mb-1 pl-2">
                             <div className="space-y-1 pt-1">
-                              {items.map((campaign) => (
-                                <Link
-                                  key={`${adType}-${campaign.id}`}
-                                  href={buildCampaignHref(campaign)}
-                                  className={cn(
-                                    'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-2 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                                    pathname === `/dashboard/campaigns/${campaign.id}`
-                                      ? 'bg-white/10 text-white'
-                                      : 'text-zinc-400'
-                                  )}
-                                >
-                                  <span className="mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-600" />
-                                  <span className="truncate">
-                                    {campaign.displayName || campaign.name}
-                                  </span>
-                                </Link>
-                              ))}
+                              {items.map((campaign) => {
+                                const campaignPath = getCoupangAdsCampaignPath(campaign.id)
+                                const isCampaignActive =
+                                  pathname === campaignPath ||
+                                  pathname.startsWith(`${campaignPath}/`)
+
+                                return (
+                                  <Link
+                                    key={`${adType}-${campaign.id}`}
+                                    href={buildCampaignHref(campaign)}
+                                    className={cn(
+                                      'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-2 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                                      isCampaignActive ? 'bg-white/10 text-white' : 'text-zinc-400'
+                                    )}
+                                  >
+                                    <span className="mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-600" />
+                                    <span className="truncate">
+                                      {campaign.displayName || campaign.name}
+                                    </span>
+                                  </Link>
+                                )
+                              })}
                             </div>
                           </div>
                         )}
@@ -290,20 +294,7 @@ export function Sidebar({
         )}
       </div>
 
-      {/* 하단: 공간 설정 + 로그아웃 */}
-      <div className="mt-auto space-y-1 px-3 py-2">
-        {spaceId && (
-          <Link
-            href={`/space/${spaceId}`}
-            className={cn(
-              'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-              pathname.startsWith('/space/') ? 'bg-white/10 text-white' : 'text-zinc-400'
-            )}
-          >
-            <Settings className="mr-3 h-5 w-5 flex-shrink-0" />
-            <span className="truncate">공간 설정</span>
-          </Link>
-        )}
+      <div className="mt-auto px-3 py-2">
         <Button
           variant="ghost"
           className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"

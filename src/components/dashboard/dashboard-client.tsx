@@ -16,8 +16,9 @@ import {
   Minus,
   UploadCloud,
 } from 'lucide-react'
-import { getLastNDaysRangeKst, getDaysAgoStrKst, getTodayStrKst } from '@/lib/date-range'
+import { getDaysAgoStrKst, getTodayStrKst } from '@/lib/date-range'
 import { CampaignListWithMetrics } from '@/components/dashboard/campaign-list-with-metrics'
+import { COUPANG_ADS_UPLOAD_PATH } from '@/lib/deck-routes'
 
 const QUICK_PERIODS = [
   { label: '7일', days: 7 },
@@ -179,7 +180,7 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
                 캠페인별 성과를 바로 분석할 수 있습니다.
               </p>
             </div>
-            <Link href="/dashboard/upload">
+            <Link href={COUPANG_ADS_UPLOAD_PATH}>
               <Button className="gap-2">
                 <UploadCloud className="h-4 w-4" />첫 리포트 업로드하기
               </Button>

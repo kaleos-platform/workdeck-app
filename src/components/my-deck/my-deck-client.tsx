@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ExternalLink, PlusCircle } from 'lucide-react'
+import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
 
 type DeckSummary = {
   id: string
@@ -30,7 +31,7 @@ type MyDeckClientProps = {
 }
 
 const DECK_ENTRY: Record<string, string> = {
-  'coupang-ads': '/d/coupang-ads',
+  'coupang-ads': COUPANG_ADS_BASE_PATH,
 }
 
 function toDeckHref(deckId: string) {

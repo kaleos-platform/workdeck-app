@@ -5,8 +5,8 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from 'sonner'
 
 export const metadata: Metadata = {
-  title: '쿠팡 광고 리포트 매니저',
-  description: '쿠팡 광고 리포트를 분석하고 ROAS를 개선하세요',
+  title: 'Workdeck',
+  description: 'Workdeck에서 Deck을 추가해 업무를 관리하세요',
 }
 
 export default function RootLayout({

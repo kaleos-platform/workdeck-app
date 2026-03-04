@@ -4,8 +4,8 @@ import { LoginForm } from '@/components/auth/login-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const metadata = {
-  title: '로그인',
-  description: '계정으로 로그인하세요',
+  title: 'Workdeck 로그인',
+  description: 'Workdeck 계정으로 로그인하세요',
 }
 
 export default async function LoginPage({
@@ -24,8 +24,8 @@ export default async function LoginPage({
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">로그인</CardTitle>
-        <CardDescription>이메일과 비밀번호를 입력하여 로그인하세요</CardDescription>
+        <CardTitle className="text-2xl font-bold">Workdeck 로그인</CardTitle>
+        <CardDescription>이메일과 비밀번호를 입력하고 내 Deck으로 바로 이동하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <LoginForm

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function CoupangAdsLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser()
 
   if (!user) {

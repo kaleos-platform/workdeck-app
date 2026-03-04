@@ -8,6 +8,7 @@ import {
   isMarketingHost,
   normalizeHost,
 } from '@/lib/domain'
+import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
 
 function isPathOrChild(pathname: string, base: string) {
   return pathname === base || pathname.startsWith(`${base}/`)
@@ -43,6 +44,15 @@ export async function proxy(request: NextRequest) {
   const isDeckEntryRoute = Boolean(getDeckEntryPath(pathname))
   const isDeckLoginRoute = Boolean(getDeckLoginPath(pathname))
 
+  if (isPathOrChild(pathname, '/dashboard')) {
+    const suffix = pathname.replace(/^\/dashboard/, '')
+    const targetPath = `${COUPANG_ADS_BASE_PATH}${suffix}`
+    if (isMarketingDomain || isAppDomain) {
+      return NextResponse.redirect(buildAppUrl(`${targetPath}${request.nextUrl.search}`))
+    }
+    return NextResponse.redirect(new URL(`${targetPath}${request.nextUrl.search}`, request.url))
+  }
+
   // 도메인 정책:
   // - marketing(workdeck.work): 마케팅 경로만 허용
   // - app(app.workdeck.work): 앱 경로 중심으로 운영
@@ -74,9 +84,10 @@ export async function proxy(request: NextRequest) {
   }
 
   // 보호된 라우트 정의 (로그인 필수)
-  const protectedRoutes = ['/dashboard', '/workspace-setup', '/my-deck', '/space']
+  const protectedRoutes = ['/workspace-setup', '/my-deck', '/space']
+  const isDeckProtectedRoute = isPathOrChild(pathname, '/d') && !isDeckLoginRoute
   const isProtectedRoute =
-    isDeckEntryRoute || protectedRoutes.some((route) => isPathOrChild(pathname, route))
+    isDeckProtectedRoute || protectedRoutes.some((route) => isPathOrChild(pathname, route))
 
   // 비로그인 전용 라우트 정의
   const authOnlyRoutes = ['/login', '/signup']
