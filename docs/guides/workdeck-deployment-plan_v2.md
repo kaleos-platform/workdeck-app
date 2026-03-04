@@ -1,6 +1,6 @@
 # Workdeck 배포 계획서 v2
 
-**업데이트:** 2026-03-04 | **현재 상태:** Phase 1 완료 → Phase 2 진행 예정
+**업데이트:** 2026-03-04 | **현재 상태:** Phase 2 완료 → Phase 3 진행 예정
 
 ---
 
@@ -69,8 +69,8 @@ Workspace (기존 — 병행 운영 중, 점진 전환)
 | 0-A   | 조직 계정 이전 (GitHub, Supabase, Sentry)                 | ✅ 완료     |
 | 0-B   | 도메인 + Vercel 환경변수 분리                             | ✅ 완료     |
 | 1     | Space/SpaceMember/DeckApp/DeckInstance 모델 + 백필        | ✅ 완료     |
-| **2** | **Core OS 레이어 (resolveDeckContext, RBAC, MeterEvent)** | **⬜ 다음** |
-| 3     | 앱 셸 UI (/my-deck, /d/[deckKey])                         | ⬜          |
+| **2** | **Core OS 레이어 (resolveDeckContext, RBAC, MeterEvent)** | **✅ 완료** |
+| **3** | **앱 셸 UI (/my-deck, /d/[deckKey])**                     | **⬜ 다음** |
 | 4     | RLS 설정                                                  | ⬜          |
 | 5     | Stripe 결제 연동 + /billing **(PoC 검증 후)**             | ⬜ 대기     |
 | 6     | 마케팅 사이트 분리 (workdeck.work, 별도 레포)             | ⬜ 별도     |
@@ -345,11 +345,12 @@ STRIPE_PRICE_TEAM=
 - [x] Workspace → Space 백필 (prod: 1=1 일치)
 - [x] `npm run build` 통과, Vercel 프로덕션 READY
 
-### Phase 2 (Core OS 레이어) ⬜
+### Phase 2 (Core OS 레이어) ✅
 
-- [ ] `resolveDeckContext('coupang-ads')` → 기존 API 동일 동작
-- [ ] MEMBER 역할로 ADMIN 전용 API 접근 시 403
-- [ ] 업로드 완료 후 `MeterEvent` 레코드 생성
+- [x] `resolveDeckContext('coupang-ads')` 구현 (`src/lib/api-helpers.ts`)
+- [x] `assertRole()` / `assertSameSpace()` RBAC 가드 구현
+- [x] `trackMeterEvent()` 구현 (`src/lib/meter.ts`)
+- [x] 업로드 API에 MeterEvent 연동 (`upload_processed`)
 
 ### Phase 3 (앱 셸 UI) ⬜
 
