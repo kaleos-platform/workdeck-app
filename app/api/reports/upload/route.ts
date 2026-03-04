@@ -29,6 +29,42 @@ function parseUploadBody(body: unknown): UploadRequestBody | null {
   return { storagePath, fileName }
 }
 
+function toStatusCode(error: unknown): number | null {
+  if (typeof error !== 'object' || error === null) return null
+
+  const asRecord = error as Record<string, unknown>
+  const direct = asRecord.statusCode
+  if (typeof direct === 'number') return direct
+
+  const nested = asRecord.originalError
+  if (typeof nested !== 'object' || nested === null) return null
+  const nestedStatus = (nested as Record<string, unknown>).status
+  return typeof nestedStatus === 'number' ? nestedStatus : null
+}
+
+async function downloadWithRetry(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  storagePath: string,
+  maxRetry = 2
+) {
+  let lastError: unknown = null
+
+  for (let attempt = 0; attempt <= maxRetry; attempt += 1) {
+    const { data, error } = await supabase.storage.from('reports').download(storagePath)
+    if (data) return { blob: data, error: null as unknown }
+
+    lastError = error
+    const statusCode = toStatusCode(error)
+    const isRetryable = statusCode === null || statusCode >= 500
+    if (!isRetryable || attempt === maxRetry) break
+
+    const delayMs = 300 * (attempt + 1)
+    await new Promise((resolve) => setTimeout(resolve, delayMs))
+  }
+
+  return { blob: null as Blob | null, error: lastError }
+}
+
 // POST /api/reports/upload — JSON body { storagePath, fileName }
 // 브라우저가 Supabase Storage에 직접 업로드한 파일을 서버에서 다운로드 후 파싱·저장
 export async function POST(request: NextRequest) {
@@ -65,12 +101,14 @@ export async function POST(request: NextRequest) {
 
   // Supabase Storage에서 파일 다운로드
   const supabase = await createClient()
-  const { data: blob, error: downloadError } = await supabase.storage
-    .from('reports')
-    .download(storagePath)
+  const { blob, error: downloadError } = await downloadWithRetry(supabase, storagePath, 2)
 
   if (downloadError || !blob) {
     console.error('Storage 파일 다운로드 오류:', downloadError)
+    const statusCode = toStatusCode(downloadError)
+    if (statusCode === null || statusCode >= 500) {
+      return errorResponse('스토리지 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요', 503)
+    }
     return errorResponse('파일 다운로드에 실패했습니다', 500)
   }
 
@@ -135,9 +173,8 @@ export async function POST(request: NextRequest) {
     // 중복 없으면 바로 삽입 단계로 진행 (overwrite=false와 동일하게 처리)
   }
 
-  // 2000행 청크 × 5개 병렬 처리
+  // DB 연결 폭주 방지를 위해 청크를 순차 처리한다.
   const CHUNK_SIZE = 2000
-  const PARALLEL = 5
   let inserted = 0
 
   try {
@@ -201,13 +238,9 @@ export async function POST(request: NextRequest) {
       chunks.push(allData.slice(i, i + CHUNK_SIZE))
     }
 
-    // PARALLEL개씩 병렬 실행 (DB 커넥션 과부하 방지)
-    for (let i = 0; i < chunks.length; i += PARALLEL) {
-      const group = chunks.slice(i, i + PARALLEL)
-      const results = await Promise.all(
-        group.map((data) => prisma.adRecord.createMany({ data, skipDuplicates: true }))
-      )
-      inserted += results.reduce((sum, r) => sum + r.count, 0)
+    for (const data of chunks) {
+      const result = await prisma.adRecord.createMany({ data, skipDuplicates: true })
+      inserted += result.count
     }
 
     // ── 캠페인명 변경 감지 ──
@@ -236,34 +269,11 @@ export async function POST(request: NextRequest) {
 
     const dbNameMap = new Map(dbLatest.map((r) => [r.campaignId, r.campaignName]))
 
-    // 변경된 캠페인 처리 (병렬)
-    await Promise.all(
-      [...latestByUpload.entries()].map(
-        async ([campaignId, { date: firstChangeDate, name: newName }]) => {
-          const oldName = dbNameMap.get(campaignId)
-          if (!oldName || oldName === newName) {
-            // 신규 캠페인이거나 이름 변경 없음 → CampaignMeta만 upsert (신규 시)
-            if (!oldName) {
-              await prisma.campaignMeta.upsert({
-                where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
-                create: {
-                  workspaceId: workspace.id,
-                  campaignId,
-                  displayName: newName,
-                  isCustomName: false,
-                },
-                update: {},
-              })
-            }
-            return
-          }
-
-          // 캠페인명 변경 감지: CampaignMeta 업데이트 (isCustomName=false인 경우만)
-          const meta = await prisma.campaignMeta.findUnique({
-            where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
-            select: { isCustomName: true },
-          })
-
+    for (const [campaignId, { date: firstChangeDate, name: newName }] of latestByUpload.entries()) {
+      const oldName = dbNameMap.get(campaignId)
+      if (!oldName || oldName === newName) {
+        // 신규 캠페인이거나 이름 변경 없음 → CampaignMeta만 upsert (신규 시)
+        if (!oldName) {
           await prisma.campaignMeta.upsert({
             where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
             create: {
@@ -272,31 +282,49 @@ export async function POST(request: NextRequest) {
               displayName: newName,
               isCustomName: false,
             },
-            update: meta?.isCustomName ? {} : { displayName: newName },
-          })
-
-          // 변경 첫 날짜에 자동 메모 생성
-          await prisma.dailyMemo.upsert({
-            where: {
-              workspaceId_campaignId_date: {
-                workspaceId: workspace.id,
-                campaignId,
-                date: firstChangeDate,
-              },
-            },
-            create: {
-              workspaceId: workspace.id,
-              campaignId,
-              date: firstChangeDate,
-              content: `캠페인 이름 변경: ${oldName} → ${newName}`,
-            },
-            update: {
-              content: `캠페인 이름 변경: ${oldName} → ${newName}`,
-            },
+            update: {},
           })
         }
-      )
-    )
+        continue
+      }
+
+      // 캠페인명 변경 감지: CampaignMeta 업데이트 (isCustomName=false인 경우만)
+      const meta = await prisma.campaignMeta.findUnique({
+        where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
+        select: { isCustomName: true },
+      })
+
+      await prisma.campaignMeta.upsert({
+        where: { workspaceId_campaignId: { workspaceId: workspace.id, campaignId } },
+        create: {
+          workspaceId: workspace.id,
+          campaignId,
+          displayName: newName,
+          isCustomName: false,
+        },
+        update: meta?.isCustomName ? {} : { displayName: newName },
+      })
+
+      // 변경 첫 날짜에 자동 메모 생성
+      await prisma.dailyMemo.upsert({
+        where: {
+          workspaceId_campaignId_date: {
+            workspaceId: workspace.id,
+            campaignId,
+            date: firstChangeDate,
+          },
+        },
+        create: {
+          workspaceId: workspace.id,
+          campaignId,
+          date: firstChangeDate,
+          content: `캠페인 이름 변경: ${oldName} → ${newName}`,
+        },
+        update: {
+          content: `캠페인 이름 변경: ${oldName} → ${newName}`,
+        },
+      })
+    }
 
     // 처리 결과 통계 계산
     const totalRows = rows.length
@@ -335,6 +363,19 @@ export async function POST(request: NextRequest) {
           }
         : String(err)
     console.error('업로드 처리 중 오류:', JSON.stringify(detail, null, 2))
+
+    const rawMessage = err instanceof Error ? err.message.toLowerCase() : ''
+    if (
+      rawMessage.includes('max client') ||
+      rawMessage.includes('max clients') ||
+      rawMessage.includes('max client connections')
+    ) {
+      return errorResponse(
+        '데이터베이스 연결이 일시적으로 혼잡합니다. 잠시 후 다시 시도해주세요',
+        503
+      )
+    }
+
     return errorResponse('데이터 저장 중 오류가 발생했습니다', 500)
   }
 }
