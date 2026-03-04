@@ -1,31 +1,39 @@
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { LoginForm } from '@/components/auth/login-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata = {
-  title: '로그인',
-  description: '계정으로 로그인하세요',
+const DECK_COPY: Record<string, { title: string; description: string }> = {
+  'coupang-ads': {
+    title: '쿠팡 광고 관리자 로그인',
+    description: '로그인 후 쿠팡 광고 관리자 Deck로 바로 이동합니다',
+  },
 }
 
-export default async function LoginPage({
+export default async function DeckLoginPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ deckKey: string }>
   searchParams: Promise<{ verified?: string; redirectTo?: string }>
 }) {
+  const { deckKey } = await params
+  const copy = DECK_COPY[deckKey]
+  if (!copy) notFound()
+
   const { verified, redirectTo } = await searchParams
+  const fallbackRedirect = `/d/${deckKey}`
+  const safeRedirectTo = sanitizeRedirectPath(redirectTo) ?? fallbackRedirect
   const isVerifyPending = verified === 'pending'
   const isVerifySuccess = verified === 'success'
-  const safeRedirectTo = sanitizeRedirectPath(redirectTo)
-  const signupHref = safeRedirectTo
-    ? `/signup?redirectTo=${encodeURIComponent(safeRedirectTo)}`
-    : '/signup'
+  const signupHref = `/signup?redirectTo=${encodeURIComponent(safeRedirectTo)}`
 
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">로그인</CardTitle>
-        <CardDescription>이메일과 비밀번호를 입력하여 로그인하세요</CardDescription>
+        <CardTitle className="text-2xl font-bold">{copy.title}</CardTitle>
+        <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <LoginForm

@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import type { AuthError } from '@supabase/supabase-js'
 import { X, MailCheck, CheckCircle2, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { resolveRedirectPath } from '@/lib/auth-redirect'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,15 +43,21 @@ function getAuthErrorMessage(error: AuthError): string {
 interface LoginFormProps {
   isVerifyPending?: boolean
   isVerifySuccess?: boolean
+  redirectTo?: string | null
 }
 
-export function LoginForm({ isVerifyPending = false, isVerifySuccess = false }: LoginFormProps) {
+export function LoginForm({
+  isVerifyPending = false,
+  isVerifySuccess = false,
+  redirectTo,
+}: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [showBanner, setShowBanner] = useState(isVerifyPending || isVerifySuccess)
   const [authError, setAuthError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const nextPath = resolveRedirectPath(redirectTo)
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -76,7 +83,7 @@ export function LoginForm({ isVerifyPending = false, isVerifySuccess = false }: 
     }
 
     toast.success('로그인 성공!')
-    router.push('/dashboard')
+    router.push(nextPath)
     router.refresh()
   }
 
@@ -86,7 +93,7 @@ export function LoginForm({ isVerifyPending = false, isVerifySuccess = false }: 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     })
 

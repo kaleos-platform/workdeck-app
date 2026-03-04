@@ -55,7 +55,7 @@ export default function WorkspaceSetupPage() {
       }
 
       toast.success('워크스페이스가 생성되었습니다!')
-      router.push('/dashboard')
+      router.push('/my-deck')
       router.refresh()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : '워크스페이스 생성에 실패했습니다')

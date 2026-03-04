@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { resolveRedirectPath, sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { prisma } from '@/lib/prisma'
 
 // GET /auth/callback?code=... — 구글 OAuth 코드를 세션으로 교환
@@ -7,7 +8,8 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const type = searchParams.get('type') // 'email': 이메일 인증 콜백, null: Google OAuth 콜백
-  const next = searchParams.get('next') ?? '/dashboard'
+  const requestedNext = sanitizeRedirectPath(searchParams.get('next'))
+  const next = resolveRedirectPath(requestedNext)
 
   if (code) {
     const supabase = await createClient()
@@ -18,7 +20,12 @@ export async function GET(request: NextRequest) {
       // app_metadata.provider가 아닌 URL 파라미터로 구분 (동일 이메일로 여러 provider 연결 시 오작동 방지)
       if (type === 'email') {
         await supabase.auth.signOut()
-        return NextResponse.redirect(`${origin}/login?verified=success`)
+        const params = new URLSearchParams({ verified: 'success' })
+        if (requestedNext) {
+          params.set('redirectTo', requestedNext)
+        }
+        const loginPath = requestedNext?.match(/^\/d\/[^/]+$/) ? `${requestedNext}/login` : '/login'
+        return NextResponse.redirect(`${origin}${loginPath}?${params.toString()}`)
       }
 
       // Google OAuth → Prisma User upsert 후 대시보드로

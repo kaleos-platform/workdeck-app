@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { resolveRedirectPath, sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { signupSchema, type SignupInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,11 +20,16 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 
-export function SignupForm() {
+interface SignupFormProps {
+  redirectTo?: string | null
+}
+
+export function SignupForm({ redirectTo }: SignupFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const nextPath = resolveRedirectPath(redirectTo)
 
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
@@ -42,7 +48,7 @@ export function SignupForm() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?type=email`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?type=email&next=${encodeURIComponent(nextPath)}`,
         data: {
           name: data.name || '',
         },
@@ -55,7 +61,12 @@ export function SignupForm() {
       return
     }
 
-    router.push('/login?verified=pending')
+    const params = new URLSearchParams({ verified: 'pending' })
+    const safeRedirect = sanitizeRedirectPath(redirectTo)
+    if (safeRedirect) {
+      params.set('redirectTo', safeRedirect)
+    }
+    router.push(`/login?${params.toString()}`)
   }
 
   async function handleGoogleSignup() {
@@ -64,7 +75,7 @@ export function SignupForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     })
 
