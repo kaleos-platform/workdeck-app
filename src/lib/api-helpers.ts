@@ -7,8 +7,7 @@ export function errorResponse(message: string, status: number, extra?: Record<st
   return NextResponse.json({ message, ...extra }, { status })
 }
 
-// 인증 + 워크스페이스 소유권 검증
-// 모든 인증 필요 API 라우트에서 호출
+// 인증 + 워크스페이스 소유권 검증 (기존 — 점진 전환 기간 동안 유지)
 export async function resolveWorkspace() {
   const user = await getUser()
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
@@ -20,4 +19,44 @@ export async function resolveWorkspace() {
   if (!workspace) return { error: errorResponse('워크스페이스가 없습니다', 404) }
 
   return { user, workspace }
+}
+
+// ─── Workdeck OS 헬퍼 ────────────────────────────────────────────────────────
+
+type SpaceMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER'
+
+// 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
+export async function resolveDeckContext(deckKey = 'coupang-ads') {
+  const user = await getUser()
+  if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
+
+  const membership = await prisma.spaceMember.findFirst({
+    where: { userId: user.id },
+    include: { space: { select: { id: true, currentPlan: true, name: true } } },
+  })
+  if (!membership) return { error: errorResponse('공간이 없습니다', 404) }
+
+  const deckInstance = await prisma.deckInstance.findUnique({
+    where: { spaceId_deckAppId: { spaceId: membership.space.id, deckAppId: deckKey } },
+  })
+  if (!deckInstance?.isActive) return { error: errorResponse('카드가 활성화되지 않았습니다', 403) }
+
+  return { user, space: membership.space, role: membership.role as SpaceMemberRole }
+}
+
+// 역할 계층: OWNER > ADMIN > MEMBER
+const ROLE_HIERARCHY: Record<SpaceMemberRole, number> = { OWNER: 3, ADMIN: 2, MEMBER: 1 }
+
+// 요구 역할보다 낮으면 403 반환, 통과하면 null 반환
+export function assertRole(userRole: SpaceMemberRole, required: SpaceMemberRole) {
+  if (ROLE_HIERARCHY[userRole] < ROLE_HIERARCHY[required])
+    return errorResponse('권한이 없습니다', 403)
+  return null
+}
+
+// cross-space 통신 차단 — spaceId 불일치 시 403 반환
+export function assertSameSpace(sourceSpaceId: string, targetSpaceId: string) {
+  if (sourceSpaceId !== targetSpaceId)
+    return errorResponse('cross-space 통신은 허용되지 않습니다', 403)
+  return null
 }
