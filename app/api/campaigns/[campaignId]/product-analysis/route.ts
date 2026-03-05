@@ -2,20 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
 import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
-
-// 상품명에서 옵션명 파싱 (JSON 형식 '{"구성":"5P"},{"사이즈":"M"}' 패턴 추출)
-function parseOptionName(productName: string | null): string | null {
-  if (!productName) return null
-  const matches = productName.matchAll(/\{"(?:구성|사이즈)":"([^"]+)"\}/g)
-  const values = [...new Set([...matches].map((m) => m[1].trim()))]
-  return values.length > 0 ? values.join('/') : null
-}
-
-// 상품명에서 순수 상품명 추출 (JSON 부분 제거)
-function parsePureProductName(productName: string | null): string {
-  if (!productName) return ''
-  return productName.split(',')[0].trim()
-}
+import { parseOptionName, parsePureProductName } from '@/lib/product-name-parser'
 
 // GET /api/campaigns/[campaignId]/product-analysis
 // 캠페인 상품별 집계 데이터 반환

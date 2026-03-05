@@ -8,14 +8,7 @@ import {
   calculateEngagementRate,
 } from '@/lib/metrics-calculator'
 import { formatDateToYmdKst } from '@/lib/date-range'
-
-// 상품명에서 옵션명 파싱 (JSON 형식 '{"구성":"5P"},{"사이즈":"M"}' 패턴 추출)
-function parseOptionName(productName: string | null): string | null {
-  if (!productName) return null
-  const matches = productName.matchAll(/\{"(?:구성|사이즈)":"([^"]+)"\}/g)
-  const values = [...new Set([...matches].map((m) => m[1].trim()))]
-  return values.length > 0 ? values.join('/') : null
-}
+import { parseOptionName, parsePureProductName } from '@/lib/product-name-parser'
 
 // GET /api/campaigns/[campaignId]/records — 광고 데이터 목록 (페이지네이션)
 export async function GET(
@@ -114,7 +107,7 @@ export async function GET(
       roas: calculateROAS(revenue1d, adCost),
       engagementRate: calculateEngagementRate(engagements, impressions),
       // 서버사이드 상품명/옵션명 파싱
-      parsedProductName: productName ? productName.split(',')[0].trim() : null,
+      parsedProductName: productName ? parsePureProductName(productName) : null,
       parsedOptionName: parseOptionName(productName),
     }
   })
