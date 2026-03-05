@@ -101,6 +101,10 @@ type ProductItem = {
 
 // 상품 분석 탭 정렬 컬럼
 type ProductSortKey = 'adCost' | 'ctr' | 'cvr' | 'roas' | 'orders1d' | 'revenue1d'
+type RemovalCancelContext =
+  | { type: 'keyword'; keywords: string[] }
+  | { type: 'product'; items: ProductItem[] }
+  | null
 
 // 광고 데이터 탭 토글 가능한 추가 컬럼
 const TOGGLE_COLUMNS = [
@@ -275,6 +279,14 @@ export default function CampaignDetailPage({
   // 메모 작성 UI (날짜/내용 입력)
   const [memoDate, setMemoDate] = useState('')
   const [memoContent, setMemoContent] = useState('')
+  const [isRemovalCancelConfirmOpen, setIsRemovalCancelConfirmOpen] = useState(false)
+  const [removalCancelContext, setRemovalCancelContext] = useState<RemovalCancelContext>(null)
+  const [isWritingCancelMemo, setIsWritingCancelMemo] = useState(true)
+  const [isCancellingRemoval, setIsCancellingRemoval] = useState(false)
+  const [isCancelMemoDialogOpen, setIsCancelMemoDialogOpen] = useState(false)
+  const [cancelMemoDate, setCancelMemoDate] = useState('')
+  const [cancelMemoContent, setCancelMemoContent] = useState('')
+  const [isSavingCancelMemo, setIsSavingCancelMemo] = useState(false)
 
   // 상품 분석 탭 상태
   const [productItems, setProductItems] = useState<ProductItem[]>([])
@@ -449,19 +461,11 @@ export default function CampaignDetailPage({
       return
     }
 
-    const q = new URLSearchParams()
-    if (from) q.set('from', from)
-    if (to) q.set('to', to)
-    const query = q.toString()
-    const url = query
-      ? `/api/campaigns/${campaignId}/memos?${query}`
-      : `/api/campaigns/${campaignId}/memos`
-
-    fetch(url)
+    fetch(`/api/campaigns/${campaignId}/memos`)
       .then((r) => (r.ok ? r.json() : { items: [] }))
       .then((d: { items: DailyMemoType[] }) => setMemos(d.items))
       .catch(() => setMemos([]))
-  }, [campaignId, from, to, isDateRangeReady])
+  }, [campaignId, isDateRangeReady])
 
   // 캠페인 메타 (adTypes) 조회
   useEffect(() => {
@@ -636,6 +640,43 @@ export default function CampaignDetailPage({
     return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
   }
 
+  function upsertMemo(saved: DailyMemoType) {
+    setMemos((prev) => {
+      const without = prev.filter((m) => m.date !== saved.date)
+      return [saved, ...without]
+    })
+  }
+
+  async function appendMemo(dateToUse: string, newEntry: string): Promise<DailyMemoType> {
+    const res = await fetch(`/api/campaigns/${campaignId}/memos?from=${dateToUse}&to=${dateToUse}`)
+    const data = (res.ok ? await res.json() : { items: [] }) as {
+      items: DailyMemoType[]
+    }
+    const existing = data.items.find((m) => m.date === dateToUse)
+    const content = existing ? `${existing.content}\n${newEntry}` : newEntry
+
+    const saveRes = await fetch(`/api/campaigns/${campaignId}/memos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: dateToUse, content }),
+    })
+    if (!saveRes.ok) throw new Error('메모 저장 실패')
+
+    const saved = (await saveRes.json()) as DailyMemoType
+    upsertMemo(saved)
+    return saved
+  }
+
+  function buildProductCancelMemo(items: ProductItem[]): string {
+    const lines = items.map((p) => {
+      const productName = p.parsedProductName || p.productName
+      const optionName = p.optionName ?? '-'
+      const optionId = p.optionId ?? '-'
+      return `- ${productName} ${optionName}: ${optionId}`
+    })
+    return `상품 제거 취소:\n${lines.join('\n')}`
+  }
+
   // 키워드 복사 후 메모 저장 + 제거 상태 기록
   async function handleSaveKeywordMemo() {
     if (isSavingMemo) return
@@ -644,37 +685,15 @@ export default function CampaignDetailPage({
       const dateToUse = memoDate || getTodayKst()
       const newEntry = memoContent.trim() || `키워드 제거: ${copiedKeywords.join(', ')}`
 
-      // 해당 날짜 기존 메모 조회
-      const res = await fetch(
-        `/api/campaigns/${campaignId}/memos?from=${dateToUse}&to=${dateToUse}`
-      )
-      const data = (res.ok ? await res.json() : { items: [] }) as {
-        items: DailyMemoType[]
-      }
-      const existing = data.items.find((m) => m.date === dateToUse)
-
-      const content = existing ? `${existing.content}\n${newEntry}` : newEntry
-
       // 메모 저장 + 제거 상태 기록 병렬 처리
-      const [saveRes, statusRes] = await Promise.all([
-        fetch(`/api/campaigns/${campaignId}/memos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date: dateToUse, content }),
-        }),
+      const [, statusRes] = await Promise.all([
+        appendMemo(dateToUse, newEntry),
         fetch(`/api/campaigns/${campaignId}/keyword-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ keywords: copiedKeywords }),
         }),
       ])
-      if (!saveRes.ok) throw new Error('메모 저장 실패')
-
-      const saved = (await saveRes.json()) as DailyMemoType
-      setMemos((prev) => {
-        const without = prev.filter((m) => m.date !== dateToUse)
-        return [saved, ...without]
-      })
 
       // 제거 상태 저장 성공 시 키워드 목록 업데이트
       if (statusRes.ok) {
@@ -688,6 +707,7 @@ export default function CampaignDetailPage({
 
       toast.success('메모에 키워드가 기록되었습니다')
       setIsCopyDoneOpen(false)
+      setSelectedKeywords([])
     } catch {
       toast.error('메모 저장 중 오류가 발생했습니다')
     } finally {
@@ -695,27 +715,19 @@ export default function CampaignDetailPage({
     }
   }
 
-  // 키워드 제거 상태 취소
-  async function handleCancelRemoval() {
+  function openKeywordCancelConfirm(keywordsToCancel: string[]) {
+    if (keywordsToCancel.length === 0) return
+    setRemovalCancelContext({ type: 'keyword', keywords: keywordsToCancel })
+    setIsWritingCancelMemo(true)
+    setIsRemovalCancelConfirmOpen(true)
+  }
+
+  // 키워드 제거 상태 취소 확인창 열기
+  function handleCancelRemoval() {
     const removedSelected = selectedKeywords.filter(
       (kw) => keywords.find((k) => k.keyword === kw)?.removedAt
     )
-    if (removedSelected.length === 0) return
-
-    try {
-      const res = await fetch(
-        `/api/campaigns/${campaignId}/keyword-status?keywords=${encodeURIComponent(removedSelected.join(','))}`,
-        { method: 'DELETE' }
-      )
-      if (!res.ok) throw new Error('제거 취소 실패')
-
-      setKeywords((prev) =>
-        prev.map((kw) => (removedSelected.includes(kw.keyword) ? { ...kw, removedAt: null } : kw))
-      )
-      toast.success(`${removedSelected.length}개 키워드 제거 상태가 취소되었습니다`)
-    } catch {
-      toast.error('제거 취소 중 오류가 발생했습니다')
-    }
+    openKeywordCancelConfirm(removedSelected)
   }
 
   // 개별 키워드 제거 버튼 클릭 → 클립보드 복사 + 팝업 열기
@@ -728,21 +740,8 @@ export default function CampaignDetailPage({
   }
 
   // 개별 키워드 제거 취소
-  async function handleSingleCancelRemoval(keyword: string) {
-    try {
-      const res = await fetch(
-        `/api/campaigns/${campaignId}/keyword-status?keywords=${encodeURIComponent(keyword)}`,
-        { method: 'DELETE' }
-      )
-      if (!res.ok) throw new Error('제거 취소 실패')
-
-      setKeywords((prev) =>
-        prev.map((kw) => (kw.keyword === keyword ? { ...kw, removedAt: null } : kw))
-      )
-      toast.success('키워드 제거 상태가 취소되었습니다')
-    } catch {
-      toast.error('제거 취소 중 오류가 발생했습니다')
-    }
+  function handleSingleCancelRemoval(keyword: string) {
+    openKeywordCancelConfirm([keyword])
   }
 
   // 캠페인 표시명 저장
@@ -821,20 +820,8 @@ export default function CampaignDetailPage({
       const dateToUse = productMemoDate || getTodayKst()
       const newEntry = productMemoContent.trim()
 
-      // 해당 날짜 기존 메모 조회
-      const res = await fetch(
-        `/api/campaigns/${campaignId}/memos?from=${dateToUse}&to=${dateToUse}`
-      )
-      const data = (res.ok ? await res.json() : { items: [] }) as { items: DailyMemoType[] }
-      const existing = data.items.find((m) => m.date === dateToUse)
-      const content = existing ? `${existing.content}\n${newEntry}` : newEntry
-
-      const [saveRes, statusRes] = await Promise.all([
-        fetch(`/api/campaigns/${campaignId}/memos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date: dateToUse, content }),
-        }),
+      const [, statusRes] = await Promise.all([
+        appendMemo(dateToUse, newEntry),
         fetch(`/api/campaigns/${campaignId}/product-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -846,14 +833,6 @@ export default function CampaignDetailPage({
           }),
         }),
       ])
-
-      if (!saveRes.ok) throw new Error('메모 저장 실패')
-
-      const saved = (await saveRes.json()) as DailyMemoType
-      setMemos((prev) => {
-        const without = prev.filter((m) => m.date !== dateToUse)
-        return [saved, ...without]
-      })
 
       if (statusRes.ok) {
         const removedDate = dateToUse
@@ -877,23 +856,100 @@ export default function CampaignDetailPage({
     }
   }
 
-  // 상품 개별 제거 취소
-  async function handleProductCancelRemoval(product: ProductItem) {
-    const url = `/api/campaigns/${campaignId}/product-status?productName=${encodeURIComponent(product.productName)}&optionId=${encodeURIComponent(product.optionId ?? '')}`
-    try {
-      const res = await fetch(url, { method: 'DELETE' })
-      if (!res.ok) throw new Error('제거 취소 실패')
+  function openProductCancelConfirm(items: ProductItem[]) {
+    if (items.length === 0) return
+    setRemovalCancelContext({ type: 'product', items })
+    setIsWritingCancelMemo(true)
+    setIsRemovalCancelConfirmOpen(true)
+  }
 
-      setProductItems((prev) =>
-        prev.map((p) =>
-          p.productName === product.productName && (p.optionId ?? '') === (product.optionId ?? '')
-            ? { ...p, removedAt: null }
-            : p
+  function handleProductCancelRemoval(product: ProductItem) {
+    openProductCancelConfirm([product])
+  }
+
+  function handleSelectedProductCancelRemoval() {
+    const removedSelected = productItems.filter((p) => {
+      const key = `${p.productName}|${p.optionId ?? ''}`
+      return selectedProducts.includes(key) && !!p.removedAt
+    })
+    openProductCancelConfirm(removedSelected)
+  }
+
+  async function handleConfirmRemovalCancel() {
+    if (!removalCancelContext) return
+    setIsCancellingRemoval(true)
+    try {
+      if (removalCancelContext.type === 'keyword') {
+        const res = await fetch(
+          `/api/campaigns/${campaignId}/keyword-status?keywords=${encodeURIComponent(removalCancelContext.keywords.join(','))}`,
+          { method: 'DELETE' }
         )
-      )
-      toast.success('상품 제거 상태가 취소되었습니다')
+        if (!res.ok) throw new Error('제거 취소 실패')
+
+        setKeywords((prev) =>
+          prev.map((kw) =>
+            removalCancelContext.keywords.includes(kw.keyword) ? { ...kw, removedAt: null } : kw
+          )
+        )
+        toast.success(`${removalCancelContext.keywords.length}개 키워드 제거 상태가 취소되었습니다`)
+      } else {
+        await Promise.all(
+          removalCancelContext.items.map(async (item) => {
+            const url = `/api/campaigns/${campaignId}/product-status?productName=${encodeURIComponent(item.productName)}&optionId=${encodeURIComponent(item.optionId ?? '')}`
+            const res = await fetch(url, { method: 'DELETE' })
+            if (!res.ok) throw new Error('제거 취소 실패')
+          })
+        )
+
+        const canceledKeys = new Set(
+          removalCancelContext.items.map((item) => `${item.productName}|${item.optionId ?? ''}`)
+        )
+        setProductItems((prev) =>
+          prev.map((p) => {
+            const key = `${p.productName}|${p.optionId ?? ''}`
+            return canceledKeys.has(key) ? { ...p, removedAt: null } : p
+          })
+        )
+        toast.success(`${removalCancelContext.items.length}개 상품 제거 상태가 취소되었습니다`)
+      }
+
+      setIsRemovalCancelConfirmOpen(false)
+      if (!isWritingCancelMemo) {
+        setRemovalCancelContext(null)
+        return
+      }
+
+      const content =
+        removalCancelContext.type === 'keyword'
+          ? `키워드 제거 취소: ${removalCancelContext.keywords.join(', ')}`
+          : buildProductCancelMemo(removalCancelContext.items)
+      setCancelMemoDate(getTodayKst())
+      setCancelMemoContent(content)
+      setIsCancelMemoDialogOpen(true)
     } catch {
       toast.error('제거 취소 중 오류가 발생했습니다')
+    } finally {
+      setIsCancellingRemoval(false)
+    }
+  }
+
+  async function handleSaveCancelMemo() {
+    if (isSavingCancelMemo) return
+    if (!cancelMemoContent.trim()) {
+      toast.error('메모 내용을 입력해주세요')
+      return
+    }
+    setIsSavingCancelMemo(true)
+    try {
+      const dateToUse = cancelMemoDate || getTodayKst()
+      await appendMemo(dateToUse, cancelMemoContent.trim())
+      toast.success('제거 취소 메모가 저장되었습니다')
+      setIsCancelMemoDialogOpen(false)
+      setRemovalCancelContext(null)
+    } catch {
+      toast.error('메모 저장 중 오류가 발생했습니다')
+    } finally {
+      setIsSavingCancelMemo(false)
     }
   }
 
@@ -1293,8 +1349,6 @@ export default function CampaignDetailPage({
                 campaignId={campaignId}
                 initialMemos={memos}
                 onMemosChange={setMemos}
-                from={from || undefined}
-                to={to || undefined}
                 targetDate={memoTarget?.date ?? null}
                 targetDateVersion={memoTarget?.version ?? 0}
               />
@@ -1305,61 +1359,64 @@ export default function CampaignDetailPage({
         {/* ── 키워드 분석 탭 ── */}
         <TabsContent value="keywords" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* 검색 + 필터 토글 버튼 */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-muted-foreground">전체 {keywords.length}개 키워드</span>
+              <Input
+                placeholder="키워드 검색"
+                value={kwSearch}
+                onChange={(e) => {
+                  setKwSearch(e.target.value)
+                  setSelectedKeywords([])
+                }}
+                className="h-8 w-40 text-sm"
+              />
+              <Button
+                variant={kwFilter === 'zero' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => {
+                  const next = kwFilter === 'zero' ? 'all' : 'zero'
+                  setKwFilter(next)
+                  setSelectedKeywords([])
+                  if (next === 'zero') {
+                    setKwSortBy('adCost')
+                    setKwSortOrder('desc')
+                  }
+                }}
+              >
+                📉저효율 키워드
+              </Button>
+              <Button
+                variant={kwFilter === 'orders' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => {
+                  const next = kwFilter === 'orders' ? 'all' : 'orders'
+                  setKwFilter(next)
+                  setSelectedKeywords([])
+                  if (next === 'orders') {
+                    setKwSortBy('orders1d')
+                    setKwSortOrder('desc')
+                  }
+                }}
+              >
+                📈주문 발생 키워드
+              </Button>
               <div className="flex items-center gap-1.5">
-                <Button
-                  variant={kwFilter === 'zero' ? 'default' : 'outline'}
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => {
-                    const next = kwFilter === 'zero' ? 'all' : 'zero'
-                    setKwFilter(next)
+                <Checkbox
+                  id="kw-exclude-removed"
+                  checked={kwExcludeRemoved}
+                  onCheckedChange={() => {
+                    setKwExcludeRemoved((prev) => !prev)
                     setSelectedKeywords([])
-                    if (next === 'zero') {
-                      setKwSortBy('adCost')
-                      setKwSortOrder('desc')
-                    }
                   }}
-                >
-                  📉저효율 키워드
-                </Button>
-                <Button
-                  variant={kwFilter === 'orders' ? 'default' : 'outline'}
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => {
-                    const next = kwFilter === 'orders' ? 'all' : 'orders'
-                    setKwFilter(next)
-                    setSelectedKeywords([])
-                    if (next === 'orders') {
-                      setKwSortBy('orders1d')
-                      setKwSortOrder('desc')
-                    }
-                  }}
-                >
-                  📈주문 발생 키워드
-                </Button>
-                <div className="flex items-center gap-1.5">
-                  <Checkbox
-                    id="kw-exclude-removed"
-                    checked={kwExcludeRemoved}
-                    onCheckedChange={() => {
-                      setKwExcludeRemoved((prev) => !prev)
-                      setSelectedKeywords([])
-                    }}
-                  />
-                  <label
-                    htmlFor="kw-exclude-removed"
-                    className="cursor-pointer text-sm select-none"
-                  >
-                    제거 제외
-                  </label>
-                </div>
+                />
+                <label htmlFor="kw-exclude-removed" className="cursor-pointer text-sm select-none">
+                  제거 제외
+                </label>
               </div>
+              <span className="text-sm text-muted-foreground">전체 {keywords.length}개 키워드</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2">
               {selectedKeywords.some((kw) => keywords.find((k) => k.keyword === kw)?.removedAt) && (
                 <Button
                   variant="outline"
@@ -1370,15 +1427,6 @@ export default function CampaignDetailPage({
                   제거 취소
                 </Button>
               )}
-              <Input
-                placeholder="키워드 검색"
-                value={kwSearch}
-                onChange={(e) => {
-                  setKwSearch(e.target.value)
-                  setSelectedKeywords([])
-                }}
-                className="h-8 w-40 text-sm"
-              />
               <Button
                 variant="outline"
                 size="sm"
@@ -1561,9 +1609,12 @@ export default function CampaignDetailPage({
         <TabsContent value="products" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                전체 {productItems.length}개 상품 옵션
-              </span>
+              <Input
+                placeholder="상품명 검색"
+                value={productFilter}
+                onChange={(e) => setProductFilter(e.target.value)}
+                className="h-8 w-40 text-sm"
+              />
               <Button
                 variant={productFilterMode === 'zero' ? 'default' : 'outline'}
                 size="sm"
@@ -1612,14 +1663,26 @@ export default function CampaignDetailPage({
                   제거 제외
                 </label>
               </div>
+              <span className="text-sm text-muted-foreground">
+                전체 {productItems.length}개 상품 옵션
+              </span>
             </div>
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="상품명 검색"
-                value={productFilter}
-                onChange={(e) => setProductFilter(e.target.value)}
-                className="h-8 w-40 text-sm"
-              />
+            <div className="ml-auto flex items-center gap-2">
+              {selectedProducts.some((selectedKey) => {
+                const selectedItem = productItems.find(
+                  (p) => `${p.productName}|${p.optionId ?? ''}` === selectedKey
+                )
+                return !!selectedItem?.removedAt
+              }) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-muted-foreground"
+                  onClick={handleSelectedProductCancelRemoval}
+                >
+                  제거 취소
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -2380,6 +2443,101 @@ export default function CampaignDetailPage({
               disabled={isDeletingCampaign}
             >
               {isDeletingCampaign ? '삭제 중...' : '삭제'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 제거 취소 확인 다이얼로그 */}
+      <Dialog
+        open={isRemovalCancelConfirmOpen}
+        onOpenChange={(open) => {
+          if (isCancellingRemoval) return
+          setIsRemovalCancelConfirmOpen(open)
+          if (!open) setRemovalCancelContext(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>제거 상태를 취소하시겠어요?</DialogTitle>
+            <DialogDescription>
+              {removalCancelContext
+                ? `${removalCancelContext.type === 'keyword' ? '키워드' : '상품'} ${
+                    removalCancelContext.type === 'keyword'
+                      ? removalCancelContext.keywords.length
+                      : removalCancelContext.items.length
+                  }개 항목의 제거 상태를 취소합니다.`
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="write-cancel-memo"
+              checked={isWritingCancelMemo}
+              onCheckedChange={(checked) => setIsWritingCancelMemo(checked === true)}
+            />
+            <label htmlFor="write-cancel-memo" className="cursor-pointer text-sm select-none">
+              제거 취소 메모 남기기
+            </label>
+          </div>
+          <DialogFooter className="gap-3 sm:gap-3">
+            <Button
+              variant="outline"
+              disabled={isCancellingRemoval}
+              onClick={() => {
+                setIsRemovalCancelConfirmOpen(false)
+                setRemovalCancelContext(null)
+              }}
+            >
+              취소
+            </Button>
+            <Button onClick={handleConfirmRemovalCancel} disabled={isCancellingRemoval}>
+              {isCancellingRemoval ? '처리 중...' : '확인'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 제거 취소 메모 다이얼로그 */}
+      <Dialog
+        open={isCancelMemoDialogOpen}
+        onOpenChange={(open) => {
+          if (isSavingCancelMemo) return
+          setIsCancelMemoDialogOpen(open)
+          if (!open) setRemovalCancelContext(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>제거 취소 메모</DialogTitle>
+            <DialogDescription>제거 취소 내역을 메모로 남깁니다.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="cancel-memo-date">작성 일자</Label>
+            <Input
+              id="cancel-memo-date"
+              type="date"
+              value={cancelMemoDate}
+              max={getTodayKst()}
+              onChange={(e) => setCancelMemoDate(e.target.value)}
+            />
+            <Label htmlFor="cancel-memo-content">내용</Label>
+            <Textarea
+              id="cancel-memo-content"
+              value={cancelMemoContent}
+              onChange={(e) => setCancelMemoContent(e.target.value)}
+              rows={4}
+            />
+          </div>
+          <DialogFooter className="gap-3 sm:gap-3">
+            <Button variant="outline" onClick={() => setIsCancelMemoDialogOpen(false)}>
+              닫기
+            </Button>
+            <Button
+              onClick={handleSaveCancelMemo}
+              disabled={isSavingCancelMemo || !cancelMemoContent.trim()}
+            >
+              {isSavingCancelMemo ? '저장 중...' : '메모 남기기'}
             </Button>
           </DialogFooter>
         </DialogContent>
