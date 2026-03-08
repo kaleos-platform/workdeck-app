@@ -161,3 +161,107 @@ describe('parseCsvBuffer', () => {
     expect(rows[0].campaignId).toBe('CAMP001')
   })
 })
+
+// 중복 행 사전 집계: 동일 복합 키 행의 광고비/노출/클릭 합산 검증
+// 쿠팡 리포트는 전환 귀속 상품이 다를 경우 같은 날짜·캠페인·키워드·광고그룹·옵션ID에 대해
+// 여러 행을 내보낸다. 0원 행이 먼저 DB에 삽입되면 실제 광고비 행이 skipDuplicates로 유실됨.
+describe('aggregateDuplicates (중복 키 집계)', () => {
+  // KEYWORD 헤더에 옵션ID·키워드·광고그룹 컬럼 포함
+  const HEADER_WITH_OPTION = [
+    '날짜',
+    '광고유형',
+    '캠페인 ID',
+    '캠페인명',
+    '광고그룹',
+    '광고 노출 지면',
+    '노출수',
+    '클릭수',
+    '클릭률',
+    '광고비',
+    '키워드',
+    '광고집행 옵션ID',
+    '총 주문수(1일)',
+    '총 전환매출액(1일)',
+    '총광고수익률(1일)',
+  ]
+
+  // Row 80: 전환 귀속 행 — 노출/클릭/광고비 = 0
+  const ROW_ZERO = [
+    '20260201',
+    '키워드광고',
+    'CAMP001',
+    '테스트 캠페인',
+    '광고그룹A',
+    '-',
+    '0',
+    '0',
+    '0%',
+    '0',
+    '여성팬티',
+    '92143112380',
+    '0',
+    '0',
+    '0%',
+  ]
+
+  // Row 81: 실제 집행 행 — 광고비 = 1,631
+  const ROW_ACTUAL = [
+    '20260201',
+    '키워드광고',
+    'CAMP001',
+    '테스트 캠페인',
+    '광고그룹A',
+    '-',
+    '3',
+    '1',
+    '33.33%',
+    '1631',
+    '여성팬티',
+    '92143112380',
+    '0',
+    '0',
+    '0%',
+  ]
+
+  it('동일 키 2행 → 1행으로 합산 (광고비 0 + 1631 = 1631)', () => {
+    // 0원 행이 먼저, 실제 행이 나중에 올 때
+    const buffer = makeXlsxBuffer([HEADER_WITH_OPTION, ROW_ZERO, ROW_ACTUAL])
+    const rows = parseExcelBuffer(buffer)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].adCost).toBe(1631)
+    expect(rows[0].impressions).toBe(3)
+    expect(rows[0].clicks).toBe(1)
+  })
+
+  it('실제 행이 먼저, 0원 행이 나중에 와도 올바르게 합산', () => {
+    const buffer = makeXlsxBuffer([HEADER_WITH_OPTION, ROW_ACTUAL, ROW_ZERO])
+    const rows = parseExcelBuffer(buffer)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].adCost).toBe(1631)
+  })
+
+  it('다른 키 행은 별도 행으로 유지', () => {
+    const ROW_DIFFERENT_KEYWORD = [
+      '20260201',
+      '키워드광고',
+      'CAMP001',
+      '테스트 캠페인',
+      '광고그룹A',
+      '-',
+      '5',
+      '2',
+      '40%',
+      '2000',
+      '남성팬티', // 다른 키워드
+      '92143112380',
+      '1',
+      '10000',
+      '500%',
+    ]
+    const buffer = makeXlsxBuffer([HEADER_WITH_OPTION, ROW_ZERO, ROW_ACTUAL, ROW_DIFFERENT_KEYWORD])
+    const rows = parseExcelBuffer(buffer)
+    expect(rows).toHaveLength(2)
+    const adCosts = rows.map((r) => r.adCost).sort((a, b) => a - b)
+    expect(adCosts).toEqual([1631, 2000])
+  })
+})

@@ -207,6 +207,59 @@ function normalizeRow(row: Record<string, unknown>, format: AdFileFormat): Parse
   }
 }
 
+// 복합 unique key 기준으로 중복 행을 사전 집계
+// 쿠팡 리포트는 동일 광고 집행에 대해 전환 귀속 상품이 다를 경우 여러 행으로 분리되며,
+// skipDuplicates로 먼저 삽입된 0원 행이 실제 광고비 행을 덮어쓰는 문제를 방지
+function aggregateDuplicates(rows: ParsedRow[]): ParsedRow[] {
+  const keyOf = (r: ParsedRow) =>
+    [
+      r.date.getTime(),
+      r.campaignId,
+      r.adType,
+      r.keyword ?? '\0',
+      r.adGroup ?? '\0',
+      r.optionId ?? '\0',
+    ].join('|')
+
+  const map = new Map<string, ParsedRow>()
+
+  for (const row of rows) {
+    const key = keyOf(row)
+    const existing = map.get(key)
+    if (!existing) {
+      map.set(key, { ...row })
+    } else {
+      // 핵심 지표 합산
+      existing.impressions += row.impressions
+      existing.clicks += row.clicks
+      existing.adCost += row.adCost
+      existing.orders1d += row.orders1d
+      existing.revenue1d += row.revenue1d
+      // ctr/roas1d는 집계 후 재계산 불가 — 첫 값 유지
+      // nullable 숫자 필드 합산
+      if (row.videoViews3s != null)
+        existing.videoViews3s = (existing.videoViews3s ?? 0) + row.videoViews3s
+      if (row.videoViews25p != null)
+        existing.videoViews25p = (existing.videoViews25p ?? 0) + row.videoViews25p
+      if (row.videoViews50p != null)
+        existing.videoViews50p = (existing.videoViews50p ?? 0) + row.videoViews50p
+      if (row.videoViews75p != null)
+        existing.videoViews75p = (existing.videoViews75p ?? 0) + row.videoViews75p
+      if (row.videoViews100p != null)
+        existing.videoViews100p = (existing.videoViews100p ?? 0) + row.videoViews100p
+      if (row.engagements != null)
+        existing.engagements = (existing.engagements ?? 0) + row.engagements
+      // avgPlayTime/costPerView3s/engagementRate는 평균 개념 — 첫 값 유지
+      // 문자 필드: 기존이 null이면 새 값으로 채움
+      if (existing.placement == null) existing.placement = row.placement
+      if (existing.productName == null) existing.productName = row.productName
+      if (existing.material == null) existing.material = row.material
+    }
+  }
+
+  return [...map.values()]
+}
+
 // 파싱된 sheet 행 배열을 정규화된 ParsedRow 배열로 변환
 function normalizeRows(rows: Record<string, unknown>[]): ParsedRow[] {
   if (rows.length === 0) return []
@@ -217,9 +270,11 @@ function normalizeRows(rows: Record<string, unknown>[]): ParsedRow[] {
   // 컬럼 검증 (오류 시 ColumnValidationError throw)
   validateColumns(rows, format)
 
-  return rows
+  const parsed = rows
     .map((row) => normalizeRow(row, format))
     .filter((row) => row.campaignId !== '' && !isNaN(row.date.getTime()))
+
+  return aggregateDuplicates(parsed)
 }
 
 // Excel(.xlsx) 버퍼를 파싱하여 정규화된 행 배열 반환
