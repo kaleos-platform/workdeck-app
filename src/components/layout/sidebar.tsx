@@ -4,15 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  LayoutDashboard,
-  UploadCloud,
-  BarChart2,
-  BarChart3,
-  LogOut,
-  ChevronDown,
-  Home,
-} from 'lucide-react'
+import { LayoutDashboard, UploadCloud, BarChart2, LogOut, ChevronDown, Home, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { Separator } from '@/components/ui/separator'
@@ -20,7 +12,7 @@ import { getLastNDaysRangeKst } from '@/lib/date-range'
 import {
   COUPANG_ADS_BASE_PATH,
   COUPANG_ADS_UPLOAD_PATH,
-  COUPANG_ADS_ANALYSIS_PATH,
+  COUPANG_ADS_EXECUTION_PATH,
   getCoupangAdsCampaignPath,
 } from '@/lib/deck-routes'
 
@@ -58,9 +50,9 @@ const COUPANG_MAIN_ROUTES = [
     href: COUPANG_ADS_UPLOAD_PATH,
   },
   {
-    label: '광고 분석',
-    icon: BarChart3,
-    href: COUPANG_ADS_ANALYSIS_PATH,
+    label: '실행 관리',
+    icon: Play,
+    href: COUPANG_ADS_EXECUTION_PATH,
   },
 ]
 

@@ -20,6 +20,25 @@ enum CollectionStatus {
   FAILED
 }
 
+// ─── 실행 태스크 열거형 ──────────────────────────────────────────────────────
+
+enum ActionType {
+  REMOVE_KEYWORD
+  ADJUST_BID
+  PAUSE_CAMPAIGN
+  RESUME_CAMPAIGN
+  ADJUST_BUDGET
+}
+
+enum ExecutionStatus {
+  PENDING_APPROVAL
+  APPROVED
+  EXECUTING
+  COMPLETED
+  FAILED
+  ROLLED_BACK
+}
+
 // ─── AI 분석 열거형 ──────────────────────────────────────────────────────────
 
 enum AnalysisType {
@@ -87,6 +106,10 @@ model Workspace {
 
   // AI 분석 리포트
   analysisReports  AnalysisReport[]
+
+  // 실행 태스크
+  executionTasks   ExecutionTask[]
+  safetyLimits     SafetyLimits?
 
   // 데이터 수집 관련
   coupangCredential   CoupangCredential?
@@ -375,4 +398,40 @@ model AnalysisReport {
   workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, createdAt])
+}
+
+// ─── 반자동 실행 인프라 ───────────────────────────────────────────────────────
+
+// 실행 태스크 (AI 제안 → 승인 → 실행 흐름)
+model ExecutionTask {
+  id               String          @id @default(cuid())
+  workspaceId      String
+  analysisReportId String?
+  actionType       ActionType
+  campaignId       String
+  target           String
+  params           Json
+  status           ExecutionStatus @default(PENDING_APPROVAL)
+  beforeState      Json?
+  afterState       Json?
+  approvedAt       DateTime?
+  approvedBy       String?
+  executedAt       DateTime?
+  error            String?
+  workspace        Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([workspaceId, status])
+}
+
+// 안전 제한 설정 (워크스페이스당 1개)
+model SafetyLimits {
+  id                  String    @id @default(cuid())
+  workspaceId         String    @unique
+  maxBidChangePct     Int       @default(30)
+  maxKeywordsPerBatch Int       @default(20)
+  maxBudgetChangePct  Int       @default(50)
+  requireApproval     Boolean   @default(true)
+  workspace           Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
