@@ -39,6 +39,41 @@ export function registerHandlers(app: App) {
     })
     await say(formatResponse('태스크 승인', data))
   })
+
+  // ─── 분석 규칙 관리 핸들러 ──────────────────────────────────────────────────
+
+  // 규칙 추가: <텍스트>
+  app.message(/규칙\s*추가[:\s]+(.+)/i, async ({ say, context }) => {
+    const match = context.matches as RegExpMatchArray
+    const ruleText = match?.[1]?.trim()
+    if (!ruleText) {
+      await say('추가할 규칙 내용을 입력해주세요. 예: 규칙 추가: CTR 0.3% 미만 키워드 제거')
+      return
+    }
+    const data = await api.post('/api/analysis/rules', {
+      rule: ruleText,
+      source: 'user',
+    })
+    await say(formatResponse('규칙 추가', data))
+  })
+
+  // 규칙 목록
+  app.message(/규칙\s*목록/i, async ({ say }) => {
+    const data = await api.get('/api/analysis/rules')
+    await say(formatResponse('분석 규칙 목록', data))
+  })
+
+  // 규칙 삭제 <id>
+  app.message(/규칙\s*삭제\s+(\S+)/i, async ({ say, context }) => {
+    const match = context.matches as RegExpMatchArray
+    const ruleId = match?.[1]?.trim()
+    if (!ruleId) {
+      await say('삭제할 규칙 ID를 입력해주세요. 예: 규칙 삭제 clxxx...')
+      return
+    }
+    const data = await api.del(`/api/analysis/rules/${ruleId}`)
+    await say(formatResponse('규칙 삭제', data))
+  })
 }
 
 // 유틸리티

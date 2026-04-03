@@ -13,3 +13,15 @@ export interface Suggestion {
   suggestedValue?: number
   estimatedImpact?: string
 }
+
+// 모델이 제안하는 개선 규칙
+export interface ImprovementSuggestion {
+  rule: string
+  reason: string
+}
+
+// AI 분석 최종 결과
+export interface AnalysisResult {
+  suggestions: Suggestion[]
+  improvementSuggestions: ImprovementSuggestion[]
+}

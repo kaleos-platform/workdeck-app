@@ -29,3 +29,11 @@ export async function patch(path: string, body: unknown) {
   })
   return res.json()
 }
+
+export async function del(path: string) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'DELETE',
+    headers,
+  })
+  return res.json()
+}

@@ -114,6 +114,9 @@ model Workspace {
   // 비즈니스 에이전트
   businessAgent    BusinessAgent?
 
+  // 학습형 분석 규칙
+  analysisRules    AnalysisRule[]
+
   // 데이터 수집 관련
   coupangCredential   CoupangCredential?
   collectionSchedule  CollectionSchedule?
@@ -437,6 +440,21 @@ model SafetyLimits {
   maxBudgetChangePct  Int       @default(50)
   requireApproval     Boolean   @default(true)
   workspace           Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// 학습형 분석 규칙 (사용자/모델/시스템이 추가한 분석 기준)
+model AnalysisRule {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  rule         String    @db.Text
+  source       String    // "user" | "model" | "system"
+  isActive     Boolean   @default(true)
+  appliedCount Int       @default(0)
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([workspaceId, isActive])
 }
 
 // 비즈니스 에이전트 (의식주의 Slack 에이전트)

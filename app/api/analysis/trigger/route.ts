@@ -75,10 +75,10 @@ async function runAnalysis(
     const context = await buildAnalysisContext(workspaceId, periodStart, periodEnd, reportType)
 
     // AI 분석 실행
-    const suggestions = await analyzeAdPerformance(context)
+    const result = await analyzeAdPerformance(context)
 
     // 요약 생성
-    const summary = `${context.campaigns.length}개 캠페인 분석 완료. ${suggestions.length}개 제안 생성.`
+    const summary = `${context.campaigns.length}개 캠페인 분석 완료. ${result.suggestions.length}개 제안 생성.`
 
     // 완료 상태로 업데이트
     await prisma.analysisReport.update({
@@ -86,14 +86,26 @@ async function runAnalysis(
       data: {
         status: 'COMPLETED',
         summary,
-        suggestions: JSON.parse(JSON.stringify(suggestions)),
+        suggestions: JSON.parse(JSON.stringify(result.suggestions)),
         metadata: {
           campaignCount: context.campaigns.length,
           inefficientKeywordCount: context.inefficientKeywords.length,
+          improvementSuggestions: JSON.parse(JSON.stringify(result.improvementSuggestions)),
+          activeRulesCount: context.activeRules.length,
           model: 'qwen3:14b',
         },
       },
     })
+
+    // 활성 규칙의 appliedCount 증가
+    if (context.activeRules.length > 0) {
+      await prisma.analysisRule.updateMany({
+        where: {
+          id: { in: context.activeRules.map((r) => r.id) },
+        },
+        data: { appliedCount: { increment: 1 } },
+      })
+    }
   } catch (err) {
     // 실패 상태로 업데이트
     const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류'

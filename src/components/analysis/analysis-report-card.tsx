@@ -111,11 +111,26 @@ export function AnalysisReportCard({ report }: AnalysisReportCardProps) {
                   </div>
                 )}
 
-                {report.suggestions.length > 0 && (
+                {report.suggestions && report.suggestions.length > 0 && (
                   <div>
-                    <h4 className="mb-2 text-sm font-medium">개선 제안</h4>
-                    <SuggestionList suggestions={report.suggestions} />
+                    <h4 className="mb-2 text-sm font-medium">개선 제안 ({report.suggestions.length}건)</h4>
+                    <ul className="space-y-2 text-sm">
+                      {report.suggestions.map((s, i) => (
+                        <li key={i} className="rounded-lg border p-3">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">{s.type}</Badge>
+                            <Badge variant={s.priority === 'HIGH' ? 'destructive' : 'secondary'} className="text-xs">{s.priority}</Badge>
+                          </div>
+                          <p className="mt-1 font-medium">{s.target}</p>
+                          <p className="text-muted-foreground">{s.reason}</p>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
+                )}
+
+                {report.improvementSuggestions && report.improvementSuggestions.length > 0 && (
+                  <SuggestionList improvementSuggestions={report.improvementSuggestions} />
                 )}
               </div>
             </CardContent>

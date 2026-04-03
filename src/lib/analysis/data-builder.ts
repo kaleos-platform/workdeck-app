@@ -5,6 +5,60 @@ import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calcula
 import type { AnalysisInput, CampaignSummary, InefficientKeyword } from '@/lib/ai/analyzer'
 import type { AnalysisType } from '@/generated/prisma/client'
 
+// 제거된 키워드 히스토리
+export interface RemovedKeyword {
+  campaignId: string
+  keyword: string
+  removedAt: Date
+  removedMemo: string | null
+}
+
+// 제거된 상품 히스토리
+export interface RemovedProduct {
+  campaignId: string
+  productName: string
+  optionId: string
+  removedAt: Date
+}
+
+// 캠페인 목표 설정
+export interface CampaignTargetInfo {
+  campaignId: string
+  dailyBudget: number | null
+  targetRoas: number | null
+  effectiveDate: Date
+}
+
+// 일별 메모
+export interface DailyMemoInfo {
+  campaignId: string
+  date: Date
+  content: string
+}
+
+// 캠페인 표시명
+export interface CampaignMetaInfo {
+  campaignId: string
+  displayName: string
+}
+
+// 분석 규칙
+export interface ActiveRule {
+  id: string
+  rule: string
+  source: string
+}
+
+// 확장된 분석 컨텍스트
+export interface AnalysisContext extends AnalysisInput {
+  removedKeywords: RemovedKeyword[]
+  removedProducts: RemovedProduct[]
+  campaignTargets: CampaignTargetInfo[]
+  recentMemos: DailyMemoInfo[]
+  campaignMetas: CampaignMetaInfo[]
+  activeRules: ActiveRule[]
+}
+
 /**
  * 워크스페이스의 광고 데이터를 분석 컨텍스트로 빌드
  */
@@ -13,7 +67,7 @@ export async function buildAnalysisContext(
   startDate: Date,
   endDate: Date,
   reportType: AnalysisType = 'DAILY_REVIEW'
-): Promise<AnalysisInput> {
+): Promise<AnalysisContext> {
   // 캠페인별 집계
   const campaignGroups = await prisma.adRecord.groupBy({
     by: ['campaignId', 'campaignName'],
@@ -85,11 +139,73 @@ export async function buildAnalysisContext(
       orders: 0,
     }))
 
+  // 제거된 키워드 히스토리
+  const removedKeywordsRaw = await prisma.keywordStatus.findMany({
+    where: { workspaceId, removedAt: { not: null } },
+    select: { campaignId: true, keyword: true, removedAt: true, removedMemo: true },
+    orderBy: { removedAt: 'desc' },
+  })
+  const removedKeywords: RemovedKeyword[] = removedKeywordsRaw.map((k) => ({
+    campaignId: k.campaignId,
+    keyword: k.keyword,
+    removedAt: k.removedAt!,
+    removedMemo: k.removedMemo,
+  }))
+
+  // 제거된 상품 히스토리
+  const removedProductsRaw = await prisma.productStatus.findMany({
+    where: { workspaceId, removedAt: { not: null } },
+    select: { campaignId: true, productName: true, optionId: true, removedAt: true },
+    orderBy: { removedAt: 'desc' },
+  })
+  const removedProducts: RemovedProduct[] = removedProductsRaw.map((p) => ({
+    campaignId: p.campaignId,
+    productName: p.productName,
+    optionId: p.optionId,
+    removedAt: p.removedAt!,
+  }))
+
+  // 캠페인별 목표 설정 (최신 effectiveDate 기준)
+  const campaignTargets = await prisma.campaignTarget.findMany({
+    where: { workspaceId },
+    select: { campaignId: true, dailyBudget: true, targetRoas: true, effectiveDate: true },
+    orderBy: { effectiveDate: 'desc' },
+  })
+
+  // 최근 메모 (최근 30일)
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const recentMemos = await prisma.dailyMemo.findMany({
+    where: { workspaceId, date: { gte: thirtyDaysAgo } },
+    select: { campaignId: true, date: true, content: true },
+    orderBy: { date: 'desc' },
+    take: 50,
+  })
+
+  // 캠페인 표시명
+  const campaignMetas = await prisma.campaignMeta.findMany({
+    where: { workspaceId },
+    select: { campaignId: true, displayName: true },
+  })
+
+  // 활성 분석 규칙
+  const activeRulesRaw = await prisma.analysisRule.findMany({
+    where: { workspaceId, isActive: true },
+    select: { id: true, rule: true, source: true },
+    orderBy: { createdAt: 'asc' },
+  })
+
   return {
     reportType,
     periodStart: startDate.toISOString().split('T')[0],
     periodEnd: endDate.toISOString().split('T')[0],
     campaigns,
     inefficientKeywords,
+    removedKeywords,
+    removedProducts,
+    campaignTargets,
+    recentMemos,
+    campaignMetas,
+    activeRules: activeRulesRaw,
   }
 }
