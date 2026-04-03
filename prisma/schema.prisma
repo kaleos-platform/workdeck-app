@@ -20,6 +20,22 @@ enum CollectionStatus {
   FAILED
 }
 
+// ─── AI 분석 열거형 ──────────────────────────────────────────────────────────
+
+enum AnalysisType {
+  DAILY_REVIEW
+  KEYWORD_AUDIT
+  BUDGET_OPTIMIZATION
+  CAMPAIGN_SCORING
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 // ─── Workdeck OS 열거형 ───────────────────────────────────────────────────────
 
 enum SpaceType {
@@ -68,6 +84,9 @@ model Workspace {
   keywordStatuses  KeywordStatus[]
   campaignTargets  CampaignTarget[]
   productStatuses  ProductStatus[]
+
+  // AI 분석 리포트
+  analysisReports  AnalysisReport[]
 
   // 데이터 수집 관련
   coupangCredential   CoupangCredential?
@@ -337,5 +356,23 @@ model CollectionRun {
   createdAt      DateTime         @default(now())
 
   @@index([workspaceId, status])
+  @@index([workspaceId, createdAt])
+}
+
+// ─── AI 분석 리포트 ─────────────────────────────────────────────────────────
+
+model AnalysisReport {
+  id          String         @id @default(cuid())
+  workspaceId String
+  periodStart DateTime
+  periodEnd   DateTime
+  reportType  AnalysisType
+  summary     String         @db.Text
+  suggestions Json
+  metadata    Json?
+  status      AnalysisStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@index([workspaceId, createdAt])
 }

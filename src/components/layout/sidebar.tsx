@@ -4,7 +4,15 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { LayoutDashboard, UploadCloud, BarChart2, LogOut, ChevronDown, Home, Settings } from 'lucide-react'
+import {
+  LayoutDashboard,
+  UploadCloud,
+  BarChart2,
+  BarChart3,
+  LogOut,
+  ChevronDown,
+  Home,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { Separator } from '@/components/ui/separator'
@@ -12,7 +20,7 @@ import { getLastNDaysRangeKst } from '@/lib/date-range'
 import {
   COUPANG_ADS_BASE_PATH,
   COUPANG_ADS_UPLOAD_PATH,
-  COUPANG_ADS_SETTINGS_PATH,
+  COUPANG_ADS_ANALYSIS_PATH,
   getCoupangAdsCampaignPath,
 } from '@/lib/deck-routes'
 
@@ -48,6 +56,11 @@ const COUPANG_MAIN_ROUTES = [
     label: '리포트 업로드',
     icon: UploadCloud,
     href: COUPANG_ADS_UPLOAD_PATH,
+  },
+  {
+    label: '광고 분석',
+    icon: BarChart3,
+    href: COUPANG_ADS_ANALYSIS_PATH,
   },
 ]
 
@@ -295,21 +308,7 @@ export function Sidebar({
         )}
       </div>
 
-      <div className="mt-auto space-y-1 px-3 py-2">
-        {!isWorkdeckSidebar && (
-          <Link
-            href={COUPANG_ADS_SETTINGS_PATH}
-            className={cn(
-              'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-              pathname === COUPANG_ADS_SETTINGS_PATH || pathname.startsWith(`${COUPANG_ADS_SETTINGS_PATH}/`)
-                ? 'bg-white/10 text-white'
-                : 'text-zinc-400'
-            )}
-          >
-            <Settings className="mr-3 h-5 w-5 flex-shrink-0" />
-            <span className="truncate">설정</span>
-          </Link>
-        )}
+      <div className="mt-auto px-3 py-2">
         <Button
           variant="ghost"
           className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"
