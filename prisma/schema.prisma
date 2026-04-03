@@ -111,6 +111,9 @@ model Workspace {
   executionTasks   ExecutionTask[]
   safetyLimits     SafetyLimits?
 
+  // 비즈니스 에이전트
+  businessAgent    BusinessAgent?
+
   // 데이터 수집 관련
   coupangCredential   CoupangCredential?
   collectionSchedule  CollectionSchedule?
@@ -434,4 +437,17 @@ model SafetyLimits {
   maxBudgetChangePct  Int       @default(50)
   requireApproval     Boolean   @default(true)
   workspace           Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// 비즈니스 에이전트 (의식주의 Slack 에이전트)
+model BusinessAgent {
+  id             String    @id @default(cuid())
+  workspaceId    String    @unique
+  slackChannelId String?
+  slackBotToken  String?
+  isActive       Boolean   @default(true)
+  lastActiveAt   DateTime?
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
