@@ -9,6 +9,17 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── 데이터 수집 열거형 ──────────────────────────────────────────────────────
+
+enum CollectionStatus {
+  PENDING
+  RUNNING
+  DOWNLOADING
+  PARSING
+  COMPLETED
+  FAILED
+}
+
 // ─── Workdeck OS 열거형 ───────────────────────────────────────────────────────
 
 enum SpaceType {
@@ -57,6 +68,11 @@ model Workspace {
   keywordStatuses  KeywordStatus[]
   campaignTargets  CampaignTarget[]
   productStatuses  ProductStatus[]
+
+  // 데이터 수집 관련
+  coupangCredential   CoupangCredential?
+  collectionSchedule  CollectionSchedule?
+  collectionRuns      CollectionRun[]
 
   createdAt DateTime @default(now())
 }
@@ -276,4 +292,50 @@ model DeckInstance {
 
   @@unique([spaceId, deckAppId])
   @@index([spaceId])
+}
+
+// ─── 데이터 수집 모델 ────────────────────────────────────────────────────────
+
+// 쿠팡 로그인 자격증명 (워크스페이스당 1개)
+model CoupangCredential {
+  id            String    @id @default(cuid())
+  workspaceId   String    @unique
+  loginId       String
+  loginPassword String
+  encryptionIv  String
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  lastError     String?
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// 자동 수집 스케줄 (워크스페이스당 1개)
+model CollectionSchedule {
+  id             String    @id @default(cuid())
+  workspaceId    String    @unique
+  enabled        Boolean   @default(true)
+  cronExpression String    @default("30 12 * * *")
+  timezone       String    @default("Asia/Seoul")
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+// 수집 실행 이력
+model CollectionRun {
+  id             String           @id @default(cuid())
+  workspaceId    String
+  status         CollectionStatus @default(PENDING)
+  triggeredBy    String
+  startedAt      DateTime?
+  completedAt    DateTime?
+  error          String?
+  uploadId       String?
+  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+
+  @@index([workspaceId, status])
+  @@index([workspaceId, createdAt])
 }

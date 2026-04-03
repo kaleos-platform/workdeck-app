@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 
@@ -86,4 +86,16 @@ export function assertSameSpace(sourceSpaceId: string, targetSpaceId: string) {
   if (sourceSpaceId !== targetSpaceId)
     return errorResponse('cross-space 통신은 허용되지 않습니다', 403)
   return null
+}
+
+// ─── Worker 인증 ─────────────────────────────────────────────────────────────
+
+// 워커 프로세스의 x-worker-api-key 헤더로 인증
+export function resolveWorkerAuth(request: NextRequest) {
+  const apiKey = request.headers.get('x-worker-api-key')
+  const expected = process.env.WORKER_API_KEY
+  if (!expected || !apiKey || apiKey !== expected) {
+    return { error: errorResponse('워커 인증에 실패했습니다', 401) }
+  }
+  return { authenticated: true as const }
 }
