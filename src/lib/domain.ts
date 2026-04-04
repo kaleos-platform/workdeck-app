@@ -12,12 +12,28 @@ function normalizePath(path: string): string {
   return path.startsWith('/') ? path : `/${path}`
 }
 
+/**
+ * Preview 배포 시 VERCEL_URL로 자동 감지.
+ * 운영 배포 시 NEXT_PUBLIC_APP_URL 또는 DEFAULT_APP_ORIGIN 사용.
+ */
 export function getAppOrigin(): string {
-  return stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_ORIGIN)
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL)
+  }
+  if (process.env.NEXT_PUBLIC_VERCEL_URL && process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production') {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  }
+  return DEFAULT_APP_ORIGIN
 }
 
 export function getMarketingOrigin(): string {
-  return stripTrailingSlash(process.env.NEXT_PUBLIC_MARKETING_URL ?? DEFAULT_MARKETING_ORIGIN)
+  if (process.env.NEXT_PUBLIC_MARKETING_URL) {
+    return stripTrailingSlash(process.env.NEXT_PUBLIC_MARKETING_URL)
+  }
+  if (process.env.NEXT_PUBLIC_VERCEL_URL && process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production') {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  }
+  return DEFAULT_MARKETING_ORIGIN
 }
 
 export function buildAppUrl(path: string): string {
