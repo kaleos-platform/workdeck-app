@@ -1,16 +1,12 @@
 // AI 분석 엔진 — Ollama 기반 광고 성과 분석
 
-import { Ollama } from 'ollama'
 import type { AnalysisType } from '@/generated/prisma/client'
 import { getSystemPrompt } from './prompts'
 import type { Suggestion, AnalysisResult, ImprovementSuggestion } from './suggestion-types'
 import type { AnalysisContext } from '@/lib/analysis/data-builder'
 
-// Ollama 클라이언트 초기화 (환경변수 fallback)
-const ollama = new Ollama({
-  host: process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434',
-})
-
+// Ollama 직접 HTTP 호출 (ollama 패키지의 fetch가 Next.js 런타임에서 실패)
+const OLLAMA_URL = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434'
 const MODEL = 'qwen3:14b'
 
 export interface AnalysisInput {
@@ -54,17 +50,26 @@ export async function analyzeAdPerformance(data: AnalysisContext): Promise<Analy
   // 사용자 프롬프트 구성 (확장된 컨텍스트 포함)
   const userPrompt = buildUserPrompt(data)
 
-  const response = await ollama.chat({
-    model: MODEL,
-    format: 'json',
-    stream: false,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ],
+  // Ollama HTTP API 직접 호출
+  const ollamaRes = await fetch(`${OLLAMA_URL}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: MODEL,
+      format: 'json',
+      stream: false,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
   })
 
-  // 응답 파싱
+  if (!ollamaRes.ok) {
+    throw new Error(`Ollama API 에러: ${ollamaRes.status} ${ollamaRes.statusText}`)
+  }
+
+  const response = await ollamaRes.json()
   const content = response.message.content
   const parsed = JSON.parse(content)
 
