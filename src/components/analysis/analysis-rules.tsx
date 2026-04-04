@@ -28,7 +28,8 @@ export function AnalysisRules() {
     try {
       const res = await fetch('/api/analysis/rules')
       if (res.ok) {
-        setRules(await res.json())
+        const data = await res.json()
+        setRules(Array.isArray(data) ? data : data.rules ?? [])
       }
     } finally {
       setLoading(false)

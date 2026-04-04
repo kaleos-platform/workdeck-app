@@ -16,7 +16,8 @@ export default function AnalysisPage() {
       try {
         const res = await fetch('/api/analysis/reports')
         if (res.ok) {
-          setReports(await res.json())
+          const data = await res.json()
+          setReports(Array.isArray(data) ? data : data.reports ?? [])
         }
       } finally {
         setLoading(false)
