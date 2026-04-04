@@ -1,8 +1,16 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { TaskQueue } from '@/components/execution/task-queue'
 import { SafetyLimitsForm } from '@/components/execution/safety-limits-form'
 import type { ExecutionTask } from '@/types/execution'
@@ -75,11 +83,27 @@ export default function ExecutionPage() {
             광고 최적화 작업을 관리하고 승인합니다.
           </p>
         </div>
-        {activeTab === 'pending' && selectedIds.size > 0 && (
-          <Button onClick={handleBatchApprove}>
-            일괄 승인 ({selectedIds.size}건)
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {activeTab === 'pending' && selectedIds.size > 0 && (
+            <Button onClick={handleBatchApprove}>
+              일괄 승인 ({selectedIds.size}건)
+            </Button>
+          )}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Settings2 className="h-4 w-4" />
+                안전 제한 설정
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>안전 제한 설정</DialogTitle>
+              </DialogHeader>
+              <SafetyLimitsForm />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -118,8 +142,6 @@ export default function ExecutionPage() {
           />
         </TabsContent>
       </Tabs>
-
-      <SafetyLimitsForm />
     </div>
   )
 }

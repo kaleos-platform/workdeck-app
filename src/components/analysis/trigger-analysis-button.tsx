@@ -6,14 +6,14 @@ import { Loader2, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 type TriggerAnalysisButtonProps = {
-  startDate: string
-  endDate: string
+  from: string
+  to: string
   onSuccess: () => void
 }
 
 export function TriggerAnalysisButton({
-  startDate,
-  endDate,
+  from,
+  to,
   onSuccess,
 }: TriggerAnalysisButtonProps) {
   const [loading, setLoading] = useState(false)
@@ -24,7 +24,7 @@ export function TriggerAnalysisButton({
       const res = await fetch('/api/analysis/trigger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ startDate, endDate }),
+        body: JSON.stringify({ from, to }),
       })
 
       if (!res.ok) {

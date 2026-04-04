@@ -19,6 +19,8 @@ export async function GET() {
       periodEnd: true,
       reportType: true,
       summary: true,
+      suggestions: true,
+      metadata: true,
       status: true,
       createdAt: true,
     },
