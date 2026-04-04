@@ -50,7 +50,12 @@ export function normalizeHost(host?: string | null): string {
 }
 
 export function isAppHost(host?: string | null): boolean {
-  return normalizeHost(host) === APP_HOST
+  const normalized = normalizeHost(host)
+  if (normalized === APP_HOST) return true
+  // Preview/Vercel 배포 호스트도 앱 도메인으로 취급
+  if (normalized.includes('vercel.app')) return true
+  if (normalized === 'localhost') return true
+  return false
 }
 
 export function isMarketingHost(host?: string | null): boolean {
