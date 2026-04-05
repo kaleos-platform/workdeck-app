@@ -244,82 +244,63 @@ async function downloadReport(
   dateTo: string,
   downloadDir: string
 ): Promise<CollectorResult> {
-  // 1. 사이드바에서 "광고보고서" 메뉴 클릭
-  console.log('광고 보고서 페이지 이동...')
-
-  // 사이드바에서 "광고보고서" 링크 찾기
-  const reportMenuLink = page.locator('a:has-text("광고보고서"), a:has-text("광고 보고서")')
-  if (await reportMenuLink.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-    await reportMenuLink.first().click()
-    console.log('사이드바 → 광고보고서 클릭')
-  } else {
-    // 직접 URL 시도
-    await page.goto(`${COUPANG_ADS_URL}/marketing/report`, {
-      waitUntil: 'domcontentloaded',
-      timeout: DEFAULT_TIMEOUT,
-    }).catch(() => {})
-  }
-
+  // 1. 매출 성장 광고 보고서 페이지로 직접 이동
+  console.log('매출 성장 광고 보고서 페이지 이동...')
+  await page.goto(`${COUPANG_ADS_URL}/marketing-reporting/billboard/one-pager`, {
+    waitUntil: 'domcontentloaded',
+    timeout: DEFAULT_TIMEOUT,
+  })
   await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
   await page.waitForTimeout(3000)
   await saveScreenshot(page, 'report-page')
 
-  // 2. "광고 보고서" 탭 클릭 (DIV.tabs-type 기반)
-  const adReportTab = page.locator('div.tabs-type:has-text("광고 보고서")').first()
-  if (await adReportTab.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await adReportTab.click()
+  // 2. 날짜 범위 설정 — 프리셋 버튼 사용 (최근 7일)
+  console.log('날짜 범위 설정...')
+  const recentBtn = page.locator('button:has-text("최근 7일")')
+  if (await recentBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await recentBtn.click()
     await page.waitForTimeout(2000)
-    console.log('광고 보고서 탭 클릭')
+    console.log('최근 7일 선택')
   }
 
-  await saveScreenshot(page, 'ad-report-tab')
+  await saveScreenshot(page, 'date-selected')
 
-  // 3. "매출 성장" 서브탭 클릭
-  const salesTab = page.locator('text=매출 성장').first()
-  if (await salesTab.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await salesTab.click()
+  // 3. "캠페인별 성과" 탭 클릭 → 상세 데이터 보기
+  console.log('캠페인별 성과 탭...')
+  const campaignTab = page.locator('text=캠페인별 성과, button:has-text("캠페인별")')
+  if (await campaignTab.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+    await campaignTab.first().click()
     await page.waitForTimeout(2000)
-    console.log('매출 성장 서브탭 선택')
+    console.log('캠페인별 성과 탭 클릭')
   }
 
   await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
   await page.waitForTimeout(2000)
-  await saveScreenshot(page, 'report-form')
+  await saveScreenshot(page, 'campaign-view')
 
-  // 3. 날짜 설정은 UI에 따라 다름 — 스크린샷으로 확인 후 조정 필요
-  console.log(`날짜 설정 시도: ${dateFrom} ~ ${dateTo}`)
+  // 4. 다운로드 시도 — 테이블의 "다운" 버튼 또는 엑셀 다운로드 버튼
+  console.log('다운로드 버튼 탐색...')
 
-  // 기간 구분 "일별" 선택
-  const dailyOption = page.locator('text=일별, label:has-text("일별")')
-  if (await dailyOption.first().isVisible({ timeout: 3000 }).catch(() => false)) {
-    await dailyOption.first().click()
-    console.log('기간 구분: 일별 선택')
-  }
+  // ag-Grid 테이블의 다운로드 버튼 찾기
+  const downloadSelectors = [
+    'button:has-text("엑셀 다운로드")',
+    'button:has-text("다운로드")',
+    'button:has-text("Excel")',
+    'a:has-text("다운")',
+    'button:has-text("다운")',
+    '[class*="download"]',
+    'button:has(svg[class*="download"])',
+  ]
 
-  // "클릭이 발생한 키워드만 보고서 포함" 체크박스 해제
-  const keywordFilter = page.locator('text=클릭이 발생한 키워드만')
-  if (await keywordFilter.isVisible({ timeout: 3000 }).catch(() => false)) {
-    const checkbox = keywordFilter.locator('..').locator('input[type="checkbox"]')
-    if (await checkbox.isChecked()) {
-      await checkbox.uncheck()
-      console.log('키워드 필터 해제')
-    }
-  }
+  for (const selector of downloadSelectors) {
+    const el = page.locator(selector).first()
+    if (await el.isVisible({ timeout: 2000 }).catch(() => false)) {
+      console.log(`다운로드 버튼 발견: ${selector}`)
 
-  await saveScreenshot(page, 'report-configured')
+      const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT })
+      await el.click()
 
-  // 4. 보고서 만들기 버튼
-  const createBtn = page.locator('button:has-text("보고서 만들기"), button:has-text("조회"), button:has-text("다운로드")')
-  if (await createBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-    console.log('보고서 만들기 클릭...')
-
-    // 다운로드 이벤트 대기
-    const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT }).catch(() => null)
-    await createBtn.first().click()
-
-    const download = await downloadPromise
-
-    if (download) {
+      const download = await downloadPromise
       const fileName = download.suggestedFilename() || `coupang-report-${dateFrom}.xlsx`
       const filePath = path.join(downloadDir, fileName)
       await download.saveAs(filePath)
@@ -328,15 +309,14 @@ async function downloadReport(
     }
   }
 
-  // 5. 다운로드 직접 시도 — 테이블에서 다운로드 버튼 찾기
-  await page.waitForTimeout(3000)
-  await saveScreenshot(page, 'waiting-download')
+  // 5. 주차별 테이블의 "다운" 셀 클릭 시도
+  console.log('테이블 다운 셀 탐색...')
+  const downloadCells = page.locator('td:has-text("다운"), [role="gridcell"]:has-text("다운")')
+  if (await downloadCells.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+    console.log('테이블 다운 셀 발견')
 
-  const downloadBtn = page.locator('a:has-text("다운로드"), button:has-text("다운로드"), a[download]')
-  if (await downloadBtn.first().isVisible({ timeout: 10000 }).catch(() => false)) {
-    console.log('다운로드 버튼 클릭...')
     const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT })
-    await downloadBtn.first().click()
+    await downloadCells.first().click()
 
     const download = await downloadPromise
     const fileName = download.suggestedFilename() || `coupang-report-${dateFrom}.xlsx`
