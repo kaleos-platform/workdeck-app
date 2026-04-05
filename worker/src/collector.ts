@@ -327,25 +327,43 @@ async function selectCampaigns(page: Page): Promise<void> {
 
 async function configureReportOptions(page: Page): Promise<void> {
   // "클릭이 발생한 키워드만 보고서에 포함" 체크박스 해제
-  const keywordCheckbox = page.locator('text=클릭이 발생한 키워드만').locator('..')
-  const checkbox = keywordCheckbox.locator('input[type="checkbox"]')
+  // 정확한 셀렉터: #ad-reporting-app .panel-options .form-item .space-left label
+  const exactLabel = page.locator('#ad-reporting-app .panel-options .space-left label')
 
-  if (await checkbox.isVisible({ timeout: 3000 }).catch(() => false)) {
-    if (await checkbox.isChecked()) {
-      await checkbox.uncheck()
+  if (await exactLabel.isVisible({ timeout: 3000 }).catch(() => false)) {
+    // 체크박스 상태 확인
+    const checkbox = exactLabel.locator('input[type="checkbox"]')
+    const isChecked = await checkbox.isChecked().catch(() => false)
+
+    if (isChecked) {
+      await exactLabel.click()
+      await page.waitForTimeout(500)
       console.log('  → "클릭 키워드만" 체크박스 해제')
     } else {
       console.log('  → "클릭 키워드만" 이미 해제됨')
     }
   } else {
-    // label 텍스트로 찾기
-    const label = page.locator('label:has-text("클릭이 발생한 키워드")')
-    if (await label.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await label.click() // 토글
-      console.log('  → label 클릭으로 체크박스 토글')
+    // fallback: 텍스트로 찾기
+    const fallbackLabel = page.locator('label:has-text("클릭이 발생한 키워드")')
+    if (await fallbackLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const cb = fallbackLabel.locator('input[type="checkbox"]')
+      if (await cb.isChecked().catch(() => false)) {
+        await fallbackLabel.click()
+        console.log('  → fallback label 클릭으로 해제')
+      } else {
+        console.log('  → 이미 해제됨 (fallback)')
+      }
     } else {
       console.log('  → 키워드 필터 체크박스를 찾지 못함')
     }
+  }
+
+  // 보고서 구조: "캠페인 > 광고그룹 > 상품 > 키워드" 선택 (가장 상세)
+  const structureOptions = page.locator('.ant-radio-wrapper:has-text("키워드"), label:has-text("키워드")')
+  if (await structureOptions.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+    await structureOptions.first().click()
+    await page.waitForTimeout(500)
+    console.log('  → 보고서 구조: 캠페인 > 광고그룹 > 상품 > 키워드')
   }
 }
 
@@ -374,31 +392,55 @@ async function createReport(page: Page): Promise<void> {
 
 // ─── 새 보고서 생성 완료 대기 ────────────────────────────────────────────────────
 
-async function waitForNewReport(page: Page, prevDlCount: number): Promise<void> {
-  // 새 보고서가 생성되면 다운로드 버튼 수가 증가함
+async function waitForNewReport(page: Page, _prevDlCount: number): Promise<void> {
+  // "보고서 내역" 탭 클릭 — 여기서 생성 상태 + 다운로드 가능
+  const historyTab = page.locator('text=보고서 내역').first()
+  if (await historyTab.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await historyTab.click()
+    await page.waitForTimeout(2000)
+    console.log('  → "보고서 내역" 탭 클릭')
+  }
+
+  await saveScreenshot(page, 'history-tab')
+
+  // 최신 보고서(첫 행)에 "다운로드" 버튼이 나타날 때까지 대기
   for (let i = 0; i < 60; i++) {
     await page.waitForTimeout(2000)
 
-    const currentDlCount = await page.locator('button:has-text("다운로드"), a:has-text("다운로드")').count()
+    // 다운로드 버튼 확인
+    const dlBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').first()
+    if (await dlBtn.isVisible().catch(() => false)) {
+      // 첫 행의 다운로드인지 확인 (날짜가 오늘인지)
+      console.log(`  → 다운로드 가능! (${(i + 1) * 2}초)`)
+      return
+    }
 
-    if (currentDlCount > prevDlCount) {
-      console.log(`  → 새 보고서 생성 완료! (${(i + 1) * 2}초, 다운로드 버튼 ${prevDlCount} → ${currentDlCount})`)
+    // "생성 완료" 텍스트 확인
+    const completed = page.locator('td:has-text("생성완료"), td:has-text("생성 완료"), text=생성완료').first()
+    if (await completed.isVisible().catch(() => false)) {
+      console.log(`  → 생성 완료 확인 (${(i + 1) * 2}초)`)
+      await page.waitForTimeout(1000)
       return
     }
 
     if (i % 5 === 0) {
-      console.log(`  → 대기 중... (${(i + 1) * 2}초, 다운로드 버튼: ${currentDlCount})`)
+      console.log(`  → 대기 중... (${(i + 1) * 2}초)`)
+      await saveScreenshot(page, `waiting-${i}`)
     }
 
-    // 30초마다 페이지 새로고침
+    // 30초마다 탭 새로고침 (보고서 내역 다시 클릭)
     if (i > 0 && i % 15 === 0) {
-      await page.reload({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => {})
-      await page.waitForTimeout(2000)
+      const refreshTab = page.locator('text=보고서 내역').first()
+      if (await refreshTab.isVisible().catch(() => false)) {
+        await refreshTab.click()
+        await page.waitForTimeout(2000)
+        console.log('  → 보고서 내역 새로고침')
+      }
     }
   }
 
   await saveScreenshot(page, 'create-timeout')
-  throw new Error('새 보고서 생성 타임아웃 (120초)')
+  throw new Error('보고서 생성 타임아웃 (120초)')
 }
 
 // ─── 다운로드 ──────────────────────────────────────────────────────────────────
