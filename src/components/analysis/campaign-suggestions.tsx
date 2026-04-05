@@ -62,9 +62,10 @@ const PRIORITY_CONFIG: Record<
 
 type CampaignSuggestionsProps = {
   suggestions: Suggestion[]
+  campaignNames?: Record<string, string>
 }
 
-export function CampaignSuggestions({ suggestions }: CampaignSuggestionsProps) {
+export function CampaignSuggestions({ suggestions, campaignNames }: CampaignSuggestionsProps) {
   if (!suggestions || suggestions.length === 0) return null
 
   // Group suggestions by campaignId
@@ -86,7 +87,9 @@ export function CampaignSuggestions({ suggestions }: CampaignSuggestionsProps) {
         const items = grouped[campaignId]
         // Use the first suggestion's target as a fallback campaign name
         const campaignLabel =
-          campaignId !== 'unknown' ? campaignId : '미분류 캠페인'
+          campaignId !== 'unknown'
+            ? campaignNames?.[campaignId] || campaignId
+            : '미분류 캠페인'
 
         return (
           <Card key={campaignId}>

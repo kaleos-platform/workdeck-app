@@ -97,6 +97,12 @@ async function runAnalysis(
       },
     })
 
+    // 분석 스케줄의 lastAnalyzedAt 갱신
+    await prisma.analysisSchedule.updateMany({
+      where: { workspaceId },
+      data: { lastAnalyzedAt: new Date() },
+    })
+
     // 활성 규칙의 appliedCount 증가
     if (context.activeRules.length > 0) {
       await prisma.analysisRule.updateMany({

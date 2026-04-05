@@ -117,6 +117,9 @@ model Workspace {
   // 학습형 분석 규칙
   analysisRules    AnalysisRule[]
 
+  // 분석 자동 스케줄
+  analysisSchedule AnalysisSchedule?
+
   // 데이터 수집 관련
   coupangCredential   CoupangCredential?
   collectionSchedule  CollectionSchedule?
@@ -455,6 +458,19 @@ model AnalysisRule {
   updatedAt    DateTime  @updatedAt
 
   @@index([workspaceId, isActive])
+}
+
+// 분석 자동 스케줄 (워크스페이스당 1개)
+model AnalysisSchedule {
+  id             String    @id @default(cuid())
+  workspaceId    String    @unique
+  enabled        Boolean   @default(true)
+  intervalDays   Int       @default(7)
+  slackNotify    Boolean   @default(true)
+  lastAnalyzedAt DateTime?
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 // 비즈니스 에이전트 (의식주의 Slack 에이전트)

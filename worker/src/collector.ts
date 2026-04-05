@@ -34,8 +34,8 @@ export type CollectorResult = {
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
 
-const COUPANG_ADS_URL = 'https://ads.coupang.com'
-const LOGIN_URL = `${COUPANG_ADS_URL}/login`
+const COUPANG_ADS_URL = 'https://advertising.coupang.com'
+const LOGIN_URL = `${COUPANG_ADS_URL}/marketing/dashboard`
 const SCREENSHOT_DIR = path.resolve('.screenshots')
 const DEFAULT_TIMEOUT = 30_000 // 30초
 const DOWNLOAD_TIMEOUT = 60_000 // 60초

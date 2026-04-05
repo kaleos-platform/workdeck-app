@@ -7,6 +7,7 @@ import {
   Loader2,
   BarChart3,
   CalendarDays,
+  CalendarClock,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ import { AnalysisReportCard } from '@/components/analysis/analysis-report-card'
 import { AnalysisRules } from '@/components/analysis/analysis-rules'
 import { CampaignSuggestions } from '@/components/analysis/campaign-suggestions'
 import { SuggestionList } from '@/components/analysis/suggestion-list'
+import { AnalysisSchedule } from '@/components/analysis/analysis-schedule'
 import { cn } from '@/lib/utils'
 import type { AnalysisReport } from '@/types/analysis'
 
@@ -38,6 +40,7 @@ export default function AnalysisPage() {
   const [loading, setLoading] = useState(true)
   const [activePreset, setActivePreset] = useState<DatePreset>(14)
   const [dateRange, setDateRange] = useState(() => getPresetRange(14))
+  const [campaignNames, setCampaignNames] = useState<Record<string, string>>({})
 
   const fetchReports = useCallback(async () => {
     setLoading(true)
@@ -55,6 +58,26 @@ export default function AnalysisPage() {
   useEffect(() => {
     fetchReports()
   }, [fetchReports])
+
+  useEffect(() => {
+    async function fetchCampaignNames() {
+      try {
+        const res = await fetch('/api/campaigns')
+        if (res.ok) {
+          const data: { id: string; name: string; displayName?: string }[] =
+            await res.json()
+          const map: Record<string, string> = {}
+          for (const c of data) {
+            map[c.id] = c.displayName || c.name
+          }
+          setCampaignNames(map)
+        }
+      } catch {
+        // silently ignore — campaignId will be used as fallback
+      }
+    }
+    fetchCampaignNames()
+  }, [])
 
   function handlePresetClick(days: DatePreset) {
     setActivePreset(days)
@@ -173,7 +196,10 @@ export default function AnalysisPage() {
 
           {/* Suggestions grouped by campaign */}
           {latestSuggestions.length > 0 && (
-            <CampaignSuggestions suggestions={latestSuggestions} />
+            <CampaignSuggestions
+              suggestions={latestSuggestions}
+              campaignNames={campaignNames}
+            />
           )}
 
           {/* Improvement Suggestions (model-generated rule suggestions) */}
@@ -210,6 +236,15 @@ export default function AnalysisPage() {
           <h2 className="text-xl font-semibold tracking-tight">분석 규칙</h2>
         </div>
         <AnalysisRules />
+      </div>
+
+      {/* Analysis Schedule */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <CalendarClock className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-xl font-semibold tracking-tight">분석 스케줄</h2>
+        </div>
+        <AnalysisSchedule />
       </div>
     </div>
   )
