@@ -23,8 +23,12 @@ export async function startHeartbeat() {
     return
   }
 
-  // 초기 로드
-  await sendHeartbeat()
+  // 초기 로드 (실패해도 에이전트는 계속 실행)
+  try {
+    await sendHeartbeat()
+  } catch (err) {
+    console.warn('초기 heartbeat 실패 (API 서버 미실행?) — .env fallback 사용:', (err as Error).message)
+  }
 
   // 주기적 heartbeat
   setInterval(async () => {
@@ -46,6 +50,7 @@ async function sendHeartbeat() {
       'x-worker-api-key': API_KEY,
     },
     body: JSON.stringify({ workspaceId: WORKSPACE_ID }),
+    signal: AbortSignal.timeout(5000),
   })
 
   if (!res.ok) {
