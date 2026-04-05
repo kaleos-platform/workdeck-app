@@ -2,6 +2,28 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
 
+// lastActiveAt이 2분 이내면 connected로 판단
+const CONNECTED_THRESHOLD_MS = 2 * 60 * 1000
+
+function toAgentResponse(agent: {
+  id: string
+  slackChannelId: string | null
+  isActive: boolean
+  lastActiveAt: Date | null
+}) {
+  const connected =
+    agent.lastActiveAt != null &&
+    Date.now() - agent.lastActiveAt.getTime() < CONNECTED_THRESHOLD_MS
+
+  return {
+    id: agent.id,
+    slackChannelId: agent.slackChannelId,
+    enabled: agent.isActive,
+    connected,
+    lastActiveAt: agent.lastActiveAt?.toISOString() ?? null,
+  }
+}
+
 // 에이전트 설정 조회
 export async function GET() {
   const resolved = await resolveWorkspace()
@@ -12,7 +34,8 @@ export async function GET() {
     where: { workspaceId: workspace.id },
   })
 
-  return NextResponse.json({ agent })
+  if (!agent) return NextResponse.json({ agent: null })
+  return NextResponse.json({ agent: toAgentResponse(agent) })
 }
 
 // 에이전트 설정 생성/업데이트
@@ -22,20 +45,22 @@ export async function POST(request: NextRequest) {
   const { workspace } = resolved
 
   const body = await request.json()
-  const { slackChannelId, isActive } = body
+  // UI는 enabled를, 이전 호출자는 isActive를 보낼 수 있음
+  const slackChannelId = body.slackChannelId ?? undefined
+  const isActive = body.enabled ?? body.isActive ?? true
 
   const agent = await prisma.businessAgent.upsert({
     where: { workspaceId: workspace.id },
     create: {
       workspaceId: workspace.id,
       slackChannelId: slackChannelId || null,
-      isActive: isActive ?? true,
+      isActive,
     },
     update: {
-      slackChannelId: slackChannelId || null,
-      isActive: isActive ?? true,
+      ...(slackChannelId !== undefined && { slackChannelId: slackChannelId || null }),
+      isActive,
     },
   })
 
-  return NextResponse.json({ agent })
+  return NextResponse.json(toAgentResponse(agent))
 }
