@@ -239,49 +239,64 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
 // ─── 캠페인 선택 ────────────────────────────────────────────────────────────────
 
 async function selectCampaigns(page: Page): Promise<void> {
-  // "캠페인을 선택하세요" 드롭다운 클릭
-  const campaignSelect = page.locator('text=캠페인을 선택하세요, [placeholder*="캠페인"]').first()
+  // "캠페인을 선택하세요" 버튼 클릭 (ant-dropdown-trigger)
+  const campaignBtn = page.locator('.campaign-picker-dropdown-btn, button:has-text("캠페인을 선택하세요"), .ant-dropdown-trigger:has-text("캠페인")')
 
-  if (await campaignSelect.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await campaignSelect.click()
-    await page.waitForTimeout(1000)
+  if (await campaignBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+    await campaignBtn.first().click()
+    await page.waitForTimeout(2000)
     console.log('  → 캠페인 드롭다운 열림')
+    await saveScreenshot(page, 'campaign-dropdown-open')
 
-    // "전체 선택" 옵션이 있으면 클릭
-    const selectAll = page.locator('text=전체 선택, text=전체, label:has-text("전체")').first()
-    if (await selectAll.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await selectAll.click()
-      console.log('  → 전체 캠페인 선택')
-    } else {
-      // 개별 캠페인 체크박스 전부 선택
-      const checkboxes = page.locator('.ant-select-dropdown input[type="checkbox"], .ant-checkbox-input')
-      const count = await checkboxes.count()
-      if (count > 0) {
-        for (let i = 0; i < count; i++) {
+    // 드롭다운 내부 체크박스 찾기
+    const checkboxes = page.locator('.ant-dropdown input[type="checkbox"], .ant-checkbox-input, .ant-tree-checkbox')
+    const cbCount = await checkboxes.count()
+
+    if (cbCount > 0) {
+      // 전체 선택 체크박스가 있으면 사용
+      const selectAllCb = page.locator('.ant-dropdown label:has-text("전체"), .ant-dropdown .ant-checkbox-wrapper:has-text("전체")')
+      if (await selectAllCb.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+        await selectAllCb.first().click()
+        console.log('  → 전체 캠페인 선택')
+      } else {
+        // 개별 체크박스 클릭
+        for (let i = 0; i < cbCount; i++) {
           const cb = checkboxes.nth(i)
-          if (!(await cb.isChecked())) {
-            await cb.check()
+          if (!(await cb.isChecked().catch(() => false))) {
+            await cb.click()
+            await page.waitForTimeout(200)
           }
         }
-        console.log(`  → ${count}개 캠페인 선택`)
-      } else {
-        // Ant Design Select 드롭다운의 옵션 클릭
-        const options = page.locator('.ant-select-item, [class*="option"]')
-        const optCount = await options.count()
-        for (let i = 0; i < optCount; i++) {
-          await options.nth(i).click()
-          await page.waitForTimeout(200)
-        }
-        console.log(`  → ${optCount}개 옵션 클릭`)
+        console.log(`  → ${cbCount}개 체크박스 선택`)
       }
+    } else {
+      // 드롭다운 메뉴 아이템 클릭
+      const menuItems = page.locator('.ant-dropdown-menu-item, .ant-dropdown li, [class*="campaign-picker"] li')
+      const itemCount = await menuItems.count()
+      console.log(`  → 드롭다운 아이템: ${itemCount}개`)
+      for (let i = 0; i < itemCount; i++) {
+        await menuItems.nth(i).click()
+        await page.waitForTimeout(300)
+      }
+      console.log(`  → ${itemCount}개 아이템 클릭`)
     }
 
-    // 드롭다운 닫기 (body 클릭)
-    await page.locator('h1, h2, .ant-page-header').first().click().catch(() => {})
+    // "확인" 버튼 클릭하여 캠페인 선택 확정
+    const confirmBtn = page.locator('button:has-text("확인")').first()
+    if (await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await confirmBtn.click()
+      await page.waitForTimeout(1000)
+      console.log('  → "확인" 클릭 — 캠페인 선택 확정')
+    } else {
+      // fallback: Escape
+      await page.keyboard.press('Escape')
+    }
     await page.waitForTimeout(500)
+
+    await saveScreenshot(page, 'campaign-selected')
   } else {
-    console.log('  → 캠페인 선택 UI를 찾지 못함')
-    await saveScreenshot(page, 'campaign-select-not-found')
+    console.log('  → 캠페인 선택 버튼을 찾지 못함')
+    await saveScreenshot(page, 'campaign-btn-not-found')
   }
 }
 
@@ -339,25 +354,40 @@ async function createReport(page: Page): Promise<void> {
 // ─── 생성 완료 대기 ──────────────────────────────────────────────────────────────
 
 async function waitForReportReady(page: Page): Promise<void> {
-  // 오른쪽 테이블에서 "생성 완료" 상태 대기 (최대 120초)
+  // "보고서 내역" 탭 클릭 (최신 보고서 확인)
+  const historyTab = page.locator('text=보고서 내역')
+  if (await historyTab.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+    await historyTab.first().click()
+    await page.waitForTimeout(1000)
+  }
+
+  // 다운로드 버튼 또는 "완료" 상태 대기 (최대 120초)
   for (let i = 0; i < 60; i++) {
     await page.waitForTimeout(2000)
 
-    // 첫 번째 행의 상태 확인
-    const status = await page.locator('td:has-text("생성 완료"), td:has-text("완료")').first()
-      .isVisible().catch(() => false)
+    // 다운로드 버튼이 나타나면 생성 완료
+    const dlBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').first()
+    if (await dlBtn.isVisible().catch(() => false)) {
+      console.log(`  → 보고서 준비 완료 (${(i + 1) * 2}초)`)
+      return
+    }
 
-    if (status) {
+    // "완료" 또는 "생성 완료" 텍스트 확인
+    const completed = page.locator('text=완료, text=생성 완료, td:has-text("완료")').first()
+    if (await completed.isVisible().catch(() => false)) {
       console.log(`  → 생성 완료 (${(i + 1) * 2}초)`)
       return
     }
 
     if (i % 5 === 0) {
-      const processing = await page.locator('td:has-text("생성 중"), td:has-text("처리 중"), td:has-text("대기")').first()
-        .isVisible().catch(() => false)
-      if (processing) {
-        console.log(`  → 처리 중... (${(i + 1) * 2}초)`)
-      }
+      console.log(`  → 대기 중... (${(i + 1) * 2}초)`)
+      await saveScreenshot(page, `waiting-${i}`)
+    }
+
+    // 페이지 새로고침 시도 (30초마다)
+    if (i > 0 && i % 15 === 0) {
+      await page.reload({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => {})
+      await page.waitForTimeout(2000)
     }
   }
 
