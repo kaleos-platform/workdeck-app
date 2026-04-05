@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Bot, Cable, Clock, RefreshCw } from 'lucide-react'
 import { CredentialForm } from '@/components/settings/credential-form'
@@ -10,6 +11,8 @@ import { AgentScheduledMessages } from '@/components/settings/agent-scheduled-me
 import { AgentActivityLog } from '@/components/settings/agent-activity-log'
 
 export default function CoupangAdsSettingsPage() {
+  const [activeTab, setActiveTab] = useState('integration')
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
       <div>
@@ -19,7 +22,7 @@ export default function CoupangAdsSettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="integration" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="integration" className="gap-1.5">
             <Cable className="h-4 w-4" />
@@ -53,7 +56,7 @@ export default function CoupangAdsSettingsPage() {
 
         <TabsContent value="agent" className="space-y-6">
           <AgentConfig />
-          <AgentScheduledMessages />
+          <AgentScheduledMessages onNavigateTab={setActiveTab} />
           <AgentActivityLog />
         </TabsContent>
       </Tabs>

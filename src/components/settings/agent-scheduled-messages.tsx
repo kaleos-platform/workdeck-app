@@ -13,8 +13,8 @@ import {
   Bell,
   CalendarClock,
   Database,
+  ExternalLink,
   Loader2,
-  MessageSquare,
   Sparkles,
 } from 'lucide-react'
 
@@ -37,11 +37,16 @@ type ScheduledMessage = {
   title: string
   description: string
   schedule: string
-  enabled: boolean
+  status: 'active' | 'inactive' | 'not-configured'
   nextRun: string | null
+  configTab: string | null // 설정 탭 이름 (링크용)
 }
 
-export function AgentScheduledMessages() {
+type Props = {
+  onNavigateTab?: (tab: string) => void
+}
+
+export function AgentScheduledMessages({ onNavigateTab }: Props) {
   const [messages, setMessages] = useState<ScheduledMessage[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -57,43 +62,52 @@ export function AgentScheduledMessages() {
 
         const items: ScheduledMessage[] = []
 
-        // 수집 완료 알림
+        // 수집 완료 + KPI 요약 알림 (통합)
+        const collectionConfigured = collection != null
+        const collectionEnabled = collection?.enabled ?? false
         items.push({
-          id: 'collection-done',
+          id: 'collection-kpi',
           icon: <Database className="h-4 w-4" />,
-          title: '데이터 수집 완료 알림',
-          description: '자동 수집이 완료되면 수집 건수와 캠페인 정보를 Slack으로 전송합니다.',
-          schedule: collection
-            ? `매일 ${cronToTime(collection.cronExpression)} (${collection.timezone})`
+          title: '데이터 수집 완료 + KPI 요약',
+          description:
+            '자동 수집이 완료되면 수집 건수, 캠페인 정보, 주요 KPI(광고비, 매출, ROAS)를 Slack으로 전송합니다.',
+          schedule: collectionConfigured
+            ? `매일 ${cronToTime(collection!.cronExpression)} (${collection!.timezone})`
             : '스케줄 미설정',
-          enabled: collection?.enabled ?? false,
-          nextRun: collection ? getNextCronRun(collection.cronExpression, collection.timezone) : null,
+          status: collectionEnabled
+            ? 'active'
+            : collectionConfigured
+              ? 'inactive'
+              : 'not-configured',
+          nextRun: collectionEnabled
+            ? getNextCronRun(collection!.cronExpression, collection!.timezone)
+            : null,
+          configTab: collectionConfigured ? null : 'auto-collect',
         })
 
         // 분석 완료 알림
+        const analysisConfigured = analysis != null
+        const analysisEnabled =
+          (analysis?.enabled ?? false) && (analysis?.slackNotify ?? false)
         items.push({
           id: 'analysis-done',
           icon: <Sparkles className="h-4 w-4" />,
           title: '분석 완료 알림',
-          description: '광고 분석이 완료되면 비효율 키워드와 절감 제안을 Slack으로 전송합니다.',
-          schedule: analysis
-            ? `${analysis.intervalDays}일마다 자동 실행`
+          description:
+            '광고 분석이 완료되면 비효율 키워드와 절감 제안을 Slack으로 전송합니다.',
+          schedule: analysisConfigured
+            ? `${analysis!.intervalDays}일마다 자동 실행`
             : '스케줄 미설정',
-          enabled: (analysis?.enabled ?? false) && (analysis?.slackNotify ?? false),
-          nextRun: analysis?.lastAnalyzedAt
-            ? getNextAnalysisRun(analysis.lastAnalyzedAt, analysis.intervalDays)
-            : null,
-        })
-
-        // KPI 일일 요약 (향후 기능 — placeholder)
-        items.push({
-          id: 'daily-kpi',
-          icon: <MessageSquare className="h-4 w-4" />,
-          title: 'KPI 일일 요약',
-          description: '매일 주요 KPI(광고비, 매출, ROAS)를 Slack으로 요약 전송합니다.',
-          schedule: '준비 중',
-          enabled: false,
-          nextRun: null,
+          status: analysisEnabled
+            ? 'active'
+            : analysisConfigured
+              ? 'inactive'
+              : 'not-configured',
+          nextRun:
+            analysisEnabled && analysis?.lastAnalyzedAt
+              ? getNextAnalysisRun(analysis.lastAnalyzedAt, analysis.intervalDays)
+              : null,
+          configTab: analysisConfigured ? null : 'auto-collect',
         })
 
         setMessages(items)
@@ -102,7 +116,7 @@ export function AgentScheduledMessages() {
       .finally(() => setLoading(false))
   }, [])
 
-  const activeCount = messages.filter((m) => m.enabled).length
+  const activeCount = messages.filter((m) => m.status === 'active').length
 
   return (
     <Card>
@@ -136,7 +150,7 @@ export function AgentScheduledMessages() {
               <div
                 key={msg.id}
                 className={`flex items-start gap-4 rounded-lg border p-4 transition-colors ${
-                  msg.enabled
+                  msg.status === 'active'
                     ? 'border-border bg-background'
                     : 'border-dashed border-muted bg-muted/30'
                 }`}
@@ -144,7 +158,7 @@ export function AgentScheduledMessages() {
                 {/* 아이콘 */}
                 <div
                   className={`mt-0.5 rounded-md p-2 ${
-                    msg.enabled
+                    msg.status === 'active'
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground'
                   }`}
@@ -156,12 +170,7 @@ export function AgentScheduledMessages() {
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium">{msg.title}</p>
-                    <Badge
-                      variant={msg.enabled ? 'default' : 'secondary'}
-                      className="text-[10px] px-1.5 py-0"
-                    >
-                      {msg.enabled ? '활성' : '비활성'}
-                    </Badge>
+                    <StatusBadge status={msg.status} />
                   </div>
                   <p className="text-xs text-muted-foreground">{msg.description}</p>
 
@@ -171,12 +180,24 @@ export function AgentScheduledMessages() {
                       <CalendarClock className="h-3 w-3" />
                       {msg.schedule}
                     </span>
-                    {msg.enabled && msg.nextRun && (
+                    {msg.status === 'active' && msg.nextRun && (
                       <span className="text-xs text-muted-foreground">
                         다음 실행: {msg.nextRun}
                       </span>
                     )}
                   </div>
+
+                  {/* 미설정 안내 */}
+                  {msg.status === 'not-configured' && msg.configTab && onNavigateTab && (
+                    <button
+                      type="button"
+                      className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline"
+                      onClick={() => onNavigateTab(msg.configTab!)}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      자동 수집 탭에서 스케줄을 설정하세요
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -185,6 +206,31 @@ export function AgentScheduledMessages() {
       </CardContent>
     </Card>
   )
+}
+
+// ─── 상태 뱃지 ──────────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: ScheduledMessage['status'] }) {
+  switch (status) {
+    case 'active':
+      return (
+        <Badge variant="default" className="text-[10px] px-1.5 py-0">
+          활성
+        </Badge>
+      )
+    case 'inactive':
+      return (
+        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+          비활성
+        </Badge>
+      )
+    case 'not-configured':
+      return (
+        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-yellow-600 border-yellow-300">
+          미설정
+        </Badge>
+      )
+  }
 }
 
 // ─── 유틸리티 ────────────────────────────────────────────────────────────────
