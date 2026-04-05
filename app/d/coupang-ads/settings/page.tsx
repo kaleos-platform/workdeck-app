@@ -6,6 +6,7 @@ import { CredentialForm } from '@/components/settings/credential-form'
 import { ScheduleConfig } from '@/components/settings/schedule-config'
 import { CollectionHistory } from '@/components/settings/collection-history'
 import { AgentConfig } from '@/components/settings/agent-config'
+import { AgentScheduledMessages } from '@/components/settings/agent-scheduled-messages'
 import { AgentActivityLog } from '@/components/settings/agent-activity-log'
 
 export default function CoupangAdsSettingsPage() {
@@ -52,6 +53,7 @@ export default function CoupangAdsSettingsPage() {
 
         <TabsContent value="agent" className="space-y-6">
           <AgentConfig />
+          <AgentScheduledMessages />
           <AgentActivityLog />
         </TabsContent>
       </Tabs>
