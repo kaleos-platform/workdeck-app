@@ -11,8 +11,26 @@ import { Loader2, Clock, CalendarClock } from 'lucide-react'
 
 type ScheduleData = {
   enabled: boolean
-  collectionTime: string
+  cronExpression?: string
+  collectionTime?: string
   nextRunAt?: string | null
+}
+
+// cron "30 12 * * *" → "12:30"
+function cronToTime(cron: string): string {
+  const parts = cron.split(' ')
+  if (parts.length >= 2) {
+    const minute = parts[0].padStart(2, '0')
+    const hour = parts[1].padStart(2, '0')
+    return `${hour}:${minute}`
+  }
+  return '12:30'
+}
+
+// "12:30" → cron "30 12 * * *"
+function timeToCron(time: string): string {
+  const [hour, minute] = time.split(':')
+  return `${minute || '0'} ${hour || '12'} * * *`
 }
 
 export function ScheduleConfig() {
@@ -29,10 +47,11 @@ export function ScheduleConfig() {
         return res.json()
       })
       .then((raw) => {
-        const data: ScheduleData = raw.schedule ?? raw
-        setEnabled(data.enabled ?? false)
-        if (data.collectionTime) setCollectionTime(data.collectionTime)
-        if (data.nextRunAt) setNextRunAt(data.nextRunAt)
+        const data = raw.schedule ?? raw
+        setEnabled(data?.enabled ?? false)
+        if (data?.cronExpression) setCollectionTime(cronToTime(data.cronExpression))
+        else if (data?.collectionTime) setCollectionTime(data.collectionTime)
+        if (data?.nextRunAt) setNextRunAt(data.nextRunAt)
       })
       .catch(() => {
         // 초기 상태 유지
@@ -46,7 +65,7 @@ export function ScheduleConfig() {
       const res = await fetch('/api/collection/schedule', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled, collectionTime }),
+        body: JSON.stringify({ enabled, cronExpression: timeToCron(collectionTime) }),
       })
 
       if (!res.ok) {
@@ -56,8 +75,9 @@ export function ScheduleConfig() {
         return
       }
 
-      const data = await res.json() as ScheduleData
-      if (data.nextRunAt) setNextRunAt(data.nextRunAt)
+      const raw = await res.json()
+      const saved = raw.schedule ?? raw
+      if (saved?.nextRunAt) setNextRunAt(saved.nextRunAt)
       toast.success('수집 스케줄이 저장되었습니다')
     } catch {
       toast.error('설정 저장 중 오류가 발생했습니다')

@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Loader2, Play, RefreshCw } from 'lucide-react'
+import { Loader2, Play, RefreshCw, Square } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type CollectionRunStatus = 'COMPLETED' | 'FAILED' | 'RUNNING' | 'PENDING' | 'DOWNLOADING' | 'PARSING'
@@ -99,6 +99,7 @@ export function CollectionHistory() {
   const [runs, setRuns] = useState<CollectionRun[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isTriggering, setIsTriggering] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
 
   // 진행 중인 작업 확인
   const activeRun = runs.find((r) => ACTIVE_STATUSES.includes(r.status))
@@ -152,6 +153,27 @@ export function CollectionHistory() {
     }
   }
 
+  async function handleForceStop() {
+    if (!activeRun) return
+    setIsCancelling(true)
+    try {
+      const res = await fetch(`/api/collection/runs/${activeRun.id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        toast.error((data as { message?: string }).message ?? '강제 종료에 실패했습니다')
+        return
+      }
+      toast.success('수집 작업이 강제 종료되었습니다')
+      await fetchRuns()
+    } catch {
+      toast.error('강제 종료 중 오류가 발생했습니다')
+    } finally {
+      setIsCancelling(false)
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -172,28 +194,44 @@ export function CollectionHistory() {
               <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
               새로고침
             </Button>
-            <Button
-              size="sm"
-              onClick={handleManualTrigger}
-              disabled={isTriggering || hasActiveRun}
-            >
-              {isTriggering ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  수집 시작 중...
-                </>
-              ) : hasActiveRun ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  수집 진행 중...
-                </>
-              ) : (
-                <>
-                  <Play className="mr-2 h-4 w-4" />
-                  수동 수집
-                </>
-              )}
-            </Button>
+            {hasActiveRun ? (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleForceStop}
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    종료 중...
+                  </>
+                ) : (
+                  <>
+                    <Square className="mr-2 h-4 w-4" />
+                    강제 종료
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={handleManualTrigger}
+                disabled={isTriggering}
+              >
+                {isTriggering ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    수집 시작 중...
+                  </>
+                ) : (
+                  <>
+                    <Play className="mr-2 h-4 w-4" />
+                    수동 수집
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>

@@ -87,3 +87,39 @@ export async function PATCH(
 
   return NextResponse.json({ run: updated })
 }
+
+// DELETE /api/collection/runs/[runId] — 진행 중인 수집 강제 종료
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ runId: string }> }
+) {
+  const resolved = await resolveWorkspace()
+  if ('error' in resolved) return resolved.error
+  const { workspace } = resolved
+
+  const { runId } = await params
+
+  const run = await prisma.collectionRun.findUnique({
+    where: { id: runId },
+  })
+
+  if (!run || run.workspaceId !== workspace.id) {
+    return errorResponse('수집 실행을 찾을 수 없습니다', 404)
+  }
+
+  // 이미 완료/실패한 작업은 강제 종료 불가
+  if (run.status === 'COMPLETED' || run.status === 'FAILED') {
+    return errorResponse('이미 종료된 작업입니다', 400)
+  }
+
+  const updated = await prisma.collectionRun.update({
+    where: { id: runId },
+    data: {
+      status: 'FAILED',
+      error: '사용자에 의해 강제 종료됨',
+      completedAt: new Date(),
+    },
+  })
+
+  return NextResponse.json({ run: updated })
+}
