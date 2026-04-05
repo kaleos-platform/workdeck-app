@@ -24,7 +24,11 @@ export function AgentActivityLog() {
   useEffect(() => {
     fetch('/api/deck-agents')
       .then((res) => (res.ok ? res.json() : null))
-      .then((data: AgentStatus | null) => setStatus(data))
+      .then((raw) => {
+        // API 응답: { agent: { ... } } 또는 null
+        const data: AgentStatus | null = raw?.agent ?? (raw?.id ? raw : null)
+        setStatus(data)
+      })
       .catch(() => setStatus(null))
       .finally(() => setLoading(false))
   }, [])
