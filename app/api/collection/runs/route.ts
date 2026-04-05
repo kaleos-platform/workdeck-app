@@ -2,11 +2,29 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 
+// 10분 이상 RUNNING 상태면 타임아웃 처리
+const STALE_THRESHOLD_MS = 10 * 60 * 1000
+
 // GET /api/collection/runs — 수집 실행 이력 조회
 export async function GET(request: NextRequest) {
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
+
+  // 고착된 RUNNING 상태 자동 정리
+  const staleThreshold = new Date(Date.now() - STALE_THRESHOLD_MS)
+  await prisma.collectionRun.updateMany({
+    where: {
+      workspaceId: workspace.id,
+      status: { in: ['RUNNING', 'DOWNLOADING', 'PARSING'] },
+      startedAt: { lt: staleThreshold },
+    },
+    data: {
+      status: 'FAILED',
+      completedAt: new Date(),
+      error: '타임아웃: 10분 이상 응답 없음',
+    },
+  })
 
   // 페이지네이션 파라미터
   const url = new URL(request.url)
