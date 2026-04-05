@@ -93,10 +93,16 @@ function formatDate(dateStr: string): string {
   })
 }
 
+const ACTIVE_STATUSES = ['PENDING', 'RUNNING', 'DOWNLOADING', 'PARSING']
+
 export function CollectionHistory() {
   const [runs, setRuns] = useState<CollectionRun[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isTriggering, setIsTriggering] = useState(false)
+
+  // 진행 중인 작업 확인
+  const activeRun = runs.find((r) => ACTIVE_STATUSES.includes(r.status))
+  const hasActiveRun = Boolean(activeRun)
 
   const fetchRuns = useCallback(async () => {
     try {
@@ -114,6 +120,13 @@ export function CollectionHistory() {
   useEffect(() => {
     fetchRuns()
   }, [fetchRuns])
+
+  // 진행 중인 작업이 있으면 5초마다 자동 새로고침
+  useEffect(() => {
+    if (!hasActiveRun) return
+    const interval = setInterval(fetchRuns, 5000)
+    return () => clearInterval(interval)
+  }, [hasActiveRun, fetchRuns])
 
   async function handleManualTrigger() {
     setIsTriggering(true)
@@ -162,12 +175,17 @@ export function CollectionHistory() {
             <Button
               size="sm"
               onClick={handleManualTrigger}
-              disabled={isTriggering}
+              disabled={isTriggering || hasActiveRun}
             >
               {isTriggering ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   수집 시작 중...
+                </>
+              ) : hasActiveRun ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  수집 진행 중...
                 </>
               ) : (
                 <>
