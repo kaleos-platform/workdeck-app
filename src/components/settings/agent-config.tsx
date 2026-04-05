@@ -36,10 +36,11 @@ export function AgentConfig() {
     try {
       const res = await fetch('/api/deck-agents')
       if (res.ok) {
-        const data: AgentData = await res.json()
+        const raw = await res.json()
+        const data: AgentData | null = raw.agent ?? (raw.id ? raw : null)
         setAgent(data)
-        setChannelId(data.slackChannelId ?? '')
-        setEnabled(data.enabled)
+        setChannelId(data?.slackChannelId ?? '')
+        setEnabled(data?.enabled ?? false)
       } else {
         setAgent(null)
       }

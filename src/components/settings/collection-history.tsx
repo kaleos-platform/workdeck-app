@@ -94,8 +94,8 @@ export function CollectionHistory() {
     try {
       const res = await fetch('/api/collection/runs')
       if (!res.ok) throw new Error()
-      const data = await res.json() as CollectionRun[]
-      setRuns(data)
+      const data = await res.json()
+      setRuns(Array.isArray(data) ? data : data.runs ?? [])
     } catch {
       // 조용히 실패
     } finally {
