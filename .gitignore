@@ -68,3 +68,4 @@ next-env.d.ts
 /worker/.downloads
 /worker/.screenshots
 /worker/.env
+test-results/
