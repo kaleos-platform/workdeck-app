@@ -141,17 +141,19 @@ export async function collectCoupangReport(
     await configureReportOptions(page)
     await saveScreenshot(page, 'options-set')
 
-    // ── Step 5: 보고서 만들기 ──
+    // ── Step 5: 기존 보고서 수 기록 후 보고서 만들기 ──
     console.log('\n[5/7] 보고서 만들기...')
+    const prevDlCount = await page.locator('button:has-text("다운로드"), a:has-text("다운로드")').count()
+    console.log(`  → 기존 다운로드 버튼: ${prevDlCount}개`)
     await createReport(page)
     await saveScreenshot(page, 'report-created')
 
-    // ── Step 6: 생성 완료 대기 ──
-    console.log('\n[6/7] 생성 완료 대기...')
-    await waitForReportReady(page)
+    // ── Step 6: 새 보고서 생성 완료 대기 ──
+    console.log('\n[6/7] 새 보고서 생성 완료 대기...')
+    await waitForNewReport(page, prevDlCount)
     await saveScreenshot(page, 'report-ready')
 
-    // ── Step 7: 다운로드 ──
+    // ── Step 7: 다운로드 (첫 번째 = 최신) ──
     console.log('\n[7/7] 다운로드...')
     const result = await downloadReport(page, downloadDir, dateFrom)
     console.log(`  → 완료: ${result.fileName}`)
@@ -211,27 +213,48 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
 // ─── 기간 설정 ──────────────────────────────────────────────────────────────────
 
 async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promise<void> {
-  // 날짜 입력 필드가 있는지 확인
-  const dateInputs = page.locator('input[type="date"], input[placeholder*="날짜"], input[placeholder*="시작"]')
-  const dateInputCount = await dateInputs.count()
+  // 1. 기간 구분을 "일별"로 설정 (기본이 "합계")
+  // 라디오 버튼: "합계 · 일별" — Ant Design Radio Group
+  const dailyRadio = page.locator('.ant-radio-wrapper:has-text("일별"), label:has-text("일별"), span:text-is("일별")')
+  if (await dailyRadio.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+    await dailyRadio.first().click()
+    await page.waitForTimeout(500)
+    console.log('  → 기간 구분: 일별 선택')
+  } else {
+    // text 매칭으로 시도
+    const allRadios = page.locator('.ant-radio-wrapper, [class*="radio"]')
+    const radioCount = await allRadios.count()
+    for (let i = 0; i < radioCount; i++) {
+      const text = await allRadios.nth(i).textContent()
+      if (text?.trim() === '일별') {
+        await allRadios.nth(i).click()
+        await page.waitForTimeout(500)
+        console.log('  → 기간 구분: 일별 (radio index ' + i + ')')
+        break
+      }
+    }
+  }
 
+  // 2. 프리셋 사용 (최근 7일, 지난주)
+  const presets = ['지난주', '최근 7일', '이번달']
+  for (const preset of presets) {
+    const btn = page.locator(`button:has-text("${preset}"), label:has-text("${preset}")`)
+    if (await btn.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+      await btn.first().click()
+      await page.waitForTimeout(1000)
+      console.log(`  → 프리셋: ${preset}`)
+      return
+    }
+  }
+
+  // 3. 직접 날짜 입력
+  const dateInputs = page.locator('input[type="date"], input[type="text"][class*="date"]')
+  const dateInputCount = await dateInputs.count()
   if (dateInputCount >= 2) {
-    // 직접 날짜 입력
     await dateInputs.nth(0).fill(dateFrom)
     await dateInputs.nth(1).fill(dateTo)
     console.log(`  → 날짜 직접 입력: ${dateFrom} ~ ${dateTo}`)
   } else {
-    // 프리셋 버튼 사용 (최근 7일)
-    const presets = ['최근 7일', '지난주', '이번달']
-    for (const preset of presets) {
-      const btn = page.locator(`button:has-text("${preset}")`)
-      if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await btn.click()
-        await page.waitForTimeout(1000)
-        console.log(`  → 프리셋: ${preset}`)
-        return
-      }
-    }
     console.log('  → 날짜 설정 셀렉터를 찾지 못함 (기본값 사용)')
   }
 }
@@ -329,62 +352,45 @@ async function configureReportOptions(page: Page): Promise<void> {
 // ─── 보고서 만들기 ────────────────────────────────────────────────────────────────
 
 async function createReport(page: Page): Promise<void> {
-  // "보고서 만들기" 버튼이 활성화될 때까지 대기
   const createBtn = page.locator('button:has-text("보고서 만들기")')
+  await createBtn.waitFor({ state: 'visible', timeout: 10000 })
 
-  // 버튼이 enabled 될 때까지 대기 (최대 10초)
-  try {
-    await createBtn.waitFor({ state: 'visible', timeout: 10000 })
-
-    // disabled 상태면 캠페인 미선택
-    const isDisabled = await createBtn.isDisabled()
-    if (isDisabled) {
-      await saveScreenshot(page, 'create-disabled')
-      throw new Error('"보고서 만들기" 버튼이 비활성화됨 — 캠페인을 선택해주세요')
-    }
-
-    await createBtn.click()
-    console.log('  → "보고서 만들기" 클릭')
-  } catch (error) {
-    await saveScreenshot(page, 'no-create-button')
-    throw new Error(`보고서 만들기 실패: ${error instanceof Error ? error.message : String(error)}`)
+  // 버튼이 활성화될 때까지 대기 (최대 10초)
+  for (let i = 0; i < 20; i++) {
+    if (!(await createBtn.isDisabled())) break
+    await page.waitForTimeout(500)
   }
+
+  const isDisabled = await createBtn.isDisabled()
+  if (isDisabled) {
+    await saveScreenshot(page, 'create-disabled')
+    throw new Error('"보고서 만들기" 버튼이 비활성화됨 — 캠페인을 선택해주세요')
+  }
+
+  await createBtn.click()
+  await page.waitForTimeout(2000) // 보고서 생성 요청 후 대기
+  console.log('  → "보고서 만들기" 클릭')
 }
 
-// ─── 생성 완료 대기 ──────────────────────────────────────────────────────────────
+// ─── 새 보고서 생성 완료 대기 ────────────────────────────────────────────────────
 
-async function waitForReportReady(page: Page): Promise<void> {
-  // "보고서 내역" 탭 클릭 (최신 보고서 확인)
-  const historyTab = page.locator('text=보고서 내역')
-  if (await historyTab.first().isVisible({ timeout: 3000 }).catch(() => false)) {
-    await historyTab.first().click()
-    await page.waitForTimeout(1000)
-  }
-
-  // 다운로드 버튼 또는 "완료" 상태 대기 (최대 120초)
+async function waitForNewReport(page: Page, prevDlCount: number): Promise<void> {
+  // 새 보고서가 생성되면 다운로드 버튼 수가 증가함
   for (let i = 0; i < 60; i++) {
     await page.waitForTimeout(2000)
 
-    // 다운로드 버튼이 나타나면 생성 완료
-    const dlBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').first()
-    if (await dlBtn.isVisible().catch(() => false)) {
-      console.log(`  → 보고서 준비 완료 (${(i + 1) * 2}초)`)
-      return
-    }
+    const currentDlCount = await page.locator('button:has-text("다운로드"), a:has-text("다운로드")').count()
 
-    // "완료" 또는 "생성 완료" 텍스트 확인
-    const completed = page.locator('text=완료, text=생성 완료, td:has-text("완료")').first()
-    if (await completed.isVisible().catch(() => false)) {
-      console.log(`  → 생성 완료 (${(i + 1) * 2}초)`)
+    if (currentDlCount > prevDlCount) {
+      console.log(`  → 새 보고서 생성 완료! (${(i + 1) * 2}초, 다운로드 버튼 ${prevDlCount} → ${currentDlCount})`)
       return
     }
 
     if (i % 5 === 0) {
-      console.log(`  → 대기 중... (${(i + 1) * 2}초)`)
-      await saveScreenshot(page, `waiting-${i}`)
+      console.log(`  → 대기 중... (${(i + 1) * 2}초, 다운로드 버튼: ${currentDlCount})`)
     }
 
-    // 페이지 새로고침 시도 (30초마다)
+    // 30초마다 페이지 새로고침
     if (i > 0 && i % 15 === 0) {
       await page.reload({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => {})
       await page.waitForTimeout(2000)
@@ -392,7 +398,7 @@ async function waitForReportReady(page: Page): Promise<void> {
   }
 
   await saveScreenshot(page, 'create-timeout')
-  throw new Error('보고서 생성 타임아웃 (120초)')
+  throw new Error('새 보고서 생성 타임아웃 (120초)')
 }
 
 // ─── 다운로드 ──────────────────────────────────────────────────────────────────
