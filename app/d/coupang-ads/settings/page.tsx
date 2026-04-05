@@ -1,39 +1,12 @@
 'use client'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bot, Cable, Clock, RefreshCw } from 'lucide-react'
+import { CredentialForm } from '@/components/settings/credential-form'
+import { ScheduleConfig } from '@/components/settings/schedule-config'
+import { CollectionHistory } from '@/components/settings/collection-history'
 import { AgentConfig } from '@/components/settings/agent-config'
 import { AgentActivityLog } from '@/components/settings/agent-activity-log'
-
-function PlaceholderTab({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: React.ComponentType<{ className?: string }>
-  title: string
-  description: string
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Icon className="h-5 w-5 text-muted-foreground" />
-          <CardTitle>{title}</CardTitle>
-        </div>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            이 기능은 준비 중입니다.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
 
 export default function CoupangAdsSettingsPage() {
   return (
@@ -66,27 +39,15 @@ export default function CoupangAdsSettingsPage() {
         </TabsList>
 
         <TabsContent value="integration">
-          <PlaceholderTab
-            icon={Cable}
-            title="쿠팡 연동 설정"
-            description="쿠팡 광고 API 연동 정보를 관리합니다."
-          />
+          <CredentialForm />
         </TabsContent>
 
         <TabsContent value="auto-collect">
-          <PlaceholderTab
-            icon={RefreshCw}
-            title="자동 수집 설정"
-            description="광고 데이터 자동 수집 스케줄을 관리합니다."
-          />
+          <ScheduleConfig />
         </TabsContent>
 
         <TabsContent value="history">
-          <PlaceholderTab
-            icon={Clock}
-            title="수집 이력"
-            description="데이터 수집 이력을 확인합니다."
-          />
+          <CollectionHistory />
         </TabsContent>
 
         <TabsContent value="agent" className="space-y-6">
