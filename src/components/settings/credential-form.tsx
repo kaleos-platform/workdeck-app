@@ -41,9 +41,10 @@ export function CredentialForm() {
         if (!res.ok) throw new Error()
         return res.json()
       })
-      .then((data: { loginId?: string; isConnected?: boolean }) => {
-        if (data.loginId) {
-          setValue('loginId', data.loginId)
+      .then((data: { credential?: { loginId?: string }; isConnected?: boolean }) => {
+        const loginId = data.credential?.loginId
+        if (loginId) {
+          setValue('loginId', loginId)
         }
         setStatus(data.isConnected ? 'connected' : 'disconnected')
       })

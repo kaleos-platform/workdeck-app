@@ -28,8 +28,9 @@ export function ScheduleConfig() {
         if (!res.ok) throw new Error()
         return res.json()
       })
-      .then((data: ScheduleData) => {
-        setEnabled(data.enabled)
+      .then((raw) => {
+        const data: ScheduleData = raw.schedule ?? raw
+        setEnabled(data.enabled ?? false)
         if (data.collectionTime) setCollectionTime(data.collectionTime)
         if (data.nextRunAt) setNextRunAt(data.nextRunAt)
       })
