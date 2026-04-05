@@ -124,23 +124,43 @@ export function formatRuleAction(action: '추가' | '삭제', data: { id?: strin
   }
 }
 
-/** 자동 알림: 수집 완료 */
+/** 자동 알림: 수집 완료 + KPI 요약 */
 export function formatCollectionDone(data: {
   recordCount?: number
   dateRange?: string
   campaignCount?: number
-}) {
-  return {
-    blocks: [
-      header(':inbox_tray: 데이터 수집 완료'),
-      divider(),
-      section(
-        `*수집 레코드*\n${num(data.recordCount)}건`,
-        `*캠페인*\n${num(data.campaignCount)}개`,
-      ),
-      context(data.dateRange ? `기간: ${data.dateRange}` : ''),
-    ],
+  kpi?: {
+    totalSpend?: number
+    totalRevenue?: number
+    roas?: number
+    ctr?: number
   }
+}) {
+  const blocks: KnownBlock[] = [
+    header(':inbox_tray: 데이터 수집 완료 + KPI 요약'),
+    divider(),
+    section(
+      `*수집 레코드*\n${num(data.recordCount)}건`,
+      `*캠페인*\n${num(data.campaignCount)}개`,
+    ),
+  ]
+
+  if (data.kpi) {
+    blocks.push(
+      section(
+        `*총 광고비*\n${won(data.kpi.totalSpend)}`,
+        `*총 매출*\n${won(data.kpi.totalRevenue)}`,
+      ),
+      section(
+        `*ROAS*\n${pct(data.kpi.roas)}`,
+        `*CTR*\n${pct(data.kpi.ctr)}`,
+      ),
+    )
+  }
+
+  blocks.push(context(data.dateRange ? `기간: ${data.dateRange}` : ''))
+
+  return { blocks }
 }
 
 /** 자동 알림: 분석 완료 */

@@ -1,5 +1,6 @@
 import type { App } from '@slack/bolt'
 import * as api from './workdeck-client'
+import { logActivity } from './logger'
 import {
   formatKpi,
   formatReport,
@@ -20,8 +21,10 @@ export function registerHandlers(app: App) {
     try {
       const data = await api.get('/api/dashboard/kpi')
       await say(formatKpi(data))
+      logActivity({ type: 'command', command: 'KPI 현황', response: 'KPI 데이터 전송' })
     } catch {
       await say(formatError('KPI 데이터를 가져올 수 없습니다.'))
+      logActivity({ type: 'error', command: 'KPI 현황', response: 'KPI 조회 실패' })
     }
   })
 
@@ -99,6 +102,7 @@ export function registerHandlers(app: App) {
   // ─── 비효율 키워드 ───────────────────────────────────────────────────
 
   app.message(/비효율|낭비|inefficient/i, async ({ say }) => {
+    logActivity({ type: 'command', command: '비효율 키워드', response: '조회 시작' })
     try {
       const data = await api.get('/api/analysis/inefficient-keywords')
       if (!data?.keywords?.length) {
@@ -134,8 +138,10 @@ export function registerHandlers(app: App) {
         endDate: getToday(),
       })
       await say(formatReport(data))
+      logActivity({ type: 'command', command: '분석 실행', response: '7일간 분석 트리거' })
     } catch {
       await say(formatError('분석 실행에 실패했습니다.'))
+      logActivity({ type: 'error', command: '분석 실행', response: '분석 트리거 실패' })
     }
   })
 

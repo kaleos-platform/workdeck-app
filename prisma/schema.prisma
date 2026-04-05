@@ -475,13 +475,27 @@ model AnalysisSchedule {
 
 // 비즈니스 에이전트 (의식주의 Slack 에이전트)
 model BusinessAgent {
-  id             String    @id @default(cuid())
-  workspaceId    String    @unique
+  id             String     @id @default(cuid())
+  workspaceId    String     @unique
   slackChannelId String?
   slackBotToken  String?
-  isActive       Boolean   @default(true)
+  isActive       Boolean    @default(true)
   lastActiveAt   DateTime?
-  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  workspace      Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  logs           AgentLog[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model AgentLog {
+  id        String   @id @default(cuid())
+  agentId   String
+  type      String   // command, notification, error
+  command   String?  // 사용자 입력 명령 (예: "상태", "분석")
+  response  String?  // 에이전트 응답 요약
+  channel   String?  // Slack 채널 ID
+  agent     BusinessAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([agentId, createdAt(sort: Desc)])
 }

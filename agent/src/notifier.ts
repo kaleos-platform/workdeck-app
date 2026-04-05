@@ -1,6 +1,7 @@
 import type { App } from '@slack/bolt'
 import * as api from './workdeck-client'
 import { getConfig } from './heartbeat'
+import { logActivity } from './logger'
 import { formatCollectionDone, formatAnalysisDone } from './response-formatter'
 
 /** DB 설정 → .env fallback 순으로 채널 ID 반환 */
@@ -33,15 +34,26 @@ async function checkCollections(app: App, since: string) {
 
   for (const event of res.events) {
     if (event.type === 'collection_done') {
+      // KPI 데이터도 함께 가져와서 수집 완료 + KPI 요약으로 전송
+      let kpi: { totalSpend?: number; totalRevenue?: number; roas?: number; ctr?: number } | undefined
+      try {
+        const kpiRes = await api.get('/api/dashboard/kpi')
+        if (kpiRes && !kpiRes.error) kpi = kpiRes
+      } catch {
+        // KPI 조회 실패해도 수집 알림은 전송
+      }
+
       await app.client.chat.postMessage({
         channel: getChannel(),
         ...formatCollectionDone({
           recordCount: event.recordCount,
           dateRange: event.dateRange,
           campaignCount: event.campaignCount,
+          kpi,
         }),
         text: `데이터 수집 완료: ${event.recordCount ?? 0}건`,
       })
+      logActivity({ type: 'notification', command: '수집 완료 알림', response: `${event.recordCount ?? 0}건 수집` })
     }
   }
 }
@@ -62,6 +74,7 @@ async function checkAnalysis(app: App, since: string) {
         }),
         text: `분석 완료: ${event.summary ?? ''}`,
       })
+      logActivity({ type: 'notification', command: '분석 완료 알림', response: event.summary ?? '' })
     }
   }
 }
