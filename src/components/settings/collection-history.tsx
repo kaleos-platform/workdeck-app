@@ -16,16 +16,16 @@ import {
 import { Loader2, Play, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type CollectionRunStatus = 'COMPLETED' | 'FAILED' | 'RUNNING' | 'PENDING'
+type CollectionRunStatus = 'COMPLETED' | 'FAILED' | 'RUNNING' | 'PENDING' | 'DOWNLOADING' | 'PARSING'
 
 type CollectionRun = {
   id: string
-  date: string
   status: CollectionRunStatus
-  trigger: string
-  startedAt: string
-  durationMs?: number | null
-  error?: string | null
+  triggeredBy: string
+  startedAt: string | null
+  completedAt: string | null
+  error: string | null
+  createdAt: string
 }
 
 const STATUS_CONFIG: Record<
@@ -47,6 +47,14 @@ const STATUS_CONFIG: Record<
   PENDING: {
     label: '대기',
     className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+  },
+  DOWNLOADING: {
+    label: '다운로드 중',
+    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  },
+  PARSING: {
+    label: '파싱 중',
+    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   },
 }
 
@@ -197,25 +205,27 @@ export function CollectionHistory() {
                 {runs.map((run) => (
                   <TableRow key={run.id}>
                     <TableCell className="font-medium">
-                      {formatDate(run.date)}
+                      {formatDate(run.createdAt)}
                     </TableCell>
                     <TableCell>
                       <Badge
                         className={cn(
-                          STATUS_CONFIG[run.status]?.className
+                          STATUS_CONFIG[run.status as CollectionRunStatus]?.className
                         )}
                       >
-                        {STATUS_CONFIG[run.status]?.label ?? run.status}
+                        {STATUS_CONFIG[run.status as CollectionRunStatus]?.label ?? run.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {TRIGGER_LABELS[run.trigger] ?? run.trigger}
+                      {TRIGGER_LABELS[run.triggeredBy] ?? run.triggeredBy}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {formatDateTime(run.startedAt)}
+                      {run.startedAt ? formatDateTime(run.startedAt) : '-'}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {run.durationMs != null ? formatDuration(run.durationMs) : '-'}
+                      {run.startedAt && run.completedAt
+                        ? formatDuration(new Date(run.completedAt).getTime() - new Date(run.startedAt).getTime())
+                        : '-'}
                     </TableCell>
                     <TableCell className="max-w-[200px]">
                       {run.error ? (
