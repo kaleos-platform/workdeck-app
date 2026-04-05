@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/agent/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -60,3 +61,11 @@ next-env.d.ts
 
 # MCP 설정 (access token 포함 가능 — 개인별 로컬 관리)
 .mcp.json
+
+# Worker 런타임 데이터
+/worker/node_modules
+/worker/.browser-data
+/worker/.downloads
+/worker/.screenshots
+/worker/.env
+test-results/
