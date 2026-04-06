@@ -7,6 +7,7 @@ import 'dotenv/config'
 import cron from 'node-cron'
 import { runCollection } from './orchestrator.js'
 import { checkAndRunAnalysis } from './analysis-scheduler.js'
+import { startManualPoller } from './manual-poller.js'
 
 const CRON_SCHEDULE = '30 12 * * *' // 매일 12:30 KST
 const ANALYSIS_CRON = '0 * * * *'   // 매 정시
@@ -51,4 +52,7 @@ cron.schedule(
   }
 )
 
-console.log('크론 스케줄러 대기 중...\n')
+// 수동 수집 폴링 시작
+startManualPoller()
+
+console.log('크론 스케줄러 + 수동 수집 폴링 대기 중...\n')

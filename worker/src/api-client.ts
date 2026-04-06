@@ -117,6 +117,17 @@ export async function getCredentials(): Promise<CredentialResponse> {
 }
 
 /**
+ * 미처리 수동 수집 조회 (Worker 폴링용)
+ * GET /api/collection/runs/pending
+ * @returns 가장 오래된 PENDING 레코드 1건 또는 null
+ */
+export async function getPendingRun(): Promise<{ id: string; workspaceId: string } | null> {
+  const response = await workerFetch('/api/collection/runs/pending')
+  const data = await response.json()
+  return data.run ?? null
+}
+
+/**
  * 리포트 파일 업로드
  * 워커가 다운로드한 Excel 파일을 Supabase Storage에 올린 뒤 처리 요청
  * POST /api/reports/upload

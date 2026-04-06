@@ -74,13 +74,12 @@ export async function POST() {
     return errorResponse('이미 진행 중인 수집 작업이 있습니다', 409)
   }
 
-  // 새 수집 실행 생성 (즉시 RUNNING 상태 + 시작 시간 기록)
+  // 새 수집 실행 생성 (PENDING 상태 — Worker가 폴링하여 실행)
   const run = await prisma.collectionRun.create({
     data: {
       workspaceId: workspace.id,
       triggeredBy: 'manual',
-      status: 'RUNNING',
-      startedAt: new Date(),
+      status: 'PENDING',
     },
   })
 
