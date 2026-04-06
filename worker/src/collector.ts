@@ -235,80 +235,87 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
     }
   }
 
-  // 2. 날짜 입력 — Ant Design RangePicker 또는 개별 DatePicker
-  // 쿠팡 광고센터: input이 readonly+disabled → 컨테이너 클릭으로 패널 열기
-  const rangePicker = page.locator('.ant-picker-range, .ant-calendar-range-picker')
-  const rangePickerCount = await rangePicker.count().catch(() => 0)
+  // 2. 기간 프리셋 드롭다운 → "맞춤" 선택하여 날짜 입력 활성화
+  // 쿠팡 광고센터: "보고서 기간" 셀렉트가 "지난주" 기본값 → 날짜 입력 disabled
+  // "맞춤" 또는 "직접입력" 선택 시 날짜 입력 활성화
 
-  if (rangePickerCount > 0) {
-    // RangePicker: 컨테이너 클릭 → 패널에서 날짜 선택
-    console.log(`  → RangePicker 발견 (${rangePickerCount}개)`)
-    await rangePicker.first().click()
+  // 기간 프리셋 셀렉트 찾기 (Ant Select 또는 일반 select)
+  const periodSelect = page.locator('.ant-select:has-text("지난주"), .ant-select:has-text("기간"), select')
+  const periodSelectCount = await periodSelect.count().catch(() => 0)
+
+  if (periodSelectCount > 0) {
+    // Ant Select 클릭하여 드롭다운 열기
+    await periodSelect.first().click()
     await page.waitForTimeout(500)
 
-    // 패널이 열리면 input이 활성화됨
-    const activeInputs = page.locator('.ant-picker-input-active input, .ant-picker-active-bar + .ant-picker-input input, .ant-picker-panel input')
-    const panelInputs = page.locator('.ant-picker-input input:not([disabled])')
-    const enabledCount = await panelInputs.count().catch(() => 0)
+    // "맞춤", "직접입력", "사용자 지정" 옵션 찾기
+    const customOptions = ['맞춤', '직접입력', '사용자 지정', '직접 설정', '커스텀']
+    let found = false
+    for (const label of customOptions) {
+      const option = page.locator(`.ant-select-item:has-text("${label}"), .ant-select-dropdown [title="${label}"], option:has-text("${label}")`)
+      if (await option.count().catch(() => 0) > 0) {
+        await option.first().click()
+        await page.waitForTimeout(500)
+        console.log(`  → 기간 프리셋: "${label}" 선택`)
+        found = true
+        break
+      }
+    }
 
-    if (enabledCount >= 2) {
-      // 시작일 입력
-      await panelInputs.nth(0).click()
-      await panelInputs.nth(0).fill(dateFrom)
-      await page.waitForTimeout(300)
-      // 종료일 입력
-      await panelInputs.nth(1).click()
-      await panelInputs.nth(1).fill(dateTo)
-      await page.waitForTimeout(300)
-      await page.keyboard.press('Enter')
+    if (!found) {
+      // 드롭다운 옵션 디버깅
+      const allOptions = page.locator('.ant-select-item, .ant-select-dropdown .ant-select-item-option')
+      const optCount = await allOptions.count().catch(() => 0)
+      const labels: string[] = []
+      for (let i = 0; i < Math.min(optCount, 10); i++) {
+        const text = await allOptions.nth(i).textContent().catch(() => '?')
+        labels.push(text?.trim() ?? '?')
+      }
+      console.log(`  → 기간 프리셋 옵션 (${optCount}개): ${labels.join(', ')}`)
+      await page.keyboard.press('Escape')
+    }
+  }
+
+  // 3. 날짜 입력 시도 (프리셋 변경 후 활성화되었을 수 있음)
+  await page.waitForTimeout(300)
+  const dateInputs = page.locator('.ant-picker-input input:not([disabled]), input[type="date"]:not([disabled])')
+  const dateInputCount = await dateInputs.count().catch(() => 0)
+
+  if (dateInputCount >= 2) {
+    for (const [idx, value] of [[0, dateFrom], [1, dateTo]] as [number, string][]) {
+      await dateInputs.nth(idx).click()
+      await page.waitForTimeout(200)
+      await dateInputs.nth(idx).fill(value)
+      await page.waitForTimeout(200)
+    }
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(500)
+    console.log(`  → 날짜 직접 입력: ${dateFrom} ~ ${dateTo}`)
+  } else if (dateInputCount === 0) {
+    // RangePicker 컨테이너 클릭 시도
+    const rangePicker = page.locator('.ant-picker-range, .ant-picker')
+    if (await rangePicker.count().catch(() => 0) > 0) {
+      await rangePicker.first().click()
       await page.waitForTimeout(500)
-      console.log(`  → RangePicker 날짜 입력: ${dateFrom} ~ ${dateTo}`)
-    } else if (enabledCount === 1) {
-      await panelInputs.nth(0).fill(dateFrom)
-      await page.keyboard.press('Enter')
-      await page.waitForTimeout(500)
-      // 두 번째 입력
-      const secondInputs = page.locator('.ant-picker-input input:not([disabled])')
-      if (await secondInputs.count() > 0) {
-        await secondInputs.nth(0).fill(dateTo)
+      const enabledInputs = page.locator('.ant-picker-input input:not([disabled])')
+      const eCount = await enabledInputs.count().catch(() => 0)
+      if (eCount >= 1) {
+        await enabledInputs.nth(0).fill(dateFrom)
+        await page.keyboard.press('Tab')
+        await page.waitForTimeout(300)
+        const secondInputs = page.locator('.ant-picker-input input:not([disabled])')
+        if (await secondInputs.count() >= 2) {
+          await secondInputs.nth(1).fill(dateTo)
+        }
         await page.keyboard.press('Enter')
         await page.waitForTimeout(500)
-      }
-      console.log(`  → RangePicker 순차 입력: ${dateFrom} ~ ${dateTo}`)
-    } else {
-      // 패널은 열렸지만 input 비활성 → 직접 날짜 셀 클릭 방식은 복잡하므로 Escape
-      await page.keyboard.press('Escape')
-      console.log('  → RangePicker 열렸으나 input 비활성 — 기본값 사용')
-    }
-  } else {
-    // 개별 DatePicker 2개
-    const pickers = page.locator('.ant-picker:not(.ant-picker-range)')
-    const pickerCount = await pickers.count().catch(() => 0)
-
-    if (pickerCount >= 2) {
-      console.log(`  → 개별 DatePicker 발견 (${pickerCount}개)`)
-      for (const [idx, value] of [[0, dateFrom], [1, dateTo]] as [number, string][]) {
-        await pickers.nth(idx).click()
-        await page.waitForTimeout(500)
-        const activeInput = page.locator('.ant-picker-input input:not([disabled])')
-        if (await activeInput.count() > 0) {
-          await activeInput.first().fill(value)
-          await page.keyboard.press('Enter')
-          await page.waitForTimeout(500)
-        }
-      }
-      console.log(`  → DatePicker 날짜 입력: ${dateFrom} ~ ${dateTo}`)
-    } else {
-      // fallback: generic input
-      const dateInputs = page.locator('input[type="date"]')
-      const dateCount = await dateInputs.count()
-      if (dateCount >= 2) {
-        await dateInputs.nth(0).fill(dateFrom)
-        await dateInputs.nth(1).fill(dateTo)
-        console.log(`  → input[type="date"] 입력: ${dateFrom} ~ ${dateTo}`)
+        console.log(`  → RangePicker 입력: ${dateFrom} ~ ${dateTo}`)
       } else {
-        console.log('  → 날짜 설정 셀렉터를 찾지 못함 — 기본값 사용')
+        await page.keyboard.press('Escape')
+        console.log('  → 날짜 입력 활성화 실패 — 기본값 사용')
       }
+    } else {
+      console.log('  → 날짜 입력 셀렉터 없음 — 기본값 사용')
     }
   }
 }
