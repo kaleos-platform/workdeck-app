@@ -18,6 +18,15 @@ import { cn } from '@/lib/utils'
 
 type CollectionRunStatus = 'COMPLETED' | 'FAILED' | 'RUNNING' | 'PENDING' | 'DOWNLOADING' | 'PARSING'
 
+type UploadInfo = {
+  fileName: string
+  periodStart: string
+  periodEnd: string
+  totalRows: number | null
+  insertedRows: number | null
+  duplicateRows: number | null
+}
+
 type CollectionRun = {
   id: string
   status: CollectionRunStatus
@@ -25,6 +34,7 @@ type CollectionRun = {
   startedAt: string | null
   completedAt: string | null
   error: string | null
+  upload: UploadInfo | null
   createdAt: string
 }
 
@@ -254,7 +264,7 @@ export function CollectionHistory() {
                   <TableHead>트리거</TableHead>
                   <TableHead>시작시간</TableHead>
                   <TableHead>소요시간</TableHead>
-                  <TableHead>에러</TableHead>
+                  <TableHead>결과</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -283,11 +293,26 @@ export function CollectionHistory() {
                         ? formatDuration(new Date(run.completedAt).getTime() - new Date(run.startedAt).getTime())
                         : '-'}
                     </TableCell>
-                    <TableCell className="max-w-[200px]">
+                    <TableCell className="max-w-[300px]">
                       {run.error ? (
                         <span className="truncate text-sm text-destructive" title={run.error}>
                           {run.error}
                         </span>
+                      ) : run.upload ? (
+                        <span className="text-sm text-muted-foreground">
+                          {formatDate(run.upload.periodStart)} ~ {formatDate(run.upload.periodEnd)}
+                          {' · '}
+                          <span className="font-medium text-foreground">
+                            {(run.upload.insertedRows ?? run.upload.totalRows ?? 0).toLocaleString()}건
+                          </span>
+                          {(run.upload.duplicateRows ?? 0) > 0 && (
+                            <span className="text-muted-foreground"> (중복 {run.upload.duplicateRows}건)</span>
+                          )}
+                        </span>
+                      ) : run.status === 'COMPLETED' ? (
+                        <span className="text-sm text-muted-foreground">완료</span>
+                      ) : ACTIVE_STATUSES.includes(run.status) ? (
+                        <span className="text-sm text-muted-foreground">진행 중...</span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
