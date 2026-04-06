@@ -227,130 +227,115 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
     console.log('  → 기간 구분: 일별 선택')
   }
 
-  // 2. DOM 구조를 JavaScript로 직접 탐색하여 "보고서 기간" UI 파악
-  const domInfo = await page.evaluate(() => {
-    const info: string[] = []
+  // 2. 기간 프리셋 라디오에서 "기간 설정" 또는 "맞춤" 옵션 선택
+  // 쿠팡 광고센터: "지난주", "지난달", "기간 설정" 등이 ant-radio-wrapper로 구성
+  // "기간 설정"을 선택하면 RangePicker가 활성화됨
+  const allRadios = page.locator('.ant-radio-wrapper')
+  const radioCount = await allRadios.count()
+  const radioLabels: string[] = []
 
-    // select 요소 탐색
-    document.querySelectorAll('select').forEach((el, i) => {
-      const options = Array.from(el.options).map(o => o.text).join(', ')
-      info.push(`<select>[${i}] name="${el.name}" value="${el.value}" options=[${options}]`)
-    })
+  for (let i = 0; i < radioCount; i++) {
+    const text = (await allRadios.nth(i).textContent().catch(() => ''))?.trim() ?? ''
+    radioLabels.push(text)
+  }
+  console.log(`  → 기간 라디오 옵션 (${radioCount}개): ${radioLabels.join(', ')}`)
 
-    // "보고서 기간" 또는 "기간" 텍스트를 포함하는 요소의 형제/자식 탐색
-    document.querySelectorAll('*').forEach(el => {
-      const text = el.textContent?.trim() ?? ''
-      if (el.children.length === 0 && (text === '보고서 기간' || text === '기간')) {
-        const parent = el.parentElement
-        if (parent) {
-          const siblings = Array.from(parent.children).map(c =>
-            `<${c.tagName.toLowerCase()} class="${c.className?.toString().slice(0, 40)}">${c.textContent?.trim().slice(0, 50)}`
-          )
-          info.push(`기간_라벨_형제: ${siblings.join(' | ')}`)
+  // "기간 설정", "맞춤", "직접 입력" 등의 라디오 클릭
+  const customLabels = ['기간 설정', '기간설정', '맞춤', '직접 입력', '직접입력', '사용자 지정']
+  let periodRadioClicked = false
 
-          // 부모의 부모까지 탐색
-          const grandparent = parent.parentElement
-          if (grandparent) {
-            const gpChildren = Array.from(grandparent.children).map(c =>
-              `<${c.tagName.toLowerCase()} class="${c.className?.toString().slice(0, 40)}">`
-            )
-            info.push(`기간_조부모_자식: ${gpChildren.join(' | ')}`)
-          }
-        }
-      }
-    })
-
-    // ant-picker 관련 요소
-    document.querySelectorAll('[class*="picker"], [class*="Picker"]').forEach((el, i) => {
-      if (i < 5) {
-        info.push(`picker[${i}] tag=${el.tagName} class="${el.className?.toString().slice(0, 60)}" disabled=${(el as HTMLInputElement).disabled}`)
-      }
-    })
-
-    // "지난주" 텍스트를 포함하는 클릭 가능 요소
-    document.querySelectorAll('*').forEach(el => {
-      if (el.children.length === 0 && el.textContent?.includes('지난주')) {
-        info.push(`지난주_요소: <${el.tagName.toLowerCase()} class="${el.className?.toString().slice(0, 40)}"> parent=<${el.parentElement?.tagName.toLowerCase()} class="${el.parentElement?.className?.toString().slice(0, 40)}">`)
-      }
-    })
-
-    return info
-  })
-
-  console.log('  [DOM 디버깅]')
-  domInfo.forEach(line => console.log(`    ${line}`))
-
-  // 3. 날짜 설정 시도: select 요소가 있으면 값 변경
-  const nativeSelect = page.locator('select')
-  const nativeSelectCount = await nativeSelect.count().catch(() => 0)
-
-  let dateSet = false
-
-  for (let i = 0; i < nativeSelectCount; i++) {
-    const options = await nativeSelect.nth(i).evaluate((el: HTMLSelectElement) =>
-      Array.from(el.options).map(o => ({ value: o.value, text: o.text }))
-    ).catch(() => [])
-
-    // "맞춤" 또는 "직접입력" 옵션 찾기
-    const customOpt = options.find(o =>
-      /맞춤|직접|커스텀|custom/i.test(o.text)
-    )
-    if (customOpt) {
-      await nativeSelect.nth(i).selectOption(customOpt.value)
+  for (const label of customLabels) {
+    const radio = page.locator(`.ant-radio-wrapper:has-text("${label}")`)
+    if (await radio.count().catch(() => 0) > 0) {
+      await radio.first().click()
       await page.waitForTimeout(500)
-      console.log(`  → select[${i}]: "${customOpt.text}" 선택`)
-
-      // 날짜 입력 활성화 확인
-      const enabledInputs = page.locator('input:not([disabled])[placeholder*="시작"], input:not([disabled])[placeholder*="날짜"], .ant-picker-input input:not([disabled])')
-      const eCount = await enabledInputs.count().catch(() => 0)
-      if (eCount >= 2) {
-        await enabledInputs.nth(0).fill(dateFrom)
-        await page.waitForTimeout(200)
-        await enabledInputs.nth(1).fill(dateTo)
-        await page.keyboard.press('Enter')
-        await page.waitForTimeout(500)
-        console.log(`  → 날짜 입력 완료: ${dateFrom} ~ ${dateTo}`)
-        dateSet = true
-      }
+      console.log(`  → 기간 라디오: "${label}" 선택`)
+      periodRadioClicked = true
       break
     }
   }
 
-  // 4. select가 없거나 맞춤 옵션이 없는 경우: "기간 설정" 아이콘 또는 날짜 영역 클릭
-  if (!dateSet) {
-    // "기간 설정" 텍스트/아이콘 클릭 시도
-    const periodSettingBtn = page.locator('text=기간 설정, [title="기간 설정"], button:has-text("기간")')
-    if (await periodSettingBtn.count().catch(() => 0) > 0) {
-      await periodSettingBtn.first().click()
-      await page.waitForTimeout(500)
-      console.log('  → "기간 설정" 버튼 클릭')
-    }
-
-    // 날짜 입력 시도 (disabled가 아닌 것)
-    const inputs = page.locator('input:not([disabled])')
-    const inputCount = await inputs.count()
-    for (let i = 0; i < inputCount; i++) {
-      const placeholder = await inputs.nth(i).getAttribute('placeholder').catch(() => '')
-      const value = await inputs.nth(i).getAttribute('value').catch(() => '')
-      if (placeholder?.includes('시작') || /^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) {
-        await inputs.nth(i).click()
-        await inputs.nth(i).fill(dateFrom)
-        await page.waitForTimeout(300)
-        // 다음 input
-        if (i + 1 < inputCount) {
-          await inputs.nth(i + 1).fill(dateTo)
-        }
-        await page.keyboard.press('Enter')
+  // 맞춤 라디오를 못 찾은 경우: "기간 설정 ①" 아이콘이 있을 수 있음
+  if (!periodRadioClicked) {
+    // "기간 설정" 텍스트가 포함된 모든 요소 클릭 시도
+    const periodBtn = page.locator('[class*="date-range"] .ant-radio-wrapper').last()
+    if (await periodBtn.count().catch(() => 0) > 0) {
+      const lastText = await periodBtn.textContent().catch(() => '')
+      if (lastText && !lastText.includes('지난주') && !lastText.includes('지난달')) {
+        await periodBtn.click()
         await page.waitForTimeout(500)
-        console.log(`  → input 직접 입력: ${dateFrom} ~ ${dateTo}`)
-        dateSet = true
-        break
+        console.log(`  → 마지막 기간 라디오 클릭: "${lastText?.trim()}"`)
+        periodRadioClicked = true
       }
     }
   }
 
-  if (!dateSet) {
-    console.log(`  → 날짜 설정 실패 — 쿠팡 기본값 사용 (dateFrom=${dateFrom}, dateTo=${dateTo})`)
+  // 3. RangePicker에 날짜 입력 (라디오 변경 후 활성화되었을 수 있음)
+  await page.waitForTimeout(300)
+
+  // 활성화된 input 찾기
+  const enabledInputs = page.locator('.ant-picker-input input:not([disabled])')
+  const enabledCount = await enabledInputs.count().catch(() => 0)
+  console.log(`  → 활성 날짜 input: ${enabledCount}개`)
+
+  if (enabledCount >= 2) {
+    // 시작일 입력
+    await enabledInputs.nth(0).click({ clickCount: 3 }) // 전체 선택
+    await page.waitForTimeout(200)
+    await enabledInputs.nth(0).fill(dateFrom)
+    await page.waitForTimeout(300)
+    // 종료일 입력
+    await enabledInputs.nth(1).click({ clickCount: 3 })
+    await page.waitForTimeout(200)
+    await enabledInputs.nth(1).fill(dateTo)
+    await page.waitForTimeout(300)
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(500)
+    console.log(`  → 날짜 입력 완료: ${dateFrom} ~ ${dateTo}`)
+  } else if (enabledCount === 1) {
+    // RangePicker가 시작일만 활성화한 경우
+    await enabledInputs.nth(0).click({ clickCount: 3 })
+    await enabledInputs.nth(0).fill(dateFrom)
+    await page.keyboard.press('Tab')
+    await page.waitForTimeout(500)
+    // Tab 후 종료일 input 활성화 대기
+    const endInputs = page.locator('.ant-picker-input input:not([disabled])')
+    if (await endInputs.count() >= 2) {
+      await endInputs.nth(1).click({ clickCount: 3 })
+      await endInputs.nth(1).fill(dateTo)
+    }
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(500)
+    console.log(`  → 날짜 순차 입력: ${dateFrom} ~ ${dateTo}`)
+  } else {
+    // 여전히 disabled → RangePicker 컨테이너 클릭으로 활성화 시도
+    const rangePicker = page.locator('.ant-picker-range')
+    if (await rangePicker.count().catch(() => 0) > 0) {
+      await rangePicker.first().click()
+      await page.waitForTimeout(500)
+
+      const afterClickInputs = page.locator('.ant-picker-input input:not([disabled])')
+      const afterCount = await afterClickInputs.count().catch(() => 0)
+      console.log(`  → RangePicker 클릭 후 활성 input: ${afterCount}개`)
+
+      if (afterCount >= 1) {
+        await afterClickInputs.nth(0).fill(dateFrom)
+        await page.keyboard.press('Tab')
+        await page.waitForTimeout(300)
+        const endInputs2 = page.locator('.ant-picker-input input:not([disabled])')
+        if (await endInputs2.count() >= 2) {
+          await endInputs2.nth(1).fill(dateTo)
+        }
+        await page.keyboard.press('Enter')
+        await page.waitForTimeout(500)
+        console.log(`  → RangePicker 입력: ${dateFrom} ~ ${dateTo}`)
+      } else {
+        await page.keyboard.press('Escape')
+        console.log(`  → 날짜 설정 실패 — 기본값 사용`)
+      }
+    } else {
+      console.log(`  → RangePicker 없음 — 기본값 사용`)
+    }
   }
 }
 
