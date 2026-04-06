@@ -127,13 +127,14 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   await updateCollectionRun(runId, { status: 'DOWNLOADING' })
   console.log('상태: DOWNLOADING')
 
-  // 수동 수집: 최근 7일, 자동 수집: 어제 1일
+  // 수동 수집: 최근 7일, 자동 수집: 어제 1일 (KST 기준)
+  function kstDate(offsetDays: number): string {
+    const kst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+    kst.setDate(kst.getDate() + offsetDays)
+    return kst.toISOString().split('T')[0]
+  }
   const dateOptions = isManual
-    ? (() => {
-        const to = new Date(); to.setDate(to.getDate() - 1)
-        const from = new Date(); from.setDate(from.getDate() - 7)
-        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
-      })()
+    ? { dateFrom: kstDate(-7), dateTo: kstDate(-1) }
     : {}
 
   const result = await collectCoupangReport({
