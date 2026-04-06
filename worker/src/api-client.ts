@@ -37,6 +37,7 @@ export type UpdateRunData = {
 
 /** 자격증명 응답 */
 export type CredentialResponse = {
+  workspaceId: string
   loginId: string
   encryptedPassword: string
   passwordIv: string
@@ -128,13 +129,13 @@ export async function getPendingRun(): Promise<{ id: string; workspaceId: string
 }
 
 /**
- * 리포트 파일 업로드
- * 워커가 다운로드한 Excel 파일을 Supabase Storage에 올린 뒤 처리 요청
- * POST /api/reports/upload
+ * 리포트 파일 업로드 (multipart/form-data)
+ * POST /api/collection/upload
  */
 export async function uploadReport(
   buffer: Buffer,
-  fileName: string
+  fileName: string,
+  workspaceId?: string
 ): Promise<{
   uploadId: string
   inserted: number
@@ -143,17 +144,26 @@ export async function uploadReport(
   insertedRows: number
   duplicateRows: number
 }> {
-  // 워커는 storagePath 방식 대신 직접 buffer를 전달해야 하므로
-  // worker 전용 업로드 엔드포인트를 사용한다
-  const response = await workerFetch('/api/collection/upload', {
+  const formData = new FormData()
+  formData.append('file', new Blob([buffer]), fileName)
+  if (workspaceId) {
+    formData.append('workspaceId', workspaceId)
+  }
+
+  const url = `${getBaseUrl()}/api/collection/upload`
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/octet-stream',
       'x-worker-api-key': getWorkerApiKey(),
-      'x-file-name': encodeURIComponent(fileName),
+      // Content-Type은 FormData가 자동 설정 (boundary 포함)
     },
-    body: buffer,
+    body: formData,
   })
+
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`API 요청 실패 [${response.status}]: /api/collection/upload — ${body}`)
+  }
 
   return response.json()
 }

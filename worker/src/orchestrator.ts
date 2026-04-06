@@ -141,7 +141,7 @@ async function executeCollectionPipeline(runId: string): Promise<string | null> 
   // ── Step 6: 파일 읽기 → 업로드 API 호출 ──
   console.log('파일 업로드 중...')
   const fileBuffer = fs.readFileSync(result.filePath)
-  const uploadResult = await uploadReport(Buffer.from(fileBuffer), result.fileName)
+  const uploadResult = await uploadReport(Buffer.from(fileBuffer), result.fileName, credential.workspaceId)
 
   console.log(
     `업로드 완료 — 삽입: ${uploadResult.insertedRows}, 중복: ${uploadResult.duplicateRows}, 전체: ${uploadResult.totalRows}`
