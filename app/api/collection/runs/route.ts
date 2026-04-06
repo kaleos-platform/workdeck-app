@@ -42,8 +42,23 @@ export async function GET(request: NextRequest) {
   const hasMore = runs.length > limit
   if (hasMore) runs.pop()
 
+  // uploadId가 있는 run에 대해 ReportUpload 정보 조회
+  const uploadIds = runs.map((r) => r.uploadId).filter(Boolean) as string[]
+  const uploads = uploadIds.length > 0
+    ? await prisma.reportUpload.findMany({
+        where: { id: { in: uploadIds } },
+        select: { id: true, fileName: true, periodStart: true, periodEnd: true, totalRows: true, insertedRows: true, duplicateRows: true },
+      })
+    : []
+  const uploadMap = new Map(uploads.map((u) => [u.id, u]))
+
+  const runsWithUpload = runs.map((r) => ({
+    ...r,
+    upload: r.uploadId ? uploadMap.get(r.uploadId) ?? null : null,
+  }))
+
   return NextResponse.json({
-    runs,
+    runs: runsWithUpload,
     nextCursor: hasMore ? runs[runs.length - 1].id : null,
   })
 }
