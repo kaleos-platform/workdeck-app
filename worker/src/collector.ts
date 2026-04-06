@@ -279,31 +279,39 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
   console.log(`  → 활성 날짜 input: ${enabledCount}개`)
 
   if (enabledCount >= 2) {
+    // Ant Design DatePicker: fill()은 React onChange를 트리거하지 않음
+    // 실제 키보드 입력으로 시뮬레이션해야 함
+
     // 시작일 입력
-    await enabledInputs.nth(0).click({ clickCount: 3 }) // 전체 선택
-    await page.waitForTimeout(200)
-    await enabledInputs.nth(0).fill(dateFrom)
+    await enabledInputs.nth(0).click()
     await page.waitForTimeout(300)
-    // 종료일 입력
-    await enabledInputs.nth(1).click({ clickCount: 3 })
-    await page.waitForTimeout(200)
-    await enabledInputs.nth(1).fill(dateTo)
-    await page.waitForTimeout(300)
+    await page.keyboard.press('Control+a')
+    await page.keyboard.type(dateFrom, { delay: 30 })
     await page.keyboard.press('Enter')
     await page.waitForTimeout(500)
-    console.log(`  → 날짜 입력 완료: ${dateFrom} ~ ${dateTo}`)
+
+    // 종료일 입력 (Enter 후 자동으로 종료일 input이 포커스될 수 있음)
+    const endInput = page.locator('.ant-picker-input input:not([disabled])').last()
+    await endInput.click()
+    await page.waitForTimeout(300)
+    await page.keyboard.press('Control+a')
+    await page.keyboard.type(dateTo, { delay: 30 })
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(500)
+
+    // 입력 확인: input의 실제 value 로깅
+    const startVal = await enabledInputs.nth(0).getAttribute('value').catch(() => '?')
+    const endVal = await page.locator('.ant-picker-input input').last().getAttribute('value').catch(() => '?')
+    console.log(`  → 날짜 입력 완료: ${dateFrom} ~ ${dateTo} (실제값: ${startVal} ~ ${endVal})`)
   } else if (enabledCount === 1) {
-    // RangePicker가 시작일만 활성화한 경우
-    await enabledInputs.nth(0).click({ clickCount: 3 })
-    await enabledInputs.nth(0).fill(dateFrom)
+    await enabledInputs.nth(0).click()
+    await page.waitForTimeout(300)
+    await page.keyboard.press('Control+a')
+    await page.keyboard.type(dateFrom, { delay: 30 })
     await page.keyboard.press('Tab')
     await page.waitForTimeout(500)
-    // Tab 후 종료일 input 활성화 대기
-    const endInputs = page.locator('.ant-picker-input input:not([disabled])')
-    if (await endInputs.count() >= 2) {
-      await endInputs.nth(1).click({ clickCount: 3 })
-      await endInputs.nth(1).fill(dateTo)
-    }
+    await page.keyboard.press('Control+a')
+    await page.keyboard.type(dateTo, { delay: 30 })
     await page.keyboard.press('Enter')
     await page.waitForTimeout(500)
     console.log(`  → 날짜 순차 입력: ${dateFrom} ~ ${dateTo}`)
@@ -319,13 +327,13 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
       console.log(`  → RangePicker 클릭 후 활성 input: ${afterCount}개`)
 
       if (afterCount >= 1) {
-        await afterClickInputs.nth(0).fill(dateFrom)
+        await afterClickInputs.nth(0).click()
+        await page.keyboard.press('Control+a')
+        await page.keyboard.type(dateFrom, { delay: 30 })
         await page.keyboard.press('Tab')
-        await page.waitForTimeout(300)
-        const endInputs2 = page.locator('.ant-picker-input input:not([disabled])')
-        if (await endInputs2.count() >= 2) {
-          await endInputs2.nth(1).fill(dateTo)
-        }
+        await page.waitForTimeout(500)
+        await page.keyboard.press('Control+a')
+        await page.keyboard.type(dateTo, { delay: 30 })
         await page.keyboard.press('Enter')
         await page.waitForTimeout(500)
         console.log(`  → RangePicker 입력: ${dateFrom} ~ ${dateTo}`)
