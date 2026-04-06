@@ -117,7 +117,10 @@ async function executeCollectionPipeline(runId: string): Promise<string | null> 
   // ── Step 3: 자격증명 복호화 ──
   console.log('자격증명 조회 및 복호화 중...')
   const credential = await getCredentials()
-  const password = decrypt(credential.encryptedPassword, credential.passwordIv)
+  // iv가 'none'이면 평문 저장 (ENCRYPTION_KEY 미설정 환경)
+  const password = credential.passwordIv === 'none'
+    ? credential.encryptedPassword
+    : decrypt(credential.encryptedPassword, credential.passwordIv)
 
   // ── Step 4: Playwright로 Excel 다운로드 ──
   console.log('쿠팡 광고센터 수집 시작...')
