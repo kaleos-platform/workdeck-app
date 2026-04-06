@@ -51,10 +51,16 @@ const DOWNLOAD_TIMEOUT = 120_000
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────────
 
+/** KST 기준 날짜 문자열 (YYYY-MM-DD) */
+function getKSTDateString(offsetDays = 0): string {
+  // UTC + 9시간 = KST
+  const kst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  kst.setDate(kst.getDate() + offsetDays)
+  return kst.toISOString().split('T')[0]
+}
+
 function getYesterday(): string {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().split('T')[0]
+  return getKSTDateString(-1)
 }
 
 async function saveScreenshot(page: Page, name: string): Promise<void> {
@@ -213,110 +219,138 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
 // ─── 기간 설정 ──────────────────────────────────────────────────────────────────
 
 async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promise<void> {
-  // 1. 기간 구분을 "일별"로 설정 (기본이 "합계")
-  // 라디오 버튼: "합계 · 일별" — Ant Design Radio Group
+  // 1. 기간 구분을 "일별"로 설정
   const dailyRadio = page.locator('.ant-radio-wrapper:has-text("일별"), label:has-text("일별"), span:text-is("일별")')
   if (await dailyRadio.first().isVisible({ timeout: 3000 }).catch(() => false)) {
     await dailyRadio.first().click()
     await page.waitForTimeout(500)
     console.log('  → 기간 구분: 일별 선택')
-  } else {
-    // text 매칭으로 시도
-    const allRadios = page.locator('.ant-radio-wrapper, [class*="radio"]')
-    const radioCount = await allRadios.count()
-    for (let i = 0; i < radioCount; i++) {
-      const text = await allRadios.nth(i).textContent()
-      if (text?.trim() === '일별') {
-        await allRadios.nth(i).click()
-        await page.waitForTimeout(500)
-        console.log('  → 기간 구분: 일별 (radio index ' + i + ')')
-        break
-      }
-    }
   }
 
-  // 2. 기간 프리셋 드롭다운 → "맞춤" 선택하여 날짜 입력 활성화
-  // 쿠팡 광고센터: "보고서 기간" 셀렉트가 "지난주" 기본값 → 날짜 입력 disabled
-  // "맞춤" 또는 "직접입력" 선택 시 날짜 입력 활성화
+  // 2. DOM 구조를 JavaScript로 직접 탐색하여 "보고서 기간" UI 파악
+  const domInfo = await page.evaluate(() => {
+    const info: string[] = []
 
-  // 기간 프리셋 셀렉트 찾기 (Ant Select 또는 일반 select)
-  const periodSelect = page.locator('.ant-select:has-text("지난주"), .ant-select:has-text("기간"), select')
-  const periodSelectCount = await periodSelect.count().catch(() => 0)
+    // select 요소 탐색
+    document.querySelectorAll('select').forEach((el, i) => {
+      const options = Array.from(el.options).map(o => o.text).join(', ')
+      info.push(`<select>[${i}] name="${el.name}" value="${el.value}" options=[${options}]`)
+    })
 
-  if (periodSelectCount > 0) {
-    // Ant Select 클릭하여 드롭다운 열기
-    await periodSelect.first().click()
-    await page.waitForTimeout(500)
+    // "보고서 기간" 또는 "기간" 텍스트를 포함하는 요소의 형제/자식 탐색
+    document.querySelectorAll('*').forEach(el => {
+      const text = el.textContent?.trim() ?? ''
+      if (el.children.length === 0 && (text === '보고서 기간' || text === '기간')) {
+        const parent = el.parentElement
+        if (parent) {
+          const siblings = Array.from(parent.children).map(c =>
+            `<${c.tagName.toLowerCase()} class="${c.className?.toString().slice(0, 40)}">${c.textContent?.trim().slice(0, 50)}`
+          )
+          info.push(`기간_라벨_형제: ${siblings.join(' | ')}`)
 
-    // "맞춤", "직접입력", "사용자 지정" 옵션 찾기
-    const customOptions = ['맞춤', '직접입력', '사용자 지정', '직접 설정', '커스텀']
-    let found = false
-    for (const label of customOptions) {
-      const option = page.locator(`.ant-select-item:has-text("${label}"), .ant-select-dropdown [title="${label}"], option:has-text("${label}")`)
-      if (await option.count().catch(() => 0) > 0) {
-        await option.first().click()
-        await page.waitForTimeout(500)
-        console.log(`  → 기간 프리셋: "${label}" 선택`)
-        found = true
-        break
+          // 부모의 부모까지 탐색
+          const grandparent = parent.parentElement
+          if (grandparent) {
+            const gpChildren = Array.from(grandparent.children).map(c =>
+              `<${c.tagName.toLowerCase()} class="${c.className?.toString().slice(0, 40)}">`
+            )
+            info.push(`기간_조부모_자식: ${gpChildren.join(' | ')}`)
+          }
+        }
       }
-    }
+    })
 
-    if (!found) {
-      // 드롭다운 옵션 디버깅
-      const allOptions = page.locator('.ant-select-item, .ant-select-dropdown .ant-select-item-option')
-      const optCount = await allOptions.count().catch(() => 0)
-      const labels: string[] = []
-      for (let i = 0; i < Math.min(optCount, 10); i++) {
-        const text = await allOptions.nth(i).textContent().catch(() => '?')
-        labels.push(text?.trim() ?? '?')
+    // ant-picker 관련 요소
+    document.querySelectorAll('[class*="picker"], [class*="Picker"]').forEach((el, i) => {
+      if (i < 5) {
+        info.push(`picker[${i}] tag=${el.tagName} class="${el.className?.toString().slice(0, 60)}" disabled=${(el as HTMLInputElement).disabled}`)
       }
-      console.log(`  → 기간 프리셋 옵션 (${optCount}개): ${labels.join(', ')}`)
-      await page.keyboard.press('Escape')
-    }
-  }
+    })
 
-  // 3. 날짜 입력 시도 (프리셋 변경 후 활성화되었을 수 있음)
-  await page.waitForTimeout(300)
-  const dateInputs = page.locator('.ant-picker-input input:not([disabled]), input[type="date"]:not([disabled])')
-  const dateInputCount = await dateInputs.count().catch(() => 0)
+    // "지난주" 텍스트를 포함하는 클릭 가능 요소
+    document.querySelectorAll('*').forEach(el => {
+      if (el.children.length === 0 && el.textContent?.includes('지난주')) {
+        info.push(`지난주_요소: <${el.tagName.toLowerCase()} class="${el.className?.toString().slice(0, 40)}"> parent=<${el.parentElement?.tagName.toLowerCase()} class="${el.parentElement?.className?.toString().slice(0, 40)}">`)
+      }
+    })
 
-  if (dateInputCount >= 2) {
-    for (const [idx, value] of [[0, dateFrom], [1, dateTo]] as [number, string][]) {
-      await dateInputs.nth(idx).click()
-      await page.waitForTimeout(200)
-      await dateInputs.nth(idx).fill(value)
-      await page.waitForTimeout(200)
-    }
-    await page.keyboard.press('Enter')
-    await page.waitForTimeout(500)
-    console.log(`  → 날짜 직접 입력: ${dateFrom} ~ ${dateTo}`)
-  } else if (dateInputCount === 0) {
-    // RangePicker 컨테이너 클릭 시도
-    const rangePicker = page.locator('.ant-picker-range, .ant-picker')
-    if (await rangePicker.count().catch(() => 0) > 0) {
-      await rangePicker.first().click()
+    return info
+  })
+
+  console.log('  [DOM 디버깅]')
+  domInfo.forEach(line => console.log(`    ${line}`))
+
+  // 3. 날짜 설정 시도: select 요소가 있으면 값 변경
+  const nativeSelect = page.locator('select')
+  const nativeSelectCount = await nativeSelect.count().catch(() => 0)
+
+  let dateSet = false
+
+  for (let i = 0; i < nativeSelectCount; i++) {
+    const options = await nativeSelect.nth(i).evaluate((el: HTMLSelectElement) =>
+      Array.from(el.options).map(o => ({ value: o.value, text: o.text }))
+    ).catch(() => [])
+
+    // "맞춤" 또는 "직접입력" 옵션 찾기
+    const customOpt = options.find(o =>
+      /맞춤|직접|커스텀|custom/i.test(o.text)
+    )
+    if (customOpt) {
+      await nativeSelect.nth(i).selectOption(customOpt.value)
       await page.waitForTimeout(500)
-      const enabledInputs = page.locator('.ant-picker-input input:not([disabled])')
+      console.log(`  → select[${i}]: "${customOpt.text}" 선택`)
+
+      // 날짜 입력 활성화 확인
+      const enabledInputs = page.locator('input:not([disabled])[placeholder*="시작"], input:not([disabled])[placeholder*="날짜"], .ant-picker-input input:not([disabled])')
       const eCount = await enabledInputs.count().catch(() => 0)
-      if (eCount >= 1) {
+      if (eCount >= 2) {
         await enabledInputs.nth(0).fill(dateFrom)
-        await page.keyboard.press('Tab')
+        await page.waitForTimeout(200)
+        await enabledInputs.nth(1).fill(dateTo)
+        await page.keyboard.press('Enter')
+        await page.waitForTimeout(500)
+        console.log(`  → 날짜 입력 완료: ${dateFrom} ~ ${dateTo}`)
+        dateSet = true
+      }
+      break
+    }
+  }
+
+  // 4. select가 없거나 맞춤 옵션이 없는 경우: "기간 설정" 아이콘 또는 날짜 영역 클릭
+  if (!dateSet) {
+    // "기간 설정" 텍스트/아이콘 클릭 시도
+    const periodSettingBtn = page.locator('text=기간 설정, [title="기간 설정"], button:has-text("기간")')
+    if (await periodSettingBtn.count().catch(() => 0) > 0) {
+      await periodSettingBtn.first().click()
+      await page.waitForTimeout(500)
+      console.log('  → "기간 설정" 버튼 클릭')
+    }
+
+    // 날짜 입력 시도 (disabled가 아닌 것)
+    const inputs = page.locator('input:not([disabled])')
+    const inputCount = await inputs.count()
+    for (let i = 0; i < inputCount; i++) {
+      const placeholder = await inputs.nth(i).getAttribute('placeholder').catch(() => '')
+      const value = await inputs.nth(i).getAttribute('value').catch(() => '')
+      if (placeholder?.includes('시작') || /^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) {
+        await inputs.nth(i).click()
+        await inputs.nth(i).fill(dateFrom)
         await page.waitForTimeout(300)
-        const secondInputs = page.locator('.ant-picker-input input:not([disabled])')
-        if (await secondInputs.count() >= 2) {
-          await secondInputs.nth(1).fill(dateTo)
+        // 다음 input
+        if (i + 1 < inputCount) {
+          await inputs.nth(i + 1).fill(dateTo)
         }
         await page.keyboard.press('Enter')
         await page.waitForTimeout(500)
-        console.log(`  → RangePicker 입력: ${dateFrom} ~ ${dateTo}`)
-      } else {
-        await page.keyboard.press('Escape')
-        console.log('  → 날짜 입력 활성화 실패 — 기본값 사용')
+        console.log(`  → input 직접 입력: ${dateFrom} ~ ${dateTo}`)
+        dateSet = true
+        break
       }
-    } else {
-      console.log('  → 날짜 입력 셀렉터 없음 — 기본값 사용')
     }
+  }
+
+  if (!dateSet) {
+    console.log(`  → 날짜 설정 실패 — 쿠팡 기본값 사용 (dateFrom=${dateFrom}, dateTo=${dateTo})`)
   }
 }
 
