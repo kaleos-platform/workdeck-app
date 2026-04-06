@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Bot, Cable, RefreshCw } from 'lucide-react'
+import { Bell, Bot, Cable, RefreshCw } from 'lucide-react'
 import { CredentialForm } from '@/components/settings/credential-form'
 import { ScheduleConfig } from '@/components/settings/schedule-config'
 import { AnalysisSchedule } from '@/components/analysis/analysis-schedule'
@@ -69,6 +69,10 @@ export default function CoupangAdsSettingsPage() {
             자동 수집
             <StatusDot active={scheduleActive} />
           </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-1.5">
+            <Bell className="h-4 w-4" />
+            알림
+          </TabsTrigger>
           <TabsTrigger value="integration" className="gap-1.5">
             <Cable className="h-4 w-4" />
             쿠팡 연동
@@ -78,8 +82,11 @@ export default function CoupangAdsSettingsPage() {
 
         <TabsContent value="agent" className="space-y-6">
           <AgentConfig />
-          <AgentScheduledMessages onNavigateTab={setActiveTab} />
           <AgentActivityLog />
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-6">
+          <AgentScheduledMessages onNavigateTab={setActiveTab} />
         </TabsContent>
 
         <TabsContent value="auto-collect" className="space-y-6">
