@@ -24,4 +24,5 @@ export interface ImprovementSuggestion {
 export interface AnalysisResult {
   suggestions: Suggestion[]
   improvementSuggestions: ImprovementSuggestion[]
+  modelUsed: string
 }

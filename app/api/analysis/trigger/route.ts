@@ -92,7 +92,7 @@ async function runAnalysis(
           inefficientKeywordCount: context.inefficientKeywords.length,
           improvementSuggestions: JSON.parse(JSON.stringify(result.improvementSuggestions)),
           activeRulesCount: context.activeRules.length,
-          model: 'qwen3:14b',
+          model: result.modelUsed,
         },
       },
     })

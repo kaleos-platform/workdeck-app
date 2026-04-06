@@ -22,16 +22,17 @@ export async function GET() {
     where: { workspaceId: workspace.id },
   })
 
-  // 스케줄이 없으면 기본값 반환
   if (!schedule) {
-    return NextResponse.json(DEFAULT_SCHEDULE)
+    return NextResponse.json({ schedule: DEFAULT_SCHEDULE })
   }
 
   return NextResponse.json({
-    enabled: schedule.enabled,
-    intervalDays: schedule.intervalDays,
-    slackNotify: schedule.slackNotify,
-    lastAnalyzedAt: schedule.lastAnalyzedAt,
+    schedule: {
+      enabled: schedule.enabled,
+      intervalDays: schedule.intervalDays,
+      slackNotify: schedule.slackNotify,
+      lastAnalyzedAt: schedule.lastAnalyzedAt,
+    },
   })
 }
 
@@ -72,9 +73,11 @@ export async function PUT(request: NextRequest) {
   })
 
   return NextResponse.json({
-    enabled: schedule.enabled,
-    intervalDays: schedule.intervalDays,
-    slackNotify: schedule.slackNotify,
-    lastAnalyzedAt: schedule.lastAnalyzedAt,
+    schedule: {
+      enabled: schedule.enabled,
+      intervalDays: schedule.intervalDays,
+      slackNotify: schedule.slackNotify,
+      lastAnalyzedAt: schedule.lastAnalyzedAt,
+    },
   })
 }

@@ -16,7 +16,12 @@ const SOURCE_LABELS: Record<AnalysisRule['source'], { label: string; className: 
   system: { label: '시스템', className: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
 }
 
-export function AnalysisRules() {
+type Props = {
+  onRulesCountChange?: (count: number) => void
+  embedded?: boolean
+}
+
+export function AnalysisRules({ onRulesCountChange, embedded }: Props = {}) {
   const [rules, setRules] = useState<AnalysisRule[]>([])
   const [loading, setLoading] = useState(true)
   const [newRule, setNewRule] = useState('')
@@ -29,12 +34,14 @@ export function AnalysisRules() {
       const res = await fetch('/api/analysis/rules')
       if (res.ok) {
         const data = await res.json()
-        setRules(Array.isArray(data) ? data : data.rules ?? [])
+        const list = Array.isArray(data) ? data : data.rules ?? []
+        setRules(list)
+        onRulesCountChange?.(list.length)
       }
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [onRulesCountChange])
 
   useEffect(() => {
     fetchRules()
@@ -109,12 +116,8 @@ export function AnalysisRules() {
     return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">규칙 목록</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+  const content = (
+      <div className="space-y-4">
         {/* 규칙 추가 */}
         <div className="flex items-center gap-2">
           <Input
@@ -189,7 +192,17 @@ export function AnalysisRules() {
             })}
           </div>
         )}
-      </CardContent>
+      </div>
+  )
+
+  if (embedded) return content
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">규칙 목록</CardTitle>
+      </CardHeader>
+      <CardContent>{content}</CardContent>
     </Card>
   )
 }

@@ -1,13 +1,17 @@
-// AI 분석 엔진 — Ollama 기반 광고 성과 분석
+// AI 분석 엔진 — OpenRouter 기반 광고 성과 분석
 
 import type { AnalysisType } from '@/generated/prisma/client'
 import { getSystemPrompt } from './prompts'
 import type { Suggestion, AnalysisResult, ImprovementSuggestion } from './suggestion-types'
 import type { AnalysisContext } from '@/lib/analysis/data-builder'
 
-// Ollama 직접 HTTP 호출 (ollama 패키지의 fetch가 Next.js 런타임에서 실패)
-const OLLAMA_URL = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434'
-const MODEL = 'qwen3:14b'
+// OpenRouter API 설정
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY ?? ''
+
+// 모델 우선순위 (무료 티어)
+const PRIMARY_MODEL = 'qwen/qwen3.6-plus:free'
+const FALLBACK_MODEL = 'minimax/minimax-m2.5:free'
 
 export interface AnalysisInput {
   reportType: AnalysisType
@@ -44,48 +48,77 @@ export interface InefficientKeyword {
  * 광고 성과 데이터를 AI로 분석하여 제안 목록 + 개선 규칙을 반환
  */
 export async function analyzeAdPerformance(data: AnalysisContext): Promise<AnalysisResult> {
-  // 활성 규칙을 시스템 프롬프트에 주입
-  const systemPrompt = getSystemPrompt(data.reportType, data.activeRules)
-
-  // 사용자 프롬프트 구성 (확장된 컨텍스트 포함)
-  const userPrompt = buildUserPrompt(data)
-
-  // Ollama HTTP API 직접 호출
-  const ollamaRes = await fetch(`${OLLAMA_URL}/api/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: MODEL,
-      format: 'json',
-      stream: false,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  })
-
-  if (!ollamaRes.ok) {
-    throw new Error(`Ollama API 에러: ${ollamaRes.status} ${ollamaRes.statusText}`)
+  if (!OPENROUTER_API_KEY) {
+    throw new Error('OPENROUTER_API_KEY 환경변수가 설정되지 않았습니다')
   }
 
-  const response = await ollamaRes.json()
-  const content = response.message.content
-  const parsed = JSON.parse(content)
+  const systemPrompt = getSystemPrompt(data.reportType, data.activeRules)
+  const userPrompt = buildUserPrompt(data)
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt },
+  ]
 
-  // suggestions 파싱 — 배열 또는 { suggestions: [...] } 형태 모두 처리
+  // Primary 모델 시도
+  try {
+    return await callOpenRouter(PRIMARY_MODEL, messages)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.warn(`[analyzer] Primary 모델 실패 (${PRIMARY_MODEL}): ${message}`)
+
+    // 429 또는 5xx인 경우 fallback
+    if (message.includes('429') || message.includes('5')) {
+      console.log(`[analyzer] Fallback 모델로 재시도: ${FALLBACK_MODEL}`)
+      return await callOpenRouter(FALLBACK_MODEL, messages)
+    }
+
+    throw err
+  }
+}
+
+/** OpenRouter API 호출 */
+async function callOpenRouter(
+  model: string,
+  messages: Array<{ role: string; content: string }>,
+): Promise<AnalysisResult> {
+  const res = await fetch(OPENROUTER_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'HTTP-Referer': 'https://workdeck.work',
+      'X-Title': 'Workdeck',
+    },
+    body: JSON.stringify({ model, messages }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`OpenRouter API 에러 [${res.status}]: ${body.slice(0, 200)}`)
+  }
+
+  const response = await res.json()
+  const content = response.choices?.[0]?.message?.content
+
+  if (!content) {
+    throw new Error('OpenRouter 응답에 content가 없습니다')
+  }
+
+  // JSON 파싱 — 코드블록 감싸진 경우도 처리
+  const jsonStr = content.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim()
+  const parsed = JSON.parse(jsonStr)
+
   const suggestions: Suggestion[] = Array.isArray(parsed)
     ? parsed
     : Array.isArray(parsed.suggestions)
       ? parsed.suggestions
       : []
 
-  // improvementSuggestions 파싱
   const improvementSuggestions: ImprovementSuggestion[] = Array.isArray(parsed.improvementSuggestions)
     ? parsed.improvementSuggestions
     : []
 
-  return { suggestions, improvementSuggestions }
+  return { suggestions, improvementSuggestions, modelUsed: model }
 }
 
 /** 분석 데이터를 사용자 프롬프트 문자열로 변환 (확장) */
@@ -144,7 +177,6 @@ function buildUserPrompt(data: AnalysisContext): string {
   // 캠페인 목표 ROAS / 일예산
   if (data.campaignTargets.length > 0) {
     lines.push('', '## 캠페인 목표 설정 (목표 ROAS 대비 실적 비교 필요)')
-    // 캠페인별 최신 목표만 표시
     const latestTargets = new Map<string, typeof data.campaignTargets[0]>()
     for (const t of data.campaignTargets) {
       if (!latestTargets.has(t.campaignId)) {
