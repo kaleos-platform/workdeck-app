@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { CalendarClock, Loader2 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -110,7 +110,13 @@ export function AnalysisSchedule() {
 
   return (
     <Card>
-      <CardContent className="space-y-6 pt-6">
+      <CardHeader>
+        <CardTitle>자동 분석 설정</CardTitle>
+        <CardDescription>
+          수집된 광고 데이터를 주기적으로 AI 분석하여 개선 제안을 생성합니다.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
         {/* 자동 분석 on/off */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">

@@ -6,6 +6,7 @@ import { Bot, Cable, Clock, RefreshCw } from 'lucide-react'
 import { CredentialForm } from '@/components/settings/credential-form'
 import { ScheduleConfig } from '@/components/settings/schedule-config'
 import { CollectionHistory } from '@/components/settings/collection-history'
+import { AnalysisSchedule } from '@/components/analysis/analysis-schedule'
 import { AgentConfig } from '@/components/settings/agent-config'
 import { AgentScheduledMessages } from '@/components/settings/agent-scheduled-messages'
 import { AgentActivityLog } from '@/components/settings/agent-activity-log'
@@ -46,8 +47,9 @@ export default function CoupangAdsSettingsPage() {
           <CredentialForm />
         </TabsContent>
 
-        <TabsContent value="auto-collect">
+        <TabsContent value="auto-collect" className="space-y-6">
           <ScheduleConfig />
+          <AnalysisSchedule />
         </TabsContent>
 
         <TabsContent value="history">

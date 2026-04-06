@@ -58,7 +58,7 @@ export function AgentScheduledMessages({ onNavigateTab }: Props) {
       .then(([collectionRaw, analysisRaw]) => {
         const collection: CollectionSchedule | null = collectionRaw?.schedule ?? null
         const analysis: AnalysisSchedule | null =
-          analysisRaw?.enabled !== undefined ? analysisRaw : null
+          analysisRaw?.schedule ?? null
 
         const items: ScheduledMessage[] = []
 
