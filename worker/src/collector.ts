@@ -235,19 +235,7 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
     }
   }
 
-  // 2. 프리셋 사용 (최근 7일, 지난주)
-  const presets = ['지난주', '최근 7일', '이번달']
-  for (const preset of presets) {
-    const btn = page.locator(`button:has-text("${preset}"), label:has-text("${preset}")`)
-    if (await btn.first().isVisible({ timeout: 2000 }).catch(() => false)) {
-      await btn.first().click()
-      await page.waitForTimeout(1000)
-      console.log(`  → 프리셋: ${preset}`)
-      return
-    }
-  }
-
-  // 3. 직접 날짜 입력
+  // 2. 직접 날짜 입력 (프리셋 대신 항상 정확한 날짜 사용)
   const dateInputs = page.locator('input[type="date"], input[type="text"][class*="date"]')
   const dateInputCount = await dateInputs.count()
   if (dateInputCount >= 2) {
