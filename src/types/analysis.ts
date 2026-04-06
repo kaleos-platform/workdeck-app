@@ -42,6 +42,7 @@ export interface AnalysisReport {
   summary: string
   suggestions: Suggestion[]
   improvementSuggestions?: ImprovementSuggestion[]
+  metadata?: Record<string, unknown>
   status: AnalysisStatus
   createdAt: string
 }

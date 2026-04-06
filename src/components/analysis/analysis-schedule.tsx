@@ -49,7 +49,11 @@ function getNextDate(lastAnalyzedAt: string | null, intervalDays: number): strin
   })
 }
 
-export function AnalysisSchedule() {
+type AnalysisScheduleProps = {
+  embedded?: boolean // Dialog 내부 등 Card 래핑 없이 사용
+}
+
+export function AnalysisSchedule({ embedded }: AnalysisScheduleProps = {}) {
   const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -108,16 +112,9 @@ export function AnalysisSchedule() {
     )
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>자동 분석 설정</CardTitle>
-        <CardDescription>
-          수집된 광고 데이터를 주기적으로 AI 분석하여 개선 제안을 생성합니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* 자동 분석 on/off */}
+  const content = (
+    <div className="space-y-6">
+      {/* 자동 분석 on/off */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="auto-analysis" className="text-sm font-medium">
@@ -201,14 +198,27 @@ export function AnalysisSchedule() {
           분석 실행 버튼으로 수동 실행할 수 있습니다.
         </p>
 
-        {/* Saving indicator */}
-        {saving && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            저장 중...
-          </div>
-        )}
-      </CardContent>
+      {/* Saving indicator */}
+      {saving && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          저장 중...
+        </div>
+      )}
+    </div>
+  )
+
+  if (embedded) return content
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>자동 분석 설정</CardTitle>
+        <CardDescription>
+          수집된 광고 데이터를 주기적으로 AI 분석하여 개선 제안을 생성합니다.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>{content}</CardContent>
     </Card>
   )
 }
