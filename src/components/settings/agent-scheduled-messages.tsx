@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import {
   Bell,
   CalendarClock,
@@ -39,7 +40,9 @@ type ScheduledMessage = {
   schedule: string
   status: 'active' | 'inactive' | 'not-configured'
   nextRun: string | null
-  configTab: string | null // 설정 탭 이름 (링크용)
+  configTab: string | null
+  toggleable: boolean
+  toggled: boolean
 }
 
 type Props = {
@@ -49,6 +52,7 @@ type Props = {
 export function AgentScheduledMessages({ onNavigateTab }: Props) {
   const [messages, setMessages] = useState<ScheduledMessage[]>([])
   const [loading, setLoading] = useState(true)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -57,57 +61,47 @@ export function AgentScheduledMessages({ onNavigateTab }: Props) {
     ])
       .then(([collectionRaw, analysisRaw]) => {
         const collection: CollectionSchedule | null = collectionRaw?.schedule ?? null
-        const analysis: AnalysisSchedule | null =
-          analysisRaw?.schedule ?? null
+        const analysis: AnalysisSchedule | null = analysisRaw?.schedule ?? null
 
         const items: ScheduledMessage[] = []
 
-        // 수집 완료 + KPI 요약 알림 (통합)
+        // 수집 완료 + KPI 요약 알림
         const collectionConfigured = collection != null
         const collectionEnabled = collection?.enabled ?? false
         items.push({
           id: 'collection-kpi',
           icon: <Database className="h-4 w-4" />,
           title: '데이터 수집 완료 + KPI 요약',
-          description:
-            '자동 수집이 완료되면 수집 건수, 캠페인 정보, 주요 KPI(광고비, 매출, ROAS)를 Slack으로 전송합니다.',
+          description: '자동 수집 완료 시 수집 건수와 KPI를 Slack으로 전송합니다.',
           schedule: collectionConfigured
             ? `매일 ${cronToTime(collection!.cronExpression)} (${collection!.timezone})`
             : '스케줄 미설정',
-          status: collectionEnabled
-            ? 'active'
-            : collectionConfigured
-              ? 'inactive'
-              : 'not-configured',
-          nextRun: collectionEnabled
-            ? getNextCronRun(collection!.cronExpression, collection!.timezone)
-            : null,
-          configTab: collectionConfigured ? null : 'auto-collect',
+          status: collectionEnabled ? 'active' : collectionConfigured ? 'inactive' : 'not-configured',
+          nextRun: collectionEnabled ? getNextCronRun(collection!.cronExpression, collection!.timezone) : null,
+          configTab: collectionConfigured ? null : 'scheduled-tasks',
+          toggleable: false, // 수집 알림은 별도 필드 없음
+          toggled: collectionEnabled,
         })
 
         // 분석 완료 알림
         const analysisConfigured = analysis != null
-        const analysisEnabled =
-          (analysis?.enabled ?? false) && (analysis?.slackNotify ?? false)
+        const slackNotify = analysis?.slackNotify ?? false
+        const analysisActive = (analysis?.enabled ?? false) && slackNotify
         items.push({
           id: 'analysis-done',
           icon: <Sparkles className="h-4 w-4" />,
           title: '분석 완료 알림',
-          description:
-            '광고 분석이 완료되면 비효율 키워드와 절감 제안을 Slack으로 전송합니다.',
+          description: '광고 분석 완료 시 비효율 키워드와 절감 제안을 Slack으로 전송합니다.',
           schedule: analysisConfigured
             ? `${analysis!.intervalDays}일마다 자동 실행`
             : '스케줄 미설정',
-          status: analysisEnabled
-            ? 'active'
-            : analysisConfigured
-              ? 'inactive'
-              : 'not-configured',
-          nextRun:
-            analysisEnabled && analysis?.lastAnalyzedAt
-              ? getNextAnalysisRun(analysis.lastAnalyzedAt, analysis.intervalDays)
-              : null,
-          configTab: analysisConfigured ? null : 'auto-collect',
+          status: analysisActive ? 'active' : analysisConfigured ? 'inactive' : 'not-configured',
+          nextRun: analysisActive && analysis?.lastAnalyzedAt
+            ? getNextAnalysisRun(analysis.lastAnalyzedAt, analysis.intervalDays)
+            : null,
+          configTab: analysisConfigured ? null : 'scheduled-tasks',
+          toggleable: analysisConfigured && (analysis?.enabled ?? false), // 분석이 활성일 때만 토글 가능
+          toggled: slackNotify,
         })
 
         setMessages(items)
@@ -115,6 +109,30 @@ export function AgentScheduledMessages({ onNavigateTab }: Props) {
       .catch(() => setMessages([]))
       .finally(() => setLoading(false))
   }, [])
+
+  async function handleToggle(msgId: string, newValue: boolean) {
+    if (msgId === 'analysis-done') {
+      setTogglingId(msgId)
+      try {
+        const res = await fetch('/api/analysis/schedule', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slackNotify: newValue }),
+        })
+        if (res.ok) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === msgId
+                ? { ...m, toggled: newValue, status: newValue ? 'active' : 'inactive' }
+                : m,
+            ),
+          )
+        }
+      } finally {
+        setTogglingId(null)
+      }
+    }
+  }
 
   const activeCount = messages.filter((m) => m.status === 'active').length
 
@@ -174,7 +192,6 @@ export function AgentScheduledMessages({ onNavigateTab }: Props) {
                   </div>
                   <p className="text-xs text-muted-foreground">{msg.description}</p>
 
-                  {/* 스케줄 정보 */}
                   <div className="flex items-center gap-3 pt-1">
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <CalendarClock className="h-3 w-3" />
@@ -187,7 +204,6 @@ export function AgentScheduledMessages({ onNavigateTab }: Props) {
                     )}
                   </div>
 
-                  {/* 미설정 안내 */}
                   {msg.status === 'not-configured' && msg.configTab && onNavigateTab && (
                     <button
                       type="button"
@@ -195,8 +211,21 @@ export function AgentScheduledMessages({ onNavigateTab }: Props) {
                       onClick={() => onNavigateTab(msg.configTab!)}
                     >
                       <ExternalLink className="h-3 w-3" />
-                      자동 수집 탭에서 스케줄을 설정하세요
+                      예약 작업 탭에서 스케줄을 설정하세요
                     </button>
+                  )}
+                </div>
+
+                {/* 토글 */}
+                <div className="shrink-0 pt-1">
+                  {msg.toggleable ? (
+                    <Switch
+                      checked={msg.toggled}
+                      disabled={togglingId === msg.id}
+                      onCheckedChange={(v) => handleToggle(msg.id, v)}
+                    />
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">자동</span>
                   )}
                 </div>
               </div>
@@ -208,78 +237,38 @@ export function AgentScheduledMessages({ onNavigateTab }: Props) {
   )
 }
 
-// ─── 상태 뱃지 ──────────────────────────────────────────────────────────────
-
 function StatusBadge({ status }: { status: ScheduledMessage['status'] }) {
   switch (status) {
     case 'active':
-      return (
-        <Badge variant="default" className="text-[10px] px-1.5 py-0">
-          활성
-        </Badge>
-      )
+      return <Badge variant="default" className="text-[10px] px-1.5 py-0">활성</Badge>
     case 'inactive':
-      return (
-        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-          비활성
-        </Badge>
-      )
+      return <Badge variant="secondary" className="text-[10px] px-1.5 py-0">비활성</Badge>
     case 'not-configured':
-      return (
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-yellow-600 border-yellow-300">
-          미설정
-        </Badge>
-      )
+      return <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-yellow-600 border-yellow-300">미설정</Badge>
   }
 }
 
-// ─── 유틸리티 ────────────────────────────────────────────────────────────────
-
-/** cron "30 12 * * *" → "12:30" */
 function cronToTime(cron: string): string {
   const parts = cron.split(' ')
   if (parts.length < 2) return cron
-  const minute = parts[0].padStart(2, '0')
-  const hour = parts[1].padStart(2, '0')
-  return `${hour}:${minute}`
+  return `${parts[1].padStart(2, '0')}:${parts[0].padStart(2, '0')}`
 }
 
-/** cron 다음 실행 시각 계산 (단순: 오늘/내일 기준) */
 function getNextCronRun(cron: string, _timezone: string): string | null {
   const parts = cron.split(' ')
   if (parts.length < 2) return null
-
   const minute = parseInt(parts[0], 10)
   const hour = parseInt(parts[1], 10)
   if (isNaN(minute) || isNaN(hour)) return null
-
-  const now = new Date()
   const next = new Date()
   next.setHours(hour, minute, 0, 0)
-
-  if (next <= now) {
-    next.setDate(next.getDate() + 1)
-  }
-
-  return next.toLocaleString('ko-KR', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  if (next <= new Date()) next.setDate(next.getDate() + 1)
+  return next.toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
-/** 분석 다음 실행 시각 계산 */
 function getNextAnalysisRun(lastAnalyzedAt: string, intervalDays: number): string | null {
   const last = new Date(lastAnalyzedAt)
   if (isNaN(last.getTime())) return null
-
   const next = new Date(last.getTime() + intervalDays * 24 * 60 * 60 * 1000)
-
-  return next.toLocaleString('ko-KR', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return next.toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }

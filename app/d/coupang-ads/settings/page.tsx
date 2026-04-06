@@ -64,9 +64,9 @@ export default function CoupangAdsSettingsPage() {
             에이전트
             <StatusDot active={agentActive} />
           </TabsTrigger>
-          <TabsTrigger value="auto-collect" className="gap-1.5">
+          <TabsTrigger value="scheduled-tasks" className="gap-1.5">
             <RefreshCw className="h-4 w-4" />
-            자동 수집
+            예약 작업
             <StatusDot active={scheduleActive} />
           </TabsTrigger>
           <TabsTrigger value="notifications" className="gap-1.5">
@@ -89,7 +89,7 @@ export default function CoupangAdsSettingsPage() {
           <AgentScheduledMessages onNavigateTab={setActiveTab} />
         </TabsContent>
 
-        <TabsContent value="auto-collect" className="space-y-6">
+        <TabsContent value="scheduled-tasks" className="space-y-6">
           <ScheduleConfig />
           <AnalysisSchedule />
         </TabsContent>
