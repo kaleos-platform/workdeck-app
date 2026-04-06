@@ -235,15 +235,57 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
     }
   }
 
-  // 2. 직접 날짜 입력 (프리셋 대신 항상 정확한 날짜 사용)
-  const dateInputs = page.locator('input[type="date"], input[type="text"][class*="date"]')
-  const dateInputCount = await dateInputs.count()
+  // 2. 직접 날짜 입력 (Ant Design DatePicker 호환)
+  // 셀렉터 우선순위: Ant Design 5.x → 4.x → placeholder → generic input
+  const dateSelectors = [
+    '.ant-picker-input input',
+    '.ant-calendar-picker-input',
+    'input[placeholder*="날짜"]',
+    'input[placeholder*="시작"]',
+    'input[type="date"]',
+    'input[type="text"][class*="date"]',
+  ]
+
+  let dateInputs = page.locator('_none_') // 빈 로케이터
+  let dateInputCount = 0
+
+  for (const selector of dateSelectors) {
+    const locator = page.locator(selector)
+    const count = await locator.count().catch(() => 0)
+    if (count >= 2) {
+      dateInputs = locator
+      dateInputCount = count
+      console.log(`  → 날짜 셀렉터 발견: "${selector}" (${count}개)`)
+      break
+    }
+  }
+
   if (dateInputCount >= 2) {
-    await dateInputs.nth(0).fill(dateFrom)
-    await dateInputs.nth(1).fill(dateTo)
+    // Ant DatePicker: click → 전체 선택 → type으로 입력
+    for (const [idx, value] of [[0, dateFrom], [1, dateTo]] as [number, string][]) {
+      await dateInputs.nth(idx).click()
+      await page.waitForTimeout(300)
+      await dateInputs.nth(idx).fill('')
+      await dateInputs.nth(idx).type(value, { delay: 50 })
+      await page.waitForTimeout(300)
+    }
+    // Enter로 확정 후 DatePicker 닫기
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(500)
     console.log(`  → 날짜 직접 입력: ${dateFrom} ~ ${dateTo}`)
   } else {
-    console.log('  → 날짜 설정 셀렉터를 찾지 못함 (기본값 사용)')
+    // 모든 input을 디버깅 출력
+    const allInputs = page.locator('input')
+    const inputCount = await allInputs.count()
+    const inputInfo: string[] = []
+    for (let i = 0; i < Math.min(inputCount, 10); i++) {
+      const type = await allInputs.nth(i).getAttribute('type').catch(() => '?')
+      const placeholder = await allInputs.nth(i).getAttribute('placeholder').catch(() => '')
+      const cls = await allInputs.nth(i).getAttribute('class').catch(() => '')
+      inputInfo.push(`[${i}] type=${type} placeholder="${placeholder}" class="${cls?.slice(0, 30)}"`)
+    }
+    console.log(`  → 날짜 설정 셀렉터를 찾지 못함 (input ${inputCount}개):`)
+    inputInfo.forEach(info => console.log(`    ${info}`))
   }
 }
 
