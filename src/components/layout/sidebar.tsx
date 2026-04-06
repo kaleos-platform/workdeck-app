@@ -47,7 +47,7 @@ const COUPANG_MAIN_ROUTES = [
     href: COUPANG_ADS_BASE_PATH,
   },
   {
-    label: '리포트 업로드',
+    label: '데이터 수집',
     icon: UploadCloud,
     href: COUPANG_ADS_UPLOAD_PATH,
   },

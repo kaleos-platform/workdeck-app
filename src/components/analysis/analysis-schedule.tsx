@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { CalendarClock, Loader2 } from 'lucide-react'
+import { CalendarClock, ExternalLink, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { COUPANG_ADS_SETTINGS_PATH } from '@/lib/deck-routes'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -171,6 +173,15 @@ export function AnalysisSchedule({ embedded }: AnalysisScheduleProps = {}) {
             onCheckedChange={handleSlackChange}
           />
         </div>
+        {embedded && (
+          <Link
+            href={`${COUPANG_ADS_SETTINGS_PATH}?tab=agent`}
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            <ExternalLink className="h-3 w-3" />
+            Slack 연동 설정으로 이동
+          </Link>
+        )}
 
         {/* 날짜 정보 */}
         <div className="rounded-lg border bg-muted/30 p-4">

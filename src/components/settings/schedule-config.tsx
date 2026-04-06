@@ -33,7 +33,11 @@ function timeToCron(time: string): string {
   return `${minute || '0'} ${hour || '12'} * * *`
 }
 
-export function ScheduleConfig() {
+type ScheduleConfigProps = {
+  embedded?: boolean
+}
+
+export function ScheduleConfig({ embedded }: ScheduleConfigProps = {}) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [enabled, setEnabled] = useState(false)
@@ -98,6 +102,70 @@ export function ScheduleConfig() {
     })
   }
 
+  const content = isLoading ? (
+    <div className="flex items-center justify-center py-8">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  ) : (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="space-y-0.5">
+          <Label htmlFor="auto-collect" className="text-base font-medium">
+            자동 수집 활성화
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            매일 지정된 시간에 자동으로 데이터를 수집합니다
+          </p>
+        </div>
+        <Switch
+          id="auto-collect"
+          checked={enabled}
+          onCheckedChange={setEnabled}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="collection-time" className="flex items-center gap-2">
+          <Clock className="h-4 w-4" />
+          수집 시간
+        </Label>
+        <Input
+          id="collection-time"
+          type="time"
+          value={collectionTime}
+          onChange={(e) => setCollectionTime(e.target.value)}
+          className="w-40"
+          disabled={!enabled}
+        />
+        <p className="text-xs text-muted-foreground">
+          매일 이 시간에 자동 수집이 실행됩니다 (한국 시간 기준)
+        </p>
+      </div>
+
+      {enabled && nextRunAt && (
+        <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-3">
+          <CalendarClock className="h-4 w-4 text-muted-foreground" />
+          <p className="text-sm">
+            다음 수집 예정: <span className="font-medium">{formatNextRun(nextRunAt)}</span>
+          </p>
+        </div>
+      )}
+
+      <Button onClick={handleSave} disabled={isSaving}>
+        {isSaving ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            저장 중...
+          </>
+        ) : (
+          '설정 저장'
+        )}
+      </Button>
+    </div>
+  )
+
+  if (embedded) return content
+
   return (
     <Card>
       <CardHeader>
@@ -106,69 +174,7 @@ export function ScheduleConfig() {
           설정된 시간에 쿠팡 광고 데이터를 자동으로 수집합니다.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <Label htmlFor="auto-collect" className="text-base font-medium">
-                  자동 수집 활성화
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  매일 지정된 시간에 자동으로 데이터를 수집합니다
-                </p>
-              </div>
-              <Switch
-                id="auto-collect"
-                checked={enabled}
-                onCheckedChange={setEnabled}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="collection-time" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                수집 시간
-              </Label>
-              <Input
-                id="collection-time"
-                type="time"
-                value={collectionTime}
-                onChange={(e) => setCollectionTime(e.target.value)}
-                className="w-40"
-                disabled={!enabled}
-              />
-              <p className="text-xs text-muted-foreground">
-                매일 이 시간에 자동 수집이 실행됩니다 (한국 시간 기준)
-              </p>
-            </div>
-
-            {enabled && nextRunAt && (
-              <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-3">
-                <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm">
-                  다음 수집 예정: <span className="font-medium">{formatNextRun(nextRunAt)}</span>
-                </p>
-              </div>
-            )}
-
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  저장 중...
-                </>
-              ) : (
-                '설정 저장'
-              )}
-            </Button>
-          </div>
-        )}
-      </CardContent>
+      <CardContent>{content}</CardContent>
     </Card>
   )
 }

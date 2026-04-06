@@ -9,7 +9,9 @@ import {
   Loader2,
   Settings2,
   Sliders,
+  Trash2,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -107,6 +109,24 @@ export default function AnalysisPage() {
   function handlePresetClick(days: DatePreset) {
     setActivePreset(days)
     setDateRange(getPresetRange(days))
+  }
+
+  async function handleDeleteReport(reportId: string) {
+    if (!confirm('이 분석 리포트를 삭제하시겠습니까?')) return
+    try {
+      const res = await fetch(`/api/analysis/reports/${reportId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setReports((prev) => prev.filter((r) => r.id !== reportId))
+        if (selectedReportId === reportId) {
+          setSelectedReportId(reports.find((r) => r.id !== reportId)?.id ?? null)
+        }
+        toast.success('리포트가 삭제되었습니다')
+      } else {
+        toast.error('삭제에 실패했습니다')
+      }
+    } catch {
+      toast.error('삭제 중 오류가 발생했습니다')
+    }
   }
 
   const selectedReport = reports.find((r) => r.id === selectedReportId) ?? null
@@ -275,35 +295,43 @@ export default function AnalysisPage() {
                 const metadata = report.metadata as { campaignCount?: number } | null
 
                 return (
-                  <button
-                    key={report.id}
-                    type="button"
-                    onClick={() => setSelectedReportId(report.id)}
-                    className={cn(
-                      'w-full rounded-lg border p-3 text-left transition-colors',
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:bg-muted/50',
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium">
-                        {date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                        {' '}
-                        {date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                      <StatusDot status={report.status} />
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground truncate">
-                      {report.status === 'COMPLETED'
-                        ? `${metadata?.campaignCount ?? '-'}개 캠페인, ${suggestionCount}개 제안`
-                        : report.status === 'FAILED'
-                          ? '분석 실패'
-                          : report.status === 'PROCESSING'
-                            ? '분석 중...'
-                            : '대기 중'}
-                    </p>
-                  </button>
+                  <div key={report.id} className="group relative">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedReportId(report.id)}
+                      className={cn(
+                        'w-full rounded-lg border p-3 text-left transition-colors',
+                        isSelected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:bg-muted/50',
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium">
+                          {date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                          {' '}
+                          {date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <StatusDot status={report.status} />
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground truncate">
+                        {report.status === 'COMPLETED'
+                          ? `${metadata?.campaignCount ?? '-'}개 캠페인, ${suggestionCount}개 제안`
+                          : report.status === 'FAILED'
+                            ? '분석 실패'
+                            : report.status === 'PROCESSING'
+                              ? '분석 중...'
+                              : '대기 중'}
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteReport(report.id) }}
+                      className="absolute top-2 right-2 hidden rounded p-1 text-muted-foreground hover:text-destructive group-hover:block"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
                 )
               })}
             </div>

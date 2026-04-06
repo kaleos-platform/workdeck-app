@@ -1,18 +1,52 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Bot, Cable, Clock, RefreshCw } from 'lucide-react'
+import { Bot, Cable, RefreshCw } from 'lucide-react'
 import { CredentialForm } from '@/components/settings/credential-form'
 import { ScheduleConfig } from '@/components/settings/schedule-config'
-import { CollectionHistory } from '@/components/settings/collection-history'
 import { AnalysisSchedule } from '@/components/analysis/analysis-schedule'
 import { AgentConfig } from '@/components/settings/agent-config'
 import { AgentScheduledMessages } from '@/components/settings/agent-scheduled-messages'
 import { AgentActivityLog } from '@/components/settings/agent-activity-log'
+import { cn } from '@/lib/utils'
+
+function StatusDot({ active }: { active: boolean | null }) {
+  if (active === null) return null
+  return (
+    <span
+      className={cn(
+        'inline-block h-1.5 w-1.5 rounded-full',
+        active ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600',
+      )}
+    />
+  )
+}
 
 export default function CoupangAdsSettingsPage() {
-  const [activeTab, setActiveTab] = useState('integration')
+  const searchParams = useSearchParams()
+  const initialTab = searchParams.get('tab') ?? 'agent'
+  const [activeTab, setActiveTab] = useState(initialTab)
+
+  // 탭 활성화 상태
+  const [agentActive, setAgentActive] = useState<boolean | null>(null)
+  const [scheduleActive, setScheduleActive] = useState<boolean | null>(null)
+  const [credentialActive, setCredentialActive] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    // 3개 API 병렬 호출로 활성화 상태 확인
+    Promise.all([
+      fetch('/api/deck-agents').then((r) => (r.ok ? r.json() : null)),
+      fetch('/api/collection/schedule').then((r) => (r.ok ? r.json() : null)),
+      fetch('/api/collection/credentials').then((r) => (r.ok ? r.json() : null)),
+    ]).then(([agentData, scheduleData, credData]) => {
+      const agent = agentData?.agent
+      setAgentActive(agent?.enabled ?? false)
+      setScheduleActive(scheduleData?.schedule?.enabled ?? false)
+      setCredentialActive(credData?.isConnected ?? false)
+    }).catch(() => {})
+  }, [])
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
@@ -25,26 +59,27 @@ export default function CoupangAdsSettingsPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
-          <TabsTrigger value="integration" className="gap-1.5">
-            <Cable className="h-4 w-4" />
-            쿠팡 연동
+          <TabsTrigger value="agent" className="gap-1.5">
+            <Bot className="h-4 w-4" />
+            에이전트
+            <StatusDot active={agentActive} />
           </TabsTrigger>
           <TabsTrigger value="auto-collect" className="gap-1.5">
             <RefreshCw className="h-4 w-4" />
             자동 수집
+            <StatusDot active={scheduleActive} />
           </TabsTrigger>
-          <TabsTrigger value="history" className="gap-1.5">
-            <Clock className="h-4 w-4" />
-            수집 이력
-          </TabsTrigger>
-          <TabsTrigger value="agent" className="gap-1.5">
-            <Bot className="h-4 w-4" />
-            에이전트
+          <TabsTrigger value="integration" className="gap-1.5">
+            <Cable className="h-4 w-4" />
+            쿠팡 연동
+            <StatusDot active={credentialActive} />
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="integration">
-          <CredentialForm />
+        <TabsContent value="agent" className="space-y-6">
+          <AgentConfig />
+          <AgentScheduledMessages onNavigateTab={setActiveTab} />
+          <AgentActivityLog />
         </TabsContent>
 
         <TabsContent value="auto-collect" className="space-y-6">
@@ -52,14 +87,8 @@ export default function CoupangAdsSettingsPage() {
           <AnalysisSchedule />
         </TabsContent>
 
-        <TabsContent value="history">
-          <CollectionHistory />
-        </TabsContent>
-
-        <TabsContent value="agent" className="space-y-6">
-          <AgentConfig />
-          <AgentScheduledMessages onNavigateTab={setActiveTab} />
-          <AgentActivityLog />
+        <TabsContent value="integration">
+          <CredentialForm />
         </TabsContent>
       </Tabs>
     </div>
