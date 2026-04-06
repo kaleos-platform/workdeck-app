@@ -25,7 +25,7 @@ export async function runCollectionForRun(runId: string): Promise<void> {
     console.log(`[manual] 상태: RUNNING (runId: ${runId})`)
 
     // ── Step 3~7: 공통 파이프라인 ──
-    downloadedFilePath = await executeCollectionPipeline(runId)
+    downloadedFilePath = await executeCollectionPipeline(runId, true)
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -113,7 +113,7 @@ export async function runCollection(triggeredBy: string = 'scheduled'): Promise<
 }
 
 /** Step 3~7 공통 파이프라인 — 자격증명 → 다운로드 → 파싱 → 업로드 → 완료 */
-async function executeCollectionPipeline(runId: string): Promise<string | null> {
+async function executeCollectionPipeline(runId: string, isManual = false): Promise<string | null> {
   // ── Step 3: 자격증명 복호화 ──
   console.log('자격증명 조회 및 복호화 중...')
   const credential = await getCredentials()
@@ -127,10 +127,19 @@ async function executeCollectionPipeline(runId: string): Promise<string | null> 
   await updateCollectionRun(runId, { status: 'DOWNLOADING' })
   console.log('상태: DOWNLOADING')
 
+  // 수동 수집: 최근 7일, 자동 수집: 어제 1일
+  const dateOptions = isManual
+    ? (() => {
+        const to = new Date(); to.setDate(to.getDate() - 1)
+        const from = new Date(); from.setDate(from.getDate() - 7)
+        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+      })()
+    : {}
+
   const result = await collectCoupangReport({
     loginId: credential.loginId,
     password,
-  })
+  }, dateOptions)
 
   console.log(`파일 다운로드 완료: ${result.fileName}`)
 
