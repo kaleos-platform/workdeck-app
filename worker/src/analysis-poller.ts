@@ -52,6 +52,13 @@ export function startAnalysisPoller(): void {
         const runRes = await workerFetch(`/api/analysis/reports/${report.id}/run`, {
           method: 'POST',
         })
+
+        if (!runRes.ok) {
+          const body = await runRes.text().catch(() => '')
+          console.error(`[analysis-poller] 분석 API 에러 [${runRes.status}]: ${body.slice(0, 200)}`)
+          return
+        }
+
         const result = await runRes.json() as {
           status: string
           summary?: string
