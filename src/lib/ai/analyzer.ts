@@ -10,8 +10,8 @@ const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY ?? ''
 
 // 모델 우선순위 (무료 티어)
-const PRIMARY_MODEL = 'deepseek/deepseek-chat-v3-0324:free'
-const FALLBACK_MODEL = 'qwen/qwen3-235b-a22b:free'
+const PRIMARY_MODEL = 'meta-llama/llama-3.3-70b-instruct:free'
+const FALLBACK_MODEL = 'google/gemma-3-27b-it:free'
 
 export interface AnalysisInput {
   reportType: AnalysisType

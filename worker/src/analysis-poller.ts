@@ -12,8 +12,8 @@ let isProcessing = false
 
 // OpenRouter API 설정
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const PRIMARY_MODEL = 'deepseek/deepseek-chat-v3-0324:free'
-const FALLBACK_MODEL = 'qwen/qwen3-235b-a22b:free'
+const PRIMARY_MODEL = 'meta-llama/llama-3.3-70b-instruct:free'
+const FALLBACK_MODEL = 'google/gemma-3-27b-it:free'
 
 function getBaseUrl(): string {
   const url = process.env.WORKDECK_API_URL
