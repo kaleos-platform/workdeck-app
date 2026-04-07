@@ -23,10 +23,17 @@ export function TriggerAnalysisButton({
   async function handleTrigger() {
     setLoading(true)
     try {
+      // 분석 기간: 항상 최근 30일
+      const toDate = new Date()
+      const fromDate = new Date()
+      fromDate.setDate(fromDate.getDate() - 30)
+      const analysisFrom = fromDate.toISOString().slice(0, 10)
+      const analysisTo = toDate.toISOString().slice(0, 10)
+
       const res = await fetch('/api/analysis/trigger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to }),
+        body: JSON.stringify({ from: analysisFrom, to: analysisTo }),
       })
 
       if (!res.ok) {

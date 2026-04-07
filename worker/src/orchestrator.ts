@@ -227,7 +227,7 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
 }
 
 /** 수집 후 자동 분석 트리거 — triggerAfterCollection이 활성화된 경우만 */
-async function triggerAnalysisAfterCollection(workspaceId: string, dateFrom: string, dateTo: string): Promise<void> {
+async function triggerAnalysisAfterCollection(workspaceId: string, _dateFrom: string, _dateTo: string): Promise<void> {
   // 스케줄 확인
   const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
   const apiKey = process.env.WORKER_API_KEY
@@ -238,19 +238,35 @@ async function triggerAnalysisAfterCollection(workspaceId: string, dateFrom: str
   })
   if (!scheduleRes.ok) return
 
-  const { schedules } = await scheduleRes.json() as { schedules: Array<{ workspaceId: string; triggerAfterCollection: boolean }> }
+  const { schedules } = await scheduleRes.json() as { schedules: Array<{ workspaceId: string; triggerAfterCollection: boolean; intervalDays: number; lastAnalyzedAt: string | null }> }
   const schedule = schedules.find((s) => s.workspaceId === workspaceId && s.triggerAfterCollection)
   if (!schedule) return
 
+  // intervalDays 경과 여부 확인 — 분석 간격이 지나야 수집 후 자동 분석
+  if (schedule.lastAnalyzedAt) {
+    const lastAnalyzed = new Date(schedule.lastAnalyzedAt)
+    const diffDays = (Date.now() - lastAnalyzed.getTime()) / (1000 * 60 * 60 * 24)
+    if (diffDays < schedule.intervalDays) {
+      console.log(`[orchestrator] 수집 후 분석 스킵 — 마지막 분석으로부터 ${diffDays.toFixed(1)}일 (간격: ${schedule.intervalDays}일)`)
+      return
+    }
+  }
+
   console.log('[orchestrator] 수집 후 자동 분석 트리거 실행')
+
+  // 항상 최근 30일 기준으로 종합 분석
+  const now = new Date()
+  const from30 = new Date(now)
+  from30.setDate(from30.getDate() - 30)
+  const formatDate = (d: Date) => d.toISOString().split('T')[0]
 
   const triggerRes = await fetch(`${baseUrl}/api/analysis/trigger`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-worker-api-key': apiKey },
     body: JSON.stringify({
       workspaceId,
-      from: dateFrom,
-      to: dateTo,
+      from: formatDate(from30),
+      to: formatDate(now),
       reportType: 'DAILY_REVIEW',
       triggeredBy: 'collection',
     }),

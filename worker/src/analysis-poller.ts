@@ -11,8 +11,8 @@ const POLL_INTERVAL = 30_000 // 30초
 let isProcessing = false
 
 // Gemini API 설정
-const GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash-lite'
-const GEMINI_FALLBACK_MODEL = 'gemini-2.0-flash-lite'
+const GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash'
+const GEMINI_FALLBACK_MODEL = 'gemini-2.5-flash-lite'
 
 function getBaseUrl(): string {
   const url = process.env.WORKDECK_API_URL
@@ -152,6 +152,42 @@ function buildUserPrompt(ctx: Record<string, unknown>): string {
     lines.push('', '## 비효율 키워드 (광고비 > 0, 주문 = 0)')
     for (const k of inefficientKeywords) {
       lines.push(`- [${k.campaignName}] "${k.keyword}": 광고비 ${Number(k.adCost).toLocaleString()}원, 클릭 ${k.clicks}, 노출 ${k.impressions}`)
+    }
+  }
+
+  // 제거된 키워드 히스토리
+  const removedKeywords = ctx.removedKeywords as Array<Record<string, unknown>> ?? []
+  if (removedKeywords.length > 0) {
+    lines.push('', '## 이미 제거된 키워드 (다시 제안하지 마세요)')
+    for (const k of removedKeywords) {
+      const memo = k.removedMemo ? ` (사유: ${k.removedMemo})` : ''
+      const removedDate = k.removedAt ? String(k.removedAt).split('T')[0] : ''
+      lines.push(`- [${k.campaignId}] "${k.keyword}" — 제거일: ${removedDate}${memo}`)
+    }
+  }
+
+  // 캠페인 목표 설정
+  const campaignTargets = ctx.campaignTargets as Array<Record<string, unknown>> ?? []
+  if (campaignTargets.length > 0) {
+    lines.push('', '## 캠페인 목표 설정 (목표 ROAS 대비 실적 비교 필요)')
+    const seen = new Set<string>()
+    for (const t of campaignTargets) {
+      const cid = t.campaignId as string
+      if (seen.has(cid)) continue
+      seen.add(cid)
+      const budget = t.dailyBudget != null ? `일예산 ${Number(t.dailyBudget).toLocaleString()}원` : '일예산 미설정'
+      const roas = t.targetRoas != null ? `목표 ROAS ${t.targetRoas}%` : '목표 ROAS 미설정'
+      lines.push(`- ${cid}: ${budget}, ${roas}`)
+    }
+  }
+
+  // 최근 메모 (사용자 조치 내역)
+  const recentMemos = ctx.recentMemos as Array<Record<string, unknown>> ?? []
+  if (recentMemos.length > 0) {
+    lines.push('', '## 최근 광고 운영 메모 (사용자가 직접 기록한 조치 내역 — 반드시 참고)')
+    for (const m of recentMemos.slice(0, 30)) {
+      const memoDate = m.date ? String(m.date).split('T')[0] : ''
+      lines.push(`- [${m.campaignId}] ${memoDate}: ${m.content}`)
     }
   }
 

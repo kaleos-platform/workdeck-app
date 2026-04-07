@@ -341,7 +341,7 @@ export default function AnalysisPage() {
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleDeleteReport(report.id) }}
-                      className="absolute top-2 right-2 hidden rounded p-1 text-muted-foreground hover:text-destructive group-hover:block"
+                      className="absolute bottom-2 right-2 hidden rounded p-1 text-muted-foreground hover:text-destructive group-hover:block"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>

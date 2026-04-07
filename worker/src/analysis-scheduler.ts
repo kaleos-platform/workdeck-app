@@ -85,11 +85,11 @@ function needsAnalysis(schedule: ScheduleWithWorkspace): boolean {
   return diffDays >= schedule.intervalDays
 }
 
-/** 분석 트리거 — 최근 N일 범위로 분석 요청 */
-async function triggerAnalysis(workspaceId: string, intervalDays: number): Promise<string> {
+/** 분석 트리거 — 항상 최근 30일 범위로 종합 분석 */
+async function triggerAnalysis(workspaceId: string, _intervalDays: number): Promise<string> {
   const now = new Date()
   const from = new Date(now)
-  from.setDate(from.getDate() - intervalDays)
+  from.setDate(from.getDate() - 30)
 
   // 날짜 포맷: YYYY-MM-DD
   const formatDate = (d: Date) => d.toISOString().split('T')[0]

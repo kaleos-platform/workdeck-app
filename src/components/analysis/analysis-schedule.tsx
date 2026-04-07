@@ -266,7 +266,7 @@ export function AnalysisSchedule({ embedded }: AnalysisScheduleProps = {}) {
               <p className={cn('font-medium', schedule.enabled && 'text-primary')}>
                 {schedule.enabled
                   ? schedule.triggerAfterCollection
-                    ? '수집 후 자동'
+                    ? `${getNextDate(schedule.lastAnalyzedAt, schedule.intervalDays)} 이후 수집 시`
                     : getNextDate(schedule.lastAnalyzedAt, schedule.intervalDays)
                   : '비활성'}
               </p>
