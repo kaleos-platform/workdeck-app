@@ -3,6 +3,7 @@
  * API 호출, 자격증명 복호화, Playwright 수집, 업로드까지 전체 파이프라인을 관리한다.
  */
 import fs from 'node:fs'
+import * as XLSX from 'xlsx'
 import {
   createCollectionRun,
   updateCollectionRun,
@@ -12,6 +13,44 @@ import {
 import { decrypt } from './encryption.js'
 import { collectCoupangReport } from './collector.js'
 import { notifyCollectionDone, notifyCollectionFailed } from './slack-notifier.js'
+
+/**
+ * 다운로드된 Excel 파일의 날짜 범위를 검증한다.
+ * 파일 내 실제 날짜 중 요청한 종료일(dateTo)이 포함되지 않으면 경고를 로깅한다.
+ * 쿠팡이 캐시된 보고서를 반환하거나 최신 날짜 데이터가 누락된 경우를 감지한다.
+ */
+function verifyDownloadedFile(buffer: Buffer, fileName: string, dateTo: string): void {
+  try {
+    const wb = XLSX.read(buffer, { type: 'buffer' })
+    const sheet = wb.Sheets[wb.SheetNames[0]]
+    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { raw: false })
+
+    // 날짜 컬럼에서 고유 날짜 추출
+    const uniqueDates = new Set<string>()
+    for (const row of rows) {
+      const raw = String(row['날짜'] ?? '').trim()
+      if (raw.length === 8) {
+        const formatted = `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`
+        uniqueDates.add(formatted)
+      }
+    }
+
+    const sortedDates = [...uniqueDates].sort()
+    const fileMinDate = sortedDates[0] ?? '?'
+    const fileMaxDate = sortedDates[sortedDates.length - 1] ?? '?'
+    console.log(`파일 검증: ${fileName} — 날짜 범위 ${fileMinDate} ~ ${fileMaxDate} (${rows.length}행, ${sortedDates.length}일)`)
+
+    if (!uniqueDates.has(dateTo)) {
+      console.warn(
+        `⚠ 경고: 요청한 종료일(${dateTo})이 파일에 없습니다! ` +
+        `파일 날짜: ${sortedDates.join(', ')}. ` +
+        `쿠팡이 캐시된 보고서를 반환했을 수 있습니다.`
+      )
+    }
+  } catch (err) {
+    console.warn('파일 검증 중 오류 (계속 진행):', err instanceof Error ? err.message : err)
+  }
+}
 
 /**
  * 기존 CollectionRun을 이어받아 수집 실행 (수동 수집 폴링용)
@@ -146,13 +185,16 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
 
   console.log(`파일 다운로드 완료: ${result.fileName}`)
 
+  // ── Step 4.5: 다운로드 파일 날짜 범위 검증 ──
+  const fileBuffer = fs.readFileSync(result.filePath)
+  verifyDownloadedFile(Buffer.from(fileBuffer), result.fileName, dateTo)
+
   // ── Step 5: 상태 → PARSING ──
   await updateCollectionRun(runId, { status: 'PARSING' })
   console.log('상태: PARSING')
 
   // ── Step 6: 파일 읽기 → 업로드 API 호출 ──
   console.log('파일 업로드 중...')
-  const fileBuffer = fs.readFileSync(result.filePath)
   const uploadResult = await uploadReport(Buffer.from(fileBuffer), result.fileName, credential.workspaceId)
 
   console.log(

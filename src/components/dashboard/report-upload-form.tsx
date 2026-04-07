@@ -91,7 +91,7 @@ const STATUS_LABEL: Record<FileStatus, string> = {
   error: '오류',
 }
 
-export function ReportUploadForm() {
+export function ReportUploadForm({ onComplete }: { onComplete?: () => void } = {}) {
   const [files, setFiles] = useState<FileEntry[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -267,7 +267,11 @@ export function ReportUploadForm() {
         setSingleDuplicate({ entryId: entry.id, info: result.requiresConfirmation })
       } else if (result.inserted !== undefined) {
         toast.success(`${result.inserted}개 행 저장 완료`)
-        router.push(COUPANG_ADS_BASE_PATH)
+        if (onComplete) {
+          onComplete()
+        } else {
+          router.push(COUPANG_ADS_BASE_PATH)
+        }
       }
     } catch {
       // 오류는 updateFile로 이미 처리됨
@@ -286,7 +290,11 @@ export function ReportUploadForm() {
       const result = await processOneFile(entryId, overwrite)
       if (result.inserted !== undefined) {
         toast.success(`${result.inserted}개 행 저장 완료`)
-        router.push(COUPANG_ADS_BASE_PATH)
+        if (onComplete) {
+          onComplete()
+        } else {
+          router.push(COUPANG_ADS_BASE_PATH)
+        }
       }
     } catch {
       // 오류는 updateFile로 이미 처리됨

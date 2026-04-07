@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { createClient } from '@/lib/supabase/server'
 import { processUpload } from '@/lib/upload-processor'
+import { prisma } from '@/lib/prisma'
 
 type UploadRequestBody = {
   storagePath: string
@@ -141,6 +142,20 @@ export async function POST(request: NextRequest) {
 
     // 처리 완료 후 Storage 임시 파일 삭제
     await supabase.storage.from('reports').remove([storagePath])
+
+    // 수집 이력에 파일 업로드 기록 생성 (triggeredBy='file')
+    await prisma.collectionRun.create({
+      data: {
+        workspaceId: workspace.id,
+        triggeredBy: 'file',
+        status: 'COMPLETED',
+        startedAt: new Date(),
+        completedAt: new Date(),
+        uploadId: result.uploadId,
+      },
+    }).catch((err) => {
+      console.error('CollectionRun(file) 생성 실패:', err)
+    })
 
     return NextResponse.json(
       {

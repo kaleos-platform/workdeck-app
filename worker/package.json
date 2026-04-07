@@ -9,13 +9,14 @@
     "collect": "tsx src/collect-once.ts"
   },
   "dependencies": {
-    "playwright": "^1.50.0",
+    "dotenv": "^16.0.0",
     "node-cron": "^3.0.0",
-    "dotenv": "^16.0.0"
+    "playwright": "^1.50.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/node-cron": "^3.0.0",
     "tsx": "^4.0.0",
-    "typescript": "^5.0.0",
-    "@types/node-cron": "^3.0.0"
+    "typescript": "^5.0.0"
   }
 }
