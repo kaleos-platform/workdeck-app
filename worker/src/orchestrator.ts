@@ -11,6 +11,7 @@ import {
 } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { collectCoupangReport } from './collector.js'
+import { notifyCollectionDone, notifyCollectionFailed } from './slack-notifier.js'
 
 /**
  * 기존 CollectionRun을 이어받아 수집 실행 (수동 수집 폴링용)
@@ -38,6 +39,7 @@ export async function runCollectionForRun(runId: string): Promise<void> {
     } catch (updateError) {
       console.error('[manual] 상태 업데이트 실패:', updateError)
     }
+    await notifyCollectionFailed(errorMessage).catch(() => {})
     throw error
   } finally {
     if (downloadedFilePath && fs.existsSync(downloadedFilePath)) {
@@ -133,9 +135,9 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     kst.setDate(kst.getDate() + offsetDays)
     return kst.toISOString().split('T')[0]
   }
-  const dateOptions = isManual
-    ? { dateFrom: kstDate(-7), dateTo: kstDate(-1) }
-    : {}
+  const dateFrom = isManual ? kstDate(-7) : kstDate(-1)
+  const dateTo = kstDate(-1)
+  const dateOptions = { dateFrom, dateTo }
 
   const result = await collectCoupangReport({
     loginId: credential.loginId,
@@ -163,6 +165,14 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     uploadId: uploadResult.uploadId,
   })
   console.log('상태: COMPLETED')
+
+  // ── Step 8: Slack 알림 전송 ──
+  await notifyCollectionDone({
+    dateRange: `${dateFrom} ~ ${dateTo}`,
+    totalRows: uploadResult.totalRows,
+    insertedRows: uploadResult.insertedRows,
+    duplicateRows: uploadResult.duplicateRows,
+  }).catch((err) => console.error('[slack] 알림 전송 실패:', err))
 
   return result.filePath
 }
