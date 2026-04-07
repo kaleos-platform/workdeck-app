@@ -93,19 +93,17 @@ export async function notifyCollectionDone(params: {
   duplicateRows: number
 }): Promise<void> {
   const blocks: Block[] = [
-    header(':inbox_tray: 데이터 수집 완료'),
+    header(':white_check_mark: 쿠팡 광고 데이터 수집 완료'),
     divider(),
+    section(`*상태*\n완료`, `*수집 기간*\n${params.dateRange}`),
     section(
-      `*수집 기간*\n${params.dateRange}`,
-      `*데이터*\n${params.insertedRows.toLocaleString()}건`,
+      `*등록*\n${params.insertedRows.toLocaleString()}건`,
+      `*중복*\n${params.duplicateRows.toLocaleString()}건`,
     ),
+    context(`전체 ${params.totalRows.toLocaleString()}건 처리`),
   ]
 
-  if (params.duplicateRows > 0) {
-    blocks.push(context(`중복 ${params.duplicateRows.toLocaleString()}건 제외 | 전체 ${params.totalRows.toLocaleString()}건`))
-  }
-
-  await postMessage(blocks, `데이터 수집 완료: ${params.insertedRows}건 (${params.dateRange})`)
+  await postMessage(blocks, `쿠팡 광고 데이터 수집 완료: 등록 ${params.insertedRows.toLocaleString()}건 (${params.dateRange})`)
 }
 
 /** 분석 완료 알림 */
@@ -130,10 +128,11 @@ export async function notifyAnalysisDone(params: {
 /** 수집 실패 알림 */
 export async function notifyCollectionFailed(error: string): Promise<void> {
   const blocks: Block[] = [
-    header(':warning: 데이터 수집 실패'),
+    header(':x: 쿠팡 광고 데이터 수집 실패'),
     divider(),
+    section('*상태*\n실패'),
     section(error.slice(0, 200)),
   ]
 
-  await postMessage(blocks, `수집 실패: ${error.slice(0, 100)}`)
+  await postMessage(blocks, `쿠팡 광고 데이터 수집 실패: ${error.slice(0, 100)}`)
 }
