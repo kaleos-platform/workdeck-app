@@ -125,11 +125,7 @@ async function callOpenRouter(
       'HTTP-Referer': 'https://workdeck.work',
       'X-Title': 'Workdeck',
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      response_format: { type: 'json_object' },
-    }),
+    body: JSON.stringify({ model, messages }),
   })
 
   if (!res.ok) {
