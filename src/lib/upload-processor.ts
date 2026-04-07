@@ -16,6 +16,8 @@ export type UploadResult = {
   totalRows: number
   insertedRows: number
   duplicateRows: number
+  periodStart: string
+  periodEnd: string
 }
 
 // 중복 감지 결과 타입
@@ -265,5 +267,7 @@ export async function processUpload(params: {
     totalRows,
     insertedRows,
     duplicateRows,
+    periodStart: periodStart.toISOString(),
+    periodEnd: periodEnd.toISOString(),
   }
 }

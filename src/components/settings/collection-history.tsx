@@ -68,10 +68,10 @@ const STATUS_CONFIG: Record<
   },
 }
 
-const TRIGGER_LABELS: Record<string, string> = {
-  manual: '수동',
-  scheduled: '자동',
-  api: 'API',
+const TRIGGER_CONFIG: Record<string, { label: string; className: string }> = {
+  manual: { label: '수동', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+  scheduled: { label: '자동', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
+  api: { label: 'API', className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' },
 }
 
 function formatDateTime(dateStr: string): string {
@@ -283,7 +283,12 @@ export function CollectionHistory() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {TRIGGER_LABELS[run.triggeredBy] ?? run.triggeredBy}
+                      <Badge
+                        variant="secondary"
+                        className={cn('text-[10px]', TRIGGER_CONFIG[run.triggeredBy]?.className)}
+                      >
+                        {TRIGGER_CONFIG[run.triggeredBy]?.label ?? run.triggeredBy}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {run.startedAt ? formatDateTime(run.startedAt) : '-'}

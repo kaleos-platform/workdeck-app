@@ -167,8 +167,11 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   console.log('상태: COMPLETED')
 
   // ── Step 8: Slack 알림 전송 ──
+  // 실제 수집 기간 (upload 응답) 또는 의도된 기간 (fallback)
+  const actualStart = uploadResult.periodStart ? uploadResult.periodStart.split('T')[0] : dateFrom
+  const actualEnd = uploadResult.periodEnd ? uploadResult.periodEnd.split('T')[0] : dateTo
   await notifyCollectionDone({
-    dateRange: `${dateFrom} ~ ${dateTo}`,
+    dateRange: `${actualStart} ~ ${actualEnd}`,
     totalRows: uploadResult.totalRows,
     insertedRows: uploadResult.insertedRows,
     duplicateRows: uploadResult.duplicateRows,
