@@ -9,6 +9,7 @@ import { runCollection } from './orchestrator.js'
 import { checkAndRunCollection } from './collection-scheduler.js'
 import { checkAndRunAnalysis } from './analysis-scheduler.js'
 import { startManualPoller } from './manual-poller.js'
+import { startAnalysisPoller } from './analysis-poller.js'
 
 console.log('=== Workdeck Worker 시작 ===')
 console.log(`API URL: ${process.env.WORKDECK_API_URL}`)
@@ -46,5 +47,8 @@ cron.schedule(
 
 // 수동 수집 폴링 시작
 startManualPoller()
+
+// 분석 폴링 시작
+startAnalysisPoller()
 
 console.log('크론 스케줄러 + 수동 수집 폴링 대기 중...\n')

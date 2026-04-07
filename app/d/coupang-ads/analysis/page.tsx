@@ -131,21 +131,24 @@ export default function AnalysisPage() {
 
   const selectedReport = reports.find((r) => r.id === selectedReportId) ?? null
 
+  // 진행 중인 분석 감지
+  const activeReport = reports.find((r) => r.status === 'PENDING' || r.status === 'PROCESSING')
+
+  // 진행 중이면 5초마다 자동 새로고침
+  useEffect(() => {
+    if (!activeReport) return
+    const interval = setInterval(fetchReports, 5000)
+    return () => clearInterval(interval)
+  }, [activeReport?.id, fetchReports])
+
   return (
     <div className="space-y-6">
       {/* ─── Header ─── */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">광고 분석</h1>
-          <p className="text-sm text-muted-foreground">
-            광고 성과를 분석하고 최적화 제안을 확인합니다.
-          </p>
-        </div>
-        <TriggerAnalysisButton
-          from={dateRange.from}
-          to={dateRange.to}
-          onSuccess={fetchReports}
-        />
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">광고 분석</h1>
+        <p className="text-sm text-muted-foreground">
+          광고 성과를 분석하고 최적화 제안을 확인합니다.
+        </p>
       </div>
 
       {/* ─── 상단 배너: 스케줄 요약 + 규칙 개수 ─── */}
@@ -213,44 +216,52 @@ export default function AnalysisPage() {
         </div>
       </div>
 
-      {/* ─── Date Range Presets ─── */}
-      <div className="flex items-center gap-3">
-        <CalendarDays className="h-4 w-4 text-muted-foreground" />
-        <div className="flex items-center gap-2">
-          {([7, 14, 30] as DatePreset[]).map((days) => (
-            <Button
-              key={days}
-              variant={activePreset === days ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handlePresetClick(days)}
-              className="text-xs"
-            >
-              {days}일
-            </Button>
-          ))}
+      {/* ─── Date Range Presets + 분석 실행/종료 ─── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <CalendarDays className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            {([7, 14, 30] as DatePreset[]).map((days) => (
+              <Button
+                key={days}
+                variant={activePreset === days ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handlePresetClick(days)}
+                className="text-xs"
+              >
+                {days}일
+              </Button>
+            ))}
+          </div>
+          <Separator orientation="vertical" className="mx-1 h-5" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="date"
+              value={dateRange.from}
+              onChange={(e) => {
+                setActivePreset(0 as DatePreset)
+                setDateRange((prev) => ({ ...prev, from: e.target.value }))
+              }}
+              className="rounded-md border bg-background px-2 py-1 text-xs"
+            />
+            <span>~</span>
+            <input
+              type="date"
+              value={dateRange.to}
+              onChange={(e) => {
+                setActivePreset(0 as DatePreset)
+                setDateRange((prev) => ({ ...prev, to: e.target.value }))
+              }}
+              className="rounded-md border bg-background px-2 py-1 text-xs"
+            />
+          </div>
         </div>
-        <Separator orientation="vertical" className="mx-1 h-5" />
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <input
-            type="date"
-            value={dateRange.from}
-            onChange={(e) => {
-              setActivePreset(0 as DatePreset)
-              setDateRange((prev) => ({ ...prev, from: e.target.value }))
-            }}
-            className="rounded-md border bg-background px-2 py-1 text-xs"
-          />
-          <span>~</span>
-          <input
-            type="date"
-            value={dateRange.to}
-            onChange={(e) => {
-              setActivePreset(0 as DatePreset)
-              setDateRange((prev) => ({ ...prev, to: e.target.value }))
-            }}
-            className="rounded-md border bg-background px-2 py-1 text-xs"
-          />
-        </div>
+        <TriggerAnalysisButton
+          from={dateRange.from}
+          to={dateRange.to}
+          onSuccess={fetchReports}
+          activeReportId={activeReport?.id ?? null}
+        />
       </div>
 
       {/* ─── Loading ─── */}

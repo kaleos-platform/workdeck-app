@@ -5,8 +5,6 @@
 
 // ─── 타입 정의 ─────────────────────────────────────────────────────────────────
 
-import { notifyAnalysisDone } from './slack-notifier.js'
-
 type AnalysisSchedule = {
   enabled: boolean
   intervalDays: number
@@ -135,12 +133,7 @@ export async function checkAndRunAnalysis(): Promise<void> {
       const reportId = await triggerAnalysis(schedule.workspaceId, schedule.intervalDays)
       console.log(`[analysis-scheduler] 분석 시작됨: reportId=${reportId}`)
 
-      // Slack 알림이 활성화되어 있으면 분석 완료를 대기 후 전송
-      if (schedule.slackNotify) {
-        waitAndNotifyAnalysis(reportId).catch((err) =>
-          console.error(`[analysis-scheduler] 알림 실패:`, err)
-        )
-      }
+      // Slack 알림은 analysis-poller가 분석 완료 후 자동 발송
     } catch (error) {
       console.error(
         `[analysis-scheduler] 분석 트리거 실패: workspace=${schedule.workspaceId}`,
@@ -150,40 +143,3 @@ export async function checkAndRunAnalysis(): Promise<void> {
   }
 }
 
-/** 분석 완료를 폴링으로 대기 후 Slack 알림 전송 (최대 5분) */
-async function waitAndNotifyAnalysis(reportId: string): Promise<void> {
-  const MAX_WAIT = 5 * 60 * 1000 // 5분
-  const POLL_INTERVAL = 15_000 // 15초
-  const start = Date.now()
-
-  while (Date.now() - start < MAX_WAIT) {
-    await new Promise((r) => setTimeout(r, POLL_INTERVAL))
-
-    try {
-      const res = await workerFetch(`/api/analysis/reports/${reportId}`)
-      if (!res.ok) continue
-
-      const data = await res.json()
-      const report = data.report
-
-      if (report?.status === 'COMPLETED') {
-        const metadata = report.metadata as { campaignCount?: number } | null
-        await notifyAnalysisDone({
-          summary: report.summary ?? '분석 완료',
-          suggestionCount: Array.isArray(report.suggestions) ? report.suggestions.length : 0,
-          campaignCount: metadata?.campaignCount ?? 0,
-        })
-        return
-      }
-
-      if (report?.status === 'FAILED') {
-        console.log(`[analysis-scheduler] 분석 실패: ${report.summary}`)
-        return
-      }
-    } catch {
-      // 폴링 실패 시 계속 재시도
-    }
-  }
-
-  console.log(`[analysis-scheduler] 분석 완료 대기 타임아웃 (${MAX_WAIT / 1000}초)`)
-}

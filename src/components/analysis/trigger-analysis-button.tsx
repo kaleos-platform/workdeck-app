@@ -2,19 +2,21 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Loader2, Play } from 'lucide-react'
+import { Loader2, Play, Square } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 type TriggerAnalysisButtonProps = {
   from: string
   to: string
   onSuccess: () => void
+  activeReportId?: string | null
 }
 
 export function TriggerAnalysisButton({
   from,
   to,
   onSuccess,
+  activeReportId,
 }: TriggerAnalysisButtonProps) {
   const [loading, setLoading] = useState(false)
 
@@ -43,6 +45,51 @@ export function TriggerAnalysisButton({
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleCancel() {
+    if (!activeReportId) return
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/analysis/reports/${activeReportId}`, {
+        method: 'PATCH',
+      })
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as {
+          message?: string
+        }
+        throw new Error(data.message || '분석 종료에 실패했습니다')
+      }
+
+      toast.success('분석이 종료되었습니다')
+      onSuccess()
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : '분석 종료에 실패했습니다'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 진행 중인 분석이 있으면 종료 버튼 표시
+  if (activeReportId) {
+    return (
+      <Button
+        variant="destructive"
+        onClick={handleCancel}
+        disabled={loading}
+        className="gap-2"
+      >
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Square className="h-4 w-4" />
+        )}
+        {loading ? '종료 중...' : '분석 종료'}
+      </Button>
+    )
   }
 
   return (
