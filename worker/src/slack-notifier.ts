@@ -112,17 +112,30 @@ export async function notifyAnalysisDone(params: {
   suggestionCount: number
   campaignCount: number
 }): Promise<void> {
+  const analysisUrl = process.env.WORKDECK_APP_URL
+    ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/analysis`
+    : 'https://app.workdeck.work/d/coupang-ads/analysis'
+
   const blocks: Block[] = [
-    header(':sparkles: 광고 분석 완료'),
+    header(':white_check_mark: 쿠팡 광고 분석 완료'),
     divider(),
+    section(`*상태*\n완료`, `*캠페인*\n${params.campaignCount}개`),
+    section(`*제안*\n${params.suggestionCount}개`),
     section(params.summary),
-    section(
-      `*캠페인*\n${params.campaignCount}개`,
-      `*제안*\n${params.suggestionCount}개`,
-    ),
+    {
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: { type: 'plain_text', text: '광고 분석 보기', emoji: true },
+          url: analysisUrl,
+          style: 'primary',
+        },
+      ],
+    },
   ]
 
-  await postMessage(blocks, `분석 완료: ${params.summary}`)
+  await postMessage(blocks, `쿠팡 광고 분석 완료: ${params.campaignCount}개 캠페인, ${params.suggestionCount}개 제안`)
 }
 
 /** 수집 실패 알림 */
