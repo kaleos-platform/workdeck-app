@@ -22,6 +22,7 @@ export async function GET() {
       suggestions: true,
       metadata: true,
       status: true,
+      triggeredBy: true,
       createdAt: true,
     },
   })

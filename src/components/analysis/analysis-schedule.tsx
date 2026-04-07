@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -20,6 +21,8 @@ import { cn } from '@/lib/utils'
 type Schedule = {
   enabled: boolean
   intervalDays: number
+  analysisHour: number | null
+  triggerAfterCollection: boolean
   slackNotify: boolean
   lastAnalyzedAt: string | null
 }
@@ -27,6 +30,8 @@ type Schedule = {
 const DEFAULT_SCHEDULE: Schedule = {
   enabled: false,
   intervalDays: 7,
+  analysisHour: null,
+  triggerAfterCollection: false,
   slackNotify: false,
   lastAnalyzedAt: null,
 }
@@ -52,7 +57,7 @@ function getNextDate(lastAnalyzedAt: string | null, intervalDays: number): strin
 }
 
 type AnalysisScheduleProps = {
-  embedded?: boolean // Dialog 내부 등 Card 래핑 없이 사용
+  embedded?: boolean
 }
 
 export function AnalysisSchedule({ embedded }: AnalysisScheduleProps = {}) {
@@ -66,7 +71,10 @@ export function AnalysisSchedule({ embedded }: AnalysisScheduleProps = {}) {
       if (res.ok) {
         const data = await res.json()
         if (data.schedule) {
-          setSchedule(data.schedule)
+          setSchedule({
+            ...DEFAULT_SCHEDULE,
+            ...data.schedule,
+          })
         }
       }
     } finally {
@@ -98,6 +106,19 @@ export function AnalysisSchedule({ embedded }: AnalysisScheduleProps = {}) {
 
   function handleIntervalChange(value: string) {
     saveSchedule({ ...schedule, intervalDays: Number(value) })
+  }
+
+  function handleHourChange(value: string) {
+    saveSchedule({ ...schedule, analysisHour: value === 'none' ? null : Number(value) })
+  }
+
+  function handleTriggerAfterCollectionChange(checked: boolean) {
+    saveSchedule({
+      ...schedule,
+      triggerAfterCollection: checked,
+      // 수집 후 분석 활성화 시 시간 설정 초기화
+      analysisHour: checked ? null : schedule.analysisHour,
+    })
   }
 
   function handleSlackChange(slackNotify: boolean) {
@@ -157,6 +178,53 @@ export function AnalysisSchedule({ embedded }: AnalysisScheduleProps = {}) {
           </Select>
         </div>
 
+        {/* 수집 후 자동 분석 */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="trigger-after-collection" className="text-sm font-medium">
+              데이터 수집 후 자동 분석
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              수집 완료 직후 분석을 자동 실행합니다
+            </p>
+          </div>
+          <Checkbox
+            id="trigger-after-collection"
+            checked={schedule.triggerAfterCollection}
+            onCheckedChange={(checked) => handleTriggerAfterCollectionChange(checked === true)}
+            disabled={!schedule.enabled}
+          />
+        </div>
+
+        {/* 분석 시간 설정 */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-sm font-medium">분석 시간</Label>
+            <p className="text-xs text-muted-foreground">
+              {schedule.triggerAfterCollection
+                ? '수집 후 자동 분석이 활성화되어 있습니다'
+                : '지정한 시간에 분석을 실행합니다'}
+            </p>
+          </div>
+          <Select
+            value={schedule.analysisHour != null ? String(schedule.analysisHour) : 'none'}
+            onValueChange={handleHourChange}
+            disabled={!schedule.enabled || schedule.triggerAfterCollection}
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="미설정" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">미설정</SelectItem>
+              {Array.from({ length: 24 }, (_, i) => (
+                <SelectItem key={i} value={String(i)}>
+                  {String(i).padStart(2, '0')}:00
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Slack 공유 */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
@@ -197,7 +265,9 @@ export function AnalysisSchedule({ embedded }: AnalysisScheduleProps = {}) {
               <p className="text-xs text-muted-foreground">다음 예정일</p>
               <p className={cn('font-medium', schedule.enabled && 'text-primary')}>
                 {schedule.enabled
-                  ? getNextDate(schedule.lastAnalyzedAt, schedule.intervalDays)
+                  ? schedule.triggerAfterCollection
+                    ? '수집 후 자동'
+                    : getNextDate(schedule.lastAnalyzedAt, schedule.intervalDays)
                   : '비활성'}
               </p>
             </div>

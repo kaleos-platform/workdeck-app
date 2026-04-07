@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   const workspace = { id: workspaceId }
 
   // 요청 바디 파싱
-  let body: { from?: string; to?: string; reportType?: string; workspaceId?: string }
+  let body: { from?: string; to?: string; reportType?: string; workspaceId?: string; triggeredBy?: string }
   if (isWorker) {
     body = bodyData!
   } else {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const { from, to, reportType = 'DAILY_REVIEW' } = body
+  const { from, to, reportType = 'DAILY_REVIEW', triggeredBy = 'manual' } = body
 
   if (!from || !to) {
     return errorResponse('from, to 날짜가 필요합니다', 400)
@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
       summary: '',
       suggestions: [],
       status: 'PENDING',
+      triggeredBy,
     },
   })
 

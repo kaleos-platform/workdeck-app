@@ -219,5 +219,48 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     duplicateRows: uploadResult.duplicateRows,
   }).catch((err) => console.error('[slack] 알림 전송 실패:', err))
 
+  // ── Step 9: 수집 후 자동 분석 트리거 ──
+  await triggerAnalysisAfterCollection(credential.workspaceId, actualStart, actualEnd)
+    .catch((err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err))
+
   return result.filePath
+}
+
+/** 수집 후 자동 분석 트리거 — triggerAfterCollection이 활성화된 경우만 */
+async function triggerAnalysisAfterCollection(workspaceId: string, dateFrom: string, dateTo: string): Promise<void> {
+  // 스케줄 확인
+  const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
+  const apiKey = process.env.WORKER_API_KEY
+  if (!baseUrl || !apiKey) return
+
+  const scheduleRes = await fetch(`${baseUrl}/api/analysis/schedule/active`, {
+    headers: { 'Content-Type': 'application/json', 'x-worker-api-key': apiKey },
+  })
+  if (!scheduleRes.ok) return
+
+  const { schedules } = await scheduleRes.json() as { schedules: Array<{ workspaceId: string; triggerAfterCollection: boolean }> }
+  const schedule = schedules.find((s) => s.workspaceId === workspaceId && s.triggerAfterCollection)
+  if (!schedule) return
+
+  console.log('[orchestrator] 수집 후 자동 분석 트리거 실행')
+
+  const triggerRes = await fetch(`${baseUrl}/api/analysis/trigger`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-worker-api-key': apiKey },
+    body: JSON.stringify({
+      workspaceId,
+      from: dateFrom,
+      to: dateTo,
+      reportType: 'DAILY_REVIEW',
+      triggeredBy: 'collection',
+    }),
+  })
+
+  if (triggerRes.ok) {
+    const data = await triggerRes.json()
+    console.log(`[orchestrator] 분석 트리거 완료: reportId=${data.reportId}`)
+  } else {
+    const body = await triggerRes.text()
+    console.error(`[orchestrator] 분석 트리거 실패 [${triggerRes.status}]: ${body}`)
+  }
 }

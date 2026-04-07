@@ -403,6 +403,7 @@ model AnalysisReport {
   suggestions Json
   metadata    Json?
   status      AnalysisStatus @default(PENDING)
+  triggeredBy String         @default("manual")
   createdAt   DateTime       @default(now())
   workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
@@ -462,15 +463,17 @@ model AnalysisRule {
 
 // 분석 자동 스케줄 (워크스페이스당 1개)
 model AnalysisSchedule {
-  id             String    @id @default(cuid())
-  workspaceId    String    @unique
-  enabled        Boolean   @default(true)
-  intervalDays   Int       @default(7)
-  slackNotify    Boolean   @default(true)
-  lastAnalyzedAt DateTime?
-  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                     String    @id @default(cuid())
+  workspaceId            String    @unique
+  enabled                Boolean   @default(true)
+  intervalDays           Int       @default(7)
+  analysisHour           Int?
+  triggerAfterCollection Boolean   @default(false)
+  slackNotify            Boolean   @default(true)
+  lastAnalyzedAt         DateTime?
+  workspace              Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
 
 // 비즈니스 에이전트 (의식주의 Slack 에이전트)

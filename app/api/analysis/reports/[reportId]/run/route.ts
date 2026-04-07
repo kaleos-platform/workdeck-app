@@ -1,5 +1,8 @@
 // POST /api/analysis/reports/[reportId]/run — Worker용 분석 동기 실행
 
+// Vercel 함수 타임아웃 확장 (OpenRouter API 호출 대기)
+export const maxDuration = 60
+
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
