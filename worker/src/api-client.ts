@@ -143,6 +143,8 @@ export async function uploadReport(
   totalRows: number
   insertedRows: number
   duplicateRows: number
+  periodStart?: string
+  periodEnd?: string
 }> {
   const formData = new FormData()
   formData.append('file', new Blob([buffer]), fileName)

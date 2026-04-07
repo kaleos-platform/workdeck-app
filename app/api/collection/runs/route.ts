@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { resolveWorkspace, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
 
 // 10분 이상 RUNNING 상태면 타임아웃 처리
 const STALE_THRESHOLD_MS = 10 * 60 * 1000
@@ -63,11 +63,37 @@ export async function GET(request: NextRequest) {
   })
 }
 
-// POST /api/collection/runs — 수동 수집 트리거
-export async function POST() {
-  const resolved = await resolveWorkspace()
-  if ('error' in resolved) return resolved.error
-  const { workspace } = resolved
+// POST /api/collection/runs — 수집 트리거 (사용자 세션 OR Worker 인증)
+export async function POST(request: NextRequest) {
+  // Worker 인증 시 body에서 workspaceId + triggeredBy 읽기
+  const workerKey = request.headers.get('x-worker-api-key')
+  const expectedKey = process.env.WORKER_API_KEY
+  const isWorker = Boolean(workerKey && expectedKey && workerKey === expectedKey)
+
+  let workspaceId: string
+  let triggeredBy = 'manual'
+
+  if (isWorker) {
+    const body = await request.json().catch(() => ({}))
+    if (!body.workspaceId) {
+      // Worker가 workspaceId 없이 호출 시 첫 번째 활성 자격증명의 workspace 사용
+      const cred = await prisma.coupangCredential.findFirst({
+        where: { isActive: true },
+        select: { workspaceId: true },
+      })
+      if (!cred) return errorResponse('활성 워크스페이스가 없습니다', 404)
+      workspaceId = cred.workspaceId
+    } else {
+      workspaceId = body.workspaceId
+    }
+    triggeredBy = body.triggeredBy ?? 'scheduled'
+  } else {
+    const resolved = await resolveWorkspace()
+    if ('error' in resolved) return resolved.error
+    workspaceId = resolved.workspace.id
+  }
+
+  const workspace = { id: workspaceId }
 
   // 자격증명 존재 확인
   const credential = await prisma.coupangCredential.findUnique({
@@ -89,12 +115,14 @@ export async function POST() {
     return errorResponse('이미 진행 중인 수집 작업이 있습니다', 409)
   }
 
-  // 새 수집 실행 생성 (PENDING 상태 — Worker가 폴링하여 실행)
+  // 새 수집 실행 생성
+  const status = isWorker ? 'RUNNING' : 'PENDING' // Worker는 직접 실행, UI는 Worker 폴링 대기
   const run = await prisma.collectionRun.create({
     data: {
       workspaceId: workspace.id,
-      triggeredBy: 'manual',
-      status: 'PENDING',
+      triggeredBy,
+      status,
+      ...(isWorker && { startedAt: new Date() }),
     },
   })
 
