@@ -279,30 +279,7 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
   console.log(`  → 활성 날짜 input: ${enabledCount}개`)
 
   if (enabledCount >= 2) {
-    // Ant Design DatePicker: fill()은 React onChange를 트리거하지 않음
-    // 실제 키보드 입력으로 시뮬레이션해야 함
-
-    // 시작일 입력
-    await enabledInputs.nth(0).click()
-    await page.waitForTimeout(300)
-    await page.keyboard.press('Control+a')
-    await page.keyboard.type(dateFrom, { delay: 30 })
-    await page.keyboard.press('Enter')
-    await page.waitForTimeout(500)
-
-    // 종료일 입력 (Enter 후 자동으로 종료일 input이 포커스될 수 있음)
-    const endInput = page.locator('.ant-picker-input input:not([disabled])').last()
-    await endInput.click()
-    await page.waitForTimeout(300)
-    await page.keyboard.press('Control+a')
-    await page.keyboard.type(dateTo, { delay: 30 })
-    await page.keyboard.press('Enter')
-    await page.waitForTimeout(500)
-
-    // 입력 확인: input의 실제 value 로깅
-    const startVal = await enabledInputs.nth(0).getAttribute('value').catch(() => '?')
-    const endVal = await page.locator('.ant-picker-input input').last().getAttribute('value').catch(() => '?')
-    console.log(`  → 날짜 입력 완료: ${dateFrom} ~ ${dateTo} (실제값: ${startVal} ~ ${endVal})`)
+    await inputDateRange(page, enabledInputs, dateFrom, dateTo)
   } else if (enabledCount === 1) {
     await enabledInputs.nth(0).click()
     await page.waitForTimeout(300)
@@ -327,23 +304,70 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
       console.log(`  → RangePicker 클릭 후 활성 input: ${afterCount}개`)
 
       if (afterCount >= 1) {
-        await afterClickInputs.nth(0).click()
-        await page.keyboard.press('Control+a')
-        await page.keyboard.type(dateFrom, { delay: 30 })
-        await page.keyboard.press('Tab')
-        await page.waitForTimeout(500)
-        await page.keyboard.press('Control+a')
-        await page.keyboard.type(dateTo, { delay: 30 })
-        await page.keyboard.press('Enter')
-        await page.waitForTimeout(500)
-        console.log(`  → RangePicker 입력: ${dateFrom} ~ ${dateTo}`)
+        await inputDateRange(page, afterClickInputs, dateFrom, dateTo)
       } else {
         await page.keyboard.press('Escape')
-        console.log(`  → 날짜 설정 실패 — 기본값 사용`)
+        throw new Error(`날짜 설정 실패: 활성 input을 찾을 수 없습니다 (dateFrom=${dateFrom}, dateTo=${dateTo})`)
       }
     } else {
-      console.log(`  → RangePicker 없음 — 기본값 사용`)
+      throw new Error(`날짜 설정 실패: RangePicker를 찾을 수 없습니다 (dateFrom=${dateFrom}, dateTo=${dateTo})`)
     }
+  }
+
+  // 최종 검증: 실제 input 값이 의도한 날짜와 일치하는지 확인
+  await verifyDateInputs(page, dateFrom, dateTo)
+}
+
+/** RangePicker의 활성 input에 시작일·종료일을 입력 */
+async function inputDateRange(
+  page: Page,
+  enabledInputs: ReturnType<Page['locator']>,
+  dateFrom: string,
+  dateTo: string,
+): Promise<void> {
+  // 시작일 입력
+  await enabledInputs.nth(0).click()
+  await page.waitForTimeout(300)
+  await page.keyboard.press('Control+a')
+  await page.keyboard.type(dateFrom, { delay: 30 })
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(500)
+
+  // 종료일 입력
+  const endInput = page.locator('.ant-picker-input input:not([disabled])').last()
+  await endInput.click()
+  await page.waitForTimeout(300)
+  await page.keyboard.press('Control+a')
+  await page.keyboard.type(dateTo, { delay: 30 })
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(500)
+
+  const startVal = await enabledInputs.nth(0).getAttribute('value').catch(() => '?')
+  const endVal = await page.locator('.ant-picker-input input').last().getAttribute('value').catch(() => '?')
+  console.log(`  → 날짜 입력 완료: ${dateFrom} ~ ${dateTo} (실제값: ${startVal} ~ ${endVal})`)
+}
+
+/** 날짜 입력 후 실제 값이 의도한 날짜와 일치하는지 검증 */
+async function verifyDateInputs(page: Page, dateFrom: string, dateTo: string): Promise<void> {
+  const allInputs = page.locator('.ant-picker-input input')
+  const count = await allInputs.count().catch(() => 0)
+  if (count < 2) return // 검증 불가 시 패스
+
+  const startVal = (await allInputs.nth(0).getAttribute('value').catch(() => '')) ?? ''
+  const endVal = (await allInputs.nth(count - 1).getAttribute('value').catch(() => '')) ?? ''
+
+  // 날짜 포맷 정규화 (YYYY-MM-DD 또는 YYYY.MM.DD 등)
+  const normalize = (s: string) => s.replace(/[.\-/]/g, '')
+  const expectedFrom = normalize(dateFrom)
+  const expectedTo = normalize(dateTo)
+  const actualFrom = normalize(startVal)
+  const actualTo = normalize(endVal)
+
+  if (actualFrom && actualTo && (actualFrom !== expectedFrom || actualTo !== expectedTo)) {
+    throw new Error(
+      `날짜 불일치: 의도=${dateFrom}~${dateTo}, 실제=${startVal}~${endVal}. ` +
+      `잘못된 기간의 데이터가 수집될 수 있어 중단합니다.`
+    )
   }
 }
 
