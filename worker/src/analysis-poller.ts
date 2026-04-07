@@ -12,8 +12,8 @@ let isProcessing = false
 
 // OpenRouter API 설정
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const PRIMARY_MODEL = 'qwen/qwen3.6-plus:free'
-const FALLBACK_MODEL = 'minimax/minimax-m2.5:free'
+const PRIMARY_MODEL = 'deepseek/deepseek-chat-v3-0324:free'
+const FALLBACK_MODEL = 'qwen/qwen3-235b-a22b:free'
 
 function getBaseUrl(): string {
   const url = process.env.WORKDECK_API_URL
@@ -94,9 +94,13 @@ async function callOpenRouter(
       throw new Error(`OpenRouter [${res.status}]: ${body.slice(0, 200)}`)
     }
 
-    const response = await res.json() as { choices?: Array<{ message?: { content?: string } }> }
-    const content = response.choices?.[0]?.message?.content
-    if (!content) throw new Error('OpenRouter 응답에 content가 없습니다')
+    const response = await res.json() as { choices?: Array<{ message?: { content?: string; reasoning_content?: string } }> }
+    const message = response.choices?.[0]?.message
+    const content = message?.content || message?.reasoning_content
+    if (!content) {
+      console.error(`[analysis-poller] OpenRouter 빈 응답:`, JSON.stringify(response).slice(0, 500))
+      throw new Error('OpenRouter 응답에 content가 없습니다')
+    }
 
     const parsed = extractJSON(content)
     return {
