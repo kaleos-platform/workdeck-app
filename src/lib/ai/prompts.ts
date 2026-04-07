@@ -7,6 +7,7 @@ import type { ActiveRule } from '@/lib/analysis/data-builder'
 const SUGGESTION_SCHEMA = `
 ## 중요: 응답 형식
 반드시 순수 JSON만 반환하세요. 마크다운, 설명 텍스트, 코드블록 없이 JSON 객체만 출력합니다.
+suggestions는 우선순위가 높은 것부터 최대 20개까지만 포함하세요. improvementSuggestions는 최대 3개까지.
 형식:
 {
   "suggestions": [
