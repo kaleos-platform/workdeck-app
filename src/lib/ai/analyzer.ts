@@ -76,6 +76,42 @@ export async function analyzeAdPerformance(data: AnalysisContext): Promise<Analy
   }
 }
 
+/** 응답 텍스트에서 JSON을 추출 — 코드블록, 마크다운 혼합, 순수 JSON 모두 처리 */
+function extractJSON(content: string): Record<string, unknown> {
+  // 1. ```json ... ``` 코드블록에서 추출
+  const codeBlockMatch = content.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/)
+  if (codeBlockMatch) {
+    try {
+      return JSON.parse(codeBlockMatch[1].trim())
+    } catch {
+      // 코드블록 안이 유효하지 않은 JSON — 다음 방법 시도
+    }
+  }
+
+  // 2. 순수 JSON (전체 텍스트)
+  const trimmed = content.trim()
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      return JSON.parse(trimmed)
+    } catch {
+      // 전체가 유효하지 않은 JSON — 다음 방법 시도
+    }
+  }
+
+  // 3. 텍스트 안에서 첫 번째 { ... } 블록 추출
+  const firstBrace = content.indexOf('{')
+  const lastBrace = content.lastIndexOf('}')
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    try {
+      return JSON.parse(content.slice(firstBrace, lastBrace + 1))
+    } catch {
+      // 추출 실패
+    }
+  }
+
+  throw new Error(`AI 응답에서 JSON을 추출할 수 없습니다: ${content.slice(0, 200)}`)
+}
+
 /** OpenRouter API 호출 */
 async function callOpenRouter(
   model: string,
@@ -89,7 +125,11 @@ async function callOpenRouter(
       'HTTP-Referer': 'https://workdeck.work',
       'X-Title': 'Workdeck',
     },
-    body: JSON.stringify({ model, messages }),
+    body: JSON.stringify({
+      model,
+      messages,
+      response_format: { type: 'json_object' },
+    }),
   })
 
   if (!res.ok) {
@@ -104,9 +144,8 @@ async function callOpenRouter(
     throw new Error('OpenRouter 응답에 content가 없습니다')
   }
 
-  // JSON 파싱 — 코드블록 감싸진 경우도 처리
-  const jsonStr = content.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim()
-  const parsed = JSON.parse(jsonStr)
+  // JSON 파싱 — 코드블록, 마크다운 혼합, 순수 JSON 모두 처리
+  const parsed = extractJSON(content)
 
   const suggestions: Suggestion[] = Array.isArray(parsed)
     ? parsed
