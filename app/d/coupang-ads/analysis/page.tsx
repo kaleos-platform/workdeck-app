@@ -106,6 +106,17 @@ export default function AnalysisPage() {
       .catch(() => {})
   }, [])
 
+  // 규칙 개수 로드 (Dialog 열기 전에도 표시)
+  useEffect(() => {
+    fetch('/api/analysis/rules')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.rules ?? []
+        setRulesCount(list.length)
+      })
+      .catch(() => {})
+  }, [])
+
   function handlePresetClick(days: DatePreset) {
     setActivePreset(days)
     setDateRange(getPresetRange(days))

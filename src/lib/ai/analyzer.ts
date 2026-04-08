@@ -42,6 +42,7 @@ export interface InefficientKeyword {
   clicks: number
   impressions: number
   orders: number
+  costRatio?: number // 캠페인 총 광고비 대비 이 키워드의 광고비 비중 (%)
 }
 
 /**

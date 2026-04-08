@@ -11,8 +11,8 @@ const POLL_INTERVAL = 30_000 // 30초
 let isProcessing = false
 
 // Gemini API 설정
-const GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash'
-const GEMINI_FALLBACK_MODEL = 'gemini-2.5-flash-lite'
+const GEMINI_PRIMARY_MODEL = 'gemini-2.5-pro'
+const GEMINI_FALLBACK_MODEL = 'gemini-2.5-flash'
 
 function getBaseUrl(): string {
   const url = process.env.WORKDECK_API_URL
@@ -83,7 +83,7 @@ async function callGemini(
         contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
         generationConfig: {
           responseMimeType: 'application/json',
-          temperature: 0.7,
+          temperature: 0.3,
           maxOutputTokens: 65536,
           thinkingConfig: { thinkingBudget: 2048 },
         },
@@ -152,7 +152,8 @@ function buildUserPrompt(ctx: Record<string, unknown>): string {
   if (inefficientKeywords.length > 0) {
     lines.push('', '## 비효율 키워드 (광고비 > 0, 주문 = 0)')
     for (const k of inefficientKeywords) {
-      lines.push(`- [${k.campaignName}] "${k.keyword}": 광고비 ${Number(k.adCost).toLocaleString()}원, 클릭 ${k.clicks}, 노출 ${k.impressions}`)
+      const costRatioStr = k.costRatio != null ? `, 캠페인 광고비 대비 ${k.costRatio}%` : ''
+      lines.push(`- [${k.campaignName}] "${k.keyword}": 광고비 ${Number(k.adCost).toLocaleString()}원, 클릭 ${k.clicks}, 노출 ${k.impressions}${costRatioStr}`)
     }
   }
 
@@ -190,6 +191,16 @@ function buildUserPrompt(ctx: Record<string, unknown>): string {
       const memoDate = m.date ? String(m.date).split('T')[0] : ''
       lines.push(`- [${m.campaignId}] ${memoDate}: ${m.content}`)
     }
+  }
+
+  // 규칙 리마인더 (시스템 프롬프트에도 있지만, 사용자 프롬프트 말미에 다시 강조)
+  const activeRules = ctx.activeRules as Array<{ id: string; rule: string }> ?? []
+  if (activeRules.length > 0) {
+    lines.push('', '## 적용할 규칙 리마인더 (수치 기준을 반드시 준수)')
+    for (let i = 0; i < activeRules.length; i++) {
+      lines.push(`규칙 ${i + 1}. ${activeRules[i].rule}`)
+    }
+    lines.push('위 규칙에 명시된 수치를 임의로 변경하지 마세요. 각 suggestion의 appliedRule 필드에 적용한 규칙 번호를 명시하세요.')
   }
 
   return lines.join('\n')

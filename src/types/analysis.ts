@@ -11,6 +11,7 @@ export interface Suggestion {
   campaignId: string
   target: string
   reason: string
+  appliedRule?: string
   currentValue?: number
   suggestedValue?: number
   estimatedImpact?: string

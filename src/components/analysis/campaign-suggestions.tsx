@@ -144,6 +144,12 @@ export function CampaignSuggestions({ suggestions, campaignNames }: CampaignSugg
                           {suggestion.reason}
                         </p>
 
+                        {suggestion.appliedRule && (
+                          <p className="text-[10px] text-muted-foreground/70">
+                            적용 규칙: {suggestion.appliedRule}
+                          </p>
+                        )}
+
                         {/* Current → Suggested value */}
                         {suggestion.currentValue != null &&
                           suggestion.suggestedValue != null && (
