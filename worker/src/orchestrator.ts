@@ -41,13 +41,15 @@ function verifyDownloadedFile(buffer: Buffer, fileName: string, dateTo: string):
     console.log(`파일 검증: ${fileName} — 날짜 범위 ${fileMinDate} ~ ${fileMaxDate} (${rows.length}행, ${sortedDates.length}일)`)
 
     if (!uniqueDates.has(dateTo)) {
-      console.warn(
-        `⚠ 경고: 요청한 종료일(${dateTo})이 파일에 없습니다! ` +
+      throw new Error(
+        `요청한 종료일(${dateTo})이 파일에 없습니다. ` +
         `파일 날짜: ${sortedDates.join(', ')}. ` +
         `쿠팡이 캐시된 보고서를 반환했을 수 있습니다.`
       )
     }
   } catch (err) {
+    // 날짜 불일치 에러는 그대로 전파
+    if (err instanceof Error && err.message.includes('요청한 종료일')) throw err
     console.warn('파일 검증 중 오류 (계속 진행):', err instanceof Error ? err.message : err)
   }
 }
@@ -209,9 +211,13 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   console.log('상태: COMPLETED')
 
   // ── Step 8: Slack 알림 전송 ──
-  // 실제 수집 기간 (upload 응답) 또는 의도된 기간 (fallback)
-  const actualStart = uploadResult.periodStart ? uploadResult.periodStart.split('T')[0] : dateFrom
-  const actualEnd = uploadResult.periodEnd ? uploadResult.periodEnd.split('T')[0] : dateTo
+  // 실제 수집 기간 (upload 응답의 ISO 날짜를 KST로 변환) 또는 의도된 기간 (fallback)
+  function toKSTDateStr(isoStr: string): string {
+    const d = new Date(isoStr)
+    return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
+  }
+  const actualStart = uploadResult.periodStart ? toKSTDateStr(uploadResult.periodStart) : dateFrom
+  const actualEnd = uploadResult.periodEnd ? toKSTDateStr(uploadResult.periodEnd) : dateTo
   await notifyCollectionDone({
     dateRange: `${actualStart} ~ ${actualEnd}`,
     totalRows: uploadResult.totalRows,
