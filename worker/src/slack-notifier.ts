@@ -128,6 +128,42 @@ export async function notifyAnalysisDone(params: {
   await postMessage(blocks, `쿠팡 광고 분석 완료: ${params.campaignCount}개 캠페인, ${params.suggestionCount}개 제안`)
 }
 
+/** 재고 수집 완료 알림 */
+export async function notifyInventoryDone(params: {
+  healthRows?: number
+  metricsRows?: number
+  errors: string[]
+}): Promise<void> {
+  const hasData = (params.healthRows ?? 0) > 0 || (params.metricsRows ?? 0) > 0
+  const hasErrors = params.errors.length > 0
+
+  if (!hasData && !hasErrors) return // 결과가 없으면 알림 생략
+
+  const emoji = hasErrors ? ':warning:' : ':white_check_mark:'
+  const status = hasErrors ? (hasData ? '일부 완료' : '실패') : '완료'
+
+  const inventoryUrl = process.env.WORKDECK_APP_URL
+    ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/inventory`
+    : 'https://app.workdeck.work/d/coupang-ads/inventory'
+
+  const blocks: Block[] = [
+    header(`${emoji} 쿠팡 재고 데이터 수집 ${status}`),
+    divider(),
+    section(
+      `*재고 건강성*\n${params.healthRows != null ? `${params.healthRows.toLocaleString()}건` : '미수집'}`,
+      `*판매 성과*\n${params.metricsRows != null ? `${params.metricsRows.toLocaleString()}건` : '미수집'}`,
+    ),
+  ]
+
+  if (hasErrors) {
+    blocks.push(section(`*오류*\n${params.errors.join('\n').slice(0, 200)}`))
+  }
+
+  blocks.push(section(`<${inventoryUrl}|:package: 재고 현황 보기>`))
+
+  await postMessage(blocks, `쿠팡 재고 데이터 수집 ${status}`)
+}
+
 /** 수집 실패 알림 */
 export async function notifyCollectionFailed(error: string): Promise<void> {
   const blocks: Block[] = [

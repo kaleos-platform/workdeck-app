@@ -147,7 +147,7 @@ export async function uploadReport(
   periodEnd?: string
 }> {
   const formData = new FormData()
-  formData.append('file', new Blob([buffer]), fileName)
+  formData.append('file', new Blob([new Uint8Array(buffer)]), fileName)
   if (workspaceId) {
     formData.append('workspaceId', workspaceId)
   }
@@ -165,6 +165,42 @@ export async function uploadReport(
   if (!response.ok) {
     const body = await response.text()
     throw new Error(`API 요청 실패 [${response.status}]: /api/collection/upload — ${body}`)
+  }
+
+  return response.json()
+}
+
+/**
+ * 재고 엑셀 파일 업로드 (multipart/form-data)
+ * POST /api/inventory/upload-worker
+ */
+export async function uploadInventory(
+  buffer: Buffer,
+  fileName: string,
+  workspaceId: string,
+): Promise<{
+  success: boolean
+  fileType: string
+  totalRows: number
+  insertedRows: number
+  error?: string
+}> {
+  const formData = new FormData()
+  formData.append('file', new Blob([new Uint8Array(buffer)]), fileName)
+  formData.append('workspaceId', workspaceId)
+
+  const url = `${getBaseUrl()}/api/inventory/upload-worker`
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'x-worker-api-key': getWorkerApiKey(),
+    },
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`API 요청 실패 [${response.status}]: /api/inventory/upload-worker — ${body}`)
   }
 
   return response.json()

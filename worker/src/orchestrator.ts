@@ -9,10 +9,12 @@ import {
   updateCollectionRun,
   getCredentials,
   uploadReport,
+  uploadInventory,
 } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { collectCoupangReport } from './collector.js'
-import { notifyCollectionDone, notifyCollectionFailed } from './slack-notifier.js'
+import { collectInventoryData } from './inventory-collector.js'
+import { notifyCollectionDone, notifyCollectionFailed, notifyInventoryDone } from './slack-notifier.js'
 
 /**
  * 다운로드된 Excel 파일의 날짜 범위를 검증한다.
@@ -225,11 +227,87 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     duplicateRows: uploadResult.duplicateRows,
   }).catch((err) => console.error('[slack] 알림 전송 실패:', err))
 
-  // ── Step 9: 수집 후 자동 분석 트리거 ──
+  // ── Step 9: 재고 데이터 수집 (Wing) ──
+  let inventoryResult: { healthRows?: number; metricsRows?: number; errors: string[] } = { errors: [] }
+  try {
+    console.log('\n[orchestrator] 재고 데이터 수집 시작...')
+    inventoryResult = await collectAndUploadInventory(credential)
+    console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건, 판매성과: ${inventoryResult.metricsRows ?? 0}건`)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`[orchestrator] 재고 수집 실패 (광고 데이터는 정상): ${msg}`)
+    inventoryResult.errors.push(msg)
+  }
+
+  // ── Step 10: 재고 수집 결과 Slack 알림 ──
+  await notifyInventoryDone(inventoryResult)
+    .catch((err) => console.error('[slack] 재고 알림 전송 실패:', err))
+
+  // ── Step 11: 수집 후 자동 분석 트리거 ──
   await triggerAnalysisAfterCollection(credential.workspaceId, actualStart, actualEnd)
     .catch((err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err))
 
   return result.filePath
+}
+
+/** Wing에서 재고 데이터를 수집하고 업로드한다 */
+async function collectAndUploadInventory(
+  credential: { loginId: string; encryptedPassword: string; passwordIv: string; workspaceId: string },
+): Promise<{ healthRows?: number; metricsRows?: number; errors: string[] }> {
+  const password = credential.passwordIv === 'none'
+    ? credential.encryptedPassword
+    : decrypt(credential.encryptedPassword, credential.passwordIv)
+
+  const inventoryData = await collectInventoryData(
+    { loginId: credential.loginId, password },
+  )
+
+  const errors: string[] = []
+  let healthRows: number | undefined
+  let metricsRows: number | undefined
+
+  // 재고 건강성 업로드
+  if (inventoryData.inventoryHealth) {
+    try {
+      const buffer = fs.readFileSync(inventoryData.inventoryHealth.filePath)
+      const result = await uploadInventory(
+        Buffer.from(buffer),
+        inventoryData.inventoryHealth.fileName,
+        credential.workspaceId,
+      )
+      healthRows = result.insertedRows
+      console.log(`[inventory] 재고 건강성 업로드: ${result.insertedRows}건`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[inventory] 재고 건강성 업로드 실패: ${msg}`)
+      errors.push(`재고 건강성 업로드: ${msg}`)
+    } finally {
+      // 임시 파일 삭제
+      try { fs.unlinkSync(inventoryData.inventoryHealth.filePath) } catch {}
+    }
+  }
+
+  // 판매 성과 업로드
+  if (inventoryData.vendorMetrics) {
+    try {
+      const buffer = fs.readFileSync(inventoryData.vendorMetrics.filePath)
+      const result = await uploadInventory(
+        Buffer.from(buffer),
+        inventoryData.vendorMetrics.fileName,
+        credential.workspaceId,
+      )
+      metricsRows = result.insertedRows
+      console.log(`[inventory] 판매 성과 업로드: ${result.insertedRows}건`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[inventory] 판매 성과 업로드 실패: ${msg}`)
+      errors.push(`판매 성과 업로드: ${msg}`)
+    } finally {
+      try { fs.unlinkSync(inventoryData.vendorMetrics.filePath) } catch {}
+    }
+  }
+
+  return { healthRows, metricsRows, errors }
 }
 
 /** 수집 후 자동 분석 트리거 — triggerAfterCollection이 활성화된 경우만 */
