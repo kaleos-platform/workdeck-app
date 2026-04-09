@@ -154,3 +154,13 @@ export type BusinessAgent = Prisma.BusinessAgentModel
  * 
  */
 export type AgentLog = Prisma.AgentLogModel
+/**
+ * Model InventoryUpload
+ * 
+ */
+export type InventoryUpload = Prisma.InventoryUploadModel
+/**
+ * Model InventoryRecord
+ * 
+ */
+export type InventoryRecord = Prisma.InventoryRecordModel

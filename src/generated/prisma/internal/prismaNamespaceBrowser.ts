@@ -73,7 +73,9 @@ export const ModelName = {
   AnalysisRule: 'AnalysisRule',
   AnalysisSchedule: 'AnalysisSchedule',
   BusinessAgent: 'BusinessAgent',
-  AgentLog: 'AgentLog'
+  AgentLog: 'AgentLog',
+  InventoryUpload: 'InventoryUpload',
+  InventoryRecord: 'InventoryRecord'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -426,6 +428,65 @@ export const AgentLogScalarFieldEnum = {
 } as const
 
 export type AgentLogScalarFieldEnum = (typeof AgentLogScalarFieldEnum)[keyof typeof AgentLogScalarFieldEnum]
+
+
+export const InventoryUploadScalarFieldEnum = {
+  id: 'id',
+  fileName: 'fileName',
+  fileType: 'fileType',
+  uploadedAt: 'uploadedAt',
+  snapshotDate: 'snapshotDate',
+  totalRows: 'totalRows',
+  insertedRows: 'insertedRows',
+  workspaceId: 'workspaceId'
+} as const
+
+export type InventoryUploadScalarFieldEnum = (typeof InventoryUploadScalarFieldEnum)[keyof typeof InventoryUploadScalarFieldEnum]
+
+
+export const InventoryRecordScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  snapshotDate: 'snapshotDate',
+  fileType: 'fileType',
+  productId: 'productId',
+  optionId: 'optionId',
+  skuId: 'skuId',
+  productName: 'productName',
+  optionName: 'optionName',
+  category: 'category',
+  availableStock: 'availableStock',
+  inboundStock: 'inboundStock',
+  productGrade: 'productGrade',
+  restockQty: 'restockQty',
+  restockDate: 'restockDate',
+  estimatedDepletion: 'estimatedDepletion',
+  storageFee: 'storageFee',
+  isItemWinner: 'isItemWinner',
+  returns30d: 'returns30d',
+  revenue7d: 'revenue7d',
+  revenue30d: 'revenue30d',
+  salesQty7d: 'salesQty7d',
+  salesQty30d: 'salesQty30d',
+  visitors: 'visitors',
+  views: 'views',
+  cartAdds: 'cartAdds',
+  conversionRate: 'conversionRate',
+  itemWinnerRate: 'itemWinnerRate',
+  totalRevenue: 'totalRevenue',
+  totalSales: 'totalSales',
+  totalCancelAmt: 'totalCancelAmt',
+  totalCancelled: 'totalCancelled',
+  stock1to30d: 'stock1to30d',
+  stock31to45d: 'stock31to45d',
+  stock46to60d: 'stock46to60d',
+  stock61to120d: 'stock61to120d',
+  stock121to180d: 'stock121to180d',
+  stock181plusD: 'stock181plusD',
+  uploadId: 'uploadId'
+} as const
+
+export type InventoryRecordScalarFieldEnum = (typeof InventoryRecordScalarFieldEnum)[keyof typeof InventoryRecordScalarFieldEnum]
 
 
 export const SortOrder = {
