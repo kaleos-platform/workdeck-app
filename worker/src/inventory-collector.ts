@@ -162,12 +162,12 @@ async function downloadInventoryHealth(
   await downloadBtn.click()
   await page.waitForTimeout(1000)
 
-  // Step 3: 드롭다운에서 "엑셀 다운로드 요청" 클릭
-  // 셀렉터: .backdrop div 내부의 "엑셀 다운로드 요청" 텍스트
-  const requestBtn = page.locator('.backdrop div:has-text("엑셀 다운로드 요청")').first()
+  // Step 3: 드롭다운에서 "엑셀 다운로드 요청" 클릭 (첫 번째 항목)
+  // 정확한 셀렉터: #inventory-management-main-container .backdrop > div > div:nth-child(1)
+  const requestBtn = page.locator('#inventory-management-main-container .backdrop > div > div:nth-child(1)').first()
 
   if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
-    // fallback: 텍스트 매칭
+    // fallback: 텍스트 정확 매칭
     const fallbackBtn = page.locator('div:text-is("엑셀 다운로드 요청")').first()
     if (!(await fallbackBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
       await saveScreenshot(page, 'inventory-health-no-request-btn')
@@ -179,7 +179,8 @@ async function downloadInventoryHealth(
     return result
   }
 
-  console.log('[inventory]   → "엑셀 다운로드 요청" 클릭')
+  const reqText = await requestBtn.textContent().catch(() => '?')
+  console.log(`[inventory]   → "${reqText?.trim()}" 클릭`)
   const result = await clickAndDownload(
     page,
     downloadDir,
