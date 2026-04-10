@@ -135,20 +135,20 @@ async function downloadInventoryHealth(
   await page.waitForTimeout(3000)
   await saveScreenshot(page, 'inventory-health-page')
 
-  // Step 1: "엑셀 다운로드" 버튼 찾기 (드롭다운 트리거)
-  // "상품목록" 엑셀이 아닌, 재고 건강성 "엑셀 다운로드" 버튼 선택
-  const allExcelBtns = page.locator('button:has-text("엑셀 다운로드")')
-  const count = await allExcelBtns.count()
-  console.log(`[inventory]   → "엑셀 다운로드" 버튼 ${count}개`)
+  // Step 1: "엑셀 다운로드" 드롭다운 트리거 버튼 찾기
+  // parent가 .excel_download인 버튼 (정확한 셀렉터)
+  let downloadBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
 
-  let downloadBtn = allExcelBtns.first()
-  for (let i = 0; i < count; i++) {
-    const text = (await allExcelBtns.nth(i).textContent().catch(() => ''))?.trim()
-    console.log(`[inventory]     [${i}] "${text}"`)
-    // "상품목록"이 아닌 "엑셀 다운로드" 버튼 선택
-    if (text && !text.includes('상품목록') && text.includes('엑셀 다운로드')) {
-      downloadBtn = allExcelBtns.nth(i)
-      break
+  if (!(await downloadBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+    // fallback: "상품목록"이 아닌 "엑셀 다운로드" 버튼
+    const allBtns = page.locator('button:has-text("엑셀 다운로드")')
+    const count = await allBtns.count()
+    for (let i = 0; i < count; i++) {
+      const text = (await allBtns.nth(i).textContent().catch(() => ''))?.trim()
+      if (text && !text.includes('상품목록')) {
+        downloadBtn = allBtns.nth(i)
+        break
+      }
     }
   }
 
@@ -157,34 +157,33 @@ async function downloadInventoryHealth(
     throw new Error('[inventory] 재고 건강성 다운로드 버튼을 찾을 수 없습니다')
   }
 
-  // Step 2: 버튼 클릭 → 드롭다운 메뉴 열기
-  console.log('[inventory]   → 엑셀 다운로드 버튼 클릭 (드롭다운 열기)')
+  // Step 2: 버튼 클릭 → 드롭다운 열기
+  console.log('[inventory]   → 엑셀 다운로드 버튼 클릭 (드롭다운)')
   await downloadBtn.click()
   await page.waitForTimeout(1000)
-  await saveScreenshot(page, 'inventory-health-dropdown')
 
-  // Step 3: 드롭다운에서 "다운로드 요청" 항목 클릭 → 실제 파일 다운로드
-  const requestBtn = page.locator('text=/다운로드\\s*요청/, button:has-text("다운로드 요청"), a:has-text("다운로드 요청"), li:has-text("다운로드 요청"), [role="menuitem"]:has-text("다운로드")')
+  // Step 3: 드롭다운에서 "엑셀 다운로드 요청" 클릭
+  // 셀렉터: .backdrop div 내부의 "엑셀 다운로드 요청" 텍스트
+  const requestBtn = page.locator('.backdrop div:has-text("엑셀 다운로드 요청")').first()
 
-  if (!(await requestBtn.first().isVisible({ timeout: 5000 }).catch(() => false))) {
-    // fallback: 드롭다운 내 모든 항목 로깅
-    const menuItems = await page.evaluate(() => {
-      const els = document.querySelectorAll('li, [role="menuitem"], .dropdown-menu *, .ant-dropdown *')
-      return Array.from(els)
-        .map((el) => el.textContent?.trim())
-        .filter((t) => t && t.length < 60 && t.length > 0)
-        .slice(0, 20)
-    })
-    console.log(`[inventory]   → 드롭다운 항목: ${JSON.stringify(menuItems)}`)
-    await saveScreenshot(page, 'inventory-health-dropdown-items')
-    throw new Error('[inventory] 드롭다운에서 다운로드 요청 버튼을 찾을 수 없습니다')
+  if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+    // fallback: 텍스트 매칭
+    const fallbackBtn = page.locator('div:text-is("엑셀 다운로드 요청")').first()
+    if (!(await fallbackBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+      await saveScreenshot(page, 'inventory-health-no-request-btn')
+      throw new Error('[inventory] 드롭다운에서 "엑셀 다운로드 요청" 버튼을 찾을 수 없습니다')
+    }
+    console.log('[inventory]   → "엑셀 다운로드 요청" 클릭 (fallback)')
+    const result = await clickAndDownload(page, downloadDir, fallbackBtn, `inventory_health_${Date.now()}.xlsx`)
+    console.log(`[inventory]   → 재고 건강성 저장: ${result.fileName}`)
+    return result
   }
 
-  console.log('[inventory]   → "다운로드 요청" 클릭')
+  console.log('[inventory]   → "엑셀 다운로드 요청" 클릭')
   const result = await clickAndDownload(
     page,
     downloadDir,
-    requestBtn.first(),
+    requestBtn,
     `inventory_health_${Date.now()}.xlsx`,
   )
 
