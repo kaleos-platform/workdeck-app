@@ -42,7 +42,10 @@ type InventoryRow = {
   itemWinnerRate: number | null
 }
 
-type SortField = 'productName' | 'availableStock' | 'revenue30d' | 'salesQty30d' | 'storageFee' | 'conversionRate' | 'returns30d'
+type SortField = 'productName' | 'availableStock' | 'revenue30d' | 'salesQty30d' | 'storageFee' | 'conversionRate' | 'returns30d' | 'returnRate' | 'storageFeeRate'
+
+// 클라이언트 정렬이 필요한 계산 필드
+const CLIENT_SORT_FIELDS: SortField[] = ['returnRate', 'storageFeeRate']
 
 const COL_COUNT = 13
 
@@ -65,14 +68,29 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
   const [productNames, setProductNames] = useState<string[]>([])
   const [excludedOptionIds, setExcludedOptionIds] = useState<string[]>([])
 
+  // 계산 필드의 값 추출 (null이면 null 반환 → 정렬 시 마지막으로)
+  function getCalcValue(r: InventoryRow, field: SortField): number | null {
+    if (field === 'returnRate') {
+      if (r.returns30d == null || r.salesQty30d == null || r.salesQty30d === 0) return null
+      return r.returns30d / r.salesQty30d * 100
+    }
+    if (field === 'storageFeeRate') {
+      if (r.storageFee == null || r.revenue30d == null || Number(r.revenue30d) === 0) return null
+      return r.storageFee / Number(r.revenue30d) * 100
+    }
+    return null
+  }
+
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
+      const isClientSort = CLIENT_SORT_FIELDS.includes(sortBy)
       const params = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-        sortBy,
-        sortOrder,
+        page: isClientSort ? '1' : String(page),
+        limit: isClientSort ? '200' : String(limit),
+        // 계산 필드 정렬 시 서버에는 기본 정렬로 요청
+        sortBy: isClientSort ? 'productName' : sortBy,
+        sortOrder: isClientSort ? 'asc' : sortOrder,
         ...(search ? { search } : {}),
         ...(isItemWinner !== 'all' ? { isItemWinner } : {}),
         ...(productNameFilter !== '__all__' ? { productNameFilter } : {}),
@@ -86,7 +104,21 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
         return
       }
       const data = await res.json()
-      setRecords(data.records ?? [])
+      let rows: InventoryRow[] = data.records ?? []
+
+      if (isClientSort && rows.length > 0) {
+        // 클라이언트 정렬: null(="-")은 항상 마지막
+        rows = [...rows].sort((a, b) => {
+          const va = getCalcValue(a, sortBy)
+          const vb = getCalcValue(b, sortBy)
+          if (va == null && vb == null) return 0
+          if (va == null) return 1  // null은 항상 뒤로
+          if (vb == null) return -1
+          return sortOrder === 'asc' ? va - vb : vb - va
+        })
+      }
+
+      setRecords(rows)
       setTotal(data.total ?? 0)
       if (data.productNames) setProductNames(data.productNames)
       if (data.excludedOptionIds) setExcludedOptionIds(data.excludedOptionIds)
@@ -251,13 +283,17 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                 </Button>
               </TableHead>
               <TableHead>
-                <Button variant="ghost" size="sm" onClick={() => toggleSort('returns30d')}>
+                <Button variant="ghost" size="sm" onClick={() => toggleSort('returnRate')}>
                   반품율(%) <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
-              <TableHead>보관료</TableHead>
               <TableHead>
                 <Button variant="ghost" size="sm" onClick={() => toggleSort('storageFee')}>
+                  보관료 <ArrowUpDown className="ml-1 h-3 w-3" />
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button variant="ghost" size="sm" onClick={() => toggleSort('storageFeeRate')}>
                   보관료율(%) <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
