@@ -16,6 +16,11 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      // 비밀번호 재설정 (type=recovery) → 세션 유지 후 비밀번호 재설정 페이지로
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}/reset-password`)
+      }
+
       // 이메일 인증 완료 (type=email) → 세션 종료 후 로그인 화면으로 리다이렉트
       // app_metadata.provider가 아닌 URL 파라미터로 구분 (동일 이메일로 여러 provider 연결 시 오작동 방지)
       if (type === 'email') {

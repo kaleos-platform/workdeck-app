@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import type { AuthError } from '@supabase/supabase-js'
+import Link from 'next/link'
 import { X, MailCheck, CheckCircle2, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { resolveRedirectPath } from '@/lib/auth-redirect'
@@ -43,17 +44,19 @@ function getAuthErrorMessage(error: AuthError): string {
 interface LoginFormProps {
   isVerifyPending?: boolean
   isVerifySuccess?: boolean
+  isResetSuccess?: boolean
   redirectTo?: string | null
 }
 
 export function LoginForm({
   isVerifyPending = false,
   isVerifySuccess = false,
+  isResetSuccess = false,
   redirectTo,
 }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  const [showBanner, setShowBanner] = useState(isVerifyPending || isVerifySuccess)
+  const [showBanner, setShowBanner] = useState(isVerifyPending || isVerifySuccess || isResetSuccess)
   const [authError, setAuthError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -114,6 +117,22 @@ export function LoginForm({
           <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
           <AlertDescription className="pr-6">
             이메일 인증이 완료되었습니다. 로그인해주세요.
+          </AlertDescription>
+          <button
+            onClick={() => setShowBanner(false)}
+            className="absolute top-3 right-3 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200"
+            aria-label="배너 닫기"
+            type="button"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </Alert>
+      )}
+      {showBanner && isResetSuccess && (
+        <Alert className="relative border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <AlertDescription className="pr-6">
+            비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.
           </AlertDescription>
           <button
             onClick={() => setShowBanner(false)}
@@ -225,6 +244,15 @@ export function LoginForm({
               </FormItem>
             )}
           />
+
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-muted-foreground hover:text-primary hover:underline"
+            >
+              비밀번호를 잊으셨나요?
+            </Link>
+          </div>
 
           {/* 로그인 에러 인라인 Alert */}
           {authError && (
