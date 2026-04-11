@@ -228,6 +228,9 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   }).catch((err) => console.error('[slack] 알림 전송 실패:', err))
 
   // ── Step 9: 재고 데이터 수집 (Wing) ──
+  // 광고 수집기 context.close() 후 브라우저 데이터 디렉토리 잠금 해제 대기
+  await new Promise((r) => setTimeout(r, 3000))
+
   let inventoryResult: { healthRows?: number; metricsRows?: number; errors: string[] } = { errors: [] }
   try {
     console.log('\n[orchestrator] 재고 데이터 수집 시작...')
@@ -242,6 +245,10 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   // ── Step 10: 재고 수집 결과 Slack 알림 ──
   await notifyInventoryDone(inventoryResult)
     .catch((err) => console.error('[slack] 재고 알림 전송 실패:', err))
+
+  // ── Step 10.5: 재고 분석 트리거 ──
+  await triggerInventoryAnalysis(credential.workspaceId)
+    .catch((err) => console.error('[orchestrator] 재고 분석 트리거 실패:', err))
 
   // ── Step 11: 수집 후 자동 분석 트리거 ──
   await triggerAnalysisAfterCollection(credential.workspaceId, actualStart, actualEnd)
@@ -308,6 +315,29 @@ async function collectAndUploadInventory(
   }
 
   return { healthRows, metricsRows, errors }
+}
+
+/** 재고 분석 트리거 — 재고 수집 완료 후 자동 분석 */
+async function triggerInventoryAnalysis(workspaceId: string): Promise<void> {
+  const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
+  const apiKey = process.env.WORKER_API_KEY
+  if (!baseUrl || !apiKey) return
+
+  console.log('[orchestrator] 재고 분석 트리거 실행')
+
+  const res = await fetch(`${baseUrl}/api/inventory/analysis`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-worker-api-key': apiKey },
+    body: JSON.stringify({ workspaceId }),
+  })
+
+  if (res.ok) {
+    const data = await res.json()
+    console.log(`[orchestrator] 재고 분석 완료: analysisId=${data.analysisId}`)
+  } else {
+    const body = await res.text()
+    console.error(`[orchestrator] 재고 분석 실패 [${res.status}]: ${body}`)
+  }
 }
 
 /** 수집 후 자동 분석 트리거 — triggerAfterCollection이 활성화된 경우만 */
