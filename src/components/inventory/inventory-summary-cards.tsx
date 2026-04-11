@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Package, AlertTriangle, PackageX, Truck } from 'lucide-react'
+import { Package, AlertTriangle, PackageX, TrendingUp, Warehouse } from 'lucide-react'
 
 type Summary = {
   snapshotDate: string | null
   totalProducts: number
   outOfStock: number
   lowStock: number
-  inboundPending: number
+  totalRevenue30d: number
   totalStorageFee: number
 }
 
@@ -45,15 +45,21 @@ export function InventorySummaryCards() {
       color: 'text-yellow-500',
     },
     {
-      label: '입고 예정',
-      value: data.inboundPending.toLocaleString(),
-      icon: Truck,
+      label: '이번달 매출(30일)',
+      value: `${Number(data.totalRevenue30d).toLocaleString()}원`,
+      icon: TrendingUp,
       color: 'text-emerald-500',
+    },
+    {
+      label: '이번달 누적 보관료',
+      value: `${Number(data.totalStorageFee).toLocaleString()}원`,
+      icon: Warehouse,
+      color: 'text-orange-500',
     },
   ]
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {cards.map((c) => (
         <Card key={c.label}>
           <CardContent className="flex items-center gap-4 p-4">

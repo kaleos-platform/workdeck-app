@@ -126,8 +126,9 @@ model Workspace {
   collectionRuns      CollectionRun[]
 
   // 재고 관리
-  inventoryUploads  InventoryUpload[]
-  inventoryRecords  InventoryRecord[]
+  inventoryUploads          InventoryUpload[]
+  inventoryRecords          InventoryRecord[]
+  inventoryExcludedProducts InventoryExcludedProduct[]
 
   createdAt DateTime @default(now())
 }
@@ -585,4 +586,18 @@ model InventoryRecord {
   @@unique([workspaceId, snapshotDate, productId, optionId, fileType])
   @@index([workspaceId, snapshotDate])
   @@index([workspaceId, productName])
+}
+
+// 재고 관리 제외 상품
+model InventoryExcludedProduct {
+  id          String   @id @default(cuid())
+  workspaceId String
+  productId   String
+  excludedAt  DateTime @default(now())
+  reason      String?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, productId])
+  @@index([workspaceId])
 }

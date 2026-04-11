@@ -75,7 +75,8 @@ export const ModelName = {
   BusinessAgent: 'BusinessAgent',
   AgentLog: 'AgentLog',
   InventoryUpload: 'InventoryUpload',
-  InventoryRecord: 'InventoryRecord'
+  InventoryRecord: 'InventoryRecord',
+  InventoryExcludedProduct: 'InventoryExcludedProduct'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -487,6 +488,17 @@ export const InventoryRecordScalarFieldEnum = {
 } as const
 
 export type InventoryRecordScalarFieldEnum = (typeof InventoryRecordScalarFieldEnum)[keyof typeof InventoryRecordScalarFieldEnum]
+
+
+export const InventoryExcludedProductScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  productId: 'productId',
+  excludedAt: 'excludedAt',
+  reason: 'reason'
+} as const
+
+export type InventoryExcludedProductScalarFieldEnum = (typeof InventoryExcludedProductScalarFieldEnum)[keyof typeof InventoryExcludedProductScalarFieldEnum]
 
 
 export const SortOrder = {

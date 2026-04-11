@@ -193,6 +193,7 @@ export type WorkspaceWhereInput = {
   collectionRuns?: Prisma.CollectionRunListRelationFilter
   inventoryUploads?: Prisma.InventoryUploadListRelationFilter
   inventoryRecords?: Prisma.InventoryRecordListRelationFilter
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductListRelationFilter
 }
 
 export type WorkspaceOrderByWithRelationInput = {
@@ -219,6 +220,7 @@ export type WorkspaceOrderByWithRelationInput = {
   collectionRuns?: Prisma.CollectionRunOrderByRelationAggregateInput
   inventoryUploads?: Prisma.InventoryUploadOrderByRelationAggregateInput
   inventoryRecords?: Prisma.InventoryRecordOrderByRelationAggregateInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductOrderByRelationAggregateInput
 }
 
 export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -248,6 +250,7 @@ export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
   collectionRuns?: Prisma.CollectionRunListRelationFilter
   inventoryUploads?: Prisma.InventoryUploadListRelationFilter
   inventoryRecords?: Prisma.InventoryRecordListRelationFilter
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductListRelationFilter
 }, "id" | "ownerId">
 
 export type WorkspaceOrderByWithAggregationInput = {
@@ -293,6 +296,7 @@ export type WorkspaceCreateInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateInput = {
@@ -318,6 +322,7 @@ export type WorkspaceUncheckedCreateInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUpdateInput = {
@@ -343,6 +348,7 @@ export type WorkspaceUpdateInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateInput = {
@@ -368,6 +374,7 @@ export type WorkspaceUncheckedUpdateInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateManyInput = {
@@ -705,6 +712,20 @@ export type WorkspaceUpdateOneRequiredWithoutInventoryRecordsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.WorkspaceUpdateToOneWithWhereWithoutInventoryRecordsInput, Prisma.WorkspaceUpdateWithoutInventoryRecordsInput>, Prisma.WorkspaceUncheckedUpdateWithoutInventoryRecordsInput>
 }
 
+export type WorkspaceCreateNestedOneWithoutInventoryExcludedProductsInput = {
+  create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutInventoryExcludedProductsInput, Prisma.WorkspaceUncheckedCreateWithoutInventoryExcludedProductsInput>
+  connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutInventoryExcludedProductsInput
+  connect?: Prisma.WorkspaceWhereUniqueInput
+}
+
+export type WorkspaceUpdateOneRequiredWithoutInventoryExcludedProductsNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutInventoryExcludedProductsInput, Prisma.WorkspaceUncheckedCreateWithoutInventoryExcludedProductsInput>
+  connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutInventoryExcludedProductsInput
+  upsert?: Prisma.WorkspaceUpsertWithoutInventoryExcludedProductsInput
+  connect?: Prisma.WorkspaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkspaceUpdateToOneWithWhereWithoutInventoryExcludedProductsInput, Prisma.WorkspaceUpdateWithoutInventoryExcludedProductsInput>, Prisma.WorkspaceUncheckedUpdateWithoutInventoryExcludedProductsInput>
+}
+
 export type WorkspaceCreateWithoutOwnerInput = {
   id?: string
   name: string
@@ -727,6 +748,7 @@ export type WorkspaceCreateWithoutOwnerInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutOwnerInput = {
@@ -751,6 +773,7 @@ export type WorkspaceUncheckedCreateWithoutOwnerInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutOwnerInput = {
@@ -791,6 +814,7 @@ export type WorkspaceUpdateWithoutOwnerInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutOwnerInput = {
@@ -815,6 +839,7 @@ export type WorkspaceUncheckedUpdateWithoutOwnerInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutReportUploadsInput = {
@@ -839,6 +864,7 @@ export type WorkspaceCreateWithoutReportUploadsInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutReportUploadsInput = {
@@ -863,6 +889,7 @@ export type WorkspaceUncheckedCreateWithoutReportUploadsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutReportUploadsInput = {
@@ -903,6 +930,7 @@ export type WorkspaceUpdateWithoutReportUploadsInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutReportUploadsInput = {
@@ -927,6 +955,7 @@ export type WorkspaceUncheckedUpdateWithoutReportUploadsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutAdRecordsInput = {
@@ -951,6 +980,7 @@ export type WorkspaceCreateWithoutAdRecordsInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutAdRecordsInput = {
@@ -975,6 +1005,7 @@ export type WorkspaceUncheckedCreateWithoutAdRecordsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutAdRecordsInput = {
@@ -1015,6 +1046,7 @@ export type WorkspaceUpdateWithoutAdRecordsInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutAdRecordsInput = {
@@ -1039,6 +1071,7 @@ export type WorkspaceUncheckedUpdateWithoutAdRecordsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutCampaignMetasInput = {
@@ -1063,6 +1096,7 @@ export type WorkspaceCreateWithoutCampaignMetasInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutCampaignMetasInput = {
@@ -1087,6 +1121,7 @@ export type WorkspaceUncheckedCreateWithoutCampaignMetasInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutCampaignMetasInput = {
@@ -1127,6 +1162,7 @@ export type WorkspaceUpdateWithoutCampaignMetasInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutCampaignMetasInput = {
@@ -1151,6 +1187,7 @@ export type WorkspaceUncheckedUpdateWithoutCampaignMetasInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutKeywordStatusesInput = {
@@ -1175,6 +1212,7 @@ export type WorkspaceCreateWithoutKeywordStatusesInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutKeywordStatusesInput = {
@@ -1199,6 +1237,7 @@ export type WorkspaceUncheckedCreateWithoutKeywordStatusesInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutKeywordStatusesInput = {
@@ -1239,6 +1278,7 @@ export type WorkspaceUpdateWithoutKeywordStatusesInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutKeywordStatusesInput = {
@@ -1263,6 +1303,7 @@ export type WorkspaceUncheckedUpdateWithoutKeywordStatusesInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutCampaignTargetsInput = {
@@ -1287,6 +1328,7 @@ export type WorkspaceCreateWithoutCampaignTargetsInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutCampaignTargetsInput = {
@@ -1311,6 +1353,7 @@ export type WorkspaceUncheckedCreateWithoutCampaignTargetsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutCampaignTargetsInput = {
@@ -1351,6 +1394,7 @@ export type WorkspaceUpdateWithoutCampaignTargetsInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutCampaignTargetsInput = {
@@ -1375,6 +1419,7 @@ export type WorkspaceUncheckedUpdateWithoutCampaignTargetsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutProductStatusesInput = {
@@ -1399,6 +1444,7 @@ export type WorkspaceCreateWithoutProductStatusesInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutProductStatusesInput = {
@@ -1423,6 +1469,7 @@ export type WorkspaceUncheckedCreateWithoutProductStatusesInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutProductStatusesInput = {
@@ -1463,6 +1510,7 @@ export type WorkspaceUpdateWithoutProductStatusesInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutProductStatusesInput = {
@@ -1487,6 +1535,7 @@ export type WorkspaceUncheckedUpdateWithoutProductStatusesInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutDailyMemosInput = {
@@ -1511,6 +1560,7 @@ export type WorkspaceCreateWithoutDailyMemosInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutDailyMemosInput = {
@@ -1535,6 +1585,7 @@ export type WorkspaceUncheckedCreateWithoutDailyMemosInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutDailyMemosInput = {
@@ -1575,6 +1626,7 @@ export type WorkspaceUpdateWithoutDailyMemosInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutDailyMemosInput = {
@@ -1599,6 +1651,7 @@ export type WorkspaceUncheckedUpdateWithoutDailyMemosInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutCoupangCredentialInput = {
@@ -1623,6 +1676,7 @@ export type WorkspaceCreateWithoutCoupangCredentialInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutCoupangCredentialInput = {
@@ -1647,6 +1701,7 @@ export type WorkspaceUncheckedCreateWithoutCoupangCredentialInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutCoupangCredentialInput = {
@@ -1687,6 +1742,7 @@ export type WorkspaceUpdateWithoutCoupangCredentialInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutCoupangCredentialInput = {
@@ -1711,6 +1767,7 @@ export type WorkspaceUncheckedUpdateWithoutCoupangCredentialInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutCollectionScheduleInput = {
@@ -1735,6 +1792,7 @@ export type WorkspaceCreateWithoutCollectionScheduleInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutCollectionScheduleInput = {
@@ -1759,6 +1817,7 @@ export type WorkspaceUncheckedCreateWithoutCollectionScheduleInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutCollectionScheduleInput = {
@@ -1799,6 +1858,7 @@ export type WorkspaceUpdateWithoutCollectionScheduleInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutCollectionScheduleInput = {
@@ -1823,6 +1883,7 @@ export type WorkspaceUncheckedUpdateWithoutCollectionScheduleInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutCollectionRunsInput = {
@@ -1847,6 +1908,7 @@ export type WorkspaceCreateWithoutCollectionRunsInput = {
   collectionSchedule?: Prisma.CollectionScheduleCreateNestedOneWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutCollectionRunsInput = {
@@ -1871,6 +1933,7 @@ export type WorkspaceUncheckedCreateWithoutCollectionRunsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUncheckedCreateNestedOneWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutCollectionRunsInput = {
@@ -1911,6 +1974,7 @@ export type WorkspaceUpdateWithoutCollectionRunsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUpdateOneWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutCollectionRunsInput = {
@@ -1935,6 +1999,7 @@ export type WorkspaceUncheckedUpdateWithoutCollectionRunsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUncheckedUpdateOneWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutAnalysisReportsInput = {
@@ -1959,6 +2024,7 @@ export type WorkspaceCreateWithoutAnalysisReportsInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutAnalysisReportsInput = {
@@ -1983,6 +2049,7 @@ export type WorkspaceUncheckedCreateWithoutAnalysisReportsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutAnalysisReportsInput = {
@@ -2023,6 +2090,7 @@ export type WorkspaceUpdateWithoutAnalysisReportsInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutAnalysisReportsInput = {
@@ -2047,6 +2115,7 @@ export type WorkspaceUncheckedUpdateWithoutAnalysisReportsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutExecutionTasksInput = {
@@ -2071,6 +2140,7 @@ export type WorkspaceCreateWithoutExecutionTasksInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutExecutionTasksInput = {
@@ -2095,6 +2165,7 @@ export type WorkspaceUncheckedCreateWithoutExecutionTasksInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutExecutionTasksInput = {
@@ -2135,6 +2206,7 @@ export type WorkspaceUpdateWithoutExecutionTasksInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutExecutionTasksInput = {
@@ -2159,6 +2231,7 @@ export type WorkspaceUncheckedUpdateWithoutExecutionTasksInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutSafetyLimitsInput = {
@@ -2183,6 +2256,7 @@ export type WorkspaceCreateWithoutSafetyLimitsInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutSafetyLimitsInput = {
@@ -2207,6 +2281,7 @@ export type WorkspaceUncheckedCreateWithoutSafetyLimitsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutSafetyLimitsInput = {
@@ -2247,6 +2322,7 @@ export type WorkspaceUpdateWithoutSafetyLimitsInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutSafetyLimitsInput = {
@@ -2271,6 +2347,7 @@ export type WorkspaceUncheckedUpdateWithoutSafetyLimitsInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutAnalysisRulesInput = {
@@ -2295,6 +2372,7 @@ export type WorkspaceCreateWithoutAnalysisRulesInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutAnalysisRulesInput = {
@@ -2319,6 +2397,7 @@ export type WorkspaceUncheckedCreateWithoutAnalysisRulesInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutAnalysisRulesInput = {
@@ -2359,6 +2438,7 @@ export type WorkspaceUpdateWithoutAnalysisRulesInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutAnalysisRulesInput = {
@@ -2383,6 +2463,7 @@ export type WorkspaceUncheckedUpdateWithoutAnalysisRulesInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutAnalysisScheduleInput = {
@@ -2407,6 +2488,7 @@ export type WorkspaceCreateWithoutAnalysisScheduleInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutAnalysisScheduleInput = {
@@ -2431,6 +2513,7 @@ export type WorkspaceUncheckedCreateWithoutAnalysisScheduleInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutAnalysisScheduleInput = {
@@ -2471,6 +2554,7 @@ export type WorkspaceUpdateWithoutAnalysisScheduleInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutAnalysisScheduleInput = {
@@ -2495,6 +2579,7 @@ export type WorkspaceUncheckedUpdateWithoutAnalysisScheduleInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutBusinessAgentInput = {
@@ -2519,6 +2604,7 @@ export type WorkspaceCreateWithoutBusinessAgentInput = {
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutBusinessAgentInput = {
@@ -2543,6 +2629,7 @@ export type WorkspaceUncheckedCreateWithoutBusinessAgentInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutBusinessAgentInput = {
@@ -2583,6 +2670,7 @@ export type WorkspaceUpdateWithoutBusinessAgentInput = {
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutBusinessAgentInput = {
@@ -2607,6 +2695,7 @@ export type WorkspaceUncheckedUpdateWithoutBusinessAgentInput = {
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutInventoryUploadsInput = {
@@ -2631,6 +2720,7 @@ export type WorkspaceCreateWithoutInventoryUploadsInput = {
   collectionSchedule?: Prisma.CollectionScheduleCreateNestedOneWithoutWorkspaceInput
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutInventoryUploadsInput = {
@@ -2655,6 +2745,7 @@ export type WorkspaceUncheckedCreateWithoutInventoryUploadsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUncheckedCreateNestedOneWithoutWorkspaceInput
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutInventoryUploadsInput = {
@@ -2695,6 +2786,7 @@ export type WorkspaceUpdateWithoutInventoryUploadsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUpdateOneWithoutWorkspaceNestedInput
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutInventoryUploadsInput = {
@@ -2719,6 +2811,7 @@ export type WorkspaceUncheckedUpdateWithoutInventoryUploadsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUncheckedUpdateOneWithoutWorkspaceNestedInput
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceCreateWithoutInventoryRecordsInput = {
@@ -2743,6 +2836,7 @@ export type WorkspaceCreateWithoutInventoryRecordsInput = {
   collectionSchedule?: Prisma.CollectionScheduleCreateNestedOneWithoutWorkspaceInput
   collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceUncheckedCreateWithoutInventoryRecordsInput = {
@@ -2767,6 +2861,7 @@ export type WorkspaceUncheckedCreateWithoutInventoryRecordsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUncheckedCreateNestedOneWithoutWorkspaceInput
   collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type WorkspaceCreateOrConnectWithoutInventoryRecordsInput = {
@@ -2807,6 +2902,7 @@ export type WorkspaceUpdateWithoutInventoryRecordsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUpdateOneWithoutWorkspaceNestedInput
   collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type WorkspaceUncheckedUpdateWithoutInventoryRecordsInput = {
@@ -2831,6 +2927,123 @@ export type WorkspaceUncheckedUpdateWithoutInventoryRecordsInput = {
   collectionSchedule?: Prisma.CollectionScheduleUncheckedUpdateOneWithoutWorkspaceNestedInput
   collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
   inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
+}
+
+export type WorkspaceCreateWithoutInventoryExcludedProductsInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
+  adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
+  dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
+  campaignMetas?: Prisma.CampaignMetaCreateNestedManyWithoutWorkspaceInput
+  keywordStatuses?: Prisma.KeywordStatusCreateNestedManyWithoutWorkspaceInput
+  campaignTargets?: Prisma.CampaignTargetCreateNestedManyWithoutWorkspaceInput
+  productStatuses?: Prisma.ProductStatusCreateNestedManyWithoutWorkspaceInput
+  analysisReports?: Prisma.AnalysisReportCreateNestedManyWithoutWorkspaceInput
+  executionTasks?: Prisma.ExecutionTaskCreateNestedManyWithoutWorkspaceInput
+  safetyLimits?: Prisma.SafetyLimitsCreateNestedOneWithoutWorkspaceInput
+  businessAgent?: Prisma.BusinessAgentCreateNestedOneWithoutWorkspaceInput
+  analysisRules?: Prisma.AnalysisRuleCreateNestedManyWithoutWorkspaceInput
+  analysisSchedule?: Prisma.AnalysisScheduleCreateNestedOneWithoutWorkspaceInput
+  coupangCredential?: Prisma.CoupangCredentialCreateNestedOneWithoutWorkspaceInput
+  collectionSchedule?: Prisma.CollectionScheduleCreateNestedOneWithoutWorkspaceInput
+  collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
+  inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
+  inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+}
+
+export type WorkspaceUncheckedCreateWithoutInventoryExcludedProductsInput = {
+  id?: string
+  name: string
+  ownerId: string
+  createdAt?: Date | string
+  reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
+  adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  dailyMemos?: Prisma.DailyMemoUncheckedCreateNestedManyWithoutWorkspaceInput
+  campaignMetas?: Prisma.CampaignMetaUncheckedCreateNestedManyWithoutWorkspaceInput
+  keywordStatuses?: Prisma.KeywordStatusUncheckedCreateNestedManyWithoutWorkspaceInput
+  campaignTargets?: Prisma.CampaignTargetUncheckedCreateNestedManyWithoutWorkspaceInput
+  productStatuses?: Prisma.ProductStatusUncheckedCreateNestedManyWithoutWorkspaceInput
+  analysisReports?: Prisma.AnalysisReportUncheckedCreateNestedManyWithoutWorkspaceInput
+  executionTasks?: Prisma.ExecutionTaskUncheckedCreateNestedManyWithoutWorkspaceInput
+  safetyLimits?: Prisma.SafetyLimitsUncheckedCreateNestedOneWithoutWorkspaceInput
+  businessAgent?: Prisma.BusinessAgentUncheckedCreateNestedOneWithoutWorkspaceInput
+  analysisRules?: Prisma.AnalysisRuleUncheckedCreateNestedManyWithoutWorkspaceInput
+  analysisSchedule?: Prisma.AnalysisScheduleUncheckedCreateNestedOneWithoutWorkspaceInput
+  coupangCredential?: Prisma.CoupangCredentialUncheckedCreateNestedOneWithoutWorkspaceInput
+  collectionSchedule?: Prisma.CollectionScheduleUncheckedCreateNestedOneWithoutWorkspaceInput
+  collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+}
+
+export type WorkspaceCreateOrConnectWithoutInventoryExcludedProductsInput = {
+  where: Prisma.WorkspaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkspaceCreateWithoutInventoryExcludedProductsInput, Prisma.WorkspaceUncheckedCreateWithoutInventoryExcludedProductsInput>
+}
+
+export type WorkspaceUpsertWithoutInventoryExcludedProductsInput = {
+  update: Prisma.XOR<Prisma.WorkspaceUpdateWithoutInventoryExcludedProductsInput, Prisma.WorkspaceUncheckedUpdateWithoutInventoryExcludedProductsInput>
+  create: Prisma.XOR<Prisma.WorkspaceCreateWithoutInventoryExcludedProductsInput, Prisma.WorkspaceUncheckedCreateWithoutInventoryExcludedProductsInput>
+  where?: Prisma.WorkspaceWhereInput
+}
+
+export type WorkspaceUpdateToOneWithWhereWithoutInventoryExcludedProductsInput = {
+  where?: Prisma.WorkspaceWhereInput
+  data: Prisma.XOR<Prisma.WorkspaceUpdateWithoutInventoryExcludedProductsInput, Prisma.WorkspaceUncheckedUpdateWithoutInventoryExcludedProductsInput>
+}
+
+export type WorkspaceUpdateWithoutInventoryExcludedProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
+  adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
+  dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
+  campaignMetas?: Prisma.CampaignMetaUpdateManyWithoutWorkspaceNestedInput
+  keywordStatuses?: Prisma.KeywordStatusUpdateManyWithoutWorkspaceNestedInput
+  campaignTargets?: Prisma.CampaignTargetUpdateManyWithoutWorkspaceNestedInput
+  productStatuses?: Prisma.ProductStatusUpdateManyWithoutWorkspaceNestedInput
+  analysisReports?: Prisma.AnalysisReportUpdateManyWithoutWorkspaceNestedInput
+  executionTasks?: Prisma.ExecutionTaskUpdateManyWithoutWorkspaceNestedInput
+  safetyLimits?: Prisma.SafetyLimitsUpdateOneWithoutWorkspaceNestedInput
+  businessAgent?: Prisma.BusinessAgentUpdateOneWithoutWorkspaceNestedInput
+  analysisRules?: Prisma.AnalysisRuleUpdateManyWithoutWorkspaceNestedInput
+  analysisSchedule?: Prisma.AnalysisScheduleUpdateOneWithoutWorkspaceNestedInput
+  coupangCredential?: Prisma.CoupangCredentialUpdateOneWithoutWorkspaceNestedInput
+  collectionSchedule?: Prisma.CollectionScheduleUpdateOneWithoutWorkspaceNestedInput
+  collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
+  inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
+  inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+}
+
+export type WorkspaceUncheckedUpdateWithoutInventoryExcludedProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
+  adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  dailyMemos?: Prisma.DailyMemoUncheckedUpdateManyWithoutWorkspaceNestedInput
+  campaignMetas?: Prisma.CampaignMetaUncheckedUpdateManyWithoutWorkspaceNestedInput
+  keywordStatuses?: Prisma.KeywordStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
+  campaignTargets?: Prisma.CampaignTargetUncheckedUpdateManyWithoutWorkspaceNestedInput
+  productStatuses?: Prisma.ProductStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
+  analysisReports?: Prisma.AnalysisReportUncheckedUpdateManyWithoutWorkspaceNestedInput
+  executionTasks?: Prisma.ExecutionTaskUncheckedUpdateManyWithoutWorkspaceNestedInput
+  safetyLimits?: Prisma.SafetyLimitsUncheckedUpdateOneWithoutWorkspaceNestedInput
+  businessAgent?: Prisma.BusinessAgentUncheckedUpdateOneWithoutWorkspaceNestedInput
+  analysisRules?: Prisma.AnalysisRuleUncheckedUpdateManyWithoutWorkspaceNestedInput
+  analysisSchedule?: Prisma.AnalysisScheduleUncheckedUpdateOneWithoutWorkspaceNestedInput
+  coupangCredential?: Prisma.CoupangCredentialUncheckedUpdateOneWithoutWorkspaceNestedInput
+  collectionSchedule?: Prisma.CollectionScheduleUncheckedUpdateOneWithoutWorkspaceNestedInput
+  collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 
@@ -2852,6 +3065,7 @@ export type WorkspaceCountOutputType = {
   collectionRuns: number
   inventoryUploads: number
   inventoryRecords: number
+  inventoryExcludedProducts: number
 }
 
 export type WorkspaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2868,6 +3082,7 @@ export type WorkspaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensi
   collectionRuns?: boolean | WorkspaceCountOutputTypeCountCollectionRunsArgs
   inventoryUploads?: boolean | WorkspaceCountOutputTypeCountInventoryUploadsArgs
   inventoryRecords?: boolean | WorkspaceCountOutputTypeCountInventoryRecordsArgs
+  inventoryExcludedProducts?: boolean | WorkspaceCountOutputTypeCountInventoryExcludedProductsArgs
 }
 
 /**
@@ -2971,6 +3186,13 @@ export type WorkspaceCountOutputTypeCountInventoryRecordsArgs<ExtArgs extends ru
   where?: Prisma.InventoryRecordWhereInput
 }
 
+/**
+ * WorkspaceCountOutputType without action
+ */
+export type WorkspaceCountOutputTypeCountInventoryExcludedProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InventoryExcludedProductWhereInput
+}
+
 
 export type WorkspaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2996,6 +3218,7 @@ export type WorkspaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   collectionRuns?: boolean | Prisma.Workspace$collectionRunsArgs<ExtArgs>
   inventoryUploads?: boolean | Prisma.Workspace$inventoryUploadsArgs<ExtArgs>
   inventoryRecords?: boolean | Prisma.Workspace$inventoryRecordsArgs<ExtArgs>
+  inventoryExcludedProducts?: boolean | Prisma.Workspace$inventoryExcludedProductsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workspace"]>
 
@@ -3043,6 +3266,7 @@ export type WorkspaceInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   collectionRuns?: boolean | Prisma.Workspace$collectionRunsArgs<ExtArgs>
   inventoryUploads?: boolean | Prisma.Workspace$inventoryUploadsArgs<ExtArgs>
   inventoryRecords?: boolean | Prisma.Workspace$inventoryRecordsArgs<ExtArgs>
+  inventoryExcludedProducts?: boolean | Prisma.Workspace$inventoryExcludedProductsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3074,6 +3298,7 @@ export type $WorkspacePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     collectionRuns: Prisma.$CollectionRunPayload<ExtArgs>[]
     inventoryUploads: Prisma.$InventoryUploadPayload<ExtArgs>[]
     inventoryRecords: Prisma.$InventoryRecordPayload<ExtArgs>[]
+    inventoryExcludedProducts: Prisma.$InventoryExcludedProductPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3493,6 +3718,7 @@ export interface Prisma__WorkspaceClient<T, Null = never, ExtArgs extends runtim
   collectionRuns<T extends Prisma.Workspace$collectionRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$collectionRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollectionRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inventoryUploads<T extends Prisma.Workspace$inventoryUploadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$inventoryUploadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryUploadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inventoryRecords<T extends Prisma.Workspace$inventoryRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$inventoryRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  inventoryExcludedProducts<T extends Prisma.Workspace$inventoryExcludedProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$inventoryExcludedProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryExcludedProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4326,6 +4552,30 @@ export type Workspace$inventoryRecordsArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.InventoryRecordScalarFieldEnum | Prisma.InventoryRecordScalarFieldEnum[]
+}
+
+/**
+ * Workspace.inventoryExcludedProducts
+ */
+export type Workspace$inventoryExcludedProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InventoryExcludedProduct
+   */
+  select?: Prisma.InventoryExcludedProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InventoryExcludedProduct
+   */
+  omit?: Prisma.InventoryExcludedProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InventoryExcludedProductInclude<ExtArgs> | null
+  where?: Prisma.InventoryExcludedProductWhereInput
+  orderBy?: Prisma.InventoryExcludedProductOrderByWithRelationInput | Prisma.InventoryExcludedProductOrderByWithRelationInput[]
+  cursor?: Prisma.InventoryExcludedProductWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InventoryExcludedProductScalarFieldEnum | Prisma.InventoryExcludedProductScalarFieldEnum[]
 }
 
 /**

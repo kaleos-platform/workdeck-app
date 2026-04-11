@@ -12,6 +12,13 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ArrowUpDown, Search } from 'lucide-react'
 
 type InventoryRow = {
@@ -29,12 +36,15 @@ type InventoryRow = {
   isItemWinner: boolean | null
   revenue30d: number | null
   salesQty30d: number | null
+  returns30d: number | null
   visitors: number | null
   conversionRate: number | null
   itemWinnerRate: number | null
 }
 
-type SortField = 'productName' | 'availableStock' | 'revenue30d' | 'salesQty30d' | 'storageFee' | 'conversionRate'
+type SortField = 'productName' | 'availableStock' | 'revenue30d' | 'salesQty30d' | 'storageFee' | 'conversionRate' | 'returns30d'
+
+const COL_COUNT = 12
 
 export function InventoryTable() {
   const [records, setRecords] = useState<InventoryRow[]>([])
@@ -42,10 +52,17 @@ export function InventoryTable() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
-  const [sortBy, setSortBy] = useState<SortField>('availableStock')
+  const [sortBy, setSortBy] = useState<SortField>('productName')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [loading, setLoading] = useState(false)
   const limit = 50
+
+  // 필터
+  const [isItemWinner, setIsItemWinner] = useState('all')
+  const [productNameFilter, setProductNameFilter] = useState('__all__')
+  const [productGrade, setProductGrade] = useState('all')
+  const [excludedView, setExcludedView] = useState('active')
+  const [productNames, setProductNames] = useState<string[]>([])
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -56,6 +73,10 @@ export function InventoryTable() {
         sortBy,
         sortOrder,
         ...(search ? { search } : {}),
+        ...(isItemWinner !== 'all' ? { isItemWinner } : {}),
+        ...(productNameFilter !== '__all__' ? { productNameFilter } : {}),
+        ...(productGrade !== 'all' ? { productGrade } : {}),
+        excludedView,
       })
       const res = await fetch(`/api/inventory?${params}`)
       if (!res.ok) {
@@ -66,10 +87,11 @@ export function InventoryTable() {
       const data = await res.json()
       setRecords(data.records ?? [])
       setTotal(data.total ?? 0)
+      if (data.productNames) setProductNames(data.productNames)
     } finally {
       setLoading(false)
     }
-  }, [page, search, sortBy, sortOrder])
+  }, [page, search, sortBy, sortOrder, isItemWinner, productNameFilter, productGrade, excludedView])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -89,13 +111,45 @@ export function InventoryTable() {
     setPage(1)
   }
 
+  async function toggleExclude(productId: string, isCurrentlyExcluded: boolean) {
+    try {
+      if (isCurrentlyExcluded) {
+        await fetch('/api/inventory/excluded', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId }),
+        })
+      } else {
+        await fetch('/api/inventory/excluded', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId }),
+        })
+      }
+      fetchData()
+    } catch {
+      // ignore
+    }
+  }
+
   const totalPages = Math.ceil(total / limit)
+  const isExcludedView = excludedView === 'excluded'
 
   function stockBadge(stock: number | null) {
     if (stock == null) return <span className="text-muted-foreground">-</span>
     if (stock === 0) return <Badge variant="destructive">품절</Badge>
     if (stock <= 10) return <Badge variant="outline" className="border-yellow-400 text-yellow-600">{stock}</Badge>
     return <span>{stock.toLocaleString()}</span>
+  }
+
+  function calcReturnRate(returns30d: number | null, salesQty30d: number | null): string {
+    if (returns30d == null || salesQty30d == null || salesQty30d === 0) return '-'
+    return `${(returns30d / salesQty30d * 100).toFixed(1)}%`
+  }
+
+  function calcStorageFeeRate(storageFee: number | null, revenue30d: number | null): string {
+    if (storageFee == null || revenue30d == null || Number(revenue30d) === 0) return '-'
+    return `${(storageFee / Number(revenue30d) * 100).toFixed(1)}%`
   }
 
   return (
@@ -113,7 +167,55 @@ export function InventoryTable() {
         <Button type="submit" variant="outline" size="sm">검색</Button>
       </form>
 
-      <div className="rounded-md border">
+      {/* 필터 */}
+      <div className="flex gap-2 flex-wrap">
+        <Select value={isItemWinner} onValueChange={(v) => { setIsItemWinner(v); setPage(1) }}>
+          <SelectTrigger className="w-[130px]" size="sm">
+            <SelectValue placeholder="위너 필터" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">위너: 전체</SelectItem>
+            <SelectItem value="true">위너만</SelectItem>
+            <SelectItem value="false">비위너</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={productNameFilter} onValueChange={(v) => { setProductNameFilter(v); setPage(1) }}>
+          <SelectTrigger className="w-[200px]" size="sm">
+            <SelectValue placeholder="상품명 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">상품명: 전체</SelectItem>
+            {productNames.map(name => (
+              <SelectItem key={name} value={name}>{name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={productGrade} onValueChange={(v) => { setProductGrade(v); setPage(1) }}>
+          <SelectTrigger className="w-[130px]" size="sm">
+            <SelectValue placeholder="상품등급" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">등급: 전체</SelectItem>
+            <SelectItem value="NEW">NEW</SelectItem>
+            <SelectItem value="반품">반품</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={excludedView} onValueChange={(v) => { setExcludedView(v); setPage(1) }}>
+          <SelectTrigger className="w-[150px]" size="sm">
+            <SelectValue placeholder="관리 상태" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="active">관리 상품</SelectItem>
+            <SelectItem value="excluded">제외 상품</SelectItem>
+            <SelectItem value="all">전체</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -122,6 +224,8 @@ export function InventoryTable() {
                   상품명 <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
+              <TableHead>등급</TableHead>
+              <TableHead>위너</TableHead>
               <TableHead>
                 <Button variant="ghost" size="sm" onClick={() => toggleSort('availableStock')}>
                   재고 <ArrowUpDown className="ml-1 h-3 w-3" />
@@ -139,30 +243,33 @@ export function InventoryTable() {
                   매출(30일) <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
+              <TableHead>반품율(%)</TableHead>
               <TableHead>
                 <Button variant="ghost" size="sm" onClick={() => toggleSort('storageFee')}>
                   보관료 <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
-              <TableHead>위너</TableHead>
+              <TableHead>보관료율(%)</TableHead>
+              <TableHead>관리</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={COL_COUNT} className="h-24 text-center text-muted-foreground">
                   로딩 중...
                 </TableCell>
               </TableRow>
             ) : records.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={COL_COUNT} className="h-24 text-center text-muted-foreground">
                   데이터가 없습니다
                 </TableCell>
               </TableRow>
             ) : (
               records.map((r) => (
                 <TableRow key={r.id}>
+                  {/* 상품명 */}
                   <TableCell>
                     <div className="max-w-[300px]">
                       <p className="truncate text-sm font-medium">{r.productName}</p>
@@ -171,7 +278,25 @@ export function InventoryTable() {
                       )}
                     </div>
                   </TableCell>
+                  {/* 등급 */}
+                  <TableCell>
+                    {r.productGrade ? (
+                      <Badge variant="outline" className="text-[10px]">{r.productGrade}</Badge>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  {/* 위너 */}
+                  <TableCell>
+                    {r.isItemWinner === true ? (
+                      <Badge variant="secondary" className="text-[10px]">위너</Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  {/* 재고 */}
                   <TableCell>{stockBadge(r.availableStock)}</TableCell>
+                  {/* 입고예정 */}
                   <TableCell>
                     {r.inboundStock != null && r.inboundStock > 0 ? (
                       <span className="text-emerald-600">{r.inboundStock.toLocaleString()}</span>
@@ -179,22 +304,38 @@ export function InventoryTable() {
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
+                  {/* 소진예상 */}
                   <TableCell>
                     <span className="text-xs">{r.estimatedDepletion ?? '-'}</span>
                   </TableCell>
+                  {/* 판매(30일) */}
                   <TableCell>{r.salesQty30d?.toLocaleString() ?? '-'}</TableCell>
+                  {/* 매출(30일) */}
                   <TableCell>
                     {r.revenue30d != null ? `${Number(r.revenue30d).toLocaleString()}원` : '-'}
                   </TableCell>
+                  {/* 반품율(%) */}
+                  <TableCell>
+                    <span className="text-xs">{calcReturnRate(r.returns30d, r.salesQty30d)}</span>
+                  </TableCell>
+                  {/* 보관료 */}
                   <TableCell>
                     {r.storageFee != null ? `${r.storageFee.toLocaleString()}원` : '-'}
                   </TableCell>
+                  {/* 보관료율(%) */}
                   <TableCell>
-                    {r.isItemWinner === true ? (
-                      <Badge variant="secondary" className="text-[10px]">위너</Badge>
-                    ) : r.isItemWinner === false ? (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    ) : null}
+                    <span className="text-xs">{calcStorageFeeRate(r.storageFee, r.revenue30d)}</span>
+                  </TableCell>
+                  {/* 관리 */}
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-7 px-2"
+                      onClick={() => toggleExclude(r.productId, isExcludedView)}
+                    >
+                      {isExcludedView ? '복원' : '제외'}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

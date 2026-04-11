@@ -19,28 +19,36 @@ export async function GET() {
       totalProducts: 0,
       outOfStock: 0,
       lowStock: 0,
-      inboundPending: 0,
+      totalRevenue30d: 0,
       totalStorageFee: 0,
     })
   }
 
   const snapshotDate = latestUpload.snapshotDate
-  const base = { workspaceId: resolved.workspace.id, snapshotDate }
 
-  const [totalProducts, outOfStock, lowStock, inboundPending, storageFeeAgg] = await Promise.all([
-    prisma.inventoryRecord.count({ where: base }),
+  // 제외 상품 목록 조회
+  const excludedProducts = await prisma.inventoryExcludedProduct.findMany({
+    where: { workspaceId: resolved.workspace.id },
+    select: { productId: true },
+  })
+  const excludedProductIds = excludedProducts.map(e => e.productId)
+
+  const base = { workspaceId: resolved.workspace.id, snapshotDate }
+  const baseActive = excludedProductIds.length > 0
+    ? { ...base, productId: { notIn: excludedProductIds } }
+    : base
+
+  const [totalProducts, outOfStock, lowStock, aggregates] = await Promise.all([
+    prisma.inventoryRecord.count({ where: baseActive }),
     prisma.inventoryRecord.count({
-      where: { ...base, availableStock: 0 },
+      where: { ...baseActive, availableStock: 0 },
     }),
     prisma.inventoryRecord.count({
-      where: { ...base, availableStock: { gt: 0, lte: 10 } },
-    }),
-    prisma.inventoryRecord.count({
-      where: { ...base, inboundStock: { gt: 0 } },
+      where: { ...baseActive, availableStock: { gt: 0, lte: 10 } },
     }),
     prisma.inventoryRecord.aggregate({
-      where: base,
-      _sum: { storageFee: true },
+      where: baseActive,
+      _sum: { storageFee: true, revenue30d: true },
     }),
   ])
 
@@ -51,7 +59,7 @@ export async function GET() {
     totalProducts,
     outOfStock,
     lowStock,
-    inboundPending,
-    totalStorageFee: storageFeeAgg._sum.storageFee ?? 0,
+    totalRevenue30d: aggregates._sum.revenue30d ?? 0,
+    totalStorageFee: aggregates._sum.storageFee ?? 0,
   })
 }

@@ -408,7 +408,8 @@ export const ModelName = {
   BusinessAgent: 'BusinessAgent',
   AgentLog: 'AgentLog',
   InventoryUpload: 'InventoryUpload',
-  InventoryRecord: 'InventoryRecord'
+  InventoryRecord: 'InventoryRecord',
+  InventoryExcludedProduct: 'InventoryExcludedProduct'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -424,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2278,6 +2279,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InventoryExcludedProduct: {
+      payload: Prisma.$InventoryExcludedProductPayload<ExtArgs>
+      fields: Prisma.InventoryExcludedProductFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InventoryExcludedProductFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InventoryExcludedProductFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>
+        }
+        findFirst: {
+          args: Prisma.InventoryExcludedProductFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InventoryExcludedProductFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>
+        }
+        findMany: {
+          args: Prisma.InventoryExcludedProductFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>[]
+        }
+        create: {
+          args: Prisma.InventoryExcludedProductCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>
+        }
+        createMany: {
+          args: Prisma.InventoryExcludedProductCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InventoryExcludedProductCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>[]
+        }
+        delete: {
+          args: Prisma.InventoryExcludedProductDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>
+        }
+        update: {
+          args: Prisma.InventoryExcludedProductUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>
+        }
+        deleteMany: {
+          args: Prisma.InventoryExcludedProductDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InventoryExcludedProductUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InventoryExcludedProductUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>[]
+        }
+        upsert: {
+          args: Prisma.InventoryExcludedProductUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryExcludedProductPayload>
+        }
+        aggregate: {
+          args: Prisma.InventoryExcludedProductAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInventoryExcludedProduct>
+        }
+        groupBy: {
+          args: Prisma.InventoryExcludedProductGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InventoryExcludedProductGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InventoryExcludedProductCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InventoryExcludedProductCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2712,6 +2787,17 @@ export const InventoryRecordScalarFieldEnum = {
 export type InventoryRecordScalarFieldEnum = (typeof InventoryRecordScalarFieldEnum)[keyof typeof InventoryRecordScalarFieldEnum]
 
 
+export const InventoryExcludedProductScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  productId: 'productId',
+  excludedAt: 'excludedAt',
+  reason: 'reason'
+} as const
+
+export type InventoryExcludedProductScalarFieldEnum = (typeof InventoryExcludedProductScalarFieldEnum)[keyof typeof InventoryExcludedProductScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3074,6 +3160,7 @@ export type GlobalOmitConfig = {
   agentLog?: Prisma.AgentLogOmit
   inventoryUpload?: Prisma.InventoryUploadOmit
   inventoryRecord?: Prisma.InventoryRecordOmit
+  inventoryExcludedProduct?: Prisma.InventoryExcludedProductOmit
 }
 
 /* Types for Logging */
