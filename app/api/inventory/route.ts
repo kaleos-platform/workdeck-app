@@ -80,10 +80,16 @@ export async function GET(req: NextRequest) {
   const allowedSorts = ['productName', 'availableStock', 'revenue30d', 'salesQty30d', 'storageFee', 'conversionRate', 'returns30d']
   const orderField = allowedSorts.includes(sortBy) ? sortBy : 'productName'
 
+  // non-nullable 필드(productName)는 plain SortOrder만 허용, nullable은 nulls: 'last' 가능
+  const nonNullableFields = ['productName']
+  const orderByValue = nonNullableFields.includes(orderField)
+    ? sortOrder
+    : { sort: sortOrder, nulls: 'last' as const }
+
   const [records, total, productNamesResult] = await Promise.all([
     prisma.inventoryRecord.findMany({
       where,
-      orderBy: { [orderField]: { sort: sortOrder, nulls: 'last' } },
+      orderBy: { [orderField]: orderByValue },
       skip: (page - 1) * limit,
       take: limit,
     }),
