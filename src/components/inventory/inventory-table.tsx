@@ -12,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -47,7 +48,7 @@ type SortField = 'productName' | 'availableStock' | 'revenue30d' | 'salesQty30d'
 // 클라이언트 정렬이 필요한 계산 필드
 const CLIENT_SORT_FIELDS: SortField[] = ['returnRate', 'storageFeeRate']
 
-const COL_COUNT = 13
+const COL_COUNT = 14 // 체크박스 컬럼 추가
 
 export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => void } = {}) {
   const [records, setRecords] = useState<InventoryRow[]>([])
@@ -68,7 +69,10 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
   const [productNames, setProductNames] = useState<string[]>([])
   const [excludedOptionIds, setExcludedOptionIds] = useState<string[]>([])
 
-  // 계산 필드의 값 추출 (null이면 null 반환 → 정렬 시 마지막으로)
+  // 체크박스 선택
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  // 계산 필드의 값 추출
   function getCalcValue(r: InventoryRow, field: SortField): number | null {
     if (field === 'returnRate') {
       if (r.returns30d == null || r.salesQty30d == null || r.salesQty30d === 0) return null
@@ -88,7 +92,6 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
       const params = new URLSearchParams({
         page: isClientSort ? '1' : String(page),
         limit: isClientSort ? '200' : String(limit),
-        // 계산 필드 정렬 시 서버에는 기본 정렬로 요청
         sortBy: isClientSort ? 'productName' : sortBy,
         sortOrder: isClientSort ? 'asc' : sortOrder,
         ...(search ? { search } : {}),
@@ -107,12 +110,11 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
       let rows: InventoryRow[] = data.records ?? []
 
       if (isClientSort && rows.length > 0) {
-        // 클라이언트 정렬: null(="-")은 항상 마지막
         rows = [...rows].sort((a, b) => {
           const va = getCalcValue(a, sortBy)
           const vb = getCalcValue(b, sortBy)
           if (va == null && vb == null) return 0
-          if (va == null) return 1  // null은 항상 뒤로
+          if (va == null) return 1
           if (vb == null) return -1
           return sortOrder === 'asc' ? va - vb : vb - va
         })
@@ -122,6 +124,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
       setTotal(data.total ?? 0)
       if (data.productNames) setProductNames(data.productNames)
       if (data.excludedOptionIds) setExcludedOptionIds(data.excludedOptionIds)
+      setSelectedIds(new Set())
     } finally {
       setLoading(false)
     }
@@ -145,6 +148,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
     setPage(1)
   }
 
+  // 단건 제외/복원 — 필터 유지하며 해당 행만 로컬에서 제거
   async function toggleExclude(row: InventoryRow, isCurrentlyExcluded: boolean) {
     try {
       if (isCurrentlyExcluded) {
@@ -153,18 +157,69 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ optionId: row.optionId }),
         })
+        setExcludedOptionIds(prev => prev.filter(id => id !== row.optionId))
       } else {
         await fetch('/api/inventory/excluded', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ productId: row.productId, optionId: row.optionId }),
         })
+        setExcludedOptionIds(prev => [...prev, row.optionId])
       }
-      fetchData()
+      // 필터에 따라 행 제거 (active 뷰에서 제외하면 사라짐, excluded 뷰에서 복원하면 사라짐)
+      if (
+        (excludedView === 'active' && !isCurrentlyExcluded) ||
+        (excludedView === 'excluded' && isCurrentlyExcluded)
+      ) {
+        setRecords(prev => prev.filter(r => r.optionId !== row.optionId))
+        setTotal(prev => prev - 1)
+      }
+      setSelectedIds(prev => { const next = new Set(prev); next.delete(row.id); return next })
       onExcludeChange?.()
     } catch {
       // ignore
     }
+  }
+
+  // 일괄 제외/복원
+  async function bulkToggleExclude(exclude: boolean) {
+    const selected = records.filter(r => selectedIds.has(r.id))
+    if (selected.length === 0) return
+
+    const promises = selected.map(row => {
+      if (exclude) {
+        return fetch('/api/inventory/excluded', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: row.productId, optionId: row.optionId }),
+        })
+      } else {
+        return fetch('/api/inventory/excluded', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ optionId: row.optionId }),
+        })
+      }
+    })
+    await Promise.all(promises)
+
+    const selectedOptionIds = new Set(selected.map(r => r.optionId))
+    if (exclude) {
+      setExcludedOptionIds(prev => [...prev, ...selected.map(r => r.optionId)])
+    } else {
+      setExcludedOptionIds(prev => prev.filter(id => !selectedOptionIds.has(id)))
+    }
+
+    // 필터에 따라 행 제거
+    if (
+      (excludedView === 'active' && exclude) ||
+      (excludedView === 'excluded' && !exclude)
+    ) {
+      setRecords(prev => prev.filter(r => !selectedOptionIds.has(r.optionId)))
+      setTotal(prev => prev - selected.length)
+    }
+    setSelectedIds(new Set())
+    onExcludeChange?.()
   }
 
   const totalPages = Math.ceil(total / limit)
@@ -172,6 +227,27 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
   function isOptionExcluded(optionId: string): boolean {
     return excludedOptionIds.includes(optionId)
   }
+
+  // 체크박스 핸들러
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === records.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(records.map(r => r.id)))
+    }
+  }
+
+  const allSelected = records.length > 0 && selectedIds.size === records.length
+  const someSelected = selectedIds.size > 0
 
   function stockBadge(stock: number | null) {
     if (stock == null) return <span className="text-muted-foreground">-</span>
@@ -206,7 +282,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
       </form>
 
       {/* 필터: 상품명 → 등급 → 위너 → 관리 */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap items-center">
         <Select value={productNameFilter} onValueChange={(v) => { setProductNameFilter(v); setPage(1) }}>
           <SelectTrigger className="w-[200px]" size="sm">
             <SelectValue placeholder="상품명 선택" />
@@ -251,12 +327,47 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
             <SelectItem value="all">전체</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* 일괄 액션 */}
+        {someSelected && (
+          <div className="flex gap-2 ml-auto">
+            <span className="text-sm text-muted-foreground self-center">
+              {selectedIds.size}개 선택
+            </span>
+            {excludedView !== 'excluded' && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="text-xs h-8"
+                onClick={() => bulkToggleExclude(true)}
+              >
+                제외하기
+              </Button>
+            )}
+            {excludedView !== 'active' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-8"
+                onClick={() => bulkToggleExclude(false)}
+              >
+                복원하기
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead className="min-w-[200px]">
                 <Button variant="ghost" size="sm" onClick={() => toggleSort('productName')}>
                   상품명 <ArrowUpDown className="ml-1 h-3 w-3" />
@@ -317,7 +428,14 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
               records.map((r) => {
                 const excluded = isOptionExcluded(r.optionId)
                 return (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} data-state={selectedIds.has(r.id) ? 'selected' : undefined}>
+                    {/* 체크박스 */}
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(r.id)}
+                        onCheckedChange={() => toggleSelect(r.id)}
+                      />
+                    </TableCell>
                     {/* 상품명 */}
                     <TableCell>
                       <div className="max-w-[300px]">
