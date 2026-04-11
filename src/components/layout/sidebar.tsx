@@ -53,7 +53,7 @@ const COUPANG_MAIN_ROUTES = [
     href: COUPANG_ADS_UPLOAD_PATH,
   },
   {
-    label: '재고 관리',
+    label: '로켓그로스 재고',
     icon: Package,
     href: COUPANG_ADS_INVENTORY_PATH,
   },

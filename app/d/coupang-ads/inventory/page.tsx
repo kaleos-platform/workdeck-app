@@ -24,9 +24,9 @@ export default function InventoryPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">재고 관리</h1>
+          <h1 className="text-2xl font-bold">로켓그로스 재고 관리</h1>
           <p className="text-sm text-muted-foreground">
-            쿠팡 Wing 재고 현황 및 상품 판매 성과를 관리합니다
+            쿠팡 로켓그로스 재고 현황 및 상품 판매 성과를 관리합니다.
           </p>
         </div>
         <InventoryUploadForm onUploadComplete={handleUploadComplete} />
