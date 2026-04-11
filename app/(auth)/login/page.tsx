@@ -11,11 +11,12 @@ export const metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ verified?: string; redirectTo?: string }>
+  searchParams: Promise<{ verified?: string; redirectTo?: string; reset?: string }>
 }) {
-  const { verified, redirectTo } = await searchParams
+  const { verified, redirectTo, reset } = await searchParams
   const isVerifyPending = verified === 'pending'
   const isVerifySuccess = verified === 'success'
+  const isResetSuccess = reset === 'success'
   const safeRedirectTo = sanitizeRedirectPath(redirectTo)
   const signupHref = safeRedirectTo
     ? `/signup?redirectTo=${encodeURIComponent(safeRedirectTo)}`
@@ -31,6 +32,7 @@ export default async function LoginPage({
         <LoginForm
           isVerifyPending={isVerifyPending}
           isVerifySuccess={isVerifySuccess}
+          isResetSuccess={isResetSuccess}
           redirectTo={safeRedirectTo}
         />
 

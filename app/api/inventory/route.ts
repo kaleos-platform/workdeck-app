@@ -61,8 +61,9 @@ export async function GET(req: NextRequest) {
   if (isItemWinner === 'true') where.isItemWinner = true
   else if (isItemWinner === 'false') where.isItemWinner = false
 
-  // 상품등급 필터
-  if (productGrade !== 'all') where.productGrade = productGrade
+  // 상품등급 필터 — "반품"은 "반품-최상", "반품-중" 등 포함 검색
+  if (productGrade === '반품') where.productGrade = { contains: '반품' }
+  else if (productGrade !== 'all') where.productGrade = productGrade
 
   // 제외 옵션 필터
   if (excludedView === 'excluded') {
