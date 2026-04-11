@@ -5,7 +5,10 @@ import type { ActiveRule } from '@/lib/analysis/data-builder'
 
 // 응답 JSON 스키마를 프롬프트에 포함시켜 구조화된 출력을 유도
 const SUGGESTION_SCHEMA = `
-응답은 반드시 아래 JSON 형식으로 반환하세요:
+## 중요: 응답 형식
+반드시 순수 JSON만 반환하세요. 마크다운, 설명 텍스트, 코드블록 없이 JSON 객체만 출력합니다.
+suggestions는 우선순위가 높은 것부터 최대 20개까지만 포함하세요. improvementSuggestions는 최대 3개까지.
+형식:
 {
   "suggestions": [
     {
@@ -13,7 +16,8 @@ const SUGGESTION_SCHEMA = `
       "priority": "HIGH" | "MEDIUM" | "LOW",
       "campaignId": "캠페인 ID",
       "target": "대상 키워드 또는 캠페인명",
-      "reason": "한국어로 구체적인 이유",
+      "reason": "한국어로 구체적인 이유 (적용한 규칙의 수치 기준을 reason에 명시)",
+      "appliedRule": "적용한 규칙 번호 (예: '규칙 1') 또는 '기본 기준'. 규칙을 적용한 경우 반드시 표기",
       "currentValue": 현재값(숫자, 선택),
       "suggestedValue": 제안값(숫자, 선택),
       "estimatedImpact": "예상 효과 설명(선택)"
@@ -100,9 +104,17 @@ export function getSystemPrompt(type: AnalysisType, activeRules?: ActiveRule[]):
   // 동적 분석 규칙 주입
   if (activeRules && activeRules.length > 0) {
     const rulesBlock = activeRules
-      .map((r, i) => `${i + 1}. ${r.rule}`)
+      .map((r, i) => `규칙 ${i + 1}. ${r.rule}`)
       .join('\n')
-    parts.push(`\n## 필수 분석 규칙 (반드시 적용)\n${rulesBlock}`)
+    parts.push(`
+## 사용자 설정 분석 규칙 (절대 무시 금지 — 최우선 적용)
+아래는 사용자가 직접 설정한 분석 규칙입니다. 반드시 아래 규칙의 수치 기준을 그대로 적용하세요.
+- 규칙에 "1% 초과"라고 되어 있으면 임의로 "0.5%"로 변경하지 마세요.
+- 규칙에 명시된 수치와 조건을 정확히 따르세요.
+- 사용자 규칙이 위의 기본 분석 기준과 충돌하면, 사용자 규칙을 우선 적용하세요.
+- 각 suggestion의 "appliedRule" 필드에 적용한 규칙 번호를 반드시 명시하세요.
+
+${rulesBlock}`)
   }
 
   // 추가 지시사항

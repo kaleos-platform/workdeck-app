@@ -30,6 +30,8 @@ export async function GET() {
     schedule: {
       enabled: schedule.enabled,
       intervalDays: schedule.intervalDays,
+      analysisHour: schedule.analysisHour,
+      triggerAfterCollection: schedule.triggerAfterCollection,
       slackNotify: schedule.slackNotify,
       lastAnalyzedAt: schedule.lastAnalyzedAt,
     },
@@ -43,18 +45,29 @@ export async function PUT(request: NextRequest) {
   const { workspace } = resolved
 
   // 요청 바디 파싱
-  let body: { enabled?: boolean; intervalDays?: number; slackNotify?: boolean }
+  let body: {
+    enabled?: boolean
+    intervalDays?: number
+    analysisHour?: number | null
+    triggerAfterCollection?: boolean
+    slackNotify?: boolean
+  }
   try {
     body = await request.json()
   } catch {
     return errorResponse('잘못된 요청 형식입니다', 400)
   }
 
-  const { enabled, intervalDays, slackNotify } = body
+  const { enabled, intervalDays, analysisHour, triggerAfterCollection, slackNotify } = body
 
   // intervalDays 유효성 검증
   if (intervalDays !== undefined && (intervalDays < 1 || intervalDays > 30)) {
     return errorResponse('intervalDays는 1~30 사이여야 합니다', 400)
+  }
+
+  // analysisHour 유효성 검증
+  if (analysisHour !== undefined && analysisHour !== null && (analysisHour < 0 || analysisHour > 23)) {
+    return errorResponse('analysisHour는 0~23 사이여야 합니다', 400)
   }
 
   const schedule = await prisma.analysisSchedule.upsert({
@@ -63,11 +76,15 @@ export async function PUT(request: NextRequest) {
       workspaceId: workspace.id,
       enabled: enabled ?? DEFAULT_SCHEDULE.enabled,
       intervalDays: intervalDays ?? DEFAULT_SCHEDULE.intervalDays,
+      analysisHour: analysisHour ?? null,
+      triggerAfterCollection: triggerAfterCollection ?? false,
       slackNotify: slackNotify ?? DEFAULT_SCHEDULE.slackNotify,
     },
     update: {
       ...(enabled !== undefined && { enabled }),
       ...(intervalDays !== undefined && { intervalDays }),
+      ...(analysisHour !== undefined && { analysisHour }),
+      ...(triggerAfterCollection !== undefined && { triggerAfterCollection }),
       ...(slackNotify !== undefined && { slackNotify }),
     },
   })
@@ -76,6 +93,8 @@ export async function PUT(request: NextRequest) {
     schedule: {
       enabled: schedule.enabled,
       intervalDays: schedule.intervalDays,
+      analysisHour: schedule.analysisHour,
+      triggerAfterCollection: schedule.triggerAfterCollection,
       slackNotify: schedule.slackNotify,
       lastAnalyzedAt: schedule.lastAnalyzedAt,
     },

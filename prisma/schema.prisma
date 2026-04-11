@@ -125,6 +125,11 @@ model Workspace {
   collectionSchedule  CollectionSchedule?
   collectionRuns      CollectionRun[]
 
+  // 재고 관리
+  inventoryUploads          InventoryUpload[]
+  inventoryRecords          InventoryRecord[]
+  inventoryExcludedProducts InventoryExcludedProduct[]
+
   createdAt DateTime @default(now())
 }
 
@@ -403,6 +408,7 @@ model AnalysisReport {
   suggestions Json
   metadata    Json?
   status      AnalysisStatus @default(PENDING)
+  triggeredBy String         @default("manual")
   createdAt   DateTime       @default(now())
   workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
@@ -462,15 +468,17 @@ model AnalysisRule {
 
 // 분석 자동 스케줄 (워크스페이스당 1개)
 model AnalysisSchedule {
-  id             String    @id @default(cuid())
-  workspaceId    String    @unique
-  enabled        Boolean   @default(true)
-  intervalDays   Int       @default(7)
-  slackNotify    Boolean   @default(true)
-  lastAnalyzedAt DateTime?
-  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                     String    @id @default(cuid())
+  workspaceId            String    @unique
+  enabled                Boolean   @default(true)
+  intervalDays           Int       @default(7)
+  analysisHour           Int?
+  triggerAfterCollection Boolean   @default(false)
+  slackNotify            Boolean   @default(true)
+  lastAnalyzedAt         DateTime?
+  workspace              Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
 
 // 비즈니스 에이전트 (의식주의 Slack 에이전트)
@@ -498,4 +506,98 @@ model AgentLog {
   createdAt DateTime @default(now())
 
   @@index([agentId, createdAt(sort: Desc)])
+}
+
+// ─── 재고 관리 ────────────────────────────────────────────────
+
+// 재고 엑셀 업로드 이력
+model InventoryUpload {
+  id           String   @id @default(cuid())
+  fileName     String
+  fileType     String   // INVENTORY_HEALTH | VENDOR_ITEM_METRICS
+  uploadedAt   DateTime @default(now())
+  snapshotDate DateTime // 데이터 기준일
+  totalRows    Int?
+  insertedRows Int?
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  inventoryRecords InventoryRecord[]
+
+  @@index([workspaceId])
+}
+
+// 재고 / 상품 성과 레코드
+model InventoryRecord {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  snapshotDate DateTime
+  fileType     String   // INVENTORY_HEALTH | VENDOR_ITEM_METRICS
+
+  // 상품 식별
+  productId   String  // 등록상품ID
+  optionId    String  // 옵션ID
+  skuId       String? // SKU ID
+  productName String
+  optionName  String?
+  category    String?
+
+  // 재고 (inventory_health)
+  availableStock     Int?    // 판매가능재고
+  inboundStock       Int?    // 입고예정재고
+  productGrade       String? // 상품등급 (NEW 등)
+  restockQty         Int?    // 추가입고 추천수량
+  restockDate        String? // 추가입고날짜
+  estimatedDepletion String? // 재고예상 소진일
+  storageFee         Int?    // 이번달 누적보관료
+  isItemWinner       Boolean? // 아이템위너 여부
+  returns30d         Int?    // 고객반품 30일
+
+  // 매출/판매
+  revenue7d   Decimal? @db.Decimal(18, 2)
+  revenue30d  Decimal? @db.Decimal(18, 2)
+  salesQty7d  Int?
+  salesQty30d Int?
+
+  // vendor_item_metrics 전용
+  visitors       Int?
+  views          Int?
+  cartAdds       Int?
+  conversionRate Decimal? @db.Decimal(10, 4) // 구매전환율 %
+  itemWinnerRate Decimal? @db.Decimal(10, 4) // 아이템위너 비율 %
+  totalRevenue   Decimal? @db.Decimal(18, 2)
+  totalSales     Int?
+  totalCancelAmt Decimal? @db.Decimal(18, 2)
+  totalCancelled Int?
+
+  // 보관기간별 재고
+  stock1to30d    Int?
+  stock31to45d   Int?
+  stock46to60d   Int?
+  stock61to120d  Int?
+  stock121to180d Int?
+  stock181plusD   Int?
+
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  uploadId  String
+  upload    InventoryUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, snapshotDate, productId, optionId, fileType])
+  @@index([workspaceId, snapshotDate])
+  @@index([workspaceId, productName])
+}
+
+// 재고 관리 제외 상품
+model InventoryExcludedProduct {
+  id          String   @id @default(cuid())
+  workspaceId String
+  productId   String
+  excludedAt  DateTime @default(now())
+  reason      String?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, productId])
+  @@index([workspaceId])
 }

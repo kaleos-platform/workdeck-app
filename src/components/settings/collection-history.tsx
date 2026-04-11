@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Loader2, Play, RefreshCw, Square } from 'lucide-react'
+import { Loader2, Play, Square } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type CollectionRunStatus = 'COMPLETED' | 'FAILED' | 'RUNNING' | 'PENDING' | 'DOWNLOADING' | 'PARSING'
@@ -196,15 +196,6 @@ export function CollectionHistory() {
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchRuns}
-              disabled={isLoading}
-            >
-              <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
-              새로고침
-            </Button>
             {hasActiveRun ? (
               <Button
                 size="sm"

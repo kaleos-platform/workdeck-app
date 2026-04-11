@@ -10,8 +10,8 @@ const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY ?? ''
 
 // 모델 우선순위 (무료 티어)
-const PRIMARY_MODEL = 'qwen/qwen3.6-plus:free'
-const FALLBACK_MODEL = 'minimax/minimax-m2.5:free'
+const PRIMARY_MODEL = 'meta-llama/llama-3.3-70b-instruct:free'
+const FALLBACK_MODEL = 'google/gemma-3-27b-it:free'
 
 export interface AnalysisInput {
   reportType: AnalysisType
@@ -42,6 +42,7 @@ export interface InefficientKeyword {
   clicks: number
   impressions: number
   orders: number
+  costRatio?: number // 캠페인 총 광고비 대비 이 키워드의 광고비 비중 (%)
 }
 
 /**
@@ -76,6 +77,42 @@ export async function analyzeAdPerformance(data: AnalysisContext): Promise<Analy
   }
 }
 
+/** 응답 텍스트에서 JSON을 추출 — 코드블록, 마크다운 혼합, 순수 JSON 모두 처리 */
+function extractJSON(content: string): Record<string, unknown> {
+  // 1. ```json ... ``` 코드블록에서 추출
+  const codeBlockMatch = content.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/)
+  if (codeBlockMatch) {
+    try {
+      return JSON.parse(codeBlockMatch[1].trim())
+    } catch {
+      // 코드블록 안이 유효하지 않은 JSON — 다음 방법 시도
+    }
+  }
+
+  // 2. 순수 JSON (전체 텍스트)
+  const trimmed = content.trim()
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      return JSON.parse(trimmed)
+    } catch {
+      // 전체가 유효하지 않은 JSON — 다음 방법 시도
+    }
+  }
+
+  // 3. 텍스트 안에서 첫 번째 { ... } 블록 추출
+  const firstBrace = content.indexOf('{')
+  const lastBrace = content.lastIndexOf('}')
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    try {
+      return JSON.parse(content.slice(firstBrace, lastBrace + 1))
+    } catch {
+      // 추출 실패
+    }
+  }
+
+  throw new Error(`AI 응답에서 JSON을 추출할 수 없습니다: ${content.slice(0, 200)}`)
+}
+
 /** OpenRouter API 호출 */
 async function callOpenRouter(
   model: string,
@@ -104,9 +141,8 @@ async function callOpenRouter(
     throw new Error('OpenRouter 응답에 content가 없습니다')
   }
 
-  // JSON 파싱 — 코드블록 감싸진 경우도 처리
-  const jsonStr = content.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim()
-  const parsed = JSON.parse(jsonStr)
+  // JSON 파싱 — 코드블록, 마크다운 혼합, 순수 JSON 모두 처리
+  const parsed = extractJSON(content)
 
   const suggestions: Suggestion[] = Array.isArray(parsed)
     ? parsed

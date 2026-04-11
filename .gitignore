@@ -45,7 +45,6 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
-/src/generated/
 
 # IDE 설정
 .cursor/

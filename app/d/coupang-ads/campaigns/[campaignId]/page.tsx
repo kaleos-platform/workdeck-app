@@ -55,6 +55,7 @@ import { FilterBar } from '@/components/dashboard/filter-bar'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
 import { DailyMemo } from '@/components/dashboard/daily-memo'
 import { CampaignTargetSection } from '@/components/dashboard/campaign-target-section'
+import { ProductTrendsTable } from '@/components/dashboard/product-trends-table'
 import { getDaysAgoStrKst, isYmdDateString } from '@/lib/date-range'
 import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
 import type {
@@ -79,7 +80,7 @@ type SortKey =
 
 // 키워드 탭 정렬 컬럼
 type KeywordSortKey = 'keyword' | 'adCost' | 'ctr' | 'cvr' | 'roas' | 'orders1d' | 'revenue1d'
-type TabValue = 'dashboard' | 'keywords' | 'products' | 'addata'
+type TabValue = 'dashboard' | 'keywords' | 'products' | 'addata' | 'trends'
 
 // 상품 분석 탭 아이템 타입
 type ProductItem = {
@@ -237,7 +238,7 @@ export default function CampaignDetailPage({
   const tab = searchParams.get('tab')
   const isDateRangeReady = isYmdDateString(from) && isYmdDateString(to)
   const activeTab: TabValue =
-    tab === 'keywords' || tab === 'addata' || tab === 'dashboard' || tab === 'products'
+    tab === 'keywords' || tab === 'addata' || tab === 'dashboard' || tab === 'products' || tab === 'trends'
       ? tab
       : 'dashboard'
 
@@ -1152,7 +1153,8 @@ export default function CampaignDetailPage({
       nextTab !== 'dashboard' &&
       nextTab !== 'keywords' &&
       nextTab !== 'products' &&
-      nextTab !== 'addata'
+      nextTab !== 'addata' &&
+      nextTab !== 'trends'
     )
       return
 
@@ -1265,6 +1267,12 @@ export default function CampaignDetailPage({
             className="border border-transparent hover:border-border hover:bg-background/70"
           >
             상품 분석
+          </TabsTrigger>
+          <TabsTrigger
+            value="trends"
+            className="border border-transparent hover:border-border hover:bg-background/70"
+          >
+            매출 트렌드
           </TabsTrigger>
           <TabsTrigger
             value="addata"
@@ -1920,6 +1928,11 @@ export default function CampaignDetailPage({
               남길 수 있습니다
             </p>
           )}
+        </TabsContent>
+
+        {/* ── 매출 트렌드 탭 ── */}
+        <TabsContent value="trends" className="space-y-4">
+          <ProductTrendsTable campaignId={campaignId} />
         </TabsContent>
 
         {/* ── 광고 데이터 탭 ── */}

@@ -65,20 +65,30 @@ export async function checkAndRunCollection(
   let schedules: CollectionSchedule[]
   try {
     schedules = await fetchActiveSchedules()
-  } catch {
-    return // API 미실행 시 무시
+  } catch (err) {
+    console.error('[collection-scheduler] 스케줄 조회 실패:', err instanceof Error ? err.message : err)
+    return
   }
 
   if (schedules.length === 0) return
 
   // KST 기준 현재 시각
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+  const nowHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
 
   for (const schedule of schedules) {
-    if (executedToday.has(schedule.workspaceId)) continue
-    if (!matchesCron(schedule.cronExpression, now)) continue
+    const alreadyRan = executedToday.has(schedule.workspaceId)
+    const cronMatch = matchesCron(schedule.cronExpression, now)
 
-    console.log(`[collection-scheduler] 수집 시작: workspace=${schedule.workspaceId}, cron=${schedule.cronExpression}`)
+    // 매 시간 정각에만 디버그 로그 (로그 과다 방지)
+    if (now.getMinutes() === 0) {
+      console.log(`[collection-scheduler] 체크 ${nowHHMM} — cron=${schedule.cronExpression}, match=${cronMatch}, executed=${alreadyRan}`)
+    }
+
+    if (alreadyRan) continue
+    if (!cronMatch) continue
+
+    console.log(`[collection-scheduler] 수집 시작: workspace=${schedule.workspaceId}, cron=${schedule.cronExpression}, now=${nowHHMM}`)
     executedToday.add(schedule.workspaceId)
 
     try {

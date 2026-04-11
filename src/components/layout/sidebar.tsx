@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { LayoutDashboard, UploadCloud, BarChart2, BarChart3, Play, LogOut, ChevronDown, Home, Settings } from 'lucide-react'
+import { LayoutDashboard, UploadCloud, BarChart2, BarChart3, Play, LogOut, ChevronDown, Home, Settings, Package } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { Separator } from '@/components/ui/separator'
@@ -15,6 +15,7 @@ import {
   COUPANG_ADS_ANALYSIS_PATH,
   COUPANG_ADS_EXECUTION_PATH,
   COUPANG_ADS_SETTINGS_PATH,
+  COUPANG_ADS_INVENTORY_PATH,
   getCoupangAdsCampaignPath,
 } from '@/lib/deck-routes'
 
@@ -50,6 +51,11 @@ const COUPANG_MAIN_ROUTES = [
     label: '데이터 수집',
     icon: UploadCloud,
     href: COUPANG_ADS_UPLOAD_PATH,
+  },
+  {
+    label: '재고 관리',
+    icon: Package,
+    href: COUPANG_ADS_INVENTORY_PATH,
   },
   {
     label: '광고 분석',

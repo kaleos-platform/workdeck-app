@@ -147,21 +147,19 @@ export async function collectCoupangReport(
     await configureReportOptions(page)
     await saveScreenshot(page, 'options-set')
 
-    // ── Step 5: 기존 보고서 수 기록 후 보고서 만들기 ──
+    // ── Step 5: 보고서 만들기 ──
     console.log('\n[5/7] 보고서 만들기...')
-    const prevDlCount = await page.locator('button:has-text("다운로드"), a:has-text("다운로드")').count()
-    console.log(`  → 기존 다운로드 버튼: ${prevDlCount}개`)
     await createReport(page)
     await saveScreenshot(page, 'report-created')
 
     // ── Step 6: 새 보고서 생성 완료 대기 ──
     console.log('\n[6/7] 새 보고서 생성 완료 대기...')
-    await waitForNewReport(page, prevDlCount)
+    await waitForNewReport(page, dateFrom, dateTo)
     await saveScreenshot(page, 'report-ready')
 
-    // ── Step 7: 다운로드 (첫 번째 = 최신) ──
+    // ── Step 7: 다운로드 (목표 날짜 범위의 보고서) ──
     console.log('\n[7/7] 다운로드...')
-    const result = await downloadReport(page, downloadDir, dateFrom)
+    const result = await downloadReport(page, downloadDir, dateFrom, dateTo)
     console.log(`  → 완료: ${result.fileName}`)
     return result
   } catch (error) {
@@ -504,8 +502,11 @@ async function createReport(page: Page): Promise<void> {
 
 // ─── 새 보고서 생성 완료 대기 ────────────────────────────────────────────────────
 
-async function waitForNewReport(page: Page, _prevDlCount: number): Promise<void> {
-  // "보고서 내역" 탭 클릭 — 여기서 생성 상태 + 다운로드 가능
+/** 새 보고서가 생성 완료될 때까지 대기 — 탭 전환 + Y좌표 기반 매칭 */
+async function waitForNewReport(page: Page, dateFrom: string, dateTo: string): Promise<void> {
+  console.log(`  → 목표 보고서: ${dateFrom} ~ ${dateTo}`)
+
+  // "보고서 내역" 탭으로 이동
   const historyTab = page.locator('text=보고서 내역').first()
   if (await historyTab.isVisible({ timeout: 5000 }).catch(() => false)) {
     await historyTab.click()
@@ -515,44 +516,71 @@ async function waitForNewReport(page: Page, _prevDlCount: number): Promise<void>
 
   await saveScreenshot(page, 'history-tab')
 
-  // 최신 보고서(첫 행)에 "다운로드" 버튼이 나타날 때까지 대기
   for (let i = 0; i < 60; i++) {
-    await page.waitForTimeout(2000)
+    await page.waitForTimeout(3000)
 
-    // 다운로드 버튼 확인
-    const dlBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').first()
-    if (await dlBtn.isVisible().catch(() => false)) {
-      // 첫 행의 다운로드인지 확인 (날짜가 오늘인지)
-      console.log(`  → 다운로드 가능! (${(i + 1) * 2}초)`)
-      return
+    // 주기적으로 탭 전환하여 데이터 새로고침 (reload 대신)
+    if (i > 0 && i % 4 === 0) {
+      const otherTab = page.locator('text=유형별 보고서').first()
+      if (await otherTab.isVisible().catch(() => false)) {
+        await otherTab.click()
+        await page.waitForTimeout(1000)
+      }
+      if (await historyTab.isVisible().catch(() => false)) {
+        await historyTab.click()
+        await page.waitForTimeout(2000)
+      }
+      console.log(`  → 탭 새로고침 (${(i + 1) * 3}초)`)
     }
 
-    // "생성 완료" 텍스트 확인
-    const completed = page.locator('td:has-text("생성완료"), td:has-text("생성 완료"), text=생성완료').first()
-    if (await completed.isVisible().catch(() => false)) {
-      console.log(`  → 생성 완료 확인 (${(i + 1) * 2}초)`)
-      await page.waitForTimeout(1000)
+    // dateFrom 텍스트가 있는 요소를 찾아 같은 행의 다운로드 버튼 확인
+    const found = await page.evaluate((args) => {
+      const { df, dt } = args
+      const range = `${df} ~ ${dt}`
+
+      // 날짜 범위 텍스트를 포함하는 모든 요소 찾기
+      const allEls = document.querySelectorAll('*')
+      let matchEl: Element | null = null
+      for (const el of allEls) {
+        // 자식 없는 텍스트 노드만 확인 (leaf 요소)
+        if (el.children.length === 0 && el.textContent?.includes(range)) {
+          matchEl = el
+          break
+        }
+      }
+
+      if (!matchEl) return 'not_found'
+
+      const matchRect = matchEl.getBoundingClientRect()
+
+      // 모든 버튼/링크에서 "다운로드" 텍스트를 가진 것 찾기
+      const btns = document.querySelectorAll('button, a')
+      for (const btn of btns) {
+        if (btn.textContent?.trim() === '다운로드') {
+          const btnRect = btn.getBoundingClientRect()
+          if (Math.abs(btnRect.y - matchRect.y) < 40) {
+            return 'ready'
+          }
+        }
+      }
+
+      return 'generating'
+    }, { df: dateFrom, dt: dateTo }).catch(() => 'error')
+
+    if (found === 'ready') {
+      console.log(`  → 보고서 다운로드 가능! (${(i + 1) * 3}초)`)
       return
     }
 
     if (i % 5 === 0) {
-      console.log(`  → 대기 중... (${(i + 1) * 2}초)`)
+      const msg = found === 'generating' ? '보고서 생성 중' : found === 'not_found' ? '보고서 대기 중' : '확인 에러'
+      console.log(`  → ${msg}... (${(i + 1) * 3}초)`)
       await saveScreenshot(page, `waiting-${i}`)
-    }
-
-    // 30초마다 탭 새로고침 (보고서 내역 다시 클릭)
-    if (i > 0 && i % 15 === 0) {
-      const refreshTab = page.locator('text=보고서 내역').first()
-      if (await refreshTab.isVisible().catch(() => false)) {
-        await refreshTab.click()
-        await page.waitForTimeout(2000)
-        console.log('  → 보고서 내역 새로고침')
-      }
     }
   }
 
   await saveScreenshot(page, 'create-timeout')
-  throw new Error('보고서 생성 타임아웃 (120초)')
+  throw new Error('새 보고서 생성 타임아웃 (180초)')
 }
 
 // ─── 다운로드 ──────────────────────────────────────────────────────────────────
@@ -560,10 +588,38 @@ async function waitForNewReport(page: Page, _prevDlCount: number): Promise<void>
 async function downloadReport(
   page: Page,
   downloadDir: string,
-  dateFrom: string
+  dateFrom: string,
+  dateTo: string,
 ): Promise<CollectorResult> {
-  // "다운로드" 버튼 찾기 (보고서 테이블 우측)
-  const downloadBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').first()
+  // 우리 날짜 범위 행의 다운로드 버튼 찾기 (Y좌표 매칭)
+  const range = `${dateFrom} ~ ${dateTo}`
+  let downloadBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').first()
+
+  // 날짜 범위와 같은 행에 있는 다운로드 버튼을 찾기 시도
+  const targetBtnIndex = await page.evaluate((r) => {
+    const allEls = document.querySelectorAll('*')
+    let matchY = -1
+    for (const el of allEls) {
+      if (el.children.length === 0 && el.textContent?.includes(r)) {
+        matchY = el.getBoundingClientRect().y
+        break
+      }
+    }
+    if (matchY < 0) return 0 // fallback: first button
+
+    const btns = document.querySelectorAll('button, a')
+    let idx = 0
+    for (const btn of btns) {
+      if (btn.textContent?.trim() === '다운로드') {
+        if (Math.abs(btn.getBoundingClientRect().y - matchY) < 40) return idx
+        idx++
+      }
+    }
+    return 0
+  }, range).catch(() => 0)
+
+  downloadBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').nth(targetBtnIndex)
+  console.log(`  → 다운로드 버튼 인덱스: ${targetBtnIndex}`)
 
   if (!(await downloadBtn.isVisible({ timeout: 10000 }).catch(() => false))) {
     await saveScreenshot(page, 'no-download-button')

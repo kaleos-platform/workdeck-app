@@ -123,21 +123,35 @@ export async function buildAnalysisContext(
     orderBy: { _sum: { adCost: 'desc' } },
   })
 
+  // 캠페인별 총 광고비 맵 (costRatio 계산용)
+  const campaignAdCostMap = new Map<string, number>()
+  for (const c of campaigns) {
+    campaignAdCostMap.set(c.campaignId, c.totalAdCost)
+  }
+
   const inefficientKeywords: InefficientKeyword[] = keywordGroups
     .filter((g) => {
       const adCost = Number(g._sum.adCost ?? 0)
       const orders = Number(g._sum.orders1d ?? 0)
       return adCost > 0 && orders === 0
     })
-    .map((g) => ({
-      campaignId: g.campaignId,
-      campaignName: g.campaignName,
-      keyword: g.keyword!,
-      adCost: Number(g._sum.adCost ?? 0),
-      clicks: Number(g._sum.clicks ?? 0),
-      impressions: Number(g._sum.impressions ?? 0),
-      orders: 0,
-    }))
+    .map((g) => {
+      const adCost = Number(g._sum.adCost ?? 0)
+      const campaignTotal = campaignAdCostMap.get(g.campaignId) ?? 0
+      const costRatio = campaignTotal > 0
+        ? Math.round((adCost / campaignTotal) * 10000) / 100  // 소수점 2자리 %
+        : 0
+      return {
+        campaignId: g.campaignId,
+        campaignName: g.campaignName,
+        keyword: g.keyword!,
+        adCost,
+        clicks: Number(g._sum.clicks ?? 0),
+        impressions: Number(g._sum.impressions ?? 0),
+        orders: 0,
+        costRatio,
+      }
+    })
 
   // 제거된 키워드 히스토리
   const removedKeywordsRaw = await prisma.keywordStatus.findMany({

@@ -5,11 +5,11 @@
 
 // ─── 타입 정의 ─────────────────────────────────────────────────────────────────
 
-import { notifyAnalysisDone } from './slack-notifier.js'
-
 type AnalysisSchedule = {
   enabled: boolean
   intervalDays: number
+  analysisHour: number | null
+  triggerAfterCollection: boolean
   slackNotify: boolean
   lastAnalyzedAt: string | null
 }
@@ -63,23 +63,33 @@ async function fetchActiveSchedules(): Promise<ScheduleWithWorkspace[]> {
 function needsAnalysis(schedule: ScheduleWithWorkspace): boolean {
   if (!schedule.enabled) return false
 
+  // 수집 후 자동 분석 모드면 스케줄러에서 무시 (수집 완료 시 트리거됨)
+  if (schedule.triggerAfterCollection) return false
+
+  const now = new Date()
+
+  // 시각 설정이 있으면 해당 시각에만 실행 (KST 기준)
+  if (schedule.analysisHour != null) {
+    const kstHour = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })).getHours()
+    if (kstHour !== schedule.analysisHour) return false
+  }
+
   // 한 번도 분석하지 않은 경우 → 즉시 실행
   if (!schedule.lastAnalyzedAt) return true
 
   // intervalDays 경과 여부 확인
   const lastAnalyzed = new Date(schedule.lastAnalyzedAt)
-  const now = new Date()
   const diffMs = now.getTime() - lastAnalyzed.getTime()
   const diffDays = diffMs / (1000 * 60 * 60 * 24)
 
   return diffDays >= schedule.intervalDays
 }
 
-/** 분석 트리거 — 최근 N일 범위로 분석 요청 */
-async function triggerAnalysis(workspaceId: string, intervalDays: number): Promise<string> {
+/** 분석 트리거 — 항상 최근 30일 범위로 종합 분석 */
+async function triggerAnalysis(workspaceId: string, _intervalDays: number): Promise<string> {
   const now = new Date()
   const from = new Date(now)
-  from.setDate(from.getDate() - intervalDays)
+  from.setDate(from.getDate() - 30)
 
   // 날짜 포맷: YYYY-MM-DD
   const formatDate = (d: Date) => d.toISOString().split('T')[0]
@@ -91,6 +101,7 @@ async function triggerAnalysis(workspaceId: string, intervalDays: number): Promi
       from: formatDate(from),
       to: formatDate(now),
       reportType: 'DAILY_REVIEW',
+      triggeredBy: 'scheduled',
     }),
   })
 
@@ -135,12 +146,7 @@ export async function checkAndRunAnalysis(): Promise<void> {
       const reportId = await triggerAnalysis(schedule.workspaceId, schedule.intervalDays)
       console.log(`[analysis-scheduler] 분석 시작됨: reportId=${reportId}`)
 
-      // Slack 알림이 활성화되어 있으면 분석 완료를 대기 후 전송
-      if (schedule.slackNotify) {
-        waitAndNotifyAnalysis(reportId).catch((err) =>
-          console.error(`[analysis-scheduler] 알림 실패:`, err)
-        )
-      }
+      // Slack 알림은 analysis-poller가 분석 완료 후 자동 발송
     } catch (error) {
       console.error(
         `[analysis-scheduler] 분석 트리거 실패: workspace=${schedule.workspaceId}`,
@@ -150,40 +156,3 @@ export async function checkAndRunAnalysis(): Promise<void> {
   }
 }
 
-/** 분석 완료를 폴링으로 대기 후 Slack 알림 전송 (최대 5분) */
-async function waitAndNotifyAnalysis(reportId: string): Promise<void> {
-  const MAX_WAIT = 5 * 60 * 1000 // 5분
-  const POLL_INTERVAL = 15_000 // 15초
-  const start = Date.now()
-
-  while (Date.now() - start < MAX_WAIT) {
-    await new Promise((r) => setTimeout(r, POLL_INTERVAL))
-
-    try {
-      const res = await workerFetch(`/api/analysis/reports/${reportId}`)
-      if (!res.ok) continue
-
-      const data = await res.json()
-      const report = data.report
-
-      if (report?.status === 'COMPLETED') {
-        const metadata = report.metadata as { campaignCount?: number } | null
-        await notifyAnalysisDone({
-          summary: report.summary ?? '분석 완료',
-          suggestionCount: Array.isArray(report.suggestions) ? report.suggestions.length : 0,
-          campaignCount: metadata?.campaignCount ?? 0,
-        })
-        return
-      }
-
-      if (report?.status === 'FAILED') {
-        console.log(`[analysis-scheduler] 분석 실패: ${report.summary}`)
-        return
-      }
-    } catch {
-      // 폴링 실패 시 계속 재시도
-    }
-  }
-
-  console.log(`[analysis-scheduler] 분석 완료 대기 타임아웃 (${MAX_WAIT / 1000}초)`)
-}

@@ -62,8 +62,8 @@ export default function AnalysisPage() {
   const [schedule, setSchedule] = useState<ScheduleSummary | null>(null)
   const [rulesCount, setRulesCount] = useState(0)
 
-  const fetchReports = useCallback(async () => {
-    setLoading(true)
+  const fetchReports = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const res = await fetch('/api/analysis/reports')
       if (res.ok) {
@@ -106,6 +106,17 @@ export default function AnalysisPage() {
       .catch(() => {})
   }, [])
 
+  // 규칙 개수 로드 (Dialog 열기 전에도 표시)
+  useEffect(() => {
+    fetch('/api/analysis/rules')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.rules ?? []
+        setRulesCount(list.length)
+      })
+      .catch(() => {})
+  }, [])
+
   function handlePresetClick(days: DatePreset) {
     setActivePreset(days)
     setDateRange(getPresetRange(days))
@@ -131,21 +142,24 @@ export default function AnalysisPage() {
 
   const selectedReport = reports.find((r) => r.id === selectedReportId) ?? null
 
+  // 진행 중인 분석 감지
+  const activeReport = reports.find((r) => r.status === 'PENDING' || r.status === 'PROCESSING')
+
+  // 진행 중이면 5초마다 자동 새로고침 (silent — 깜빡임 방지)
+  useEffect(() => {
+    if (!activeReport) return
+    const interval = setInterval(() => fetchReports(true), 5000)
+    return () => clearInterval(interval)
+  }, [activeReport?.id, fetchReports])
+
   return (
     <div className="space-y-6">
       {/* ─── Header ─── */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">광고 분석</h1>
-          <p className="text-sm text-muted-foreground">
-            광고 성과를 분석하고 최적화 제안을 확인합니다.
-          </p>
-        </div>
-        <TriggerAnalysisButton
-          from={dateRange.from}
-          to={dateRange.to}
-          onSuccess={fetchReports}
-        />
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">광고 분석</h1>
+        <p className="text-sm text-muted-foreground">
+          광고 성과를 분석하고 최적화 제안을 확인합니다.
+        </p>
       </div>
 
       {/* ─── 상단 배너: 스케줄 요약 + 규칙 개수 ─── */}
@@ -213,44 +227,52 @@ export default function AnalysisPage() {
         </div>
       </div>
 
-      {/* ─── Date Range Presets ─── */}
-      <div className="flex items-center gap-3">
-        <CalendarDays className="h-4 w-4 text-muted-foreground" />
-        <div className="flex items-center gap-2">
-          {([7, 14, 30] as DatePreset[]).map((days) => (
-            <Button
-              key={days}
-              variant={activePreset === days ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handlePresetClick(days)}
-              className="text-xs"
-            >
-              {days}일
-            </Button>
-          ))}
+      {/* ─── Date Range Presets + 분석 실행/종료 ─── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <CalendarDays className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            {([7, 14, 30] as DatePreset[]).map((days) => (
+              <Button
+                key={days}
+                variant={activePreset === days ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handlePresetClick(days)}
+                className="text-xs"
+              >
+                {days}일
+              </Button>
+            ))}
+          </div>
+          <Separator orientation="vertical" className="mx-1 h-5" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="date"
+              value={dateRange.from}
+              onChange={(e) => {
+                setActivePreset(0 as DatePreset)
+                setDateRange((prev) => ({ ...prev, from: e.target.value }))
+              }}
+              className="rounded-md border bg-background px-2 py-1 text-xs"
+            />
+            <span>~</span>
+            <input
+              type="date"
+              value={dateRange.to}
+              onChange={(e) => {
+                setActivePreset(0 as DatePreset)
+                setDateRange((prev) => ({ ...prev, to: e.target.value }))
+              }}
+              className="rounded-md border bg-background px-2 py-1 text-xs"
+            />
+          </div>
         </div>
-        <Separator orientation="vertical" className="mx-1 h-5" />
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <input
-            type="date"
-            value={dateRange.from}
-            onChange={(e) => {
-              setActivePreset(0 as DatePreset)
-              setDateRange((prev) => ({ ...prev, from: e.target.value }))
-            }}
-            className="rounded-md border bg-background px-2 py-1 text-xs"
-          />
-          <span>~</span>
-          <input
-            type="date"
-            value={dateRange.to}
-            onChange={(e) => {
-              setActivePreset(0 as DatePreset)
-              setDateRange((prev) => ({ ...prev, to: e.target.value }))
-            }}
-            className="rounded-md border bg-background px-2 py-1 text-xs"
-          />
-        </div>
+        <TriggerAnalysisButton
+          from={dateRange.from}
+          to={dateRange.to}
+          onSuccess={fetchReports}
+          activeReportId={activeReport?.id ?? null}
+        />
       </div>
 
       {/* ─── Loading ─── */}
@@ -307,11 +329,14 @@ export default function AnalysisPage() {
                       )}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium">
-                          {date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                          {' '}
-                          {date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-medium">
+                            {date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                            {' '}
+                            {date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <TriggerBadge triggeredBy={report.triggeredBy} />
+                        </div>
                         <StatusDot status={report.status} />
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground truncate">
@@ -327,7 +352,7 @@ export default function AnalysisPage() {
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleDeleteReport(report.id) }}
-                      className="absolute top-2 right-2 hidden rounded p-1 text-muted-foreground hover:text-destructive group-hover:block"
+                      className="absolute bottom-2 right-2 hidden rounded p-1 text-muted-foreground hover:text-destructive group-hover:block"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -405,6 +430,22 @@ export default function AnalysisPage() {
         </div>
       )}
     </div>
+  )
+}
+
+const TRIGGER_CONFIG: Record<string, { label: string; className: string }> = {
+  manual: { label: '수동', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+  scheduled: { label: '자동', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
+  collection: { label: '수집 후', className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+}
+
+function TriggerBadge({ triggeredBy }: { triggeredBy?: string }) {
+  const config = TRIGGER_CONFIG[triggeredBy ?? 'manual']
+  if (!config) return null
+  return (
+    <Badge className={cn('text-[9px] px-1 py-0 leading-tight', config.className)}>
+      {config.label}
+    </Badge>
   )
 }
 

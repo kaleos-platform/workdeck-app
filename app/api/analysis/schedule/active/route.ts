@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
       workspaceId: true,
       enabled: true,
       intervalDays: true,
+      analysisHour: true,
+      triggerAfterCollection: true,
       slackNotify: true,
       lastAnalyzedAt: true,
     },

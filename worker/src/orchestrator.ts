@@ -9,10 +9,12 @@ import {
   updateCollectionRun,
   getCredentials,
   uploadReport,
+  uploadInventory,
 } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { collectCoupangReport } from './collector.js'
-import { notifyCollectionDone, notifyCollectionFailed } from './slack-notifier.js'
+import { collectInventoryData } from './inventory-collector.js'
+import { notifyCollectionDone, notifyCollectionFailed, notifyInventoryDone } from './slack-notifier.js'
 
 /**
  * 다운로드된 Excel 파일의 날짜 범위를 검증한다.
@@ -41,13 +43,15 @@ function verifyDownloadedFile(buffer: Buffer, fileName: string, dateTo: string):
     console.log(`파일 검증: ${fileName} — 날짜 범위 ${fileMinDate} ~ ${fileMaxDate} (${rows.length}행, ${sortedDates.length}일)`)
 
     if (!uniqueDates.has(dateTo)) {
-      console.warn(
-        `⚠ 경고: 요청한 종료일(${dateTo})이 파일에 없습니다! ` +
+      throw new Error(
+        `요청한 종료일(${dateTo})이 파일에 없습니다. ` +
         `파일 날짜: ${sortedDates.join(', ')}. ` +
         `쿠팡이 캐시된 보고서를 반환했을 수 있습니다.`
       )
     }
   } catch (err) {
+    // 날짜 불일치 에러는 그대로 전파
+    if (err instanceof Error && err.message.includes('요청한 종료일')) throw err
     console.warn('파일 검증 중 오류 (계속 진행):', err instanceof Error ? err.message : err)
   }
 }
@@ -209,9 +213,13 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   console.log('상태: COMPLETED')
 
   // ── Step 8: Slack 알림 전송 ──
-  // 실제 수집 기간 (upload 응답) 또는 의도된 기간 (fallback)
-  const actualStart = uploadResult.periodStart ? uploadResult.periodStart.split('T')[0] : dateFrom
-  const actualEnd = uploadResult.periodEnd ? uploadResult.periodEnd.split('T')[0] : dateTo
+  // 실제 수집 기간 (upload 응답의 ISO 날짜를 KST로 변환) 또는 의도된 기간 (fallback)
+  function toKSTDateStr(isoStr: string): string {
+    const d = new Date(isoStr)
+    return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
+  }
+  const actualStart = uploadResult.periodStart ? toKSTDateStr(uploadResult.periodStart) : dateFrom
+  const actualEnd = uploadResult.periodEnd ? toKSTDateStr(uploadResult.periodEnd) : dateTo
   await notifyCollectionDone({
     dateRange: `${actualStart} ~ ${actualEnd}`,
     totalRows: uploadResult.totalRows,
@@ -219,5 +227,140 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     duplicateRows: uploadResult.duplicateRows,
   }).catch((err) => console.error('[slack] 알림 전송 실패:', err))
 
+  // ── Step 9: 재고 데이터 수집 (Wing) ──
+  let inventoryResult: { healthRows?: number; metricsRows?: number; errors: string[] } = { errors: [] }
+  try {
+    console.log('\n[orchestrator] 재고 데이터 수집 시작...')
+    inventoryResult = await collectAndUploadInventory(credential)
+    console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건, 판매성과: ${inventoryResult.metricsRows ?? 0}건`)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`[orchestrator] 재고 수집 실패 (광고 데이터는 정상): ${msg}`)
+    inventoryResult.errors.push(msg)
+  }
+
+  // ── Step 10: 재고 수집 결과 Slack 알림 ──
+  await notifyInventoryDone(inventoryResult)
+    .catch((err) => console.error('[slack] 재고 알림 전송 실패:', err))
+
+  // ── Step 11: 수집 후 자동 분석 트리거 ──
+  await triggerAnalysisAfterCollection(credential.workspaceId, actualStart, actualEnd)
+    .catch((err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err))
+
   return result.filePath
+}
+
+/** Wing에서 재고 데이터를 수집하고 업로드한다 */
+async function collectAndUploadInventory(
+  credential: { loginId: string; encryptedPassword: string; passwordIv: string; workspaceId: string },
+): Promise<{ healthRows?: number; metricsRows?: number; errors: string[] }> {
+  const password = credential.passwordIv === 'none'
+    ? credential.encryptedPassword
+    : decrypt(credential.encryptedPassword, credential.passwordIv)
+
+  const inventoryData = await collectInventoryData(
+    { loginId: credential.loginId, password },
+  )
+
+  const errors: string[] = []
+  let healthRows: number | undefined
+  let metricsRows: number | undefined
+
+  // 재고 건강성 업로드
+  if (inventoryData.inventoryHealth) {
+    try {
+      const buffer = fs.readFileSync(inventoryData.inventoryHealth.filePath)
+      const result = await uploadInventory(
+        Buffer.from(buffer),
+        inventoryData.inventoryHealth.fileName,
+        credential.workspaceId,
+      )
+      healthRows = result.insertedRows
+      console.log(`[inventory] 재고 건강성 업로드: ${result.insertedRows}건`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[inventory] 재고 건강성 업로드 실패: ${msg}`)
+      errors.push(`재고 건강성 업로드: ${msg}`)
+    } finally {
+      // 임시 파일 삭제
+      try { fs.unlinkSync(inventoryData.inventoryHealth.filePath) } catch {}
+    }
+  }
+
+  // 판매 성과 업로드
+  if (inventoryData.vendorMetrics) {
+    try {
+      const buffer = fs.readFileSync(inventoryData.vendorMetrics.filePath)
+      const result = await uploadInventory(
+        Buffer.from(buffer),
+        inventoryData.vendorMetrics.fileName,
+        credential.workspaceId,
+      )
+      metricsRows = result.insertedRows
+      console.log(`[inventory] 판매 성과 업로드: ${result.insertedRows}건`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[inventory] 판매 성과 업로드 실패: ${msg}`)
+      errors.push(`판매 성과 업로드: ${msg}`)
+    } finally {
+      try { fs.unlinkSync(inventoryData.vendorMetrics.filePath) } catch {}
+    }
+  }
+
+  return { healthRows, metricsRows, errors }
+}
+
+/** 수집 후 자동 분석 트리거 — triggerAfterCollection이 활성화된 경우만 */
+async function triggerAnalysisAfterCollection(workspaceId: string, _dateFrom: string, _dateTo: string): Promise<void> {
+  // 스케줄 확인
+  const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
+  const apiKey = process.env.WORKER_API_KEY
+  if (!baseUrl || !apiKey) return
+
+  const scheduleRes = await fetch(`${baseUrl}/api/analysis/schedule/active`, {
+    headers: { 'Content-Type': 'application/json', 'x-worker-api-key': apiKey },
+  })
+  if (!scheduleRes.ok) return
+
+  const { schedules } = await scheduleRes.json() as { schedules: Array<{ workspaceId: string; triggerAfterCollection: boolean; intervalDays: number; lastAnalyzedAt: string | null }> }
+  const schedule = schedules.find((s) => s.workspaceId === workspaceId && s.triggerAfterCollection)
+  if (!schedule) return
+
+  // intervalDays 경과 여부 확인 — 분석 간격이 지나야 수집 후 자동 분석
+  if (schedule.lastAnalyzedAt) {
+    const lastAnalyzed = new Date(schedule.lastAnalyzedAt)
+    const diffDays = (Date.now() - lastAnalyzed.getTime()) / (1000 * 60 * 60 * 24)
+    if (diffDays < schedule.intervalDays) {
+      console.log(`[orchestrator] 수집 후 분석 스킵 — 마지막 분석으로부터 ${diffDays.toFixed(1)}일 (간격: ${schedule.intervalDays}일)`)
+      return
+    }
+  }
+
+  console.log('[orchestrator] 수집 후 자동 분석 트리거 실행')
+
+  // 항상 최근 30일 기준으로 종합 분석
+  const now = new Date()
+  const from30 = new Date(now)
+  from30.setDate(from30.getDate() - 30)
+  const formatDate = (d: Date) => d.toISOString().split('T')[0]
+
+  const triggerRes = await fetch(`${baseUrl}/api/analysis/trigger`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-worker-api-key': apiKey },
+    body: JSON.stringify({
+      workspaceId,
+      from: formatDate(from30),
+      to: formatDate(now),
+      reportType: 'DAILY_REVIEW',
+      triggeredBy: 'collection',
+    }),
+  })
+
+  if (triggerRes.ok) {
+    const data = await triggerRes.json()
+    console.log(`[orchestrator] 분석 트리거 완료: reportId=${data.reportId}`)
+  } else {
+    const body = await triggerRes.text()
+    console.error(`[orchestrator] 분석 트리거 실패 [${triggerRes.status}]: ${body}`)
+  }
 }

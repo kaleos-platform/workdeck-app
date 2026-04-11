@@ -11,6 +11,7 @@ export interface Suggestion {
   campaignId: string
   target: string
   reason: string
+  appliedRule?: string
   currentValue?: number
   suggestedValue?: number
   estimatedImpact?: string
@@ -44,5 +45,6 @@ export interface AnalysisReport {
   improvementSuggestions?: ImprovementSuggestion[]
   metadata?: Record<string, unknown>
   status: AnalysisStatus
+  triggeredBy?: string
   createdAt: string
 }

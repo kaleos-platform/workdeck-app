@@ -93,19 +93,17 @@ export async function notifyCollectionDone(params: {
   duplicateRows: number
 }): Promise<void> {
   const blocks: Block[] = [
-    header(':inbox_tray: 데이터 수집 완료'),
+    header(':white_check_mark: 쿠팡 광고 데이터 수집 완료'),
     divider(),
+    section(`*상태*\n완료`, `*수집 기간*\n${params.dateRange}`),
     section(
-      `*수집 기간*\n${params.dateRange}`,
-      `*데이터*\n${params.insertedRows.toLocaleString()}건`,
+      `*등록*\n${params.insertedRows.toLocaleString()}건`,
+      `*중복*\n${params.duplicateRows.toLocaleString()}건`,
     ),
+    context(`전체 ${params.totalRows.toLocaleString()}건 처리`),
   ]
 
-  if (params.duplicateRows > 0) {
-    blocks.push(context(`중복 ${params.duplicateRows.toLocaleString()}건 제외 | 전체 ${params.totalRows.toLocaleString()}건`))
-  }
-
-  await postMessage(blocks, `데이터 수집 완료: ${params.insertedRows}건 (${params.dateRange})`)
+  await postMessage(blocks, `쿠팡 광고 데이터 수집 완료: 등록 ${params.insertedRows.toLocaleString()}건 (${params.dateRange})`)
 }
 
 /** 분석 완료 알림 */
@@ -114,26 +112,66 @@ export async function notifyAnalysisDone(params: {
   suggestionCount: number
   campaignCount: number
 }): Promise<void> {
+  const analysisUrl = process.env.WORKDECK_APP_URL
+    ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/analysis`
+    : 'https://app.workdeck.work/d/coupang-ads/analysis'
+
   const blocks: Block[] = [
-    header(':sparkles: 광고 분석 완료'),
+    header(':white_check_mark: 쿠팡 광고 분석 완료'),
     divider(),
+    section(`*상태*\n완료`, `*캠페인*\n${params.campaignCount}개`),
+    section(`*제안*\n${params.suggestionCount}개`),
     section(params.summary),
+    section(`<${analysisUrl}|:mag: 광고 분석 보기>`),
+  ]
+
+  await postMessage(blocks, `쿠팡 광고 분석 완료: ${params.campaignCount}개 캠페인, ${params.suggestionCount}개 제안`)
+}
+
+/** 재고 수집 완료 알림 */
+export async function notifyInventoryDone(params: {
+  healthRows?: number
+  metricsRows?: number
+  errors: string[]
+}): Promise<void> {
+  const hasData = (params.healthRows ?? 0) > 0 || (params.metricsRows ?? 0) > 0
+  const hasErrors = params.errors.length > 0
+
+  if (!hasData && !hasErrors) return // 결과가 없으면 알림 생략
+
+  const emoji = hasErrors ? ':warning:' : ':white_check_mark:'
+  const status = hasErrors ? (hasData ? '일부 완료' : '실패') : '완료'
+
+  const inventoryUrl = process.env.WORKDECK_APP_URL
+    ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/inventory`
+    : 'https://app.workdeck.work/d/coupang-ads/inventory'
+
+  const blocks: Block[] = [
+    header(`${emoji} 쿠팡 재고 데이터 수집 ${status}`),
+    divider(),
     section(
-      `*캠페인*\n${params.campaignCount}개`,
-      `*제안*\n${params.suggestionCount}개`,
+      `*재고 건강성*\n${params.healthRows != null ? `${params.healthRows.toLocaleString()}건` : '미수집'}`,
+      `*판매 성과*\n${params.metricsRows != null ? `${params.metricsRows.toLocaleString()}건` : '미수집'}`,
     ),
   ]
 
-  await postMessage(blocks, `분석 완료: ${params.summary}`)
+  if (hasErrors) {
+    blocks.push(section(`*오류*\n${params.errors.join('\n').slice(0, 200)}`))
+  }
+
+  blocks.push(section(`<${inventoryUrl}|:package: 재고 현황 보기>`))
+
+  await postMessage(blocks, `쿠팡 재고 데이터 수집 ${status}`)
 }
 
 /** 수집 실패 알림 */
 export async function notifyCollectionFailed(error: string): Promise<void> {
   const blocks: Block[] = [
-    header(':warning: 데이터 수집 실패'),
+    header(':x: 쿠팡 광고 데이터 수집 실패'),
     divider(),
+    section('*상태*\n실패'),
     section(error.slice(0, 200)),
   ]
 
-  await postMessage(blocks, `수집 실패: ${error.slice(0, 100)}`)
+  await postMessage(blocks, `쿠팡 광고 데이터 수집 실패: ${error.slice(0, 100)}`)
 }
