@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Package, AlertTriangle, PackageX, TrendingUp, Warehouse } from 'lucide-react'
+import { Package, RotateCcw, PackageX, TrendingUp, Warehouse } from 'lucide-react'
 
 type Summary = {
   snapshotDate: string | null
   totalProducts: number
   outOfStock: number
-  lowStock: number
+  returnProducts: number
   totalRevenue30d: number
   totalStorageFee: number
 }
@@ -39,9 +39,9 @@ export function InventorySummaryCards() {
       color: 'text-red-500',
     },
     {
-      label: '저재고 (10개 이하)',
-      value: data.lowStock.toLocaleString(),
-      icon: AlertTriangle,
+      label: '반품 상품',
+      value: data.returnProducts.toLocaleString(),
+      icon: RotateCcw,
       color: 'text-yellow-500',
     },
     {

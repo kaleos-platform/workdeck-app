@@ -18,7 +18,7 @@ export async function GET() {
       snapshotDate: null,
       totalProducts: 0,
       outOfStock: 0,
-      lowStock: 0,
+      returnProducts: 0,
       totalRevenue30d: 0,
       totalStorageFee: 0,
     })
@@ -38,13 +38,13 @@ export async function GET() {
     ? { ...base, optionId: { notIn: excludedOptionIds } }
     : base
 
-  const [totalProducts, outOfStock, lowStock, aggregates] = await Promise.all([
+  const [totalProducts, outOfStock, returnProducts, aggregates] = await Promise.all([
     prisma.inventoryRecord.count({ where: baseActive }),
     prisma.inventoryRecord.count({
       where: { ...baseActive, availableStock: 0 },
     }),
     prisma.inventoryRecord.count({
-      where: { ...baseActive, availableStock: { gt: 0, lte: 10 } },
+      where: { ...baseActive, productGrade: { contains: '반품' } },
     }),
     prisma.inventoryRecord.aggregate({
       where: baseActive,
@@ -58,7 +58,7 @@ export async function GET() {
     fileType: latestUpload.fileType,
     totalProducts,
     outOfStock,
-    lowStock,
+    returnProducts,
     totalRevenue30d: aggregates._sum.revenue30d ?? 0,
     totalStorageFee: aggregates._sum.storageFee ?? 0,
   })
