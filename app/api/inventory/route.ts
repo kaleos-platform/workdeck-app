@@ -37,12 +37,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ records: [], total: 0, snapshotDate: null, productNames: [] })
   }
 
-  // 제외 상품 목록 조회
-  const excludedProducts = await prisma.inventoryExcludedProduct.findMany({
+  // 제외 옵션 목록 조회
+  const excludedOptions = await prisma.inventoryExcludedProduct.findMany({
     where: { workspaceId: resolved.workspace.id },
-    select: { productId: true },
+    select: { optionId: true },
   })
-  const excludedProductIds = excludedProducts.map(e => e.productId)
+  const excludedOptionIds = excludedOptions.map(e => e.optionId)
 
   // where 절 구성
   const where: Record<string, unknown> = {
@@ -64,16 +64,16 @@ export async function GET(req: NextRequest) {
   // 상품등급 필터
   if (productGrade !== 'all') where.productGrade = productGrade
 
-  // 제외 상품 필터
+  // 제외 옵션 필터
   if (excludedView === 'excluded') {
-    if (excludedProductIds.length > 0) {
-      where.productId = { in: excludedProductIds }
+    if (excludedOptionIds.length > 0) {
+      where.optionId = { in: excludedOptionIds }
     } else {
-      return NextResponse.json({ records: [], total: 0, snapshotDate: targetDate.toISOString(), productNames: [] })
+      return NextResponse.json({ records: [], total: 0, snapshotDate: targetDate.toISOString(), productNames: [], excludedOptionIds: [] })
     }
   } else if (excludedView === 'active') {
-    if (excludedProductIds.length > 0) {
-      where.productId = { notIn: excludedProductIds }
+    if (excludedOptionIds.length > 0) {
+      where.optionId = { notIn: excludedOptionIds }
     }
   }
 
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
     page,
     limit,
     snapshotDate: targetDate.toISOString(),
-    excludedProductIds,
+    excludedOptionIds,
     productNames: productNamesResult.map(p => p.productName),
   })
 }

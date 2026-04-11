@@ -588,16 +588,17 @@ model InventoryRecord {
   @@index([workspaceId, productName])
 }
 
-// 재고 관리 제외 상품
+// 재고 관리 제외 옵션
 model InventoryExcludedProduct {
   id          String   @id @default(cuid())
   workspaceId String
   productId   String
+  optionId    String
   excludedAt  DateTime @default(now())
   reason      String?
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([workspaceId, productId])
+  @@unique([workspaceId, optionId])
   @@index([workspaceId])
 }

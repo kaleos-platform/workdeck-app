@@ -28,6 +28,7 @@ export type InventoryExcludedProductMinAggregateOutputType = {
   id: string | null
   workspaceId: string | null
   productId: string | null
+  optionId: string | null
   excludedAt: Date | null
   reason: string | null
 }
@@ -36,6 +37,7 @@ export type InventoryExcludedProductMaxAggregateOutputType = {
   id: string | null
   workspaceId: string | null
   productId: string | null
+  optionId: string | null
   excludedAt: Date | null
   reason: string | null
 }
@@ -44,6 +46,7 @@ export type InventoryExcludedProductCountAggregateOutputType = {
   id: number
   workspaceId: number
   productId: number
+  optionId: number
   excludedAt: number
   reason: number
   _all: number
@@ -54,6 +57,7 @@ export type InventoryExcludedProductMinAggregateInputType = {
   id?: true
   workspaceId?: true
   productId?: true
+  optionId?: true
   excludedAt?: true
   reason?: true
 }
@@ -62,6 +66,7 @@ export type InventoryExcludedProductMaxAggregateInputType = {
   id?: true
   workspaceId?: true
   productId?: true
+  optionId?: true
   excludedAt?: true
   reason?: true
 }
@@ -70,6 +75,7 @@ export type InventoryExcludedProductCountAggregateInputType = {
   id?: true
   workspaceId?: true
   productId?: true
+  optionId?: true
   excludedAt?: true
   reason?: true
   _all?: true
@@ -151,6 +157,7 @@ export type InventoryExcludedProductGroupByOutputType = {
   id: string
   workspaceId: string
   productId: string
+  optionId: string
   excludedAt: Date
   reason: string | null
   _count: InventoryExcludedProductCountAggregateOutputType | null
@@ -180,6 +187,7 @@ export type InventoryExcludedProductWhereInput = {
   id?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
   workspaceId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
   productId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
+  optionId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
   excludedAt?: Prisma.DateTimeFilter<"InventoryExcludedProduct"> | Date | string
   reason?: Prisma.StringNullableFilter<"InventoryExcludedProduct"> | string | null
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
@@ -189,6 +197,7 @@ export type InventoryExcludedProductOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  optionId?: Prisma.SortOrder
   excludedAt?: Prisma.SortOrder
   reason?: Prisma.SortOrderInput | Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
@@ -196,21 +205,23 @@ export type InventoryExcludedProductOrderByWithRelationInput = {
 
 export type InventoryExcludedProductWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  workspaceId_productId?: Prisma.InventoryExcludedProductWorkspaceIdProductIdCompoundUniqueInput
+  workspaceId_optionId?: Prisma.InventoryExcludedProductWorkspaceIdOptionIdCompoundUniqueInput
   AND?: Prisma.InventoryExcludedProductWhereInput | Prisma.InventoryExcludedProductWhereInput[]
   OR?: Prisma.InventoryExcludedProductWhereInput[]
   NOT?: Prisma.InventoryExcludedProductWhereInput | Prisma.InventoryExcludedProductWhereInput[]
   workspaceId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
   productId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
+  optionId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
   excludedAt?: Prisma.DateTimeFilter<"InventoryExcludedProduct"> | Date | string
   reason?: Prisma.StringNullableFilter<"InventoryExcludedProduct"> | string | null
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
-}, "id" | "workspaceId_productId">
+}, "id" | "workspaceId_optionId">
 
 export type InventoryExcludedProductOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  optionId?: Prisma.SortOrder
   excludedAt?: Prisma.SortOrder
   reason?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.InventoryExcludedProductCountOrderByAggregateInput
@@ -225,6 +236,7 @@ export type InventoryExcludedProductScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"InventoryExcludedProduct"> | string
   workspaceId?: Prisma.StringWithAggregatesFilter<"InventoryExcludedProduct"> | string
   productId?: Prisma.StringWithAggregatesFilter<"InventoryExcludedProduct"> | string
+  optionId?: Prisma.StringWithAggregatesFilter<"InventoryExcludedProduct"> | string
   excludedAt?: Prisma.DateTimeWithAggregatesFilter<"InventoryExcludedProduct"> | Date | string
   reason?: Prisma.StringNullableWithAggregatesFilter<"InventoryExcludedProduct"> | string | null
 }
@@ -232,6 +244,7 @@ export type InventoryExcludedProductScalarWhereWithAggregatesInput = {
 export type InventoryExcludedProductCreateInput = {
   id?: string
   productId: string
+  optionId: string
   excludedAt?: Date | string
   reason?: string | null
   workspace: Prisma.WorkspaceCreateNestedOneWithoutInventoryExcludedProductsInput
@@ -241,6 +254,7 @@ export type InventoryExcludedProductUncheckedCreateInput = {
   id?: string
   workspaceId: string
   productId: string
+  optionId: string
   excludedAt?: Date | string
   reason?: string | null
 }
@@ -248,6 +262,7 @@ export type InventoryExcludedProductUncheckedCreateInput = {
 export type InventoryExcludedProductUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   excludedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutInventoryExcludedProductsNestedInput
@@ -257,6 +272,7 @@ export type InventoryExcludedProductUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   excludedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -265,6 +281,7 @@ export type InventoryExcludedProductCreateManyInput = {
   id?: string
   workspaceId: string
   productId: string
+  optionId: string
   excludedAt?: Date | string
   reason?: string | null
 }
@@ -272,6 +289,7 @@ export type InventoryExcludedProductCreateManyInput = {
 export type InventoryExcludedProductUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   excludedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -280,6 +298,7 @@ export type InventoryExcludedProductUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   excludedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -294,15 +313,16 @@ export type InventoryExcludedProductOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type InventoryExcludedProductWorkspaceIdProductIdCompoundUniqueInput = {
+export type InventoryExcludedProductWorkspaceIdOptionIdCompoundUniqueInput = {
   workspaceId: string
-  productId: string
+  optionId: string
 }
 
 export type InventoryExcludedProductCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  optionId?: Prisma.SortOrder
   excludedAt?: Prisma.SortOrder
   reason?: Prisma.SortOrder
 }
@@ -311,6 +331,7 @@ export type InventoryExcludedProductMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  optionId?: Prisma.SortOrder
   excludedAt?: Prisma.SortOrder
   reason?: Prisma.SortOrder
 }
@@ -319,6 +340,7 @@ export type InventoryExcludedProductMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  optionId?: Prisma.SortOrder
   excludedAt?: Prisma.SortOrder
   reason?: Prisma.SortOrder
 }
@@ -368,6 +390,7 @@ export type InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInp
 export type InventoryExcludedProductCreateWithoutWorkspaceInput = {
   id?: string
   productId: string
+  optionId: string
   excludedAt?: Date | string
   reason?: string | null
 }
@@ -375,6 +398,7 @@ export type InventoryExcludedProductCreateWithoutWorkspaceInput = {
 export type InventoryExcludedProductUncheckedCreateWithoutWorkspaceInput = {
   id?: string
   productId: string
+  optionId: string
   excludedAt?: Date | string
   reason?: string | null
 }
@@ -412,6 +436,7 @@ export type InventoryExcludedProductScalarWhereInput = {
   id?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
   workspaceId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
   productId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
+  optionId?: Prisma.StringFilter<"InventoryExcludedProduct"> | string
   excludedAt?: Prisma.DateTimeFilter<"InventoryExcludedProduct"> | Date | string
   reason?: Prisma.StringNullableFilter<"InventoryExcludedProduct"> | string | null
 }
@@ -419,6 +444,7 @@ export type InventoryExcludedProductScalarWhereInput = {
 export type InventoryExcludedProductCreateManyWorkspaceInput = {
   id?: string
   productId: string
+  optionId: string
   excludedAt?: Date | string
   reason?: string | null
 }
@@ -426,6 +452,7 @@ export type InventoryExcludedProductCreateManyWorkspaceInput = {
 export type InventoryExcludedProductUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   excludedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -433,6 +460,7 @@ export type InventoryExcludedProductUpdateWithoutWorkspaceInput = {
 export type InventoryExcludedProductUncheckedUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   excludedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -440,6 +468,7 @@ export type InventoryExcludedProductUncheckedUpdateWithoutWorkspaceInput = {
 export type InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   excludedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -450,6 +479,7 @@ export type InventoryExcludedProductSelect<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   workspaceId?: boolean
   productId?: boolean
+  optionId?: boolean
   excludedAt?: boolean
   reason?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -459,6 +489,7 @@ export type InventoryExcludedProductSelectCreateManyAndReturn<ExtArgs extends ru
   id?: boolean
   workspaceId?: boolean
   productId?: boolean
+  optionId?: boolean
   excludedAt?: boolean
   reason?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -468,6 +499,7 @@ export type InventoryExcludedProductSelectUpdateManyAndReturn<ExtArgs extends ru
   id?: boolean
   workspaceId?: boolean
   productId?: boolean
+  optionId?: boolean
   excludedAt?: boolean
   reason?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -477,11 +509,12 @@ export type InventoryExcludedProductSelectScalar = {
   id?: boolean
   workspaceId?: boolean
   productId?: boolean
+  optionId?: boolean
   excludedAt?: boolean
   reason?: boolean
 }
 
-export type InventoryExcludedProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "productId" | "excludedAt" | "reason", ExtArgs["result"]["inventoryExcludedProduct"]>
+export type InventoryExcludedProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "productId" | "optionId" | "excludedAt" | "reason", ExtArgs["result"]["inventoryExcludedProduct"]>
 export type InventoryExcludedProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }
@@ -501,6 +534,7 @@ export type $InventoryExcludedProductPayload<ExtArgs extends runtime.Types.Exten
     id: string
     workspaceId: string
     productId: string
+    optionId: string
     excludedAt: Date
     reason: string | null
   }, ExtArgs["result"]["inventoryExcludedProduct"]>
@@ -930,6 +964,7 @@ export interface InventoryExcludedProductFieldRefs {
   readonly id: Prisma.FieldRef<"InventoryExcludedProduct", 'String'>
   readonly workspaceId: Prisma.FieldRef<"InventoryExcludedProduct", 'String'>
   readonly productId: Prisma.FieldRef<"InventoryExcludedProduct", 'String'>
+  readonly optionId: Prisma.FieldRef<"InventoryExcludedProduct", 'String'>
   readonly excludedAt: Prisma.FieldRef<"InventoryExcludedProduct", 'DateTime'>
   readonly reason: Prisma.FieldRef<"InventoryExcludedProduct", 'String'>
 }

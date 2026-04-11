@@ -26,16 +26,16 @@ export async function GET() {
 
   const snapshotDate = latestUpload.snapshotDate
 
-  // 제외 상품 목록 조회
-  const excludedProducts = await prisma.inventoryExcludedProduct.findMany({
+  // 제외 옵션 목록 조회
+  const excludedOptions = await prisma.inventoryExcludedProduct.findMany({
     where: { workspaceId: resolved.workspace.id },
-    select: { productId: true },
+    select: { optionId: true },
   })
-  const excludedProductIds = excludedProducts.map(e => e.productId)
+  const excludedOptionIds = excludedOptions.map(e => e.optionId)
 
   const base = { workspaceId: resolved.workspace.id, snapshotDate }
-  const baseActive = excludedProductIds.length > 0
-    ? { ...base, productId: { notIn: excludedProductIds } }
+  const baseActive = excludedOptionIds.length > 0
+    ? { ...base, optionId: { notIn: excludedOptionIds } }
     : base
 
   const [totalProducts, outOfStock, lowStock, aggregates] = await Promise.all([
