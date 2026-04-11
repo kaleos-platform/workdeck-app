@@ -173,19 +173,8 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
         <Button type="submit" variant="outline" size="sm">검색</Button>
       </form>
 
-      {/* 필터 */}
+      {/* 필터: 상품명 → 등급 → 위너 → 관리 */}
       <div className="flex gap-2 flex-wrap">
-        <Select value={isItemWinner} onValueChange={(v) => { setIsItemWinner(v); setPage(1) }}>
-          <SelectTrigger className="w-[130px]" size="sm">
-            <SelectValue placeholder="위너 필터" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">위너: 전체</SelectItem>
-            <SelectItem value="true">위너만</SelectItem>
-            <SelectItem value="false">비위너</SelectItem>
-          </SelectContent>
-        </Select>
-
         <Select value={productNameFilter} onValueChange={(v) => { setProductNameFilter(v); setPage(1) }}>
           <SelectTrigger className="w-[200px]" size="sm">
             <SelectValue placeholder="상품명 선택" />
@@ -206,6 +195,17 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
             <SelectItem value="all">등급: 전체</SelectItem>
             <SelectItem value="NEW">NEW</SelectItem>
             <SelectItem value="반품">반품</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={isItemWinner} onValueChange={(v) => { setIsItemWinner(v); setPage(1) }}>
+          <SelectTrigger className="w-[150px]" size="sm">
+            <SelectValue placeholder="위너 필터" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">위너: 전체</SelectItem>
+            <SelectItem value="true">위너 상품</SelectItem>
+            <SelectItem value="false">위너 아닌 상품</SelectItem>
           </SelectContent>
         </Select>
 
@@ -249,13 +249,17 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                   매출(30일) <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
-              <TableHead>반품율(%)</TableHead>
               <TableHead>
-                <Button variant="ghost" size="sm" onClick={() => toggleSort('storageFee')}>
-                  보관료 <ArrowUpDown className="ml-1 h-3 w-3" />
+                <Button variant="ghost" size="sm" onClick={() => toggleSort('returns30d')}>
+                  반품율(%) <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
-              <TableHead>보관료율(%)</TableHead>
+              <TableHead>보관료</TableHead>
+              <TableHead>
+                <Button variant="ghost" size="sm" onClick={() => toggleSort('storageFee')}>
+                  보관료율(%) <ArrowUpDown className="ml-1 h-3 w-3" />
+                </Button>
+              </TableHead>
               <TableHead>관리</TableHead>
             </TableRow>
           </TableHeader>
