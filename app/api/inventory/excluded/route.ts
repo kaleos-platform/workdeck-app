@@ -19,22 +19,23 @@ export async function POST(req: NextRequest) {
   if ('error' in resolved) return resolved.error
 
   const body = await req.json()
-  const { productId, reason } = body as { productId: string; reason?: string }
+  const { productId, optionId, reason } = body as { productId: string; optionId: string; reason?: string }
 
-  if (!productId) {
-    return errorResponse('productId가 필요합니다', 400)
+  if (!optionId) {
+    return errorResponse('optionId가 필요합니다', 400)
   }
 
   const record = await prisma.inventoryExcludedProduct.upsert({
     where: {
-      workspaceId_productId: {
+      workspaceId_optionId: {
         workspaceId: resolved.workspace.id,
-        productId,
+        optionId,
       },
     },
     create: {
       workspaceId: resolved.workspace.id,
-      productId,
+      productId: productId || '',
+      optionId,
       reason: reason ?? null,
     },
     update: {
@@ -50,16 +51,16 @@ export async function DELETE(req: NextRequest) {
   if ('error' in resolved) return resolved.error
 
   const body = await req.json()
-  const { productId } = body as { productId: string }
+  const { optionId } = body as { optionId: string }
 
-  if (!productId) {
-    return errorResponse('productId가 필요합니다', 400)
+  if (!optionId) {
+    return errorResponse('optionId가 필요합니다', 400)
   }
 
   await prisma.inventoryExcludedProduct.deleteMany({
     where: {
       workspaceId: resolved.workspace.id,
-      productId,
+      optionId,
     },
   })
 

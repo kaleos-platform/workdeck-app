@@ -44,7 +44,7 @@ type InventoryRow = {
 
 type SortField = 'productName' | 'availableStock' | 'revenue30d' | 'salesQty30d' | 'storageFee' | 'conversionRate' | 'returns30d'
 
-const COL_COUNT = 12
+const COL_COUNT = 13
 
 export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => void } = {}) {
   const [records, setRecords] = useState<InventoryRow[]>([])
@@ -63,7 +63,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
   const [productGrade, setProductGrade] = useState('all')
   const [excludedView, setExcludedView] = useState('active')
   const [productNames, setProductNames] = useState<string[]>([])
-  const [excludedProductIds, setExcludedProductIds] = useState<string[]>([])
+  const [excludedOptionIds, setExcludedOptionIds] = useState<string[]>([])
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -89,7 +89,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
       setRecords(data.records ?? [])
       setTotal(data.total ?? 0)
       if (data.productNames) setProductNames(data.productNames)
-      if (data.excludedProductIds) setExcludedProductIds(data.excludedProductIds)
+      if (data.excludedOptionIds) setExcludedOptionIds(data.excludedOptionIds)
     } finally {
       setLoading(false)
     }
@@ -113,19 +113,19 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
     setPage(1)
   }
 
-  async function toggleExclude(productId: string, isCurrentlyExcluded: boolean) {
+  async function toggleExclude(row: InventoryRow, isCurrentlyExcluded: boolean) {
     try {
       if (isCurrentlyExcluded) {
         await fetch('/api/inventory/excluded', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId }),
+          body: JSON.stringify({ optionId: row.optionId }),
         })
       } else {
         await fetch('/api/inventory/excluded', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId }),
+          body: JSON.stringify({ productId: row.productId, optionId: row.optionId }),
         })
       }
       fetchData()
@@ -137,8 +137,8 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
 
   const totalPages = Math.ceil(total / limit)
 
-  function isProductExcluded(productId: string): boolean {
-    return excludedProductIds.includes(productId)
+  function isOptionExcluded(optionId: string): boolean {
+    return excludedOptionIds.includes(optionId)
   }
 
   function stockBadge(stock: number | null) {
@@ -230,6 +230,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                   상품명 <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
+              <TableHead>관리 상태</TableHead>
               <TableHead>등급</TableHead>
               <TableHead>위너</TableHead>
               <TableHead>
@@ -260,7 +261,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                   보관료율(%) <ArrowUpDown className="ml-1 h-3 w-3" />
                 </Button>
               </TableHead>
-              <TableHead>관리</TableHead>
+              <TableHead>상품관리</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -277,78 +278,89 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                 </TableCell>
               </TableRow>
             ) : (
-              records.map((r) => (
-                <TableRow key={r.id}>
-                  {/* 상품명 */}
-                  <TableCell>
-                    <div className="max-w-[300px]">
-                      <p className="truncate text-sm font-medium">{r.productName}</p>
-                      {r.optionName && (
-                        <p className="truncate text-xs text-muted-foreground">{r.optionName}</p>
+              records.map((r) => {
+                const excluded = isOptionExcluded(r.optionId)
+                return (
+                  <TableRow key={r.id}>
+                    {/* 상품명 */}
+                    <TableCell>
+                      <div className="max-w-[300px]">
+                        <p className="truncate text-sm font-medium">{r.productName}</p>
+                        {r.optionName && (
+                          <p className="truncate text-xs text-muted-foreground">{r.optionName}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    {/* 관리 상태 */}
+                    <TableCell>
+                      {excluded ? (
+                        <Badge variant="outline" className="text-[10px] border-gray-300 text-gray-500">제외</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-600">관리</Badge>
                       )}
-                    </div>
-                  </TableCell>
-                  {/* 등급 */}
-                  <TableCell>
-                    {r.productGrade ? (
-                      <Badge variant="outline" className="text-[10px]">{r.productGrade}</Badge>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  {/* 위너 */}
-                  <TableCell>
-                    {r.isItemWinner === true ? (
-                      <Badge variant="secondary" className="text-[10px]">위너</Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  {/* 재고 */}
-                  <TableCell>{stockBadge(r.availableStock)}</TableCell>
-                  {/* 입고예정 */}
-                  <TableCell>
-                    {r.inboundStock != null && r.inboundStock > 0 ? (
-                      <span className="text-emerald-600">{r.inboundStock.toLocaleString()}</span>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  {/* 소진예상 */}
-                  <TableCell>
-                    <span className="text-xs">{r.estimatedDepletion ?? '-'}</span>
-                  </TableCell>
-                  {/* 판매(30일) */}
-                  <TableCell>{r.salesQty30d?.toLocaleString() ?? '-'}</TableCell>
-                  {/* 매출(30일) */}
-                  <TableCell>
-                    {r.revenue30d != null ? `${Number(r.revenue30d).toLocaleString()}원` : '-'}
-                  </TableCell>
-                  {/* 반품율(%) */}
-                  <TableCell>
-                    <span className="text-xs">{calcReturnRate(r.returns30d, r.salesQty30d)}</span>
-                  </TableCell>
-                  {/* 보관료 */}
-                  <TableCell>
-                    {r.storageFee != null ? `${r.storageFee.toLocaleString()}원` : '-'}
-                  </TableCell>
-                  {/* 보관료율(%) */}
-                  <TableCell>
-                    <span className="text-xs">{calcStorageFeeRate(r.storageFee, r.revenue30d)}</span>
-                  </TableCell>
-                  {/* 관리 */}
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs h-7 px-2"
-                      onClick={() => toggleExclude(r.productId, isProductExcluded(r.productId))}
-                    >
-                      {isProductExcluded(r.productId) ? '복원' : '제외'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    {/* 등급 */}
+                    <TableCell>
+                      {r.productGrade ? (
+                        <Badge variant="outline" className="text-[10px]">{r.productGrade}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    {/* 위너 */}
+                    <TableCell>
+                      {r.isItemWinner === true ? (
+                        <Badge variant="secondary" className="text-[10px]">위너</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    {/* 재고 */}
+                    <TableCell>{stockBadge(r.availableStock)}</TableCell>
+                    {/* 입고예정 */}
+                    <TableCell>
+                      {r.inboundStock != null && r.inboundStock > 0 ? (
+                        <span className="text-emerald-600">{r.inboundStock.toLocaleString()}</span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    {/* 소진예상 */}
+                    <TableCell>
+                      <span className="text-xs">{r.estimatedDepletion ?? '-'}</span>
+                    </TableCell>
+                    {/* 판매(30일) */}
+                    <TableCell>{r.salesQty30d?.toLocaleString() ?? '-'}</TableCell>
+                    {/* 매출(30일) */}
+                    <TableCell>
+                      {r.revenue30d != null ? `${Number(r.revenue30d).toLocaleString()}원` : '-'}
+                    </TableCell>
+                    {/* 반품율(%) */}
+                    <TableCell>
+                      <span className="text-xs">{calcReturnRate(r.returns30d, r.salesQty30d)}</span>
+                    </TableCell>
+                    {/* 보관료 */}
+                    <TableCell>
+                      {r.storageFee != null ? `${r.storageFee.toLocaleString()}원` : '-'}
+                    </TableCell>
+                    {/* 보관료율(%) */}
+                    <TableCell>
+                      <span className="text-xs">{calcStorageFeeRate(r.storageFee, r.revenue30d)}</span>
+                    </TableCell>
+                    {/* 상품관리 */}
+                    <TableCell>
+                      <Button
+                        variant={excluded ? 'outline' : 'destructive'}
+                        size="sm"
+                        className="text-xs h-7 px-3"
+                        onClick={() => toggleExclude(r, excluded)}
+                      >
+                        {excluded ? '복원하기' : '제외하기'}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>

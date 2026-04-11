@@ -494,6 +494,7 @@ export const InventoryExcludedProductScalarFieldEnum = {
   id: 'id',
   workspaceId: 'workspaceId',
   productId: 'productId',
+  optionId: 'optionId',
   excludedAt: 'excludedAt',
   reason: 'reason'
 } as const
