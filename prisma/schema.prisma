@@ -129,6 +129,7 @@ model Workspace {
   inventoryUploads          InventoryUpload[]
   inventoryRecords          InventoryRecord[]
   inventoryExcludedProducts InventoryExcludedProduct[]
+  inventoryAnalyses         InventoryAnalysis[]
 
   createdAt DateTime @default(now())
 }
@@ -601,4 +602,23 @@ model InventoryExcludedProduct {
 
   @@unique([workspaceId, optionId])
   @@index([workspaceId])
+}
+
+// 재고 분석 결과
+model InventoryAnalysis {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  snapshotDate DateTime
+  analysedAt   DateTime @default(now())
+  triggeredBy  String   @default("manual")
+
+  results          Json
+  shortageCount    Int @default(0)
+  returnRateCount  Int @default(0)
+  storageFeeCount  Int @default(0)
+  winnerIssueCount Int @default(0)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, analysedAt(sort: Desc)])
 }

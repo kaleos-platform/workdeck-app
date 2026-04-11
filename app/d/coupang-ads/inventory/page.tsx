@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { InventorySummaryCards } from '@/components/inventory/inventory-summary-cards'
+import { InventoryAnalysisPanel } from '@/components/inventory/inventory-analysis-panel'
 import { InventoryTable } from '@/components/inventory/inventory-table'
 import { InventoryUploadForm } from '@/components/inventory/inventory-upload-form'
 
@@ -33,6 +34,7 @@ export default function InventoryPage() {
       </div>
 
       <InventorySummaryCards key={`summary-${summaryKey}`} />
+      <InventoryAnalysisPanel key={`analysis-${summaryKey}`} />
       <InventoryTable key={`table-${refreshKey}`} onExcludeChange={handleExcludeChange} />
     </div>
   )

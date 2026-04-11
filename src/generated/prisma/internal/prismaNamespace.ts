@@ -409,7 +409,8 @@ export const ModelName = {
   AgentLog: 'AgentLog',
   InventoryUpload: 'InventoryUpload',
   InventoryRecord: 'InventoryRecord',
-  InventoryExcludedProduct: 'InventoryExcludedProduct'
+  InventoryExcludedProduct: 'InventoryExcludedProduct',
+  InventoryAnalysis: 'InventoryAnalysis'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -425,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2353,6 +2354,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InventoryAnalysis: {
+      payload: Prisma.$InventoryAnalysisPayload<ExtArgs>
+      fields: Prisma.InventoryAnalysisFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InventoryAnalysisFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InventoryAnalysisFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>
+        }
+        findFirst: {
+          args: Prisma.InventoryAnalysisFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InventoryAnalysisFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>
+        }
+        findMany: {
+          args: Prisma.InventoryAnalysisFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>[]
+        }
+        create: {
+          args: Prisma.InventoryAnalysisCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>
+        }
+        createMany: {
+          args: Prisma.InventoryAnalysisCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InventoryAnalysisCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>[]
+        }
+        delete: {
+          args: Prisma.InventoryAnalysisDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>
+        }
+        update: {
+          args: Prisma.InventoryAnalysisUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>
+        }
+        deleteMany: {
+          args: Prisma.InventoryAnalysisDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InventoryAnalysisUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InventoryAnalysisUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>[]
+        }
+        upsert: {
+          args: Prisma.InventoryAnalysisUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryAnalysisPayload>
+        }
+        aggregate: {
+          args: Prisma.InventoryAnalysisAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInventoryAnalysis>
+        }
+        groupBy: {
+          args: Prisma.InventoryAnalysisGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InventoryAnalysisGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InventoryAnalysisCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InventoryAnalysisCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2799,6 +2874,22 @@ export const InventoryExcludedProductScalarFieldEnum = {
 export type InventoryExcludedProductScalarFieldEnum = (typeof InventoryExcludedProductScalarFieldEnum)[keyof typeof InventoryExcludedProductScalarFieldEnum]
 
 
+export const InventoryAnalysisScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  snapshotDate: 'snapshotDate',
+  analysedAt: 'analysedAt',
+  triggeredBy: 'triggeredBy',
+  results: 'results',
+  shortageCount: 'shortageCount',
+  returnRateCount: 'returnRateCount',
+  storageFeeCount: 'storageFeeCount',
+  winnerIssueCount: 'winnerIssueCount'
+} as const
+
+export type InventoryAnalysisScalarFieldEnum = (typeof InventoryAnalysisScalarFieldEnum)[keyof typeof InventoryAnalysisScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3162,6 +3253,7 @@ export type GlobalOmitConfig = {
   inventoryUpload?: Prisma.InventoryUploadOmit
   inventoryRecord?: Prisma.InventoryRecordOmit
   inventoryExcludedProduct?: Prisma.InventoryExcludedProductOmit
+  inventoryAnalysis?: Prisma.InventoryAnalysisOmit
 }
 
 /* Types for Logging */

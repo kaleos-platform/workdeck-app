@@ -169,3 +169,8 @@ export type InventoryRecord = Prisma.InventoryRecordModel
  * 
  */
 export type InventoryExcludedProduct = Prisma.InventoryExcludedProductModel
+/**
+ * Model InventoryAnalysis
+ * 
+ */
+export type InventoryAnalysis = Prisma.InventoryAnalysisModel

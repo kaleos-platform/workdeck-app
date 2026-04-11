@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { createClient } from '@/lib/supabase/server'
 import { processInventoryUpload } from '@/lib/inventory-upload-processor'
+import { runAndSaveInventoryAnalysis } from '@/lib/inventory-analyzer'
 
 export const runtime = 'nodejs'
 
@@ -46,6 +47,13 @@ export async function POST(req: NextRequest) {
   if (!result.success) {
     return errorResponse(result.error, 400)
   }
+
+  // 업로드 성공 → 재고 분석 자동 실행 (fire-and-forget)
+  runAndSaveInventoryAnalysis({
+    workspaceId: resolved.workspace.id,
+    triggeredBy: 'manual',
+    sendSlack: true,
+  }).catch((err) => console.error('[inventory-upload] 분석 실행 실패:', err))
 
   return NextResponse.json(result)
 }
