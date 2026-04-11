@@ -50,16 +50,16 @@ export async function GET(req: NextRequest) {
     snapshotDate: targetDate,
   }
 
-  if (search) {
+  // 상품명 필터 (정확 매칭이 검색보다 우선)
+  if (productNameFilter) {
+    where.productName = productNameFilter
+  } else if (search) {
     where.productName = { contains: search, mode: 'insensitive' }
   }
 
   // 위너 필터
   if (isItemWinner === 'true') where.isItemWinner = true
   else if (isItemWinner === 'false') where.isItemWinner = false
-
-  // 상품명 필터
-  if (productNameFilter) where.productName = productNameFilter
 
   // 상품등급 필터
   if (productGrade !== 'all') where.productGrade = productGrade
@@ -102,6 +102,7 @@ export async function GET(req: NextRequest) {
     page,
     limit,
     snapshotDate: targetDate.toISOString(),
+    excludedProductIds,
     productNames: productNamesResult.map(p => p.productName),
   })
 }

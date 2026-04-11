@@ -25,7 +25,7 @@ export default function InventoryPage() {
       </div>
 
       <InventorySummaryCards key={`summary-${refreshKey}`} />
-      <InventoryTable key={`table-${refreshKey}`} />
+      <InventoryTable key={`table-${refreshKey}`} onExcludeChange={handleUploadComplete} />
     </div>
   )
 }

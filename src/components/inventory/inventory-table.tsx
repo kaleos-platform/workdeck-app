@@ -46,7 +46,7 @@ type SortField = 'productName' | 'availableStock' | 'revenue30d' | 'salesQty30d'
 
 const COL_COUNT = 12
 
-export function InventoryTable() {
+export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => void } = {}) {
   const [records, setRecords] = useState<InventoryRow[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -63,6 +63,7 @@ export function InventoryTable() {
   const [productGrade, setProductGrade] = useState('all')
   const [excludedView, setExcludedView] = useState('active')
   const [productNames, setProductNames] = useState<string[]>([])
+  const [excludedProductIds, setExcludedProductIds] = useState<string[]>([])
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -88,6 +89,7 @@ export function InventoryTable() {
       setRecords(data.records ?? [])
       setTotal(data.total ?? 0)
       if (data.productNames) setProductNames(data.productNames)
+      if (data.excludedProductIds) setExcludedProductIds(data.excludedProductIds)
     } finally {
       setLoading(false)
     }
@@ -127,13 +129,17 @@ export function InventoryTable() {
         })
       }
       fetchData()
+      onExcludeChange?.()
     } catch {
       // ignore
     }
   }
 
   const totalPages = Math.ceil(total / limit)
-  const isExcludedView = excludedView === 'excluded'
+
+  function isProductExcluded(productId: string): boolean {
+    return excludedProductIds.includes(productId)
+  }
 
   function stockBadge(stock: number | null) {
     if (stock == null) return <span className="text-muted-foreground">-</span>
@@ -332,9 +338,9 @@ export function InventoryTable() {
                       variant="ghost"
                       size="sm"
                       className="text-xs h-7 px-2"
-                      onClick={() => toggleExclude(r.productId, isExcludedView)}
+                      onClick={() => toggleExclude(r.productId, isProductExcluded(r.productId))}
                     >
-                      {isExcludedView ? '복원' : '제외'}
+                      {isProductExcluded(r.productId) ? '복원' : '제외'}
                     </Button>
                   </TableCell>
                 </TableRow>
