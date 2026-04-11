@@ -7,9 +7,17 @@ import { InventoryUploadForm } from '@/components/inventory/inventory-upload-for
 
 export default function InventoryPage() {
   const [refreshKey, setRefreshKey] = useState(0)
+  const [summaryKey, setSummaryKey] = useState(0)
 
+  // 업로드 완료 → 요약 + 테이블 모두 리마운트
   const handleUploadComplete = useCallback(() => {
     setRefreshKey((k) => k + 1)
+    setSummaryKey((k) => k + 1)
+  }, [])
+
+  // 제외/복원 → 요약 카드만 갱신 (테이블은 로컬 상태 유지)
+  const handleExcludeChange = useCallback(() => {
+    setSummaryKey((k) => k + 1)
   }, [])
 
   return (
@@ -24,8 +32,8 @@ export default function InventoryPage() {
         <InventoryUploadForm onUploadComplete={handleUploadComplete} />
       </div>
 
-      <InventorySummaryCards key={`summary-${refreshKey}`} />
-      <InventoryTable key={`table-${refreshKey}`} onExcludeChange={handleUploadComplete} />
+      <InventorySummaryCards key={`summary-${summaryKey}`} />
+      <InventoryTable key={`table-${refreshKey}`} onExcludeChange={handleExcludeChange} />
     </div>
   )
 }
