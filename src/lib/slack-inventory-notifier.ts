@@ -108,9 +108,13 @@ export async function notifyInventoryAnalysis(params: {
   const blocks: Block[] = [
     header(':clipboard: 쿠팡 재고 분석 완료'),
     divider(),
-    section(
-      `*분석일*\n${formatDate(params.analysedAt)}  |  *스냅샷*\n${formatDate(params.snapshotDate)}`,
-    ),
+    {
+      type: 'section',
+      fields: [
+        { type: 'mrkdwn', text: `*분석일*\n${formatDate(params.analysedAt)}` },
+        { type: 'mrkdwn', text: `*기준 데이터 날짜*\n${formatDate(params.snapshotDate)}` },
+      ],
+    },
   ]
 
   const MAX_ITEMS = 5
