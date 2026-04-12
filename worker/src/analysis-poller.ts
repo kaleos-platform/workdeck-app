@@ -11,8 +11,8 @@ const POLL_INTERVAL = 30_000 // 30초
 let isProcessing = false
 
 // Gemini API 설정
-const GEMINI_PRIMARY_MODEL = 'gemini-2.5-pro'
-const GEMINI_FALLBACK_MODEL = 'gemini-2.5-flash'
+const GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash'
+const GEMINI_FALLBACK_MODEL = 'gemini-2.5-pro'
 
 function getBaseUrl(): string {
   const url = process.env.WORKDECK_API_URL
