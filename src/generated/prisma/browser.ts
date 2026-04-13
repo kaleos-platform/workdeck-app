@@ -152,3 +152,63 @@ export type InventoryExcludedProduct = Prisma.InventoryExcludedProductModel
  * 
  */
 export type InventoryAnalysis = Prisma.InventoryAnalysisModel
+/**
+ * Model InvProduct
+ * 
+ */
+export type InvProduct = Prisma.InvProductModel
+/**
+ * Model InvProductOption
+ * 
+ */
+export type InvProductOption = Prisma.InvProductOptionModel
+/**
+ * Model InvStorageLocation
+ * 
+ */
+export type InvStorageLocation = Prisma.InvStorageLocationModel
+/**
+ * Model InvChannelGroup
+ * 
+ */
+export type InvChannelGroup = Prisma.InvChannelGroupModel
+/**
+ * Model InvSalesChannel
+ * 
+ */
+export type InvSalesChannel = Prisma.InvSalesChannelModel
+/**
+ * Model InvMovement
+ * 
+ */
+export type InvMovement = Prisma.InvMovementModel
+/**
+ * Model InvStockLevel
+ * 
+ */
+export type InvStockLevel = Prisma.InvStockLevelModel
+/**
+ * Model InvReorderConfig
+ * 
+ */
+export type InvReorderConfig = Prisma.InvReorderConfigModel
+/**
+ * Model InvImportHistory
+ * 
+ */
+export type InvImportHistory = Prisma.InvImportHistoryModel
+/**
+ * Model InvReconciliation
+ * 
+ */
+export type InvReconciliation = Prisma.InvReconciliationModel
+/**
+ * Model InvLocationProductMap
+ * 
+ */
+export type InvLocationProductMap = Prisma.InvLocationProductMapModel
+/**
+ * Model InvSettings
+ * 
+ */
+export type InvSettings = Prisma.InvSettingsModel

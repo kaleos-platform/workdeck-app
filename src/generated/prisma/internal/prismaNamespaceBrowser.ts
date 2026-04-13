@@ -77,7 +77,19 @@ export const ModelName = {
   InventoryUpload: 'InventoryUpload',
   InventoryRecord: 'InventoryRecord',
   InventoryExcludedProduct: 'InventoryExcludedProduct',
-  InventoryAnalysis: 'InventoryAnalysis'
+  InventoryAnalysis: 'InventoryAnalysis',
+  InvProduct: 'InvProduct',
+  InvProductOption: 'InvProductOption',
+  InvStorageLocation: 'InvStorageLocation',
+  InvChannelGroup: 'InvChannelGroup',
+  InvSalesChannel: 'InvSalesChannel',
+  InvMovement: 'InvMovement',
+  InvStockLevel: 'InvStockLevel',
+  InvReorderConfig: 'InvReorderConfig',
+  InvImportHistory: 'InvImportHistory',
+  InvReconciliation: 'InvReconciliation',
+  InvLocationProductMap: 'InvLocationProductMap',
+  InvSettings: 'InvSettings'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -517,6 +529,165 @@ export const InventoryAnalysisScalarFieldEnum = {
 } as const
 
 export type InventoryAnalysisScalarFieldEnum = (typeof InventoryAnalysisScalarFieldEnum)[keyof typeof InventoryAnalysisScalarFieldEnum]
+
+
+export const InvProductScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  code: 'code',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvProductScalarFieldEnum = (typeof InvProductScalarFieldEnum)[keyof typeof InvProductScalarFieldEnum]
+
+
+export const InvProductOptionScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  name: 'name',
+  sku: 'sku',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvProductOptionScalarFieldEnum = (typeof InvProductOptionScalarFieldEnum)[keyof typeof InvProductOptionScalarFieldEnum]
+
+
+export const InvStorageLocationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvStorageLocationScalarFieldEnum = (typeof InvStorageLocationScalarFieldEnum)[keyof typeof InvStorageLocationScalarFieldEnum]
+
+
+export const InvChannelGroupScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  createdAt: 'createdAt'
+} as const
+
+export type InvChannelGroupScalarFieldEnum = (typeof InvChannelGroupScalarFieldEnum)[keyof typeof InvChannelGroupScalarFieldEnum]
+
+
+export const InvSalesChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  groupId: 'groupId',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+} as const
+
+export type InvSalesChannelScalarFieldEnum = (typeof InvSalesChannelScalarFieldEnum)[keyof typeof InvSalesChannelScalarFieldEnum]
+
+
+export const InvMovementScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  optionId: 'optionId',
+  locationId: 'locationId',
+  toLocationId: 'toLocationId',
+  channelId: 'channelId',
+  type: 'type',
+  quantity: 'quantity',
+  movementDate: 'movementDate',
+  orderDate: 'orderDate',
+  reason: 'reason',
+  referenceId: 'referenceId',
+  importHistoryId: 'importHistoryId',
+  createdAt: 'createdAt'
+} as const
+
+export type InvMovementScalarFieldEnum = (typeof InvMovementScalarFieldEnum)[keyof typeof InvMovementScalarFieldEnum]
+
+
+export const InvStockLevelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  optionId: 'optionId',
+  locationId: 'locationId',
+  quantity: 'quantity',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvStockLevelScalarFieldEnum = (typeof InvStockLevelScalarFieldEnum)[keyof typeof InvStockLevelScalarFieldEnum]
+
+
+export const InvReorderConfigScalarFieldEnum = {
+  id: 'id',
+  optionId: 'optionId',
+  leadTimeDays: 'leadTimeDays',
+  safetyStockQty: 'safetyStockQty',
+  analysisWindowDays: 'analysisWindowDays'
+} as const
+
+export type InvReorderConfigScalarFieldEnum = (typeof InvReorderConfigScalarFieldEnum)[keyof typeof InvReorderConfigScalarFieldEnum]
+
+
+export const InvImportHistoryScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  fileName: 'fileName',
+  fileType: 'fileType',
+  totalRows: 'totalRows',
+  successRows: 'successRows',
+  errorRows: 'errorRows',
+  errors: 'errors',
+  importedAt: 'importedAt'
+} as const
+
+export type InvImportHistoryScalarFieldEnum = (typeof InvImportHistoryScalarFieldEnum)[keyof typeof InvImportHistoryScalarFieldEnum]
+
+
+export const InvReconciliationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  locationId: 'locationId',
+  fileName: 'fileName',
+  snapshotDate: 'snapshotDate',
+  status: 'status',
+  matchResults: 'matchResults',
+  totalItems: 'totalItems',
+  matchedItems: 'matchedItems',
+  adjustedItems: 'adjustedItems',
+  createdAt: 'createdAt',
+  confirmedAt: 'confirmedAt'
+} as const
+
+export type InvReconciliationScalarFieldEnum = (typeof InvReconciliationScalarFieldEnum)[keyof typeof InvReconciliationScalarFieldEnum]
+
+
+export const InvLocationProductMapScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  locationId: 'locationId',
+  optionId: 'optionId',
+  externalCode: 'externalCode',
+  externalName: 'externalName',
+  externalOptionName: 'externalOptionName',
+  createdAt: 'createdAt'
+} as const
+
+export type InvLocationProductMapScalarFieldEnum = (typeof InvLocationProductMapScalarFieldEnum)[keyof typeof InvLocationProductMapScalarFieldEnum]
+
+
+export const InvSettingsScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  defaultLocationId: 'defaultLocationId',
+  slackWebhookUrl: 'slackWebhookUrl',
+  preferences: 'preferences'
+} as const
+
+export type InvSettingsScalarFieldEnum = (typeof InvSettingsScalarFieldEnum)[keyof typeof InvSettingsScalarFieldEnum]
 
 
 export const SortOrder = {

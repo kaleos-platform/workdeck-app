@@ -184,6 +184,16 @@ export type SpaceWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   members?: Prisma.SpaceMemberListRelationFilter
   deckInstances?: Prisma.DeckInstanceListRelationFilter
+  invProducts?: Prisma.InvProductListRelationFilter
+  invLocations?: Prisma.InvStorageLocationListRelationFilter
+  invChannelGroups?: Prisma.InvChannelGroupListRelationFilter
+  invSalesChannels?: Prisma.InvSalesChannelListRelationFilter
+  invMovements?: Prisma.InvMovementListRelationFilter
+  invStockLevels?: Prisma.InvStockLevelListRelationFilter
+  invImportHistories?: Prisma.InvImportHistoryListRelationFilter
+  invReconciliations?: Prisma.InvReconciliationListRelationFilter
+  invLocationMappings?: Prisma.InvLocationProductMapListRelationFilter
+  invSettings?: Prisma.XOR<Prisma.InvSettingsNullableScalarRelationFilter, Prisma.InvSettingsWhereInput> | null
 }
 
 export type SpaceOrderByWithRelationInput = {
@@ -194,6 +204,16 @@ export type SpaceOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   members?: Prisma.SpaceMemberOrderByRelationAggregateInput
   deckInstances?: Prisma.DeckInstanceOrderByRelationAggregateInput
+  invProducts?: Prisma.InvProductOrderByRelationAggregateInput
+  invLocations?: Prisma.InvStorageLocationOrderByRelationAggregateInput
+  invChannelGroups?: Prisma.InvChannelGroupOrderByRelationAggregateInput
+  invSalesChannels?: Prisma.InvSalesChannelOrderByRelationAggregateInput
+  invMovements?: Prisma.InvMovementOrderByRelationAggregateInput
+  invStockLevels?: Prisma.InvStockLevelOrderByRelationAggregateInput
+  invImportHistories?: Prisma.InvImportHistoryOrderByRelationAggregateInput
+  invReconciliations?: Prisma.InvReconciliationOrderByRelationAggregateInput
+  invLocationMappings?: Prisma.InvLocationProductMapOrderByRelationAggregateInput
+  invSettings?: Prisma.InvSettingsOrderByWithRelationInput
 }
 
 export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -207,6 +227,16 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   members?: Prisma.SpaceMemberListRelationFilter
   deckInstances?: Prisma.DeckInstanceListRelationFilter
+  invProducts?: Prisma.InvProductListRelationFilter
+  invLocations?: Prisma.InvStorageLocationListRelationFilter
+  invChannelGroups?: Prisma.InvChannelGroupListRelationFilter
+  invSalesChannels?: Prisma.InvSalesChannelListRelationFilter
+  invMovements?: Prisma.InvMovementListRelationFilter
+  invStockLevels?: Prisma.InvStockLevelListRelationFilter
+  invImportHistories?: Prisma.InvImportHistoryListRelationFilter
+  invReconciliations?: Prisma.InvReconciliationListRelationFilter
+  invLocationMappings?: Prisma.InvLocationProductMapListRelationFilter
+  invSettings?: Prisma.XOR<Prisma.InvSettingsNullableScalarRelationFilter, Prisma.InvSettingsWhereInput> | null
 }, "id">
 
 export type SpaceOrderByWithAggregationInput = {
@@ -239,6 +269,16 @@ export type SpaceCreateInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateInput = {
@@ -249,6 +289,16 @@ export type SpaceUncheckedCreateInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
 }
 
 export type SpaceUpdateInput = {
@@ -259,6 +309,16 @@ export type SpaceUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateInput = {
@@ -269,6 +329,16 @@ export type SpaceUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
 }
 
 export type SpaceCreateManyInput = {
@@ -356,6 +426,146 @@ export type SpaceUpdateOneRequiredWithoutDeckInstancesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutDeckInstancesInput, Prisma.SpaceUpdateWithoutDeckInstancesInput>, Prisma.SpaceUncheckedUpdateWithoutDeckInstancesInput>
 }
 
+export type SpaceCreateNestedOneWithoutInvProductsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvProductsInput, Prisma.SpaceUncheckedCreateWithoutInvProductsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvProductsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvProductsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvProductsInput, Prisma.SpaceUncheckedCreateWithoutInvProductsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvProductsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvProductsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvProductsInput, Prisma.SpaceUpdateWithoutInvProductsInput>, Prisma.SpaceUncheckedUpdateWithoutInvProductsInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvLocationsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvLocationsInput, Prisma.SpaceUncheckedCreateWithoutInvLocationsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvLocationsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvLocationsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvLocationsInput, Prisma.SpaceUncheckedCreateWithoutInvLocationsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvLocationsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvLocationsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvLocationsInput, Prisma.SpaceUpdateWithoutInvLocationsInput>, Prisma.SpaceUncheckedUpdateWithoutInvLocationsInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvChannelGroupsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvChannelGroupsInput, Prisma.SpaceUncheckedCreateWithoutInvChannelGroupsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvChannelGroupsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvChannelGroupsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvChannelGroupsInput, Prisma.SpaceUncheckedCreateWithoutInvChannelGroupsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvChannelGroupsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvChannelGroupsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvChannelGroupsInput, Prisma.SpaceUpdateWithoutInvChannelGroupsInput>, Prisma.SpaceUncheckedUpdateWithoutInvChannelGroupsInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvSalesChannelsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvSalesChannelsInput, Prisma.SpaceUncheckedCreateWithoutInvSalesChannelsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvSalesChannelsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvSalesChannelsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvSalesChannelsInput, Prisma.SpaceUncheckedCreateWithoutInvSalesChannelsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvSalesChannelsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvSalesChannelsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvSalesChannelsInput, Prisma.SpaceUpdateWithoutInvSalesChannelsInput>, Prisma.SpaceUncheckedUpdateWithoutInvSalesChannelsInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvMovementsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvMovementsInput, Prisma.SpaceUncheckedCreateWithoutInvMovementsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvMovementsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvMovementsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvMovementsInput, Prisma.SpaceUncheckedCreateWithoutInvMovementsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvMovementsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvMovementsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvMovementsInput, Prisma.SpaceUpdateWithoutInvMovementsInput>, Prisma.SpaceUncheckedUpdateWithoutInvMovementsInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvStockLevelsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvStockLevelsInput, Prisma.SpaceUncheckedCreateWithoutInvStockLevelsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvStockLevelsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvStockLevelsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvStockLevelsInput, Prisma.SpaceUncheckedCreateWithoutInvStockLevelsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvStockLevelsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvStockLevelsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvStockLevelsInput, Prisma.SpaceUpdateWithoutInvStockLevelsInput>, Prisma.SpaceUncheckedUpdateWithoutInvStockLevelsInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvImportHistoriesInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvImportHistoriesInput, Prisma.SpaceUncheckedCreateWithoutInvImportHistoriesInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvImportHistoriesInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvImportHistoriesNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvImportHistoriesInput, Prisma.SpaceUncheckedCreateWithoutInvImportHistoriesInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvImportHistoriesInput
+  upsert?: Prisma.SpaceUpsertWithoutInvImportHistoriesInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvImportHistoriesInput, Prisma.SpaceUpdateWithoutInvImportHistoriesInput>, Prisma.SpaceUncheckedUpdateWithoutInvImportHistoriesInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvReconciliationsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvReconciliationsInput, Prisma.SpaceUncheckedCreateWithoutInvReconciliationsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvReconciliationsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvReconciliationsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvReconciliationsInput, Prisma.SpaceUncheckedCreateWithoutInvReconciliationsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvReconciliationsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvReconciliationsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvReconciliationsInput, Prisma.SpaceUpdateWithoutInvReconciliationsInput>, Prisma.SpaceUncheckedUpdateWithoutInvReconciliationsInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvLocationMappingsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvLocationMappingsInput, Prisma.SpaceUncheckedCreateWithoutInvLocationMappingsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvLocationMappingsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvLocationMappingsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvLocationMappingsInput, Prisma.SpaceUncheckedCreateWithoutInvLocationMappingsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvLocationMappingsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvLocationMappingsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvLocationMappingsInput, Prisma.SpaceUpdateWithoutInvLocationMappingsInput>, Prisma.SpaceUncheckedUpdateWithoutInvLocationMappingsInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvSettingsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvSettingsInput, Prisma.SpaceUncheckedCreateWithoutInvSettingsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvSettingsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvSettingsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvSettingsInput, Prisma.SpaceUncheckedCreateWithoutInvSettingsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvSettingsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvSettingsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvSettingsInput, Prisma.SpaceUpdateWithoutInvSettingsInput>, Prisma.SpaceUncheckedUpdateWithoutInvSettingsInput>
+}
+
 export type SpaceCreateWithoutMembersInput = {
   id?: string
   name: string
@@ -363,6 +573,16 @@ export type SpaceCreateWithoutMembersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutMembersInput = {
@@ -372,6 +592,16 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutMembersInput = {
@@ -397,6 +627,16 @@ export type SpaceUpdateWithoutMembersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutMembersInput = {
@@ -406,6 +646,16 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeckInstancesInput = {
@@ -415,6 +665,16 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
@@ -424,6 +684,16 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeckInstancesInput = {
@@ -449,6 +719,16 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
@@ -458,6 +738,936 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvProductsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvProductsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvProductsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvProductsInput, Prisma.SpaceUncheckedCreateWithoutInvProductsInput>
+}
+
+export type SpaceUpsertWithoutInvProductsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvProductsInput, Prisma.SpaceUncheckedUpdateWithoutInvProductsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvProductsInput, Prisma.SpaceUncheckedCreateWithoutInvProductsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvProductsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvProductsInput, Prisma.SpaceUncheckedUpdateWithoutInvProductsInput>
+}
+
+export type SpaceUpdateWithoutInvProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvLocationsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvLocationsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvLocationsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvLocationsInput, Prisma.SpaceUncheckedCreateWithoutInvLocationsInput>
+}
+
+export type SpaceUpsertWithoutInvLocationsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvLocationsInput, Prisma.SpaceUncheckedUpdateWithoutInvLocationsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvLocationsInput, Prisma.SpaceUncheckedCreateWithoutInvLocationsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvLocationsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvLocationsInput, Prisma.SpaceUncheckedUpdateWithoutInvLocationsInput>
+}
+
+export type SpaceUpdateWithoutInvLocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvChannelGroupsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvChannelGroupsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvChannelGroupsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvChannelGroupsInput, Prisma.SpaceUncheckedCreateWithoutInvChannelGroupsInput>
+}
+
+export type SpaceUpsertWithoutInvChannelGroupsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvChannelGroupsInput, Prisma.SpaceUncheckedUpdateWithoutInvChannelGroupsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvChannelGroupsInput, Prisma.SpaceUncheckedCreateWithoutInvChannelGroupsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvChannelGroupsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvChannelGroupsInput, Prisma.SpaceUncheckedUpdateWithoutInvChannelGroupsInput>
+}
+
+export type SpaceUpdateWithoutInvChannelGroupsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvChannelGroupsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvSalesChannelsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvSalesChannelsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvSalesChannelsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvSalesChannelsInput, Prisma.SpaceUncheckedCreateWithoutInvSalesChannelsInput>
+}
+
+export type SpaceUpsertWithoutInvSalesChannelsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvSalesChannelsInput, Prisma.SpaceUncheckedUpdateWithoutInvSalesChannelsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvSalesChannelsInput, Prisma.SpaceUncheckedCreateWithoutInvSalesChannelsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvSalesChannelsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvSalesChannelsInput, Prisma.SpaceUncheckedUpdateWithoutInvSalesChannelsInput>
+}
+
+export type SpaceUpdateWithoutInvSalesChannelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvSalesChannelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvMovementsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvMovementsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvMovementsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvMovementsInput, Prisma.SpaceUncheckedCreateWithoutInvMovementsInput>
+}
+
+export type SpaceUpsertWithoutInvMovementsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvMovementsInput, Prisma.SpaceUncheckedUpdateWithoutInvMovementsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvMovementsInput, Prisma.SpaceUncheckedCreateWithoutInvMovementsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvMovementsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvMovementsInput, Prisma.SpaceUncheckedUpdateWithoutInvMovementsInput>
+}
+
+export type SpaceUpdateWithoutInvMovementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvStockLevelsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvStockLevelsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvStockLevelsInput, Prisma.SpaceUncheckedCreateWithoutInvStockLevelsInput>
+}
+
+export type SpaceUpsertWithoutInvStockLevelsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvStockLevelsInput, Prisma.SpaceUncheckedUpdateWithoutInvStockLevelsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvStockLevelsInput, Prisma.SpaceUncheckedCreateWithoutInvStockLevelsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvStockLevelsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvStockLevelsInput, Prisma.SpaceUncheckedUpdateWithoutInvStockLevelsInput>
+}
+
+export type SpaceUpdateWithoutInvStockLevelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvImportHistoriesInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvImportHistoriesInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvImportHistoriesInput, Prisma.SpaceUncheckedCreateWithoutInvImportHistoriesInput>
+}
+
+export type SpaceUpsertWithoutInvImportHistoriesInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvImportHistoriesInput, Prisma.SpaceUncheckedUpdateWithoutInvImportHistoriesInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvImportHistoriesInput, Prisma.SpaceUncheckedCreateWithoutInvImportHistoriesInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvImportHistoriesInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvImportHistoriesInput, Prisma.SpaceUncheckedUpdateWithoutInvImportHistoriesInput>
+}
+
+export type SpaceUpdateWithoutInvImportHistoriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvReconciliationsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvReconciliationsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvReconciliationsInput, Prisma.SpaceUncheckedCreateWithoutInvReconciliationsInput>
+}
+
+export type SpaceUpsertWithoutInvReconciliationsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvReconciliationsInput, Prisma.SpaceUncheckedUpdateWithoutInvReconciliationsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvReconciliationsInput, Prisma.SpaceUncheckedCreateWithoutInvReconciliationsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvReconciliationsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvReconciliationsInput, Prisma.SpaceUncheckedUpdateWithoutInvReconciliationsInput>
+}
+
+export type SpaceUpdateWithoutInvReconciliationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvLocationMappingsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvLocationMappingsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvLocationMappingsInput, Prisma.SpaceUncheckedCreateWithoutInvLocationMappingsInput>
+}
+
+export type SpaceUpsertWithoutInvLocationMappingsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvLocationMappingsInput, Prisma.SpaceUncheckedUpdateWithoutInvLocationMappingsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvLocationMappingsInput, Prisma.SpaceUncheckedCreateWithoutInvLocationMappingsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvLocationMappingsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvLocationMappingsInput, Prisma.SpaceUncheckedUpdateWithoutInvLocationMappingsInput>
+}
+
+export type SpaceUpdateWithoutInvLocationMappingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvSettingsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvSettingsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvSettingsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvSettingsInput, Prisma.SpaceUncheckedCreateWithoutInvSettingsInput>
+}
+
+export type SpaceUpsertWithoutInvSettingsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvSettingsInput, Prisma.SpaceUncheckedUpdateWithoutInvSettingsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvSettingsInput, Prisma.SpaceUncheckedCreateWithoutInvSettingsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvSettingsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvSettingsInput, Prisma.SpaceUncheckedUpdateWithoutInvSettingsInput>
+}
+
+export type SpaceUpdateWithoutInvSettingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -468,11 +1678,29 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
 export type SpaceCountOutputType = {
   members: number
   deckInstances: number
+  invProducts: number
+  invLocations: number
+  invChannelGroups: number
+  invSalesChannels: number
+  invMovements: number
+  invStockLevels: number
+  invImportHistories: number
+  invReconciliations: number
+  invLocationMappings: number
 }
 
 export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | SpaceCountOutputTypeCountMembersArgs
   deckInstances?: boolean | SpaceCountOutputTypeCountDeckInstancesArgs
+  invProducts?: boolean | SpaceCountOutputTypeCountInvProductsArgs
+  invLocations?: boolean | SpaceCountOutputTypeCountInvLocationsArgs
+  invChannelGroups?: boolean | SpaceCountOutputTypeCountInvChannelGroupsArgs
+  invSalesChannels?: boolean | SpaceCountOutputTypeCountInvSalesChannelsArgs
+  invMovements?: boolean | SpaceCountOutputTypeCountInvMovementsArgs
+  invStockLevels?: boolean | SpaceCountOutputTypeCountInvStockLevelsArgs
+  invImportHistories?: boolean | SpaceCountOutputTypeCountInvImportHistoriesArgs
+  invReconciliations?: boolean | SpaceCountOutputTypeCountInvReconciliationsArgs
+  invLocationMappings?: boolean | SpaceCountOutputTypeCountInvLocationMappingsArgs
 }
 
 /**
@@ -499,6 +1727,69 @@ export type SpaceCountOutputTypeCountDeckInstancesArgs<ExtArgs extends runtime.T
   where?: Prisma.DeckInstanceWhereInput
 }
 
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvProductWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvLocationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvStorageLocationWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvChannelGroupsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvChannelGroupWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvSalesChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvSalesChannelWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvMovementWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvStockLevelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvStockLevelWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvImportHistoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvImportHistoryWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvReconciliationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvReconciliationWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvLocationMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvLocationProductMapWhereInput
+}
+
 
 export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -508,6 +1799,16 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   updatedAt?: boolean
   members?: boolean | Prisma.Space$membersArgs<ExtArgs>
   deckInstances?: boolean | Prisma.Space$deckInstancesArgs<ExtArgs>
+  invProducts?: boolean | Prisma.Space$invProductsArgs<ExtArgs>
+  invLocations?: boolean | Prisma.Space$invLocationsArgs<ExtArgs>
+  invChannelGroups?: boolean | Prisma.Space$invChannelGroupsArgs<ExtArgs>
+  invSalesChannels?: boolean | Prisma.Space$invSalesChannelsArgs<ExtArgs>
+  invMovements?: boolean | Prisma.Space$invMovementsArgs<ExtArgs>
+  invStockLevels?: boolean | Prisma.Space$invStockLevelsArgs<ExtArgs>
+  invImportHistories?: boolean | Prisma.Space$invImportHistoriesArgs<ExtArgs>
+  invReconciliations?: boolean | Prisma.Space$invReconciliationsArgs<ExtArgs>
+  invLocationMappings?: boolean | Prisma.Space$invLocationMappingsArgs<ExtArgs>
+  invSettings?: boolean | Prisma.Space$invSettingsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["space"]>
 
@@ -539,6 +1840,16 @@ export type SpaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | Prisma.Space$membersArgs<ExtArgs>
   deckInstances?: boolean | Prisma.Space$deckInstancesArgs<ExtArgs>
+  invProducts?: boolean | Prisma.Space$invProductsArgs<ExtArgs>
+  invLocations?: boolean | Prisma.Space$invLocationsArgs<ExtArgs>
+  invChannelGroups?: boolean | Prisma.Space$invChannelGroupsArgs<ExtArgs>
+  invSalesChannels?: boolean | Prisma.Space$invSalesChannelsArgs<ExtArgs>
+  invMovements?: boolean | Prisma.Space$invMovementsArgs<ExtArgs>
+  invStockLevels?: boolean | Prisma.Space$invStockLevelsArgs<ExtArgs>
+  invImportHistories?: boolean | Prisma.Space$invImportHistoriesArgs<ExtArgs>
+  invReconciliations?: boolean | Prisma.Space$invReconciliationsArgs<ExtArgs>
+  invLocationMappings?: boolean | Prisma.Space$invLocationMappingsArgs<ExtArgs>
+  invSettings?: boolean | Prisma.Space$invSettingsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -549,6 +1860,16 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     members: Prisma.$SpaceMemberPayload<ExtArgs>[]
     deckInstances: Prisma.$DeckInstancePayload<ExtArgs>[]
+    invProducts: Prisma.$InvProductPayload<ExtArgs>[]
+    invLocations: Prisma.$InvStorageLocationPayload<ExtArgs>[]
+    invChannelGroups: Prisma.$InvChannelGroupPayload<ExtArgs>[]
+    invSalesChannels: Prisma.$InvSalesChannelPayload<ExtArgs>[]
+    invMovements: Prisma.$InvMovementPayload<ExtArgs>[]
+    invStockLevels: Prisma.$InvStockLevelPayload<ExtArgs>[]
+    invImportHistories: Prisma.$InvImportHistoryPayload<ExtArgs>[]
+    invReconciliations: Prisma.$InvReconciliationPayload<ExtArgs>[]
+    invLocationMappings: Prisma.$InvLocationProductMapPayload<ExtArgs>[]
+    invSettings: Prisma.$InvSettingsPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -952,6 +2273,16 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   members<T extends Prisma.Space$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deckInstances<T extends Prisma.Space$deckInstancesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$deckInstancesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeckInstancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invProducts<T extends Prisma.Space$invProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invLocations<T extends Prisma.Space$invLocationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invLocationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvStorageLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invChannelGroups<T extends Prisma.Space$invChannelGroupsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invChannelGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvChannelGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invSalesChannels<T extends Prisma.Space$invSalesChannelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invSalesChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvSalesChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invMovements<T extends Prisma.Space$invMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invStockLevels<T extends Prisma.Space$invStockLevelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invStockLevelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvStockLevelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invImportHistories<T extends Prisma.Space$invImportHistoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invImportHistoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvImportHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invReconciliations<T extends Prisma.Space$invReconciliationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invReconciliationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvReconciliationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invLocationMappings<T extends Prisma.Space$invLocationMappingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invLocationMappingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvLocationProductMapPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invSettings<T extends Prisma.Space$invSettingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invSettingsArgs<ExtArgs>>): Prisma.Prisma__InvSettingsClient<runtime.Types.Result.GetResult<Prisma.$InvSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1419,6 +2750,241 @@ export type Space$deckInstancesArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.DeckInstanceScalarFieldEnum | Prisma.DeckInstanceScalarFieldEnum[]
+}
+
+/**
+ * Space.invProducts
+ */
+export type Space$invProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvProduct
+   */
+  select?: Prisma.InvProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvProduct
+   */
+  omit?: Prisma.InvProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvProductInclude<ExtArgs> | null
+  where?: Prisma.InvProductWhereInput
+  orderBy?: Prisma.InvProductOrderByWithRelationInput | Prisma.InvProductOrderByWithRelationInput[]
+  cursor?: Prisma.InvProductWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvProductScalarFieldEnum | Prisma.InvProductScalarFieldEnum[]
+}
+
+/**
+ * Space.invLocations
+ */
+export type Space$invLocationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvStorageLocation
+   */
+  select?: Prisma.InvStorageLocationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvStorageLocation
+   */
+  omit?: Prisma.InvStorageLocationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvStorageLocationInclude<ExtArgs> | null
+  where?: Prisma.InvStorageLocationWhereInput
+  orderBy?: Prisma.InvStorageLocationOrderByWithRelationInput | Prisma.InvStorageLocationOrderByWithRelationInput[]
+  cursor?: Prisma.InvStorageLocationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvStorageLocationScalarFieldEnum | Prisma.InvStorageLocationScalarFieldEnum[]
+}
+
+/**
+ * Space.invChannelGroups
+ */
+export type Space$invChannelGroupsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvChannelGroup
+   */
+  select?: Prisma.InvChannelGroupSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvChannelGroup
+   */
+  omit?: Prisma.InvChannelGroupOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvChannelGroupInclude<ExtArgs> | null
+  where?: Prisma.InvChannelGroupWhereInput
+  orderBy?: Prisma.InvChannelGroupOrderByWithRelationInput | Prisma.InvChannelGroupOrderByWithRelationInput[]
+  cursor?: Prisma.InvChannelGroupWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvChannelGroupScalarFieldEnum | Prisma.InvChannelGroupScalarFieldEnum[]
+}
+
+/**
+ * Space.invSalesChannels
+ */
+export type Space$invSalesChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvSalesChannel
+   */
+  select?: Prisma.InvSalesChannelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvSalesChannel
+   */
+  omit?: Prisma.InvSalesChannelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvSalesChannelInclude<ExtArgs> | null
+  where?: Prisma.InvSalesChannelWhereInput
+  orderBy?: Prisma.InvSalesChannelOrderByWithRelationInput | Prisma.InvSalesChannelOrderByWithRelationInput[]
+  cursor?: Prisma.InvSalesChannelWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvSalesChannelScalarFieldEnum | Prisma.InvSalesChannelScalarFieldEnum[]
+}
+
+/**
+ * Space.invMovements
+ */
+export type Space$invMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvMovement
+   */
+  select?: Prisma.InvMovementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvMovement
+   */
+  omit?: Prisma.InvMovementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvMovementInclude<ExtArgs> | null
+  where?: Prisma.InvMovementWhereInput
+  orderBy?: Prisma.InvMovementOrderByWithRelationInput | Prisma.InvMovementOrderByWithRelationInput[]
+  cursor?: Prisma.InvMovementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvMovementScalarFieldEnum | Prisma.InvMovementScalarFieldEnum[]
+}
+
+/**
+ * Space.invStockLevels
+ */
+export type Space$invStockLevelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvStockLevel
+   */
+  select?: Prisma.InvStockLevelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvStockLevel
+   */
+  omit?: Prisma.InvStockLevelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvStockLevelInclude<ExtArgs> | null
+  where?: Prisma.InvStockLevelWhereInput
+  orderBy?: Prisma.InvStockLevelOrderByWithRelationInput | Prisma.InvStockLevelOrderByWithRelationInput[]
+  cursor?: Prisma.InvStockLevelWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvStockLevelScalarFieldEnum | Prisma.InvStockLevelScalarFieldEnum[]
+}
+
+/**
+ * Space.invImportHistories
+ */
+export type Space$invImportHistoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvImportHistory
+   */
+  select?: Prisma.InvImportHistorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvImportHistory
+   */
+  omit?: Prisma.InvImportHistoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvImportHistoryInclude<ExtArgs> | null
+  where?: Prisma.InvImportHistoryWhereInput
+  orderBy?: Prisma.InvImportHistoryOrderByWithRelationInput | Prisma.InvImportHistoryOrderByWithRelationInput[]
+  cursor?: Prisma.InvImportHistoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvImportHistoryScalarFieldEnum | Prisma.InvImportHistoryScalarFieldEnum[]
+}
+
+/**
+ * Space.invReconciliations
+ */
+export type Space$invReconciliationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvReconciliation
+   */
+  select?: Prisma.InvReconciliationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvReconciliation
+   */
+  omit?: Prisma.InvReconciliationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvReconciliationInclude<ExtArgs> | null
+  where?: Prisma.InvReconciliationWhereInput
+  orderBy?: Prisma.InvReconciliationOrderByWithRelationInput | Prisma.InvReconciliationOrderByWithRelationInput[]
+  cursor?: Prisma.InvReconciliationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvReconciliationScalarFieldEnum | Prisma.InvReconciliationScalarFieldEnum[]
+}
+
+/**
+ * Space.invLocationMappings
+ */
+export type Space$invLocationMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvLocationProductMap
+   */
+  select?: Prisma.InvLocationProductMapSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvLocationProductMap
+   */
+  omit?: Prisma.InvLocationProductMapOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvLocationProductMapInclude<ExtArgs> | null
+  where?: Prisma.InvLocationProductMapWhereInput
+  orderBy?: Prisma.InvLocationProductMapOrderByWithRelationInput | Prisma.InvLocationProductMapOrderByWithRelationInput[]
+  cursor?: Prisma.InvLocationProductMapWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvLocationProductMapScalarFieldEnum | Prisma.InvLocationProductMapScalarFieldEnum[]
+}
+
+/**
+ * Space.invSettings
+ */
+export type Space$invSettingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvSettings
+   */
+  select?: Prisma.InvSettingsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvSettings
+   */
+  omit?: Prisma.InvSettingsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvSettingsInclude<ExtArgs> | null
+  where?: Prisma.InvSettingsWhereInput
 }
 
 /**

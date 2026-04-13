@@ -517,6 +517,40 @@ export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolNullableFilter<$PrismaModel>
 }
 
+export type EnumInvMovementTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvMovementType | Prisma.EnumInvMovementTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvMovementTypeFilter<$PrismaModel> | $Enums.InvMovementType
+}
+
+export type EnumInvMovementTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvMovementType | Prisma.EnumInvMovementTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvMovementTypeWithAggregatesFilter<$PrismaModel> | $Enums.InvMovementType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInvMovementTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInvMovementTypeFilter<$PrismaModel>
+}
+
+export type EnumInvReconciliationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvReconciliationStatus | Prisma.EnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.InvReconciliationStatus[] | Prisma.ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvReconciliationStatus[] | Prisma.ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel> | $Enums.InvReconciliationStatus
+}
+
+export type EnumInvReconciliationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvReconciliationStatus | Prisma.EnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.InvReconciliationStatus[] | Prisma.ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvReconciliationStatus[] | Prisma.ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvReconciliationStatusWithAggregatesFilter<$PrismaModel> | $Enums.InvReconciliationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -966,6 +1000,40 @@ export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedBoolNullableFilter<$PrismaModel>
   _max?: Prisma.NestedBoolNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumInvMovementTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvMovementType | Prisma.EnumInvMovementTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvMovementTypeFilter<$PrismaModel> | $Enums.InvMovementType
+}
+
+export type NestedEnumInvMovementTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvMovementType | Prisma.EnumInvMovementTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvMovementTypeWithAggregatesFilter<$PrismaModel> | $Enums.InvMovementType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInvMovementTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInvMovementTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumInvReconciliationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvReconciliationStatus | Prisma.EnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.InvReconciliationStatus[] | Prisma.ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvReconciliationStatus[] | Prisma.ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel> | $Enums.InvReconciliationStatus
+}
+
+export type NestedEnumInvReconciliationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvReconciliationStatus | Prisma.EnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.InvReconciliationStatus[] | Prisma.ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvReconciliationStatus[] | Prisma.ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvReconciliationStatusWithAggregatesFilter<$PrismaModel> | $Enums.InvReconciliationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel>
 }
 
 

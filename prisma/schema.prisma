@@ -305,6 +305,18 @@ model Space {
   members       SpaceMember[]
   deckInstances DeckInstance[]
 
+  // 통합 재고 관리 (Inv)
+  invProducts         InvProduct[]
+  invLocations        InvStorageLocation[]
+  invChannelGroups    InvChannelGroup[]
+  invSalesChannels    InvSalesChannel[]
+  invMovements        InvMovement[]
+  invStockLevels      InvStockLevel[]
+  invImportHistories  InvImportHistory[]
+  invReconciliations  InvReconciliation[]
+  invLocationMappings InvLocationProductMap[]
+  invSettings         InvSettings?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -621,4 +633,249 @@ model InventoryAnalysis {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, analysedAt(sort: Desc)])
+}
+
+// ─── 통합 재고 관리 (Inv) ─────────────────────────────────────────────────────
+
+enum InvMovementType {
+  INBOUND
+  OUTBOUND
+  RETURN
+  TRANSFER
+  ADJUSTMENT
+}
+
+enum InvReconciliationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+// 상품 (옵션 단위로 관리)
+model InvProduct {
+  id      String @id @default(cuid())
+  spaceId String
+  name    String
+  code    String? // 상품 코드 (space 내 unique, null 허용)
+
+  space   Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  options InvProductOption[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, code])
+  @@index([spaceId])
+}
+
+// 상품 옵션
+model InvProductOption {
+  id        String @id @default(cuid())
+  productId String
+  name      String
+  sku       String?
+
+  product          InvProduct            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  movements        InvMovement[]
+  stockLevels      InvStockLevel[]
+  reorderConfig    InvReorderConfig?
+  locationMappings InvLocationProductMap[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+// 보관 장소
+model InvStorageLocation {
+  id       String  @id @default(cuid())
+  spaceId  String
+  name     String
+  isActive Boolean @default(true)
+
+  space           Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  stockLevels     InvStockLevel[]
+  movements       InvMovement[]          @relation("MovementLocation")
+  incomingTransfers InvMovement[]         @relation("MovementToLocation")
+  locationMappings InvLocationProductMap[]
+  reconciliations InvReconciliation[]
+  settingsDefault InvSettings[]          @relation("DefaultLocation")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// 판매 채널 그룹
+model InvChannelGroup {
+  id      String @id @default(cuid())
+  spaceId String
+  name    String
+
+  space    Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channels InvSalesChannel[]
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
+}
+
+// 판매 채널
+model InvSalesChannel {
+  id       String  @id @default(cuid())
+  spaceId  String
+  name     String
+  groupId  String?
+  isActive Boolean @default(true)
+
+  space     Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group     InvChannelGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  movements InvMovement[]
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
+  @@index([groupId])
+}
+
+// 재고 이동 원장 (불변 레코드)
+model InvMovement {
+  id         String @id @default(cuid())
+  spaceId    String
+  optionId   String
+  locationId String
+
+  toLocationId    String? // TRANSFER 전용
+  channelId       String? // OUTBOUND 전용
+  type            InvMovementType
+  quantity        Int
+  movementDate    DateTime
+  orderDate       DateTime? // OUTBOUND 전용
+  reason          String?   // ADJUSTMENT 시 필수 (앱 레벨 검증)
+  referenceId     String?   // 연관 이동 또는 조정 ID
+  importHistoryId String?
+
+  space         Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  option        InvProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  location      InvStorageLocation @relation("MovementLocation", fields: [locationId], references: [id], onDelete: Cascade)
+  toLocation    InvStorageLocation? @relation("MovementToLocation", fields: [toLocationId], references: [id], onDelete: SetNull)
+  channel       InvSalesChannel?   @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  importHistory InvImportHistory?  @relation(fields: [importHistoryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
+  @@index([optionId])
+  @@index([locationId])
+  @@index([spaceId, movementDate])
+}
+
+// 현재 재고 수준 (옵션 × 장소)
+model InvStockLevel {
+  id         String @id @default(cuid())
+  spaceId    String
+  optionId   String
+  locationId String
+  quantity   Int    @default(0) // 음수 가능
+
+  space    Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  option   InvProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  location InvStorageLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([optionId, locationId])
+  @@index([spaceId])
+}
+
+// 옵션별 발주 예측 설정
+model InvReorderConfig {
+  id                String @id @default(cuid())
+  optionId          String @unique
+  leadTimeDays      Int    @default(7)
+  safetyStockQty    Int    @default(0)
+  analysisWindowDays Int   @default(90)
+
+  option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@index([optionId])
+}
+
+// 대량 가져오기 이력
+model InvImportHistory {
+  id          String @id @default(cuid())
+  spaceId     String
+  fileName    String
+  fileType    String // "EXCEL" | "CSV"
+  totalRows   Int
+  successRows Int
+  errorRows   Int
+  errors      Json?  // 행 단위 에러 상세
+
+  space     Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  movements InvMovement[]
+
+  importedAt DateTime @default(now())
+
+  @@index([spaceId])
+}
+
+// 파일 기반 재고 대사 이력
+model InvReconciliation {
+  id           String                   @id @default(cuid())
+  spaceId      String
+  locationId   String
+  fileName     String
+  snapshotDate DateTime
+  status       InvReconciliationStatus  @default(PENDING)
+  matchResults Json                     // 매칭/차이 상세
+  totalItems   Int
+  matchedItems Int
+  adjustedItems Int                     @default(0)
+
+  space    Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  location InvStorageLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+  confirmedAt DateTime?
+
+  @@index([spaceId])
+}
+
+// 보관 장소별 외부 상품 코드 매핑
+model InvLocationProductMap {
+  id         String @id @default(cuid())
+  spaceId    String
+  locationId String
+  optionId   String
+
+  externalCode       String  // 보관 장소의 상품 코드/ID
+  externalName       String? // 보관 장소의 상품명 (참조용)
+  externalOptionName String? // 보관 장소의 옵션명 (참조용)
+
+  space    Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  location InvStorageLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  option   InvProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([locationId, externalCode])
+  @@index([spaceId])
+  @@index([optionId])
+}
+
+// 공간별 재고 덱 설정
+model InvSettings {
+  id                String  @id @default(cuid())
+  spaceId           String  @unique
+  defaultLocationId String?
+  slackWebhookUrl   String?
+  preferences       Json    @default("{}")
+
+  space           Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  defaultLocation InvStorageLocation? @relation("DefaultLocation", fields: [defaultLocationId], references: [id], onDelete: SetNull)
+
+  @@index([spaceId])
 }

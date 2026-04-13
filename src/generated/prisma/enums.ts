@@ -79,3 +79,23 @@ export const SpaceMemberRole = {
 } as const
 
 export type SpaceMemberRole = (typeof SpaceMemberRole)[keyof typeof SpaceMemberRole]
+
+
+export const InvMovementType = {
+  INBOUND: 'INBOUND',
+  OUTBOUND: 'OUTBOUND',
+  RETURN: 'RETURN',
+  TRANSFER: 'TRANSFER',
+  ADJUSTMENT: 'ADJUSTMENT'
+} as const
+
+export type InvMovementType = (typeof InvMovementType)[keyof typeof InvMovementType]
+
+
+export const InvReconciliationStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type InvReconciliationStatus = (typeof InvReconciliationStatus)[keyof typeof InvReconciliationStatus]
