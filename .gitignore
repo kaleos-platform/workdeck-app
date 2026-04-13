@@ -74,5 +74,5 @@ docs/source_ref/
 
 # Prisma 로컬 SQLite (개발 중 임시 파일)
 prisma/dev.db
-prisma/scripts/check-user.ts
-prisma/scripts/seed-inv-deck.ts
+# Prisma 로컬 스크립트 (QA/디버그용, 커밋 안 함)
+prisma/scripts/
