@@ -131,10 +131,9 @@ export async function notifyAnalysisDone(params: {
 /** 재고 수집 완료 알림 */
 export async function notifyInventoryDone(params: {
   healthRows?: number
-  metricsRows?: number
   errors: string[]
 }): Promise<void> {
-  const hasData = (params.healthRows ?? 0) > 0 || (params.metricsRows ?? 0) > 0
+  const hasData = (params.healthRows ?? 0) > 0
   const hasErrors = params.errors.length > 0
 
   if (!hasData && !hasErrors) return // 결과가 없으면 알림 생략
@@ -149,10 +148,7 @@ export async function notifyInventoryDone(params: {
   const blocks: Block[] = [
     header(`${emoji} 쿠팡 재고 데이터 수집 ${status}`),
     divider(),
-    section(
-      `*재고 건강성*\n${params.healthRows != null ? `${params.healthRows.toLocaleString()}건` : '미수집'}`,
-      `*판매 성과*\n${params.metricsRows != null ? `${params.metricsRows.toLocaleString()}건` : '미수집'}`,
-    ),
+    section(`*재고현황*\n${params.healthRows != null ? `${params.healthRows.toLocaleString()}건` : '미수집'}`),
   ]
 
   if (hasErrors) {

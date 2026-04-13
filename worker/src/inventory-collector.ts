@@ -3,8 +3,7 @@
  *
  * 흐름:
  * 1. Wing 로그인 (기존 쿠팡 계정 사용)
- * 2. 재고 건강성 페이지 → 엑셀 다운로드
- * 3. 판매 성과(Vendor Item Metrics) 페이지 → 엑셀 다운로드
+ * 2. 재고현황 페이지 → 엑셀 다운로드
  *
  * 기존 collector.ts의 브라우저 컨텍스트를 재사용하여
  * 광고 데이터 수집 후 같은 세션에서 실행된다.
@@ -18,14 +17,12 @@ import { chromium, type BrowserContext, type Page } from 'playwright'
 
 export interface InventoryCollectorResult {
   inventoryHealth: { filePath: string; fileName: string } | null
-  vendorMetrics: { filePath: string; fileName: string } | null
 }
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
 
 const WING_URL = 'https://wing.coupang.com'
 const INVENTORY_HEALTH_URL = `${WING_URL}/tenants/rfm-inventory/management/list`
-const VENDOR_METRICS_URL = `${WING_URL}/tenants/seller-insights/vendor-item-metrics`
 const SCREENSHOT_DIR = path.resolve('.screenshots')
 const DEFAULT_TIMEOUT = 30_000
 const DOWNLOAD_TIMEOUT = 120_000
@@ -98,7 +95,7 @@ async function performWingLogin(
 // ─── 다운로드 함수 ──────────────────────────────────────────────────────────────
 
 /**
- * 페이지에서 엑셀 다운로드 버튼을 클릭하고 파일을 저장한다.
+ * 페이지에서 다운로드를 트리거하고 파일을 저장한다.
  * download 이벤트 프로미스를 안전하게 관리하여 unhandled rejection을 방지한다.
  */
 async function clickAndDownload(
@@ -107,12 +104,10 @@ async function clickAndDownload(
   btnLocator: ReturnType<Page['locator']>,
   fallbackName: string,
 ): Promise<{ filePath: string; fileName: string }> {
-  // download 이벤트 리스너를 먼저 등록
   const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT })
-  // 실패 시 프로미스가 unhandled rejection 되지 않도록 catch 등록
   downloadPromise.catch(() => {})
 
-  await btnLocator.click()
+  await btnLocator.click({ force: true })
 
   const download = await downloadPromise
   const fileName = download.suggestedFilename() || fallbackName
@@ -121,66 +116,90 @@ async function clickAndDownload(
   return { filePath, fileName }
 }
 
-/** 재고 건강성 엑셀 다운로드 */
-async function downloadInventoryHealth(
-  page: Page,
-  downloadDir: string,
-): Promise<{ filePath: string; fileName: string }> {
-  console.log('[inventory] 재고 건강성 페이지 이동...')
-  await page.goto(INVENTORY_HEALTH_URL, {
+/** 사이드바 기준으로 로켓그로스 > 재고현황 진입 */
+async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
+  console.log('[inventory] Wing 재고현황 페이지 진입...')
+
+  await page.goto(`${WING_URL}/dashboard`, {
     waitUntil: 'domcontentloaded',
     timeout: DEFAULT_TIMEOUT,
   })
   await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
+  await page.waitForTimeout(2000)
+
+  const dismissCandidates = [
+    'button:has-text("닫기")',
+    'button:has-text("오늘 하루 보지 않기")',
+    'button[aria-label="닫기"]',
+    '[data-wuic-partial="close"]',
+  ]
+  for (const sel of dismissCandidates) {
+    const btn = page.locator(sel).first()
+    if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await btn.click({ force: true }).catch(() => {})
+      await page.waitForTimeout(500)
+    }
+  }
+
+  const rocketGrowth = page.locator('text=로켓그로스').first()
+  if (await rocketGrowth.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await rocketGrowth.click({ force: true }).catch(() => {})
+    await page.waitForTimeout(1000)
+  }
+
+  const inventoryMenu = page.locator('a:has-text("재고현황"), button:has-text("재고현황"), text=재고현황').first()
+  if (await inventoryMenu.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await inventoryMenu.click({ force: true })
+  } else {
+    console.log('[inventory]   → 사이드바 경로 실패, 직접 URL fallback')
+    await page.goto(INVENTORY_HEALTH_URL, {
+      waitUntil: 'domcontentloaded',
+      timeout: DEFAULT_TIMEOUT,
+    })
+  }
+
+  await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
   await page.waitForTimeout(3000)
   await saveScreenshot(page, 'inventory-health-page')
+}
 
-  // Step 1: "엑셀 다운로드" 드롭다운 트리거 버튼 찾기
-  // parent가 .excel_download인 버튼 (정확한 셀렉터)
+/** 재고현황 엑셀 다운로드 */
+async function downloadInventoryHealth(
+  page: Page,
+  downloadDir: string,
+): Promise<{ filePath: string; fileName: string }> {
+  await navigateToRocketGrowthInventory(page)
+
   let downloadBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
-
-  if (!(await downloadBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
-    // fallback: "상품목록"이 아닌 "엑셀 다운로드" 버튼
-    const allBtns = page.locator('button:has-text("엑셀 다운로드")')
-    const count = await allBtns.count()
-    for (let i = 0; i < count; i++) {
-      const text = (await allBtns.nth(i).textContent().catch(() => ''))?.trim()
-      if (text && !text.includes('상품목록')) {
-        downloadBtn = allBtns.nth(i)
-        break
-      }
-    }
+  if (!(await downloadBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    downloadBtn = page.locator('button:has-text("엑셀 다운로드")').first()
   }
 
   if (!(await downloadBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
     await saveScreenshot(page, 'inventory-health-no-btn')
-    throw new Error('[inventory] 재고 건강성 다운로드 버튼을 찾을 수 없습니다')
+    throw new Error('[inventory] 재고현황의 "엑셀 다운로드" 버튼을 찾을 수 없습니다')
   }
 
-  // Step 2: 버튼 클릭 → 드롭다운 열기
-  console.log('[inventory]   → 엑셀 다운로드 버튼 클릭 (드롭다운)')
-  await downloadBtn.click()
+  console.log('[inventory]   → 재고현황 엑셀 다운로드 메뉴 열기')
+  await downloadBtn.click({ force: true })
   await page.waitForTimeout(1000)
+  await saveScreenshot(page, 'inventory-health-menu-open')
 
-  // Step 3: 드롭다운에서 "엑셀 다운로드 요청" 클릭 (첫 번째 항목)
-  // 정확한 셀렉터: #inventory-management-main-container .backdrop > div > div:nth-child(1)
-  const requestBtn = page.locator('#inventory-management-main-container .backdrop > div > div:nth-child(1)').first()
+  let requestBtn = page.locator('text=엑셀 다운로드 요청').first()
+  if (!(await requestBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    requestBtn = page.locator('.backdrop div:has-text("엑셀 다운로드 요청")').first()
+  }
+  if (!(await requestBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    requestBtn = page.locator('div[role="menuitem"]:has-text("엑셀 다운로드 요청"), li:has-text("엑셀 다운로드 요청")').first()
+  }
 
   if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
-    // fallback: 텍스트 정확 매칭
-    const fallbackBtn = page.locator('div:text-is("엑셀 다운로드 요청")').first()
-    if (!(await fallbackBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-      await saveScreenshot(page, 'inventory-health-no-request-btn')
-      throw new Error('[inventory] 드롭다운에서 "엑셀 다운로드 요청" 버튼을 찾을 수 없습니다')
-    }
-    console.log('[inventory]   → "엑셀 다운로드 요청" 클릭 (fallback)')
-    const result = await clickAndDownload(page, downloadDir, fallbackBtn, `inventory_health_${Date.now()}.xlsx`)
-    console.log(`[inventory]   → 재고 건강성 저장: ${result.fileName}`)
-    return result
+    await saveScreenshot(page, 'inventory-health-no-request-btn')
+    throw new Error('[inventory] 재고현황의 "엑셀 다운로드 요청" 메뉴를 찾을 수 없습니다')
   }
 
-  const reqText = await requestBtn.textContent().catch(() => '?')
-  console.log(`[inventory]   → "${reqText?.trim()}" 클릭`)
+  const menuText = (await requestBtn.textContent().catch(() => ''))?.trim()
+  console.log(`[inventory]   → 메뉴 선택: ${menuText}`)
   const result = await clickAndDownload(
     page,
     downloadDir,
@@ -188,45 +207,7 @@ async function downloadInventoryHealth(
     `inventory_health_${Date.now()}.xlsx`,
   )
 
-  console.log(`[inventory]   → 재고 건강성 저장: ${result.fileName}`)
-  return result
-}
-
-/** 판매 성과 (Vendor Item Metrics) 엑셀 다운로드 */
-async function downloadVendorMetrics(
-  page: Page,
-  downloadDir: string,
-): Promise<{ filePath: string; fileName: string }> {
-  console.log('[inventory] 판매 성과 페이지 이동...')
-  await page.goto(VENDOR_METRICS_URL, {
-    waitUntil: 'domcontentloaded',
-    timeout: DEFAULT_TIMEOUT,
-  })
-  await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
-  await page.waitForTimeout(3000)
-  await saveScreenshot(page, 'vendor-metrics-page')
-
-  // 엑셀 다운로드 버튼 찾기
-  const downloadBtn = page
-    .locator(
-      'button:has-text("엑셀 다운로드"), a:has-text("엑셀 다운로드"), button:has-text("다운로드"), a:has-text("다운로드")',
-    )
-    .first()
-
-  if (!(await downloadBtn.isVisible({ timeout: 10000 }).catch(() => false))) {
-    await saveScreenshot(page, 'vendor-metrics-no-btn')
-    throw new Error('[inventory] 판매 성과 다운로드 버튼을 찾을 수 없습니다')
-  }
-
-  console.log('[inventory]   → 다운로드 시작')
-  const result = await clickAndDownload(
-    page,
-    downloadDir,
-    downloadBtn,
-    `vendor_metrics_${Date.now()}.xlsx`,
-  )
-
-  console.log(`[inventory]   → 판매 성과 저장: ${result.fileName}`)
+  console.log(`[inventory]   → 재고현황 저장: ${result.fileName}`)
   return result
 }
 
@@ -279,31 +260,19 @@ export async function collectInventoryData(
     }
 
     let inventoryHealth: { filePath: string; fileName: string } | null = null
-    let vendorMetrics: { filePath: string; fileName: string } | null = null
 
-    // 재고 건강성 다운로드
+    // 재고현황 다운로드
     try {
       inventoryHealth = await downloadInventoryHealth(page, downloadDir)
     } catch (err) {
       console.error(
-        '[inventory] 재고 건강성 다운로드 실패:',
+        '[inventory] 재고현황 다운로드 실패:',
         err instanceof Error ? err.message : err,
       )
       await saveScreenshot(page, 'inventory-health-error')
     }
 
-    // 판매 성과 다운로드
-    try {
-      vendorMetrics = await downloadVendorMetrics(page, downloadDir)
-    } catch (err) {
-      console.error(
-        '[inventory] 판매 성과 다운로드 실패:',
-        err instanceof Error ? err.message : err,
-      )
-      await saveScreenshot(page, 'vendor-metrics-error')
-    }
-
-    return { inventoryHealth, vendorMetrics }
+    return { inventoryHealth }
   } catch (error) {
     await saveScreenshot(page, 'inventory-error')
     throw error
