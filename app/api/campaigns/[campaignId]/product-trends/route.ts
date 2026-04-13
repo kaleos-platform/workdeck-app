@@ -115,7 +115,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       : null
 
     let trend: TrendItem['trend'] = 'stable'
-    if (!prev) trend = 'new'
+    if (!prev && (curOrders > 0 || curRevenue > 0)) trend = 'new'
     else if (ordersChangePct != null && ordersChangePct > 10) trend = 'up'
     else if (ordersChangePct != null && ordersChangePct < -10) trend = 'down'
 
