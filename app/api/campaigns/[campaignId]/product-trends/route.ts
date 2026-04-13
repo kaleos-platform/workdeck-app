@@ -54,12 +54,12 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const [currentData, previousData] = await Promise.all([
     prisma.adRecord.groupBy({
-      by: ['productName', 'optionId'],
+      by: ['productName'],
       where: { ...baseWhere, date: { gte: currentStart, lte: currentEnd } },
       _sum: { orders1d: true, revenue1d: true, adCost: true },
     }),
     prisma.adRecord.groupBy({
-      by: ['productName', 'optionId'],
+      by: ['productName'],
       where: { ...baseWhere, date: { gte: previousStart, lte: previousEnd } },
       _sum: { orders1d: true, revenue1d: true, adCost: true },
     }),
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   // 이전 기간 맵
   const prevMap = new Map<string, { orders: number; revenue: number; adCost: number }>()
   for (const g of previousData) {
-    const key = `${g.productName ?? ''}|${g.optionId ?? ''}`
+    const key = `${g.productName ?? ''}`
     prevMap.set(key, {
       orders: Number(g._sum.orders1d ?? 0),
       revenue: Number(g._sum.revenue1d ?? 0),
@@ -80,7 +80,6 @@ export async function GET(req: NextRequest, { params }: Params) {
   const seenKeys = new Set<string>()
   type TrendItem = {
     productName: string
-    optionId: string | null
     current: { orders: number; revenue: number; adCost: number; roas: number | null }
     previous: { orders: number; revenue: number; adCost: number; roas: number | null }
     ordersChange: number
@@ -93,7 +92,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   const trends: TrendItem[] = []
 
   for (const g of currentData) {
-    const key = `${g.productName ?? ''}|${g.optionId ?? ''}`
+    const key = `${g.productName ?? ''}`
     seenKeys.add(key)
 
     const curOrders = Number(g._sum.orders1d ?? 0)
@@ -121,7 +120,6 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     trends.push({
       productName: g.productName ?? '',
-      optionId: g.optionId ?? null,
       current: { orders: curOrders, revenue: curRevenue, adCost: curAdCost, roas: calculateROAS(curRevenue, curAdCost) },
       previous: { orders: prevOrders, revenue: prevRevenue, adCost: prevAdCost, roas: calculateROAS(prevRevenue, prevAdCost) },
       ordersChange,
@@ -134,7 +132,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   // 이전에만 있던 상품 (gone)
   for (const g of previousData) {
-    const key = `${g.productName ?? ''}|${g.optionId ?? ''}`
+    const key = `${g.productName ?? ''}`
     if (seenKeys.has(key)) continue
 
     const prevOrders = Number(g._sum.orders1d ?? 0)
@@ -144,7 +142,6 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     trends.push({
       productName: g.productName ?? '',
-      optionId: g.optionId ?? null,
       current: { orders: 0, revenue: 0, adCost: 0, roas: null },
       previous: { orders: prevOrders, revenue: prevRevenue, adCost: prevAdCost, roas: calculateROAS(prevRevenue, prevAdCost) },
       ordersChange: -prevOrders,

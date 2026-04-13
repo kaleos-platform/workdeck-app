@@ -15,7 +15,6 @@ import { cn } from '@/lib/utils'
 
 type TrendItem = {
   productName: string
-  optionId: string | null
   current: { orders: number; revenue: number; adCost: number; roas: number | null }
   previous: { orders: number; revenue: number; adCost: number; roas: number | null }
   ordersChange: number
@@ -106,9 +105,9 @@ export function ProductTrendsTable({ campaignId, from, to }: Props) {
                 const config = TREND_CONFIG[t.trend]
                 const Icon = config.icon
                 return (
-                  <TableRow key={`${t.productName}-${t.optionId}-${i}`}>
+                  <TableRow key={`${t.productName}-${i}`}>
                     <TableCell>
-                      <p className="max-w-[250px] truncate text-sm font-medium">
+                      <p className="text-sm font-medium">
                         {t.productName}
                       </p>
                     </TableCell>
