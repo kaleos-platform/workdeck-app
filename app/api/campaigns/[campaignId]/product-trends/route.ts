@@ -11,22 +11,39 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const { campaignId } = await params
   const { searchParams } = req.nextUrl
-  const period = Math.min(90, Math.max(1, Number(searchParams.get('period') ?? 7)))
+  const fromParam = searchParams.get('from')
+  const toParam = searchParams.get('to')
 
-  const now = new Date()
-  // 현재 기간: now - period ~ now
-  const currentEnd = new Date(now)
-  currentEnd.setHours(23, 59, 59, 999)
-  const currentStart = new Date(now)
-  currentStart.setDate(currentStart.getDate() - period + 1)
-  currentStart.setHours(0, 0, 0, 0)
+  let currentStart: Date
+  let currentEnd: Date
 
-  // 이전 기간: currentStart - period ~ currentStart - 1
+  if (fromParam && toParam) {
+    // from/to 파라미터가 있으면 해당 기간 사용
+    currentStart = new Date(fromParam)
+    currentStart.setHours(0, 0, 0, 0)
+    currentEnd = new Date(toParam)
+    currentEnd.setHours(23, 59, 59, 999)
+  } else {
+    // fallback: period 파라미터
+    const period = Math.min(90, Math.max(1, Number(searchParams.get('period') ?? 7)))
+    const now = new Date()
+    currentEnd = new Date(now)
+    currentEnd.setHours(23, 59, 59, 999)
+    currentStart = new Date(now)
+    currentStart.setDate(currentStart.getDate() - period + 1)
+    currentStart.setHours(0, 0, 0, 0)
+  }
+
+  // 현재 기간 길이만큼 이전 기간 계산
+  const periodMs = currentEnd.getTime() - currentStart.getTime()
+  const periodDays = Math.round(periodMs / (1000 * 60 * 60 * 24)) + 1
+
+  // 이전 기간: currentStart - periodDays ~ currentStart - 1
   const previousEnd = new Date(currentStart)
   previousEnd.setDate(previousEnd.getDate() - 1)
   previousEnd.setHours(23, 59, 59, 999)
   const previousStart = new Date(previousEnd)
-  previousStart.setDate(previousStart.getDate() - period + 1)
+  previousStart.setDate(previousStart.getDate() - periodDays + 1)
   previousStart.setHours(0, 0, 0, 0)
 
   const baseWhere = {
@@ -144,7 +161,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   return NextResponse.json({
     trends: limited,
-    period,
+    period: periodDays,
     currentRange: { start: currentStart.toISOString(), end: currentEnd.toISOString() },
     previousRange: { start: previousStart.toISOString(), end: previousEnd.toISOString() },
   })

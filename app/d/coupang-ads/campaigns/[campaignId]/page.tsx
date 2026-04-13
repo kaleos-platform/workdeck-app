@@ -1249,7 +1249,7 @@ export default function CampaignDetailPage({
 
       {/* 탭 영역 */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger
             value="dashboard"
             className="border border-transparent hover:border-border hover:bg-background/70"
@@ -1932,7 +1932,7 @@ export default function CampaignDetailPage({
 
         {/* ── 매출 트렌드 탭 ── */}
         <TabsContent value="trends" className="space-y-4">
-          <ProductTrendsTable campaignId={campaignId} />
+          <ProductTrendsTable campaignId={campaignId} from={from} to={to} />
         </TabsContent>
 
         {/* ── 광고 데이터 탭 ── */}

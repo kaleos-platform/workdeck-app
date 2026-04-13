@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp, TrendingDown, Minus, Sparkles, Ghost, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -28,13 +27,9 @@ type TrendItem = {
 
 type Props = {
   campaignId: string
+  from: string
+  to: string
 }
-
-const PERIOD_OPTIONS = [
-  { label: '7일', value: 7 },
-  { label: '14일', value: 14 },
-  { label: '30일', value: 30 },
-]
 
 const TREND_CONFIG = {
   up: { icon: TrendingUp, label: '증가', className: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' },
@@ -57,40 +52,27 @@ function ChangeBadge({ value, pct }: { value: number; pct: number | null }) {
   )
 }
 
-export function ProductTrendsTable({ campaignId }: Props) {
-  const [period, setPeriod] = useState(7)
+export function ProductTrendsTable({ campaignId, from, to }: Props) {
   const [trends, setTrends] = useState<TrendItem[]>([])
   const [loading, setLoading] = useState(false)
 
   const fetchData = useCallback(async () => {
+    if (!from || !to) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/campaigns/${campaignId}/product-trends?period=${period}`)
+      const res = await fetch(`/api/campaigns/${campaignId}/product-trends?from=${from}&to=${to}`)
       if (!res.ok) return
       const data = await res.json()
       setTrends(data.trends ?? [])
     } finally {
       setLoading(false)
     }
-  }, [campaignId, period])
+  }, [campaignId, from, to])
 
   useEffect(() => { fetchData() }, [fetchData])
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">비교 기간:</span>
-        {PERIOD_OPTIONS.map((opt) => (
-          <Button
-            key={opt.value}
-            variant={period === opt.value ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setPeriod(opt.value)}
-          >
-            {opt.label}
-          </Button>
-        ))}
-      </div>
 
       <div className="rounded-md border">
         <Table>
