@@ -2,15 +2,13 @@
 const BASE_URL = process.env.WORKDECK_API_URL || 'http://localhost:3000'
 const API_KEY = process.env.WORKDECK_API_KEY || ''
 
+// 모든 요청에 x-worker-api-key 포함 (서버에서 세션 또는 worker key로 인증)
 const headers: Record<string, string> = {
-  'Content-Type': 'application/json',
-  'X-API-Key': API_KEY,
-}
-
-const workerHeaders: Record<string, string> = {
   'Content-Type': 'application/json',
   'x-worker-api-key': API_KEY,
 }
+
+const workerHeaders = headers
 
 export async function get(path: string) {
   const res = await fetch(`${BASE_URL}${path}`, { headers })

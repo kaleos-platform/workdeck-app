@@ -3,7 +3,7 @@
 const BASE_URL = process.env.WORKDECK_API_URL || 'http://localhost:3000'
 const API_KEY = process.env.WORKDECK_API_KEY || ''
 const WORKSPACE_ID = process.env.WORKDECK_WORKSPACE_ID || ''
-const HEARTBEAT_INTERVAL = 30_000 // 30초
+const HEARTBEAT_INTERVAL = 90_000 // 90초 (API 호출 67% 절감)
 
 type HeartbeatResponse = {
   slackChannelId: string | null

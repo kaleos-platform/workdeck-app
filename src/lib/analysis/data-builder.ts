@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
-import type { AnalysisInput, CampaignSummary, InefficientKeyword } from '@/lib/ai/analyzer'
+import type { AnalysisInput, CampaignSummary, InefficientKeyword } from '@/lib/ai/suggestion-types'
 import type { AnalysisType } from '@/generated/prisma/client'
 
 // 제거된 키워드 히스토리

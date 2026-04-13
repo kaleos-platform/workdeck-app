@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { headers } from 'next/headers'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 
@@ -7,8 +8,29 @@ export function errorResponse(message: string, status: number, extra?: Record<st
   return NextResponse.json({ message, ...extra }, { status })
 }
 
-// 인증 + 워크스페이스 소유권 검증 (기존 — 점진 전환 기간 동안 유지)
+/** x-worker-api-key 헤더가 유효한지 확인 (request 객체 없이 headers()로) */
+async function isWorkerAuthenticated(): Promise<boolean> {
+  const h = await headers()
+  const apiKey = h.get('x-worker-api-key')
+  const expected = process.env.WORKER_API_KEY
+  return !!(expected && apiKey && apiKey === expected)
+}
+
+// 인증 + 워크스페이스 소유권 검증 (세션 또는 worker key)
 export async function resolveWorkspace() {
+  // Worker/Agent key 인증 fallback — 세션 없이 API key로 접근하는 경우
+  if (await isWorkerAuthenticated()) {
+    const h = await headers()
+    const workspaceId = h.get('x-workspace-id')
+    if (workspaceId) {
+      const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true } })
+      if (workspace) return { workspace }
+    }
+    // workspace ID 미지정 시 첫 번째 워크스페이스 사용 (단일 테넌트)
+    const workspace = await prisma.workspace.findFirst({ select: { id: true } })
+    if (workspace) return { workspace }
+  }
+
   const deckContext = await resolveDeckContext('coupang-ads')
   const deckError = 'error' in deckContext ? deckContext.error : null
   if (deckError && deckError.status !== 404) {

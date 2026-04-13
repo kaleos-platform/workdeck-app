@@ -10,9 +10,10 @@ import { notifyAnalysisDone } from './slack-notifier.js'
 const POLL_INTERVAL = 30_000 // 30초
 let isProcessing = false
 
-// Gemini API 설정
-const GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash'
-const GEMINI_FALLBACK_MODEL = 'gemini-2.5-pro'
+// AI 모델 설정 (환경변수로 전환 가능)
+const GEMINI_PRIMARY_MODEL = process.env.AI_PRIMARY_MODEL || 'gemini-2.5-flash'
+const GEMINI_FALLBACK_MODEL = process.env.AI_FALLBACK_MODEL || 'gemini-2.5-pro'
+const OPENROUTER_FALLBACK_MODEL = process.env.AI_FREE_FALLBACK_MODEL || 'qwen/qwen3.6-plus:free'
 
 function getBaseUrl(): string {
   const url = process.env.WORKDECK_API_URL
@@ -66,64 +67,125 @@ function extractJSON(content: string): Record<string, unknown> {
   throw new Error(`JSON 추출 실패: ${content.slice(0, 100)}`)
 }
 
-/** Gemini API 호출 (Worker에서 직접 — 타임아웃 제한 없음) */
+type AnalysisResult = { suggestions: unknown[]; improvementSuggestions: unknown[]; modelUsed: string }
+
+function parseAnalysisResponse(content: string, model: string): AnalysisResult {
+  const parsed = extractJSON(content)
+  return {
+    suggestions: Array.isArray(parsed) ? parsed : (Array.isArray(parsed.suggestions) ? parsed.suggestions : []),
+    improvementSuggestions: Array.isArray(parsed.improvementSuggestions) ? parsed.improvementSuggestions : [],
+    modelUsed: model,
+  }
+}
+
+/** Gemini API 호출 */
 async function callGemini(
+  model: string,
   systemPrompt: string,
   userPrompt: string,
-): Promise<{ suggestions: unknown[]; improvementSuggestions: unknown[]; modelUsed: string }> {
-  async function tryModel(model: string) {
-    const apiKey = getGeminiApiKey()
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+): Promise<AnalysisResult> {
+  const apiKey = getGeminiApiKey()
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.3,
-          maxOutputTokens: 65536,
-          thinkingConfig: { thinkingBudget: 2048 },
-        },
-      }),
-    })
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.3,
+        maxOutputTokens: 65536,
+        thinkingConfig: { thinkingBudget: 2048 },
+      },
+    }),
+  })
 
-    if (!res.ok) {
-      const body = await res.text().catch(() => '')
-      throw new Error(`Gemini [${res.status}]: ${body.slice(0, 200)}`)
-    }
-
-    const response = await res.json() as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>
-    }
-    const content = response.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!content) {
-      console.error(`[analysis-poller] Gemini 빈 응답:`, JSON.stringify(response).slice(0, 500))
-      throw new Error('Gemini 응답에 content가 없습니다')
-    }
-
-    const parsed = extractJSON(content)
-    return {
-      suggestions: Array.isArray(parsed) ? parsed : (Array.isArray(parsed.suggestions) ? parsed.suggestions : []),
-      improvementSuggestions: Array.isArray(parsed.improvementSuggestions) ? parsed.improvementSuggestions : [],
-      modelUsed: model,
-    }
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`Gemini [${res.status}]: ${body.slice(0, 200)}`)
   }
 
-  // Primary → Fallback
+  const response = await res.json() as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>
+  }
+  const content = response.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!content) {
+    console.error(`[analysis-poller] Gemini 빈 응답:`, JSON.stringify(response).slice(0, 500))
+    throw new Error('Gemini 응답에 content가 없습니다')
+  }
+
+  return parseAnalysisResponse(content, model)
+}
+
+/** OpenRouter API 호출 (free 모델 fallback용) */
+async function callOpenRouter(
+  model: string,
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<AnalysisResult> {
+  const apiKey = process.env.OPENROUTER_API_KEY
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY 환경변수가 설정되지 않았습니다')
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': 'https://workdeck.work',
+      'X-Title': 'Workdeck',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`OpenRouter [${res.status}]: ${body.slice(0, 200)}`)
+  }
+
+  const response = await res.json() as { choices?: Array<{ message?: { content?: string } }> }
+  const content = response.choices?.[0]?.message?.content
+  if (!content) throw new Error('OpenRouter 응답에 content가 없습니다')
+
+  return parseAnalysisResponse(content, model)
+}
+
+/** AI 분석 호출 — 3단계 fallback: Gemini flash → Gemini pro → OpenRouter free */
+async function callAnalysisAI(
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<AnalysisResult> {
+  // 1차: Gemini Primary (flash)
   try {
-    return await tryModel(GEMINI_PRIMARY_MODEL)
+    return await callGemini(GEMINI_PRIMARY_MODEL, systemPrompt, userPrompt)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.warn(`[analysis-poller] Primary 모델 실패 (${GEMINI_PRIMARY_MODEL}): ${msg}`)
-    if (msg.includes('429') || msg.includes('5')) {
-      console.log(`[analysis-poller] Fallback 모델로 재시도: ${GEMINI_FALLBACK_MODEL}`)
-      return await tryModel(GEMINI_FALLBACK_MODEL)
-    }
-    throw err
+    console.warn(`[analysis-poller] Primary 실패 (${GEMINI_PRIMARY_MODEL}): ${msg}`)
+
+    if (!msg.includes('429') && !msg.includes('5')) throw err
   }
+
+  // 2차: Gemini Fallback (pro)
+  try {
+    console.log(`[analysis-poller] Fallback 1 재시도: ${GEMINI_FALLBACK_MODEL}`)
+    return await callGemini(GEMINI_FALLBACK_MODEL, systemPrompt, userPrompt)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.warn(`[analysis-poller] Fallback 1 실패 (${GEMINI_FALLBACK_MODEL}): ${msg}`)
+
+    if (!msg.includes('429') && !msg.includes('5')) throw err
+  }
+
+  // 3차: OpenRouter Free (qwen3.6-plus)
+  console.log(`[analysis-poller] Fallback 2 재시도 (free): ${OPENROUTER_FALLBACK_MODEL}`)
+  return await callOpenRouter(OPENROUTER_FALLBACK_MODEL, systemPrompt, userPrompt)
 }
 
 /** 분석 컨텍스트에서 사용자 프롬프트 빌드 */
@@ -232,10 +294,10 @@ export function startAnalysisPoller(): void {
 
         const { context } = await runRes.json() as { context: Record<string, unknown> }
 
-        // 3. Worker에서 직접 Gemini API 호출 (타임아웃 제한 없음)
-        console.log('[analysis-poller] Gemini API 호출 중...')
+        // 3. Worker에서 직접 AI 호출 (3단계 fallback: Gemini flash → pro → OpenRouter free)
+        console.log('[analysis-poller] AI 분석 호출 중...')
         const userPrompt = buildUserPrompt(context)
-        const result = await callGemini(context.systemPrompt as string, userPrompt)
+        const result = await callAnalysisAI(context.systemPrompt as string, userPrompt)
         console.log(`[analysis-poller] AI 분석 완료: ${result.suggestions.length}개 제안 (${result.modelUsed})`)
 
         const campaigns = context.campaigns as Array<Record<string, unknown>> ?? []

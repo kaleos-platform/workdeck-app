@@ -231,11 +231,11 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   // 광고 수집기 context.close() 후 브라우저 데이터 디렉토리 잠금 해제 대기
   await new Promise((r) => setTimeout(r, 3000))
 
-  let inventoryResult: { healthRows?: number; metricsRows?: number; errors: string[] } = { errors: [] }
+  let inventoryResult: { healthRows?: number; errors: string[] } = { errors: [] }
   try {
     console.log('\n[orchestrator] 재고 데이터 수집 시작...')
     inventoryResult = await collectAndUploadInventory(credential)
-    console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건, 판매성과: ${inventoryResult.metricsRows ?? 0}건`)
+    console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건`)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error(`[orchestrator] 재고 수집 실패 (광고 데이터는 정상): ${msg}`)
@@ -260,7 +260,7 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
 /** Wing에서 재고 데이터를 수집하고 업로드한다 */
 async function collectAndUploadInventory(
   credential: { loginId: string; encryptedPassword: string; passwordIv: string; workspaceId: string },
-): Promise<{ healthRows?: number; metricsRows?: number; errors: string[] }> {
+): Promise<{ healthRows?: number; errors: string[] }> {
   const password = credential.passwordIv === 'none'
     ? credential.encryptedPassword
     : decrypt(credential.encryptedPassword, credential.passwordIv)
@@ -271,7 +271,6 @@ async function collectAndUploadInventory(
 
   const errors: string[] = []
   let healthRows: number | undefined
-  let metricsRows: number | undefined
 
   // 재고 건강성 업로드
   if (inventoryData.inventoryHealth) {
@@ -294,27 +293,7 @@ async function collectAndUploadInventory(
     }
   }
 
-  // 판매 성과 업로드
-  if (inventoryData.vendorMetrics) {
-    try {
-      const buffer = fs.readFileSync(inventoryData.vendorMetrics.filePath)
-      const result = await uploadInventory(
-        Buffer.from(buffer),
-        inventoryData.vendorMetrics.fileName,
-        credential.workspaceId,
-      )
-      metricsRows = result.insertedRows
-      console.log(`[inventory] 판매 성과 업로드: ${result.insertedRows}건`)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      console.error(`[inventory] 판매 성과 업로드 실패: ${msg}`)
-      errors.push(`판매 성과 업로드: ${msg}`)
-    } finally {
-      try { fs.unlinkSync(inventoryData.vendorMetrics.filePath) } catch {}
-    }
-  }
-
-  return { healthRows, metricsRows, errors }
+  return { healthRows, errors }
 }
 
 /** 재고 분석 트리거 — 재고 수집 완료 후 자동 분석 */

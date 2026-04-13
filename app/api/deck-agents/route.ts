@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
 
-// lastActiveAt이 2분 이내면 connected로 판단
-const CONNECTED_THRESHOLD_MS = 2 * 60 * 1000
+// lastActiveAt이 3분 이내면 connected로 판단 (heartbeat 90초 간격 기준)
+const CONNECTED_THRESHOLD_MS = 3 * 60 * 1000
 
 function toAgentResponse(agent: {
   id: string
