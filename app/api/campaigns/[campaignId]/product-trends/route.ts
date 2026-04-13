@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { calculateROAS } from '@/lib/metrics-calculator'
-import { parsePureProductName, parseOptionName } from '@/lib/product-name-parser'
+import { parsePureProductName } from '@/lib/product-name-parser'
 
 type Params = { params: Promise<{ campaignId: string }> }
 
@@ -130,7 +130,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     seenKeys.add(rawKey)
 
     const pName = parsePureProductName(g.productName)
-    const optName = parseOptionName(g.productName) ?? g.optionId ?? '-'
+    const optName = g.optionId || '-'
     const curOrders = Number(g._sum.orders1d ?? 0)
     const curRevenue = Number(g._sum.revenue1d ?? 0)
     const curAdCost = Number(g._sum.adCost ?? 0)
@@ -174,7 +174,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (prevOrders === 0 && prevRevenue === 0) continue
 
     const pName = parsePureProductName(g.productName)
-    const optName = parseOptionName(g.productName) ?? g.optionId ?? '-'
+    const optName = g.optionId || '-'
 
     const entry = getOrCreate(pName)
     entry.prevTotal.orders += prevOrders

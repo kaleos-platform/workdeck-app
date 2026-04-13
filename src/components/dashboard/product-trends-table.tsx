@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, TrendingDown, Minus, Sparkles, Ghost, Loader2, ChevronRight, ChevronDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Sparkles, Ghost, Loader2, ChevronRight, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type TrendData = {
@@ -32,12 +32,15 @@ type Props = {
   to: string
 }
 
+type SortKey = 'productName' | 'trend' | 'currentOrders' | 'previousOrders' | 'ordersChange' | 'currentRevenue' | 'previousRevenue' | 'revenueChange'
+type SortDir = 'asc' | 'desc'
+
 const TREND_CONFIG = {
-  up: { icon: TrendingUp, label: '증가', className: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' },
-  down: { icon: TrendingDown, label: '감소', className: 'text-red-600 bg-red-50 dark:bg-red-900/20' },
-  stable: { icon: Minus, label: '유지', className: 'text-muted-foreground bg-muted' },
-  new: { icon: Sparkles, label: '신규', className: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' },
-  gone: { icon: Ghost, label: '사라짐', className: 'text-gray-500 bg-gray-50 dark:bg-gray-900/20' },
+  up: { icon: TrendingUp, label: '증가', className: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20', order: 1 },
+  new: { icon: Sparkles, label: '신규', className: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20', order: 2 },
+  stable: { icon: Minus, label: '유지', className: 'text-muted-foreground bg-muted', order: 3 },
+  down: { icon: TrendingDown, label: '감소', className: 'text-red-600 bg-red-50 dark:bg-red-900/20', order: 4 },
+  gone: { icon: Ghost, label: '사라짐', className: 'text-gray-500 bg-gray-50 dark:bg-gray-900/20', order: 5 },
 }
 
 function ChangeBadge({ value, pct }: { value: number; pct: number | null }) {
@@ -87,10 +90,54 @@ function DataCells({ data }: { data: TrendData }) {
   )
 }
 
+function SortIcon({ sortKey, currentKey, dir }: { sortKey: SortKey; currentKey: SortKey | null; dir: SortDir }) {
+  if (currentKey !== sortKey) return <ArrowUpDown className="ml-1 inline h-3 w-3 text-muted-foreground/50" />
+  return dir === 'asc'
+    ? <ArrowUp className="ml-1 inline h-3 w-3" />
+    : <ArrowDown className="ml-1 inline h-3 w-3" />
+}
+
+function getSortValue(t: ProductTrend, key: SortKey): string | number {
+  switch (key) {
+    case 'productName': return t.productName
+    case 'trend': return TREND_CONFIG[t.trend].order
+    case 'currentOrders': return t.current.orders
+    case 'previousOrders': return t.previous.orders
+    case 'ordersChange': return t.ordersChange
+    case 'currentRevenue': return t.current.revenue
+    case 'previousRevenue': return t.previous.revenue
+    case 'revenueChange': return t.revenueChange
+  }
+}
+
 export function ProductTrendsTable({ campaignId, from, to }: Props) {
   const [trends, setTrends] = useState<ProductTrend[]>([])
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [sortKey, setSortKey] = useState<SortKey | null>(null)
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir(key === 'productName' ? 'asc' : 'desc')
+    }
+  }
+
+  const sortedTrends = useMemo(() => {
+    if (!sortKey) return trends
+    return [...trends].sort((a, b) => {
+      const aVal = getSortValue(a, sortKey)
+      const bVal = getSortValue(b, sortKey)
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
+      }
+      const diff = (aVal as number) - (bVal as number)
+      return sortDir === 'asc' ? diff : -diff
+    })
+  }, [trends, sortKey, sortDir])
 
   const toggleExpand = (name: string) => {
     setExpanded((prev) => {
@@ -116,20 +163,33 @@ export function ProductTrendsTable({ campaignId, from, to }: Props) {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  const columns: { key: SortKey; label: string; className?: string }[] = [
+    { key: 'productName', label: '상품명', className: 'min-w-[200px]' },
+    { key: 'trend', label: '트렌드' },
+    { key: 'currentOrders', label: '현재 주문', className: 'text-right' },
+    { key: 'previousOrders', label: '이전 주문', className: 'text-right' },
+    { key: 'ordersChange', label: '주문 변화', className: 'text-right' },
+    { key: 'currentRevenue', label: '현재 매출', className: 'text-right' },
+    { key: 'previousRevenue', label: '이전 매출', className: 'text-right' },
+    { key: 'revenueChange', label: '매출 변화', className: 'text-right' },
+  ]
+
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[200px]">상품명</TableHead>
-              <TableHead>트렌드</TableHead>
-              <TableHead className="text-right">현재 주문</TableHead>
-              <TableHead className="text-right">이전 주문</TableHead>
-              <TableHead className="text-right">주문 변화</TableHead>
-              <TableHead className="text-right">현재 매출</TableHead>
-              <TableHead className="text-right">이전 매출</TableHead>
-              <TableHead className="text-right">매출 변화</TableHead>
+              {columns.map((col) => (
+                <TableHead
+                  key={col.key}
+                  className={cn('cursor-pointer select-none hover:bg-muted/50', col.className)}
+                  onClick={() => toggleSort(col.key)}
+                >
+                  {col.label}
+                  <SortIcon sortKey={col.key} currentKey={sortKey} dir={sortDir} />
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,14 +199,14 @@ export function ProductTrendsTable({ campaignId, from, to }: Props) {
                   <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
                 </TableCell>
               </TableRow>
-            ) : trends.length === 0 ? (
+            ) : sortedTrends.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   상품 데이터가 없습니다
                 </TableCell>
               </TableRow>
             ) : (
-              trends.map((t, i) => {
+              sortedTrends.map((t, i) => {
                 const isOpen = expanded.has(t.productName)
                 const hasOptions = t.options.length > 1
                 return (

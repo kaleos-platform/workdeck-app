@@ -68,3 +68,11 @@ next-env.d.ts
 /worker/.screenshots
 /worker/.env
 test-results/
+
+# 민감 — 의식주의 실제 재고 참조 파일 (QA용)
+docs/source_ref/
+
+# Prisma 로컬 SQLite (개발 중 임시 파일)
+prisma/dev.db
+prisma/scripts/check-user.ts
+prisma/scripts/seed-inv-deck.ts
