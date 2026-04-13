@@ -10,12 +10,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Moon, Sun, LogOut, LayoutGrid, BarChart2 } from 'lucide-react'
+import { Moon, Sun, LogOut, LayoutGrid, BarChart2, Package } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useAuth } from '@/hooks/use-auth'
-import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
+import { COUPANG_ADS_BASE_PATH, INVENTORY_MGMT_BASE_PATH } from '@/lib/deck-routes'
 
-type HeaderVariant = 'workdeck' | 'coupang-ads'
+type HeaderVariant = 'workdeck' | 'coupang-ads' | 'inventory-mgmt'
 
 type HeaderProps = {
   variant?: HeaderVariant
@@ -29,9 +29,19 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
 
   const initials = user.email?.charAt(0).toUpperCase() || '?'
   const isCoupangDeck = variant === 'coupang-ads'
-  const brandHref = isCoupangDeck ? COUPANG_ADS_BASE_PATH : '/my-deck'
-  const brandName = isCoupangDeck ? '쿠팡 광고 관리자' : 'Workdeck'
-  const BrandIcon = isCoupangDeck ? BarChart2 : LayoutGrid
+  const isInventoryDeck = variant === 'inventory-mgmt'
+  const isDeckVariant = isCoupangDeck || isInventoryDeck
+  const brandHref = isCoupangDeck
+    ? COUPANG_ADS_BASE_PATH
+    : isInventoryDeck
+      ? INVENTORY_MGMT_BASE_PATH
+      : '/my-deck'
+  const brandName = isCoupangDeck
+    ? '쿠팡 광고 관리자'
+    : isInventoryDeck
+      ? '통합 재고 관리'
+      : 'Workdeck'
+  const BrandIcon = isCoupangDeck ? BarChart2 : isInventoryDeck ? Package : LayoutGrid
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -45,7 +55,9 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
             className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md ${
               isCoupangDeck
                 ? 'bg-gradient-to-br from-orange-500 to-red-600'
-                : 'bg-gradient-to-br from-blue-600 to-cyan-500'
+                : isInventoryDeck
+                  ? 'bg-gradient-to-br from-emerald-500 to-green-600'
+                  : 'bg-gradient-to-br from-blue-600 to-cyan-500'
             }`}
           >
             <BrandIcon className="h-5 w-5 text-white" />
@@ -54,7 +66,7 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
         </Link>
 
         <div className="flex items-center gap-2">
-          {isCoupangDeck && (
+          {isDeckVariant && (
             <Button asChild variant="outline" size="sm" className="h-8">
               <Link href="/my-deck">My Deck</Link>
             </Button>

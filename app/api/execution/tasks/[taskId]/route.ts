@@ -10,6 +10,7 @@ export async function GET(
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
+  const user = 'user' in resolved ? resolved.user : undefined
   const { taskId } = await params
 
   const task = await prisma.executionTask.findFirst({
@@ -30,7 +31,8 @@ export async function PATCH(
 ) {
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
-  const { workspace, user } = resolved
+  const { workspace } = resolved
+  const user = 'user' in resolved ? resolved.user : undefined
   const { taskId } = await params
 
   const task = await prisma.executionTask.findFirst({
@@ -55,7 +57,7 @@ export async function PATCH(
       data: {
         status: 'APPROVED',
         approvedAt: new Date(),
-        approvedBy: user.id,
+        approvedBy: user?.id ?? 'system',
       },
     })
     return NextResponse.json(updated)

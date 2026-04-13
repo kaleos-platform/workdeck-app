@@ -19,7 +19,9 @@ type Block = {
 
 async function postMessage(blocks: Block[], text: string): Promise<boolean> {
   if (!SLACK_BOT_TOKEN || !SLACK_CHANNEL_ID) {
-    console.log('[slack-inventory] 봇 토큰 또는 채널 ID 미설정 — 알림 건너뜀')
+    console.log(
+      `[slack-inventory] env 미설정 — token: ${SLACK_BOT_TOKEN ? 'set' : 'missing'}, channel: ${SLACK_CHANNEL_ID ? 'set' : 'missing'}`,
+    )
     return false
   }
 
@@ -91,14 +93,14 @@ export async function notifyInventoryAnalysis(params: {
   returnRateCount: number
   storageFeeCount: number
   winnerIssueCount: number
-}): Promise<void> {
+}): Promise<boolean> {
   const { results } = params
   const totalIssues =
     params.shortageCount + params.returnRateCount + params.storageFeeCount + params.winnerIssueCount
 
   if (totalIssues === 0) {
     console.log('[slack-inventory] 분석 이슈 없음 — 알림 건너뜀')
-    return
+    return false
   }
 
   const inventoryUrl = process.env.WORKDECK_APP_URL
@@ -192,5 +194,5 @@ export async function notifyInventoryAnalysis(params: {
   blocks.push(divider())
   blocks.push(context(`전체 결과는 <${inventoryUrl}|재고 관리 페이지>에서 확인하세요`))
 
-  await postMessage(blocks, `쿠팡 재고 분석 완료: ${totalIssues}건의 이슈 발견`)
+  return postMessage(blocks, `쿠팡 재고 분석 완료: ${totalIssues}건의 이슈 발견`)
 }

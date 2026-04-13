@@ -6,7 +6,8 @@ import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 export async function POST(request: NextRequest) {
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
-  const { workspace, user } = resolved
+  const { workspace } = resolved
+  const user = 'user' in resolved ? resolved.user : undefined
 
   const body = await request.json()
   const { taskIds } = body as { taskIds: string[] }
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
     data: {
       status: 'APPROVED',
       approvedAt: new Date(),
-      approvedBy: user.id,
+      approvedBy: user?.id ?? 'system',
     },
   })
 

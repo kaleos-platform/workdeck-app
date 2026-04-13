@@ -9,3 +9,13 @@ export const COUPANG_ADS_INVENTORY_PATH = `${COUPANG_ADS_BASE_PATH}/inventory`
 export function getCoupangAdsCampaignPath(campaignId: string): string {
   return `${COUPANG_ADS_BASE_PATH}/campaigns/${campaignId}`
 }
+
+export const INVENTORY_MGMT_DECK_ID = 'inventory-mgmt'
+export const INVENTORY_MGMT_BASE_PATH = '/d/inventory-mgmt'
+export const INVENTORY_MGMT_MOVEMENTS_PATH = `${INVENTORY_MGMT_BASE_PATH}/movements`
+export const INVENTORY_MGMT_PRODUCTS_PATH = `${INVENTORY_MGMT_BASE_PATH}/products`
+export const INVENTORY_MGMT_LOCATIONS_PATH = `${INVENTORY_MGMT_BASE_PATH}/locations`
+export const INVENTORY_MGMT_CHANNELS_PATH = `${INVENTORY_MGMT_BASE_PATH}/channels`
+export const INVENTORY_MGMT_RECONCILIATION_PATH = `${INVENTORY_MGMT_BASE_PATH}/reconciliation`
+export const INVENTORY_MGMT_REORDER_PATH = `${INVENTORY_MGMT_BASE_PATH}/reorder`
+export const INVENTORY_MGMT_SETTINGS_PATH = `${INVENTORY_MGMT_BASE_PATH}/settings`

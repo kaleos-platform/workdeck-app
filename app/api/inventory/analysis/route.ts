@@ -27,6 +27,10 @@ export async function POST(request: NextRequest) {
   let workspaceId: string
 
   if ('error' in workerAuth) {
+    // 워커 키가 제공되었으나 인증 실패 시 경고 로그
+    if (request.headers.get('x-worker-api-key')) {
+      console.warn('[inventory/analysis] x-worker-api-key 제공되었으나 인증 실패 — 세션 인증으로 폴백')
+    }
     // 워커 인증 실패 → 사용자 세션 인증 시도
     const resolved = await resolveWorkspace()
     if ('error' in resolved) return resolved.error

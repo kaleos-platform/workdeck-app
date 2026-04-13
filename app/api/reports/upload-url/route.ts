@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: NextRequest) {
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
-  const { user, workspace } = resolved
+  const { workspace } = resolved
+  const user = 'user' in resolved ? resolved.user : undefined
 
   const url = new URL(request.url)
   const fileName = url.searchParams.get('fileName')
@@ -17,7 +18,8 @@ export async function GET(request: NextRequest) {
 
   // 스토리지 RLS 호환: 사용자 기준 최상위 경로를 유지
   // {userId}/{workspaceId}/{timestamp}_{fileName}
-  const storagePath = `${user.id}/${workspace.id}/${Date.now()}_${fileName}`
+  const userId = user?.id ?? 'worker'
+  const storagePath = `${userId}/${workspace.id}/${Date.now()}_${fileName}`
 
   const supabase = await createClient()
   const { data, error } = await supabase.storage.from('reports').createSignedUploadUrl(storagePath)

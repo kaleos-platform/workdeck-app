@@ -6,6 +6,9 @@
   "functions": {
     "app/api/reports/upload/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/inv/import/route.ts": {
+      "maxDuration": 60
     }
   }
 }

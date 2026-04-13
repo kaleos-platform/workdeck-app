@@ -205,7 +205,7 @@ export async function runAndSaveInventoryAnalysis(params: {
   workspaceId: string
   triggeredBy: string
   sendSlack?: boolean
-}): Promise<{ analysisId: string } | null> {
+}): Promise<{ analysisId: string; slackAttempted: boolean; slackDelivered: boolean } | null> {
   const output = await analyzeInventory({ workspaceId: params.workspaceId })
   if (!output) return null
 
@@ -222,18 +222,27 @@ export async function runAndSaveInventoryAnalysis(params: {
     },
   })
 
+  let slackAttempted = false
+  let slackDelivered = false
+
   if (params.sendSlack) {
-    const { notifyInventoryAnalysis } = await import('@/lib/slack-inventory-notifier')
-    await notifyInventoryAnalysis({
-      analysedAt: analysis.analysedAt,
-      snapshotDate: output.snapshotDate,
-      results: output.results,
-      shortageCount: output.shortageCount,
-      returnRateCount: output.returnRateCount,
-      storageFeeCount: output.storageFeeCount,
-      winnerIssueCount: output.winnerIssueCount,
-    }).catch((err) => console.error('[inventory-analyzer] Slack 알림 실패:', err))
+    slackAttempted = true
+    try {
+      const { notifyInventoryAnalysis } = await import('@/lib/slack-inventory-notifier')
+      slackDelivered = await notifyInventoryAnalysis({
+        analysedAt: analysis.analysedAt,
+        snapshotDate: output.snapshotDate,
+        results: output.results,
+        shortageCount: output.shortageCount,
+        returnRateCount: output.returnRateCount,
+        storageFeeCount: output.storageFeeCount,
+        winnerIssueCount: output.winnerIssueCount,
+      })
+    } catch (err) {
+      console.error('[inventory-analyzer] Slack 알림 실패:', err)
+      slackDelivered = false
+    }
   }
 
-  return { analysisId: analysis.id }
+  return { analysisId: analysis.id, slackAttempted, slackDelivered }
 }
