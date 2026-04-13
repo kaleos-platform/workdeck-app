@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { calculateROAS } from '@/lib/metrics-calculator'
+import { parsePureProductName } from '@/lib/product-name-parser'
 
 type Params = { params: Promise<{ campaignId: string }> }
 
@@ -119,7 +120,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     else if (ordersChangePct != null && ordersChangePct < -10) trend = 'down'
 
     trends.push({
-      productName: g.productName ?? '',
+      productName: parsePureProductName(g.productName),
       current: { orders: curOrders, revenue: curRevenue, adCost: curAdCost, roas: calculateROAS(curRevenue, curAdCost) },
       previous: { orders: prevOrders, revenue: prevRevenue, adCost: prevAdCost, roas: calculateROAS(prevRevenue, prevAdCost) },
       ordersChange,
@@ -141,7 +142,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (prevOrders === 0 && prevRevenue === 0) continue
 
     trends.push({
-      productName: g.productName ?? '',
+      productName: parsePureProductName(g.productName),
       current: { orders: 0, revenue: 0, adCost: 0, roas: null },
       previous: { orders: prevOrders, revenue: prevRevenue, adCost: prevAdCost, roas: calculateROAS(prevRevenue, prevAdCost) },
       ordersChange: -prevOrders,
