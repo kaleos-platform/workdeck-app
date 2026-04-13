@@ -2,9 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { calculateROAS } from '@/lib/metrics-calculator'
-import { parsePureProductName } from '@/lib/product-name-parser'
+import { parsePureProductName, parseOptionName } from '@/lib/product-name-parser'
 
 type Params = { params: Promise<{ campaignId: string }> }
+
+type Stats = { orders: number; revenue: number; adCost: number }
+type StatsWithRoas = Stats & { roas: number | null }
+type Trend = 'up' | 'down' | 'stable' | 'new' | 'gone'
+
+function calcChange(cur: number, prev: number) {
+  const change = cur - prev
+  const pct = prev > 0 ? Math.round((change / prev) * 1000) / 10 : null
+  return { change, pct }
+}
+
+function calcTrend(prev: Stats | undefined, curOrders: number, curRevenue: number, ordersChangePct: number | null): Trend {
+  if (!prev && (curOrders > 0 || curRevenue > 0)) return 'new'
+  if (ordersChangePct != null && ordersChangePct > 10) return 'up'
+  if (ordersChangePct != null && ordersChangePct < -10) return 'down'
+  return 'stable'
+}
 
 export async function GET(req: NextRequest, { params }: Params) {
   const resolved = await resolveWorkspace()
@@ -19,13 +36,11 @@ export async function GET(req: NextRequest, { params }: Params) {
   let currentEnd: Date
 
   if (fromParam && toParam) {
-    // from/to 파라미터가 있으면 해당 기간 사용
     currentStart = new Date(fromParam)
     currentStart.setHours(0, 0, 0, 0)
     currentEnd = new Date(toParam)
     currentEnd.setHours(23, 59, 59, 999)
   } else {
-    // fallback: period 파라미터
     const period = Math.min(90, Math.max(1, Number(searchParams.get('period') ?? 7)))
     const now = new Date()
     currentEnd = new Date(now)
@@ -35,11 +50,9 @@ export async function GET(req: NextRequest, { params }: Params) {
     currentStart.setHours(0, 0, 0, 0)
   }
 
-  // 현재 기간 길이만큼 이전 기간 계산
   const periodMs = currentEnd.getTime() - currentStart.getTime()
   const periodDays = Math.round(periodMs / (1000 * 60 * 60 * 24)) + 1
 
-  // 이전 기간: currentStart - periodDays ~ currentStart - 1
   const previousEnd = new Date(currentStart)
   previousEnd.setDate(previousEnd.getDate() - 1)
   previousEnd.setHours(23, 59, 59, 999)
@@ -53,23 +66,24 @@ export async function GET(req: NextRequest, { params }: Params) {
     productName: { not: null },
   }
 
+  // 옵션 단위로 조회
   const [currentData, previousData] = await Promise.all([
     prisma.adRecord.groupBy({
-      by: ['productName'],
+      by: ['productName', 'optionId'],
       where: { ...baseWhere, date: { gte: currentStart, lte: currentEnd } },
       _sum: { orders1d: true, revenue1d: true, adCost: true },
     }),
     prisma.adRecord.groupBy({
-      by: ['productName'],
+      by: ['productName', 'optionId'],
       where: { ...baseWhere, date: { gte: previousStart, lte: previousEnd } },
       _sum: { orders1d: true, revenue1d: true, adCost: true },
     }),
   ])
 
-  // 이전 기간 맵
-  const prevMap = new Map<string, { orders: number; revenue: number; adCost: number }>()
+  // 이전 기간 맵 (옵션 단위)
+  const prevMap = new Map<string, Stats>()
   for (const g of previousData) {
-    const key = `${g.productName ?? ''}`
+    const key = `${g.productName ?? ''}|${g.optionId ?? ''}`
     prevMap.set(key, {
       orders: Number(g._sum.orders1d ?? 0),
       revenue: Number(g._sum.revenue1d ?? 0),
@@ -77,83 +91,141 @@ export async function GET(req: NextRequest, { params }: Params) {
     })
   }
 
-  // 현재 기간 처리
-  const seenKeys = new Set<string>()
-  type TrendItem = {
-    productName: string
-    current: { orders: number; revenue: number; adCost: number; roas: number | null }
-    previous: { orders: number; revenue: number; adCost: number; roas: number | null }
+  // 옵션별 트렌드 계산 후 상품별로 그룹핑
+  type OptionTrend = {
+    optionName: string
+    current: StatsWithRoas
+    previous: StatsWithRoas
     ordersChange: number
     ordersChangePct: number | null
     revenueChange: number
     revenueChangePct: number | null
-    trend: 'up' | 'down' | 'stable' | 'new' | 'gone'
+    trend: Trend
   }
 
-  const trends: TrendItem[] = []
+  // 상품별 집계용 맵
+  const productMap = new Map<string, {
+    curTotal: Stats
+    prevTotal: Stats
+    options: OptionTrend[]
+    seenOptionKeys: Set<string>
+  }>()
 
+  function getOrCreate(pName: string) {
+    if (!productMap.has(pName)) {
+      productMap.set(pName, {
+        curTotal: { orders: 0, revenue: 0, adCost: 0 },
+        prevTotal: { orders: 0, revenue: 0, adCost: 0 },
+        options: [],
+        seenOptionKeys: new Set(),
+      })
+    }
+    return productMap.get(pName)!
+  }
+
+  // 현재 기간 데이터 처리
+  const seenKeys = new Set<string>()
   for (const g of currentData) {
-    const key = `${g.productName ?? ''}`
-    seenKeys.add(key)
+    const rawKey = `${g.productName ?? ''}|${g.optionId ?? ''}`
+    seenKeys.add(rawKey)
 
+    const pName = parsePureProductName(g.productName)
+    const optName = parseOptionName(g.productName) ?? g.optionId ?? '-'
     const curOrders = Number(g._sum.orders1d ?? 0)
     const curRevenue = Number(g._sum.revenue1d ?? 0)
     const curAdCost = Number(g._sum.adCost ?? 0)
-    const prev = prevMap.get(key)
-
+    const prev = prevMap.get(rawKey)
     const prevOrders = prev?.orders ?? 0
     const prevRevenue = prev?.revenue ?? 0
     const prevAdCost = prev?.adCost ?? 0
 
-    const ordersChange = curOrders - prevOrders
-    const ordersChangePct = prevOrders > 0
-      ? Math.round((ordersChange / prevOrders) * 1000) / 10
-      : null
-    const revenueChange = curRevenue - prevRevenue
-    const revenueChangePct = prevRevenue > 0
-      ? Math.round((revenueChange / prevRevenue) * 1000) / 10
-      : null
+    const orders = calcChange(curOrders, prevOrders)
+    const revenue = calcChange(curRevenue, prevRevenue)
 
-    let trend: TrendItem['trend'] = 'stable'
-    if (!prev && (curOrders > 0 || curRevenue > 0)) trend = 'new'
-    else if (ordersChangePct != null && ordersChangePct > 10) trend = 'up'
-    else if (ordersChangePct != null && ordersChangePct < -10) trend = 'down'
+    const entry = getOrCreate(pName)
+    entry.curTotal.orders += curOrders
+    entry.curTotal.revenue += curRevenue
+    entry.curTotal.adCost += curAdCost
+    entry.prevTotal.orders += prevOrders
+    entry.prevTotal.revenue += prevRevenue
+    entry.prevTotal.adCost += prevAdCost
+    entry.seenOptionKeys.add(rawKey)
 
-    trends.push({
-      productName: parsePureProductName(g.productName),
+    entry.options.push({
+      optionName: optName,
       current: { orders: curOrders, revenue: curRevenue, adCost: curAdCost, roas: calculateROAS(curRevenue, curAdCost) },
       previous: { orders: prevOrders, revenue: prevRevenue, adCost: prevAdCost, roas: calculateROAS(prevRevenue, prevAdCost) },
-      ordersChange,
-      ordersChangePct,
-      revenueChange,
-      revenueChangePct,
-      trend,
+      ordersChange: orders.change,
+      ordersChangePct: orders.pct,
+      revenueChange: revenue.change,
+      revenueChangePct: revenue.pct,
+      trend: calcTrend(prev, curOrders, curRevenue, orders.pct),
     })
   }
 
-  // 이전에만 있던 상품 (gone)
+  // 이전에만 있던 옵션 (gone)
   for (const g of previousData) {
-    const key = `${g.productName ?? ''}`
-    if (seenKeys.has(key)) continue
+    const rawKey = `${g.productName ?? ''}|${g.optionId ?? ''}`
+    if (seenKeys.has(rawKey)) continue
 
     const prevOrders = Number(g._sum.orders1d ?? 0)
     const prevRevenue = Number(g._sum.revenue1d ?? 0)
     const prevAdCost = Number(g._sum.adCost ?? 0)
     if (prevOrders === 0 && prevRevenue === 0) continue
 
-    trends.push({
-      productName: parsePureProductName(g.productName),
+    const pName = parsePureProductName(g.productName)
+    const optName = parseOptionName(g.productName) ?? g.optionId ?? '-'
+
+    const entry = getOrCreate(pName)
+    entry.prevTotal.orders += prevOrders
+    entry.prevTotal.revenue += prevRevenue
+    entry.prevTotal.adCost += prevAdCost
+
+    entry.options.push({
+      optionName: optName,
       current: { orders: 0, revenue: 0, adCost: 0, roas: null },
       previous: { orders: prevOrders, revenue: prevRevenue, adCost: prevAdCost, roas: calculateROAS(prevRevenue, prevAdCost) },
       ordersChange: -prevOrders,
       ordersChangePct: -100,
       revenueChange: -prevRevenue,
       revenueChangePct: -100,
-      trend: 'gone',
+      trend: 'gone' as Trend,
     })
   }
 
-  // 변화량 절대값 기준 정렬 (큰 변화 먼저), 최대 100개
+  // 상품별 합계 트렌드 생성
+  type ProductTrend = {
+    productName: string
+    current: StatsWithRoas
+    previous: StatsWithRoas
+    ordersChange: number
+    ordersChangePct: number | null
+    revenueChange: number
+    revenueChangePct: number | null
+    trend: Trend
+    options: OptionTrend[]
+  }
+
+  const trends: ProductTrend[] = []
+  for (const [pName, entry] of productMap) {
+    const orders = calcChange(entry.curTotal.orders, entry.prevTotal.orders)
+    const revenue = calcChange(entry.curTotal.revenue, entry.prevTotal.revenue)
+    const hasPrev = entry.prevTotal.orders > 0 || entry.prevTotal.revenue > 0
+
+    trends.push({
+      productName: pName,
+      current: { ...entry.curTotal, roas: calculateROAS(entry.curTotal.revenue, entry.curTotal.adCost) },
+      previous: { ...entry.prevTotal, roas: calculateROAS(entry.prevTotal.revenue, entry.prevTotal.adCost) },
+      ordersChange: orders.change,
+      ordersChangePct: orders.pct,
+      revenueChange: revenue.change,
+      revenueChangePct: revenue.pct,
+      trend: calcTrend(hasPrev ? entry.prevTotal : undefined, entry.curTotal.orders, entry.curTotal.revenue, orders.pct),
+      options: entry.options.sort((a, b) => Math.abs(b.ordersChange) - Math.abs(a.ordersChange)),
+    })
+  }
+
+  // 변화량 절대값 기준 정렬, 최대 100개
   trends.sort((a, b) => Math.abs(b.ordersChange) - Math.abs(a.ordersChange))
   const limited = trends.slice(0, 100)
 

@@ -10,11 +10,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, TrendingDown, Minus, Sparkles, Ghost, Loader2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Sparkles, Ghost, Loader2, ChevronRight, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type TrendItem = {
-  productName: string
+type TrendData = {
   current: { orders: number; revenue: number; adCost: number; roas: number | null }
   previous: { orders: number; revenue: number; adCost: number; roas: number | null }
   ordersChange: number
@@ -23,6 +22,9 @@ type TrendItem = {
   revenueChangePct: number | null
   trend: 'up' | 'down' | 'stable' | 'new' | 'gone'
 }
+
+type OptionTrend = TrendData & { optionName: string }
+type ProductTrend = TrendData & { productName: string; options: OptionTrend[] }
 
 type Props = {
   campaignId: string
@@ -51,9 +53,53 @@ function ChangeBadge({ value, pct }: { value: number; pct: number | null }) {
   )
 }
 
+function TrendBadge({ trend }: { trend: TrendData['trend'] }) {
+  const config = TREND_CONFIG[trend]
+  const Icon = config.icon
+  return (
+    <Badge variant="secondary" className={cn('gap-1 text-[10px]', config.className)}>
+      <Icon className="h-3 w-3" />
+      {config.label}
+    </Badge>
+  )
+}
+
+function DataCells({ data }: { data: TrendData }) {
+  return (
+    <>
+      <TableCell className="text-right">{data.current.orders.toLocaleString()}</TableCell>
+      <TableCell className="text-right text-muted-foreground">
+        {data.previous.orders.toLocaleString()}
+      </TableCell>
+      <TableCell className="text-right">
+        <ChangeBadge value={data.ordersChange} pct={data.ordersChangePct} />
+      </TableCell>
+      <TableCell className="text-right">
+        {data.current.revenue.toLocaleString()}원
+      </TableCell>
+      <TableCell className="text-right text-muted-foreground">
+        {data.previous.revenue.toLocaleString()}원
+      </TableCell>
+      <TableCell className="text-right">
+        <ChangeBadge value={data.revenueChange} pct={data.revenueChangePct} />
+      </TableCell>
+    </>
+  )
+}
+
 export function ProductTrendsTable({ campaignId, from, to }: Props) {
-  const [trends, setTrends] = useState<TrendItem[]>([])
+  const [trends, setTrends] = useState<ProductTrend[]>([])
   const [loading, setLoading] = useState(false)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  const toggleExpand = (name: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      return next
+    })
+  }
 
   const fetchData = useCallback(async () => {
     if (!from || !to) return
@@ -72,12 +118,11 @@ export function ProductTrendsTable({ campaignId, from, to }: Props) {
 
   return (
     <div className="space-y-4">
-
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[180px]">상품명</TableHead>
+              <TableHead className="min-w-[200px]">상품명</TableHead>
               <TableHead>트렌드</TableHead>
               <TableHead className="text-right">현재 주문</TableHead>
               <TableHead className="text-right">이전 주문</TableHead>
@@ -102,38 +147,48 @@ export function ProductTrendsTable({ campaignId, from, to }: Props) {
               </TableRow>
             ) : (
               trends.map((t, i) => {
-                const config = TREND_CONFIG[t.trend]
-                const Icon = config.icon
+                const isOpen = expanded.has(t.productName)
+                const hasOptions = t.options.length > 1
                 return (
-                  <TableRow key={`${t.productName}-${i}`}>
-                    <TableCell>
-                      <p className="text-sm font-medium">
-                        {t.productName}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={cn('gap-1 text-[10px]', config.className)}>
-                        <Icon className="h-3 w-3" />
-                        {config.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">{t.current.orders.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {t.previous.orders.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <ChangeBadge value={t.ordersChange} pct={t.ordersChangePct} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {t.current.revenue.toLocaleString()}원
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {t.previous.revenue.toLocaleString()}원
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <ChangeBadge value={t.revenueChange} pct={t.revenueChangePct} />
-                    </TableCell>
-                  </TableRow>
+                  <>{/* 상품 합계 행 */}
+                    <TableRow
+                      key={`product-${i}`}
+                      className={cn(hasOptions && 'cursor-pointer hover:bg-muted/50')}
+                      onClick={() => hasOptions && toggleExpand(t.productName)}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          {hasOptions && (
+                            isOpen
+                              ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          )}
+                          <p className="text-sm font-medium">
+                            {t.productName}
+                            {hasOptions && (
+                              <span className="ml-1.5 text-xs text-muted-foreground">
+                                ({t.options.length}개 옵션)
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell><TrendBadge trend={t.trend} /></TableCell>
+                      <DataCells data={t} />
+                    </TableRow>
+                    {/* 옵션별 세부 행 */}
+                    {isOpen && t.options.map((opt, j) => (
+                      <TableRow key={`option-${i}-${j}`} className="bg-muted/30">
+                        <TableCell className="pl-10">
+                          <p className="text-xs text-muted-foreground">
+                            ㄴ {opt.optionName}
+                          </p>
+                        </TableCell>
+                        <TableCell><TrendBadge trend={opt.trend} /></TableCell>
+                        <DataCells data={opt} />
+                      </TableRow>
+                    ))}
+                  </>
                 )
               })
             )}
