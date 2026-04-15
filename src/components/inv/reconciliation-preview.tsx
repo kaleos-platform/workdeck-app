@@ -2,16 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -92,6 +96,43 @@ type Props = {
   onConfirmed: () => void
 }
 
+type UnifiedEntry = {
+  key: string
+  status: string
+  productName: string
+  optionName: string
+  systemQty: number | null
+  fileQty: number | null
+  delta: number | null
+  optionId?: string
+  externalCode?: string
+  suggestions?: SuggestionOption[]
+  row?: ParsedRow
+}
+
+const STATUS_FILTERS = [
+  { value: 'all', label: '전체' },
+  { value: 'matched-diff', label: '차이있음' },
+  { value: 'matched-equal', label: '일치' },
+  { value: 'file-only', label: '미매칭' },
+  { value: 'system-only', label: '파일 누락' },
+] as const
+
+function statusBadge(status: string) {
+  switch (status) {
+    case 'matched-diff':
+      return <Badge className="bg-amber-100 text-amber-700 border-amber-200">차이있음</Badge>
+    case 'matched-equal':
+      return <Badge className="bg-green-100 text-green-700 border-green-200">일치</Badge>
+    case 'file-only':
+      return <Badge className="bg-red-100 text-red-700 border-red-200">미매칭</Badge>
+    case 'system-only':
+      return <Badge className="bg-gray-100 text-gray-600 border-gray-200">파일 누락</Badge>
+    default:
+      return null
+  }
+}
+
 export function ReconciliationPreview({
   reconciliationId,
   onClose,
@@ -100,12 +141,26 @@ export function ReconciliationPreview({
   const [recon, setRecon] = useState<Reconciliation | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'matched-diff' | 'matched-equal' | 'file-only' | 'system-only'
+  >('all')
   // selected matched-diff optionIds (default: all)
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  // manual mappings (externalCode → optionId) chosen by user
+  // manual mappings (externalCode -> optionId) chosen by user
   const [manualMap, setManualMap] = useState<Record<string, string>>({})
-  // applied manual map selectedAlso (adjust these too)
+  // applied manual map (adjust these too)
   const [applyMapped, setApplyMapped] = useState<Record<string, boolean>>({})
+
+  // New product registration dialog state
+  const [registerOpen, setRegisterOpen] = useState(false)
+  const [registerCode, setRegisterCode] = useState('')
+  const [registerForm, setRegisterForm] = useState({
+    productName: '',
+    optionName: '',
+    productCode: '',
+    optionSku: '',
+  })
+  const [registerSubmitting, setRegisterSubmitting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -116,8 +171,9 @@ export function ReconciliationPreview({
       const r = data.reconciliation as Reconciliation
       setRecon(r)
       const diffIds = (r.matchResults ?? [])
-        .filter((e): e is Extract<MatchEntry, { status: 'matched-diff' }> =>
-          e.status === 'matched-diff'
+        .filter(
+          (e): e is Extract<MatchEntry, { status: 'matched-diff' }> =>
+            e.status === 'matched-diff'
         )
         .map((e) => e.optionId)
       setSelected(new Set(diffIds))
@@ -162,6 +218,87 @@ export function ReconciliationPreview({
     [entries]
   )
 
+  const counts = {
+    all: entries.length,
+    'matched-diff': diffEntries.length,
+    'matched-equal': equalEntries.length,
+    'file-only': fileOnlyEntries.length,
+    'system-only': systemOnlyEntries.length,
+  }
+
+  // Build unified entries
+  const unifiedEntries = useMemo<UnifiedEntry[]>(() => {
+    const result: UnifiedEntry[] = []
+
+    for (const e of diffEntries) {
+      result.push({
+        key: `diff-${e.optionId}`,
+        status: 'matched-diff',
+        productName: e.productName,
+        optionName: e.optionName,
+        systemQty: e.systemQuantity,
+        fileQty: e.fileQuantity,
+        delta: e.delta,
+        optionId: e.optionId,
+        row: e.row,
+      })
+    }
+
+    for (const e of equalEntries) {
+      if (e.status === 'matched-equal') {
+        result.push({
+          key: `equal-${e.optionId}`,
+          status: 'matched-equal',
+          productName: e.productName,
+          optionName: e.optionName,
+          systemQty: e.systemQuantity,
+          fileQty: null,
+          delta: null,
+          optionId: e.optionId,
+          row: e.row,
+        })
+      }
+    }
+
+    for (const e of fileOnlyEntries) {
+      result.push({
+        key: `file-${e.row.externalCode}`,
+        status: 'file-only',
+        productName: e.row.externalName ?? e.row.externalCode,
+        optionName: e.row.externalOptionName ?? '-',
+        systemQty: null,
+        fileQty: e.row.quantity,
+        delta: null,
+        externalCode: e.row.externalCode,
+        suggestions: e.suggestions,
+        row: e.row,
+      })
+    }
+
+    for (const e of systemOnlyEntries) {
+      result.push({
+        key: `sys-${e.optionId}`,
+        status: 'system-only',
+        productName: e.productName,
+        optionName: e.optionName,
+        systemQty: e.systemQuantity,
+        fileQty: null,
+        delta: null,
+        optionId: e.optionId,
+      })
+    }
+
+    return result
+  }, [diffEntries, equalEntries, fileOnlyEntries, systemOnlyEntries])
+
+  const filteredEntries = useMemo(
+    () =>
+      statusFilter === 'all'
+        ? unifiedEntries
+        : unifiedEntries.filter((e) => e.status === statusFilter),
+    [unifiedEntries, statusFilter]
+  )
+
   function toggle(optionId: string) {
     setSelected((s) => {
       const next = new Set(s)
@@ -169,6 +306,52 @@ export function ReconciliationPreview({
       else next.add(optionId)
       return next
     })
+  }
+
+  function openRegisterDialog(entry: UnifiedEntry) {
+    setRegisterCode(entry.externalCode ?? '')
+    setRegisterForm({
+      productName: entry.row?.externalName ?? '',
+      optionName: entry.row?.externalOptionName ?? '',
+      productCode: '',
+      optionSku: '',
+    })
+    setRegisterOpen(true)
+  }
+
+  async function handleRegisterProduct() {
+    setRegisterSubmitting(true)
+    try {
+      const res = await fetch('/api/inv/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: registerForm.productName,
+          code: registerForm.productCode || undefined,
+          options: [
+            {
+              name: registerForm.optionName,
+              sku: registerForm.optionSku || undefined,
+            },
+          ],
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? '등록 실패')
+
+      const newOptionId = data.product?.options?.[0]?.id ?? data.optionId
+      if (newOptionId && registerCode) {
+        setManualMap((m) => ({ ...m, [registerCode]: newOptionId }))
+        setApplyMapped((m) => ({ ...m, [registerCode]: true }))
+      }
+
+      toast.success('새 상품이 등록되었습니다')
+      setRegisterOpen(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '등록 실패')
+    } finally {
+      setRegisterSubmitting(false)
+    }
   }
 
   async function handleConfirm() {
@@ -180,7 +363,7 @@ export function ReconciliationPreview({
         .map(([externalCode, optionId]) => ({ externalCode, optionId }))
 
       const selectedOptionIds = [...selected]
-      // file-only 항목 중 사용자가 "적용" 체크한 것만 selectedOptionIds에 포함
+      // file-only items where user checked "apply"
       for (const [externalCode, optionId] of Object.entries(manualMap)) {
         if (optionId && applyMapped[externalCode]) {
           selectedOptionIds.push(optionId)
@@ -255,196 +438,149 @@ export function ReconciliationPreview({
         </Button>
       </div>
 
-      <Tabs defaultValue="diff">
-        <TabsList>
-          <TabsTrigger value="diff">
-            차이있음 <Badge variant="secondary" className="ml-2">{diffEntries.length}</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="equal">
-            일치 <Badge variant="secondary" className="ml-2">{equalEntries.length}</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="file-only">
-            미매칭 <Badge variant="secondary" className="ml-2">{fileOnlyEntries.length}</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="system-only">
-            파일 누락 <Badge variant="secondary" className="ml-2">{systemOnlyEntries.length}</Badge>
-          </TabsTrigger>
-        </TabsList>
+      {/* Status filter buttons */}
+      <div className="flex gap-1 rounded-lg border bg-muted p-1">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => setStatusFilter(f.value)}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              statusFilter === f.value
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {f.label}
+            <span className="ml-1.5 text-xs opacity-70">
+              {counts[f.value]}
+            </span>
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="diff">
-          {diffEntries.length === 0 ? (
-            <p className="p-6 text-center text-sm text-muted-foreground">
-              차이가 있는 항목이 없습니다
-            </p>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10"></TableHead>
-                    <TableHead>상품명</TableHead>
-                    <TableHead>옵션명</TableHead>
-                    <TableHead className="text-right">시스템</TableHead>
-                    <TableHead className="text-right">파일</TableHead>
-                    <TableHead className="text-right">차이</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {diffEntries.map((e) => (
-                    <TableRow key={e.optionId}>
-                      <TableCell>
+      {/* Unified table */}
+      {filteredEntries.length === 0 ? (
+        <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+          해당 상태의 항목이 없습니다
+        </div>
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-24">상태</TableHead>
+                <TableHead>상품명</TableHead>
+                <TableHead>옵션명</TableHead>
+                <TableHead className="text-right w-20">시스템</TableHead>
+                <TableHead className="text-right w-20">파일</TableHead>
+                <TableHead className="text-right w-20">차이</TableHead>
+                <TableHead className="w-60">동작</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredEntries.map((entry) => (
+                <TableRow key={entry.key}>
+                  <TableCell>{statusBadge(entry.status)}</TableCell>
+                  <TableCell className="font-medium">
+                    {entry.productName}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {entry.optionName}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {entry.systemQty !== null ? entry.systemQty : '-'}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    {entry.fileQty !== null ? entry.fileQty : '-'}
+                  </TableCell>
+                  <TableCell
+                    className={`text-right font-mono ${
+                      entry.delta !== null
+                        ? entry.delta > 0
+                          ? 'text-emerald-600'
+                          : entry.delta < 0
+                            ? 'text-red-600'
+                            : ''
+                        : ''
+                    }`}
+                  >
+                    {entry.delta !== null
+                      ? `${entry.delta > 0 ? '+' : ''}${entry.delta}`
+                      : '-'}
+                  </TableCell>
+                  <TableCell>
+                    {entry.status === 'matched-diff' && entry.optionId && (
+                      <Checkbox
+                        checked={selected.has(entry.optionId)}
+                        onCheckedChange={() => toggle(entry.optionId!)}
+                        disabled={!isPending}
+                      />
+                    )}
+                    {entry.status === 'file-only' && entry.externalCode && (
+                      <div className="flex items-center gap-1.5">
+                        <Select
+                          value={manualMap[entry.externalCode] ?? ''}
+                          onValueChange={(v) =>
+                            setManualMap((m) => ({
+                              ...m,
+                              [entry.externalCode!]: v,
+                            }))
+                          }
+                          disabled={
+                            !isPending ||
+                            (entry.suggestions?.length ?? 0) === 0
+                          }
+                        >
+                          <SelectTrigger className="h-7 w-36 text-xs">
+                            <SelectValue
+                              placeholder={
+                                (entry.suggestions?.length ?? 0) === 0
+                                  ? '후보 없음'
+                                  : '후보 선택'
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(entry.suggestions ?? []).map((s) => (
+                              <SelectItem key={s.optionId} value={s.optionId}>
+                                {s.productName} / {s.optionName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <Checkbox
-                          checked={selected.has(e.optionId)}
-                          onCheckedChange={() => toggle(e.optionId)}
-                          disabled={!isPending}
+                          checked={!!applyMapped[entry.externalCode]}
+                          disabled={
+                            !isPending || !manualMap[entry.externalCode]
+                          }
+                          onCheckedChange={(v) =>
+                            setApplyMapped((m) => ({
+                              ...m,
+                              [entry.externalCode!]: v === true,
+                            }))
+                          }
                         />
-                      </TableCell>
-                      <TableCell>{e.productName}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {e.optionName}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {e.systemQuantity}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        {e.fileQuantity}
-                      </TableCell>
-                      <TableCell
-                        className={`text-right font-mono ${
-                          e.delta > 0 ? 'text-emerald-600' : 'text-red-600'
-                        }`}
-                      >
-                        {e.delta > 0 ? '+' : ''}
-                        {e.delta}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="equal">
-          <p className="p-6 text-center text-sm text-muted-foreground">
-            {equalEntries.length}건이 시스템 재고와 일치합니다.
-          </p>
-        </TabsContent>
-
-        <TabsContent value="file-only">
-          {fileOnlyEntries.length === 0 ? (
-            <p className="p-6 text-center text-sm text-muted-foreground">
-              모든 행이 매칭되었습니다
-            </p>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>외부 코드</TableHead>
-                    <TableHead>외부 상품명</TableHead>
-                    <TableHead className="text-right">수량</TableHead>
-                    <TableHead>매핑 옵션 선택</TableHead>
-                    <TableHead className="w-16">적용</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fileOnlyEntries.map((e) => {
-                    const code = e.row.externalCode
-                    return (
-                      <TableRow key={code}>
-                        <TableCell className="font-mono text-xs">
-                          {code}
-                        </TableCell>
-                        <TableCell>
-                          {e.row.externalName ?? '-'}
-                          {e.row.externalOptionName
-                            ? ` / ${e.row.externalOptionName}`
-                            : ''}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {e.row.quantity}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={manualMap[code] ?? ''}
-                            onValueChange={(v) =>
-                              setManualMap((m) => ({ ...m, [code]: v }))
-                            }
-                            disabled={!isPending || e.suggestions.length === 0}
+                        {isPending && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => openRegisterDialog(entry)}
                           >
-                            <SelectTrigger className="h-8">
-                              <SelectValue
-                                placeholder={
-                                  e.suggestions.length === 0
-                                    ? '후보 없음'
-                                    : '후보 선택'
-                                }
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {e.suggestions.map((s) => (
-                                <SelectItem key={s.optionId} value={s.optionId}>
-                                  {s.productName} / {s.optionName}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Checkbox
-                            checked={!!applyMapped[code]}
-                            disabled={!isPending || !manualMap[code]}
-                            onCheckedChange={(v) =>
-                              setApplyMapped((m) => ({
-                                ...m,
-                                [code]: v === true,
-                              }))
-                            }
-                          />
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="system-only">
-          {systemOnlyEntries.length === 0 ? (
-            <p className="p-6 text-center text-sm text-muted-foreground">
-              없음
-            </p>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>상품명</TableHead>
-                    <TableHead>옵션명</TableHead>
-                    <TableHead className="text-right">시스템 재고</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {systemOnlyEntries.map((e) => (
-                    <TableRow key={e.optionId}>
-                      <TableCell>{e.productName}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {e.optionName}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {e.systemQuantity}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                            <Plus className="mr-1 h-3 w-3" />
+                            새 상품
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {isPending && (
         <div className="flex justify-end gap-2 pt-4 border-t">
@@ -457,6 +593,96 @@ export function ReconciliationPreview({
           </Button>
         </div>
       )}
+
+      {/* New product registration dialog */}
+      <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>새 상품 등록</DialogTitle>
+            <DialogDescription>
+              미매칭 항목에 대한 새 상품을 등록합니다. 등록 후 자동으로 매핑됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="reg-product-name">상품명</Label>
+              <Input
+                id="reg-product-name"
+                value={registerForm.productName}
+                onChange={(e) =>
+                  setRegisterForm((f) => ({
+                    ...f,
+                    productName: e.target.value,
+                  }))
+                }
+                placeholder="상품명을 입력하세요"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg-option-name">옵션명</Label>
+              <Input
+                id="reg-option-name"
+                value={registerForm.optionName}
+                onChange={(e) =>
+                  setRegisterForm((f) => ({
+                    ...f,
+                    optionName: e.target.value,
+                  }))
+                }
+                placeholder="옵션명을 입력하세요"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg-product-code">제품코드 (선택)</Label>
+              <Input
+                id="reg-product-code"
+                value={registerForm.productCode}
+                onChange={(e) =>
+                  setRegisterForm((f) => ({
+                    ...f,
+                    productCode: e.target.value,
+                  }))
+                }
+                placeholder="제품코드"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg-option-sku">SKU (선택)</Label>
+              <Input
+                id="reg-option-sku"
+                value={registerForm.optionSku}
+                onChange={(e) =>
+                  setRegisterForm((f) => ({
+                    ...f,
+                    optionSku: e.target.value,
+                  }))
+                }
+                placeholder="SKU"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRegisterOpen(false)}
+              disabled={registerSubmitting}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleRegisterProduct}
+              disabled={
+                registerSubmitting || !registerForm.productName.trim()
+              }
+            >
+              {registerSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              등록
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

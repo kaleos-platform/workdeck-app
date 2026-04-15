@@ -31,6 +31,7 @@ function buildQuery(filters: DashboardFilterValues): string {
   if (filters.channelGroupId) p.set('channelGroupId', filters.channelGroupId)
   if (filters.from) p.set('from', filters.from)
   if (filters.to) p.set('to', filters.to)
+  if (filters.movementTypes?.length) p.set('movementTypes', filters.movementTypes.join(','))
   const s = p.toString()
   return s ? `?${s}` : ''
 }
@@ -148,40 +149,6 @@ export function DashboardSummary({ filters }: Props) {
         ))}
       </div>
 
-      {data.movementsByLocation.length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <p className="mb-3 text-sm font-semibold">위치별 재고</p>
-            <div className="space-y-2">
-              {data.movementsByLocation.map((row) => {
-                const max = Math.max(
-                  1,
-                  ...data.movementsByLocation.map((r) => Math.abs(r.stockUnits))
-                )
-                const pct = Math.max(0, Math.round((Math.abs(row.stockUnits) / max) * 100))
-                return (
-                  <div key={row.locationId} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">{row.locationName}</span>
-                      <span className="font-medium tabular-nums">
-                        {row.stockUnits.toLocaleString()} 개
-                      </span>
-                    </div>
-                    <div className="h-2 w-full overflow-hidden rounded bg-muted">
-                      <div
-                        className={`h-full ${
-                          row.stockUnits < 0 ? 'bg-red-500' : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

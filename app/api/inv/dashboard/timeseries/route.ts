@@ -53,6 +53,13 @@ export async function GET(req: NextRequest) {
   const channelId = searchParams.get('channelId') || undefined
   const channelGroupId = searchParams.get('channelGroupId') || undefined
 
+  // Parse movementTypes filter (comma-separated)
+  const VALID_TYPES: MoveType[] = ['INBOUND', 'OUTBOUND', 'RETURN', 'TRANSFER', 'ADJUSTMENT']
+  const movementTypesParam = searchParams.get('movementTypes')
+  const movementTypes: MoveType[] | undefined = movementTypesParam
+    ? (movementTypesParam.split(',').filter((t) => VALID_TYPES.includes(t as MoveType)) as MoveType[])
+    : undefined
+
   let from = parseKstDate(searchParams.get('from'))
   let to = parseKstDate(searchParams.get('to'), true)
 
@@ -93,11 +100,13 @@ export async function GET(req: NextRequest) {
     locationId?: string
     movementDate: { gte: Date; lte: Date }
     channelId?: string | { in: string[] }
+    type?: { in: MoveType[] }
   } = {
     spaceId,
     movementDate: { gte: from, lte: to },
   }
   if (locationId) where.locationId = locationId
+  if (movementTypes?.length) where.type = { in: movementTypes }
 
   // 모든 이동 조회. 채널 필터는 OUTBOUND에만 적용되어야 하므로 후처리에서 거름
   const movements = await prisma.invMovement.findMany({

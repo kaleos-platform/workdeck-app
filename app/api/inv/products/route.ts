@@ -66,3 +66,65 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ data, total, page, pageSize })
 }
+
+export async function POST(req: NextRequest) {
+  const resolved = await resolveDeckContext('inventory-mgmt')
+  if ('error' in resolved) return resolved.error
+
+  let body: { name?: string; code?: string; options?: { name: string; sku?: string }[] }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ message: '잘못된 요청 형식입니다' }, { status: 400 })
+  }
+
+  const name = (body.name ?? '').trim()
+  if (!name) {
+    return NextResponse.json({ message: '상품명은 필수입니다' }, { status: 400 })
+  }
+
+  const options = body.options
+  if (!Array.isArray(options) || options.length === 0) {
+    return NextResponse.json({ message: '최소 1개의 옵션이 필요합니다' }, { status: 400 })
+  }
+
+  for (const o of options) {
+    if (!o.name || !o.name.trim()) {
+      return NextResponse.json({ message: '모든 옵션에 이름이 필요합니다' }, { status: 400 })
+    }
+  }
+
+  const code = body.code?.trim() || null
+
+  try {
+    const product = await prisma.invProduct.create({
+      data: {
+        spaceId: resolved.space.id,
+        name,
+        code,
+        options: {
+          create: options.map((o) => ({
+            name: o.name.trim(),
+            sku: o.sku?.trim() || null,
+          })),
+        },
+      },
+      include: { options: true },
+    })
+
+    return NextResponse.json({ product }, { status: 201 })
+  } catch (err: unknown) {
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'code' in err &&
+      (err as { code: string }).code === 'P2002'
+    ) {
+      return NextResponse.json(
+        { message: '이미 동일한 제품코드가 존재합니다' },
+        { status: 409 },
+      )
+    }
+    throw err
+  }
+}

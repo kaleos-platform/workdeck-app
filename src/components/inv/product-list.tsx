@@ -106,20 +106,19 @@ export function ProductList() {
               <TableHead>상품명</TableHead>
               <TableHead>제품코드</TableHead>
               <TableHead className="text-right">옵션수</TableHead>
-              <TableHead className="text-right">총재고</TableHead>
-              <TableHead className="w-24 text-right">액션</TableHead>
+              <TableHead className="w-24 text-right">동작</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
                   등록된 상품이 없습니다. 입고 기록으로 자동 생성됩니다.
                 </TableCell>
               </TableRow>
@@ -136,18 +135,15 @@ export function ProductList() {
                   </TableCell>
                   <TableCell className="text-right">{row.optionsCount}</TableCell>
                   <TableCell className="text-right">
-                    {row.totalStock.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-right">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation()
                         setSelectedProductId(row.id)
                       }}
                     >
-                      상세
+                      수정
                     </Button>
                   </TableCell>
                 </TableRow>

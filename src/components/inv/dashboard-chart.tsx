@@ -12,9 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { BarChart3 } from 'lucide-react'
-import { getLastNDaysRangeKst } from '@/lib/date-range'
 import type { DashboardFilterValues } from './dashboard-filters'
 
 interface Props {
@@ -45,15 +43,22 @@ const LINES = [
   { key: 'adjustment', label: '조정', color: '#9333ea' },
 ] as const
 
-function buildQuery(filters: DashboardFilterValues, fallback?: { from: string; to: string }) {
+const KEY_TO_TYPE: Record<string, string> = {
+  inbound: 'INBOUND',
+  outbound: 'OUTBOUND',
+  return: 'RETURN',
+  transfer: 'TRANSFER',
+  adjustment: 'ADJUSTMENT',
+}
+
+function buildQuery(filters: DashboardFilterValues) {
   const p = new URLSearchParams()
   if (filters.locationId) p.set('locationId', filters.locationId)
   if (filters.channelId) p.set('channelId', filters.channelId)
   if (filters.channelGroupId) p.set('channelGroupId', filters.channelGroupId)
-  const from = filters.from ?? fallback?.from
-  const to = filters.to ?? fallback?.to
-  if (from) p.set('from', from)
-  if (to) p.set('to', to)
+  if (filters.from) p.set('from', filters.from)
+  if (filters.to) p.set('to', filters.to)
+  if (filters.movementTypes?.length) p.set('movementTypes', filters.movementTypes.join(','))
   const s = p.toString()
   return s ? `?${s}` : ''
 }
@@ -65,18 +70,15 @@ function formatDateLabel(ymd: string): string {
 }
 
 export function DashboardChart({ filters }: Props) {
-  const [rangeDays, setRangeDays] = useState<7 | 30 | 90>(30)
   const [data, setData] = useState<TimeseriesResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const effectiveRange = useMemo(() => getLastNDaysRangeKst(rangeDays), [rangeDays])
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetch(`/api/inv/dashboard/timeseries${buildQuery(filters, effectiveRange)}`)
+    fetch(`/api/inv/dashboard/timeseries${buildQuery(filters)}`)
       .then(async (res) => {
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as { message?: string }
@@ -96,7 +98,7 @@ export function DashboardChart({ filters }: Props) {
     return () => {
       cancelled = true
     }
-  }, [filters, effectiveRange])
+  }, [filters])
 
   const chartData = useMemo(
     () =>
@@ -107,6 +109,10 @@ export function DashboardChart({ filters }: Props) {
     [data]
   )
 
+  const visibleLines = filters.movementTypes?.length
+    ? LINES.filter((ln) => filters.movementTypes!.includes(KEY_TO_TYPE[ln.key]))
+    : LINES
+
   const totalMovements = chartData.reduce(
     (sum, row) =>
       sum + row.inbound + row.outbound + row.return + row.transfer + row.adjustment,
@@ -116,26 +122,11 @@ export function DashboardChart({ filters }: Props) {
   return (
     <Card>
       <CardContent className="space-y-4 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold">재고 이동 추이</p>
-            <p className="text-xs text-muted-foreground">
-              {data ? `${data.from} ~ ${data.to}` : '기간 불러오는 중...'}
-            </p>
-          </div>
-          <div className="flex gap-1">
-            {[7, 30, 90].map((n) => (
-              <Button
-                key={n}
-                variant={rangeDays === n ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setRangeDays(n as 7 | 30 | 90)}
-                disabled={Boolean(filters.from || filters.to)}
-              >
-                {n}일
-              </Button>
-            ))}
-          </div>
+        <div>
+          <p className="text-sm font-semibold">재고 이동 추이</p>
+          <p className="text-xs text-muted-foreground">
+            {data ? `${data.from} ~ ${data.to}` : '기간 불러오는 중...'}
+          </p>
         </div>
 
         {loading ? (
@@ -177,7 +168,7 @@ export function DashboardChart({ filters }: Props) {
                 ]}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              {LINES.map((ln) => (
+              {visibleLines.map((ln) => (
                 <Line
                   key={ln.key}
                   dataKey={ln.key}
