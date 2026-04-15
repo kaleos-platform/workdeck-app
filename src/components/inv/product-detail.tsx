@@ -5,12 +5,18 @@ import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -27,30 +33,12 @@ type OptionRow = {
   totalStock: number
 }
 
-type MovementRow = {
-  id: string
-  type: string
-  quantity: number
-  movementDate: string
-  optionName: string
-  locationName: string
-  toLocationName: string | null
-}
-
 type ProductDetailData = {
   id: string
   name: string
   code: string | null
+  groupId: string | null
   options: OptionRow[]
-  movements: MovementRow[]
-}
-
-const MOVEMENT_TYPE_LABEL: Record<string, string> = {
-  INBOUND: '입고',
-  OUTBOUND: '출고',
-  TRANSFER: '이동',
-  ADJUSTMENT: '조정',
-  RETURN: '반품',
 }
 
 export function ProductDetail({
@@ -66,6 +54,8 @@ export function ProductDetail({
 
   const [nameDraft, setNameDraft] = useState('')
   const [codeDraft, setCodeDraft] = useState('')
+  const [groupId, setGroupId] = useState<string | null>(null)
+  const [groups, setGroups] = useState<{ id: string; name: string }[]>([])
   const [optionDrafts, setOptionDrafts] = useState<
     Record<string, { name: string; sku: string }>
   >({})
@@ -84,6 +74,7 @@ export function ProductDetail({
       setData(json)
       setNameDraft(json.name)
       setCodeDraft(json.code ?? '')
+      setGroupId(json.groupId ?? null)
       const drafts: Record<string, { name: string; sku: string }> = {}
       json.options.forEach((o) => {
         drafts[o.id] = { name: o.name, sku: o.sku ?? '' }
@@ -94,18 +85,32 @@ export function ProductDetail({
     }
   }, [productId])
 
+  const fetchGroups = useCallback(async () => {
+    try {
+      const res = await fetch('/api/inv/product-groups')
+      if (res.ok) {
+        const json = await res.json()
+        setGroups(json.groups ?? [])
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
   useEffect(() => {
     void fetchDetail()
-  }, [fetchDetail])
+    void fetchGroups()
+  }, [fetchDetail, fetchGroups])
 
   const saveProduct = async () => {
     if (!data) return
     setSaving(true)
     try {
-      const body: { name?: string; code?: string | null } = {}
+      const body: { name?: string; code?: string | null; groupId?: string | null } = {}
       if (nameDraft.trim() !== data.name) body.name = nameDraft.trim()
       const newCode = codeDraft.trim() === '' ? null : codeDraft.trim()
       if (newCode !== data.code) body.code = newCode
+      if (groupId !== data.groupId) body.groupId = groupId
       if (Object.keys(body).length === 0) {
         toast.info('변경 사항이 없습니다')
         return
@@ -240,10 +245,17 @@ export function ProductDetail({
             />
           </div>
         </div>
-        <div className="flex justify-end">
-          <Button onClick={saveProduct} disabled={saving} size="sm">
-            상품 저장
-          </Button>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">상품 그룹</label>
+          <Select value={groupId ?? 'none'} onValueChange={(v) => setGroupId(v === 'none' ? null : v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="(기본)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">(기본)</SelectItem>
+              {groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </section>
 
@@ -354,61 +366,9 @@ export function ProductDetail({
         </div>
       </section>
 
-      <section className="space-y-2">
-        <h3 className="text-sm font-semibold">
-          최근 재고 이동 ({data.movements.length})
-        </h3>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>날짜</TableHead>
-                <TableHead>타입</TableHead>
-                <TableHead className="text-right">수량</TableHead>
-                <TableHead>위치</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.movements.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="py-6 text-center text-muted-foreground"
-                  >
-                    이동 기록이 없습니다
-                  </TableCell>
-                </TableRow>
-              ) : (
-                data.movements.map((m) => (
-                  <TableRow key={m.id}>
-                    <TableCell className="whitespace-nowrap text-sm">
-                      {new Date(m.movementDate).toLocaleDateString('ko-KR')}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {MOVEMENT_TYPE_LABEL[m.type] ?? m.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {m.quantity.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {m.locationName}
-                      {m.toLocationName ? ` → ${m.toLocationName}` : ''}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={onClose}>
-          닫기
-        </Button>
-      </div>
+      <Button onClick={saveProduct} disabled={saving} className="w-full">
+        {saving ? '저장 중...' : '저장'}
+      </Button>
     </div>
   )
 }
