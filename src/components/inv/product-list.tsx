@@ -1,8 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Settings2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -20,6 +22,7 @@ import {
 } from '@/components/ui/table'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { ProductDetail } from '@/components/inv/product-detail'
+import { ProductGroupManager } from '@/components/inv/product-group-manager'
 
 type ProductRow = {
   id: string
@@ -52,12 +55,23 @@ export function ProductList() {
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([])
   const [groupFilter, setGroupFilter] = useState<string>('all')
 
-  useEffect(() => {
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkGroupId, setBulkGroupId] = useState('')
+
+  // Group manager dialog state
+  const [groupManagerOpen, setGroupManagerOpen] = useState(false)
+
+  const fetchGroups = useCallback(() => {
     fetch('/api/inv/product-groups')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => { if (json?.groups) setGroups(json.groups) })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    fetchGroups()
+  }, [fetchGroups])
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -97,10 +111,60 @@ export function ProductList() {
     void fetchProducts()
   }, [fetchProducts])
 
+  // Clear selection when page or filter changes
+  useEffect(() => {
+    setSelectedIds(new Set())
+    setBulkGroupId('')
+  }, [page, debouncedSearch, groupFilter])
+
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(total / PAGE_SIZE)),
     [total],
   )
+
+  const allSelected = rows.length > 0 && rows.every((r) => selectedIds.has(r.id))
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(rows.map((r) => r.id)))
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const handleBulkGroupChange = async () => {
+    if (!bulkGroupId) return
+    const newGroupId = bulkGroupId === 'none' ? null : bulkGroupId
+    await Promise.all(
+      Array.from(selectedIds).map((id) =>
+        fetch(`/api/inv/products/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groupId: newGroupId }),
+        }),
+      ),
+    )
+    setSelectedIds(new Set())
+    setBulkGroupId('')
+    void fetchProducts()
+  }
+
+  const handleGroupsChanged = () => {
+    fetchGroups()
+    void fetchProducts()
+  }
 
   const handleDetailClose = (changed: boolean) => {
     setSelectedProductId(null)
@@ -126,14 +190,45 @@ export function ProductList() {
             {groups.map((g) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button variant="outline" size="sm" onClick={() => setGroupManagerOpen(true)}>
+          <Settings2 className="mr-1 h-4 w-4" />그룹 관리
+        </Button>
       </div>
+
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-4 py-2">
+          <span className="text-sm font-medium">{selectedIds.size}개 선택</span>
+          <Select value={bulkGroupId} onValueChange={setBulkGroupId}>
+            <SelectTrigger className="h-8 w-40">
+              <SelectValue placeholder="그룹 변경" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">(기본)</SelectItem>
+              {groups.map((g) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Button size="sm" onClick={handleBulkGroupChange} disabled={!bulkGroupId}>
+            적용
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+            선택 해제
+          </Button>
+        </div>
+      )}
 
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>상품명</TableHead>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="전체 선택"
+                />
+              </TableHead>
               <TableHead>그룹</TableHead>
+              <TableHead>상품명</TableHead>
               <TableHead>제품코드</TableHead>
               <TableHead className="text-right">옵션수</TableHead>
               <TableHead className="w-24 text-right">동작</TableHead>
@@ -142,13 +237,13 @@ export function ProductList() {
           <TableBody>
             {loading && rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                   등록된 상품이 없습니다. 입고 기록으로 자동 생성됩니다.
                 </TableCell>
               </TableRow>
@@ -159,29 +254,17 @@ export function ProductList() {
                   className="cursor-pointer"
                   onClick={() => setSelectedProductId(row.id)}
                 >
-                  <TableCell className="font-medium">{row.name}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Select
-                      value={row.groupId ?? 'none'}
-                      onValueChange={async (v) => {
-                        const newGroupId = v === 'none' ? null : v
-                        await fetch(`/api/inv/products/${row.id}`, {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ groupId: newGroupId }),
-                        })
-                        void fetchProducts()
-                      }}
-                    >
-                      <SelectTrigger className="h-8 w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">(기본)</SelectItem>
-                        {groups.map((g) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <Checkbox
+                      checked={selectedIds.has(row.id)}
+                      onCheckedChange={() => toggleSelect(row.id)}
+                      aria-label={`${row.name} 선택`}
+                    />
                   </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {row.groupName ?? '(기본)'}
+                  </TableCell>
+                  <TableCell className="font-medium">{row.name}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {row.code ?? '-'}
                   </TableCell>
@@ -244,6 +327,12 @@ export function ProductList() {
           )}
         </DialogContent>
       </Dialog>
+
+      <ProductGroupManager
+        open={groupManagerOpen}
+        onOpenChange={setGroupManagerOpen}
+        onChanged={handleGroupsChanged}
+      />
     </div>
   )
 }
