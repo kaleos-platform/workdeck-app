@@ -316,6 +316,7 @@ model Space {
   invReconciliations  InvReconciliation[]
   invLocationMappings InvLocationProductMap[]
   invSettings         InvSettings?
+  invProductGroups    InvProductGroup[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -651,14 +652,32 @@ enum InvReconciliationStatus {
   CANCELLED
 }
 
-// 상품 (옵션 단위로 관리)
-model InvProduct {
+// 상품 그룹 (카테고리)
+model InvProductGroup {
   id      String @id @default(cuid())
   spaceId String
   name    String
+
+  space    Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  products InvProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
+}
+
+// 상품 (옵션 단위로 관리)
+model InvProduct {
+  id      String  @id @default(cuid())
+  spaceId String
+  name    String
   code    String? // 상품 코드 (space 내 unique, null 허용)
+  groupId String?
 
   space   Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group   InvProductGroup?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
   options InvProductOption[]
 
   createdAt DateTime @default(now())
@@ -666,6 +685,7 @@ model InvProduct {
 
   @@unique([spaceId, code])
   @@index([spaceId])
+  @@index([groupId])
 }
 
 // 상품 옵션

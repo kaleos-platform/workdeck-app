@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Loader2, Plus, X } from 'lucide-react'
 
 type OptionDraft = { name: string; sku: string }
@@ -32,11 +39,50 @@ export function ProductCreateDialog({ onCreated }: Props) {
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
   const [options, setOptions] = useState<OptionDraft[]>([emptyOption()])
+  const [groups, setGroups] = useState<{ id: string; name: string }[]>([])
+  const [groupId, setGroupId] = useState<string>('')
+  const [creatingGroup, setCreatingGroup] = useState(false)
+  const [newGroupName, setNewGroupName] = useState('')
+
+  useEffect(() => {
+    if (!open) return
+    fetch('/api/inv/product-groups')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => { if (json?.groups) setGroups(json.groups) })
+      .catch(() => {})
+  }, [open])
+
+  const handleCreateGroup = async () => {
+    const trimmed = newGroupName.trim()
+    if (!trimmed) return
+    try {
+      const res = await fetch('/api/inv/product-groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed }),
+      })
+      if (res.ok) {
+        const created = await res.json()
+        setGroups((prev) => [...prev, { id: created.id, name: created.name }])
+        setGroupId(created.id)
+        setCreatingGroup(false)
+        setNewGroupName('')
+      } else {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err.message ?? '그룹 생성에 실패했습니다')
+      }
+    } catch {
+      toast.error('그룹 생성에 실패했습니다')
+    }
+  }
 
   const reset = () => {
     setName('')
     setCode('')
     setOptions([emptyOption()])
+    setGroupId('')
+    setCreatingGroup(false)
+    setNewGroupName('')
   }
 
   const addOption = () => {
@@ -74,6 +120,7 @@ export function ProductCreateDialog({ onCreated }: Props) {
         body: JSON.stringify({
           name: trimmedName,
           code: code.trim() || undefined,
+          ...(groupId ? { groupId } : {}),
           options: validOptions.map((o) => ({
             name: o.name.trim(),
             sku: o.sku.trim() || undefined,
@@ -137,6 +184,54 @@ export function ProductCreateDialog({ onCreated }: Props) {
               value={code}
               onChange={(e) => setCode(e.target.value)}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>상품 그룹</Label>
+            {creatingGroup ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="새 그룹명"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className="flex-1"
+                  onKeyDown={(e) => { if (e.key === 'Enter') void handleCreateGroup() }}
+                />
+                <Button type="button" size="sm" onClick={() => void handleCreateGroup()}>
+                  생성
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setCreatingGroup(false); setNewGroupName('') }}
+                >
+                  취소
+                </Button>
+              </div>
+            ) : (
+              <Select
+                value={groupId || '__none__'}
+                onValueChange={(v) => {
+                  if (v === '__create__') {
+                    setCreatingGroup(true)
+                  } else {
+                    setGroupId(v === '__none__' ? '' : v)
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="(기본)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">(기본)</SelectItem>
+                  {groups.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                  ))}
+                  <SelectItem value="__create__">+ 새 그룹 추가</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="space-y-2">

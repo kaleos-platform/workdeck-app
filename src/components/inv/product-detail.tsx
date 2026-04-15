@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -68,6 +69,7 @@ export function ProductDetail({
   const [optionDrafts, setOptionDrafts] = useState<
     Record<string, { name: string; sku: string }>
   >({})
+  const [newOption, setNewOption] = useState<{ name: string; sku: string } | null>(null)
 
   const fetchDetail = useCallback(async () => {
     setLoading(true)
@@ -119,6 +121,31 @@ export function ProductDetail({
         return
       }
       toast.success('상품 정보를 저장했습니다')
+      await fetchDetail()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const saveNewOption = async () => {
+    if (!newOption || !newOption.name.trim()) {
+      toast.error('옵션명을 입력하세요')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/inv/products/${productId}/options`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newOption.name.trim(), sku: newOption.sku.trim() || undefined }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err.message ?? '옵션 추가에 실패했습니다')
+        return
+      }
+      toast.success('옵션이 추가되었습니다')
+      setNewOption(null)
       await fetchDetail()
     } finally {
       setSaving(false)
@@ -223,6 +250,14 @@ export function ProductDetail({
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">옵션 ({data.options.length})</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setNewOption({ name: '', sku: '' })}
+            disabled={!!newOption}
+          >
+            <Plus className="mr-1 h-3 w-3" />옵션 추가
+          </Button>
         </div>
         <div className="rounded-md border">
           <Table>
@@ -284,6 +319,35 @@ export function ProductDetail({
                     </TableRow>
                   )
                 })
+              )}
+              {newOption && (
+                <TableRow>
+                  <TableCell>
+                    <Input
+                      value={newOption.name}
+                      onChange={(e) => setNewOption({ ...newOption, name: e.target.value })}
+                      placeholder="옵션명"
+                      autoFocus
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      value={newOption.sku}
+                      onChange={(e) => setNewOption({ ...newOption, sku: e.target.value })}
+                      placeholder="SKU (선택)"
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button variant="outline" size="sm" disabled={saving} onClick={saveNewOption}>
+                        저장
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setNewOption(null)}>
+                        취소
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>

@@ -175,6 +175,11 @@ export type InventoryExcludedProduct = Prisma.InventoryExcludedProductModel
  */
 export type InventoryAnalysis = Prisma.InventoryAnalysisModel
 /**
+ * Model InvProductGroup
+ * 
+ */
+export type InvProductGroup = Prisma.InvProductGroupModel
+/**
  * Model InvProduct
  * 
  */
