@@ -12,7 +12,16 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent } from '@/components/ui/card'
-import { BarChart3 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { BarChart3, TableIcon } from 'lucide-react'
 import type { DashboardFilterValues } from './dashboard-filters'
 
 interface Props {
@@ -69,10 +78,13 @@ function formatDateLabel(ymd: string): string {
   return `${parts[1]}/${parts[2]}`
 }
 
+type ViewMode = 'table' | 'chart'
+
 export function DashboardChart({ filters }: Props) {
   const [data, setData] = useState<TimeseriesResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
 
   useEffect(() => {
     let cancelled = false
@@ -122,11 +134,33 @@ export function DashboardChart({ filters }: Props) {
   return (
     <Card>
       <CardContent className="space-y-4 p-6">
-        <div>
-          <p className="text-sm font-semibold">재고 이동 추이</p>
-          <p className="text-xs text-muted-foreground">
-            {data ? `${data.from} ~ ${data.to}` : '기간 불러오는 중...'}
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">재고 이동 추이</p>
+            <p className="text-xs text-muted-foreground">
+              {data ? `${data.from} ~ ${data.to}` : '기간 불러오는 중...'}
+            </p>
+          </div>
+          <div className="flex gap-1 rounded-lg border p-0.5">
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 px-2.5"
+              onClick={() => setViewMode('table')}
+            >
+              <TableIcon className="mr-1 h-3.5 w-3.5" />
+              테이블
+            </Button>
+            <Button
+              variant={viewMode === 'chart' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 px-2.5"
+              onClick={() => setViewMode('chart')}
+            >
+              <BarChart3 className="mr-1 h-3.5 w-3.5" />
+              그래프
+            </Button>
+          </div>
         </div>
 
         {loading ? (
@@ -136,9 +170,70 @@ export function DashboardChart({ filters }: Props) {
             {error}
           </div>
         ) : totalMovements === 0 ? (
-          <div className="flex h-72 flex-col items-center justify-center gap-3 text-muted-foreground">
+          <div className="flex h-48 flex-col items-center justify-center gap-3 text-muted-foreground">
             <BarChart3 className="h-12 w-12 opacity-30" />
             <p className="text-sm">선택한 기간에 이동 내역이 없습니다</p>
+          </div>
+        ) : viewMode === 'table' ? (
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="sticky left-0 bg-background">날짜</TableHead>
+                  {visibleLines.map((ln) => (
+                    <TableHead key={ln.key} className="text-right">
+                      <span style={{ color: ln.color }}>{ln.label}</span>
+                    </TableHead>
+                  ))}
+                  <TableHead className="text-right font-semibold">합계</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {chartData.map((row) => {
+                  const r = row as unknown as Record<string, number>
+                  let rowTotal = 0
+                  for (const ln of visibleLines) rowTotal += r[ln.key] ?? 0
+                  return (
+                    <TableRow key={row.date}>
+                      <TableCell className="sticky left-0 bg-background whitespace-nowrap text-sm">
+                        {row.date}
+                      </TableCell>
+                      {visibleLines.map((ln) => {
+                        const val = (row as unknown as Record<string, number>)[ln.key]
+                        return (
+                          <TableCell key={ln.key} className="text-right tabular-nums">
+                            {val === 0 ? (
+                              <span className="text-muted-foreground">-</span>
+                            ) : (
+                              val.toLocaleString()
+                            )}
+                          </TableCell>
+                        )
+                      })}
+                      <TableCell className="text-right tabular-nums font-medium">
+                        {rowTotal === 0 ? '-' : rowTotal.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+                {/* Total row */}
+                <TableRow className="bg-muted/50 font-medium">
+                  <TableCell className="sticky left-0 bg-muted/50 text-sm font-semibold">합계</TableCell>
+                  {visibleLines.map((ln) => {
+                    let colTotal = 0
+                    for (const row of chartData) colTotal += (row as unknown as Record<string, number>)[ln.key] ?? 0
+                    return (
+                      <TableCell key={ln.key} className="text-right tabular-nums font-semibold">
+                        {colTotal === 0 ? '-' : colTotal.toLocaleString()}
+                      </TableCell>
+                    )
+                  })}
+                  <TableCell className="text-right tabular-nums font-semibold">
+                    {totalMovements.toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
