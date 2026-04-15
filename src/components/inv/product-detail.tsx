@@ -185,7 +185,7 @@ export function ProductDetail({
   return (
     <div className="space-y-6">
       <DialogHeader>
-        <DialogTitle>상품 상세</DialogTitle>
+        <DialogTitle>상품 수정</DialogTitle>
         <DialogDescription>
           상품명과 제품코드, 옵션 정보를 수정할 수 있습니다.
         </DialogDescription>
@@ -230,15 +230,14 @@ export function ProductDetail({
               <TableRow>
                 <TableHead>옵션명</TableHead>
                 <TableHead>SKU</TableHead>
-                <TableHead className="text-right">총재고</TableHead>
-                <TableHead className="w-20 text-right">액션</TableHead>
+                <TableHead className="w-20 text-right">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.options.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={3}
                     className="py-6 text-center text-muted-foreground"
                   >
                     등록된 옵션이 없습니다
@@ -271,9 +270,6 @@ export function ProductDetail({
                             }))
                           }
                         />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {o.totalStock.toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button

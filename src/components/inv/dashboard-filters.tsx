@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { getLastNDaysRangeKst, getTodayStrKst } from '@/lib/date-range'
 
 export type DashboardFilterValues = {
   locationId?: string
@@ -18,6 +19,7 @@ export type DashboardFilterValues = {
   channelGroupId?: string
   from?: string
   to?: string
+  movementTypes?: string[]
 }
 
 interface Props {
@@ -76,11 +78,66 @@ export function DashboardFilters({ value, onChange }: Props) {
   }
 
   function reset() {
-    onChange({})
+    const range = getLastNDaysRangeKst(7)
+    onChange({ from: range.from, to: range.to })
+  }
+
+  // --- Quick-select helpers ---
+  function getThisMonthRange(): { from: string; to: string } {
+    const today = getTodayStrKst()
+    const [y, m] = today.split('-').map(Number)
+    const from = `${y}-${String(m).padStart(2, '0')}-01`
+    return { from, to: today }
+  }
+
+  function getLastMonthRange(): { from: string; to: string } {
+    const today = getTodayStrKst()
+    const [y, m] = today.split('-').map(Number)
+    const prevM = m === 1 ? 12 : m - 1
+    const prevY = m === 1 ? y - 1 : y
+    const from = `${prevY}-${String(prevM).padStart(2, '0')}-01`
+    const lastDay = new Date(y, m - 1, 0).getDate()
+    const to = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+    return { from, to }
+  }
+
+  const range7 = getLastNDaysRangeKst(7)
+  const range30 = getLastNDaysRangeKst(30)
+  const range90 = getLastNDaysRangeKst(90)
+  const rangeThisMonth = getThisMonthRange()
+  const rangeLastMonth = getLastMonthRange()
+
+  function isRangeActive(r: { from: string; to: string }) {
+    return value.from === r.from && value.to === r.to
+  }
+
+  const quickSelects = [
+    { label: '7일', range: range7 },
+    { label: '30일', range: range30 },
+    { label: '90일', range: range90 },
+    { label: '이번달', range: rangeThisMonth },
+    { label: '지난달', range: rangeLastMonth },
+  ]
+
+  const movementTypeOptions = [
+    { type: 'INBOUND', label: '입고', color: 'bg-emerald-500' },
+    { type: 'OUTBOUND', label: '출고', color: 'bg-red-500' },
+    { type: 'RETURN', label: '반품', color: 'bg-blue-500' },
+    { type: 'TRANSFER', label: '이동', color: 'bg-yellow-500' },
+    { type: 'ADJUSTMENT', label: '조정', color: 'bg-purple-500' },
+  ]
+
+  function toggleMovementType(type: string) {
+    const current = value.movementTypes ?? []
+    const next = current.includes(type)
+      ? current.filter((t) => t !== type)
+      : [...current, type]
+    onChange({ ...value, movementTypes: next.length > 0 ? next : undefined })
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-4">
+    <div className="space-y-3 rounded-lg border bg-card p-4">
+    <div className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1">
         <Label className="text-xs text-muted-foreground">보관 위치</Label>
         <Select
@@ -164,6 +221,38 @@ export function DashboardFilters({ value, onChange }: Props) {
       <Button variant="outline" size="sm" onClick={reset}>
         초기화
       </Button>
+    </div>
+
+    {/* Quick-select date range buttons */}
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs text-muted-foreground">기간:</span>
+      {quickSelects.map((qs) => (
+        <Button
+          key={qs.label}
+          variant={isRangeActive(qs.range) ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => onChange({ ...value, from: qs.range.from, to: qs.range.to })}
+        >
+          {qs.label}
+        </Button>
+      ))}
+    </div>
+
+    {/* Movement type toggle buttons */}
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs text-muted-foreground">이동유형:</span>
+      {movementTypeOptions.map((mt) => (
+        <Button
+          key={mt.type}
+          variant={value.movementTypes?.includes(mt.type) ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => toggleMovementType(mt.type)}
+        >
+          <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${mt.color}`} />
+          {mt.label}
+        </Button>
+      ))}
+    </div>
     </div>
   )
 }
