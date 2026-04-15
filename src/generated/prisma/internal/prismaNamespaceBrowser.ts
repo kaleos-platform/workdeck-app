@@ -78,6 +78,7 @@ export const ModelName = {
   InventoryRecord: 'InventoryRecord',
   InventoryExcludedProduct: 'InventoryExcludedProduct',
   InventoryAnalysis: 'InventoryAnalysis',
+  InvProductGroup: 'InvProductGroup',
   InvProduct: 'InvProduct',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
@@ -531,11 +532,23 @@ export const InventoryAnalysisScalarFieldEnum = {
 export type InventoryAnalysisScalarFieldEnum = (typeof InventoryAnalysisScalarFieldEnum)[keyof typeof InventoryAnalysisScalarFieldEnum]
 
 
+export const InvProductGroupScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvProductGroupScalarFieldEnum = (typeof InvProductGroupScalarFieldEnum)[keyof typeof InvProductGroupScalarFieldEnum]
+
+
 export const InvProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
   code: 'code',
+  groupId: 'groupId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

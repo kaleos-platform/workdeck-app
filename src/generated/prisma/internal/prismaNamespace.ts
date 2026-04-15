@@ -411,6 +411,7 @@ export const ModelName = {
   InventoryRecord: 'InventoryRecord',
   InventoryExcludedProduct: 'InventoryExcludedProduct',
   InventoryAnalysis: 'InventoryAnalysis',
+  InvProductGroup: 'InvProductGroup',
   InvProduct: 'InvProduct',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
@@ -438,7 +439,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProduct" | "invProductOption" | "invStorageLocation" | "invChannelGroup" | "invSalesChannel" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invChannelGroup" | "invSalesChannel" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2440,6 +2441,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InvProductGroup: {
+      payload: Prisma.$InvProductGroupPayload<ExtArgs>
+      fields: Prisma.InvProductGroupFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InvProductGroupFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InvProductGroupFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        findFirst: {
+          args: Prisma.InvProductGroupFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InvProductGroupFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        findMany: {
+          args: Prisma.InvProductGroupFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>[]
+        }
+        create: {
+          args: Prisma.InvProductGroupCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        createMany: {
+          args: Prisma.InvProductGroupCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InvProductGroupCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>[]
+        }
+        delete: {
+          args: Prisma.InvProductGroupDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        update: {
+          args: Prisma.InvProductGroupUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        deleteMany: {
+          args: Prisma.InvProductGroupDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InvProductGroupUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InvProductGroupUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>[]
+        }
+        upsert: {
+          args: Prisma.InvProductGroupUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        aggregate: {
+          args: Prisma.InvProductGroupAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInvProductGroup>
+        }
+        groupBy: {
+          args: Prisma.InvProductGroupGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvProductGroupGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InvProductGroupCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvProductGroupCountAggregateOutputType> | number
+        }
+      }
+    }
     InvProduct: {
       payload: Prisma.$InvProductPayload<ExtArgs>
       fields: Prisma.InvProductFieldRefs
@@ -3790,11 +3865,23 @@ export const InventoryAnalysisScalarFieldEnum = {
 export type InventoryAnalysisScalarFieldEnum = (typeof InventoryAnalysisScalarFieldEnum)[keyof typeof InventoryAnalysisScalarFieldEnum]
 
 
+export const InvProductGroupScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvProductGroupScalarFieldEnum = (typeof InvProductGroupScalarFieldEnum)[keyof typeof InvProductGroupScalarFieldEnum]
+
+
 export const InvProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
   code: 'code',
+  groupId: 'groupId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -4341,6 +4428,7 @@ export type GlobalOmitConfig = {
   inventoryRecord?: Prisma.InventoryRecordOmit
   inventoryExcludedProduct?: Prisma.InventoryExcludedProductOmit
   inventoryAnalysis?: Prisma.InventoryAnalysisOmit
+  invProductGroup?: Prisma.InvProductGroupOmit
   invProduct?: Prisma.InvProductOmit
   invProductOption?: Prisma.InvProductOptionOmit
   invStorageLocation?: Prisma.InvStorageLocationOmit

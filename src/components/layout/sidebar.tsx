@@ -19,6 +19,7 @@ import {
   MapPin,
   Store,
   FileCheck,
+  Layers,
   TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -41,6 +42,7 @@ import {
   INVENTORY_MGMT_RECONCILIATION_PATH,
   INVENTORY_MGMT_REORDER_PATH,
   INVENTORY_MGMT_SETTINGS_PATH,
+  INVENTORY_MGMT_STOCK_STATUS_PATH,
 } from '@/lib/deck-routes'
 
 type Campaign = {
@@ -76,6 +78,11 @@ const INVENTORY_MAIN_ROUTES = [
     label: '입출고 관리',
     icon: ArrowLeftRight,
     href: INVENTORY_MGMT_MOVEMENTS_PATH,
+  },
+  {
+    label: '재고 현황',
+    icon: Layers,
+    href: INVENTORY_MGMT_STOCK_STATUS_PATH,
   },
   {
     label: '상품 관리',

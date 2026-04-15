@@ -84,14 +84,14 @@ export async function PATCH(
   })
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
 
-  let body: { name?: string; code?: string | null }
+  let body: { name?: string; code?: string | null; groupId?: string | null }
   try {
     body = await req.json()
   } catch {
     return errorResponse('잘못된 요청 본문입니다', 400)
   }
 
-  const data: { name?: string; code?: string | null } = {}
+  const data: { name?: string; code?: string | null; groupId?: string | null } = {}
 
   if (body.name !== undefined) {
     const trimmed = body.name.trim()
@@ -117,6 +117,19 @@ export async function PATCH(
     }
   }
 
+  if (body.groupId !== undefined) {
+    if (body.groupId === null) {
+      data.groupId = null
+    } else {
+      const group = await prisma.invProductGroup.findFirst({
+        where: { id: body.groupId, spaceId: resolved.space.id },
+        select: { id: true },
+      })
+      if (!group) return errorResponse('그룹을 찾을 수 없습니다', 404)
+      data.groupId = group.id
+    }
+  }
+
   if (Object.keys(data).length === 0) {
     return errorResponse('변경할 필드가 없습니다', 400)
   }
@@ -124,7 +137,7 @@ export async function PATCH(
   const updated = await prisma.invProduct.update({
     where: { id: productId },
     data,
-    select: { id: true, name: true, code: true, updatedAt: true },
+    select: { id: true, name: true, code: true, groupId: true, updatedAt: true },
   })
 
   return NextResponse.json(updated)

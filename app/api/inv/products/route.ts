@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
@@ -14,13 +14,22 @@ export async function GET(req: NextRequest) {
   const sortBy = ['name', 'createdAt'].includes(sortByRaw) ? sortByRaw : 'name'
   const sortOrder = searchParams.get('sortOrder') === 'desc' ? 'desc' : 'asc'
 
+  const groupIdParam = searchParams.get('groupId')
+
   const where: {
     spaceId: string
+    groupId?: string | null
     OR?: Array<
       | { name: { contains: string; mode: 'insensitive' } }
       | { code: { contains: string; mode: 'insensitive' } }
     >
   } = { spaceId: resolved.space.id }
+
+  if (groupIdParam === 'none') {
+    where.groupId = null
+  } else if (groupIdParam) {
+    where.groupId = groupIdParam
+  }
 
   if (search) {
     where.OR = [
@@ -36,6 +45,7 @@ export async function GET(req: NextRequest) {
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
+        group: { select: { id: true, name: true } },
         options: {
           select: {
             id: true,
@@ -57,6 +67,8 @@ export async function GET(req: NextRequest) {
       id: p.id,
       name: p.name,
       code: p.code,
+      groupId: p.group?.id ?? null,
+      groupName: p.group?.name ?? null,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
       optionsCount,
@@ -71,7 +83,7 @@ export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('inventory-mgmt')
   if ('error' in resolved) return resolved.error
 
-  let body: { name?: string; code?: string; options?: { name: string; sku?: string }[] }
+  let body: { name?: string; code?: string; groupId?: string; options?: { name: string; sku?: string }[] }
   try {
     body = await req.json()
   } catch {
@@ -96,12 +108,24 @@ export async function POST(req: NextRequest) {
 
   const code = body.code?.trim() || null
 
+  // Verify groupId if provided
+  let groupId: string | null = null
+  if (body.groupId) {
+    const group = await prisma.invProductGroup.findFirst({
+      where: { id: body.groupId, spaceId: resolved.space.id },
+      select: { id: true },
+    })
+    if (!group) return errorResponse('그룹을 찾을 수 없습니다', 404)
+    groupId = group.id
+  }
+
   try {
     const product = await prisma.invProduct.create({
       data: {
         spaceId: resolved.space.id,
         name,
         code,
+        groupId,
         options: {
           create: options.map((o) => ({
             name: o.name.trim(),

@@ -194,6 +194,7 @@ export type SpaceWhereInput = {
   invReconciliations?: Prisma.InvReconciliationListRelationFilter
   invLocationMappings?: Prisma.InvLocationProductMapListRelationFilter
   invSettings?: Prisma.XOR<Prisma.InvSettingsNullableScalarRelationFilter, Prisma.InvSettingsWhereInput> | null
+  invProductGroups?: Prisma.InvProductGroupListRelationFilter
 }
 
 export type SpaceOrderByWithRelationInput = {
@@ -214,6 +215,7 @@ export type SpaceOrderByWithRelationInput = {
   invReconciliations?: Prisma.InvReconciliationOrderByRelationAggregateInput
   invLocationMappings?: Prisma.InvLocationProductMapOrderByRelationAggregateInput
   invSettings?: Prisma.InvSettingsOrderByWithRelationInput
+  invProductGroups?: Prisma.InvProductGroupOrderByRelationAggregateInput
 }
 
 export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -237,6 +239,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   invReconciliations?: Prisma.InvReconciliationListRelationFilter
   invLocationMappings?: Prisma.InvLocationProductMapListRelationFilter
   invSettings?: Prisma.XOR<Prisma.InvSettingsNullableScalarRelationFilter, Prisma.InvSettingsWhereInput> | null
+  invProductGroups?: Prisma.InvProductGroupListRelationFilter
 }, "id">
 
 export type SpaceOrderByWithAggregationInput = {
@@ -279,6 +282,7 @@ export type SpaceCreateInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateInput = {
@@ -299,6 +303,7 @@ export type SpaceUncheckedCreateInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUpdateInput = {
@@ -319,6 +324,7 @@ export type SpaceUpdateInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateInput = {
@@ -339,6 +345,7 @@ export type SpaceUncheckedUpdateInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateManyInput = {
@@ -424,6 +431,20 @@ export type SpaceUpdateOneRequiredWithoutDeckInstancesNestedInput = {
   upsert?: Prisma.SpaceUpsertWithoutDeckInstancesInput
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutDeckInstancesInput, Prisma.SpaceUpdateWithoutDeckInstancesInput>, Prisma.SpaceUncheckedUpdateWithoutDeckInstancesInput>
+}
+
+export type SpaceCreateNestedOneWithoutInvProductGroupsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvProductGroupsInput, Prisma.SpaceUncheckedCreateWithoutInvProductGroupsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvProductGroupsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutInvProductGroupsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutInvProductGroupsInput, Prisma.SpaceUncheckedCreateWithoutInvProductGroupsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutInvProductGroupsInput
+  upsert?: Prisma.SpaceUpsertWithoutInvProductGroupsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutInvProductGroupsInput, Prisma.SpaceUpdateWithoutInvProductGroupsInput>, Prisma.SpaceUncheckedUpdateWithoutInvProductGroupsInput>
 }
 
 export type SpaceCreateNestedOneWithoutInvProductsInput = {
@@ -583,6 +604,7 @@ export type SpaceCreateWithoutMembersInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutMembersInput = {
@@ -602,6 +624,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutMembersInput = {
@@ -637,6 +660,7 @@ export type SpaceUpdateWithoutMembersInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutMembersInput = {
@@ -656,6 +680,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeckInstancesInput = {
@@ -675,6 +700,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
@@ -694,6 +720,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeckInstancesInput = {
@@ -729,6 +756,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
@@ -738,6 +766,103 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutInvProductGroupsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invChannelGroups?: Prisma.InvChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  invSalesChannels?: Prisma.InvSalesChannelUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutInvProductGroupsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvProductGroupsInput, Prisma.SpaceUncheckedCreateWithoutInvProductGroupsInput>
+}
+
+export type SpaceUpsertWithoutInvProductGroupsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutInvProductGroupsInput, Prisma.SpaceUncheckedUpdateWithoutInvProductGroupsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutInvProductGroupsInput, Prisma.SpaceUncheckedCreateWithoutInvProductGroupsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutInvProductGroupsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutInvProductGroupsInput, Prisma.SpaceUncheckedUpdateWithoutInvProductGroupsInput>
+}
+
+export type SpaceUpdateWithoutInvProductGroupsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invChannelGroups?: Prisma.InvChannelGroupUpdateManyWithoutSpaceNestedInput
+  invSalesChannels?: Prisma.InvSalesChannelUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invChannelGroups?: Prisma.InvChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
@@ -767,6 +892,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductsInput = {
@@ -786,6 +912,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductsInput = {
@@ -821,6 +948,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductsInput = {
@@ -840,6 +968,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationsInput = {
@@ -859,6 +988,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationsInput = {
@@ -878,6 +1008,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationsInput = {
@@ -913,6 +1044,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
@@ -932,6 +1064,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvChannelGroupsInput = {
@@ -951,6 +1084,7 @@ export type SpaceCreateWithoutInvChannelGroupsInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvChannelGroupsInput = {
@@ -970,6 +1104,7 @@ export type SpaceUncheckedCreateWithoutInvChannelGroupsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvChannelGroupsInput = {
@@ -1005,6 +1140,7 @@ export type SpaceUpdateWithoutInvChannelGroupsInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvChannelGroupsInput = {
@@ -1024,6 +1160,7 @@ export type SpaceUncheckedUpdateWithoutInvChannelGroupsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvSalesChannelsInput = {
@@ -1043,6 +1180,7 @@ export type SpaceCreateWithoutInvSalesChannelsInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvSalesChannelsInput = {
@@ -1062,6 +1200,7 @@ export type SpaceUncheckedCreateWithoutInvSalesChannelsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvSalesChannelsInput = {
@@ -1097,6 +1236,7 @@ export type SpaceUpdateWithoutInvSalesChannelsInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvSalesChannelsInput = {
@@ -1116,6 +1256,7 @@ export type SpaceUncheckedUpdateWithoutInvSalesChannelsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvMovementsInput = {
@@ -1135,6 +1276,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvMovementsInput = {
@@ -1154,6 +1296,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvMovementsInput = {
@@ -1189,6 +1332,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
@@ -1208,6 +1352,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvStockLevelsInput = {
@@ -1227,6 +1372,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
@@ -1246,6 +1392,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvStockLevelsInput = {
@@ -1281,6 +1428,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
@@ -1300,6 +1448,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvImportHistoriesInput = {
@@ -1319,6 +1468,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
@@ -1338,6 +1488,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvImportHistoriesInput = {
@@ -1373,6 +1524,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
@@ -1392,6 +1544,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvReconciliationsInput = {
@@ -1411,6 +1564,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
@@ -1430,6 +1584,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvReconciliationsInput = {
@@ -1465,6 +1620,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
@@ -1484,6 +1640,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationMappingsInput = {
@@ -1503,6 +1660,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
@@ -1522,6 +1680,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationMappingsInput = {
@@ -1557,6 +1716,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
@@ -1576,6 +1736,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvSettingsInput = {
@@ -1595,6 +1756,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
   invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvSettingsInput = {
@@ -1614,6 +1776,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
   invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvSettingsInput = {
@@ -1649,6 +1812,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
   invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
@@ -1668,6 +1832,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -1687,6 +1852,7 @@ export type SpaceCountOutputType = {
   invImportHistories: number
   invReconciliations: number
   invLocationMappings: number
+  invProductGroups: number
 }
 
 export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1701,6 +1867,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   invImportHistories?: boolean | SpaceCountOutputTypeCountInvImportHistoriesArgs
   invReconciliations?: boolean | SpaceCountOutputTypeCountInvReconciliationsArgs
   invLocationMappings?: boolean | SpaceCountOutputTypeCountInvLocationMappingsArgs
+  invProductGroups?: boolean | SpaceCountOutputTypeCountInvProductGroupsArgs
 }
 
 /**
@@ -1790,6 +1957,13 @@ export type SpaceCountOutputTypeCountInvLocationMappingsArgs<ExtArgs extends run
   where?: Prisma.InvLocationProductMapWhereInput
 }
 
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountInvProductGroupsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvProductGroupWhereInput
+}
+
 
 export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1809,6 +1983,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   invReconciliations?: boolean | Prisma.Space$invReconciliationsArgs<ExtArgs>
   invLocationMappings?: boolean | Prisma.Space$invLocationMappingsArgs<ExtArgs>
   invSettings?: boolean | Prisma.Space$invSettingsArgs<ExtArgs>
+  invProductGroups?: boolean | Prisma.Space$invProductGroupsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["space"]>
 
@@ -1850,6 +2025,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   invReconciliations?: boolean | Prisma.Space$invReconciliationsArgs<ExtArgs>
   invLocationMappings?: boolean | Prisma.Space$invLocationMappingsArgs<ExtArgs>
   invSettings?: boolean | Prisma.Space$invSettingsArgs<ExtArgs>
+  invProductGroups?: boolean | Prisma.Space$invProductGroupsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1870,6 +2046,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     invReconciliations: Prisma.$InvReconciliationPayload<ExtArgs>[]
     invLocationMappings: Prisma.$InvLocationProductMapPayload<ExtArgs>[]
     invSettings: Prisma.$InvSettingsPayload<ExtArgs> | null
+    invProductGroups: Prisma.$InvProductGroupPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2283,6 +2460,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   invReconciliations<T extends Prisma.Space$invReconciliationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invReconciliationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvReconciliationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invLocationMappings<T extends Prisma.Space$invLocationMappingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invLocationMappingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvLocationProductMapPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invSettings<T extends Prisma.Space$invSettingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invSettingsArgs<ExtArgs>>): Prisma.Prisma__InvSettingsClient<runtime.Types.Result.GetResult<Prisma.$InvSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  invProductGroups<T extends Prisma.Space$invProductGroupsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invProductGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvProductGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2985,6 +3163,30 @@ export type Space$invSettingsArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   include?: Prisma.InvSettingsInclude<ExtArgs> | null
   where?: Prisma.InvSettingsWhereInput
+}
+
+/**
+ * Space.invProductGroups
+ */
+export type Space$invProductGroupsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvProductGroup
+   */
+  select?: Prisma.InvProductGroupSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvProductGroup
+   */
+  omit?: Prisma.InvProductGroupOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvProductGroupInclude<ExtArgs> | null
+  where?: Prisma.InvProductGroupWhereInput
+  orderBy?: Prisma.InvProductGroupOrderByWithRelationInput | Prisma.InvProductGroupOrderByWithRelationInput[]
+  cursor?: Prisma.InvProductGroupWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvProductGroupScalarFieldEnum | Prisma.InvProductGroupScalarFieldEnum[]
 }
 
 /**
