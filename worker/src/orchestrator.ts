@@ -296,15 +296,15 @@ async function collectAndUploadInventory(
   return { healthRows, errors }
 }
 
-/** 재고 분석 트리거 — 재고 수집 완료 후 자동 분석 */
+/** 재고 분석 트리거 — 재고 수집 완료 후 항상 실행, Slack 발송 포함 */
 async function triggerInventoryAnalysis(workspaceId: string): Promise<void> {
   const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
   const apiKey = process.env.WORKER_API_KEY
   if (!baseUrl || !apiKey) return
 
-  console.log('[orchestrator] 재고 분석 트리거 실행')
+  console.log('[orchestrator] 재고 분석 트리거 실행 (worker 전용 엔드포인트)')
 
-  const res = await fetch(`${baseUrl}/api/inventory/analysis`, {
+  const res = await fetch(`${baseUrl}/api/inventory/analysis/worker`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-worker-api-key': apiKey },
     body: JSON.stringify({ workspaceId }),
@@ -312,7 +312,9 @@ async function triggerInventoryAnalysis(workspaceId: string): Promise<void> {
 
   if (res.ok) {
     const data = await res.json()
-    console.log(`[orchestrator] 재고 분석 완료: analysisId=${data.analysisId}`)
+    console.log(
+      `[orchestrator] 재고 분석 완료: analysisId=${data.analysisId}, slackAttempted=${data.slackAttempted}, slackDelivered=${data.slackDelivered}`,
+    )
   } else {
     const body = await res.text()
     console.error(`[orchestrator] 재고 분석 실패 [${res.status}]: ${body}`)
