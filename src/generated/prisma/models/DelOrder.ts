@@ -48,6 +48,7 @@ export type DelOrderMinAggregateOutputType = {
   addressIv: string | null
   postalCode: string | null
   deliveryMessage: string | null
+  memo: string | null
   orderDate: Date | null
   orderNumber: string | null
   paymentAmount: runtime.Decimal | null
@@ -68,6 +69,7 @@ export type DelOrderMaxAggregateOutputType = {
   addressIv: string | null
   postalCode: string | null
   deliveryMessage: string | null
+  memo: string | null
   orderDate: Date | null
   orderNumber: string | null
   paymentAmount: runtime.Decimal | null
@@ -88,6 +90,7 @@ export type DelOrderCountAggregateOutputType = {
   addressIv: number
   postalCode: number
   deliveryMessage: number
+  memo: number
   orderDate: number
   orderNumber: number
   paymentAmount: number
@@ -118,6 +121,7 @@ export type DelOrderMinAggregateInputType = {
   addressIv?: true
   postalCode?: true
   deliveryMessage?: true
+  memo?: true
   orderDate?: true
   orderNumber?: true
   paymentAmount?: true
@@ -138,6 +142,7 @@ export type DelOrderMaxAggregateInputType = {
   addressIv?: true
   postalCode?: true
   deliveryMessage?: true
+  memo?: true
   orderDate?: true
   orderNumber?: true
   paymentAmount?: true
@@ -158,6 +163,7 @@ export type DelOrderCountAggregateInputType = {
   addressIv?: true
   postalCode?: true
   deliveryMessage?: true
+  memo?: true
   orderDate?: true
   orderNumber?: true
   paymentAmount?: true
@@ -265,6 +271,7 @@ export type DelOrderGroupByOutputType = {
   addressIv: string
   postalCode: string | null
   deliveryMessage: string | null
+  memo: string | null
   orderDate: Date
   orderNumber: string | null
   paymentAmount: runtime.Decimal | null
@@ -308,6 +315,7 @@ export type DelOrderWhereInput = {
   addressIv?: Prisma.StringFilter<"DelOrder"> | string
   postalCode?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   deliveryMessage?: Prisma.StringNullableFilter<"DelOrder"> | string | null
+  memo?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   orderDate?: Prisma.DateTimeFilter<"DelOrder"> | Date | string
   orderNumber?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   paymentAmount?: Prisma.DecimalNullableFilter<"DelOrder"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -333,6 +341,7 @@ export type DelOrderOrderByWithRelationInput = {
   addressIv?: Prisma.SortOrder
   postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveryMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  memo?: Prisma.SortOrderInput | Prisma.SortOrder
   orderDate?: Prisma.SortOrder
   orderNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentAmount?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -361,6 +370,7 @@ export type DelOrderWhereUniqueInput = Prisma.AtLeast<{
   addressIv?: Prisma.StringFilter<"DelOrder"> | string
   postalCode?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   deliveryMessage?: Prisma.StringNullableFilter<"DelOrder"> | string | null
+  memo?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   orderDate?: Prisma.DateTimeFilter<"DelOrder"> | Date | string
   orderNumber?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   paymentAmount?: Prisma.DecimalNullableFilter<"DelOrder"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -386,6 +396,7 @@ export type DelOrderOrderByWithAggregationInput = {
   addressIv?: Prisma.SortOrder
   postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveryMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  memo?: Prisma.SortOrderInput | Prisma.SortOrder
   orderDate?: Prisma.SortOrder
   orderNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentAmount?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -414,6 +425,7 @@ export type DelOrderScalarWhereWithAggregatesInput = {
   addressIv?: Prisma.StringWithAggregatesFilter<"DelOrder"> | string
   postalCode?: Prisma.StringNullableWithAggregatesFilter<"DelOrder"> | string | null
   deliveryMessage?: Prisma.StringNullableWithAggregatesFilter<"DelOrder"> | string | null
+  memo?: Prisma.StringNullableWithAggregatesFilter<"DelOrder"> | string | null
   orderDate?: Prisma.DateTimeWithAggregatesFilter<"DelOrder"> | Date | string
   orderNumber?: Prisma.StringNullableWithAggregatesFilter<"DelOrder"> | string | null
   paymentAmount?: Prisma.DecimalNullableWithAggregatesFilter<"DelOrder"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -430,6 +442,7 @@ export type DelOrderCreateInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -455,6 +468,7 @@ export type DelOrderUncheckedCreateInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -472,6 +486,7 @@ export type DelOrderUpdateInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -497,6 +512,7 @@ export type DelOrderUncheckedUpdateInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -518,6 +534,7 @@ export type DelOrderCreateManyInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -534,6 +551,7 @@ export type DelOrderUpdateManyMutationInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -554,6 +572,7 @@ export type DelOrderUncheckedUpdateManyInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -584,6 +603,7 @@ export type DelOrderCountOrderByAggregateInput = {
   addressIv?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
   deliveryMessage?: Prisma.SortOrder
+  memo?: Prisma.SortOrder
   orderDate?: Prisma.SortOrder
   orderNumber?: Prisma.SortOrder
   paymentAmount?: Prisma.SortOrder
@@ -608,6 +628,7 @@ export type DelOrderMaxOrderByAggregateInput = {
   addressIv?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
   deliveryMessage?: Prisma.SortOrder
+  memo?: Prisma.SortOrder
   orderDate?: Prisma.SortOrder
   orderNumber?: Prisma.SortOrder
   paymentAmount?: Prisma.SortOrder
@@ -628,6 +649,7 @@ export type DelOrderMinOrderByAggregateInput = {
   addressIv?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
   deliveryMessage?: Prisma.SortOrder
+  memo?: Prisma.SortOrder
   orderDate?: Prisma.SortOrder
   orderNumber?: Prisma.SortOrder
   paymentAmount?: Prisma.SortOrder
@@ -835,6 +857,7 @@ export type DelOrderCreateWithoutSpaceInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -858,6 +881,7 @@ export type DelOrderUncheckedCreateWithoutSpaceInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -908,6 +932,7 @@ export type DelOrderScalarWhereInput = {
   addressIv?: Prisma.StringFilter<"DelOrder"> | string
   postalCode?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   deliveryMessage?: Prisma.StringNullableFilter<"DelOrder"> | string | null
+  memo?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   orderDate?: Prisma.DateTimeFilter<"DelOrder"> | Date | string
   orderNumber?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   paymentAmount?: Prisma.DecimalNullableFilter<"DelOrder"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -924,6 +949,7 @@ export type DelOrderCreateWithoutShippingMethodInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -947,6 +973,7 @@ export type DelOrderUncheckedCreateWithoutShippingMethodInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -990,6 +1017,7 @@ export type DelOrderCreateWithoutChannelInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1013,6 +1041,7 @@ export type DelOrderUncheckedCreateWithoutChannelInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1056,6 +1085,7 @@ export type DelOrderCreateWithoutBatchInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1079,6 +1109,7 @@ export type DelOrderUncheckedCreateWithoutBatchInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1122,6 +1153,7 @@ export type DelOrderCreateWithoutItemsInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1146,6 +1178,7 @@ export type DelOrderUncheckedCreateWithoutItemsInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1178,6 +1211,7 @@ export type DelOrderUpdateWithoutItemsInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1202,6 +1236,7 @@ export type DelOrderUncheckedUpdateWithoutItemsInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1221,6 +1256,7 @@ export type DelOrderCreateManySpaceInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1237,6 +1273,7 @@ export type DelOrderUpdateWithoutSpaceInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1260,6 +1297,7 @@ export type DelOrderUncheckedUpdateWithoutSpaceInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1280,6 +1318,7 @@ export type DelOrderUncheckedUpdateManyWithoutSpaceInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1299,6 +1338,7 @@ export type DelOrderCreateManyShippingMethodInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1315,6 +1355,7 @@ export type DelOrderUpdateWithoutShippingMethodInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1338,6 +1379,7 @@ export type DelOrderUncheckedUpdateWithoutShippingMethodInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1358,6 +1400,7 @@ export type DelOrderUncheckedUpdateManyWithoutShippingMethodInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1377,6 +1420,7 @@ export type DelOrderCreateManyChannelInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1393,6 +1437,7 @@ export type DelOrderUpdateWithoutChannelInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1416,6 +1461,7 @@ export type DelOrderUncheckedUpdateWithoutChannelInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1436,6 +1482,7 @@ export type DelOrderUncheckedUpdateManyWithoutChannelInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1455,6 +1502,7 @@ export type DelOrderCreateManyBatchInput = {
   addressIv: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: Date | string
   orderNumber?: string | null
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1471,6 +1519,7 @@ export type DelOrderUpdateWithoutBatchInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1494,6 +1543,7 @@ export type DelOrderUncheckedUpdateWithoutBatchInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1514,6 +1564,7 @@ export type DelOrderUncheckedUpdateManyWithoutBatchInput = {
   addressIv?: Prisma.StringFieldUpdateOperationsInput | string
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1565,6 +1616,7 @@ export type DelOrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   addressIv?: boolean
   postalCode?: boolean
   deliveryMessage?: boolean
+  memo?: boolean
   orderDate?: boolean
   orderNumber?: boolean
   paymentAmount?: boolean
@@ -1591,6 +1643,7 @@ export type DelOrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   addressIv?: boolean
   postalCode?: boolean
   deliveryMessage?: boolean
+  memo?: boolean
   orderDate?: boolean
   orderNumber?: boolean
   paymentAmount?: boolean
@@ -1615,6 +1668,7 @@ export type DelOrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   addressIv?: boolean
   postalCode?: boolean
   deliveryMessage?: boolean
+  memo?: boolean
   orderDate?: boolean
   orderNumber?: boolean
   paymentAmount?: boolean
@@ -1639,13 +1693,14 @@ export type DelOrderSelectScalar = {
   addressIv?: boolean
   postalCode?: boolean
   deliveryMessage?: boolean
+  memo?: boolean
   orderDate?: boolean
   orderNumber?: boolean
   paymentAmount?: boolean
   createdAt?: boolean
 }
 
-export type DelOrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "batchId" | "shippingMethodId" | "channelId" | "recipientNameEnc" | "recipientNameIv" | "phoneEnc" | "phoneIv" | "addressEnc" | "addressIv" | "postalCode" | "deliveryMessage" | "orderDate" | "orderNumber" | "paymentAmount" | "createdAt", ExtArgs["result"]["delOrder"]>
+export type DelOrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "batchId" | "shippingMethodId" | "channelId" | "recipientNameEnc" | "recipientNameIv" | "phoneEnc" | "phoneIv" | "addressEnc" | "addressIv" | "postalCode" | "deliveryMessage" | "memo" | "orderDate" | "orderNumber" | "paymentAmount" | "createdAt", ExtArgs["result"]["delOrder"]>
 export type DelOrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   batch?: boolean | Prisma.DelBatchDefaultArgs<ExtArgs>
@@ -1690,6 +1745,7 @@ export type $DelOrderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     addressIv: string
     postalCode: string | null
     deliveryMessage: string | null
+    memo: string | null
     orderDate: Date
     orderNumber: string | null
     paymentAmount: runtime.Decimal | null
@@ -2135,6 +2191,7 @@ export interface DelOrderFieldRefs {
   readonly addressIv: Prisma.FieldRef<"DelOrder", 'String'>
   readonly postalCode: Prisma.FieldRef<"DelOrder", 'String'>
   readonly deliveryMessage: Prisma.FieldRef<"DelOrder", 'String'>
+  readonly memo: Prisma.FieldRef<"DelOrder", 'String'>
   readonly orderDate: Prisma.FieldRef<"DelOrder", 'DateTime'>
   readonly orderNumber: Prisma.FieldRef<"DelOrder", 'String'>
   readonly paymentAmount: Prisma.FieldRef<"DelOrder", 'Decimal'>

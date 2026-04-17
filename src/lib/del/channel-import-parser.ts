@@ -48,7 +48,9 @@ export function previewFile(buffer: ArrayBuffer): FilePreview {
   const jsonRows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 })
 
   const headers = (jsonRows[0] ?? []).map((v) => String(v ?? ''))
-  const dataRows = jsonRows.slice(1)
+  const dataRows = jsonRows.slice(1).filter((row) =>
+    row.some((cell) => cell != null && String(cell).trim() !== '')
+  )
   const sampleRows = dataRows.slice(0, 5).map((row) =>
     row.map((v) => String(v ?? ''))
   )
@@ -71,7 +73,9 @@ export function parseWithMapping(
   const ws = wb.Sheets[wb.SheetNames[0]]
   const jsonRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
 
-  const dataRows = jsonRows.slice(1) // 헤더 제외
+  const dataRows = jsonRows.slice(1).filter((row: unknown[]) =>
+    row.some((cell) => cell != null && String(cell).trim() !== '')
+  )
   const rows: ParsedOrderRow[] = []
   const errors: { row: number; message: string }[] = []
 

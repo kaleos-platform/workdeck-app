@@ -75,6 +75,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       address,
       postalCode: order.postalCode,
       deliveryMessage: order.deliveryMessage,
+      memo: order.memo,
       orderDate: order.orderDate,
       orderNumber: order.orderNumber,
       paymentAmount: order.paymentAmount,

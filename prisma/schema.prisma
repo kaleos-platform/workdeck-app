@@ -1009,6 +1009,7 @@ model DelOrder {
   addressIv        String
   postalCode       String?  // 우편번호 (비PII)
   deliveryMessage  String?
+  memo             String?  // 사용자 메모
 
   // 주문 메타
   orderDate     DateTime

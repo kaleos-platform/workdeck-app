@@ -33,6 +33,7 @@ export type OrderRow = {
   orderNumber: string
   paymentAmount: string
   items: OrderProduct[]
+  memo: string
 }
 
 type ShippingMethod = { id: string; name: string }
@@ -66,6 +67,7 @@ export function createEmptyRow(): OrderRow {
     orderNumber: '',
     paymentAmount: '',
     items: [],
+    memo: '',
   }
 }
 
@@ -108,13 +110,14 @@ export function RegistrationTable({
               <TableHead className="min-w-[100px]">주문번호</TableHead>
               <TableHead className="min-w-[100px]">결제금액</TableHead>
               <TableHead className="min-w-[180px]">상품</TableHead>
+              <TableHead className="min-w-[120px]">메모</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={13} className="text-center text-muted-foreground py-8">
                   주문을 추가해 주세요
                 </TableCell>
               </TableRow>
@@ -219,6 +222,14 @@ export function RegistrationTable({
                     <OrderProductFields
                       value={row.items}
                       onChange={(items) => updateRow(row.tempId, 'items', items)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      className="h-8 text-xs"
+                      value={row.memo}
+                      onChange={(e) => updateRow(row.tempId, 'memo', e.target.value)}
+                      placeholder="메모"
                     />
                   </TableCell>
                   <TableCell>

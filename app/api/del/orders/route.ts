@@ -11,6 +11,7 @@ type OrderInput = {
   address: string
   postalCode?: string | null
   deliveryMessage?: string | null
+  memo?: string | null
   orderDate: string
   orderNumber?: string | null
   paymentAmount?: number | null
@@ -70,6 +71,7 @@ export async function POST(req: NextRequest) {
           ...encrypted,
           postalCode: input.postalCode || null,
           deliveryMessage: input.deliveryMessage || null,
+          memo: input.memo || null,
           orderDate: new Date(input.orderDate),
           orderNumber: input.orderNumber || null,
           paymentAmount: input.paymentAmount != null ? input.paymentAmount : null,
