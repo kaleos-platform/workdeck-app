@@ -775,6 +775,7 @@ export const DelOrderScalarFieldEnum = {
   addressIv: 'addressIv',
   postalCode: 'postalCode',
   deliveryMessage: 'deliveryMessage',
+  memo: 'memo',
   orderDate: 'orderDate',
   orderNumber: 'orderNumber',
   paymentAmount: 'paymentAmount',

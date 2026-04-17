@@ -92,7 +92,7 @@ export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
           <ClipboardPaste className="mr-1 h-4 w-4" />붙여넣기 대량 입력
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>붙여넣기로 대량 입력</DialogTitle>
           <DialogDescription>

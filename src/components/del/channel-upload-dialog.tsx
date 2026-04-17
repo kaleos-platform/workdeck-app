@@ -130,7 +130,7 @@ export function ChannelUploadDialog({
       if (field) columnMapping[field] = Number(idx)
     }
 
-    if (!columnMapping.recipientName || !columnMapping.phone || !columnMapping.address) {
+    if (columnMapping.recipientName === undefined || columnMapping.phone === undefined || columnMapping.address === undefined) {
       toast.error('받는분, 전화, 주소는 필수 매핑입니다')
       return
     }
@@ -172,7 +172,7 @@ export function ChannelUploadDialog({
           <Upload className="mr-1 h-4 w-4" />파일 업로드
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>채널 파일 업로드</DialogTitle>
           <DialogDescription>
@@ -183,7 +183,16 @@ export function ChannelUploadDialog({
         </DialogHeader>
 
         {step === 'upload' && (
-          <div className="space-y-4 py-4">
+          <div
+            className="rounded-lg border-2 border-dashed p-8 text-center transition-colors hover:border-primary/50"
+            onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
+            onDrop={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              const f = e.dataTransfer.files?.[0]
+              if (f) handleFileUpload(f)
+            }}
+          >
             <input
               ref={fileRef}
               type="file"
@@ -194,9 +203,16 @@ export function ChannelUploadDialog({
                 if (f) handleFileUpload(f)
               }}
             />
-            <Button variant="outline" onClick={() => fileRef.current?.click()}>
+            <Upload className="mx-auto h-10 w-10 text-muted-foreground/50" />
+            <p className="mt-3 text-sm text-muted-foreground">
+              파일을 드래그하여 놓거나
+            </p>
+            <Button variant="outline" className="mt-2" onClick={() => fileRef.current?.click()}>
               파일 선택
             </Button>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Excel(.xlsx, .xls) 또는 CSV 파일
+            </p>
           </div>
         )}
 
