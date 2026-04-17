@@ -24,7 +24,8 @@ export function maskPhone(phone: string): string {
  * 주소 마스킹: "서울시 강남구 역삼동 123-4" → "서울시 강남구 ****"
  */
 export function maskAddress(address: string): string {
-  const parts = address.split(/\s+/)
+  if (!address.trim()) return '****'
+  const parts = address.trim().split(/\s+/)
   if (parts.length <= 2) return parts[0] + ' ****'
   return parts.slice(0, 2).join(' ') + ' ****'
 }

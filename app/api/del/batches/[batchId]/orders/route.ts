@@ -47,21 +47,25 @@ export async function GET(req: NextRequest, { params }: Params) {
     let phone: string
     let address: string
 
-    if (shouldDecrypt) {
+    try {
       const pii = decryptPii(order.recipientNameEnc, order.recipientNameIv)
       const phoneVal = decryptPii(order.phoneEnc, order.phoneIv)
       const addrVal = decryptPii(order.addressEnc, order.addressIv)
-      recipientName = pii
-      phone = phoneVal
-      address = addrVal
-    } else {
-      // 마스킹 표시
-      const pii = decryptPii(order.recipientNameEnc, order.recipientNameIv)
-      const phoneVal = decryptPii(order.phoneEnc, order.phoneIv)
-      const addrVal = decryptPii(order.addressEnc, order.addressIv)
-      recipientName = maskName(pii)
-      phone = maskPhone(phoneVal)
-      address = maskAddress(addrVal)
+
+      if (shouldDecrypt) {
+        recipientName = pii
+        phone = phoneVal
+        address = addrVal
+      } else {
+        recipientName = maskName(pii)
+        phone = maskPhone(phoneVal)
+        address = maskAddress(addrVal)
+      }
+    } catch {
+      // 복호화 실패 시 안전한 플레이스홀더 반환
+      recipientName = '[복호화 오류]'
+      phone = '[복호화 오류]'
+      address = '[복호화 오류]'
     }
 
     return {

@@ -25,11 +25,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const data: Record<string, unknown> = {}
 
   // PII 필드 업데이트 (3개 모두 제공되어야 함)
-  if (body?.recipientName && body?.phone && body?.address) {
+  const trimmedName = typeof body?.recipientName === 'string' ? body.recipientName.trim() : ''
+  const trimmedPhone = typeof body?.phone === 'string' ? body.phone.trim() : ''
+  const trimmedAddress = typeof body?.address === 'string' ? body.address.trim() : ''
+  if (trimmedName && trimmedPhone && trimmedAddress) {
     const encrypted = encryptOrderPii({
-      recipientName: body.recipientName,
-      phone: body.phone,
-      address: body.address,
+      recipientName: trimmedName,
+      phone: trimmedPhone,
+      address: trimmedAddress,
     })
     Object.assign(data, encrypted)
   }

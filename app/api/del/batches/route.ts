@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {

@@ -57,24 +57,6 @@ export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
       return
     }
 
-    const rows: OrderRow[] = preview.map((cols) => {
-      const row = createEmptyRow()
-      row.recipientName = cols[0] ?? ''
-      row.phone = cols[1] ?? ''
-      row.address = cols[2] ?? ''
-      row.postalCode = cols[3] ?? ''
-      row.deliveryMessage = cols[4] ?? ''
-      row.orderDate = cols[5] ?? new Date().toISOString().split('T')[0]
-      row.orderNumber = cols[6] ?? ''
-      row.paymentAmount = cols[7] ?? ''
-      const productName = cols[8] ?? ''
-      const quantity = Number(cols[9]) || 1
-      if (productName) {
-        row.items = [{ name: productName, quantity }]
-      }
-      return row
-    })
-
     // 전체 붙여넣기 데이터로 생성
     const allLines = text.trim().split('\n')
     const allRows: OrderRow[] = allLines.map((line) => {

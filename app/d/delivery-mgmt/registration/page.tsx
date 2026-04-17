@@ -16,7 +16,6 @@ import { Badge } from '@/components/ui/badge'
 import {
   RegistrationTable,
   type OrderRow,
-  createEmptyRow,
 } from '@/components/del/registration-table'
 import { BulkPasteDialog } from '@/components/del/bulk-paste-dialog'
 import { ChannelUploadDialog } from '@/components/del/channel-upload-dialog'
