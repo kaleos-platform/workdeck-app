@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     include: { _count: { select: { orders: true } } },
   })
   if (!batch || batch.spaceId !== resolved.space.id) {
-    return errorResponse('배치를 찾을 수 없습니다', 404)
+    return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
   }
 
   return NextResponse.json({
@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     select: { spaceId: true, status: true },
   })
   if (!batch || batch.spaceId !== resolved.space.id) {
-    return errorResponse('배치를 찾을 수 없습니다', 404)
+    return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
   }
 
   const body = await req.json().catch(() => ({}))
@@ -47,7 +47,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   // 상태 변경: DRAFT → COMPLETED
   if (body?.status === 'COMPLETED') {
     if (batch.status !== 'DRAFT') {
-      return errorResponse('이미 완료된 배치입니다', 400)
+      return errorResponse('이미 완료된 배송 묶음입니다', 400)
     }
     const updated = await prisma.delBatch.update({
       where: { id: batchId },

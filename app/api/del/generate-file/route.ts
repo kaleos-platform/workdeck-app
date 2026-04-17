@@ -16,13 +16,13 @@ export async function POST(req: NextRequest) {
     return errorResponse('batchId와 shippingMethodId가 필요합니다', 400)
   }
 
-  // 배치 확인
+  // 배송 묶음 확인
   const batch = await prisma.delBatch.findUnique({
     where: { id: batchId },
     select: { spaceId: true },
   })
   if (!batch || batch.spaceId !== resolved.space.id) {
-    return errorResponse('배치를 찾을 수 없습니다', 404)
+    return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
   }
 
   // 배송 방식 확인
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     return errorResponse('배송 방식을 찾을 수 없습니다', 404)
   }
 
-  // 해당 배치 + 배송방식의 주문 조회
+  // 해당 배송 묶음 + 배송방식의 주문 조회
   const orders = await prisma.delOrder.findMany({
     where: {
       batchId,

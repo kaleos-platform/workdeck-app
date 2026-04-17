@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return errorResponse('주문을 찾을 수 없습니다', 404)
   }
   if (order.batch.status !== 'DRAFT') {
-    return errorResponse('완료된 배치의 주문은 수정할 수 없습니다', 400)
+    return errorResponse('완료된 배송 묶음의 주문은 수정할 수 없습니다', 400)
   }
 
   const body = await req.json().catch(() => ({}))
@@ -79,7 +79,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return errorResponse('주문을 찾을 수 없습니다', 404)
   }
   if (order.batch.status !== 'DRAFT') {
-    return errorResponse('완료된 배치의 주문은 삭제할 수 없습니다', 400)
+    return errorResponse('완료된 배송 묶음의 주문은 삭제할 수 없습니다', 400)
   }
 
   await prisma.delOrder.delete({ where: { id: orderId } })
