@@ -90,7 +90,14 @@ export const ModelName = {
   InvImportHistory: 'InvImportHistory',
   InvReconciliation: 'InvReconciliation',
   InvLocationProductMap: 'InvLocationProductMap',
-  InvSettings: 'InvSettings'
+  InvSettings: 'InvSettings',
+  DelShippingMethod: 'DelShippingMethod',
+  DelChannelGroup: 'DelChannelGroup',
+  DelSalesChannel: 'DelSalesChannel',
+  DelBatch: 'DelBatch',
+  DelOrder: 'DelOrder',
+  DelOrderItem: 'DelOrderItem',
+  DelIntegrationHistory: 'DelIntegrationHistory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -701,6 +708,104 @@ export const InvSettingsScalarFieldEnum = {
 } as const
 
 export type InvSettingsScalarFieldEnum = (typeof InvSettingsScalarFieldEnum)[keyof typeof InvSettingsScalarFieldEnum]
+
+
+export const DelShippingMethodScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  isActive: 'isActive',
+  formatConfig: 'formatConfig',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DelShippingMethodScalarFieldEnum = (typeof DelShippingMethodScalarFieldEnum)[keyof typeof DelShippingMethodScalarFieldEnum]
+
+
+export const DelChannelGroupScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  type: 'type',
+  createdAt: 'createdAt'
+} as const
+
+export type DelChannelGroupScalarFieldEnum = (typeof DelChannelGroupScalarFieldEnum)[keyof typeof DelChannelGroupScalarFieldEnum]
+
+
+export const DelSalesChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  groupId: 'groupId',
+  isActive: 'isActive',
+  requireOrderNumber: 'requireOrderNumber',
+  requirePayment: 'requirePayment',
+  requireProducts: 'requireProducts',
+  createdAt: 'createdAt'
+} as const
+
+export type DelSalesChannelScalarFieldEnum = (typeof DelSalesChannelScalarFieldEnum)[keyof typeof DelSalesChannelScalarFieldEnum]
+
+
+export const DelBatchScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  status: 'status',
+  label: 'label',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
+} as const
+
+export type DelBatchScalarFieldEnum = (typeof DelBatchScalarFieldEnum)[keyof typeof DelBatchScalarFieldEnum]
+
+
+export const DelOrderScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  batchId: 'batchId',
+  shippingMethodId: 'shippingMethodId',
+  channelId: 'channelId',
+  recipientNameEnc: 'recipientNameEnc',
+  recipientNameIv: 'recipientNameIv',
+  phoneEnc: 'phoneEnc',
+  phoneIv: 'phoneIv',
+  addressEnc: 'addressEnc',
+  addressIv: 'addressIv',
+  postalCode: 'postalCode',
+  deliveryMessage: 'deliveryMessage',
+  orderDate: 'orderDate',
+  orderNumber: 'orderNumber',
+  paymentAmount: 'paymentAmount',
+  createdAt: 'createdAt'
+} as const
+
+export type DelOrderScalarFieldEnum = (typeof DelOrderScalarFieldEnum)[keyof typeof DelOrderScalarFieldEnum]
+
+
+export const DelOrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  name: 'name',
+  quantity: 'quantity'
+} as const
+
+export type DelOrderItemScalarFieldEnum = (typeof DelOrderItemScalarFieldEnum)[keyof typeof DelOrderItemScalarFieldEnum]
+
+
+export const DelIntegrationHistoryScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  type: 'type',
+  dateFrom: 'dateFrom',
+  dateTo: 'dateTo',
+  totalOrders: 'totalOrders',
+  movementIds: 'movementIds',
+  createdAt: 'createdAt'
+} as const
+
+export type DelIntegrationHistoryScalarFieldEnum = (typeof DelIntegrationHistoryScalarFieldEnum)[keyof typeof DelIntegrationHistoryScalarFieldEnum]
 
 
 export const SortOrder = {
