@@ -727,7 +727,6 @@ export const DelChannelGroupScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
-  type: 'type',
   createdAt: 'createdAt'
 } as const
 
@@ -739,6 +738,7 @@ export const DelSalesChannelScalarFieldEnum = {
   spaceId: 'spaceId',
   name: 'name',
   groupId: 'groupId',
+  type: 'type',
   isActive: 'isActive',
   requireOrderNumber: 'requireOrderNumber',
   requirePayment: 'requirePayment',

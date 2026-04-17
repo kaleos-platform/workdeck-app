@@ -47,6 +47,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return errorResponse('그룹을 찾을 수 없습니다', 404)
   }
 
+  const groupCount = await prisma.delChannelGroup.count({
+    where: { spaceId: resolved.space.id },
+  })
+  if (groupCount <= 1) {
+    return errorResponse('마지막 그룹은 삭제할 수 없습니다', 400)
+  }
+
   // 소속 채널의 groupId를 null로 설정
   await prisma.delSalesChannel.updateMany({
     where: { groupId },

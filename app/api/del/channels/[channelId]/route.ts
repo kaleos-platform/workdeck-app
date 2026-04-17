@@ -38,11 +38,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (typeof body?.requireOrderNumber === 'boolean') data.requireOrderNumber = body.requireOrderNumber
   if (typeof body?.requirePayment === 'boolean') data.requirePayment = body.requirePayment
   if (typeof body?.requireProducts === 'boolean') data.requireProducts = body.requireProducts
+  if (body?.type === 'OUTBOUND' || body?.type === 'TRANSFER') data.type = body.type
 
   const updated = await prisma.delSalesChannel.update({
     where: { id: channelId },
     data,
-    include: { group: { select: { id: true, name: true, type: true } } },
+    include: { group: { select: { id: true, name: true } } },
   })
 
   return NextResponse.json({ channel: updated })

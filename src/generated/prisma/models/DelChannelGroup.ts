@@ -28,7 +28,6 @@ export type DelChannelGroupMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
-  type: $Enums.DelChannelType | null
   createdAt: Date | null
 }
 
@@ -36,7 +35,6 @@ export type DelChannelGroupMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
-  type: $Enums.DelChannelType | null
   createdAt: Date | null
 }
 
@@ -44,7 +42,6 @@ export type DelChannelGroupCountAggregateOutputType = {
   id: number
   spaceId: number
   name: number
-  type: number
   createdAt: number
   _all: number
 }
@@ -54,7 +51,6 @@ export type DelChannelGroupMinAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  type?: true
   createdAt?: true
 }
 
@@ -62,7 +58,6 @@ export type DelChannelGroupMaxAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  type?: true
   createdAt?: true
 }
 
@@ -70,7 +65,6 @@ export type DelChannelGroupCountAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  type?: true
   createdAt?: true
   _all?: true
 }
@@ -151,7 +145,6 @@ export type DelChannelGroupGroupByOutputType = {
   id: string
   spaceId: string
   name: string
-  type: $Enums.DelChannelType
   createdAt: Date
   _count: DelChannelGroupCountAggregateOutputType | null
   _min: DelChannelGroupMinAggregateOutputType | null
@@ -180,7 +173,6 @@ export type DelChannelGroupWhereInput = {
   id?: Prisma.StringFilter<"DelChannelGroup"> | string
   spaceId?: Prisma.StringFilter<"DelChannelGroup"> | string
   name?: Prisma.StringFilter<"DelChannelGroup"> | string
-  type?: Prisma.EnumDelChannelTypeFilter<"DelChannelGroup"> | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFilter<"DelChannelGroup"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channels?: Prisma.DelSalesChannelListRelationFilter
@@ -190,7 +182,6 @@ export type DelChannelGroupOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   channels?: Prisma.DelSalesChannelOrderByRelationAggregateInput
@@ -204,7 +195,6 @@ export type DelChannelGroupWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.DelChannelGroupWhereInput | Prisma.DelChannelGroupWhereInput[]
   spaceId?: Prisma.StringFilter<"DelChannelGroup"> | string
   name?: Prisma.StringFilter<"DelChannelGroup"> | string
-  type?: Prisma.EnumDelChannelTypeFilter<"DelChannelGroup"> | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFilter<"DelChannelGroup"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channels?: Prisma.DelSalesChannelListRelationFilter
@@ -214,7 +204,6 @@ export type DelChannelGroupOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.DelChannelGroupCountOrderByAggregateInput
   _max?: Prisma.DelChannelGroupMaxOrderByAggregateInput
@@ -228,14 +217,12 @@ export type DelChannelGroupScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"DelChannelGroup"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"DelChannelGroup"> | string
   name?: Prisma.StringWithAggregatesFilter<"DelChannelGroup"> | string
-  type?: Prisma.EnumDelChannelTypeWithAggregatesFilter<"DelChannelGroup"> | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DelChannelGroup"> | Date | string
 }
 
 export type DelChannelGroupCreateInput = {
   id?: string
   name: string
-  type: $Enums.DelChannelType
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelChannelGroupsInput
   channels?: Prisma.DelSalesChannelCreateNestedManyWithoutGroupInput
@@ -245,7 +232,6 @@ export type DelChannelGroupUncheckedCreateInput = {
   id?: string
   spaceId: string
   name: string
-  type: $Enums.DelChannelType
   createdAt?: Date | string
   channels?: Prisma.DelSalesChannelUncheckedCreateNestedManyWithoutGroupInput
 }
@@ -253,7 +239,6 @@ export type DelChannelGroupUncheckedCreateInput = {
 export type DelChannelGroupUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelChannelGroupsNestedInput
   channels?: Prisma.DelSalesChannelUpdateManyWithoutGroupNestedInput
@@ -263,7 +248,6 @@ export type DelChannelGroupUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channels?: Prisma.DelSalesChannelUncheckedUpdateManyWithoutGroupNestedInput
 }
@@ -272,14 +256,12 @@ export type DelChannelGroupCreateManyInput = {
   id?: string
   spaceId: string
   name: string
-  type: $Enums.DelChannelType
   createdAt?: Date | string
 }
 
 export type DelChannelGroupUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -287,7 +269,6 @@ export type DelChannelGroupUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -310,7 +291,6 @@ export type DelChannelGroupCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -318,7 +298,6 @@ export type DelChannelGroupMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -326,7 +305,6 @@ export type DelChannelGroupMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -377,10 +355,6 @@ export type DelChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.DelChannelGroupScalarWhereInput | Prisma.DelChannelGroupScalarWhereInput[]
 }
 
-export type EnumDelChannelTypeFieldUpdateOperationsInput = {
-  set?: $Enums.DelChannelType
-}
-
 export type DelChannelGroupCreateNestedOneWithoutChannelsInput = {
   create?: Prisma.XOR<Prisma.DelChannelGroupCreateWithoutChannelsInput, Prisma.DelChannelGroupUncheckedCreateWithoutChannelsInput>
   connectOrCreate?: Prisma.DelChannelGroupCreateOrConnectWithoutChannelsInput
@@ -400,7 +374,6 @@ export type DelChannelGroupUpdateOneWithoutChannelsNestedInput = {
 export type DelChannelGroupCreateWithoutSpaceInput = {
   id?: string
   name: string
-  type: $Enums.DelChannelType
   createdAt?: Date | string
   channels?: Prisma.DelSalesChannelCreateNestedManyWithoutGroupInput
 }
@@ -408,7 +381,6 @@ export type DelChannelGroupCreateWithoutSpaceInput = {
 export type DelChannelGroupUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
-  type: $Enums.DelChannelType
   createdAt?: Date | string
   channels?: Prisma.DelSalesChannelUncheckedCreateNestedManyWithoutGroupInput
 }
@@ -446,14 +418,12 @@ export type DelChannelGroupScalarWhereInput = {
   id?: Prisma.StringFilter<"DelChannelGroup"> | string
   spaceId?: Prisma.StringFilter<"DelChannelGroup"> | string
   name?: Prisma.StringFilter<"DelChannelGroup"> | string
-  type?: Prisma.EnumDelChannelTypeFilter<"DelChannelGroup"> | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFilter<"DelChannelGroup"> | Date | string
 }
 
 export type DelChannelGroupCreateWithoutChannelsInput = {
   id?: string
   name: string
-  type: $Enums.DelChannelType
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelChannelGroupsInput
 }
@@ -462,7 +432,6 @@ export type DelChannelGroupUncheckedCreateWithoutChannelsInput = {
   id?: string
   spaceId: string
   name: string
-  type: $Enums.DelChannelType
   createdAt?: Date | string
 }
 
@@ -485,7 +454,6 @@ export type DelChannelGroupUpdateToOneWithWhereWithoutChannelsInput = {
 export type DelChannelGroupUpdateWithoutChannelsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelChannelGroupsNestedInput
 }
@@ -494,21 +462,18 @@ export type DelChannelGroupUncheckedUpdateWithoutChannelsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type DelChannelGroupCreateManySpaceInput = {
   id?: string
   name: string
-  type: $Enums.DelChannelType
   createdAt?: Date | string
 }
 
 export type DelChannelGroupUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channels?: Prisma.DelSalesChannelUpdateManyWithoutGroupNestedInput
 }
@@ -516,7 +481,6 @@ export type DelChannelGroupUpdateWithoutSpaceInput = {
 export type DelChannelGroupUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channels?: Prisma.DelSalesChannelUncheckedUpdateManyWithoutGroupNestedInput
 }
@@ -524,7 +488,6 @@ export type DelChannelGroupUncheckedUpdateWithoutSpaceInput = {
 export type DelChannelGroupUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -563,7 +526,6 @@ export type DelChannelGroupSelect<ExtArgs extends runtime.Types.Extensions.Inter
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  type?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channels?: boolean | Prisma.DelChannelGroup$channelsArgs<ExtArgs>
@@ -574,7 +536,6 @@ export type DelChannelGroupSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  type?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["delChannelGroup"]>
@@ -583,7 +544,6 @@ export type DelChannelGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  type?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["delChannelGroup"]>
@@ -592,11 +552,10 @@ export type DelChannelGroupSelectScalar = {
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  type?: boolean
   createdAt?: boolean
 }
 
-export type DelChannelGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "type" | "createdAt", ExtArgs["result"]["delChannelGroup"]>
+export type DelChannelGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "createdAt", ExtArgs["result"]["delChannelGroup"]>
 export type DelChannelGroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channels?: boolean | Prisma.DelChannelGroup$channelsArgs<ExtArgs>
@@ -619,7 +578,6 @@ export type $DelChannelGroupPayload<ExtArgs extends runtime.Types.Extensions.Int
     id: string
     spaceId: string
     name: string
-    type: $Enums.DelChannelType
     createdAt: Date
   }, ExtArgs["result"]["delChannelGroup"]>
   composites: {}
@@ -1049,7 +1007,6 @@ export interface DelChannelGroupFieldRefs {
   readonly id: Prisma.FieldRef<"DelChannelGroup", 'String'>
   readonly spaceId: Prisma.FieldRef<"DelChannelGroup", 'String'>
   readonly name: Prisma.FieldRef<"DelChannelGroup", 'String'>
-  readonly type: Prisma.FieldRef<"DelChannelGroup", 'DelChannelType'>
   readonly createdAt: Prisma.FieldRef<"DelChannelGroup", 'DateTime'>
 }
     

@@ -29,6 +29,7 @@ export type DelSalesChannelMinAggregateOutputType = {
   spaceId: string | null
   name: string | null
   groupId: string | null
+  type: $Enums.DelChannelType | null
   isActive: boolean | null
   requireOrderNumber: boolean | null
   requirePayment: boolean | null
@@ -41,6 +42,7 @@ export type DelSalesChannelMaxAggregateOutputType = {
   spaceId: string | null
   name: string | null
   groupId: string | null
+  type: $Enums.DelChannelType | null
   isActive: boolean | null
   requireOrderNumber: boolean | null
   requirePayment: boolean | null
@@ -53,6 +55,7 @@ export type DelSalesChannelCountAggregateOutputType = {
   spaceId: number
   name: number
   groupId: number
+  type: number
   isActive: number
   requireOrderNumber: number
   requirePayment: number
@@ -67,6 +70,7 @@ export type DelSalesChannelMinAggregateInputType = {
   spaceId?: true
   name?: true
   groupId?: true
+  type?: true
   isActive?: true
   requireOrderNumber?: true
   requirePayment?: true
@@ -79,6 +83,7 @@ export type DelSalesChannelMaxAggregateInputType = {
   spaceId?: true
   name?: true
   groupId?: true
+  type?: true
   isActive?: true
   requireOrderNumber?: true
   requirePayment?: true
@@ -91,6 +96,7 @@ export type DelSalesChannelCountAggregateInputType = {
   spaceId?: true
   name?: true
   groupId?: true
+  type?: true
   isActive?: true
   requireOrderNumber?: true
   requirePayment?: true
@@ -176,6 +182,7 @@ export type DelSalesChannelGroupByOutputType = {
   spaceId: string
   name: string
   groupId: string | null
+  type: $Enums.DelChannelType
   isActive: boolean
   requireOrderNumber: boolean
   requirePayment: boolean
@@ -209,6 +216,7 @@ export type DelSalesChannelWhereInput = {
   spaceId?: Prisma.StringFilter<"DelSalesChannel"> | string
   name?: Prisma.StringFilter<"DelSalesChannel"> | string
   groupId?: Prisma.StringNullableFilter<"DelSalesChannel"> | string | null
+  type?: Prisma.EnumDelChannelTypeFilter<"DelSalesChannel"> | $Enums.DelChannelType
   isActive?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
   requireOrderNumber?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
   requirePayment?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
@@ -224,6 +232,7 @@ export type DelSalesChannelOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrderInput | Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
@@ -242,6 +251,7 @@ export type DelSalesChannelWhereUniqueInput = Prisma.AtLeast<{
   spaceId?: Prisma.StringFilter<"DelSalesChannel"> | string
   name?: Prisma.StringFilter<"DelSalesChannel"> | string
   groupId?: Prisma.StringNullableFilter<"DelSalesChannel"> | string | null
+  type?: Prisma.EnumDelChannelTypeFilter<"DelSalesChannel"> | $Enums.DelChannelType
   isActive?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
   requireOrderNumber?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
   requirePayment?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
@@ -257,6 +267,7 @@ export type DelSalesChannelOrderByWithAggregationInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrderInput | Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
@@ -275,6 +286,7 @@ export type DelSalesChannelScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"DelSalesChannel"> | string
   name?: Prisma.StringWithAggregatesFilter<"DelSalesChannel"> | string
   groupId?: Prisma.StringNullableWithAggregatesFilter<"DelSalesChannel"> | string | null
+  type?: Prisma.EnumDelChannelTypeWithAggregatesFilter<"DelSalesChannel"> | $Enums.DelChannelType
   isActive?: Prisma.BoolWithAggregatesFilter<"DelSalesChannel"> | boolean
   requireOrderNumber?: Prisma.BoolWithAggregatesFilter<"DelSalesChannel"> | boolean
   requirePayment?: Prisma.BoolWithAggregatesFilter<"DelSalesChannel"> | boolean
@@ -285,6 +297,7 @@ export type DelSalesChannelScalarWhereWithAggregatesInput = {
 export type DelSalesChannelCreateInput = {
   id?: string
   name: string
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -300,6 +313,7 @@ export type DelSalesChannelUncheckedCreateInput = {
   spaceId: string
   name: string
   groupId?: string | null
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -311,6 +325,7 @@ export type DelSalesChannelUncheckedCreateInput = {
 export type DelSalesChannelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -326,6 +341,7 @@ export type DelSalesChannelUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -339,6 +355,7 @@ export type DelSalesChannelCreateManyInput = {
   spaceId: string
   name: string
   groupId?: string | null
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -349,6 +366,7 @@ export type DelSalesChannelCreateManyInput = {
 export type DelSalesChannelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -361,6 +379,7 @@ export type DelSalesChannelUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -383,6 +402,7 @@ export type DelSalesChannelCountOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
@@ -395,6 +415,7 @@ export type DelSalesChannelMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
@@ -407,6 +428,7 @@ export type DelSalesChannelMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
@@ -503,6 +525,10 @@ export type DelSalesChannelUncheckedUpdateManyWithoutGroupNestedInput = {
   deleteMany?: Prisma.DelSalesChannelScalarWhereInput | Prisma.DelSalesChannelScalarWhereInput[]
 }
 
+export type EnumDelChannelTypeFieldUpdateOperationsInput = {
+  set?: $Enums.DelChannelType
+}
+
 export type DelSalesChannelCreateNestedOneWithoutOrdersInput = {
   create?: Prisma.XOR<Prisma.DelSalesChannelCreateWithoutOrdersInput, Prisma.DelSalesChannelUncheckedCreateWithoutOrdersInput>
   connectOrCreate?: Prisma.DelSalesChannelCreateOrConnectWithoutOrdersInput
@@ -522,6 +548,7 @@ export type DelSalesChannelUpdateOneWithoutOrdersNestedInput = {
 export type DelSalesChannelCreateWithoutSpaceInput = {
   id?: string
   name: string
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -535,6 +562,7 @@ export type DelSalesChannelUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
   groupId?: string | null
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -577,6 +605,7 @@ export type DelSalesChannelScalarWhereInput = {
   spaceId?: Prisma.StringFilter<"DelSalesChannel"> | string
   name?: Prisma.StringFilter<"DelSalesChannel"> | string
   groupId?: Prisma.StringNullableFilter<"DelSalesChannel"> | string | null
+  type?: Prisma.EnumDelChannelTypeFilter<"DelSalesChannel"> | $Enums.DelChannelType
   isActive?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
   requireOrderNumber?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
   requirePayment?: Prisma.BoolFilter<"DelSalesChannel"> | boolean
@@ -587,6 +616,7 @@ export type DelSalesChannelScalarWhereInput = {
 export type DelSalesChannelCreateWithoutGroupInput = {
   id?: string
   name: string
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -600,6 +630,7 @@ export type DelSalesChannelUncheckedCreateWithoutGroupInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -637,6 +668,7 @@ export type DelSalesChannelUpdateManyWithWhereWithoutGroupInput = {
 export type DelSalesChannelCreateWithoutOrdersInput = {
   id?: string
   name: string
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -651,6 +683,7 @@ export type DelSalesChannelUncheckedCreateWithoutOrdersInput = {
   spaceId: string
   name: string
   groupId?: string | null
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -677,6 +710,7 @@ export type DelSalesChannelUpdateToOneWithWhereWithoutOrdersInput = {
 export type DelSalesChannelUpdateWithoutOrdersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -691,6 +725,7 @@ export type DelSalesChannelUncheckedUpdateWithoutOrdersInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -702,6 +737,7 @@ export type DelSalesChannelCreateManySpaceInput = {
   id?: string
   name: string
   groupId?: string | null
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -712,6 +748,7 @@ export type DelSalesChannelCreateManySpaceInput = {
 export type DelSalesChannelUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -725,6 +762,7 @@ export type DelSalesChannelUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -737,6 +775,7 @@ export type DelSalesChannelUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -748,6 +787,7 @@ export type DelSalesChannelCreateManyGroupInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.DelChannelType
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -758,6 +798,7 @@ export type DelSalesChannelCreateManyGroupInput = {
 export type DelSalesChannelUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -771,6 +812,7 @@ export type DelSalesChannelUncheckedUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -783,6 +825,7 @@ export type DelSalesChannelUncheckedUpdateManyWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumDelChannelTypeFieldUpdateOperationsInput | $Enums.DelChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -826,6 +869,7 @@ export type DelSalesChannelSelect<ExtArgs extends runtime.Types.Extensions.Inter
   spaceId?: boolean
   name?: boolean
   groupId?: boolean
+  type?: boolean
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -842,6 +886,7 @@ export type DelSalesChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   spaceId?: boolean
   name?: boolean
   groupId?: boolean
+  type?: boolean
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -856,6 +901,7 @@ export type DelSalesChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   spaceId?: boolean
   name?: boolean
   groupId?: boolean
+  type?: boolean
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -870,6 +916,7 @@ export type DelSalesChannelSelectScalar = {
   spaceId?: boolean
   name?: boolean
   groupId?: boolean
+  type?: boolean
   isActive?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
@@ -877,7 +924,7 @@ export type DelSalesChannelSelectScalar = {
   createdAt?: boolean
 }
 
-export type DelSalesChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "groupId" | "isActive" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "createdAt", ExtArgs["result"]["delSalesChannel"]>
+export type DelSalesChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "groupId" | "type" | "isActive" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "createdAt", ExtArgs["result"]["delSalesChannel"]>
 export type DelSalesChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   group?: boolean | Prisma.DelSalesChannel$groupArgs<ExtArgs>
@@ -905,6 +952,7 @@ export type $DelSalesChannelPayload<ExtArgs extends runtime.Types.Extensions.Int
     spaceId: string
     name: string
     groupId: string | null
+    type: $Enums.DelChannelType
     isActive: boolean
     requireOrderNumber: boolean
     requirePayment: boolean
@@ -1340,6 +1388,7 @@ export interface DelSalesChannelFieldRefs {
   readonly spaceId: Prisma.FieldRef<"DelSalesChannel", 'String'>
   readonly name: Prisma.FieldRef<"DelSalesChannel", 'String'>
   readonly groupId: Prisma.FieldRef<"DelSalesChannel", 'String'>
+  readonly type: Prisma.FieldRef<"DelSalesChannel", 'DelChannelType'>
   readonly isActive: Prisma.FieldRef<"DelSalesChannel", 'Boolean'>
   readonly requireOrderNumber: Prisma.FieldRef<"DelSalesChannel", 'Boolean'>
   readonly requirePayment: Prisma.FieldRef<"DelSalesChannel", 'Boolean'>

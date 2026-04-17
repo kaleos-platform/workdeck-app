@@ -29,7 +29,7 @@ export async function pushToInventoryDeck(
     },
     include: {
       items: true,
-      channel: { include: { group: true } },
+      channel: { select: { id: true, name: true, type: true } },
       shippingMethod: { select: { name: true } },
       batch: { select: { completedAt: true, status: true } },
     },
@@ -49,9 +49,8 @@ export async function pushToInventoryDeck(
       continue
     }
 
-    // Determine movement type from channel group type
-    const channelGroupType = order.channel?.group?.type
-    const movementType = channelGroupType === 'TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
+    // Determine movement type from channel type
+    const movementType = order.channel?.type === 'TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
 
     // Find matching InvSalesChannel by name
     let invChannelId: string | undefined
