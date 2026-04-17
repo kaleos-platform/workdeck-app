@@ -50,6 +50,7 @@ const FIELD_OPTIONS = [
   { value: 'paymentAmount', label: '결제금액' },
   { value: 'productName', label: '상품명' },
   { value: 'productQuantity', label: '수량' },
+  { value: 'memo', label: '메모' },
 ]
 
 const NO_MAP = '__none__'
@@ -107,6 +108,7 @@ export function ChannelUploadDialog({
         '결제금액': 'paymentAmount', '금액': 'paymentAmount',
         '품목명': 'productName', '상품명': 'productName', '품목': 'productName',
         '수량': 'productQuantity',
+        '메모': 'memo',
       }
       data.headers.forEach((header, i) => {
         const normalized = header.trim()

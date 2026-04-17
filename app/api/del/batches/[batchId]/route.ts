@@ -49,9 +49,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (batch.status !== 'DRAFT') {
       return errorResponse('이미 완료된 배송 묶음입니다', 400)
     }
+    // 자동 라벨 생성
+    const now = new Date()
+    const hour = now.getHours()
+    const ampm = hour < 12 ? '오전' : '오후'
+    const autoLabel = `${now.toISOString().split('T')[0]} ${ampm}`
+    const label = typeof body?.label === 'string' && body.label.trim() ? body.label.trim() : autoLabel
+
     const updated = await prisma.delBatch.update({
       where: { id: batchId },
-      data: { status: 'COMPLETED', completedAt: new Date() },
+      data: { status: 'COMPLETED', completedAt: now, label },
     })
     return NextResponse.json({ batch: updated })
   }

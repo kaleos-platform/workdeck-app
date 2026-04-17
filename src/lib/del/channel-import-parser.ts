@@ -23,6 +23,7 @@ export type ColumnMapping = {
   paymentAmount?: number
   productName?: number
   productQuantity?: number
+  memo?: number
 }
 
 /** 파싱된 주문 행 */
@@ -37,6 +38,7 @@ export type ParsedOrderRow = {
   paymentAmount?: number
   productName?: string
   productQuantity?: number
+  memo?: string
 }
 
 /**
@@ -122,6 +124,7 @@ export function parseWithMapping(
       productQuantity: mapping.productQuantity !== undefined
         ? Number(get(mapping.productQuantity)) || undefined
         : undefined,
+      memo: get(mapping.memo) || undefined,
     })
   }
 

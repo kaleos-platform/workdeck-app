@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
           ...encrypted,
           postalCode: row.postalCode || null,
           deliveryMessage: row.deliveryMessage || null,
+          memo: row.memo || null,
           orderDate: new Date(row.orderDate),
           orderNumber: row.orderNumber || null,
           paymentAmount: row.paymentAmount ?? null,

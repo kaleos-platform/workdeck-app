@@ -28,11 +28,12 @@ type ShippingMethod = { id: string; name: string }
 type DeliveryFileDialogProps = {
   batchId: string
   shippingMethods: ShippingMethod[]
+  disabled?: boolean
 }
 
 const NO_VALUE = '__none__'
 
-export function DeliveryFileDialog({ batchId, shippingMethods }: DeliveryFileDialogProps) {
+export function DeliveryFileDialog({ batchId, shippingMethods, disabled }: DeliveryFileDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedMethodId, setSelectedMethodId] = useState('')
   const [generating, setGenerating] = useState(false)
@@ -85,7 +86,7 @@ export function DeliveryFileDialog({ batchId, shippingMethods }: DeliveryFileDia
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" disabled={disabled}>
           <FileDown className="mr-1 h-4 w-4" />배송 파일 생성
         </Button>
       </DialogTrigger>

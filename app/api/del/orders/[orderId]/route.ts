@@ -17,10 +17,6 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!order || order.spaceId !== resolved.space.id) {
     return errorResponse('주문을 찾을 수 없습니다', 404)
   }
-  if (order.batch.status !== 'DRAFT') {
-    return errorResponse('완료된 배송 묶음의 주문은 수정할 수 없습니다', 400)
-  }
-
   const body = await req.json().catch(() => ({}))
   const data: Record<string, unknown> = {}
 
@@ -46,6 +42,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (body?.paymentAmount !== undefined) {
     data.paymentAmount = body.paymentAmount != null ? Number(body.paymentAmount) : null
   }
+  if (typeof body?.memo === 'string') data.memo = body.memo || null
 
   // 상품 업데이트
   if (Array.isArray(body?.items)) {
@@ -77,9 +74,6 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   })
   if (!order || order.spaceId !== resolved.space.id) {
     return errorResponse('주문을 찾을 수 없습니다', 404)
-  }
-  if (order.batch.status !== 'DRAFT') {
-    return errorResponse('완료된 배송 묶음의 주문은 삭제할 수 없습니다', 400)
   }
 
   await prisma.delOrder.delete({ where: { id: orderId } })

@@ -30,15 +30,29 @@ interface BatchListProps {
 
 const PAGE_SIZE = 20
 
+function toDateStr(d: Date) {
+  return d.toISOString().split('T')[0]
+}
+
+function getDefaultDates() {
+  const now = new Date()
+  return {
+    from: toDateStr(new Date(now.getTime() - 7 * 86400000)),
+    to: toDateStr(now),
+  }
+}
+
 export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
   const [batches, setBatches] = useState<Batch[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
 
-  // 날짜 필터
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  // 기본 7일
+  const defaults = getDefaultDates()
+  const [dateFrom, setDateFrom] = useState(defaults.from)
+  const [dateTo, setDateTo] = useState(defaults.to)
+  const [activePreset, setActivePreset] = useState<string>('7d')
 
   const fetchBatches = useCallback(async () => {
     setLoading(true)
@@ -63,6 +77,34 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
   useEffect(() => {
     fetchBatches()
   }, [fetchBatches])
+
+  // 기간 프리셋
+  function applyPreset(preset: string) {
+    const now = new Date()
+    let from: Date
+    let to: Date = now
+
+    switch (preset) {
+      case '7d':
+        from = new Date(now.getTime() - 7 * 86400000)
+        break
+      case '30d':
+        from = new Date(now.getTime() - 30 * 86400000)
+        break
+      case 'thisMonth':
+        from = new Date(now.getFullYear(), now.getMonth(), 1)
+        break
+      case 'lastMonth':
+        from = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        to = new Date(now.getFullYear(), now.getMonth(), 0)
+        break
+      default:
+        return
+    }
+    setDateFrom(toDateStr(from))
+    setDateTo(toDateStr(to))
+    setActivePreset(preset)
+  }
 
   // 날짜 필터 적용 (클라이언트 사이드)
   const filteredBatches = batches.filter((b) => {
@@ -89,23 +131,45 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
     })
   }
 
+  const presets = [
+    { key: '7d', label: '7일' },
+    { key: '30d', label: '30일' },
+    { key: 'thisMonth', label: '이번달' },
+    { key: 'lastMonth', label: '지난달' },
+  ]
+
   return (
     <div className="space-y-3">
       <h2 className="text-sm font-semibold">완료된 배송 묶음</h2>
+
+      {/* 기간 프리셋 버튼 */}
+      <div className="flex gap-1">
+        {presets.map((p) => (
+          <Button
+            key={p.key}
+            variant={activePreset === p.key ? 'default' : 'outline'}
+            size="sm"
+            className="h-7 text-xs px-2"
+            onClick={() => applyPreset(p.key)}
+          >
+            {p.label}
+          </Button>
+        ))}
+      </div>
 
       {/* 날짜 필터 */}
       <div className="flex gap-2">
         <Input
           type="date"
           value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
+          onChange={(e) => { setDateFrom(e.target.value); setActivePreset('') }}
           className="text-xs"
           placeholder="시작일"
         />
         <Input
           type="date"
           value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
+          onChange={(e) => { setDateTo(e.target.value); setActivePreset('') }}
           className="text-xs"
           placeholder="종료일"
         />
@@ -131,7 +195,7 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
             ) : filteredBatches.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-center text-xs text-muted-foreground py-8">
-                  완료된 배송 묶음가 없습니다
+                  완료된 배송 묶음이 없습니다
                 </TableCell>
               </TableRow>
             ) : (

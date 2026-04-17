@@ -32,7 +32,7 @@ type BulkPasteDialogProps = {
 
 const EXPECTED_COLUMNS = [
   '받는분', '전화', '주소', '우편번호', '배송메시지',
-  '주문일자', '주문번호', '결제금액', '상품명', '수량',
+  '주문일자', '주문번호', '결제금액', '상품명', '수량', '메모',
 ]
 
 export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
@@ -75,6 +75,7 @@ export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
       if (productName) {
         row.items = [{ name: productName, quantity }]
       }
+      row.memo = cols[10] ?? ''
       return row
     })
 
