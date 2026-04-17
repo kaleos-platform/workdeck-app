@@ -43,6 +43,7 @@ import {
   INVENTORY_MGMT_REORDER_PATH,
   INVENTORY_MGMT_SETTINGS_PATH,
   INVENTORY_MGMT_STOCK_STATUS_PATH,
+  INVENTORY_MGMT_DASHBOARD_PATH,
 } from '@/lib/deck-routes'
 
 type Campaign = {
@@ -70,9 +71,9 @@ const DECK_ENTRY: Record<string, string> = {
 
 const INVENTORY_MAIN_ROUTES = [
   {
-    label: '대시보드',
-    icon: LayoutDashboard,
-    href: INVENTORY_MGMT_BASE_PATH,
+    label: '재고 현황',
+    icon: Layers,
+    href: INVENTORY_MGMT_STOCK_STATUS_PATH,
   },
   {
     label: '입출고 관리',
@@ -80,9 +81,9 @@ const INVENTORY_MAIN_ROUTES = [
     href: INVENTORY_MGMT_MOVEMENTS_PATH,
   },
   {
-    label: '재고 현황',
-    icon: Layers,
-    href: INVENTORY_MGMT_STOCK_STATUS_PATH,
+    label: '대시보드',
+    icon: LayoutDashboard,
+    href: INVENTORY_MGMT_DASHBOARD_PATH,
   },
   {
     label: '상품 관리',
@@ -286,10 +287,7 @@ export function Sidebar({
         {isInventorySidebar && (
           <div className="space-y-1">
             {INVENTORY_MAIN_ROUTES.map((route) => {
-              const isHomeRoute = route.href === INVENTORY_MGMT_BASE_PATH
-              const isActive = isHomeRoute
-                ? pathname === route.href
-                : pathname === route.href || pathname.startsWith(`${route.href}/`)
+              const isActive = pathname === route.href || pathname.startsWith(`${route.href}/`)
               return (
                 <Link
                   key={route.href}
