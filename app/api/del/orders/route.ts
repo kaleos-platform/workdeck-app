@@ -31,16 +31,16 @@ export async function POST(req: NextRequest) {
   if (!batchId) return errorResponse('batchId가 필요합니다', 400)
   if (ordersInput.length === 0) return errorResponse('orders 배열이 필요합니다', 400)
 
-  // 배치 확인
+  // 배송 묶음 확인
   const batch = await prisma.delBatch.findUnique({
     where: { id: batchId },
     select: { spaceId: true, status: true },
   })
   if (!batch || batch.spaceId !== resolved.space.id) {
-    return errorResponse('배치를 찾을 수 없습니다', 404)
+    return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
   }
   if (batch.status !== 'DRAFT') {
-    return errorResponse('완료된 배치에는 주문을 추가할 수 없습니다', 400)
+    return errorResponse('완료된 배송 묶음에는 주문을 추가할 수 없습니다', 400)
   }
 
   // 주문 일괄 생성

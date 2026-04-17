@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     select: { spaceId: true, status: true },
   })
   if (!batch || batch.spaceId !== resolved.space.id) {
-    return errorResponse('배치를 찾을 수 없습니다', 404)
+    return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
   }
 
   const page = Math.max(1, Number(req.nextUrl.searchParams.get('page')) || 1)
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   ])
 
   const data = orders.map((order) => {
-    // DRAFT 배치이거나 명시적 복호화 요청 시에만 전체 데이터 반환
+    // DRAFT 배송 묶음이거나 명시적 복호화 요청 시에만 전체 데이터 반환
     const shouldDecrypt = batch.status === 'DRAFT' || decrypt
     let recipientName: string
     let phone: string

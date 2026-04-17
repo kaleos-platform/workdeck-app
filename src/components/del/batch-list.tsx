@@ -49,12 +49,12 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
         pageSize: String(PAGE_SIZE),
       })
       const res = await fetch(`/api/del/batches?${params}`)
-      if (!res.ok) throw new Error('배치 목록 조회 실패')
+      if (!res.ok) throw new Error('배송 묶음 목록 조회 실패')
       const json = await res.json()
       setBatches(json.data)
       setTotal(json.total)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '배치 목록 조회 실패')
+      toast.error(err instanceof Error ? err.message : '배송 묶음 목록 조회 실패')
     } finally {
       setLoading(false)
     }
@@ -91,7 +91,7 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-semibold">완료된 배치</h2>
+      <h2 className="text-sm font-semibold">완료된 배송 묶음</h2>
 
       {/* 날짜 필터 */}
       <div className="flex gap-2">
@@ -111,7 +111,7 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
         />
       </div>
 
-      {/* 배치 테이블 */}
+      {/* 배송 묶음 테이블 */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -131,7 +131,7 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
             ) : filteredBatches.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-center text-xs text-muted-foreground py-8">
-                  완료된 배치가 없습니다
+                  완료된 배송 묶음가 없습니다
                 </TableCell>
               </TableRow>
             ) : (

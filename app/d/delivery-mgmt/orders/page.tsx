@@ -19,7 +19,7 @@ export default function DeliveryOrdersPage() {
             <OrderDetailTable batchId={selectedBatchId} />
           ) : (
             <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
-              왼쪽 목록에서 배치를 선택하세요
+              왼쪽 목록에서 배송 묶음을 선택하세요
             </div>
           )}
         </div>
