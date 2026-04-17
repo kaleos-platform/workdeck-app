@@ -1,24 +1,6 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { INVENTORY_MGMT_STOCK_STATUS_PATH } from '@/lib/deck-routes'
 
-import { useState } from 'react'
-import {
-  DashboardFilters,
-  type DashboardFilterValues,
-} from '@/components/inv/dashboard-filters'
-import { DashboardChart } from '@/components/inv/dashboard-chart'
-import { getLastNDaysRangeKst } from '@/lib/date-range'
-
-export default function InventoryDashboardPage() {
-  const [filters, setFilters] = useState<DashboardFilterValues>(() => {
-    const range = getLastNDaysRangeKst(7)
-    return { from: range.from, to: range.to }
-  })
-
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">통합 재고 관리</h1>
-      <DashboardFilters value={filters} onChange={setFilters} />
-      <DashboardChart filters={filters} />
-    </div>
-  )
+export default function InventoryMgmtPage() {
+  redirect(INVENTORY_MGMT_STOCK_STATUS_PATH)
 }
