@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,7 +13,6 @@ import { Switch } from '@/components/ui/switch'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -32,12 +32,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
-import {
   Table,
   TableBody,
   TableCell,
@@ -49,29 +43,29 @@ import {
 type ChannelGroup = {
   id: string
   name: string
-  type: 'OUTBOUND' | 'TRANSFER'
   channelCount: number
 }
 
 type Channel = {
   id: string
   name: string
-  groupId: string | null
+  groupId: string
+  type: 'OUTBOUND' | 'TRANSFER'
   isActive: boolean
   requireOrderNumber: boolean
   requirePayment: boolean
   requireProducts: boolean
-  group: { id: string; name: string; type: string } | null
+  group: { id: string; name: string } | null
 }
 
 const NO_GROUP_VALUE = '__none__'
-const TYPE_LABELS = { OUTBOUND: '출고', TRANSFER: '재고 이동' } as const
 
 export function DelChannelManager() {
   const [groups, setGroups] = useState<ChannelGroup[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'OUTBOUND' | 'TRANSFER'>('OUTBOUND')
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'OUTBOUND' | 'TRANSFER'>('ALL')
 
   // 그룹 다이얼로그
   const [groupDialogOpen, setGroupDialogOpen] = useState(false)
@@ -84,10 +78,11 @@ export function DelChannelManager() {
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
   const [channelName, setChannelName] = useState('')
   const [channelGroupId, setChannelGroupId] = useState<string>(NO_GROUP_VALUE)
+  const [channelType, setChannelType] = useState<'OUTBOUND' | 'TRANSFER'>('OUTBOUND')
   const [channelIsActive, setChannelIsActive] = useState(true)
-  const [requireOrderNumber, setRequireOrderNumber] = useState(false)
-  const [requirePayment, setRequirePayment] = useState(false)
-  const [requireProducts, setRequireProducts] = useState(false)
+  const [requireOrderNumber, setRequireOrderNumber] = useState(true)
+  const [requirePayment, setRequirePayment] = useState(true)
+  const [requireProducts, setRequireProducts] = useState(true)
   const [savingChannel, setSavingChannel] = useState(false)
 
   const loadData = useCallback(async () => {
@@ -114,11 +109,14 @@ export function DelChannelManager() {
     loadData()
   }, [loadData])
 
-  // 현재 탭에 해당하는 데이터 필터
-  const filteredGroups = groups.filter((g) => g.type === activeTab)
-  const filteredChannels = channels.filter(
-    (c) => c.group?.type === activeTab || (!c.group && activeTab === 'OUTBOUND')
-  )
+  // 필터링
+  const filteredChannels = channels.filter((c) => {
+    const matchesGroup = !selectedGroupId || c.groupId === selectedGroupId
+    const matchesType = typeFilter === 'ALL' || c.type === typeFilter
+    return matchesGroup && matchesType
+  })
+
+  const totalChannelCount = channels.length
 
   // ─── 그룹 핸들러 ──────────────────────────────────────────────────
   function openNewGroup() {
@@ -147,10 +145,7 @@ export function DelChannelManager() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: groupName.trim(),
-          ...(editingGroup ? {} : { type: activeTab }),
-        }),
+        body: JSON.stringify({ name: groupName.trim() }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
@@ -165,6 +160,10 @@ export function DelChannelManager() {
   }
 
   async function handleDeleteGroup(group: ChannelGroup) {
+    if (groups.length <= 1) {
+      toast.error('마지막 그룹은 삭제할 수 없습니다')
+      return
+    }
     if (!confirm(`"${group.name}" 그룹을 삭제하시겠습니까?`)) return
     try {
       const res = await fetch(`/api/del/channel-groups/${group.id}`, { method: 'DELETE' })
@@ -173,6 +172,9 @@ export function DelChannelManager() {
         throw new Error(data?.message ?? '삭제 실패')
       }
       toast.success('그룹이 삭제되었습니다')
+      if (selectedGroupId === group.id) {
+        setSelectedGroupId(null)
+      }
       await loadData()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제 실패')
@@ -184,10 +186,11 @@ export function DelChannelManager() {
     setEditingChannel(null)
     setChannelName('')
     setChannelGroupId(NO_GROUP_VALUE)
+    setChannelType('OUTBOUND')
     setChannelIsActive(true)
-    setRequireOrderNumber(false)
-    setRequirePayment(false)
-    setRequireProducts(false)
+    setRequireOrderNumber(true)
+    setRequirePayment(true)
+    setRequireProducts(true)
     setChannelDialogOpen(true)
   }
 
@@ -195,6 +198,7 @@ export function DelChannelManager() {
     setEditingChannel(channel)
     setChannelName(channel.name)
     setChannelGroupId(channel.groupId ?? NO_GROUP_VALUE)
+    setChannelType(channel.type)
     setChannelIsActive(channel.isActive)
     setRequireOrderNumber(channel.requireOrderNumber)
     setRequirePayment(channel.requirePayment)
@@ -213,6 +217,7 @@ export function DelChannelManager() {
       const payload = {
         name: channelName.trim(),
         groupId: groupIdValue,
+        type: channelType,
         isActive: channelIsActive,
         requireOrderNumber,
         requirePayment,
@@ -255,16 +260,13 @@ export function DelChannelManager() {
     }
   }
 
-  function renderTabContent() {
-    return (
-      <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        {/* 그룹 패널 */}
+  return (
+    <>
+      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+        {/* 왼쪽: 그룹 패널 */}
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between space-y-0">
-            <div>
-              <CardTitle>채널 그룹</CardTitle>
-              <CardDescription>{TYPE_LABELS[activeTab]} 채널을 묶어 분류합니다</CardDescription>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle>채널 그룹</CardTitle>
             <Button size="sm" onClick={openNewGroup}>
               <Plus className="mr-1 h-4 w-4" />새 그룹
             </Button>
@@ -272,14 +274,37 @@ export function DelChannelManager() {
           <CardContent>
             {loading ? (
               <p className="text-sm text-muted-foreground">불러오는 중...</p>
-            ) : filteredGroups.length === 0 ? (
-              <p className="text-sm text-muted-foreground">등록된 그룹이 없습니다</p>
             ) : (
-              <ul className="space-y-2">
-                {filteredGroups.map((group) => (
+              <ul className="space-y-1">
+                {/* 전체 항목 */}
+                <li
+                  className={cn(
+                    'flex cursor-pointer items-center justify-between rounded-md border px-3 py-2 transition-colors',
+                    selectedGroupId === null
+                      ? 'bg-primary/10 border-primary/20'
+                      : 'hover:bg-muted/50'
+                  )}
+                  onClick={() => setSelectedGroupId(null)}
+                >
+                  <div>
+                    <p className="font-medium">전체</p>
+                    <p className="text-xs text-muted-foreground">
+                      채널 {totalChannelCount}개
+                    </p>
+                  </div>
+                </li>
+
+                {/* 그룹 목록 */}
+                {groups.map((group) => (
                   <li
                     key={group.id}
-                    className="flex items-center justify-between rounded-md border px-3 py-2"
+                    className={cn(
+                      'flex cursor-pointer items-center justify-between rounded-md border px-3 py-2 transition-colors',
+                      selectedGroupId === group.id
+                        ? 'bg-primary/10 border-primary/20'
+                        : 'hover:bg-muted/50'
+                    )}
+                    onClick={() => setSelectedGroupId(group.id)}
                   >
                     <div>
                       <p className="font-medium">{group.name}</p>
@@ -287,7 +312,10 @@ export function DelChannelManager() {
                         채널 {group.channelCount}개
                       </p>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div
+                      className="flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         variant="ghost"
                         size="icon"
@@ -296,14 +324,16 @@ export function DelChannelManager() {
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteGroup(group)}
-                        aria-label="그룹 삭제"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {groups.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteGroup(group)}
+                          aria-label="그룹 삭제"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </li>
                 ))}
@@ -312,12 +342,34 @@ export function DelChannelManager() {
           </CardContent>
         </Card>
 
-        {/* 채널 패널 */}
+        {/* 오른쪽: 채널 패널 */}
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between space-y-0">
-            <div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <div className="flex items-center gap-3">
               <CardTitle>판매 채널</CardTitle>
-              <CardDescription>{TYPE_LABELS[activeTab]}에 사용할 판매 채널</CardDescription>
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant={typeFilter === 'ALL' ? 'default' : 'outline'}
+                  onClick={() => setTypeFilter('ALL')}
+                >
+                  전체
+                </Button>
+                <Button
+                  size="sm"
+                  variant={typeFilter === 'OUTBOUND' ? 'default' : 'outline'}
+                  onClick={() => setTypeFilter('OUTBOUND')}
+                >
+                  출고
+                </Button>
+                <Button
+                  size="sm"
+                  variant={typeFilter === 'TRANSFER' ? 'default' : 'outline'}
+                  onClick={() => setTypeFilter('TRANSFER')}
+                >
+                  재고이동
+                </Button>
+              </div>
             </div>
             <Button size="sm" onClick={openNewChannel}>
               <Plus className="mr-1 h-4 w-4" />새 채널
@@ -333,10 +385,10 @@ export function DelChannelManager() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>채널명</TableHead>
-                    <TableHead>그룹</TableHead>
-                    <TableHead>필수 필드</TableHead>
-                    <TableHead>상태</TableHead>
-                    <TableHead className="text-right">액션</TableHead>
+                    <TableHead>구분</TableHead>
+                    <TableHead>필수필드</TableHead>
+                    <TableHead>활성</TableHead>
+                    <TableHead>수정</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -344,10 +396,14 @@ export function DelChannelManager() {
                     <TableRow key={channel.id}>
                       <TableCell className="font-medium">{channel.name}</TableCell>
                       <TableCell>
-                        {channel.group ? (
-                          <Badge variant="secondary">{channel.group.name}</Badge>
+                        {channel.type === 'OUTBOUND' ? (
+                          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                            출고
+                          </Badge>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+                            재고이동
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell>
@@ -367,30 +423,20 @@ export function DelChannelManager() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {channel.isActive ? (
-                          <Badge>활성</Badge>
-                        ) : (
-                          <Badge variant="outline">비활성</Badge>
-                        )}
+                        <Switch
+                          checked={channel.isActive}
+                          onCheckedChange={() => toggleChannelActive(channel)}
+                        />
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEditChannel(channel)}
-                            aria-label="채널 수정"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleChannelActive(channel)}
-                          >
-                            {channel.isActive ? '비활성화' : '활성화'}
-                          </Button>
-                        </div>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEditChannel(channel)}
+                          aria-label="채널 수정"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -400,23 +446,6 @@ export function DelChannelManager() {
           </CardContent>
         </Card>
       </div>
-    )
-  }
-
-  return (
-    <>
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'OUTBOUND' | 'TRANSFER')}>
-        <TabsList>
-          <TabsTrigger value="OUTBOUND">출고</TabsTrigger>
-          <TabsTrigger value="TRANSFER">재고 이동</TabsTrigger>
-        </TabsList>
-        <TabsContent value="OUTBOUND" className="mt-4">
-          {renderTabContent()}
-        </TabsContent>
-        <TabsContent value="TRANSFER" className="mt-4">
-          {renderTabContent()}
-        </TabsContent>
-      </Tabs>
 
       {/* 그룹 다이얼로그 */}
       <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
@@ -424,7 +453,7 @@ export function DelChannelManager() {
           <DialogHeader>
             <DialogTitle>{editingGroup ? '그룹 수정' : '새 그룹 만들기'}</DialogTitle>
             <DialogDescription>
-              {TYPE_LABELS[activeTab]} 채널 그룹 이름을 입력해 주세요
+              채널 그룹 이름을 입력해 주세요
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
@@ -464,6 +493,20 @@ export function DelChannelManager() {
                 placeholder="예: 쿠팡"
               />
             </div>
+
+            <div className="space-y-2">
+              <Label>구분</Label>
+              <Select value={channelType} onValueChange={(v) => setChannelType(v as 'OUTBOUND' | 'TRANSFER')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="구분 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="OUTBOUND">출고</SelectItem>
+                  <SelectItem value="TRANSFER">재고이동</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label>그룹 (선택)</Label>
               <Select value={channelGroupId} onValueChange={setChannelGroupId}>
@@ -472,7 +515,7 @@ export function DelChannelManager() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NO_GROUP_VALUE}>그룹 없음</SelectItem>
-                  {filteredGroups.map((group) => (
+                  {groups.map((group) => (
                     <SelectItem key={group.id} value={group.id}>
                       {group.name}
                     </SelectItem>

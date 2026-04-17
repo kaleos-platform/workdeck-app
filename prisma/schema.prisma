@@ -940,10 +940,9 @@ model DelShippingMethod {
 
 // 판매 채널 그룹
 model DelChannelGroup {
-  id      String         @id @default(cuid())
+  id      String @id @default(cuid())
   spaceId String
   name    String
-  type    DelChannelType
 
   space    Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channels DelSalesChannel[]
@@ -956,14 +955,15 @@ model DelChannelGroup {
 
 // 판매 채널
 model DelSalesChannel {
-  id                 String  @id @default(cuid())
+  id                 String         @id @default(cuid())
   spaceId            String
   name               String
   groupId            String?
-  isActive           Boolean @default(true)
-  requireOrderNumber Boolean @default(false)
-  requirePayment     Boolean @default(false)
-  requireProducts    Boolean @default(false)
+  type               DelChannelType @default(OUTBOUND)
+  isActive           Boolean        @default(true)
+  requireOrderNumber Boolean        @default(true)
+  requirePayment     Boolean        @default(true)
+  requireProducts    Boolean        @default(true)
 
   space  Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   group  DelChannelGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
