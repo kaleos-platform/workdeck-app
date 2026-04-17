@@ -21,6 +21,10 @@ import {
   FileCheck,
   Layers,
   TrendingUp,
+  ClipboardList,
+  Archive,
+  Link2,
+  Truck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
@@ -44,6 +48,12 @@ import {
   INVENTORY_MGMT_SETTINGS_PATH,
   INVENTORY_MGMT_STOCK_STATUS_PATH,
   INVENTORY_MGMT_DASHBOARD_PATH,
+  DELIVERY_MGMT_BASE_PATH,
+  DELIVERY_MGMT_REGISTRATION_PATH,
+  DELIVERY_MGMT_ORDERS_PATH,
+  DELIVERY_MGMT_INTEGRATION_PATH,
+  DELIVERY_MGMT_CHANNELS_PATH,
+  DELIVERY_MGMT_SHIPPING_PATH,
 } from '@/lib/deck-routes'
 
 type Campaign = {
@@ -54,7 +64,7 @@ type Campaign = {
   adTypes: string[]
 }
 
-type SidebarVariant = 'workdeck' | 'coupang-ads' | 'inventory-mgmt'
+type SidebarVariant = 'workdeck' | 'coupang-ads' | 'inventory-mgmt' | 'delivery-mgmt'
 
 type SidebarProps = {
   workspaceName: string
@@ -67,6 +77,7 @@ const NVB_AD_TYPE = '신규 구매 고객 확보'
 const DECK_ENTRY: Record<string, string> = {
   'coupang-ads': COUPANG_ADS_BASE_PATH,
   'inventory-mgmt': INVENTORY_MGMT_BASE_PATH,
+  'delivery-mgmt': DELIVERY_MGMT_BASE_PATH,
 }
 
 const INVENTORY_MAIN_ROUTES = [
@@ -114,6 +125,34 @@ const INVENTORY_MAIN_ROUTES = [
     label: '설정',
     icon: Settings,
     href: INVENTORY_MGMT_SETTINGS_PATH,
+  },
+]
+
+const DELIVERY_MAIN_ROUTES = [
+  {
+    label: '배송 등록',
+    icon: ClipboardList,
+    href: DELIVERY_MGMT_REGISTRATION_PATH,
+  },
+  {
+    label: '주문 데이터 관리',
+    icon: Archive,
+    href: DELIVERY_MGMT_ORDERS_PATH,
+  },
+  {
+    label: '데이터 연동',
+    icon: Link2,
+    href: DELIVERY_MGMT_INTEGRATION_PATH,
+  },
+  {
+    label: '판매 채널 관리',
+    icon: Store,
+    href: DELIVERY_MGMT_CHANNELS_PATH,
+  },
+  {
+    label: '배송 방식 관리',
+    icon: Truck,
+    href: DELIVERY_MGMT_SHIPPING_PATH,
   },
 ]
 
@@ -167,6 +206,7 @@ export function Sidebar({
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
   const isInventorySidebar = variant === 'inventory-mgmt'
+  const isDeliverySidebar = variant === 'delivery-mgmt'
   const isMyDeckMode = mode === 'my-deck'
 
   useEffect(() => {
@@ -287,6 +327,27 @@ export function Sidebar({
         {isInventorySidebar && (
           <div className="space-y-1">
             {INVENTORY_MAIN_ROUTES.map((route) => {
+              const isActive = pathname === route.href || pathname.startsWith(`${route.href}/`)
+              return (
+                <Link
+                  key={route.href}
+                  href={route.href}
+                  className={cn(
+                    'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                    isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
+                  )}
+                >
+                  <route.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  <span className="truncate">{route.label}</span>
+                </Link>
+              )
+            })}
+          </div>
+        )}
+
+        {isDeliverySidebar && (
+          <div className="space-y-1">
+            {DELIVERY_MAIN_ROUTES.map((route) => {
               const isActive = pathname === route.href || pathname.startsWith(`${route.href}/`)
               return (
                 <Link

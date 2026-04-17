@@ -239,3 +239,38 @@ export type InvLocationProductMap = Prisma.InvLocationProductMapModel
  * 
  */
 export type InvSettings = Prisma.InvSettingsModel
+/**
+ * Model DelShippingMethod
+ * 
+ */
+export type DelShippingMethod = Prisma.DelShippingMethodModel
+/**
+ * Model DelChannelGroup
+ * 
+ */
+export type DelChannelGroup = Prisma.DelChannelGroupModel
+/**
+ * Model DelSalesChannel
+ * 
+ */
+export type DelSalesChannel = Prisma.DelSalesChannelModel
+/**
+ * Model DelBatch
+ * 
+ */
+export type DelBatch = Prisma.DelBatchModel
+/**
+ * Model DelOrder
+ * 
+ */
+export type DelOrder = Prisma.DelOrderModel
+/**
+ * Model DelOrderItem
+ * 
+ */
+export type DelOrderItem = Prisma.DelOrderItemModel
+/**
+ * Model DelIntegrationHistory
+ * 
+ */
+export type DelIntegrationHistory = Prisma.DelIntegrationHistoryModel

@@ -318,6 +318,14 @@ model Space {
   invSettings         InvSettings?
   invProductGroups    InvProductGroup[]
 
+  // 통합 배송 관리 (Del)
+  delShippingMethods      DelShippingMethod[]
+  delChannelGroups        DelChannelGroup[]
+  delSalesChannels        DelSalesChannel[]
+  delBatches              DelBatch[]
+  delOrders               DelOrder[]
+  delIntegrationHistories DelIntegrationHistory[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -896,6 +904,155 @@ model InvSettings {
 
   space           Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   defaultLocation InvStorageLocation? @relation("DefaultLocation", fields: [defaultLocationId], references: [id], onDelete: SetNull)
+
+  @@index([spaceId])
+}
+
+// ─── 통합 배송 관리 (Del) ─────────────────────────────────────────────────────
+
+enum DelBatchStatus {
+  DRAFT
+  COMPLETED
+}
+
+enum DelChannelType {
+  OUTBOUND  // 출고
+  TRANSFER  // 재고 이동
+}
+
+// 배송 방식 (택배사 + 파일 포맷)
+model DelShippingMethod {
+  id           String  @id @default(cuid())
+  spaceId      String
+  name         String
+  isActive     Boolean @default(true)
+  formatConfig Json    // DelFormatColumn[] — 배송 파일 컬럼 매핑
+
+  space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  orders DelOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
+}
+
+// 판매 채널 그룹
+model DelChannelGroup {
+  id      String         @id @default(cuid())
+  spaceId String
+  name    String
+  type    DelChannelType
+
+  space    Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channels DelSalesChannel[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
+}
+
+// 판매 채널
+model DelSalesChannel {
+  id                 String  @id @default(cuid())
+  spaceId            String
+  name               String
+  groupId            String?
+  isActive           Boolean @default(true)
+  requireOrderNumber Boolean @default(false)
+  requirePayment     Boolean @default(false)
+  requireProducts    Boolean @default(false)
+
+  space  Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group  DelChannelGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  orders DelOrder[]
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
+  @@index([groupId])
+}
+
+// 배송 배치 (한 번의 배송 등록 작업 단위)
+model DelBatch {
+  id          String         @id @default(cuid())
+  spaceId     String
+  status      DelBatchStatus @default(DRAFT)
+  label       String?
+
+  space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  orders DelOrder[]
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([spaceId])
+  @@index([spaceId, status])
+}
+
+// 개별 주문 (배송 등록 행 1개)
+model DelOrder {
+  id               String @id @default(cuid())
+  spaceId          String
+  batchId          String
+  shippingMethodId String
+  channelId        String?
+
+  // PII 암호화 필드
+  recipientNameEnc String
+  recipientNameIv  String
+  phoneEnc         String
+  phoneIv          String
+  addressEnc       String
+  addressIv        String
+  postalCode       String?  // 우편번호 (비PII)
+  deliveryMessage  String?
+
+  // 주문 메타
+  orderDate     DateTime
+  orderNumber   String?
+  paymentAmount Decimal? @db.Decimal(18, 2)
+
+  space          Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  batch          DelBatch          @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  shippingMethod DelShippingMethod @relation(fields: [shippingMethodId], references: [id])
+  channel        DelSalesChannel?  @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  items          DelOrderItem[]
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
+  @@index([batchId])
+  @@index([spaceId, orderDate])
+}
+
+// 주문 상품 (max 10, 앱 레벨 검증)
+model DelOrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  name    String // 상품+옵션명
+  quantity Int
+
+  order DelOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+// 데이터 연동 이력
+model DelIntegrationHistory {
+  id          String   @id @default(cuid())
+  spaceId     String
+  type        String   // "SALES" | "INVENTORY"
+  dateFrom    DateTime
+  dateTo      DateTime
+  totalOrders Int
+  movementIds String[]
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@index([spaceId])
 }
