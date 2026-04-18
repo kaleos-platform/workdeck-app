@@ -19,10 +19,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 개발 명령어
 
 ```bash
-# Prisma
-npx prisma generate          # Prisma 클라이언트 생성
-npx prisma migrate dev       # 마이그레이션 생성 및 적용
-npx prisma studio            # Prisma Studio (DB GUI)
+# Prisma — 스키마 변경은 migrate dev만 사용 (db push 금지)
+npx prisma migrate dev --name <작업명>   # 마이그레이션 파일 생성 + dev DB 적용
+npx prisma generate                       # 클라이언트 재생성 (migrate dev가 자동 실행)
+npx prisma studio                         # DB GUI
+# 운영 배포는 Vercel buildCommand의 `prisma migrate deploy`가 자동 처리.
+# prod DB 직접 SQL 실행 금지 — _prisma_migrations 와 스키마가 어긋남.
 ```
 
 ## 아키텍처 개요

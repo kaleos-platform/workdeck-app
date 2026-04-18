@@ -7,6 +7,7 @@
 - 기본 로드: `docs/rules/01-core.md`
 - 조건부 로드:
   - Next.js(App Router)/UI 구조/성능/라우팅/컴포넌트 관련이면: `docs/rules/02-architecture.md` 추가
+  - Prisma/DB 스키마/마이그레이션 관련이면: `docs/rules/02-architecture.md` 추가
   - 의존성 업데이트/취약점/권한/민감정보/API 보안/검증이면: `docs/rules/03-security.md` 추가
 - 불확실하면 추측으로 규칙을 적용하지 말고, 필요한 규칙 파일을 먼저 열어 확인하거나 질문한다.
 
@@ -33,7 +34,7 @@ Prefer `@/` imports instead of deep relative paths.
 - `npm run start`: run the production server from the built output.
 - `npm run lint`: run ESLint with the Next.js config.
 
-If you change DB models, also run Prisma workflows locally (for example: `npx prisma generate`).
+DB 스키마 변경 시 반드시 `npx prisma migrate dev --name <작업명>` 사용. `prisma db push` 및 prod DB 직접 SQL 실행 금지. (상세: `docs/rules/02-architecture.md` §4)
 
 ## Coding Style & Naming Conventions
 

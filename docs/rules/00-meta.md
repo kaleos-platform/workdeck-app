@@ -9,6 +9,7 @@
 - 기본 로드: docs/rules/01-core.md
 - 조건부 로드:
   - Next.js(App Router)/UI 구조/성능/라우팅/컴포넌트 관련이면: + docs/rules/02-architecture.md
+  - Prisma/DB 스키마/마이그레이션 관련이면: + docs/rules/02-architecture.md
   - 의존성 업데이트/취약점/권한/민감정보/API 보안/검증이면: + docs/rules/03-security.md
 
 ## If unsure
