@@ -181,7 +181,10 @@ export function RegistrationTable({
                 return (
                   <TableRow
                     key={row.tempId}
-                    className={selectionEnabled && selectedIds?.has(row.tempId) ? 'bg-primary/5' : undefined}
+                    className={cn(
+                      '[&_input]:align-middle [&_button]:align-middle',
+                      selectionEnabled && selectedIds?.has(row.tempId) && 'bg-primary/5',
+                    )}
                   >
                     {selectionEnabled && (
                       <TableCell>

@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { resolveDeckContext } from '@/lib/api-helpers'
-import { Header } from '@/components/layout/header'
-import { Sidebar } from '@/components/layout/sidebar'
+import { DeliveryMgmtShell } from '@/components/layout/delivery-mgmt-shell'
 
 export default async function DeliveryMgmtLayout({
   children,
@@ -22,15 +21,5 @@ export default async function DeliveryMgmtLayout({
 
   const { space } = resolved
 
-  return (
-    <div className="flex h-screen flex-col">
-      <Header variant="delivery-mgmt" />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar workspaceName={space.name} variant="delivery-mgmt" />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-8">{children}</div>
-        </main>
-      </div>
-    </div>
-  )
+  return <DeliveryMgmtShell workspaceName={space.name}>{children}</DeliveryMgmtShell>
 }

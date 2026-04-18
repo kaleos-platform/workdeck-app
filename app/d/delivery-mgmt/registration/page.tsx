@@ -1,8 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { CheckCircle, Trash2, X } from 'lucide-react'
+import { CheckCircle, Trash2, Upload, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,7 +21,6 @@ import {
   type OrderRow,
 } from '@/components/del/registration-table'
 import { BulkPasteDialog } from '@/components/del/bulk-paste-dialog'
-import { ChannelUploadDialog } from '@/components/del/channel-upload-dialog'
 import { DeliveryFileDialog } from '@/components/del/delivery-file-dialog'
 
 type ShippingMethod = { id: string; name: string }
@@ -32,6 +33,8 @@ type Channel = {
 }
 
 export default function DeliveryRegistrationPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeBatchId, setActiveBatchId] = useState('')
   const [orderCount, setOrderCount] = useState(0)
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([])
@@ -42,6 +45,14 @@ export default function DeliveryRegistrationPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkMemo, setBulkMemo] = useState('')
   const [bulkSelectKey, setBulkSelectKey] = useState(0)
+
+  // 업로드 페이지 완료 복귀 감지: ?imported=1 이면 refreshKey 증가 후 쿼리 제거
+  useEffect(() => {
+    if (searchParams.get('imported') === '1') {
+      setRefreshKey((k) => k + 1)
+      router.replace('/d/delivery-mgmt/registration')
+    }
+  }, [searchParams, router])
 
   // 기초 데이터 로드 + 단일 DRAFT 배송 묶음 자동 로드/생성
   const loadBaseData = useCallback(async () => {
@@ -364,12 +375,17 @@ export default function DeliveryRegistrationPage() {
       {/* 입력 도구 바 */}
       <div className="flex items-center gap-2">
         <BulkPasteDialog onParsed={handleBulkPaste} />
-        <ChannelUploadDialog
-          batchId={activeBatchId}
-          shippingMethodId={shippingMethods[0]?.id ?? ''}
-          channelId=""
-          onImported={() => setRefreshKey((k) => k + 1)}
-        />
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          disabled={!activeBatchId}
+          className={!activeBatchId ? 'pointer-events-none opacity-50' : undefined}
+        >
+          <Link href={`/d/delivery-mgmt/registration/upload?batchId=${activeBatchId}`}>
+            <Upload className="mr-1 h-4 w-4" />파일 업로드
+          </Link>
+        </Button>
       </div>
 
       {/* 일괄 작업 바 (선택 시 표시) */}
