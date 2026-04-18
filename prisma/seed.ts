@@ -16,6 +16,8 @@ async function main() {
 
   const deckApps = [
     { id: 'coupang-ads', name: '쿠팡 광고 자동화', isActive: true },
+    { id: 'delivery-mgmt', name: '통합 배송 관리', isActive: true },
+    { id: 'inventory-mgmt', name: '통합 재고 관리', isActive: true },
     { id: 'osmu', name: 'OSMU 광고 제작', isActive: false },
     { id: 'commerce-ops', name: '이커머스 운영 자동화', isActive: false },
   ]
