@@ -228,8 +228,7 @@ export function RegistrationTable({
                     </TableCell>
                     <TableCell className="align-top">
                       <Textarea
-                        rows={2}
-                        className="field-sizing-content min-h-[3.25rem] max-h-24 text-xs leading-tight px-2 py-1 resize-none md:text-xs shadow-none"
+                        className="field-sizing-content min-h-8 text-xs leading-tight px-2 py-1 resize-none md:text-xs shadow-none"
                         value={row.address}
                         onChange={(e) => updateRow(row.tempId, 'address', trimStart(e.target.value))}
                         placeholder="주소"
