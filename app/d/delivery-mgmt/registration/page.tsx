@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -53,6 +54,14 @@ export default function DeliveryRegistrationPage() {
   const [bulkMemo, setBulkMemo] = useState('')
   const [bulkSelectKey, setBulkSelectKey] = useState(0)
   const [importedCount, setImportedCount] = useState<number | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string
+    description: string
+    confirmLabel: string
+    destructive?: boolean
+    onConfirm: () => void | Promise<void>
+  } | null>(null)
+  const [confirming, setConfirming] = useState(false)
 
   // 업로드 페이지 완료 복귀: ?imported=<N> 감지 시 성공 Dialog + 목록 새로고침
   useEffect(() => {
@@ -180,10 +189,18 @@ export default function DeliveryRegistrationPage() {
   }
 
   // 처리 완료 (저장 + 완료 + 새 DRAFT 자동 생성)
-  async function handleComplete() {
+  function handleComplete() {
     if (!activeBatchId) return
-    if (!confirm('처리 완료하시겠습니까? 완료된 데이터는 주문 데이터 관리에서 조회됩니다.')) return
+    setConfirmDialog({
+      title: '처리 완료',
+      description: '처리 완료하시겠습니까? 완료된 데이터는 주문 데이터 관리에서 조회됩니다.',
+      confirmLabel: '완료',
+      onConfirm: performComplete,
+    })
+  }
 
+  async function performComplete() {
+    if (!activeBatchId) return
     setCompleting(true)
     try {
       const saved = await saveNewRows()
@@ -311,8 +328,17 @@ export default function DeliveryRegistrationPage() {
   async function handleBulkDelete() {
     const ids = Array.from(selectedIds)
     if (ids.length === 0) return
-    if (!confirm(`선택한 ${ids.length}건을 삭제하시겠습니까?`)) return
 
+    setConfirmDialog({
+      title: '선택 삭제',
+      description: `선택한 ${ids.length}건을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
+      confirmLabel: '삭제',
+      destructive: true,
+      onConfirm: () => performBulkDelete(ids),
+    })
+  }
+
+  async function performBulkDelete(ids: string[]) {
     const tempIds = ids.filter((id) => id.startsWith('temp-'))
     const dbIds = ids.filter((id) => !id.startsWith('temp-'))
 
@@ -498,6 +524,48 @@ export default function DeliveryRegistrationPage() {
           </div>
           <DialogFooter>
             <Button onClick={() => setImportedCount(null)}>확인</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 공용 확인 Dialog (처리 완료·삭제 등) */}
+      <Dialog
+        open={confirmDialog !== null}
+        onOpenChange={(v) => {
+          if (!v && !confirming) setConfirmDialog(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{confirmDialog?.title}</DialogTitle>
+            <DialogDescription className="pt-2">
+              {confirmDialog?.description}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              disabled={confirming}
+              onClick={() => setConfirmDialog(null)}
+            >
+              취소
+            </Button>
+            <Button
+              variant={confirmDialog?.destructive ? 'destructive' : 'default'}
+              disabled={confirming}
+              onClick={async () => {
+                if (!confirmDialog) return
+                setConfirming(true)
+                try {
+                  await confirmDialog.onConfirm()
+                } finally {
+                  setConfirming(false)
+                  setConfirmDialog(null)
+                }
+              }}
+            >
+              {confirming ? '처리 중...' : (confirmDialog?.confirmLabel ?? '확인')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
