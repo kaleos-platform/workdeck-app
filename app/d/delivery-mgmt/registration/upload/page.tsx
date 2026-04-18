@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeft, Copy, Info, Upload, X } from 'lucide-react'
+import { ArrowLeft, Copy, Info, Trash2, Upload, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -254,6 +254,13 @@ function UploadPageInner() {
     }
   }
 
+  function handleDeleteDraft() {
+    if (!confirm('임시저장된 업로드 내역을 삭제하시겠습니까? 복구할 수 없습니다.')) return
+    clearAll()
+    toast.success('임시저장이 삭제되었습니다')
+    router.push('/d/delivery-mgmt/registration')
+  }
+
   async function handleImport() {
     if (!file || !preview) {
       toast.error('파일을 다시 선택해 주세요')
@@ -333,9 +340,19 @@ function UploadPageInner() {
           )}
         </div>
         {hasDraft && result === null && (
-          <Button variant="outline" size="sm" onClick={clearAll}>
-            <Upload className="mr-1 h-4 w-4" />다른 파일 업로드
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDeleteDraft}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="mr-1 h-4 w-4" />임시저장 삭제
+            </Button>
+            <Button variant="outline" size="sm" onClick={clearAll}>
+              <Upload className="mr-1 h-4 w-4" />다른 파일 업로드
+            </Button>
+          </div>
         )}
       </header>
 
@@ -552,20 +569,21 @@ function MappingView(p: MappingViewProps) {
             필수 항목(<span className="text-destructive">*</span>): 받는분, 전화, 주소
           </span>
         </div>
-        <div className="rounded-md border divide-y">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md border bg-border md:grid-cols-2">
           {FIELDS.map((field) => (
-            <FieldRow
-              key={field.value}
-              field={field}
-              preview={preview}
-              columns={mapping[field.value] ?? []}
-              usedColumnSet={usedColumnSet}
-              emptyColumnSet={emptyColumnSet}
-              hoveredColumnIdx={hoveredColumnIdx}
-              setHoveredColumnIdx={setHoveredColumnIdx}
-              onAdd={(idx) => addColumn(field.value, idx)}
-              onRemove={(idx) => removeColumn(field.value, idx)}
-            />
+            <div key={field.value} className="bg-background">
+              <FieldRow
+                field={field}
+                preview={preview}
+                columns={mapping[field.value] ?? []}
+                usedColumnSet={usedColumnSet}
+                emptyColumnSet={emptyColumnSet}
+                hoveredColumnIdx={hoveredColumnIdx}
+                setHoveredColumnIdx={setHoveredColumnIdx}
+                onAdd={(idx) => addColumn(field.value, idx)}
+                onRemove={(idx) => removeColumn(field.value, idx)}
+              />
+            </div>
           ))}
         </div>
       </section>
