@@ -110,7 +110,7 @@ export function parseWithMapping(
     const rowNum = i + 2 // Excel 행 번호 (1-based + header)
 
     const get = (idx: number | undefined): string =>
-      idx !== undefined && row[idx] != null ? String(row[idx]) : ''
+      idx !== undefined && row[idx] != null ? String(row[idx]).replace(/^\s+/, '') : ''
 
     const recipientName = get(mapping.recipientName)
     const phone = normalizePhone(get(mapping.phone))

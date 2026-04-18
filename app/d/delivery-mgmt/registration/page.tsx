@@ -185,6 +185,11 @@ export default function DeliveryRegistrationPage() {
     setRows((prev) => [...prev, ...pastedRows])
   }
 
+  // 모든 행의 배송방식과 판매채널이 입력되어야 활성화
+  const allRowsValid =
+    rows.length > 0 && rows.every((r) => r.shippingMethodId && r.channelId)
+  const actionsDisabled = rows.length === 0 || !allRowsValid
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -193,13 +198,14 @@ export default function DeliveryRegistrationPage() {
           <DeliveryFileDialog
             batchId={activeBatchId}
             shippingMethods={shippingMethods}
-            disabled={rows.length === 0}
+            disabled={actionsDisabled}
           />
           <Button
             variant="default"
             size="sm"
             onClick={handleComplete}
-            disabled={completing || rows.length === 0}
+            disabled={completing || actionsDisabled}
+            title={!allRowsValid && rows.length > 0 ? '모든 행의 배송방식과 판매채널을 입력해 주세요' : undefined}
           >
             <CheckCircle className="mr-1 h-4 w-4" />처리 완료
           </Button>

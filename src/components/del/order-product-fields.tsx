@@ -3,6 +3,7 @@
 import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 
 export type OrderProduct = {
   name: string
@@ -13,12 +14,16 @@ type OrderProductFieldsProps = {
   value: OrderProduct[]
   onChange: (products: OrderProduct[]) => void
   maxItems?: number
+  invalid?: boolean
 }
+
+const trimStart = (v: string) => v.replace(/^\s+/, '')
 
 export function OrderProductFields({
   value,
   onChange,
   maxItems = 10,
+  invalid = false,
 }: OrderProductFieldsProps) {
   function addProduct() {
     if (value.length >= maxItems) return
@@ -41,17 +46,23 @@ export function OrderProductFields({
       {value.map((product, i) => (
         <div key={i} className="flex items-center gap-1">
           <Input
-            className="h-7 text-xs"
+            className={cn(
+              'h-7 text-xs',
+              invalid && !product.name && 'ring-2 ring-destructive/50 border-destructive/50',
+            )}
             value={product.name}
-            onChange={(e) => updateProduct(i, 'name', e.target.value)}
-            placeholder="상품명"
+            onChange={(e) => updateProduct(i, 'name', trimStart(e.target.value))}
+            placeholder={invalid ? '상품명 *' : '상품명'}
           />
           <Input
-            className="h-7 w-16 text-xs"
+            className="h-7 w-14 text-xs text-center [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [appearance:textfield]"
             type="number"
             min={1}
             value={product.quantity}
-            onChange={(e) => updateProduct(i, 'quantity', Number(e.target.value) || 1)}
+            onChange={(e) => {
+              const n = Number(e.target.value)
+              updateProduct(i, 'quantity', n >= 1 ? n : 1)
+            }}
           />
           <Button
             variant="ghost"
@@ -67,10 +78,10 @@ export function OrderProductFields({
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 text-xs"
+          className={cn('h-6 text-xs', invalid && value.length === 0 && 'text-destructive')}
           onClick={addProduct}
         >
-          <Plus className="mr-1 h-3 w-3" />상품 추가
+          <Plus className="mr-1 h-3 w-3" />{invalid && value.length === 0 ? '상품 추가 *' : '상품 추가'}
         </Button>
       )}
     </div>

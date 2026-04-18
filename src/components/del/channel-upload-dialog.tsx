@@ -356,7 +356,10 @@ export function ChannelUploadDialog({
             </>
           )}
           {step === 'done' && (
-            <Button onClick={() => setOpen(false)}>닫기</Button>
+            <>
+              <Button variant="outline" onClick={resetState}>다른 파일 업로드</Button>
+              <Button onClick={() => setOpen(false)}>닫기</Button>
+            </>
           )}
         </DialogFooter>
       </DialogContent>

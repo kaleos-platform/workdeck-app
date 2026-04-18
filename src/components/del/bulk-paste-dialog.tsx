@@ -57,10 +57,11 @@ export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
       return
     }
 
-    // 전체 붙여넣기 데이터로 생성
+    // 전체 붙여넣기 데이터로 생성 (앞 공백 제거)
+    const trimStart = (v: string) => v.replace(/^\s+/, '')
     const allLines = text.trim().split('\n')
     const allRows: OrderRow[] = allLines.map((line) => {
-      const cols = line.split('\t')
+      const cols = line.split('\t').map(trimStart)
       const row = createEmptyRow()
       row.recipientName = cols[0] ?? ''
       row.phone = cols[1] ?? ''
