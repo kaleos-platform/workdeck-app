@@ -10,6 +10,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -45,10 +52,14 @@ export default function DeliveryRegistrationPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkMemo, setBulkMemo] = useState('')
   const [bulkSelectKey, setBulkSelectKey] = useState(0)
+  const [importedCount, setImportedCount] = useState<number | null>(null)
 
-  // 업로드 페이지 완료 복귀 감지: ?imported=1 이면 refreshKey 증가 후 쿼리 제거
+  // 업로드 페이지 완료 복귀: ?imported=<N> 감지 시 성공 Dialog + 목록 새로고침
   useEffect(() => {
-    if (searchParams.get('imported') === '1') {
+    const raw = searchParams.get('imported')
+    if (raw) {
+      const n = Number(raw)
+      if (Number.isFinite(n) && n > 0) setImportedCount(n)
       setRefreshKey((k) => k + 1)
       router.replace('/d/delivery-mgmt/registration')
     }
@@ -463,6 +474,30 @@ export default function DeliveryRegistrationPage() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
       />
+
+      {/* 업로드 성공 Dialog */}
+      <Dialog
+        open={importedCount !== null}
+        onOpenChange={(v) => !v && setImportedCount(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>가져오기 완료</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <CheckCircle className="h-6 w-6 text-primary" />
+              <span className="text-3xl font-semibold">{importedCount}건</span>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              채널 파일에서 {importedCount}건을 가져왔습니다
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setImportedCount(null)}>확인</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

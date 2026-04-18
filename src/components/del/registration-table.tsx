@@ -297,13 +297,14 @@ export function RegistrationTable({
                     </TableCell>
                     <TableCell>
                       <Input
-                        className={cn(
-                          'h-8 text-xs [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [appearance:textfield]',
-                          missingPayment && REQUIRED_INVALID,
-                        )}
-                        type="number"
-                        value={row.paymentAmount}
-                        onChange={(e) => updateRow(row.tempId, 'paymentAmount', e.target.value)}
+                        className={cn('h-8 text-xs text-right', missingPayment && REQUIRED_INVALID)}
+                        type="text"
+                        inputMode="numeric"
+                        value={row.paymentAmount ? Number(row.paymentAmount).toLocaleString('ko-KR') : ''}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/[^0-9]/g, '')
+                          updateRow(row.tempId, 'paymentAmount', digits)
+                        }}
                         placeholder={requirePayment ? '금액 *' : '금액'}
                       />
                     </TableCell>

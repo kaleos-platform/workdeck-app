@@ -140,45 +140,73 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-semibold">완료된 배송 묶음</h2>
+      {/* 필터 바: 제목 · 프리셋 · 날짜 · 페이지네이션 한 줄 */}
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="text-sm font-semibold shrink-0">완료된 배송 묶음</h2>
 
-      {/* 기간 프리셋 버튼 */}
-      <div className="flex gap-1">
-        {presets.map((p) => (
-          <Button
-            key={p.key}
-            variant={activePreset === p.key ? 'default' : 'outline'}
-            size="sm"
-            className="h-7 text-xs px-2"
-            onClick={() => applyPreset(p.key)}
-          >
-            {p.label}
-          </Button>
-        ))}
-      </div>
+        <div className="flex gap-1">
+          {presets.map((p) => (
+            <Button
+              key={p.key}
+              variant={activePreset === p.key ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 text-xs px-2"
+              onClick={() => applyPreset(p.key)}
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
 
-      {/* 날짜 필터 */}
-      <div className="flex gap-2">
-        <Input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => { setDateFrom(e.target.value); setActivePreset('') }}
-          className="text-xs"
-          placeholder="시작일"
-        />
-        <Input
-          type="date"
-          value={dateTo}
-          onChange={(e) => { setDateTo(e.target.value); setActivePreset('') }}
-          className="text-xs"
-          placeholder="종료일"
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => { setDateFrom(e.target.value); setActivePreset('') }}
+            className="h-8 w-36 text-xs"
+            placeholder="시작일"
+          />
+          <span className="text-xs text-muted-foreground">–</span>
+          <Input
+            type="date"
+            value={dateTo}
+            onChange={(e) => { setDateTo(e.target.value); setActivePreset('') }}
+            className="h-8 w-36 text-xs"
+            placeholder="종료일"
+          />
+        </div>
+
+        {totalPages > 1 && (
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              이전
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              {page} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              다음
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* 배송 묶음 테이블 */}
-      <div className="rounded-md border">
+      <div className="max-h-[220px] overflow-y-auto rounded-md border">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
             <TableRow>
               <TableHead className="text-xs">날짜</TableHead>
               <TableHead className="text-xs">라벨</TableHead>
@@ -226,31 +254,6 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
           </TableBody>
         </Table>
       </div>
-
-      {/* 페이지네이션 */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            이전
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {page} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            다음
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

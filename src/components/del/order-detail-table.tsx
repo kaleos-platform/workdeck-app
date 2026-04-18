@@ -65,11 +65,11 @@ interface Order {
   createdAt: string
 }
 
-// 배송 정확도를 위해 중요한 필드 폭 (가려짐/말줄임 방지)
-const COL_RECIPIENT = 'min-w-[120px]'
-const COL_PHONE = 'min-w-[160px]'
-const COL_ADDRESS = 'min-w-[320px]'
-const COL_MESSAGE = 'min-w-[200px]'
+// 주요 필드 폭 — 내용 많을 때 2줄 clamp 처리
+const COL_RECIPIENT = 'min-w-[90px] max-w-[140px]'
+const COL_PHONE = 'min-w-[130px] max-w-[160px]'
+const COL_ADDRESS = 'min-w-[240px] max-w-[320px]'
+const COL_MESSAGE = 'min-w-[160px] max-w-[240px]'
 
 interface DecryptedPii {
   recipientName: string
@@ -207,14 +207,15 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     }
   }
 
-  // PII 셀 렌더링 (단일 라인, 가려짐 방지)
+  // PII 셀 렌더링 (길면 2줄 clamp + 툴팁으로 전체 확인)
   const renderPiiCell = (orderId: string, field: keyof DecryptedPii, maskedValue: string) => {
     const decrypted = decryptedRows[orderId]
     const isDecrypting = decryptingId === orderId
+    const value = decrypted ? decrypted[field] : maskedValue
     return (
       <div className="flex items-start gap-1">
-        <span className="text-xs break-keep">
-          {decrypted ? decrypted[field] : maskedValue}
+        <span className="text-xs break-keep line-clamp-2" title={value}>
+          {value}
         </span>
         <button
           className="shrink-0 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 mt-0.5"
@@ -445,7 +446,10 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                   </TableCell>
                   <TableCell className={COL_ADDRESS}>
                     <div className="flex items-start gap-1">
-                      <span className="text-xs break-keep">
+                      <span
+                        className="text-xs break-keep line-clamp-2"
+                        title={decryptedRows[order.id]?.address ?? order.address}
+                      >
                         {decryptedRows[order.id]?.address ?? order.address}
                       </span>
                       <button
@@ -462,8 +466,13 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                       </button>
                     </div>
                   </TableCell>
-                  <TableCell className={`text-xs break-keep ${COL_MESSAGE}`}>
-                    {order.deliveryMessage || '-'}
+                  <TableCell className={COL_MESSAGE}>
+                    <span
+                      className="text-xs break-keep line-clamp-2"
+                      title={order.deliveryMessage ?? ''}
+                    >
+                      {order.deliveryMessage || '-'}
+                    </span>
                   </TableCell>
                   <TableCell className="text-xs whitespace-nowrap">
                     {order.channel ? (
@@ -480,14 +489,28 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                   <TableCell className="text-xs text-right whitespace-nowrap">
                     {formatAmount(order.paymentAmount)}
                   </TableCell>
-                  <TableCell className="text-xs break-keep min-w-[180px]">
-                    {order.items.map((i) => `${i.name} x${i.quantity}`).join(', ') || '-'}
+                  <TableCell className="min-w-[150px] max-w-[220px]">
+                    {order.items.length === 0 ? (
+                      <span className="text-xs">-</span>
+                    ) : (
+                      <span
+                        className="text-xs break-keep line-clamp-2"
+                        title={order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
+                      >
+                        {order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="text-xs whitespace-nowrap">
                     {formatDate(order.orderDate)}
                   </TableCell>
-                  <TableCell className="text-xs break-keep min-w-[140px]">
-                    {order.memo || '-'}
+                  <TableCell className="min-w-[120px] max-w-[200px]">
+                    <span
+                      className="text-xs break-keep line-clamp-2"
+                      title={order.memo ?? ''}
+                    >
+                      {order.memo || '-'}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <Button

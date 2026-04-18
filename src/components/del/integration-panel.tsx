@@ -233,100 +233,120 @@ export function IntegrationPanel() {
 
   return (
     <div className="space-y-6">
-      {/* Date Range & Type Selector */}
+      {/* 데이터 조회 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">데이터 조회</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* 1. 연동 유형 */}
+          <div className="space-y-1.5 max-w-xs">
+            <Label className="text-sm">연동 유형</Label>
+            <Select
+              value={type}
+              onValueChange={(v) => {
+                setType(v as IntegrationType)
+                setPreview(null)
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SALES">매출 관리</SelectItem>
+                <SelectItem value="INVENTORY">재고 관리</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 2. 시작일·종료일·조회 같은 라인 */}
+          <div className="flex flex-wrap items-end gap-2">
             <div className="space-y-1.5">
               <Label className="text-sm">시작일</Label>
               <Input
                 type="date"
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+                onChange={(e) => {
+                  setDateFrom(e.target.value)
+                  setPreview(null)
+                }}
+                className="w-40"
               />
             </div>
+            <span className="pb-2 text-muted-foreground">–</span>
             <div className="space-y-1.5">
               <Label className="text-sm">종료일</Label>
               <Input
                 type="date"
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+                onChange={(e) => {
+                  setDateTo(e.target.value)
+                  setPreview(null)
+                }}
+                className="w-40"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm">연동 유형</Label>
-              <Select
-                value={type}
-                onValueChange={(v) => setType(v as IntegrationType)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="SALES">매출 관리</SelectItem>
-                  <SelectItem value="INVENTORY">재고 관리</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button onClick={fetchPreview} disabled={loading || !dateFrom || !dateTo}>
+            <Button
+              onClick={fetchPreview}
+              disabled={loading || !dateFrom || !dateTo}
+              className="ml-1"
+            >
               {loading && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
               조회
             </Button>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Preview Summary */}
-          {preview && (
-            <div className="rounded-md border p-4 bg-muted/30">
-              <p className="text-sm">
-                완료된 주문: <strong>{preview.totalOrders}건</strong>
-              </p>
+      {/* 조회 결과 + 내보내기 (조회 후에만 노출) */}
+      {preview && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">조회 결과 및 내보내기</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-baseline gap-2 rounded-md border bg-muted/30 px-4 py-3">
+              <span className="text-sm text-muted-foreground">완료된 주문</span>
+              <span className="text-2xl font-semibold">
+                {preview.totalOrders.toLocaleString('ko-KR')}
+              </span>
+              <span className="text-sm text-muted-foreground">건</span>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">내보내기</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleDownload('EXCEL')}
-              disabled={downloading || !dateFrom || !dateTo}
-            >
-              <Download className="mr-1.5 h-4 w-4" />
-              Excel 다운로드
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleDownload('CSV')}
-              disabled={downloading || !dateFrom || !dateTo}
-            >
-              <Download className="mr-1.5 h-4 w-4" />
-              CSV 다운로드
-            </Button>
-
-            {type === 'INVENTORY' && (
+            <div className="flex flex-wrap gap-2">
               <Button
-                onClick={openPushDialog}
-                disabled={!dateFrom || !dateTo}
+                variant="outline"
+                onClick={() => handleDownload('EXCEL')}
+                disabled={downloading || preview.totalOrders === 0}
               >
-                <Link2 className="mr-1.5 h-4 w-4" />
-                워크덱 통합 재고관리 연동
+                <Download className="mr-1.5 h-4 w-4" />
+                Excel 다운로드
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleDownload('CSV')}
+                disabled={downloading || preview.totalOrders === 0}
+              >
+                <Download className="mr-1.5 h-4 w-4" />
+                CSV 다운로드
+              </Button>
+
+              {type === 'INVENTORY' && (
+                <Button onClick={openPushDialog} disabled={preview.totalOrders === 0}>
+                  <Link2 className="mr-1.5 h-4 w-4" />
+                  워크덱 통합 재고관리 연동
+                </Button>
+              )}
+            </div>
+
+            {preview.totalOrders === 0 && (
+              <p className="text-xs text-muted-foreground">
+                선택한 기간에 완료된 주문이 없습니다. 기간을 변경해 다시 조회해 주세요.
+              </p>
             )}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Integration History */}
       {history.length > 0 && (

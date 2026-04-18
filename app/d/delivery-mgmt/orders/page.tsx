@@ -20,19 +20,19 @@ export default function DeliveryOrdersPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">주문 데이터 관리</h1>
-      <div className="flex gap-4">
-        <div className="w-80 shrink-0">
-          <BatchList onSelect={setSelectedBatchId} selectedBatchId={selectedBatchId} />
-        </div>
-        <div className="flex-1 min-w-0">
-          {selectedBatchId ? (
-            <OrderDetailTable batchId={selectedBatchId} shippingMethods={shippingMethods} />
-          ) : (
-            <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
-              왼쪽 목록에서 배송 묶음을 선택하세요
-            </div>
-          )}
-        </div>
+
+      <div className="rounded-lg border bg-card p-3">
+        <BatchList onSelect={setSelectedBatchId} selectedBatchId={selectedBatchId} />
+      </div>
+
+      <div className="min-w-0">
+        {selectedBatchId ? (
+          <OrderDetailTable batchId={selectedBatchId} shippingMethods={shippingMethods} />
+        ) : (
+          <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
+            위 목록에서 배송 묶음을 선택하세요
+          </div>
+        )}
       </div>
     </div>
   )

@@ -10,6 +10,14 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -143,7 +151,12 @@ function UploadPageInner() {
   const [fileMissing, setFileMissing] = useState(false)
   const [importing, setImporting] = useState(false)
   const [hoveredColumnIdx, setHoveredColumnIdx] = useState<number | null>(null)
-  const [result, setResult] = useState<ImportResult | null>(null)
+  const [errorDialog, setErrorDialog] = useState<{ open: boolean } & ImportResult>({
+    open: false,
+    created: 0,
+    errorCount: 0,
+    errors: [],
+  })
 
   const fileRef = useRef<HTMLInputElement>(null)
   const draftLoadedRef = useRef(false)
@@ -245,8 +258,8 @@ function UploadPageInner() {
     setFile(null)
     setPreview(null)
     setMapping({})
-    setResult(null)
     setFileMissing(false)
+    setErrorDialog({ open: false, created: 0, errorCount: 0, errors: [] })
     try {
       sessionStorage.removeItem(draftKey(batchId))
     } catch {
@@ -287,17 +300,25 @@ function UploadPageInner() {
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '가져오기 실패')
 
-      setResult({
+      if (data.errorCount === 0) {
+        // 완전 성공 → 임시저장 삭제 후 registration 으로 이동
+        try {
+          sessionStorage.removeItem(draftKey(batchId))
+        } catch {
+          // 무시
+        }
+        toast.success(`${data.created}건 가져오기 완료`)
+        router.push(`/d/delivery-mgmt/registration?imported=${data.created}`)
+        return
+      }
+
+      // 실패 또는 부분 성공 → 현재 페이지에 머물고 Dialog 로 안내
+      setErrorDialog({
+        open: true,
         created: data.created,
         errorCount: data.errorCount,
         errors: data.errors ?? [],
       })
-      try {
-        sessionStorage.removeItem(draftKey(batchId))
-      } catch {
-        // 무시
-      }
-      toast.success(`${data.created}건 가져오기 완료`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '가져오기 실패')
     } finally {
@@ -339,7 +360,7 @@ function UploadPageInner() {
             </span>
           )}
         </div>
-        {hasDraft && result === null && (
+        {hasDraft && (
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -358,13 +379,7 @@ function UploadPageInner() {
 
       {/* 본문 */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {result !== null ? (
-          <DoneView
-            result={result}
-            onReset={clearAll}
-            onClose={() => router.push('/d/delivery-mgmt/registration?imported=1')}
-          />
-        ) : !preview ? (
+        {!preview ? (
           <UploadView onFile={handleFileUpload} fileRef={fileRef} />
         ) : (
           <MappingView
@@ -384,7 +399,7 @@ function UploadPageInner() {
       </div>
 
       {/* 스티키 푸터 */}
-      {result === null && preview && (
+      {preview && (
         <footer className="flex items-center justify-between border-t px-6 py-3 shrink-0 bg-background">
           <span className="text-xs text-muted-foreground">
             매핑 완료 {mappedFieldCount} / {FIELDS.length}
@@ -426,6 +441,15 @@ function UploadPageInner() {
           const f = e.target.files?.[0]
           if (f) handleFileUpload(f)
           e.target.value = ''
+        }}
+      />
+
+      <ImportErrorDialog
+        state={errorDialog}
+        onClose={() => setErrorDialog((prev) => ({ ...prev, open: false }))}
+        onReset={() => {
+          setErrorDialog((prev) => ({ ...prev, open: false }))
+          clearAll()
         }}
       />
     </div>
@@ -792,28 +816,31 @@ function FieldRow({
   )
 }
 
-// ---------- 완료 단계 ----------
+// ---------- 오류 Dialog ----------
 
-function DoneView({
-  result,
-  onReset,
-  onClose,
-}: {
-  result: ImportResult
-  onReset: () => void
+type ErrorDialogProps = {
+  state: { open: boolean } & ImportResult
   onClose: () => void
-}) {
-  return (
-    <div className="h-full overflow-y-auto p-8">
-      <div className="mx-auto max-w-3xl space-y-6">
-        <div className="text-center py-4">
-          <p className="text-2xl font-medium">{result.created}건 가져오기 완료</p>
-          {result.errorCount > 0 && (
-            <p className="mt-2 text-sm text-destructive">{result.errorCount}건 오류</p>
-          )}
-        </div>
+  onReset: () => void
+}
 
-        {result.errors.length > 0 && (
+function ImportErrorDialog({ state, onClose, onReset }: ErrorDialogProps) {
+  const { open, created, errorCount, errors } = state
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>
+            {created === 0 ? '가져오기 실패' : '가져오기 결과'}
+          </DialogTitle>
+          <DialogDescription>
+            {created === 0
+              ? `${errorCount}건 오류로 가져오기에 실패했습니다. 오류 내역을 확인하고 매핑을 수정하거나 다른 파일을 업로드해 주세요.`
+              : `${created}건 등록, ${errorCount}건 오류가 발생했습니다.`}
+          </DialogDescription>
+        </DialogHeader>
+
+        {errors.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium text-muted-foreground">오류 상세</p>
@@ -822,7 +849,7 @@ function DoneView({
                 size="sm"
                 className="h-7 text-xs"
                 onClick={() => {
-                  const tsv = result.errors
+                  const tsv = errors
                     .map((e) => `행 ${e.row}\t${e.recipientName ?? ''}\t${e.message}`)
                     .join('\n')
                   navigator.clipboard
@@ -836,7 +863,7 @@ function DoneView({
               </Button>
             </div>
             <div className="max-h-[50vh] overflow-y-auto rounded-md border bg-muted/30 p-2 space-y-1">
-              {result.errors.map((e, idx) => (
+              {errors.map((e, idx) => (
                 <div key={idx} className="text-xs font-mono">
                   <span className="text-muted-foreground">행 {e.row}</span>
                   {e.recipientName && (
@@ -845,22 +872,22 @@ function DoneView({
                   <span className="ml-2 text-destructive">{e.message}</span>
                 </div>
               ))}
-              {result.errorCount > result.errors.length && (
+              {errorCount > errors.length && (
                 <div className="text-xs text-muted-foreground pt-1">
-                  ...외 {result.errorCount - result.errors.length}건 더
+                  ...외 {errorCount - errors.length}건 더
                 </div>
               )}
             </div>
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2">
+        <DialogFooter>
           <Button variant="outline" onClick={onReset}>
-            다른 파일 업로드
+            새 파일 업로드
           </Button>
-          <Button onClick={onClose}>배송 등록으로</Button>
-        </div>
-      </div>
-    </div>
+          <Button onClick={onClose}>매핑 수정</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
