@@ -11,19 +11,19 @@ export type FilePreview = {
   totalRows: number
 }
 
-/** 컬럼 매핑 정의 */
+/** 컬럼 매핑 정의 — 필드당 컬럼 인덱스 1개 또는 여러 개(여러 개면 파싱 시 공백으로 결합) */
 export type ColumnMapping = {
-  recipientName?: number // 컬럼 인덱스
-  phone?: number
-  address?: number
-  postalCode?: number
-  deliveryMessage?: number
-  orderDate?: number
-  orderNumber?: number
-  paymentAmount?: number
-  productName?: number
-  productQuantity?: number
-  memo?: number
+  recipientName?: number | number[]
+  phone?: number | number[]
+  address?: number | number[]
+  postalCode?: number | number[]
+  deliveryMessage?: number | number[]
+  orderDate?: number | number[]
+  orderNumber?: number | number[]
+  paymentAmount?: number | number[]
+  productName?: number | number[]
+  productQuantity?: number | number[]
+  memo?: number | number[]
 }
 
 /** 파싱된 주문 행 */
@@ -109,8 +109,14 @@ export function parseWithMapping(
     const row = dataRows[i]
     const rowNum = i + 2 // Excel 행 번호 (1-based + header)
 
-    const get = (idx: number | undefined): string =>
-      idx !== undefined && row[idx] != null ? String(row[idx]).replace(/^\s+/, '') : ''
+    const get = (idx: number | number[] | undefined): string => {
+      if (idx === undefined) return ''
+      const indices = Array.isArray(idx) ? idx : [idx]
+      return indices
+        .map((i) => (row[i] != null ? String(row[i]).trim() : ''))
+        .filter((v) => v !== '')
+        .join(' ')
+    }
 
     const recipientName = get(mapping.recipientName)
     const phone = normalizePhone(get(mapping.phone))

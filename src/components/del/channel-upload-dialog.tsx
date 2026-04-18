@@ -1,11 +1,12 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Upload, Copy } from 'lucide-react'
+import { Upload, Copy, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -30,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 
 type ChannelUploadDialogProps = {
   batchId: string
@@ -38,8 +40,10 @@ type ChannelUploadDialogProps = {
   onImported: () => void
 }
 
-const FIELD_OPTIONS: { value: string; label: string; required?: boolean }[] = [
-  { value: '', label: '(매핑 안 함)' },
+type FieldDef = { value: string; label: string; required?: boolean }
+
+// 매핑 대상 필드(배송 등록 데이터 값). 필드가 먼저고, 파일 컬럼은 여기에 붙인다.
+const FIELDS: FieldDef[] = [
   { value: 'recipientName', label: '받는분', required: true },
   { value: 'phone', label: '전화', required: true },
   { value: 'address', label: '주소', required: true },
@@ -53,7 +57,7 @@ const FIELD_OPTIONS: { value: string; label: string; required?: boolean }[] = [
   { value: 'memo', label: '메모' },
 ]
 
-const NO_MAP = '__none__'
+const REQUIRED_FIELDS = ['recipientName', 'phone', 'address']
 
 type Preview = {
   headers: string[]
@@ -71,7 +75,8 @@ export function ChannelUploadDialog({
   const [step, setStep] = useState<'upload' | 'mapping' | 'done'>('upload')
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<Preview | null>(null)
-  const [mapping, setMapping] = useState<Record<number, string>>({})
+  // field → [columnIdx, ...] (여러 컬럼이면 파싱 시 공백으로 결합)
+  const [mapping, setMapping] = useState<Record<string, number[]>>({})
   const [importing, setImporting] = useState(false)
   const [result, setResult] = useState<{
     created: number
@@ -99,8 +104,7 @@ export function ChannelUploadDialog({
       const data: Preview = await res.json()
       setPreview(data)
 
-      // 자동 매핑 시도
-      const autoMapping: Record<number, string> = {}
+      // 자동 매핑: 헤더 이름 힌트 기반으로 각 필드의 첫 매칭 컬럼 1개 할당
       const hintMap: Record<string, string> = {
         '받는분': 'recipientName', '성명': 'recipientName', '수령인': 'recipientName',
         '전화': 'phone', '전화번호': 'phone', '핸드폰': 'phone', '핸드폰번호': 'phone', '연락처': 'phone',
@@ -114,14 +118,13 @@ export function ChannelUploadDialog({
         '수량': 'productQuantity',
         '메모': 'memo',
       }
-      // 자동 매핑: 각 필드는 첫 번째 매칭 컬럼에만 할당 (중복 방지)
-      const assignedFields = new Set<string>()
+      const autoMapping: Record<string, number[]> = {}
+      const assigned = new Set<string>()
       data.headers.forEach((header, i) => {
-        const normalized = header.trim()
-        const field = hintMap[normalized]
-        if (field && !assignedFields.has(field)) {
-          autoMapping[i] = field
-          assignedFields.add(field)
+        const field = hintMap[header.trim()]
+        if (field && !assigned.has(field)) {
+          autoMapping[field] = [i]
+          assigned.add(field)
         }
       })
       setMapping(autoMapping)
@@ -131,16 +134,28 @@ export function ChannelUploadDialog({
     }
   }
 
+  function addColumn(field: string, columnIdx: number) {
+    setMapping((prev) => {
+      const existing = prev[field] ?? []
+      if (existing.includes(columnIdx)) return prev
+      return { ...prev, [field]: [...existing, columnIdx] }
+    })
+  }
+
+  function removeColumn(field: string, columnIdx: number) {
+    setMapping((prev) => {
+      const next = { ...prev }
+      const arr = (next[field] ?? []).filter((i) => i !== columnIdx)
+      if (arr.length === 0) delete next[field]
+      else next[field] = arr
+      return next
+    })
+  }
+
   async function handleImport() {
     if (!file || !preview) return
 
-    // columnMapping 객체 생성 (field → column index)
-    const columnMapping: Record<string, number> = {}
-    for (const [idx, field] of Object.entries(mapping)) {
-      if (field) columnMapping[field] = Number(idx)
-    }
-
-    if (columnMapping.recipientName === undefined || columnMapping.phone === undefined || columnMapping.address === undefined) {
+    if (REQUIRED_FIELDS.some((f) => (mapping[f]?.length ?? 0) === 0)) {
       toast.error('받는분, 전화, 주소는 필수 매핑입니다')
       return
     }
@@ -152,7 +167,7 @@ export function ChannelUploadDialog({
       formData.append('batchId', batchId)
       formData.append('shippingMethodId', shippingMethodId)
       if (channelId) formData.append('channelId', channelId)
-      formData.append('columnMapping', JSON.stringify(columnMapping))
+      formData.append('columnMapping', JSON.stringify(mapping))
 
       const res = await fetch('/api/del/import', { method: 'POST', body: formData })
       const data = await res.json()
@@ -171,6 +186,95 @@ export function ChannelUploadDialog({
     } finally {
       setImporting(false)
     }
+  }
+
+  const mappedFields = FIELDS.filter((f) => (mapping[f.value]?.length ?? 0) > 0)
+  const unmappedFields = FIELDS.filter((f) => (mapping[f.value]?.length ?? 0) === 0)
+  const missingRequired = REQUIRED_FIELDS.some((f) => (mapping[f]?.length ?? 0) === 0)
+  const usedColumns = new Set<number>(Object.values(mapping).flat())
+
+  function renderFieldRow(field: FieldDef) {
+    if (!preview) return null
+    const columns = mapping[field.value] ?? []
+    const isMissingRequired = field.required && columns.length === 0
+    return (
+      <div key={field.value} className="flex items-start gap-3 px-3 py-2">
+        <div className="w-28 shrink-0 pt-1.5 text-sm">
+          <span className={cn(isMissingRequired && 'text-destructive font-medium')}>
+            {field.label}
+          </span>
+          {field.required && <span className="text-destructive ml-0.5">*</span>}
+        </div>
+        <div className="flex-1 flex flex-wrap items-center gap-1.5">
+          {columns.map((colIdx) => (
+            <Badge
+              key={colIdx}
+              variant="secondary"
+              className="gap-1 pl-2 pr-1 py-0.5 text-xs font-normal"
+            >
+              <span>{preview.headers[colIdx] || `컬럼 ${colIdx + 1}`}</span>
+              <button
+                type="button"
+                onClick={() => removeColumn(field.value, colIdx)}
+                className="rounded-full hover:bg-muted-foreground/20 p-0.5"
+                aria-label={`${preview.headers[colIdx]} 매핑 제거`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+          <Select
+            value=""
+            onValueChange={(v) => {
+              if (v) addColumn(field.value, Number(v))
+            }}
+          >
+            <SelectTrigger
+              className={cn(
+                'h-7 w-auto min-w-[9rem] text-xs border-dashed',
+                isMissingRequired && 'border-destructive/50',
+              )}
+            >
+              <SelectValue
+                placeholder={columns.length === 0 ? '+ 파일 컬럼 선택' : '+ 컬럼 추가'}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {preview.headers.map((header, idx) => {
+                const inThisField = columns.includes(idx)
+                const inOtherField = !inThisField && usedColumns.has(idx)
+                return (
+                  <SelectItem
+                    key={idx}
+                    value={String(idx)}
+                    disabled={inThisField || inOtherField}
+                  >
+                    <span className="flex items-center">
+                      {header || `컬럼 ${idx + 1}`}
+                      {inOtherField && (
+                        <span className="ml-2 text-[10px] text-muted-foreground">
+                          (이미 사용됨)
+                        </span>
+                      )}
+                      {inThisField && (
+                        <span className="ml-2 text-[10px] text-muted-foreground">
+                          (매핑됨)
+                        </span>
+                      )}
+                    </span>
+                  </SelectItem>
+                )
+              })}
+            </SelectContent>
+          </Select>
+          {columns.length > 1 && (
+            <span className="text-[11px] text-muted-foreground ml-1">
+              공백으로 결합
+            </span>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -232,89 +336,56 @@ export function ChannelUploadDialog({
         )}
 
         {step === 'mapping' && preview && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <p className="text-sm text-muted-foreground">
               총 {preview.totalRows}건, 파일: {file?.name}
             </p>
 
-            {/* 컬럼 매핑 */}
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label>컬럼 매핑</Label>
                 <span className="text-xs text-muted-foreground">
                   필수 항목(<span className="text-destructive">*</span>): 받는분, 전화, 주소
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                {preview.headers.map((header, i) => {
-                  const mappedOpt = FIELD_OPTIONS.find((o) => o.value === mapping[i])
-                  const isMappedRequired = mappedOpt?.required
-                  // 다른 컬럼에서 이미 매핑된 필드 목록
-                  const usedByOthers = new Set(
-                    Object.entries(mapping)
-                      .filter(([idx, val]) => Number(idx) !== i && val)
-                      .map(([, val]) => val)
-                  )
-                  return (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="text-sm w-32 truncate" title={header}>
-                      {header || `(컬럼 ${i + 1})`}
-                    </span>
-                    <Select
-                      value={mapping[i] || NO_MAP}
-                      onValueChange={(v) =>
-                        setMapping((prev) => ({ ...prev, [i]: v === NO_MAP ? '' : v }))
-                      }
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue>
-                          {mappedOpt ? (
-                            <span>
-                              {mappedOpt.label}
-                              {isMappedRequired && <span className="text-destructive ml-0.5">*</span>}
-                            </span>
-                          ) : (
-                            '(매핑 안 함)'
-                          )}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {FIELD_OPTIONS.map((opt) => {
-                          const isUsed = opt.value !== '' && usedByOthers.has(opt.value)
-                          return (
-                            <SelectItem
-                              key={opt.value || NO_MAP}
-                              value={opt.value || NO_MAP}
-                              disabled={isUsed}
-                            >
-                              <span className="flex items-center">
-                                {opt.label}
-                                {opt.required && (
-                                  <span className="text-destructive ml-1 font-semibold">*</span>
-                                )}
-                                {opt.required && !isUsed && (
-                                  <span className="ml-2 rounded bg-destructive/10 text-destructive text-[10px] px-1 py-0.5 font-medium">
-                                    필수
-                                  </span>
-                                )}
-                                {isUsed && (
-                                  <span className="ml-2 text-[10px] text-muted-foreground">
-                                    (이미 사용됨)
-                                  </span>
-                                )}
-                              </span>
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectContent>
-                    </Select>
+
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-sm font-medium">매핑 필요</h3>
+                  <span className="text-xs text-muted-foreground">
+                    ({unmappedFields.length})
+                  </span>
+                </div>
+                {unmappedFields.length === 0 ? (
+                  <p className="text-xs text-muted-foreground px-3 py-3 rounded-md border border-dashed">
+                    모든 필드가 매핑되었습니다
+                  </p>
+                ) : (
+                  <div className="rounded-md border divide-y bg-muted/20">
+                    {unmappedFields.map(renderFieldRow)}
                   </div>
-                  )
-                })}
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-sm font-medium">매핑 완료</h3>
+                  <span className="text-xs text-muted-foreground">
+                    ({mappedFields.length})
+                  </span>
+                </div>
+                {mappedFields.length === 0 ? (
+                  <p className="text-xs text-muted-foreground px-3 py-3 rounded-md border border-dashed">
+                    아직 매핑된 필드가 없습니다
+                  </p>
+                ) : (
+                  <div className="rounded-md border divide-y">
+                    {mappedFields.map(renderFieldRow)}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* 샘플 미리보기 */}
             <div className="space-y-2">
               <Label>샘플 데이터</Label>
               <div className="overflow-x-auto rounded-md border">
@@ -398,12 +469,16 @@ export function ChannelUploadDialog({
 
         <DialogFooter>
           {step === 'mapping' && (
-            <>
-              <Button variant="outline" onClick={() => setStep('upload')}>이전</Button>
-              <Button onClick={handleImport} disabled={importing}>
+            <div className="flex items-center justify-end gap-3 w-full">
+              {missingRequired && (
+                <span className="text-xs text-destructive">
+                  받는분·전화·주소를 매핑해 주세요
+                </span>
+              )}
+              <Button onClick={handleImport} disabled={importing || missingRequired}>
                 {importing ? '가져오는 중...' : `${preview?.totalRows ?? 0}건 가져오기`}
               </Button>
-            </>
+            </div>
           )}
           {step === 'done' && (
             <>
