@@ -174,7 +174,7 @@ export function ChannelUploadDialog({
           <Upload className="mr-1 h-4 w-4" />파일 업로드
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[80vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>채널 파일 업로드</DialogTitle>
           <DialogDescription>
@@ -184,6 +184,7 @@ export function ChannelUploadDialog({
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex-1 overflow-y-auto min-h-0">
         {step === 'upload' && (
           <div
             className="rounded-lg border-2 border-dashed p-8 text-center transition-colors hover:border-primary/50"
@@ -273,7 +274,7 @@ export function ChannelUploadDialog({
                     {preview.sampleRows.map((row, i) => (
                       <TableRow key={i}>
                         {row.map((cell, j) => (
-                          <TableCell key={j} className="text-xs">{cell}</TableCell>
+                          <TableCell key={j} className="text-xs max-w-[200px] truncate">{cell}</TableCell>
                         ))}
                       </TableRow>
                     ))}
@@ -292,6 +293,7 @@ export function ChannelUploadDialog({
             )}
           </div>
         )}
+        </div>
 
         <DialogFooter>
           {step === 'mapping' && (

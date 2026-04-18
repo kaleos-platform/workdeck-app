@@ -93,7 +93,7 @@ export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
           <ClipboardPaste className="mr-1 h-4 w-4" />붙여넣기 대량 입력
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[80vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>붙여넣기로 대량 입력</DialogTitle>
           <DialogDescription>
@@ -101,7 +101,7 @@ export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
           <div className="space-y-2">
             <Label>컬럼 순서</Label>
             <p className="text-xs text-muted-foreground">
@@ -140,7 +140,7 @@ export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
                     {preview.map((row, i) => (
                       <TableRow key={i}>
                         {EXPECTED_COLUMNS.map((_, j) => (
-                          <TableCell key={j} className="text-xs">
+                          <TableCell key={j} className="text-xs max-w-[200px] truncate">
                             {row[j] ?? ''}
                           </TableCell>
                         ))}
