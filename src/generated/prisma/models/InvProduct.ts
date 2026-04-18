@@ -29,6 +29,7 @@ export type InvProductMinAggregateOutputType = {
   spaceId: string | null
   name: string | null
   code: string | null
+  groupId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +39,7 @@ export type InvProductMaxAggregateOutputType = {
   spaceId: string | null
   name: string | null
   code: string | null
+  groupId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,6 +49,7 @@ export type InvProductCountAggregateOutputType = {
   spaceId: number
   name: number
   code: number
+  groupId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -58,6 +61,7 @@ export type InvProductMinAggregateInputType = {
   spaceId?: true
   name?: true
   code?: true
+  groupId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -67,6 +71,7 @@ export type InvProductMaxAggregateInputType = {
   spaceId?: true
   name?: true
   code?: true
+  groupId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -76,6 +81,7 @@ export type InvProductCountAggregateInputType = {
   spaceId?: true
   name?: true
   code?: true
+  groupId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -158,6 +164,7 @@ export type InvProductGroupByOutputType = {
   spaceId: string
   name: string
   code: string | null
+  groupId: string | null
   createdAt: Date
   updatedAt: Date
   _count: InvProductCountAggregateOutputType | null
@@ -188,9 +195,11 @@ export type InvProductWhereInput = {
   spaceId?: Prisma.StringFilter<"InvProduct"> | string
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  groupId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  group?: Prisma.XOR<Prisma.InvProductGroupNullableScalarRelationFilter, Prisma.InvProductGroupWhereInput> | null
   options?: Prisma.InvProductOptionListRelationFilter
 }
 
@@ -199,9 +208,11 @@ export type InvProductOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
+  groupId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
+  group?: Prisma.InvProductGroupOrderByWithRelationInput
   options?: Prisma.InvProductOptionOrderByRelationAggregateInput
 }
 
@@ -214,9 +225,11 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   spaceId?: Prisma.StringFilter<"InvProduct"> | string
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  groupId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  group?: Prisma.XOR<Prisma.InvProductGroupNullableScalarRelationFilter, Prisma.InvProductGroupWhereInput> | null
   options?: Prisma.InvProductOptionListRelationFilter
 }, "id" | "spaceId_code">
 
@@ -225,6 +238,7 @@ export type InvProductOrderByWithAggregationInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
+  groupId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InvProductCountOrderByAggregateInput
@@ -240,6 +254,7 @@ export type InvProductScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"InvProduct"> | string
   name?: Prisma.StringWithAggregatesFilter<"InvProduct"> | string
   code?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
+  groupId?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvProduct"> | Date | string
 }
@@ -251,6 +266,7 @@ export type InvProductCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
+  group?: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
 }
 
@@ -259,6 +275,7 @@ export type InvProductUncheckedCreateInput = {
   spaceId: string
   name: string
   code?: string | null
+  groupId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -271,6 +288,7 @@ export type InvProductUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
 }
 
@@ -279,6 +297,7 @@ export type InvProductUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -289,6 +308,7 @@ export type InvProductCreateManyInput = {
   spaceId: string
   name: string
   code?: string | null
+  groupId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -306,6 +326,7 @@ export type InvProductUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -330,6 +351,7 @@ export type InvProductCountOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  groupId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -339,6 +361,7 @@ export type InvProductMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  groupId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -348,6 +371,7 @@ export type InvProductMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  groupId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -399,6 +423,48 @@ export type InvProductUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.InvProductScalarWhereInput | Prisma.InvProductScalarWhereInput[]
 }
 
+export type InvProductCreateNestedManyWithoutGroupInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutGroupInput, Prisma.InvProductUncheckedCreateWithoutGroupInput> | Prisma.InvProductCreateWithoutGroupInput[] | Prisma.InvProductUncheckedCreateWithoutGroupInput[]
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutGroupInput | Prisma.InvProductCreateOrConnectWithoutGroupInput[]
+  createMany?: Prisma.InvProductCreateManyGroupInputEnvelope
+  connect?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+}
+
+export type InvProductUncheckedCreateNestedManyWithoutGroupInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutGroupInput, Prisma.InvProductUncheckedCreateWithoutGroupInput> | Prisma.InvProductCreateWithoutGroupInput[] | Prisma.InvProductUncheckedCreateWithoutGroupInput[]
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutGroupInput | Prisma.InvProductCreateOrConnectWithoutGroupInput[]
+  createMany?: Prisma.InvProductCreateManyGroupInputEnvelope
+  connect?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+}
+
+export type InvProductUpdateManyWithoutGroupNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutGroupInput, Prisma.InvProductUncheckedCreateWithoutGroupInput> | Prisma.InvProductCreateWithoutGroupInput[] | Prisma.InvProductUncheckedCreateWithoutGroupInput[]
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutGroupInput | Prisma.InvProductCreateOrConnectWithoutGroupInput[]
+  upsert?: Prisma.InvProductUpsertWithWhereUniqueWithoutGroupInput | Prisma.InvProductUpsertWithWhereUniqueWithoutGroupInput[]
+  createMany?: Prisma.InvProductCreateManyGroupInputEnvelope
+  set?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+  disconnect?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+  delete?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+  connect?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+  update?: Prisma.InvProductUpdateWithWhereUniqueWithoutGroupInput | Prisma.InvProductUpdateWithWhereUniqueWithoutGroupInput[]
+  updateMany?: Prisma.InvProductUpdateManyWithWhereWithoutGroupInput | Prisma.InvProductUpdateManyWithWhereWithoutGroupInput[]
+  deleteMany?: Prisma.InvProductScalarWhereInput | Prisma.InvProductScalarWhereInput[]
+}
+
+export type InvProductUncheckedUpdateManyWithoutGroupNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutGroupInput, Prisma.InvProductUncheckedCreateWithoutGroupInput> | Prisma.InvProductCreateWithoutGroupInput[] | Prisma.InvProductUncheckedCreateWithoutGroupInput[]
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutGroupInput | Prisma.InvProductCreateOrConnectWithoutGroupInput[]
+  upsert?: Prisma.InvProductUpsertWithWhereUniqueWithoutGroupInput | Prisma.InvProductUpsertWithWhereUniqueWithoutGroupInput[]
+  createMany?: Prisma.InvProductCreateManyGroupInputEnvelope
+  set?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+  disconnect?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+  delete?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+  connect?: Prisma.InvProductWhereUniqueInput | Prisma.InvProductWhereUniqueInput[]
+  update?: Prisma.InvProductUpdateWithWhereUniqueWithoutGroupInput | Prisma.InvProductUpdateWithWhereUniqueWithoutGroupInput[]
+  updateMany?: Prisma.InvProductUpdateManyWithWhereWithoutGroupInput | Prisma.InvProductUpdateManyWithWhereWithoutGroupInput[]
+  deleteMany?: Prisma.InvProductScalarWhereInput | Prisma.InvProductScalarWhereInput[]
+}
+
 export type InvProductCreateNestedOneWithoutOptionsInput = {
   create?: Prisma.XOR<Prisma.InvProductCreateWithoutOptionsInput, Prisma.InvProductUncheckedCreateWithoutOptionsInput>
   connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutOptionsInput
@@ -419,6 +485,7 @@ export type InvProductCreateWithoutSpaceInput = {
   code?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  group?: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
 }
 
@@ -426,6 +493,7 @@ export type InvProductUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
   code?: string | null
+  groupId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -465,8 +533,55 @@ export type InvProductScalarWhereInput = {
   spaceId?: Prisma.StringFilter<"InvProduct"> | string
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  groupId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
+}
+
+export type InvProductCreateWithoutGroupInput = {
+  id?: string
+  name: string
+  code?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
+  options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
+}
+
+export type InvProductUncheckedCreateWithoutGroupInput = {
+  id?: string
+  spaceId: string
+  name: string
+  code?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
+}
+
+export type InvProductCreateOrConnectWithoutGroupInput = {
+  where: Prisma.InvProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvProductCreateWithoutGroupInput, Prisma.InvProductUncheckedCreateWithoutGroupInput>
+}
+
+export type InvProductCreateManyGroupInputEnvelope = {
+  data: Prisma.InvProductCreateManyGroupInput | Prisma.InvProductCreateManyGroupInput[]
+  skipDuplicates?: boolean
+}
+
+export type InvProductUpsertWithWhereUniqueWithoutGroupInput = {
+  where: Prisma.InvProductWhereUniqueInput
+  update: Prisma.XOR<Prisma.InvProductUpdateWithoutGroupInput, Prisma.InvProductUncheckedUpdateWithoutGroupInput>
+  create: Prisma.XOR<Prisma.InvProductCreateWithoutGroupInput, Prisma.InvProductUncheckedCreateWithoutGroupInput>
+}
+
+export type InvProductUpdateWithWhereUniqueWithoutGroupInput = {
+  where: Prisma.InvProductWhereUniqueInput
+  data: Prisma.XOR<Prisma.InvProductUpdateWithoutGroupInput, Prisma.InvProductUncheckedUpdateWithoutGroupInput>
+}
+
+export type InvProductUpdateManyWithWhereWithoutGroupInput = {
+  where: Prisma.InvProductScalarWhereInput
+  data: Prisma.XOR<Prisma.InvProductUpdateManyMutationInput, Prisma.InvProductUncheckedUpdateManyWithoutGroupInput>
 }
 
 export type InvProductCreateWithoutOptionsInput = {
@@ -476,6 +591,7 @@ export type InvProductCreateWithoutOptionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
+  group?: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
 }
 
 export type InvProductUncheckedCreateWithoutOptionsInput = {
@@ -483,6 +599,7 @@ export type InvProductUncheckedCreateWithoutOptionsInput = {
   spaceId: string
   name: string
   code?: string | null
+  groupId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -510,6 +627,7 @@ export type InvProductUpdateWithoutOptionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneWithoutProductsNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutOptionsInput = {
@@ -517,6 +635,7 @@ export type InvProductUncheckedUpdateWithoutOptionsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -525,6 +644,7 @@ export type InvProductCreateManySpaceInput = {
   id?: string
   name: string
   code?: string | null
+  groupId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -535,6 +655,7 @@ export type InvProductUpdateWithoutSpaceInput = {
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  group?: Prisma.InvProductGroupUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
 }
 
@@ -542,6 +663,7 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -549,6 +671,45 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
 
 export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type InvProductCreateManyGroupInput = {
+  id?: string
+  spaceId: string
+  name: string
+  code?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type InvProductUpdateWithoutGroupInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
+  options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
+}
+
+export type InvProductUncheckedUpdateWithoutGroupInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
+}
+
+export type InvProductUncheckedUpdateManyWithoutGroupInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -591,9 +752,11 @@ export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   spaceId?: boolean
   name?: boolean
   code?: boolean
+  groupId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
   options?: boolean | Prisma.InvProduct$optionsArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invProduct"]>
@@ -603,9 +766,11 @@ export type InvProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   spaceId?: boolean
   name?: boolean
   code?: boolean
+  groupId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
 }, ExtArgs["result"]["invProduct"]>
 
 export type InvProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -613,9 +778,11 @@ export type InvProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   spaceId?: boolean
   name?: boolean
   code?: boolean
+  groupId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
 }, ExtArgs["result"]["invProduct"]>
 
 export type InvProductSelectScalar = {
@@ -623,27 +790,32 @@ export type InvProductSelectScalar = {
   spaceId?: boolean
   name?: boolean
   code?: boolean
+  groupId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
+export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
 export type InvProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
   options?: boolean | Prisma.InvProduct$optionsArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InvProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
 }
 export type InvProductIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
 }
 
 export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "InvProduct"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
+    group: Prisma.$InvProductGroupPayload<ExtArgs> | null
     options: Prisma.$InvProductOptionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -651,6 +823,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     spaceId: string
     name: string
     code: string | null
+    groupId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["invProduct"]>
@@ -1048,6 +1221,7 @@ readonly fields: InvProductFieldRefs;
 export interface Prisma__InvProductClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  group<T extends Prisma.InvProduct$groupArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$groupArgs<ExtArgs>>): Prisma.Prisma__InvProductGroupClient<runtime.Types.Result.GetResult<Prisma.$InvProductGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   options<T extends Prisma.InvProduct$optionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$optionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1082,6 +1256,7 @@ export interface InvProductFieldRefs {
   readonly spaceId: Prisma.FieldRef<"InvProduct", 'String'>
   readonly name: Prisma.FieldRef<"InvProduct", 'String'>
   readonly code: Prisma.FieldRef<"InvProduct", 'String'>
+  readonly groupId: Prisma.FieldRef<"InvProduct", 'String'>
   readonly createdAt: Prisma.FieldRef<"InvProduct", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvProduct", 'DateTime'>
 }
@@ -1477,6 +1652,25 @@ export type InvProductDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many InvProducts to delete.
    */
   limit?: number
+}
+
+/**
+ * InvProduct.group
+ */
+export type InvProduct$groupArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvProductGroup
+   */
+  select?: Prisma.InvProductGroupSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvProductGroup
+   */
+  omit?: Prisma.InvProductGroupOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvProductGroupInclude<ExtArgs> | null
+  where?: Prisma.InvProductGroupWhereInput
 }
 
 /**

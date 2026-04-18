@@ -288,7 +288,7 @@ export function MovementForm({ onCreated }: Props) {
     >
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-1 h-4 w-4" />새 이동 기록
+          <Plus className="mr-1 h-4 w-4" />신규 등록
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">

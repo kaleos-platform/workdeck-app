@@ -99,3 +99,19 @@ export const InvReconciliationStatus = {
 } as const
 
 export type InvReconciliationStatus = (typeof InvReconciliationStatus)[keyof typeof InvReconciliationStatus]
+
+
+export const DelBatchStatus = {
+  DRAFT: 'DRAFT',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type DelBatchStatus = (typeof DelBatchStatus)[keyof typeof DelBatchStatus]
+
+
+export const DelChannelType = {
+  OUTBOUND: 'OUTBOUND',
+  TRANSFER: 'TRANSFER'
+} as const
+
+export type DelChannelType = (typeof DelChannelType)[keyof typeof DelChannelType]

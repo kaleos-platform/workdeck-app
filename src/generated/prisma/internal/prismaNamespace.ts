@@ -411,6 +411,7 @@ export const ModelName = {
   InventoryRecord: 'InventoryRecord',
   InventoryExcludedProduct: 'InventoryExcludedProduct',
   InventoryAnalysis: 'InventoryAnalysis',
+  InvProductGroup: 'InvProductGroup',
   InvProduct: 'InvProduct',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
@@ -422,7 +423,14 @@ export const ModelName = {
   InvImportHistory: 'InvImportHistory',
   InvReconciliation: 'InvReconciliation',
   InvLocationProductMap: 'InvLocationProductMap',
-  InvSettings: 'InvSettings'
+  InvSettings: 'InvSettings',
+  DelShippingMethod: 'DelShippingMethod',
+  DelChannelGroup: 'DelChannelGroup',
+  DelSalesChannel: 'DelSalesChannel',
+  DelBatch: 'DelBatch',
+  DelOrder: 'DelOrder',
+  DelOrderItem: 'DelOrderItem',
+  DelIntegrationHistory: 'DelIntegrationHistory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -438,7 +446,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProduct" | "invProductOption" | "invStorageLocation" | "invChannelGroup" | "invSalesChannel" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invChannelGroup" | "invSalesChannel" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delChannelGroup" | "delSalesChannel" | "delBatch" | "delOrder" | "delOrderItem" | "delIntegrationHistory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2440,6 +2448,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InvProductGroup: {
+      payload: Prisma.$InvProductGroupPayload<ExtArgs>
+      fields: Prisma.InvProductGroupFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InvProductGroupFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InvProductGroupFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        findFirst: {
+          args: Prisma.InvProductGroupFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InvProductGroupFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        findMany: {
+          args: Prisma.InvProductGroupFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>[]
+        }
+        create: {
+          args: Prisma.InvProductGroupCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        createMany: {
+          args: Prisma.InvProductGroupCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InvProductGroupCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>[]
+        }
+        delete: {
+          args: Prisma.InvProductGroupDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        update: {
+          args: Prisma.InvProductGroupUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        deleteMany: {
+          args: Prisma.InvProductGroupDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InvProductGroupUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InvProductGroupUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>[]
+        }
+        upsert: {
+          args: Prisma.InvProductGroupUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvProductGroupPayload>
+        }
+        aggregate: {
+          args: Prisma.InvProductGroupAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInvProductGroup>
+        }
+        groupBy: {
+          args: Prisma.InvProductGroupGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvProductGroupGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InvProductGroupCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvProductGroupCountAggregateOutputType> | number
+        }
+      }
+    }
     InvProduct: {
       payload: Prisma.$InvProductPayload<ExtArgs>
       fields: Prisma.InvProductFieldRefs
@@ -3328,6 +3410,524 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DelShippingMethod: {
+      payload: Prisma.$DelShippingMethodPayload<ExtArgs>
+      fields: Prisma.DelShippingMethodFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelShippingMethodFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelShippingMethodFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>
+        }
+        findFirst: {
+          args: Prisma.DelShippingMethodFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelShippingMethodFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>
+        }
+        findMany: {
+          args: Prisma.DelShippingMethodFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>[]
+        }
+        create: {
+          args: Prisma.DelShippingMethodCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>
+        }
+        createMany: {
+          args: Prisma.DelShippingMethodCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelShippingMethodCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>[]
+        }
+        delete: {
+          args: Prisma.DelShippingMethodDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>
+        }
+        update: {
+          args: Prisma.DelShippingMethodUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelShippingMethodDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelShippingMethodUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelShippingMethodUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelShippingMethodUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodPayload>
+        }
+        aggregate: {
+          args: Prisma.DelShippingMethodAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelShippingMethod>
+        }
+        groupBy: {
+          args: Prisma.DelShippingMethodGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelShippingMethodGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelShippingMethodCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelShippingMethodCountAggregateOutputType> | number
+        }
+      }
+    }
+    DelChannelGroup: {
+      payload: Prisma.$DelChannelGroupPayload<ExtArgs>
+      fields: Prisma.DelChannelGroupFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelChannelGroupFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelChannelGroupFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
+        }
+        findFirst: {
+          args: Prisma.DelChannelGroupFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelChannelGroupFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
+        }
+        findMany: {
+          args: Prisma.DelChannelGroupFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>[]
+        }
+        create: {
+          args: Prisma.DelChannelGroupCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
+        }
+        createMany: {
+          args: Prisma.DelChannelGroupCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelChannelGroupCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>[]
+        }
+        delete: {
+          args: Prisma.DelChannelGroupDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
+        }
+        update: {
+          args: Prisma.DelChannelGroupUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelChannelGroupDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelChannelGroupUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelChannelGroupUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelChannelGroupUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
+        }
+        aggregate: {
+          args: Prisma.DelChannelGroupAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelChannelGroup>
+        }
+        groupBy: {
+          args: Prisma.DelChannelGroupGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelChannelGroupGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelChannelGroupCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelChannelGroupCountAggregateOutputType> | number
+        }
+      }
+    }
+    DelSalesChannel: {
+      payload: Prisma.$DelSalesChannelPayload<ExtArgs>
+      fields: Prisma.DelSalesChannelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelSalesChannelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelSalesChannelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
+        }
+        findFirst: {
+          args: Prisma.DelSalesChannelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelSalesChannelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
+        }
+        findMany: {
+          args: Prisma.DelSalesChannelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>[]
+        }
+        create: {
+          args: Prisma.DelSalesChannelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
+        }
+        createMany: {
+          args: Prisma.DelSalesChannelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelSalesChannelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>[]
+        }
+        delete: {
+          args: Prisma.DelSalesChannelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
+        }
+        update: {
+          args: Prisma.DelSalesChannelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelSalesChannelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelSalesChannelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelSalesChannelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelSalesChannelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
+        }
+        aggregate: {
+          args: Prisma.DelSalesChannelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelSalesChannel>
+        }
+        groupBy: {
+          args: Prisma.DelSalesChannelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelSalesChannelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelSalesChannelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelSalesChannelCountAggregateOutputType> | number
+        }
+      }
+    }
+    DelBatch: {
+      payload: Prisma.$DelBatchPayload<ExtArgs>
+      fields: Prisma.DelBatchFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelBatchFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelBatchFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>
+        }
+        findFirst: {
+          args: Prisma.DelBatchFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelBatchFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>
+        }
+        findMany: {
+          args: Prisma.DelBatchFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>[]
+        }
+        create: {
+          args: Prisma.DelBatchCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>
+        }
+        createMany: {
+          args: Prisma.DelBatchCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelBatchCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>[]
+        }
+        delete: {
+          args: Prisma.DelBatchDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>
+        }
+        update: {
+          args: Prisma.DelBatchUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelBatchDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelBatchUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelBatchUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelBatchUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelBatchPayload>
+        }
+        aggregate: {
+          args: Prisma.DelBatchAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelBatch>
+        }
+        groupBy: {
+          args: Prisma.DelBatchGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelBatchGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelBatchCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelBatchCountAggregateOutputType> | number
+        }
+      }
+    }
+    DelOrder: {
+      payload: Prisma.$DelOrderPayload<ExtArgs>
+      fields: Prisma.DelOrderFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelOrderFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelOrderFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>
+        }
+        findFirst: {
+          args: Prisma.DelOrderFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelOrderFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>
+        }
+        findMany: {
+          args: Prisma.DelOrderFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>[]
+        }
+        create: {
+          args: Prisma.DelOrderCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>
+        }
+        createMany: {
+          args: Prisma.DelOrderCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelOrderCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>[]
+        }
+        delete: {
+          args: Prisma.DelOrderDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>
+        }
+        update: {
+          args: Prisma.DelOrderUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelOrderDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelOrderUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelOrderUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelOrderUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderPayload>
+        }
+        aggregate: {
+          args: Prisma.DelOrderAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelOrder>
+        }
+        groupBy: {
+          args: Prisma.DelOrderGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelOrderGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelOrderCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelOrderCountAggregateOutputType> | number
+        }
+      }
+    }
+    DelOrderItem: {
+      payload: Prisma.$DelOrderItemPayload<ExtArgs>
+      fields: Prisma.DelOrderItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelOrderItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelOrderItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>
+        }
+        findFirst: {
+          args: Prisma.DelOrderItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelOrderItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>
+        }
+        findMany: {
+          args: Prisma.DelOrderItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>[]
+        }
+        create: {
+          args: Prisma.DelOrderItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>
+        }
+        createMany: {
+          args: Prisma.DelOrderItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelOrderItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>[]
+        }
+        delete: {
+          args: Prisma.DelOrderItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>
+        }
+        update: {
+          args: Prisma.DelOrderItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelOrderItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelOrderItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelOrderItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelOrderItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelOrderItemPayload>
+        }
+        aggregate: {
+          args: Prisma.DelOrderItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelOrderItem>
+        }
+        groupBy: {
+          args: Prisma.DelOrderItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelOrderItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelOrderItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelOrderItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    DelIntegrationHistory: {
+      payload: Prisma.$DelIntegrationHistoryPayload<ExtArgs>
+      fields: Prisma.DelIntegrationHistoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelIntegrationHistoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelIntegrationHistoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>
+        }
+        findFirst: {
+          args: Prisma.DelIntegrationHistoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelIntegrationHistoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>
+        }
+        findMany: {
+          args: Prisma.DelIntegrationHistoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>[]
+        }
+        create: {
+          args: Prisma.DelIntegrationHistoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>
+        }
+        createMany: {
+          args: Prisma.DelIntegrationHistoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelIntegrationHistoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>[]
+        }
+        delete: {
+          args: Prisma.DelIntegrationHistoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>
+        }
+        update: {
+          args: Prisma.DelIntegrationHistoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelIntegrationHistoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelIntegrationHistoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelIntegrationHistoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelIntegrationHistoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelIntegrationHistoryPayload>
+        }
+        aggregate: {
+          args: Prisma.DelIntegrationHistoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelIntegrationHistory>
+        }
+        groupBy: {
+          args: Prisma.DelIntegrationHistoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelIntegrationHistoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelIntegrationHistoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelIntegrationHistoryCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3790,11 +4390,23 @@ export const InventoryAnalysisScalarFieldEnum = {
 export type InventoryAnalysisScalarFieldEnum = (typeof InventoryAnalysisScalarFieldEnum)[keyof typeof InventoryAnalysisScalarFieldEnum]
 
 
+export const InvProductGroupScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvProductGroupScalarFieldEnum = (typeof InvProductGroupScalarFieldEnum)[keyof typeof InvProductGroupScalarFieldEnum]
+
+
 export const InvProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
   code: 'code',
+  groupId: 'groupId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3947,6 +4559,105 @@ export const InvSettingsScalarFieldEnum = {
 } as const
 
 export type InvSettingsScalarFieldEnum = (typeof InvSettingsScalarFieldEnum)[keyof typeof InvSettingsScalarFieldEnum]
+
+
+export const DelShippingMethodScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  isActive: 'isActive',
+  formatConfig: 'formatConfig',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DelShippingMethodScalarFieldEnum = (typeof DelShippingMethodScalarFieldEnum)[keyof typeof DelShippingMethodScalarFieldEnum]
+
+
+export const DelChannelGroupScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  createdAt: 'createdAt'
+} as const
+
+export type DelChannelGroupScalarFieldEnum = (typeof DelChannelGroupScalarFieldEnum)[keyof typeof DelChannelGroupScalarFieldEnum]
+
+
+export const DelSalesChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  groupId: 'groupId',
+  type: 'type',
+  isActive: 'isActive',
+  requireOrderNumber: 'requireOrderNumber',
+  requirePayment: 'requirePayment',
+  requireProducts: 'requireProducts',
+  createdAt: 'createdAt'
+} as const
+
+export type DelSalesChannelScalarFieldEnum = (typeof DelSalesChannelScalarFieldEnum)[keyof typeof DelSalesChannelScalarFieldEnum]
+
+
+export const DelBatchScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  status: 'status',
+  label: 'label',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
+} as const
+
+export type DelBatchScalarFieldEnum = (typeof DelBatchScalarFieldEnum)[keyof typeof DelBatchScalarFieldEnum]
+
+
+export const DelOrderScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  batchId: 'batchId',
+  shippingMethodId: 'shippingMethodId',
+  channelId: 'channelId',
+  recipientNameEnc: 'recipientNameEnc',
+  recipientNameIv: 'recipientNameIv',
+  phoneEnc: 'phoneEnc',
+  phoneIv: 'phoneIv',
+  addressEnc: 'addressEnc',
+  addressIv: 'addressIv',
+  postalCode: 'postalCode',
+  deliveryMessage: 'deliveryMessage',
+  memo: 'memo',
+  orderDate: 'orderDate',
+  orderNumber: 'orderNumber',
+  paymentAmount: 'paymentAmount',
+  createdAt: 'createdAt'
+} as const
+
+export type DelOrderScalarFieldEnum = (typeof DelOrderScalarFieldEnum)[keyof typeof DelOrderScalarFieldEnum]
+
+
+export const DelOrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  name: 'name',
+  quantity: 'quantity'
+} as const
+
+export type DelOrderItemScalarFieldEnum = (typeof DelOrderItemScalarFieldEnum)[keyof typeof DelOrderItemScalarFieldEnum]
+
+
+export const DelIntegrationHistoryScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  type: 'type',
+  dateFrom: 'dateFrom',
+  dateTo: 'dateTo',
+  totalOrders: 'totalOrders',
+  movementIds: 'movementIds',
+  createdAt: 'createdAt'
+} as const
+
+export type DelIntegrationHistoryScalarFieldEnum = (typeof DelIntegrationHistoryScalarFieldEnum)[keyof typeof DelIntegrationHistoryScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -4219,6 +4930,34 @@ export type EnumInvReconciliationStatusFieldRefInput<$PrismaModel> = FieldRefInp
 export type ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvReconciliationStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'DelChannelType'
+ */
+export type EnumDelChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelChannelType'>
+    
+
+
+/**
+ * Reference to a field of type 'DelChannelType[]'
+ */
+export type ListEnumDelChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelChannelType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DelBatchStatus'
+ */
+export type EnumDelBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelBatchStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DelBatchStatus[]'
+ */
+export type ListEnumDelBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelBatchStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -4341,6 +5080,7 @@ export type GlobalOmitConfig = {
   inventoryRecord?: Prisma.InventoryRecordOmit
   inventoryExcludedProduct?: Prisma.InventoryExcludedProductOmit
   inventoryAnalysis?: Prisma.InventoryAnalysisOmit
+  invProductGroup?: Prisma.InvProductGroupOmit
   invProduct?: Prisma.InvProductOmit
   invProductOption?: Prisma.InvProductOptionOmit
   invStorageLocation?: Prisma.InvStorageLocationOmit
@@ -4353,6 +5093,13 @@ export type GlobalOmitConfig = {
   invReconciliation?: Prisma.InvReconciliationOmit
   invLocationProductMap?: Prisma.InvLocationProductMapOmit
   invSettings?: Prisma.InvSettingsOmit
+  delShippingMethod?: Prisma.DelShippingMethodOmit
+  delChannelGroup?: Prisma.DelChannelGroupOmit
+  delSalesChannel?: Prisma.DelSalesChannelOmit
+  delBatch?: Prisma.DelBatchOmit
+  delOrder?: Prisma.DelOrderOmit
+  delOrderItem?: Prisma.DelOrderItemOmit
+  delIntegrationHistory?: Prisma.DelIntegrationHistoryOmit
 }
 
 /* Types for Logging */

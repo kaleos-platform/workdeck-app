@@ -4,14 +4,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 
 type HistoryRow = {
   id: string
@@ -29,9 +21,16 @@ type HistoryRow = {
 type Props = {
   refreshKey: number
   onSelect: (id: string) => void
+  selectedId?: string | null
 }
 
-export function ReconciliationHistory({ refreshKey, onSelect }: Props) {
+const STATUS_LABEL: Record<string, string> = {
+  PENDING: '대기',
+  CONFIRMED: '확정',
+  CANCELLED: '취소',
+}
+
+export function ReconciliationHistory({ refreshKey, onSelect, selectedId }: Props) {
   const [rows, setRows] = useState<HistoryRow[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -63,60 +62,45 @@ export function ReconciliationHistory({ refreshKey, onSelect }: Props) {
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-        아직 대조 기록이 없습니다. 파일을 업로드해서 시작하세요.
+      <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+        대조 기록이 없습니다
       </div>
     )
   }
 
   return (
-    <div className="rounded-md border bg-background">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>파일명</TableHead>
-            <TableHead>보관 장소</TableHead>
-            <TableHead>기준일</TableHead>
-            <TableHead>상태</TableHead>
-            <TableHead className="text-right">총/매칭/조정</TableHead>
-            <TableHead>생성일</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((r) => (
-            <TableRow
-              key={r.id}
-              className="cursor-pointer"
-              onClick={() => onSelect(r.id)}
+    <div className="space-y-1">
+      <p className="px-1 pb-2 text-xs font-medium text-muted-foreground">파일 내역</p>
+      {rows.map((r) => (
+        <button
+          key={r.id}
+          type="button"
+          onClick={() => onSelect(r.id)}
+          className={`w-full rounded-md border px-3 py-2.5 text-left transition-colors hover:bg-accent ${
+            selectedId === r.id ? 'bg-accent border-primary/30' : 'border-transparent'
+          }`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{r.fileName}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {r.location.name} · {new Date(r.snapshotDate).toISOString().slice(0, 10)}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                총 {r.totalItems} / 매칭 {r.matchedItems} / 조정 {r.adjustedItems}
+              </p>
+            </div>
+            <Badge
+              variant={
+                r.status === 'CONFIRMED' ? 'default' : r.status === 'CANCELLED' ? 'destructive' : 'secondary'
+              }
+              className="shrink-0 text-[10px]"
             >
-              <TableCell className="font-medium">{r.fileName}</TableCell>
-              <TableCell>{r.location.name}</TableCell>
-              <TableCell>
-                {new Date(r.snapshotDate).toISOString().slice(0, 10)}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant={
-                    r.status === 'CONFIRMED'
-                      ? 'default'
-                      : r.status === 'CANCELLED'
-                        ? 'destructive'
-                        : 'secondary'
-                  }
-                >
-                  {r.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right font-mono text-xs">
-                {r.totalItems} / {r.matchedItems} / {r.adjustedItems}
-              </TableCell>
-              <TableCell className="text-xs text-muted-foreground">
-                {new Date(r.createdAt).toLocaleString('ko-KR')}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              {STATUS_LABEL[r.status] ?? r.status}
+            </Badge>
+          </div>
+        </button>
+      ))}
     </div>
   )
 }

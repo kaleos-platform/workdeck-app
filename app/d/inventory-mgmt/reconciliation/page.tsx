@@ -14,40 +14,48 @@ export default function ReconciliationPage() {
     setPreviewId(id)
   }
 
-  function handleClose() {
-    setPreviewId(null)
-  }
-
   function handleConfirmed() {
     setPreviewId(null)
     setRefreshKey((k) => k + 1)
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">파일 기반 재고 대조</h1>
+          <h1 className="text-2xl font-bold">재고 일괄 조정</h1>
           <p className="text-sm text-muted-foreground">
-            실제 재고 파일을 업로드하여 시스템 재고와 대조하고, 차이를
-            ADJUSTMENT 이동으로 일괄 반영합니다.
+            실제 재고 파일을 업로드하여 시스템 재고와 대조하고, 차이를 일괄 반영합니다.
           </p>
         </div>
         <ReconciliationUpload onUploaded={handleUploaded} />
       </div>
 
-      {previewId ? (
-        <ReconciliationPreview
-          reconciliationId={previewId}
-          onClose={handleClose}
-          onConfirmed={handleConfirmed}
-        />
-      ) : (
-        <ReconciliationHistory
-          refreshKey={refreshKey}
-          onSelect={setPreviewId}
-        />
-      )}
+      <div className="flex gap-4">
+        {/* Left: file history list */}
+        <div className="w-80 shrink-0">
+          <ReconciliationHistory
+            refreshKey={refreshKey}
+            onSelect={setPreviewId}
+            selectedId={previewId}
+          />
+        </div>
+
+        {/* Right: selected file detail */}
+        <div className="flex-1 min-w-0">
+          {previewId ? (
+            <ReconciliationPreview
+              reconciliationId={previewId}
+              onClose={() => setPreviewId(null)}
+              onConfirmed={handleConfirmed}
+            />
+          ) : (
+            <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
+              왼쪽 목록에서 파일을 선택하세요
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
