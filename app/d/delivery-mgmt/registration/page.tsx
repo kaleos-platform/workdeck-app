@@ -113,8 +113,9 @@ export default function DeliveryRegistrationPage() {
     loadBaseData()
   }, [loadBaseData, refreshKey])
 
-  // 배송 묶음 선택 시 기존 주문 로드
+  // 배송 묶음 선택 시 기존 주문 로드 (배송 묶음 변경/새로고침 시 선택 상태 초기화)
   useEffect(() => {
+    setSelectedIds(new Set())
     if (!activeBatchId) {
       setRows([])
       return
@@ -220,9 +221,11 @@ export default function DeliveryRegistrationPage() {
       }
       toast.success('배송 묶음이 처리 완료되었습니다')
 
-      // 새 DRAFT 자동 생성
+      // 새 DRAFT 자동 생성 + 선택/입력 상태 초기화
       setActiveBatchId('')
       setRows([])
+      setSelectedIds(new Set())
+      setBulkMemo('')
       setRefreshKey((k) => k + 1)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '처리 완료 실패')
