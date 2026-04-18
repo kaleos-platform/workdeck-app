@@ -114,10 +114,14 @@ export function ChannelUploadDialog({
         '수량': 'productQuantity',
         '메모': 'memo',
       }
+      // 자동 매핑: 각 필드는 첫 번째 매칭 컬럼에만 할당 (중복 방지)
+      const assignedFields = new Set<string>()
       data.headers.forEach((header, i) => {
         const normalized = header.trim()
-        if (hintMap[normalized]) {
-          autoMapping[i] = hintMap[normalized]
+        const field = hintMap[normalized]
+        if (field && !assignedFields.has(field)) {
+          autoMapping[i] = field
+          assignedFields.add(field)
         }
       })
       setMapping(autoMapping)
@@ -245,6 +249,12 @@ export function ChannelUploadDialog({
                 {preview.headers.map((header, i) => {
                   const mappedOpt = FIELD_OPTIONS.find((o) => o.value === mapping[i])
                   const isMappedRequired = mappedOpt?.required
+                  // 다른 컬럼에서 이미 매핑된 필드 목록
+                  const usedByOthers = new Set(
+                    Object.entries(mapping)
+                      .filter(([idx, val]) => Number(idx) !== i && val)
+                      .map(([, val]) => val)
+                  )
                   return (
                   <div key={i} className="flex items-center gap-2">
                     <span className="text-sm w-32 truncate" title={header}>
@@ -269,21 +279,33 @@ export function ChannelUploadDialog({
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {FIELD_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value || NO_MAP} value={opt.value || NO_MAP}>
-                            <span className="flex items-center">
-                              {opt.label}
-                              {opt.required && (
-                                <span className="text-destructive ml-1 font-semibold">*</span>
-                              )}
-                              {opt.required && (
-                                <span className="ml-2 rounded bg-destructive/10 text-destructive text-[10px] px-1 py-0.5 font-medium">
-                                  필수
-                                </span>
-                              )}
-                            </span>
-                          </SelectItem>
-                        ))}
+                        {FIELD_OPTIONS.map((opt) => {
+                          const isUsed = opt.value !== '' && usedByOthers.has(opt.value)
+                          return (
+                            <SelectItem
+                              key={opt.value || NO_MAP}
+                              value={opt.value || NO_MAP}
+                              disabled={isUsed}
+                            >
+                              <span className="flex items-center">
+                                {opt.label}
+                                {opt.required && (
+                                  <span className="text-destructive ml-1 font-semibold">*</span>
+                                )}
+                                {opt.required && !isUsed && (
+                                  <span className="ml-2 rounded bg-destructive/10 text-destructive text-[10px] px-1 py-0.5 font-medium">
+                                    필수
+                                  </span>
+                                )}
+                                {isUsed && (
+                                  <span className="ml-2 text-[10px] text-muted-foreground">
+                                    (이미 사용됨)
+                                  </span>
+                                )}
+                              </span>
+                            </SelectItem>
+                          )
+                        })}
                       </SelectContent>
                     </Select>
                   </div>

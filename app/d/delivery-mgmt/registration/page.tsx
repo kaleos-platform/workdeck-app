@@ -2,10 +2,18 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Trash2, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   RegistrationTable,
   type OrderRow,
@@ -31,6 +39,9 @@ export default function DeliveryRegistrationPage() {
   const [rows, setRows] = useState<OrderRow[]>([])
   const [completing, setCompleting] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkMemo, setBulkMemo] = useState('')
+  const [bulkSelectKey, setBulkSelectKey] = useState(0)
 
   // 기초 데이터 로드 + 단일 DRAFT 배송 묶음 자동 로드/생성
   const loadBaseData = useCallback(async () => {
@@ -189,6 +200,11 @@ export default function DeliveryRegistrationPage() {
   async function handleRemoveRow(tempId: string) {
     if (tempId.startsWith('temp-')) {
       setRows((prev) => prev.filter((r) => r.tempId !== tempId))
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(tempId)
+        return next
+      })
       return
     }
 
@@ -199,10 +215,106 @@ export default function DeliveryRegistrationPage() {
         throw new Error(data?.message ?? '삭제 실패')
       }
       setRows((prev) => prev.filter((r) => r.tempId !== tempId))
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(tempId)
+        return next
+      })
       setOrderCount((c) => Math.max(0, c - 1))
       toast.success('주문이 삭제되었습니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제 실패')
+    }
+  }
+
+  // 선택된 DB 행에 단일 필드 PATCH (PII 없이)
+  async function patchSelectedDbRows(body: Record<string, unknown>): Promise<number> {
+    const dbIds = Array.from(selectedIds).filter((id) => !id.startsWith('temp-'))
+    if (dbIds.length === 0) return 0
+    const results = await Promise.all(
+      dbIds.map((id) =>
+        fetch(`/api/del/orders/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }).then((r) => r.ok),
+      ),
+    )
+    return results.filter((ok) => !ok).length
+  }
+
+  // 일괄 배송방식 변경
+  async function handleBulkShipping(shippingMethodId: string) {
+    const count = selectedIds.size
+    if (count === 0) return
+    const failed = await patchSelectedDbRows({ shippingMethodId })
+    setRows((prev) =>
+      prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, shippingMethodId } : r)),
+    )
+    setBulkSelectKey((k) => k + 1)
+    if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
+    else toast.success(`${count}건 배송방식 변경`)
+  }
+
+  // 일괄 판매채널 변경
+  async function handleBulkChannel(channelId: string) {
+    const count = selectedIds.size
+    if (count === 0) return
+    const failed = await patchSelectedDbRows({ channelId })
+    setRows((prev) =>
+      prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, channelId } : r)),
+    )
+    setBulkSelectKey((k) => k + 1)
+    if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
+    else toast.success(`${count}건 판매채널 변경`)
+  }
+
+  // 일괄 메모 입력
+  async function handleBulkMemo() {
+    const count = selectedIds.size
+    if (count === 0) return
+    const failed = await patchSelectedDbRows({ memo: bulkMemo })
+    setRows((prev) =>
+      prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, memo: bulkMemo } : r)),
+    )
+    if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
+    else toast.success(`${count}건 메모 적용`)
+    setBulkMemo('')
+  }
+
+  // 일괄 삭제
+  async function handleBulkDelete() {
+    const ids = Array.from(selectedIds)
+    if (ids.length === 0) return
+    if (!confirm(`선택한 ${ids.length}건을 삭제하시겠습니까?`)) return
+
+    const tempIds = ids.filter((id) => id.startsWith('temp-'))
+    const dbIds = ids.filter((id) => !id.startsWith('temp-'))
+
+    // DB 행 삭제 — 성공한 ID만 수집
+    const deletedDbIds: string[] = []
+    await Promise.all(
+      dbIds.map(async (id) => {
+        try {
+          const res = await fetch(`/api/del/orders/${id}`, { method: 'DELETE' })
+          if (res.ok) deletedDbIds.push(id)
+        } catch {
+          // 무시 — 실패 집계에서 확인
+        }
+      }),
+    )
+
+    const removedIds = new Set([...tempIds, ...deletedDbIds])
+    setRows((prev) => prev.filter((r) => !removedIds.has(r.tempId)))
+    setSelectedIds(new Set())
+    setOrderCount((c) => Math.max(0, c - deletedDbIds.length))
+
+    const failedCount = dbIds.length - deletedDbIds.length
+    if (failedCount > 0) {
+      toast.error(`${failedCount}건 삭제 실패`)
+      setRefreshKey((k) => k + 1) // 동기화
+    } else {
+      toast.success(`${ids.length}건 삭제 완료`)
     }
   }
 
@@ -260,6 +372,71 @@ export default function DeliveryRegistrationPage() {
         />
       </div>
 
+      {/* 일괄 작업 바 (선택 시 표시) */}
+      {selectedIds.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+          <Badge variant="default">{selectedIds.size}건 선택</Badge>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => setSelectedIds(new Set())}
+          >
+            <X className="mr-1 h-3 w-3" />선택 해제
+          </Button>
+
+          <div className="mx-1 h-5 w-px bg-border" />
+
+          <Select key={`ship-${bulkSelectKey}`} onValueChange={handleBulkShipping}>
+            <SelectTrigger className="h-8 w-40 text-xs">
+              <SelectValue placeholder="배송방식 변경" />
+            </SelectTrigger>
+            <SelectContent>
+              {shippingMethods.map((m) => (
+                <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select key={`chan-${bulkSelectKey}`} onValueChange={handleBulkChannel}>
+            <SelectTrigger className="h-8 w-40 text-xs">
+              <SelectValue placeholder="판매채널 변경" />
+            </SelectTrigger>
+            <SelectContent>
+              {channels.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="flex items-center gap-1">
+            <Input
+              className="h-8 w-40 text-xs"
+              value={bulkMemo}
+              onChange={(e) => setBulkMemo(e.target.value)}
+              placeholder="메모 입력"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleBulkMemo()
+              }}
+            />
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleBulkMemo}>
+              적용
+            </Button>
+          </div>
+
+          <div className="mx-1 h-5 w-px bg-border" />
+
+          <Button
+            variant="destructive"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={handleBulkDelete}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />선택 삭제
+          </Button>
+        </div>
+      )}
+
       {/* 등록 테이블 */}
       <RegistrationTable
         rows={rows}
@@ -267,6 +444,8 @@ export default function DeliveryRegistrationPage() {
         shippingMethods={shippingMethods}
         channels={channels}
         onRemove={handleRemoveRow}
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
       />
     </div>
   )

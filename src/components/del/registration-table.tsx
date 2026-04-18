@@ -3,6 +3,7 @@
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -52,6 +53,8 @@ type RegistrationTableProps = {
   shippingMethods: ShippingMethod[]
   channels: Channel[]
   onRemove?: (tempId: string) => void | Promise<void>
+  selectedIds?: Set<string>
+  onSelectionChange?: (ids: Set<string>) => void
 }
 
 let tempCounter = 0
@@ -85,7 +88,11 @@ export function RegistrationTable({
   shippingMethods,
   channels,
   onRemove,
+  selectedIds,
+  onSelectionChange,
 }: RegistrationTableProps) {
+  const selectionEnabled = !!selectedIds && !!onSelectionChange
+
   function addRow() {
     onChange([...rows, createEmptyRow()])
   }
@@ -97,6 +104,23 @@ export function RegistrationTable({
       onChange(rows.filter((r) => r.tempId !== tempId))
     }
   }
+
+  function toggleRow(tempId: string, checked: boolean) {
+    if (!onSelectionChange || !selectedIds) return
+    const next = new Set(selectedIds)
+    if (checked) next.add(tempId)
+    else next.delete(tempId)
+    onSelectionChange(next)
+  }
+
+  function toggleAll(checked: boolean) {
+    if (!onSelectionChange) return
+    if (checked) onSelectionChange(new Set(rows.map((r) => r.tempId)))
+    else onSelectionChange(new Set())
+  }
+
+  const allSelected = selectionEnabled && rows.length > 0 && selectedIds.size === rows.length
+  const someSelected = selectionEnabled && selectedIds.size > 0 && selectedIds.size < rows.length
 
   function updateRow(tempId: string, field: keyof OrderRow, value: unknown) {
     onChange(
@@ -110,11 +134,20 @@ export function RegistrationTable({
         <Table>
           <TableHeader>
             <TableRow>
+              {selectionEnabled && (
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                    onCheckedChange={(v) => toggleAll(v === true)}
+                    aria-label="전체 선택"
+                  />
+                </TableHead>
+              )}
               <TableHead className="min-w-[120px]">배송방식<span className="text-destructive ml-0.5">*</span></TableHead>
-              <TableHead className="min-w-[80px]">받는분</TableHead>
-              <TableHead className="min-w-[120px]">전화</TableHead>
-              <TableHead className="min-w-[200px]">주소</TableHead>
-              <TableHead className="min-w-[100px]">배송메시지</TableHead>
+              <TableHead className="min-w-[110px]">받는분</TableHead>
+              <TableHead className="min-w-[140px]">전화</TableHead>
+              <TableHead className="min-w-[340px]">주소</TableHead>
+              <TableHead className="min-w-[200px]">배송메시지</TableHead>
               <TableHead className="min-w-[120px]">주문일자</TableHead>
               <TableHead className="min-w-[120px]">판매채널<span className="text-destructive ml-0.5">*</span></TableHead>
               <TableHead className="min-w-[100px]">주문번호</TableHead>
@@ -127,7 +160,7 @@ export function RegistrationTable({
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={selectionEnabled ? 13 : 12} className="text-center text-muted-foreground py-8">
                   주문을 추가해 주세요
                 </TableCell>
               </TableRow>
@@ -145,7 +178,19 @@ export function RegistrationTable({
                 const missingProducts = requireProducts && row.items.filter((i) => i.name).length === 0
 
                 return (
-                  <TableRow key={row.tempId}>
+                  <TableRow
+                    key={row.tempId}
+                    className={selectionEnabled && selectedIds?.has(row.tempId) ? 'bg-primary/5' : undefined}
+                  >
+                    {selectionEnabled && (
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds?.has(row.tempId) ?? false}
+                          onCheckedChange={(v) => toggleRow(row.tempId, v === true)}
+                          aria-label="행 선택"
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>
                       <Select
                         value={row.shippingMethodId || NO_VALUE}
