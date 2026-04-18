@@ -3,6 +3,7 @@
 import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
 export type OrderProduct = {
@@ -44,10 +45,12 @@ export function OrderProductFields({
   return (
     <div className="space-y-1">
       {value.map((product, i) => (
-        <div key={i} className="flex items-center gap-1">
-          <Input
+        <div key={i} className="flex items-start gap-1">
+          <Textarea
+            rows={1}
+            title={product.name}
             className={cn(
-              'h-7 text-xs',
+              'field-sizing-content min-h-7 max-h-12 text-xs font-medium leading-tight px-2 py-1 resize-none md:text-xs shadow-none',
               invalid && !product.name && 'ring-2 ring-destructive/50 border-destructive/50',
             )}
             value={product.name}
@@ -55,7 +58,7 @@ export function OrderProductFields({
             placeholder={invalid ? '상품명 *' : '상품명'}
           />
           <Input
-            className="h-7 w-14 text-xs text-center [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [appearance:textfield]"
+            className="h-7 w-14 shrink-0 text-xs text-center [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [appearance:textfield]"
             type="number"
             min={1}
             value={product.quantity}
