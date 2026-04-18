@@ -18,7 +18,11 @@ export async function POST(req: NextRequest) {
   }
 
   const buffer = await file.arrayBuffer()
-  const preview = previewFile(buffer)
 
-  return NextResponse.json(preview)
+  try {
+    const preview = previewFile(buffer)
+    return NextResponse.json(preview)
+  } catch {
+    return errorResponse('파일을 읽을 수 없습니다. 올바른 Excel/CSV 파일인지 확인해 주세요', 400)
+  }
 }

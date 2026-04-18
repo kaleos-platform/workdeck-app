@@ -42,7 +42,16 @@ export async function POST(req: NextRequest) {
   }
 
   const buffer = await file.arrayBuffer()
-  const { rows, errors: parseErrors } = parseWithMapping(buffer, mapping)
+
+  let rows: import('@/lib/del/channel-import-parser').ParsedOrderRow[]
+  let parseErrors: { row: number; message: string }[]
+  try {
+    const result = parseWithMapping(buffer, mapping)
+    rows = result.rows
+    parseErrors = result.errors
+  } catch {
+    return errorResponse('파일 파싱 중 오류가 발생했습니다. 올바른 Excel/CSV 파일인지 확인해 주세요', 400)
+  }
 
   // 주문 생성
   let created = 0

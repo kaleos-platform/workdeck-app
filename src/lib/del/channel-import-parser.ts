@@ -42,6 +42,30 @@ export type ParsedOrderRow = {
 }
 
 /**
+ * 한국 전화번호 정규화 — 숫자로 저장된 경우 앞자리 0 복원
+ * 예: 1012345678 → 01012345678
+ */
+function normalizePhone(raw: string): string {
+  const digits = raw.replace(/[^0-9]/g, '')
+  if (digits.length >= 9 && digits.length <= 11 && !digits.startsWith('0')) {
+    return '0' + digits
+  }
+  return raw
+}
+
+/**
+ * 한국 우편번호 정규화 — 5자리 미만이면 앞에 0 패딩
+ * 예: 6234 → 06234
+ */
+function normalizePostalCode(raw: string): string {
+  const digits = raw.replace(/[^0-9]/g, '')
+  if (digits.length > 0 && digits.length < 5) {
+    return digits.padStart(5, '0')
+  }
+  return raw
+}
+
+/**
  * 파일에서 헤더와 샘플 데이터를 추출한다.
  */
 export function previewFile(buffer: ArrayBuffer): FilePreview {
@@ -89,7 +113,7 @@ export function parseWithMapping(
       idx !== undefined && row[idx] != null ? String(row[idx]) : ''
 
     const recipientName = get(mapping.recipientName)
-    const phone = get(mapping.phone)
+    const phone = normalizePhone(get(mapping.phone))
     const address = get(mapping.address)
     const orderDateRaw = get(mapping.orderDate)
 
@@ -98,15 +122,20 @@ export function parseWithMapping(
       continue
     }
 
-    // 날짜 파싱
+    // 날짜 파싱 (4~5자리 Excel 시리얼 넘버 지원)
     let orderDate = orderDateRaw
     if (!orderDate) {
       orderDate = new Date().toISOString().split('T')[0]
-    } else if (/^\d{5}$/.test(orderDate)) {
-      // Excel 시리얼 넘버
-      const excelDate = new Date((Number(orderDate) - 25569) * 86400000)
-      orderDate = excelDate.toISOString().split('T')[0]
+    } else if (/^\d{4,5}$/.test(orderDate)) {
+      const serial = Number(orderDate)
+      if (serial > 1000) {
+        const excelDate = new Date((serial - 25569) * 86400000)
+        orderDate = excelDate.toISOString().split('T')[0]
+      }
     }
+
+    const rawPostalCode = get(mapping.postalCode)
+    const postalCode = rawPostalCode ? normalizePostalCode(rawPostalCode) : undefined
 
     const paymentStr = get(mapping.paymentAmount)
     const paymentAmount = paymentStr ? Number(paymentStr.replace(/[^0-9.-]/g, '')) : undefined
@@ -115,7 +144,7 @@ export function parseWithMapping(
       recipientName,
       phone,
       address,
-      postalCode: get(mapping.postalCode) || undefined,
+      postalCode: postalCode || undefined,
       deliveryMessage: get(mapping.deliveryMessage) || undefined,
       orderDate,
       orderNumber: get(mapping.orderNumber) || undefined,
