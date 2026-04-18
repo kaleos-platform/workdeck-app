@@ -4,6 +4,26 @@ import { prisma } from '@/lib/prisma'
 import { parseWithMapping, type ColumnMapping } from '@/lib/del/channel-import-parser'
 import { encryptOrderPii } from '@/lib/del/encryption'
 
+/**
+ * 에러 메시지를 사용자 친화적인 한글로 변환
+ */
+function normalizeError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err)
+  if (/Foreign key constraint/i.test(msg)) {
+    return '배송방식 또는 판매채널 ID가 유효하지 않습니다'
+  }
+  if (/Invalid (?:Date|date value)/i.test(msg) || /RangeError.*time value/i.test(msg)) {
+    return '주문일자 형식이 올바르지 않습니다 (YYYY-MM-DD)'
+  }
+  if (/ENCRYPTION_KEY|암호화 키|암호화/i.test(msg)) {
+    return '서버 암호화 설정 오류 (관리자에게 문의)'
+  }
+  if (/Unique constraint/i.test(msg)) {
+    return '중복된 주문 데이터입니다'
+  }
+  return msg
+}
+
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('delivery-mgmt')
   if ('error' in resolved) return resolved.error
@@ -55,21 +75,23 @@ export async function POST(req: NextRequest) {
 
   // 주문 생성
   let created = 0
-  const createErrors: { row: number; message: string }[] = [...parseErrors]
+  const createErrors: { row: number; recipientName?: string; message: string }[] = [...parseErrors]
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]
-    const encrypted = encryptOrderPii({
-      recipientName: row.recipientName,
-      phone: row.phone,
-      address: row.address,
-    })
-
-    const items = row.productName
-      ? [{ name: row.productName, quantity: row.productQuantity ?? 1 }]
-      : []
+    const rowNum = i + 2
 
     try {
+      const encrypted = encryptOrderPii({
+        recipientName: row.recipientName,
+        phone: row.phone,
+        address: row.address,
+      })
+
+      const items = row.productName
+        ? [{ name: row.productName, quantity: row.productQuantity ?? 1 }]
+        : []
+
       await prisma.delOrder.create({
         data: {
           spaceId: resolved.space.id,
@@ -88,9 +110,11 @@ export async function POST(req: NextRequest) {
       })
       created++
     } catch (err) {
+      console.error('[del/import]', { row: rowNum, recipient: row.recipientName, error: err })
       createErrors.push({
-        row: i + 2,
-        message: err instanceof Error ? err.message : '생성 실패',
+        row: rowNum,
+        recipientName: row.recipientName,
+        message: normalizeError(err),
       })
     }
   }

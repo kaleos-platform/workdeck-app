@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Upload } from 'lucide-react'
+import { Upload, Copy } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -73,7 +73,11 @@ export function ChannelUploadDialog({
   const [preview, setPreview] = useState<Preview | null>(null)
   const [mapping, setMapping] = useState<Record<number, string>>({})
   const [importing, setImporting] = useState(false)
-  const [result, setResult] = useState<{ created: number; errorCount: number } | null>(null)
+  const [result, setResult] = useState<{
+    created: number
+    errorCount: number
+    errors: { row: number; recipientName?: string; message: string }[]
+  } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   function resetState() {
@@ -150,7 +154,11 @@ export function ChannelUploadDialog({
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '가져오기 실패')
 
-      setResult({ created: data.created, errorCount: data.errorCount })
+      setResult({
+        created: data.created,
+        errorCount: data.errorCount,
+        errors: data.errors ?? [],
+      })
       setStep('done')
       toast.success(`${data.created}건 가져오기 완료`)
       onImported()
@@ -286,10 +294,53 @@ export function ChannelUploadDialog({
         )}
 
         {step === 'done' && result && (
-          <div className="py-4 text-center">
-            <p className="text-lg font-medium">{result.created}건 가져오기 완료</p>
-            {result.errorCount > 0 && (
-              <p className="text-sm text-destructive">{result.errorCount}건 오류</p>
+          <div className="space-y-3 py-2">
+            <div className="text-center">
+              <p className="text-lg font-medium">{result.created}건 가져오기 완료</p>
+              {result.errorCount > 0 && (
+                <p className="text-sm text-destructive">{result.errorCount}건 오류</p>
+              )}
+            </div>
+
+            {result.errors.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground">오류 상세</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      const tsv = result.errors
+                        .map((e) => `행 ${e.row}\t${e.recipientName ?? ''}\t${e.message}`)
+                        .join('\n')
+                      navigator.clipboard
+                        .writeText(`행\t받는분\t오류\n${tsv}`)
+                        .then(() => toast.success('오류 목록이 클립보드에 복사되었습니다'))
+                        .catch(() => toast.error('복사에 실패했습니다'))
+                    }}
+                  >
+                    <Copy className="mr-1 h-3 w-3" />
+                    복사
+                  </Button>
+                </div>
+                <div className="max-h-60 overflow-y-auto rounded-md border bg-muted/30 p-2 space-y-1">
+                  {result.errors.map((e, idx) => (
+                    <div key={idx} className="text-xs font-mono">
+                      <span className="text-muted-foreground">행 {e.row}</span>
+                      {e.recipientName && (
+                        <span className="ml-2 text-muted-foreground">({e.recipientName})</span>
+                      )}
+                      <span className="ml-2 text-destructive">{e.message}</span>
+                    </div>
+                  ))}
+                  {result.errorCount > result.errors.length && (
+                    <div className="text-xs text-muted-foreground pt-1">
+                      ...외 {result.errorCount - result.errors.length}건 더
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         )}

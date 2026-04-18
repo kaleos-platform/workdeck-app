@@ -117,8 +117,12 @@ export function parseWithMapping(
     const address = get(mapping.address)
     const orderDateRaw = get(mapping.orderDate)
 
-    if (!recipientName || !phone || !address) {
-      errors.push({ row: rowNum, message: '필수 필드(받는분, 전화, 주소) 누락' })
+    const missing: string[] = []
+    if (!recipientName) missing.push('받는분')
+    if (!phone) missing.push('전화')
+    if (!address) missing.push('주소')
+    if (missing.length > 0) {
+      errors.push({ row: rowNum, message: `필수 필드 누락: ${missing.join(', ')}` })
       continue
     }
 
