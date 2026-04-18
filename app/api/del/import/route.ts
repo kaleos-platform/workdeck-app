@@ -73,24 +73,52 @@ export async function POST(req: NextRequest) {
     return errorResponse('파일 파싱 중 오류가 발생했습니다. 올바른 Excel/CSV 파일인지 확인해 주세요', 400)
   }
 
+  // 동일 주문(받는분·전화·주소·주문일자·주문번호) 행을 묶어 하나의 배송으로 등록
+  // 묶인 행들의 상품은 items에 누적, 결제금액은 합산한다.
+  type Group = {
+    firstRowNum: number
+    rows: import('@/lib/del/channel-import-parser').ParsedOrderRow[]
+  }
+  const groups = new Map<string, Group>()
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+    const rowNum = i + 2
+    const key = [
+      row.recipientName,
+      row.phone,
+      row.address,
+      row.orderDate,
+      row.orderNumber ?? '',
+    ].join('\u0000')
+    const existing = groups.get(key)
+    if (existing) {
+      existing.rows.push(row)
+    } else {
+      groups.set(key, { firstRowNum: rowNum, rows: [row] })
+    }
+  }
+
   // 주문 생성
   let created = 0
   const createErrors: { row: number; recipientName?: string; message: string }[] = [...parseErrors]
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i]
-    const rowNum = i + 2
+  for (const group of groups.values()) {
+    const first = group.rows[0]
+    const rowNum = group.firstRowNum
 
     try {
       const encrypted = encryptOrderPii({
-        recipientName: row.recipientName,
-        phone: row.phone,
-        address: row.address,
+        recipientName: first.recipientName,
+        phone: first.phone,
+        address: first.address,
       })
 
-      const items = row.productName
-        ? [{ name: row.productName, quantity: row.productQuantity ?? 1 }]
-        : []
+      const items = group.rows
+        .filter((r) => r.productName)
+        .map((r) => ({ name: r.productName as string, quantity: r.productQuantity ?? 1 }))
+
+      const hasPayment = group.rows.some((r) => r.paymentAmount != null)
+      const paymentSum = group.rows.reduce((sum, r) => sum + (r.paymentAmount ?? 0), 0)
 
       await prisma.delOrder.create({
         data: {
@@ -99,21 +127,21 @@ export async function POST(req: NextRequest) {
           shippingMethodId,
           channelId: channelId || null,
           ...encrypted,
-          postalCode: row.postalCode || null,
-          deliveryMessage: row.deliveryMessage || null,
-          memo: row.memo || null,
-          orderDate: new Date(row.orderDate),
-          orderNumber: row.orderNumber || null,
-          paymentAmount: row.paymentAmount ?? null,
+          postalCode: first.postalCode || null,
+          deliveryMessage: first.deliveryMessage || null,
+          memo: first.memo || null,
+          orderDate: new Date(first.orderDate),
+          orderNumber: first.orderNumber || null,
+          paymentAmount: hasPayment ? paymentSum : null,
           items: items.length > 0 ? { create: items } : undefined,
         },
       })
       created++
     } catch (err) {
-      console.error('[del/import]', { row: rowNum, recipient: row.recipientName, error: err })
+      console.error('[del/import]', { row: rowNum, recipient: first.recipientName, error: err })
       createErrors.push({
         row: rowNum,
-        recipientName: row.recipientName,
+        recipientName: first.recipientName,
         message: normalizeError(err),
       })
     }

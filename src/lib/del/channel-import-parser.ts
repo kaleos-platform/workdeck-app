@@ -9,6 +9,8 @@ export type FilePreview = {
   headers: string[]
   sampleRows: string[][] // 최대 5행
   totalRows: number
+  /** 전체 데이터 행에서 값이 하나도 없는 컬럼 인덱스 목록 */
+  emptyColumns: number[]
 }
 
 /** 컬럼 매핑 정의 — 필드당 컬럼 인덱스 1개 또는 여러 개(여러 개면 파싱 시 공백으로 결합) */
@@ -81,10 +83,25 @@ export function previewFile(buffer: ArrayBuffer): FilePreview {
     row.map((v) => String(v ?? ''))
   )
 
+  // 전체 데이터 행을 스캔해 컬럼별 값 존재 여부 계산
+  const columnHasData: boolean[] = headers.map(() => false)
+  for (const row of dataRows) {
+    for (let i = 0; i < headers.length; i++) {
+      if (!columnHasData[i] && row[i] != null && String(row[i]).trim() !== '') {
+        columnHasData[i] = true
+      }
+    }
+  }
+  const emptyColumns: number[] = []
+  for (let i = 0; i < headers.length; i++) {
+    if (!columnHasData[i]) emptyColumns.push(i)
+  }
+
   return {
     headers,
     sampleRows,
     totalRows: dataRows.length,
+    emptyColumns,
   }
 }
 
