@@ -82,6 +82,9 @@ const NO_VALUE = '__none__'
 const REQUIRED_INVALID = 'ring-2 ring-destructive/50 border-destructive/50'
 // 입력값 앞쪽 공백 제거
 const trimStart = (v: string) => v.replace(/^\s+/, '')
+// 셀 공용 텍스트 입력(가로 초과 시 최대 2줄로 감싸짐) 스타일
+const CELL_TEXTAREA =
+  'field-sizing-content min-h-8 max-h-12 text-xs leading-tight px-2 py-1 resize-none md:text-xs shadow-none'
 
 export function RegistrationTable({
   rows,
@@ -144,17 +147,17 @@ export function RegistrationTable({
                   />
                 </TableHead>
               )}
-              <TableHead className="min-w-[120px]">배송방식<span className="text-destructive ml-0.5">*</span></TableHead>
-              <TableHead className="min-w-[110px]">받는분</TableHead>
-              <TableHead className="min-w-[140px]">전화</TableHead>
-              <TableHead className="min-w-[340px]">주소</TableHead>
-              <TableHead className="min-w-[200px]">배송메시지</TableHead>
+              <TableHead className="min-w-[100px]">배송방식<span className="text-destructive ml-0.5">*</span></TableHead>
+              <TableHead className="min-w-[100px]">판매채널<span className="text-destructive ml-0.5">*</span></TableHead>
+              <TableHead className="min-w-[90px]">받는분</TableHead>
+              <TableHead className="min-w-[120px]">전화</TableHead>
+              <TableHead className="min-w-[220px]">주소</TableHead>
+              <TableHead className="min-w-[150px]">배송메시지</TableHead>
+              <TableHead className="min-w-[170px]">상품</TableHead>
               <TableHead className="min-w-[120px]">주문일자</TableHead>
-              <TableHead className="min-w-[120px]">판매채널<span className="text-destructive ml-0.5">*</span></TableHead>
               <TableHead className="min-w-[100px]">주문번호</TableHead>
               <TableHead className="min-w-[100px]">결제금액</TableHead>
-              <TableHead className="min-w-[200px]">상품</TableHead>
-              <TableHead className="min-w-[120px]">메모</TableHead>
+              <TableHead className="min-w-[110px]">메모</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -182,7 +185,7 @@ export function RegistrationTable({
                   <TableRow
                     key={row.tempId}
                     className={cn(
-                      '[&_input]:align-middle [&_button]:align-middle',
+                      '[&>td]:align-top',
                       selectionEnabled && selectedIds?.has(row.tempId) && 'bg-primary/5',
                     )}
                   >
@@ -192,6 +195,7 @@ export function RegistrationTable({
                           checked={selectedIds?.has(row.tempId) ?? false}
                           onCheckedChange={(v) => toggleRow(row.tempId, v === true)}
                           aria-label="행 선택"
+                          className="mt-1.5"
                         />
                       </TableCell>
                     )}
@@ -214,46 +218,6 @@ export function RegistrationTable({
                       </Select>
                     </TableCell>
                     <TableCell>
-                      <Input
-                        className="h-8 text-xs"
-                        value={row.recipientName}
-                        onChange={(e) => updateRow(row.tempId, 'recipientName', trimStart(e.target.value))}
-                        placeholder="이름"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        className="h-8 text-xs"
-                        value={row.phone}
-                        onChange={(e) => updateRow(row.tempId, 'phone', trimStart(e.target.value))}
-                        placeholder="010-0000-0000"
-                      />
-                    </TableCell>
-                    <TableCell className="align-top">
-                      <Textarea
-                        className="field-sizing-content min-h-8 text-xs leading-tight px-2 py-1 resize-none md:text-xs shadow-none"
-                        value={row.address}
-                        onChange={(e) => updateRow(row.tempId, 'address', trimStart(e.target.value))}
-                        placeholder="주소"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        className="h-8 text-xs"
-                        value={row.deliveryMessage}
-                        onChange={(e) => updateRow(row.tempId, 'deliveryMessage', trimStart(e.target.value))}
-                        placeholder="메시지"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        className="h-8 text-xs"
-                        type="date"
-                        value={row.orderDate}
-                        onChange={(e) => updateRow(row.tempId, 'orderDate', e.target.value)}
-                      />
-                    </TableCell>
-                    <TableCell>
                       <Select
                         value={row.channelId || NO_VALUE}
                         onValueChange={(v) =>
@@ -272,8 +236,60 @@ export function RegistrationTable({
                       </Select>
                     </TableCell>
                     <TableCell>
+                      <Textarea
+                        rows={1}
+                        className={CELL_TEXTAREA}
+                        value={row.recipientName}
+                        onChange={(e) => updateRow(row.tempId, 'recipientName', trimStart(e.target.value))}
+                        placeholder="이름"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Textarea
+                        rows={1}
+                        className={CELL_TEXTAREA}
+                        value={row.phone}
+                        onChange={(e) => updateRow(row.tempId, 'phone', trimStart(e.target.value))}
+                        placeholder="010-0000-0000"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Textarea
+                        rows={1}
+                        className={CELL_TEXTAREA}
+                        value={row.address}
+                        onChange={(e) => updateRow(row.tempId, 'address', trimStart(e.target.value))}
+                        placeholder="주소"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Textarea
+                        rows={1}
+                        className={CELL_TEXTAREA}
+                        value={row.deliveryMessage}
+                        onChange={(e) => updateRow(row.tempId, 'deliveryMessage', trimStart(e.target.value))}
+                        placeholder="메시지"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <OrderProductFields
+                        value={row.items}
+                        onChange={(items) => updateRow(row.tempId, 'items', items)}
+                        invalid={missingProducts}
+                      />
+                    </TableCell>
+                    <TableCell>
                       <Input
-                        className={cn('h-8 text-xs', missingOrderNumber && REQUIRED_INVALID)}
+                        className="h-8 text-xs"
+                        type="date"
+                        value={row.orderDate}
+                        onChange={(e) => updateRow(row.tempId, 'orderDate', e.target.value)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Textarea
+                        rows={1}
+                        className={cn(CELL_TEXTAREA, missingOrderNumber && REQUIRED_INVALID)}
                         value={row.orderNumber}
                         onChange={(e) => updateRow(row.tempId, 'orderNumber', trimStart(e.target.value))}
                         placeholder={requireOrderNumber ? '주문번호 *' : '주문번호'}
@@ -292,15 +308,9 @@ export function RegistrationTable({
                       />
                     </TableCell>
                     <TableCell>
-                      <OrderProductFields
-                        value={row.items}
-                        onChange={(items) => updateRow(row.tempId, 'items', items)}
-                        invalid={missingProducts}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        className="h-8 text-xs"
+                      <Textarea
+                        rows={1}
+                        className={CELL_TEXTAREA}
                         value={row.memo}
                         onChange={(e) => updateRow(row.tempId, 'memo', trimStart(e.target.value))}
                         placeholder="메모"
