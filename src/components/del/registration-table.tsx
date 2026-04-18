@@ -51,6 +51,7 @@ type RegistrationTableProps = {
   onChange: (rows: OrderRow[]) => void
   shippingMethods: ShippingMethod[]
   channels: Channel[]
+  onRemove?: (tempId: string) => void | Promise<void>
 }
 
 let tempCounter = 0
@@ -83,13 +84,18 @@ export function RegistrationTable({
   onChange,
   shippingMethods,
   channels,
+  onRemove,
 }: RegistrationTableProps) {
   function addRow() {
     onChange([...rows, createEmptyRow()])
   }
 
   function removeRow(tempId: string) {
-    onChange(rows.filter((r) => r.tempId !== tempId))
+    if (onRemove) {
+      onRemove(tempId)
+    } else {
+      onChange(rows.filter((r) => r.tempId !== tempId))
+    }
   }
 
   function updateRow(tempId: string, field: keyof OrderRow, value: unknown) {

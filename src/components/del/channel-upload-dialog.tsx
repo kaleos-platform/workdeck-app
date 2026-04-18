@@ -38,11 +38,11 @@ type ChannelUploadDialogProps = {
   onImported: () => void
 }
 
-const FIELD_OPTIONS = [
+const FIELD_OPTIONS: { value: string; label: string; required?: boolean }[] = [
   { value: '', label: '(매핑 안 함)' },
-  { value: 'recipientName', label: '받는분' },
-  { value: 'phone', label: '전화' },
-  { value: 'address', label: '주소' },
+  { value: 'recipientName', label: '받는분', required: true },
+  { value: 'phone', label: '전화', required: true },
+  { value: 'address', label: '주소', required: true },
   { value: 'postalCode', label: '우편번호' },
   { value: 'deliveryMessage', label: '배송메시지' },
   { value: 'orderDate', label: '주문일자' },
@@ -173,8 +173,8 @@ export function ChannelUploadDialog({
     <Dialog
       open={open}
       onOpenChange={(v) => {
+        if (v) resetState()
         setOpen(v)
-        if (!v) resetState()
       }}
     >
       <DialogTrigger asChild>
@@ -235,9 +235,17 @@ export function ChannelUploadDialog({
 
             {/* 컬럼 매핑 */}
             <div className="space-y-2">
-              <Label>컬럼 매핑</Label>
+              <div className="flex items-center justify-between">
+                <Label>컬럼 매핑</Label>
+                <span className="text-xs text-muted-foreground">
+                  필수 항목(<span className="text-destructive">*</span>): 받는분, 전화, 주소
+                </span>
+              </div>
               <div className="grid grid-cols-2 gap-2">
-                {preview.headers.map((header, i) => (
+                {preview.headers.map((header, i) => {
+                  const mappedOpt = FIELD_OPTIONS.find((o) => o.value === mapping[i])
+                  const isMappedRequired = mappedOpt?.required
+                  return (
                   <div key={i} className="flex items-center gap-2">
                     <span className="text-sm w-32 truncate" title={header}>
                       {header || `(컬럼 ${i + 1})`}
@@ -249,18 +257,38 @@ export function ChannelUploadDialog({
                       }
                     >
                       <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
+                        <SelectValue>
+                          {mappedOpt ? (
+                            <span>
+                              {mappedOpt.label}
+                              {isMappedRequired && <span className="text-destructive ml-0.5">*</span>}
+                            </span>
+                          ) : (
+                            '(매핑 안 함)'
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {FIELD_OPTIONS.map((opt) => (
                           <SelectItem key={opt.value || NO_MAP} value={opt.value || NO_MAP}>
-                            {opt.label}
+                            <span className="flex items-center">
+                              {opt.label}
+                              {opt.required && (
+                                <span className="text-destructive ml-1 font-semibold">*</span>
+                              )}
+                              {opt.required && (
+                                <span className="ml-2 rounded bg-destructive/10 text-destructive text-[10px] px-1 py-0.5 font-medium">
+                                  필수
+                                </span>
+                              )}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 

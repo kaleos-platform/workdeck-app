@@ -185,9 +185,40 @@ export default function DeliveryRegistrationPage() {
     setRows((prev) => [...prev, ...pastedRows])
   }
 
-  // 모든 행의 배송방식과 판매채널이 입력되어야 활성화
+  // 행 삭제: 저장된 주문이면 DB에서도 삭제
+  async function handleRemoveRow(tempId: string) {
+    if (tempId.startsWith('temp-')) {
+      setRows((prev) => prev.filter((r) => r.tempId !== tempId))
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/del/orders/${tempId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.message ?? '삭제 실패')
+      }
+      setRows((prev) => prev.filter((r) => r.tempId !== tempId))
+      setOrderCount((c) => Math.max(0, c - 1))
+      toast.success('주문이 삭제되었습니다')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '삭제 실패')
+    }
+  }
+
+  // 모든 행의 필수값이 입력되어야 활성화
   const allRowsValid =
-    rows.length > 0 && rows.every((r) => r.shippingMethodId && r.channelId)
+    rows.length > 0 &&
+    rows.every((r) => {
+      if (!r.shippingMethodId || !r.channelId) return false
+      if (!r.recipientName || !r.phone || !r.address) return false
+      const channel = channels.find((c) => c.id === r.channelId)
+      if (!channel) return false
+      if (channel.requireOrderNumber && !r.orderNumber) return false
+      if (channel.requirePayment && !r.paymentAmount) return false
+      if (channel.requireProducts && r.items.filter((i) => i.name).length === 0) return false
+      return true
+    })
   const actionsDisabled = rows.length === 0 || !allRowsValid
 
   return (
@@ -235,6 +266,7 @@ export default function DeliveryRegistrationPage() {
         onChange={setRows}
         shippingMethods={shippingMethods}
         channels={channels}
+        onRemove={handleRemoveRow}
       />
     </div>
   )
