@@ -418,7 +418,7 @@ export default function DeliveryRegistrationPage() {
           <div className="mx-1 h-5 w-px bg-border" />
 
           <Select key={`ship-${bulkSelectKey}`} onValueChange={handleBulkShipping}>
-            <SelectTrigger className="h-8 w-40 text-xs">
+            <SelectTrigger className="h-8 w-40 text-xs bg-background">
               <SelectValue placeholder="배송방식 변경" />
             </SelectTrigger>
             <SelectContent>
@@ -429,7 +429,7 @@ export default function DeliveryRegistrationPage() {
           </Select>
 
           <Select key={`chan-${bulkSelectKey}`} onValueChange={handleBulkChannel}>
-            <SelectTrigger className="h-8 w-40 text-xs">
+            <SelectTrigger className="h-8 w-40 text-xs bg-background">
               <SelectValue placeholder="판매채널 변경" />
             </SelectTrigger>
             <SelectContent>
@@ -441,7 +441,7 @@ export default function DeliveryRegistrationPage() {
 
           <div className="flex items-center gap-1">
             <Input
-              className="h-8 w-40 text-xs"
+              className="h-8 w-40 text-xs bg-background"
               value={bulkMemo}
               onChange={(e) => setBulkMemo(e.target.value)}
               placeholder="메모 입력"
@@ -449,7 +449,7 @@ export default function DeliveryRegistrationPage() {
                 if (e.key === 'Enter') handleBulkMemo()
               }}
             />
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleBulkMemo}>
+            <Button variant="outline" size="sm" className="h-8 text-xs bg-background" onClick={handleBulkMemo}>
               적용
             </Button>
           </div>
