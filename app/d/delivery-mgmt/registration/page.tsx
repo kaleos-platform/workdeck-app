@@ -274,6 +274,7 @@ export default function DeliveryRegistrationPage() {
       prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, shippingMethodId } : r)),
     )
     setBulkSelectKey((k) => k + 1)
+    setSelectedIds(new Set())
     if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
     else toast.success(`${count}건 배송방식 변경`)
   }
@@ -287,6 +288,7 @@ export default function DeliveryRegistrationPage() {
       prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, channelId } : r)),
     )
     setBulkSelectKey((k) => k + 1)
+    setSelectedIds(new Set())
     if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
     else toast.success(`${count}건 판매채널 변경`)
   }
@@ -299,6 +301,7 @@ export default function DeliveryRegistrationPage() {
     setRows((prev) =>
       prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, memo: bulkMemo } : r)),
     )
+    setSelectedIds(new Set())
     if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
     else toast.success(`${count}건 메모 적용`)
     setBulkMemo('')
