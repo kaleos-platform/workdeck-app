@@ -24,12 +24,15 @@ export async function POST(req: NextRequest) {
     return errorResponse('xlsx, xls 파일만 지원합니다', 400)
   }
 
+  const rawSheetName = formData.get('sheetName')
+  const sheetName = typeof rawSheetName === 'string' ? rawSheetName : undefined
+
   const buffer = await file.arrayBuffer()
 
   try {
-    const preview = previewFile(buffer)
+    const preview = previewFile(buffer, sheetName)
     if (preview.headers.length === 0) {
-      return errorResponse('양식 파일에서 헤더를 찾을 수 없습니다', 400)
+      return NextResponse.json({ ...preview, suggestedColumns: [] })
     }
     const suggestedColumns = analyzeFormat(preview.headers, preview.sampleRows)
     return NextResponse.json({ ...preview, suggestedColumns })

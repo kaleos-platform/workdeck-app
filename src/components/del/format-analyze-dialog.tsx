@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Upload } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,8 @@ type AnalyzeResult = {
   sampleRows: string[][]
   totalRows: number
   emptyColumns: number[]
+  sheetNames: string[]
+  activeSheet: string
   suggestedColumns: DelFormatColumn[]
 }
 
@@ -52,17 +55,15 @@ const NONE_VALUE = '__none__'
 const FIELD_OPTIONS = Object.entries(FIELD_LABELS) as [DelFieldMapping, string][]
 const SAMPLE_PREVIEW_ROWS = 3
 
-export function FormatAnalyzeDialog({
-  open,
-  onOpenChange,
-  onApply,
-}: FormatAnalyzeDialogProps) {
+export function FormatAnalyzeDialog({ open, onOpenChange, onApply }: FormatAnalyzeDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [file, setFile] = useState<File | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
   const [result, setResult] = useState<AnalyzeResult | null>(null)
   const [columns, setColumns] = useState<DelFormatColumn[]>([])
 
   function reset() {
+    setFile(null)
     setAnalyzing(false)
     setResult(null)
     setColumns([])
@@ -74,14 +75,12 @@ export function FormatAnalyzeDialog({
     onOpenChange(next)
   }
 
-  async function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-
+  async function analyzeFile(target: File, sheetName?: string) {
     setAnalyzing(true)
     try {
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', target)
+      if (sheetName) formData.append('sheetName', sheetName)
       const res = await fetch('/api/del/shipping-methods/analyze', {
         method: 'POST',
         body: formData,
@@ -93,16 +92,27 @@ export function FormatAnalyzeDialog({
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '파일 분석 실패')
       if (inputRef.current) inputRef.current.value = ''
+      setFile(null)
     } finally {
       setAnalyzing(false)
     }
   }
 
+  async function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
+    const selected = event.target.files?.[0]
+    if (!selected) return
+    setFile(selected)
+    await analyzeFile(selected)
+  }
+
+  async function handleSheetChange(sheetName: string) {
+    if (!file) return
+    await analyzeFile(file, sheetName)
+  }
+
   function updateColumnField(index: number, value: string) {
     const field = value === NONE_VALUE ? null : (value as DelFieldMapping)
-    setColumns((prev) =>
-      prev.map((col, i) => (i === index ? { ...col, field } : col)),
-    )
+    setColumns((prev) => prev.map((col, i) => (i === index ? { ...col, field } : col)))
   }
 
   function handleApply() {
@@ -118,7 +128,7 @@ export function FormatAnalyzeDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>양식에서 불러오기</DialogTitle>
           <DialogDescription>
@@ -158,6 +168,33 @@ export function FormatAnalyzeDialog({
           </div>
         ) : (
           <div className="space-y-4 py-2">
+            {result.sheetNames.length > 1 && (
+              <div className="flex items-center gap-3">
+                <Label htmlFor="sheet-select" className="shrink-0 text-sm">
+                  분석 시트
+                </Label>
+                <Select
+                  value={result.activeSheet}
+                  onValueChange={handleSheetChange}
+                  disabled={analyzing}
+                >
+                  <SelectTrigger id="sheet-select" className="h-8 max-w-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {result.sheetNames.map((name) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-xs text-muted-foreground">
+                  시트 {result.sheetNames.length}개 중 하나를 선택하세요
+                </span>
+              </div>
+            )}
+
             <div className="flex gap-4 text-sm text-muted-foreground">
               <span>총 {result.totalRows}행</span>
               <span>컬럼 {result.headers.length}개</span>
@@ -166,76 +203,86 @@ export function FormatAnalyzeDialog({
               )}
             </div>
 
-            <div>
-              <p className="mb-2 text-sm font-medium">파일 미리보기</p>
-              <div className="overflow-x-auto rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      {result.headers.map((h, i) => (
-                        <TableHead key={i} className="whitespace-nowrap">
-                          {h || <span className="text-muted-foreground">(빈 헤더)</span>}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sampleRows.map((row, ri) => (
-                      <TableRow key={ri}>
-                        {result.headers.map((_, ci) => (
-                          <TableCell key={ci} className="whitespace-nowrap text-xs">
-                            {row[ci] ?? ''}
-                          </TableCell>
+            {columns.length === 0 ? (
+              <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                선택된 시트에서 헤더를 찾지 못했습니다. 다른 시트를 선택해 주세요.
+              </div>
+            ) : (
+              <>
+                <div>
+                  <p className="mb-2 text-sm font-medium">파일 미리보기</p>
+                  <div className="overflow-x-auto rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          {result.headers.map((h, i) => (
+                            <TableHead key={i} className="whitespace-nowrap">
+                              {h || <span className="text-muted-foreground">(빈 헤더)</span>}
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sampleRows.map((row, ri) => (
+                          <TableRow key={ri}>
+                            {result.headers.map((_, ci) => (
+                              <TableCell key={ci} className="text-xs whitespace-nowrap">
+                                {row[ci] ?? ''}
+                              </TableCell>
+                            ))}
+                          </TableRow>
                         ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
 
-            <div>
-              <p className="mb-2 text-sm font-medium">자동 매핑 결과 (수정 가능)</p>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">컬럼</TableHead>
-                      <TableHead>헤더 텍스트</TableHead>
-                      <TableHead className="w-48">매핑 필드</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {columns.map((col, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="font-mono text-center">{col.column}</TableCell>
-                        <TableCell className="text-sm">
-                          {col.label || <span className="text-muted-foreground">(빈 헤더)</span>}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={col.field ?? NONE_VALUE}
-                            onValueChange={(v) => updateColumnField(i, v)}
-                          >
-                            <SelectTrigger className="h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={NONE_VALUE}>(빈 컬럼)</SelectItem>
-                              {FIELD_OPTIONS.map(([key, label]) => (
-                                <SelectItem key={key} value={key}>
-                                  {label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
+                <div>
+                  <p className="mb-2 text-sm font-medium">자동 매핑 결과 (수정 가능)</p>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-16">컬럼</TableHead>
+                          <TableHead>헤더 텍스트</TableHead>
+                          <TableHead className="w-48">매핑 필드</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {columns.map((col, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="text-center font-mono">{col.column}</TableCell>
+                            <TableCell className="text-sm">
+                              {col.label || (
+                                <span className="text-muted-foreground">(빈 헤더)</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={col.field ?? NONE_VALUE}
+                                onValueChange={(v) => updateColumnField(i, v)}
+                              >
+                                <SelectTrigger className="h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value={NONE_VALUE}>(빈 컬럼)</SelectItem>
+                                  {FIELD_OPTIONS.map(([key, label]) => (
+                                    <SelectItem key={key} value={key}>
+                                      {label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -243,8 +290,10 @@ export function FormatAnalyzeDialog({
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             취소
           </Button>
-          {result && (
-            <Button onClick={handleApply}>양식 적용하기</Button>
+          {result && columns.length > 0 && (
+            <Button onClick={handleApply} disabled={analyzing}>
+              양식 적용하기
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>
