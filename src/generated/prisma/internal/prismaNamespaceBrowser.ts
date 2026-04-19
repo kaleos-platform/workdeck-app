@@ -97,6 +97,7 @@ export const ModelName = {
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
+  DelColumnMappingPreset: 'DelColumnMappingPreset',
   DelIntegrationHistory: 'DelIntegrationHistory'
 } as const
 
@@ -793,6 +794,18 @@ export const DelOrderItemScalarFieldEnum = {
 } as const
 
 export type DelOrderItemScalarFieldEnum = (typeof DelOrderItemScalarFieldEnum)[keyof typeof DelOrderItemScalarFieldEnum]
+
+
+export const DelColumnMappingPresetScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  mapping: 'mapping',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DelColumnMappingPresetScalarFieldEnum = (typeof DelColumnMappingPresetScalarFieldEnum)[keyof typeof DelColumnMappingPresetScalarFieldEnum]
 
 
 export const DelIntegrationHistoryScalarFieldEnum = {

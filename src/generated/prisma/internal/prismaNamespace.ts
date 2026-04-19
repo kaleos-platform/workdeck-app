@@ -430,6 +430,7 @@ export const ModelName = {
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
+  DelColumnMappingPreset: 'DelColumnMappingPreset',
   DelIntegrationHistory: 'DelIntegrationHistory'
 } as const
 
@@ -446,7 +447,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invChannelGroup" | "invSalesChannel" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delChannelGroup" | "delSalesChannel" | "delBatch" | "delOrder" | "delOrderItem" | "delIntegrationHistory"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invChannelGroup" | "invSalesChannel" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delChannelGroup" | "delSalesChannel" | "delBatch" | "delOrder" | "delOrderItem" | "delColumnMappingPreset" | "delIntegrationHistory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3854,6 +3855,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DelColumnMappingPreset: {
+      payload: Prisma.$DelColumnMappingPresetPayload<ExtArgs>
+      fields: Prisma.DelColumnMappingPresetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelColumnMappingPresetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelColumnMappingPresetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>
+        }
+        findFirst: {
+          args: Prisma.DelColumnMappingPresetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelColumnMappingPresetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>
+        }
+        findMany: {
+          args: Prisma.DelColumnMappingPresetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>[]
+        }
+        create: {
+          args: Prisma.DelColumnMappingPresetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>
+        }
+        createMany: {
+          args: Prisma.DelColumnMappingPresetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelColumnMappingPresetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>[]
+        }
+        delete: {
+          args: Prisma.DelColumnMappingPresetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>
+        }
+        update: {
+          args: Prisma.DelColumnMappingPresetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelColumnMappingPresetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelColumnMappingPresetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelColumnMappingPresetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelColumnMappingPresetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelColumnMappingPresetPayload>
+        }
+        aggregate: {
+          args: Prisma.DelColumnMappingPresetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelColumnMappingPreset>
+        }
+        groupBy: {
+          args: Prisma.DelColumnMappingPresetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelColumnMappingPresetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelColumnMappingPresetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelColumnMappingPresetCountAggregateOutputType> | number
+        }
+      }
+    }
     DelIntegrationHistory: {
       payload: Prisma.$DelIntegrationHistoryPayload<ExtArgs>
       fields: Prisma.DelIntegrationHistoryFieldRefs
@@ -4646,6 +4721,18 @@ export const DelOrderItemScalarFieldEnum = {
 export type DelOrderItemScalarFieldEnum = (typeof DelOrderItemScalarFieldEnum)[keyof typeof DelOrderItemScalarFieldEnum]
 
 
+export const DelColumnMappingPresetScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  mapping: 'mapping',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DelColumnMappingPresetScalarFieldEnum = (typeof DelColumnMappingPresetScalarFieldEnum)[keyof typeof DelColumnMappingPresetScalarFieldEnum]
+
+
 export const DelIntegrationHistoryScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -5099,6 +5186,7 @@ export type GlobalOmitConfig = {
   delBatch?: Prisma.DelBatchOmit
   delOrder?: Prisma.DelOrderOmit
   delOrderItem?: Prisma.DelOrderItemOmit
+  delColumnMappingPreset?: Prisma.DelColumnMappingPresetOmit
   delIntegrationHistory?: Prisma.DelIntegrationHistoryOmit
 }
 
