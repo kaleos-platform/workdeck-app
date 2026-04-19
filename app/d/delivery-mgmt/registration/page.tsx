@@ -45,6 +45,7 @@ export default function DeliveryRegistrationPage() {
   const [orderCount, setOrderCount] = useState(0)
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
+  const [baseDataLoaded, setBaseDataLoaded] = useState(false)
   const [rows, setRows] = useState<OrderRow[]>([])
   const [completing, setCompleting] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -85,6 +86,7 @@ export default function DeliveryRegistrationPage() {
       const cData = await cRes.json()
       setShippingMethods(mData.methods ?? [])
       setChannels(cData.channels ?? [])
+      setBaseDataLoaded(true)
 
       if (bData.data?.length > 0) {
         setActiveBatchId(bData.data[0].id)
@@ -362,8 +364,9 @@ export default function DeliveryRegistrationPage() {
     }
   }
 
-  const needsShippingMethodSetup = shippingMethods.length === 0
-  const needsChannelSetup = channels.length === 0
+  // 로드 완료 전에는 배너를 표시하지 않아 flicker(깜빡임) 방지
+  const needsShippingMethodSetup = baseDataLoaded && shippingMethods.length === 0
+  const needsChannelSetup = baseDataLoaded && channels.length === 0
   const needsSetup = needsShippingMethodSetup || needsChannelSetup
 
   // 배송 파일 생성·처리 완료는 모든 행이 배송방식·판매채널 + 채널별 필수값을 갖춰야 활성화
