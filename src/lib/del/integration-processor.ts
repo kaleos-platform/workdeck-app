@@ -12,7 +12,7 @@ export async function pushToInventoryDeck(
   spaceId: string,
   dateFrom: Date,
   dateTo: Date,
-  locationId: string,
+  locationId: string
 ): Promise<IntegrationResult> {
   // 1. Verify inventory deck is active
   const invDeck = await prisma.deckInstance.findUnique({
@@ -84,7 +84,7 @@ export async function pushToInventoryDeck(
           new Date().toISOString().split('T')[0],
         orderDate: order.orderDate.toISOString().split('T')[0],
         channelId: invChannelId,
-        reason: `배송관리 연동 (${order.shippingMethod.name})`,
+        reason: `배송관리 연동 (${order.shippingMethod?.name ?? '미지정'})`,
       }
 
       try {

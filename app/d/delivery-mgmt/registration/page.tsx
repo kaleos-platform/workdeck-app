@@ -4,8 +4,9 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { CheckCircle, Trash2, Upload, X } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CheckCircle, Trash2, Upload, X } from 'lucide-react'
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -24,10 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  RegistrationTable,
-  type OrderRow,
-} from '@/components/del/registration-table'
+import { RegistrationTable, type OrderRow } from '@/components/del/registration-table'
 import { BulkPasteDialog } from '@/components/del/bulk-paste-dialog'
 import { DeliveryFileDialog } from '@/components/del/delivery-file-dialog'
 
@@ -152,11 +150,9 @@ export default function DeliveryRegistrationPage() {
     const newRows = rows.filter((r) => r.tempId.startsWith('temp-'))
     if (newRows.length === 0) return true
 
-    const invalid = newRows.filter(
-      (r) => !r.recipientName || !r.phone || !r.address || !r.shippingMethodId
-    )
+    const invalid = newRows.filter((r) => !r.recipientName || !r.phone || !r.address)
     if (invalid.length > 0) {
-      toast.error(`${invalid.length}건의 주문에 필수 정보가 누락되었습니다`)
+      toast.error(`${invalid.length}건의 주문에 필수 정보가 누락되었습니다 (받는분·전화·주소)`)
       return false
     }
 
@@ -279,8 +275,8 @@ export default function DeliveryRegistrationPage() {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
-        }).then((r) => r.ok),
-      ),
+        }).then((r) => r.ok)
+      )
     )
     return results.filter((ok) => !ok).length
   }
@@ -290,9 +286,7 @@ export default function DeliveryRegistrationPage() {
     const count = selectedIds.size
     if (count === 0) return
     const failed = await patchSelectedDbRows({ shippingMethodId })
-    setRows((prev) =>
-      prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, shippingMethodId } : r)),
-    )
+    setRows((prev) => prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, shippingMethodId } : r)))
     setBulkSelectKey((k) => k + 1)
     setSelectedIds(new Set())
     if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
@@ -304,9 +298,7 @@ export default function DeliveryRegistrationPage() {
     const count = selectedIds.size
     if (count === 0) return
     const failed = await patchSelectedDbRows({ channelId })
-    setRows((prev) =>
-      prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, channelId } : r)),
-    )
+    setRows((prev) => prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, channelId } : r)))
     setBulkSelectKey((k) => k + 1)
     setSelectedIds(new Set())
     if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
@@ -318,9 +310,7 @@ export default function DeliveryRegistrationPage() {
     const count = selectedIds.size
     if (count === 0) return
     const failed = await patchSelectedDbRows({ memo: bulkMemo })
-    setRows((prev) =>
-      prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, memo: bulkMemo } : r)),
-    )
+    setRows((prev) => prev.map((r) => (selectedIds.has(r.tempId) ? { ...r, memo: bulkMemo } : r)))
     setSelectedIds(new Set())
     if (failed > 0) toast.error(`${failed}건 서버 저장 실패`)
     else toast.success(`${count}건 메모 적용`)
@@ -355,7 +345,7 @@ export default function DeliveryRegistrationPage() {
         } catch {
           // 무시 — 실패 집계에서 확인
         }
-      }),
+      })
     )
 
     const removedIds = new Set([...tempIds, ...deletedDbIds])
@@ -372,7 +362,11 @@ export default function DeliveryRegistrationPage() {
     }
   }
 
-  // 모든 행의 필수값이 입력되어야 활성화
+  const needsShippingMethodSetup = shippingMethods.length === 0
+  const needsChannelSetup = channels.length === 0
+  const needsSetup = needsShippingMethodSetup || needsChannelSetup
+
+  // 배송 파일 생성·처리 완료는 모든 행이 배송방식·판매채널 + 채널별 필수값을 갖춰야 활성화
   const allRowsValid =
     rows.length > 0 &&
     rows.every((r) => {
@@ -385,7 +379,14 @@ export default function DeliveryRegistrationPage() {
       if (channel.requireProducts && r.items.filter((i) => i.name).length === 0) return false
       return true
     })
-  const actionsDisabled = rows.length === 0 || !allRowsValid
+  const actionsDisabled = rows.length === 0 || !allRowsValid || needsSetup
+  const actionsDisabledReason = needsSetup
+    ? '배송 방식·판매 채널 등록이 필요합니다'
+    : rows.length === 0
+      ? '등록된 주문이 없습니다'
+      : !allRowsValid
+        ? '모든 행의 배송방식·판매채널과 필수값을 입력해 주세요'
+        : undefined
 
   return (
     <div className="space-y-6">
@@ -402,17 +403,51 @@ export default function DeliveryRegistrationPage() {
             size="sm"
             onClick={handleComplete}
             disabled={completing || actionsDisabled}
-            title={!allRowsValid && rows.length > 0 ? '모든 행의 배송방식과 판매채널을 입력해 주세요' : undefined}
+            title={actionsDisabledReason}
           >
-            <CheckCircle className="mr-1 h-4 w-4" />처리 완료
+            <CheckCircle className="mr-1 h-4 w-4" />
+            처리 완료
           </Button>
         </div>
       </div>
 
+      {/* 셋업 안내 배너 */}
+      {needsSetup && (
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>배송 파일 생성·처리 완료 전 셋업이 필요합니다</AlertTitle>
+          <AlertDescription>
+            <p>
+              주문 등록은 가능하지만 아래 항목 등록 전에는 배송 파일 생성과 처리 완료가 제한됩니다.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {needsShippingMethodSetup && (
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/d/delivery-mgmt/shipping">
+                    배송 방식 관리
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
+                </Button>
+              )}
+              {needsChannelSetup && (
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/d/delivery-mgmt/channels">
+                    판매 채널 관리
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* 배송 묶음 상태 바 */}
       <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
         <span className="text-sm font-medium">배송 묶음</span>
-        <Badge variant="secondary">{orderCount + rows.filter((r) => r.tempId.startsWith('temp-')).length}건</Badge>
+        <Badge variant="secondary">
+          {orderCount + rows.filter((r) => r.tempId.startsWith('temp-')).length}건
+        </Badge>
       </div>
 
       {/* 입력 도구 바 */}
@@ -426,7 +461,8 @@ export default function DeliveryRegistrationPage() {
           className={!activeBatchId ? 'pointer-events-none opacity-50' : undefined}
         >
           <Link href={`/d/delivery-mgmt/registration/upload?batchId=${activeBatchId}`}>
-            <Upload className="mr-1 h-4 w-4" />파일 업로드
+            <Upload className="mr-1 h-4 w-4" />
+            파일 업로드
           </Link>
         </Button>
       </div>
@@ -441,36 +477,41 @@ export default function DeliveryRegistrationPage() {
             className="h-7 text-xs"
             onClick={() => setSelectedIds(new Set())}
           >
-            <X className="mr-1 h-3 w-3" />선택 해제
+            <X className="mr-1 h-3 w-3" />
+            선택 해제
           </Button>
 
           <div className="mx-1 h-5 w-px bg-border" />
 
           <Select key={`ship-${bulkSelectKey}`} onValueChange={handleBulkShipping}>
-            <SelectTrigger className="h-8 w-40 text-xs bg-background">
+            <SelectTrigger className="h-8 w-40 bg-background text-xs">
               <SelectValue placeholder="배송방식 변경" />
             </SelectTrigger>
             <SelectContent>
               {shippingMethods.map((m) => (
-                <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                <SelectItem key={m.id} value={m.id}>
+                  {m.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
           <Select key={`chan-${bulkSelectKey}`} onValueChange={handleBulkChannel}>
-            <SelectTrigger className="h-8 w-40 text-xs bg-background">
+            <SelectTrigger className="h-8 w-40 bg-background text-xs">
               <SelectValue placeholder="판매채널 변경" />
             </SelectTrigger>
             <SelectContent>
               {channels.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
           <div className="flex items-center gap-1">
             <Input
-              className="h-8 w-40 text-xs bg-background"
+              className="h-8 w-40 bg-background text-xs"
               value={bulkMemo}
               onChange={(e) => setBulkMemo(e.target.value)}
               placeholder="메모 입력"
@@ -478,7 +519,12 @@ export default function DeliveryRegistrationPage() {
                 if (e.key === 'Enter') handleBulkMemo()
               }}
             />
-            <Button variant="outline" size="sm" className="h-8 text-xs bg-background" onClick={handleBulkMemo}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 bg-background text-xs"
+              onClick={handleBulkMemo}
+            >
               적용
             </Button>
           </div>
@@ -491,7 +537,8 @@ export default function DeliveryRegistrationPage() {
             className="h-8 text-xs"
             onClick={handleBulkDelete}
           >
-            <Trash2 className="mr-1 h-3 w-3" />선택 삭제
+            <Trash2 className="mr-1 h-3 w-3" />
+            선택 삭제
           </Button>
         </div>
       )}
@@ -508,10 +555,7 @@ export default function DeliveryRegistrationPage() {
       />
 
       {/* 업로드 성공 Dialog */}
-      <Dialog
-        open={importedCount !== null}
-        onOpenChange={(v) => !v && setImportedCount(null)}
-      >
+      <Dialog open={importedCount !== null} onOpenChange={(v) => !v && setImportedCount(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>가져오기 완료</DialogTitle>
@@ -541,16 +585,10 @@ export default function DeliveryRegistrationPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{confirmDialog?.title}</DialogTitle>
-            <DialogDescription className="pt-2">
-              {confirmDialog?.description}
-            </DialogDescription>
+            <DialogDescription className="pt-2">{confirmDialog?.description}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              disabled={confirming}
-              onClick={() => setConfirmDialog(null)}
-            >
+            <Button variant="outline" disabled={confirming} onClick={() => setConfirmDialog(null)}>
               취소
             </Button>
             <Button

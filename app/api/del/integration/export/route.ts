@@ -37,27 +37,27 @@ export async function POST(req: NextRequest) {
   if (type === 'SALES') {
     const rows = orders.flatMap((order) =>
       order.items.map((item) => ({
-        '주문일자': order.orderDate.toISOString().split('T')[0],
-        '채널': order.channel?.name ?? '',
-        '상품명': item.name,
-        '수량': item.quantity,
-        '결제금액': order.paymentAmount != null ? Number(order.paymentAmount) : '',
-        '주문번호': order.orderNumber ?? '',
-      })),
+        주문일자: order.orderDate.toISOString().split('T')[0],
+        채널: order.channel?.name ?? '',
+        상품명: item.name,
+        수량: item.quantity,
+        결제금액: order.paymentAmount != null ? Number(order.paymentAmount) : '',
+        주문번호: order.orderNumber ?? '',
+      }))
     )
     const ws = XLSX.utils.json_to_sheet(rows)
     XLSX.utils.book_append_sheet(wb, ws, '매출')
   } else {
     const rows = orders.flatMap((order) =>
       order.items.map((item) => ({
-        '출고일자': order.batch.completedAt?.toISOString().split('T')[0] ?? '',
-        '채널': order.channel?.name ?? '',
-        '상품명': item.name,
-        '수량': item.quantity,
-        '구분': '출고',
-        '주문일자': order.orderDate.toISOString().split('T')[0],
-        '배송방식': order.shippingMethod.name,
-      })),
+        출고일자: order.batch.completedAt?.toISOString().split('T')[0] ?? '',
+        채널: order.channel?.name ?? '',
+        상품명: item.name,
+        수량: item.quantity,
+        구분: '출고',
+        주문일자: order.orderDate.toISOString().split('T')[0],
+        배송방식: order.shippingMethod?.name ?? '',
+      }))
     )
     const ws = XLSX.utils.json_to_sheet(rows)
     XLSX.utils.book_append_sheet(wb, ws, '재고')
@@ -70,9 +70,7 @@ export async function POST(req: NextRequest) {
     format === 'CSV'
       ? 'text/csv'
       : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  const filename = encodeURIComponent(
-    `${type === 'SALES' ? '매출' : '재고'}_데이터.${ext}`,
-  )
+  const filename = encodeURIComponent(`${type === 'SALES' ? '매출' : '재고'}_데이터.${ext}`)
 
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,

@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
 
   if (!file) return errorResponse('파일이 필요합니다', 400)
   if (!batchId) return errorResponse('batchId가 필요합니다', 400)
-  if (!shippingMethodId) return errorResponse('shippingMethodId가 필요합니다', 400)
   if (!mappingJson) return errorResponse('columnMapping이 필요합니다', 400)
 
   // 배송 묶음 확인
@@ -70,7 +69,10 @@ export async function POST(req: NextRequest) {
     rows = result.rows
     parseErrors = result.errors
   } catch {
-    return errorResponse('파일 파싱 중 오류가 발생했습니다. 올바른 Excel/CSV 파일인지 확인해 주세요', 400)
+    return errorResponse(
+      '파일 파싱 중 오류가 발생했습니다. 올바른 Excel/CSV 파일인지 확인해 주세요',
+      400
+    )
   }
 
   // 동일 주문(받는분·전화·주소·주문일자·주문번호) 행을 묶어 하나의 배송으로 등록
@@ -124,7 +126,7 @@ export async function POST(req: NextRequest) {
         data: {
           spaceId: resolved.space.id,
           batchId,
-          shippingMethodId,
+          shippingMethodId: shippingMethodId || null,
           channelId: channelId || null,
           ...encrypted,
           postalCode: first.postalCode || null,

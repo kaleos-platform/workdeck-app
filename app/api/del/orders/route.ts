@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { encryptOrderPii } from '@/lib/del/encryption'
 
 type OrderInput = {
-  shippingMethodId: string
+  shippingMethodId?: string | null
   channelId?: string | null
   recipientName: string
   phone: string
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}))
   const batchId = typeof body?.batchId === 'string' ? body.batchId : ''
-  const ordersInput = Array.isArray(body?.orders) ? body.orders as OrderInput[] : []
+  const ordersInput = Array.isArray(body?.orders) ? (body.orders as OrderInput[]) : []
 
   if (!batchId) return errorResponse('batchId가 필요합니다', 400)
   if (ordersInput.length === 0) return errorResponse('orders 배열이 필요합니다', 400)
@@ -49,8 +49,11 @@ export async function POST(req: NextRequest) {
 
   for (let i = 0; i < ordersInput.length; i++) {
     const input = ordersInput[i]
-    if (!input.recipientName || !input.phone || !input.address || !input.shippingMethodId || !input.orderDate) {
-      errors.push({ index: i, message: '필수 필드가 누락되었습니다 (받는분, 전화, 주소, 배송방식, 주문일자)' })
+    if (!input.recipientName || !input.phone || !input.address || !input.orderDate) {
+      errors.push({
+        index: i,
+        message: '필수 필드가 누락되었습니다 (받는분, 전화, 주소, 주문일자)',
+      })
       continue
     }
 
@@ -66,7 +69,7 @@ export async function POST(req: NextRequest) {
         data: {
           spaceId: resolved.space.id,
           batchId,
-          shippingMethodId: input.shippingMethodId,
+          shippingMethodId: input.shippingMethodId || null,
           channelId: input.channelId || null,
           ...encrypted,
           postalCode: input.postalCode || null,

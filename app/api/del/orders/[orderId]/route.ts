@@ -35,7 +35,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   if (typeof body?.postalCode === 'string') data.postalCode = body.postalCode || null
   if (typeof body?.deliveryMessage === 'string') data.deliveryMessage = body.deliveryMessage || null
-  if (typeof body?.shippingMethodId === 'string') data.shippingMethodId = body.shippingMethodId
+  if (body?.shippingMethodId !== undefined) {
+    data.shippingMethodId =
+      typeof body.shippingMethodId === 'string' ? body.shippingMethodId || null : null
+  }
   if (body?.channelId !== undefined) data.channelId = body.channelId || null
   if (typeof body?.orderDate === 'string') data.orderDate = new Date(body.orderDate)
   if (typeof body?.orderNumber === 'string') data.orderNumber = body.orderNumber || null

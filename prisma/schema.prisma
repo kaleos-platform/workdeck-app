@@ -998,7 +998,7 @@ model DelOrder {
   id               String @id @default(cuid())
   spaceId          String
   batchId          String
-  shippingMethodId String
+  shippingMethodId String?
   channelId        String?
 
   // PII 암호화 필드
@@ -1019,7 +1019,7 @@ model DelOrder {
 
   space          Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   batch          DelBatch          @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  shippingMethod DelShippingMethod @relation(fields: [shippingMethodId], references: [id])
+  shippingMethod DelShippingMethod? @relation(fields: [shippingMethodId], references: [id])
   channel        DelSalesChannel?  @relation(fields: [channelId], references: [id], onDelete: SetNull)
   items          DelOrderItem[]
 

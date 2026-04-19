@@ -261,7 +261,7 @@ export type DelOrderGroupByOutputType = {
   id: string
   spaceId: string
   batchId: string
-  shippingMethodId: string
+  shippingMethodId: string | null
   channelId: string | null
   recipientNameEnc: string
   recipientNameIv: string
@@ -305,7 +305,7 @@ export type DelOrderWhereInput = {
   id?: Prisma.StringFilter<"DelOrder"> | string
   spaceId?: Prisma.StringFilter<"DelOrder"> | string
   batchId?: Prisma.StringFilter<"DelOrder"> | string
-  shippingMethodId?: Prisma.StringFilter<"DelOrder"> | string
+  shippingMethodId?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   channelId?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   recipientNameEnc?: Prisma.StringFilter<"DelOrder"> | string
   recipientNameIv?: Prisma.StringFilter<"DelOrder"> | string
@@ -322,7 +322,7 @@ export type DelOrderWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"DelOrder"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   batch?: Prisma.XOR<Prisma.DelBatchScalarRelationFilter, Prisma.DelBatchWhereInput>
-  shippingMethod?: Prisma.XOR<Prisma.DelShippingMethodScalarRelationFilter, Prisma.DelShippingMethodWhereInput>
+  shippingMethod?: Prisma.XOR<Prisma.DelShippingMethodNullableScalarRelationFilter, Prisma.DelShippingMethodWhereInput> | null
   channel?: Prisma.XOR<Prisma.DelSalesChannelNullableScalarRelationFilter, Prisma.DelSalesChannelWhereInput> | null
   items?: Prisma.DelOrderItemListRelationFilter
 }
@@ -331,7 +331,7 @@ export type DelOrderOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   batchId?: Prisma.SortOrder
-  shippingMethodId?: Prisma.SortOrder
+  shippingMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
   recipientNameEnc?: Prisma.SortOrder
   recipientNameIv?: Prisma.SortOrder
@@ -360,7 +360,7 @@ export type DelOrderWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.DelOrderWhereInput | Prisma.DelOrderWhereInput[]
   spaceId?: Prisma.StringFilter<"DelOrder"> | string
   batchId?: Prisma.StringFilter<"DelOrder"> | string
-  shippingMethodId?: Prisma.StringFilter<"DelOrder"> | string
+  shippingMethodId?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   channelId?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   recipientNameEnc?: Prisma.StringFilter<"DelOrder"> | string
   recipientNameIv?: Prisma.StringFilter<"DelOrder"> | string
@@ -377,7 +377,7 @@ export type DelOrderWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"DelOrder"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   batch?: Prisma.XOR<Prisma.DelBatchScalarRelationFilter, Prisma.DelBatchWhereInput>
-  shippingMethod?: Prisma.XOR<Prisma.DelShippingMethodScalarRelationFilter, Prisma.DelShippingMethodWhereInput>
+  shippingMethod?: Prisma.XOR<Prisma.DelShippingMethodNullableScalarRelationFilter, Prisma.DelShippingMethodWhereInput> | null
   channel?: Prisma.XOR<Prisma.DelSalesChannelNullableScalarRelationFilter, Prisma.DelSalesChannelWhereInput> | null
   items?: Prisma.DelOrderItemListRelationFilter
 }, "id">
@@ -386,7 +386,7 @@ export type DelOrderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   batchId?: Prisma.SortOrder
-  shippingMethodId?: Prisma.SortOrder
+  shippingMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
   recipientNameEnc?: Prisma.SortOrder
   recipientNameIv?: Prisma.SortOrder
@@ -415,7 +415,7 @@ export type DelOrderScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"DelOrder"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"DelOrder"> | string
   batchId?: Prisma.StringWithAggregatesFilter<"DelOrder"> | string
-  shippingMethodId?: Prisma.StringWithAggregatesFilter<"DelOrder"> | string
+  shippingMethodId?: Prisma.StringNullableWithAggregatesFilter<"DelOrder"> | string | null
   channelId?: Prisma.StringNullableWithAggregatesFilter<"DelOrder"> | string | null
   recipientNameEnc?: Prisma.StringWithAggregatesFilter<"DelOrder"> | string
   recipientNameIv?: Prisma.StringWithAggregatesFilter<"DelOrder"> | string
@@ -449,7 +449,7 @@ export type DelOrderCreateInput = {
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelOrdersInput
   batch: Prisma.DelBatchCreateNestedOneWithoutOrdersInput
-  shippingMethod: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
+  shippingMethod?: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
   channel?: Prisma.DelSalesChannelCreateNestedOneWithoutOrdersInput
   items?: Prisma.DelOrderItemCreateNestedManyWithoutOrderInput
 }
@@ -458,7 +458,7 @@ export type DelOrderUncheckedCreateInput = {
   id?: string
   spaceId: string
   batchId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   channelId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
@@ -493,7 +493,7 @@ export type DelOrderUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelOrdersNestedInput
   batch?: Prisma.DelBatchUpdateOneRequiredWithoutOrdersNestedInput
-  shippingMethod?: Prisma.DelShippingMethodUpdateOneRequiredWithoutOrdersNestedInput
+  shippingMethod?: Prisma.DelShippingMethodUpdateOneWithoutOrdersNestedInput
   channel?: Prisma.DelSalesChannelUpdateOneWithoutOrdersNestedInput
   items?: Prisma.DelOrderItemUpdateManyWithoutOrderNestedInput
 }
@@ -502,7 +502,7 @@ export type DelOrderUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
@@ -524,7 +524,7 @@ export type DelOrderCreateManyInput = {
   id?: string
   spaceId: string
   batchId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   channelId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
@@ -562,7 +562,7 @@ export type DelOrderUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
@@ -863,7 +863,7 @@ export type DelOrderCreateWithoutSpaceInput = {
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   batch: Prisma.DelBatchCreateNestedOneWithoutOrdersInput
-  shippingMethod: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
+  shippingMethod?: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
   channel?: Prisma.DelSalesChannelCreateNestedOneWithoutOrdersInput
   items?: Prisma.DelOrderItemCreateNestedManyWithoutOrderInput
 }
@@ -871,7 +871,7 @@ export type DelOrderCreateWithoutSpaceInput = {
 export type DelOrderUncheckedCreateWithoutSpaceInput = {
   id?: string
   batchId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   channelId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
@@ -922,7 +922,7 @@ export type DelOrderScalarWhereInput = {
   id?: Prisma.StringFilter<"DelOrder"> | string
   spaceId?: Prisma.StringFilter<"DelOrder"> | string
   batchId?: Prisma.StringFilter<"DelOrder"> | string
-  shippingMethodId?: Prisma.StringFilter<"DelOrder"> | string
+  shippingMethodId?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   channelId?: Prisma.StringNullableFilter<"DelOrder"> | string | null
   recipientNameEnc?: Prisma.StringFilter<"DelOrder"> | string
   recipientNameIv?: Prisma.StringFilter<"DelOrder"> | string
@@ -1024,7 +1024,7 @@ export type DelOrderCreateWithoutChannelInput = {
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelOrdersInput
   batch: Prisma.DelBatchCreateNestedOneWithoutOrdersInput
-  shippingMethod: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
+  shippingMethod?: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
   items?: Prisma.DelOrderItemCreateNestedManyWithoutOrderInput
 }
 
@@ -1032,7 +1032,7 @@ export type DelOrderUncheckedCreateWithoutChannelInput = {
   id?: string
   spaceId: string
   batchId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
   phoneEnc: string
@@ -1091,7 +1091,7 @@ export type DelOrderCreateWithoutBatchInput = {
   paymentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelOrdersInput
-  shippingMethod: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
+  shippingMethod?: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
   channel?: Prisma.DelSalesChannelCreateNestedOneWithoutOrdersInput
   items?: Prisma.DelOrderItemCreateNestedManyWithoutOrderInput
 }
@@ -1099,7 +1099,7 @@ export type DelOrderCreateWithoutBatchInput = {
 export type DelOrderUncheckedCreateWithoutBatchInput = {
   id?: string
   spaceId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   channelId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
@@ -1160,7 +1160,7 @@ export type DelOrderCreateWithoutItemsInput = {
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelOrdersInput
   batch: Prisma.DelBatchCreateNestedOneWithoutOrdersInput
-  shippingMethod: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
+  shippingMethod?: Prisma.DelShippingMethodCreateNestedOneWithoutOrdersInput
   channel?: Prisma.DelSalesChannelCreateNestedOneWithoutOrdersInput
 }
 
@@ -1168,7 +1168,7 @@ export type DelOrderUncheckedCreateWithoutItemsInput = {
   id?: string
   spaceId: string
   batchId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   channelId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
@@ -1218,7 +1218,7 @@ export type DelOrderUpdateWithoutItemsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelOrdersNestedInput
   batch?: Prisma.DelBatchUpdateOneRequiredWithoutOrdersNestedInput
-  shippingMethod?: Prisma.DelShippingMethodUpdateOneRequiredWithoutOrdersNestedInput
+  shippingMethod?: Prisma.DelShippingMethodUpdateOneWithoutOrdersNestedInput
   channel?: Prisma.DelSalesChannelUpdateOneWithoutOrdersNestedInput
 }
 
@@ -1226,7 +1226,7 @@ export type DelOrderUncheckedUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1246,7 +1246,7 @@ export type DelOrderUncheckedUpdateWithoutItemsInput = {
 export type DelOrderCreateManySpaceInput = {
   id?: string
   batchId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   channelId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
@@ -1279,7 +1279,7 @@ export type DelOrderUpdateWithoutSpaceInput = {
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batch?: Prisma.DelBatchUpdateOneRequiredWithoutOrdersNestedInput
-  shippingMethod?: Prisma.DelShippingMethodUpdateOneRequiredWithoutOrdersNestedInput
+  shippingMethod?: Prisma.DelShippingMethodUpdateOneWithoutOrdersNestedInput
   channel?: Prisma.DelSalesChannelUpdateOneWithoutOrdersNestedInput
   items?: Prisma.DelOrderItemUpdateManyWithoutOrderNestedInput
 }
@@ -1287,7 +1287,7 @@ export type DelOrderUpdateWithoutSpaceInput = {
 export type DelOrderUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1308,7 +1308,7 @@ export type DelOrderUncheckedUpdateWithoutSpaceInput = {
 export type DelOrderUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1411,7 +1411,7 @@ export type DelOrderCreateManyChannelInput = {
   id?: string
   spaceId: string
   batchId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
   phoneEnc: string
@@ -1444,7 +1444,7 @@ export type DelOrderUpdateWithoutChannelInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelOrdersNestedInput
   batch?: Prisma.DelBatchUpdateOneRequiredWithoutOrdersNestedInput
-  shippingMethod?: Prisma.DelShippingMethodUpdateOneRequiredWithoutOrdersNestedInput
+  shippingMethod?: Prisma.DelShippingMethodUpdateOneWithoutOrdersNestedInput
   items?: Prisma.DelOrderItemUpdateManyWithoutOrderNestedInput
 }
 
@@ -1452,7 +1452,7 @@ export type DelOrderUncheckedUpdateWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
   phoneEnc?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1473,7 +1473,7 @@ export type DelOrderUncheckedUpdateManyWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
   phoneEnc?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1492,7 +1492,7 @@ export type DelOrderUncheckedUpdateManyWithoutChannelInput = {
 export type DelOrderCreateManyBatchInput = {
   id?: string
   spaceId: string
-  shippingMethodId: string
+  shippingMethodId?: string | null
   channelId?: string | null
   recipientNameEnc: string
   recipientNameIv: string
@@ -1525,7 +1525,7 @@ export type DelOrderUpdateWithoutBatchInput = {
   paymentAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelOrdersNestedInput
-  shippingMethod?: Prisma.DelShippingMethodUpdateOneRequiredWithoutOrdersNestedInput
+  shippingMethod?: Prisma.DelShippingMethodUpdateOneWithoutOrdersNestedInput
   channel?: Prisma.DelSalesChannelUpdateOneWithoutOrdersNestedInput
   items?: Prisma.DelOrderItemUpdateManyWithoutOrderNestedInput
 }
@@ -1533,7 +1533,7 @@ export type DelOrderUpdateWithoutBatchInput = {
 export type DelOrderUncheckedUpdateWithoutBatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1554,7 +1554,7 @@ export type DelOrderUncheckedUpdateWithoutBatchInput = {
 export type DelOrderUncheckedUpdateManyWithoutBatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
-  shippingMethodId?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientNameEnc?: Prisma.StringFieldUpdateOperationsInput | string
   recipientNameIv?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1623,7 +1623,7 @@ export type DelOrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   batch?: boolean | Prisma.DelBatchDefaultArgs<ExtArgs>
-  shippingMethod?: boolean | Prisma.DelShippingMethodDefaultArgs<ExtArgs>
+  shippingMethod?: boolean | Prisma.DelOrder$shippingMethodArgs<ExtArgs>
   channel?: boolean | Prisma.DelOrder$channelArgs<ExtArgs>
   items?: boolean | Prisma.DelOrder$itemsArgs<ExtArgs>
   _count?: boolean | Prisma.DelOrderCountOutputTypeDefaultArgs<ExtArgs>
@@ -1650,7 +1650,7 @@ export type DelOrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   batch?: boolean | Prisma.DelBatchDefaultArgs<ExtArgs>
-  shippingMethod?: boolean | Prisma.DelShippingMethodDefaultArgs<ExtArgs>
+  shippingMethod?: boolean | Prisma.DelOrder$shippingMethodArgs<ExtArgs>
   channel?: boolean | Prisma.DelOrder$channelArgs<ExtArgs>
 }, ExtArgs["result"]["delOrder"]>
 
@@ -1675,7 +1675,7 @@ export type DelOrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   batch?: boolean | Prisma.DelBatchDefaultArgs<ExtArgs>
-  shippingMethod?: boolean | Prisma.DelShippingMethodDefaultArgs<ExtArgs>
+  shippingMethod?: boolean | Prisma.DelOrder$shippingMethodArgs<ExtArgs>
   channel?: boolean | Prisma.DelOrder$channelArgs<ExtArgs>
 }, ExtArgs["result"]["delOrder"]>
 
@@ -1704,7 +1704,7 @@ export type DelOrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type DelOrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   batch?: boolean | Prisma.DelBatchDefaultArgs<ExtArgs>
-  shippingMethod?: boolean | Prisma.DelShippingMethodDefaultArgs<ExtArgs>
+  shippingMethod?: boolean | Prisma.DelOrder$shippingMethodArgs<ExtArgs>
   channel?: boolean | Prisma.DelOrder$channelArgs<ExtArgs>
   items?: boolean | Prisma.DelOrder$itemsArgs<ExtArgs>
   _count?: boolean | Prisma.DelOrderCountOutputTypeDefaultArgs<ExtArgs>
@@ -1712,13 +1712,13 @@ export type DelOrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type DelOrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   batch?: boolean | Prisma.DelBatchDefaultArgs<ExtArgs>
-  shippingMethod?: boolean | Prisma.DelShippingMethodDefaultArgs<ExtArgs>
+  shippingMethod?: boolean | Prisma.DelOrder$shippingMethodArgs<ExtArgs>
   channel?: boolean | Prisma.DelOrder$channelArgs<ExtArgs>
 }
 export type DelOrderIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   batch?: boolean | Prisma.DelBatchDefaultArgs<ExtArgs>
-  shippingMethod?: boolean | Prisma.DelShippingMethodDefaultArgs<ExtArgs>
+  shippingMethod?: boolean | Prisma.DelOrder$shippingMethodArgs<ExtArgs>
   channel?: boolean | Prisma.DelOrder$channelArgs<ExtArgs>
 }
 
@@ -1727,7 +1727,7 @@ export type $DelOrderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
     batch: Prisma.$DelBatchPayload<ExtArgs>
-    shippingMethod: Prisma.$DelShippingMethodPayload<ExtArgs>
+    shippingMethod: Prisma.$DelShippingMethodPayload<ExtArgs> | null
     channel: Prisma.$DelSalesChannelPayload<ExtArgs> | null
     items: Prisma.$DelOrderItemPayload<ExtArgs>[]
   }
@@ -1735,7 +1735,7 @@ export type $DelOrderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: string
     spaceId: string
     batchId: string
-    shippingMethodId: string
+    shippingMethodId: string | null
     channelId: string | null
     recipientNameEnc: string
     recipientNameIv: string
@@ -2146,7 +2146,7 @@ export interface Prisma__DelOrderClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   batch<T extends Prisma.DelBatchDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelBatchDefaultArgs<ExtArgs>>): Prisma.Prisma__DelBatchClient<runtime.Types.Result.GetResult<Prisma.$DelBatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  shippingMethod<T extends Prisma.DelShippingMethodDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelShippingMethodDefaultArgs<ExtArgs>>): Prisma.Prisma__DelShippingMethodClient<runtime.Types.Result.GetResult<Prisma.$DelShippingMethodPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  shippingMethod<T extends Prisma.DelOrder$shippingMethodArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelOrder$shippingMethodArgs<ExtArgs>>): Prisma.Prisma__DelShippingMethodClient<runtime.Types.Result.GetResult<Prisma.$DelShippingMethodPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   channel<T extends Prisma.DelOrder$channelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelOrder$channelArgs<ExtArgs>>): Prisma.Prisma__DelSalesChannelClient<runtime.Types.Result.GetResult<Prisma.$DelSalesChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   items<T extends Prisma.DelOrder$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelOrder$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelOrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2589,6 +2589,25 @@ export type DelOrderDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Limit how many DelOrders to delete.
    */
   limit?: number
+}
+
+/**
+ * DelOrder.shippingMethod
+ */
+export type DelOrder$shippingMethodArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DelShippingMethod
+   */
+  select?: Prisma.DelShippingMethodSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DelShippingMethod
+   */
+  omit?: Prisma.DelShippingMethodOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DelShippingMethodInclude<ExtArgs> | null
+  where?: Prisma.DelShippingMethodWhereInput
 }
 
 /**

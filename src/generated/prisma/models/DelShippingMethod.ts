@@ -368,9 +368,9 @@ export type DelShippingMethodMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type DelShippingMethodScalarRelationFilter = {
-  is?: Prisma.DelShippingMethodWhereInput
-  isNot?: Prisma.DelShippingMethodWhereInput
+export type DelShippingMethodNullableScalarRelationFilter = {
+  is?: Prisma.DelShippingMethodWhereInput | null
+  isNot?: Prisma.DelShippingMethodWhereInput | null
 }
 
 export type DelShippingMethodCreateNestedManyWithoutSpaceInput = {
@@ -421,10 +421,12 @@ export type DelShippingMethodCreateNestedOneWithoutOrdersInput = {
   connect?: Prisma.DelShippingMethodWhereUniqueInput
 }
 
-export type DelShippingMethodUpdateOneRequiredWithoutOrdersNestedInput = {
+export type DelShippingMethodUpdateOneWithoutOrdersNestedInput = {
   create?: Prisma.XOR<Prisma.DelShippingMethodCreateWithoutOrdersInput, Prisma.DelShippingMethodUncheckedCreateWithoutOrdersInput>
   connectOrCreate?: Prisma.DelShippingMethodCreateOrConnectWithoutOrdersInput
   upsert?: Prisma.DelShippingMethodUpsertWithoutOrdersInput
+  disconnect?: Prisma.DelShippingMethodWhereInput | boolean
+  delete?: Prisma.DelShippingMethodWhereInput | boolean
   connect?: Prisma.DelShippingMethodWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.DelShippingMethodUpdateToOneWithWhereWithoutOrdersInput, Prisma.DelShippingMethodUpdateWithoutOrdersInput>, Prisma.DelShippingMethodUncheckedUpdateWithoutOrdersInput>
 }

@@ -441,10 +441,6 @@ function UploadPageInner() {
       toast.error('파일을 다시 선택해 주세요')
       return
     }
-    if (!shippingMethodId) {
-      toast.error('배송방식을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요')
-      return
-    }
     if (REQUIRED_FIELDS.some((f) => (mapping[f]?.length ?? 0) === 0)) {
       toast.error('받는분, 전화, 주소는 필수 매핑입니다')
       return
@@ -455,7 +451,7 @@ function UploadPageInner() {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('batchId', batchId)
-      formData.append('shippingMethodId', shippingMethodId)
+      if (shippingMethodId) formData.append('shippingMethodId', shippingMethodId)
       formData.append('columnMapping', JSON.stringify(mapping))
 
       const res = await fetch('/api/del/import', { method: 'POST', body: formData })
