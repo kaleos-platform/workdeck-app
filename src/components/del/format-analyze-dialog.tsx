@@ -128,7 +128,7 @@ export function FormatAnalyzeDialog({ open, onOpenChange, onApply }: FormatAnaly
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
+      <DialogContent className="max-h-[95vh] w-[95vw] max-w-[1400px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>양식에서 불러오기</DialogTitle>
           <DialogDescription>
