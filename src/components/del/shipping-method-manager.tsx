@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Trash2, Upload } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { FormatEditor } from '@/components/del/format-editor'
+import { FormatAnalyzeDialog } from '@/components/del/format-analyze-dialog'
 import type { DelFormatColumn } from '@/lib/del/format-templates'
 
 type ShippingMethod = {
@@ -42,6 +43,7 @@ export function ShippingMethodManager() {
   const [name, setName] = useState('')
   const [formatConfig, setFormatConfig] = useState<DelFormatColumn[]>([])
   const [saving, setSaving] = useState(false)
+  const [analyzeOpen, setAnalyzeOpen] = useState(false)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -200,6 +202,22 @@ export function ShippingMethodManager() {
                 placeholder="예: 한진택배"
               />
             </div>
+            <div className="flex items-start justify-between gap-3 rounded-md border border-dashed bg-muted/30 p-3">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">양식에서 불러오기</p>
+                <p className="text-xs text-muted-foreground">
+                  택배사 엑셀 양식을 업로드하면 컬럼 매핑을 자동으로 분석합니다
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setAnalyzeOpen(true)}
+              >
+                <Upload className="mr-1 h-4 w-4" />양식 업로드
+              </Button>
+            </div>
             <FormatEditor value={formatConfig} onChange={setFormatConfig} />
           </div>
           <DialogFooter>
@@ -212,6 +230,16 @@ export function ShippingMethodManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <FormatAnalyzeDialog
+        open={analyzeOpen}
+        onOpenChange={setAnalyzeOpen}
+        onApply={(cols) => {
+          setFormatConfig(cols)
+          setAnalyzeOpen(false)
+          toast.success(`${cols.length}개 컬럼을 불러왔습니다`)
+        }}
+      />
     </>
   )
 }
