@@ -319,12 +319,13 @@ model Space {
   invProductGroups    InvProductGroup[]
 
   // 통합 배송 관리 (Del)
-  delShippingMethods      DelShippingMethod[]
-  delChannelGroups        DelChannelGroup[]
-  delSalesChannels        DelSalesChannel[]
-  delBatches              DelBatch[]
-  delOrders               DelOrder[]
-  delIntegrationHistories DelIntegrationHistory[]
+  delShippingMethods       DelShippingMethod[]
+  delChannelGroups         DelChannelGroup[]
+  delSalesChannels         DelSalesChannel[]
+  delBatches               DelBatch[]
+  delOrders                DelOrder[]
+  delIntegrationHistories  DelIntegrationHistory[]
+  delColumnMappingPresets  DelColumnMappingPreset[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1039,6 +1040,22 @@ model DelOrderItem {
   order DelOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
+}
+
+// 컬럼 매핑 프리셋 (업로드 시 header name → field 매핑을 저장)
+model DelColumnMappingPreset {
+  id      String @id @default(cuid())
+  spaceId String
+  name    String
+  mapping Json   // Array<{ headerName: string; field: string }>
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
 }
 
 // 데이터 연동 이력

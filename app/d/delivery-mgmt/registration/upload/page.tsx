@@ -1,12 +1,23 @@
 'use client'
 
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeft, Copy, Info, Trash2, Upload, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  BookmarkPlus,
+  Copy,
+  Info,
+  Save,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -55,17 +66,34 @@ const FIELDS: FieldDef[] = [
 const REQUIRED_FIELDS = ['recipientName', 'phone', 'address']
 
 const HINT_MAP: Record<string, string> = {
-  '받는분': 'recipientName', '성명': 'recipientName', '수령인': 'recipientName',
-  '전화': 'phone', '전화번호': 'phone', '핸드폰': 'phone', '핸드폰번호': 'phone', '연락처': 'phone',
-  '주소': 'address', '총주소': 'address', '받는분주소': 'address',
-  '우편번호': 'postalCode', '우편': 'postalCode',
-  '배송메시지': 'deliveryMessage', '배송메세지': 'deliveryMessage', '특기사항': 'deliveryMessage', '특이사항': 'deliveryMessage',
-  '주문일': 'orderDate', '주문일자': 'orderDate', '결제일': 'orderDate',
-  '주문번호': 'orderNumber',
-  '결제금액': 'paymentAmount', '금액': 'paymentAmount',
-  '품목명': 'productName', '상품명': 'productName', '품목': 'productName',
-  '수량': 'productQuantity',
-  '메모': 'memo',
+  받는분: 'recipientName',
+  성명: 'recipientName',
+  수령인: 'recipientName',
+  전화: 'phone',
+  전화번호: 'phone',
+  핸드폰: 'phone',
+  핸드폰번호: 'phone',
+  연락처: 'phone',
+  주소: 'address',
+  총주소: 'address',
+  받는분주소: 'address',
+  우편번호: 'postalCode',
+  우편: 'postalCode',
+  배송메시지: 'deliveryMessage',
+  배송메세지: 'deliveryMessage',
+  특기사항: 'deliveryMessage',
+  특이사항: 'deliveryMessage',
+  주문일: 'orderDate',
+  주문일자: 'orderDate',
+  결제일: 'orderDate',
+  주문번호: 'orderNumber',
+  결제금액: 'paymentAmount',
+  금액: 'paymentAmount',
+  품목명: 'productName',
+  상품명: 'productName',
+  품목: 'productName',
+  수량: 'productQuantity',
+  메모: 'memo',
 }
 
 // ---------- 타입 ----------
@@ -88,6 +116,71 @@ type Draft = {
   fileBase64?: string
   preview: Preview
   mapping: Record<string, number[]>
+}
+
+// ---------- 프리셋 타입 ----------
+
+type PresetMappingEntry = { headerName: string; field: string }
+
+type Preset = {
+  id: string
+  name: string
+  mapping: PresetMappingEntry[]
+  updatedAt: string
+}
+
+type PresetApplyResult = {
+  mapping: Record<string, number[]>
+  matched: number
+  total: number
+  missingHeaders: string[] // preset에 있지만 파일에 없는 header
+}
+
+// preset의 header name → field 매핑을 현재 파일 headers에 적용
+function applyPreset(preset: PresetMappingEntry[], headers: string[]): PresetApplyResult {
+  const headerIndexMap = new Map<string, number>()
+  headers.forEach((h, i) => {
+    const normalized = h.trim()
+    if (normalized && !headerIndexMap.has(normalized)) {
+      headerIndexMap.set(normalized, i)
+    }
+  })
+
+  const mapping: Record<string, number[]> = {}
+  const missingHeaders: string[] = []
+  let matched = 0
+
+  for (const entry of preset) {
+    const idx = headerIndexMap.get(entry.headerName)
+    if (idx !== undefined) {
+      const existing = mapping[entry.field] ?? []
+      if (!existing.includes(idx)) {
+        mapping[entry.field] = [...existing, idx]
+      }
+      matched++
+    } else {
+      missingHeaders.push(entry.headerName)
+    }
+  }
+
+  return { mapping, matched, total: preset.length, missingHeaders }
+}
+
+// 현재 mapping + headers → 저장용 preset 매핑 배열로 변환
+function mappingToPresetEntries(
+  mapping: Record<string, number[]>,
+  headers: string[]
+): PresetMappingEntry[] {
+  const entries: PresetMappingEntry[] = []
+  for (const [field, indices] of Object.entries(mapping)) {
+    for (const idx of indices) {
+      const headerName = headers[idx]?.trim()
+      if (headerName) {
+        entries.push({ headerName, field })
+      }
+    }
+  }
+  return entries
 }
 
 // ---------- 유틸 ----------
@@ -158,6 +251,15 @@ function UploadPageInner() {
     errors: [],
   })
 
+  // 프리셋 관련 상태
+  const [presets, setPresets] = useState<Preset[]>([])
+  const [presetMismatch, setPresetMismatch] = useState<{
+    presetName: string
+    matched: number
+    total: number
+    missingHeaders: string[]
+  } | null>(null)
+
   const fileRef = useRef<HTMLInputElement>(null)
   const draftLoadedRef = useRef(false)
 
@@ -166,7 +268,65 @@ function UploadPageInner() {
     if (!batchId) router.replace('/d/delivery-mgmt/registration')
   }, [batchId, router])
 
-  // 초기 로드: 활성 배송방식 가져오기 + sessionStorage 복원
+  // 프리셋 목록 로드
+  const loadPresets = useCallback(async () => {
+    try {
+      const res = await fetch('/api/del/column-mapping-presets')
+      if (res.ok) {
+        const data = await res.json()
+        setPresets(data.presets ?? [])
+      }
+    } catch {
+      // 조용히 실패
+    }
+  }, [])
+
+  // 프리셋 적용
+  function handleApplyPreset(preset: Preset) {
+    if (!preview) return
+    const result = applyPreset(preset.mapping, preview.headers)
+    setMapping(result.mapping)
+
+    if (result.matched < result.total) {
+      setPresetMismatch({
+        presetName: preset.name,
+        matched: result.matched,
+        total: result.total,
+        missingHeaders: result.missingHeaders,
+      })
+    } else {
+      setPresetMismatch(null)
+      toast.success(`프리셋 "${preset.name}" 적용 완료`)
+    }
+  }
+
+  // 프리셋 저장
+  async function handleSavePreset(name: string) {
+    if (!preview) return
+    const entries = mappingToPresetEntries(mapping, preview.headers)
+    if (entries.length === 0) {
+      toast.error('저장할 매핑이 없습니다')
+      return
+    }
+
+    try {
+      const res = await fetch('/api/del/column-mapping-presets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, mapping: entries }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.message ?? '저장 실패')
+      }
+      toast.success(`프리셋 "${name}" 저장 완료`)
+      await loadPresets()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '프리셋 저장 실패')
+    }
+  }
+
+  // 초기 로드: 활성 배송방식 가져오기 + sessionStorage 복원 + 프리셋
   useEffect(() => {
     if (!batchId) return
 
@@ -183,6 +343,8 @@ function UploadPageInner() {
         // 조용히 실패 — 가져오기 시점에 다시 체크
       }
     })()
+
+    void loadPresets()
 
     // draft 복원
     try {
@@ -205,7 +367,7 @@ function UploadPageInner() {
     return () => {
       cancelled = true
     }
-  }, [batchId])
+  }, [batchId, loadPresets])
 
   // mapping 변경 시 draft 갱신 (debounce)
   useEffect(() => {
@@ -345,11 +507,12 @@ function UploadPageInner() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* 상단 바 */}
-      <header className="flex items-center justify-between border-b px-6 py-3 shrink-0 bg-background">
+      <header className="flex shrink-0 items-center justify-between border-b bg-background px-6 py-3">
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="sm" className="h-8">
             <Link href="/d/delivery-mgmt/registration">
-              <ArrowLeft className="mr-1 h-4 w-4" />배송 등록
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              배송 등록
             </Link>
           </Button>
           <div className="h-5 w-px bg-border" />
@@ -366,19 +529,21 @@ function UploadPageInner() {
               variant="ghost"
               size="sm"
               onClick={handleDeleteDraft}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
-              <Trash2 className="mr-1 h-4 w-4" />임시저장 삭제
+              <Trash2 className="mr-1 h-4 w-4" />
+              임시저장 삭제
             </Button>
             <Button variant="outline" size="sm" onClick={clearAll}>
-              <Upload className="mr-1 h-4 w-4" />다른 파일 업로드
+              <Upload className="mr-1 h-4 w-4" />
+              다른 파일 업로드
             </Button>
           </div>
         )}
       </header>
 
       {/* 본문 */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {!preview ? (
           <UploadView onFile={handleFileUpload} fileRef={fileRef} />
         ) : (
@@ -394,26 +559,27 @@ function UploadPageInner() {
             unusedColumns={unusedColumns}
             fileMissing={fileMissing}
             onPickFile={() => fileRef.current?.click()}
+            presets={presets}
+            onApplyPreset={handleApplyPreset}
+            onSavePreset={handleSavePreset}
+            presetMismatch={presetMismatch}
+            onDismissMismatch={() => setPresetMismatch(null)}
           />
         )}
       </div>
 
       {/* 스티키 푸터 */}
       {preview && (
-        <footer className="flex items-center justify-between border-t px-6 py-3 shrink-0 bg-background">
+        <footer className="flex shrink-0 items-center justify-between border-t bg-background px-6 py-3">
           <span className="text-xs text-muted-foreground">
             매핑 완료 {mappedFieldCount} / {FIELDS.length}
           </span>
           <div className="flex items-center gap-3">
             {missingRequired && (
-              <span className="text-xs text-destructive">
-                받는분·전화·주소를 매핑해 주세요
-              </span>
+              <span className="text-xs text-destructive">받는분·전화·주소를 매핑해 주세요</span>
             )}
             {fileMissing && (
-              <span className="text-xs text-destructive">
-                파일을 다시 선택해 주세요
-              </span>
+              <span className="text-xs text-destructive">파일을 다시 선택해 주세요</span>
             )}
             <Button
               variant="ghost"
@@ -422,10 +588,7 @@ function UploadPageInner() {
             >
               취소
             </Button>
-            <Button
-              onClick={handleImport}
-              disabled={importing || missingRequired || fileMissing}
-            >
+            <Button onClick={handleImport} disabled={importing || missingRequired || fileMissing}>
               {importing ? '가져오는 중...' : `${preview.totalRows}건 가져오기`}
             </Button>
           </div>
@@ -460,7 +623,7 @@ function UploadPageInner() {
 
 async function saveDraft(
   batchId: string,
-  state: { file: File | null; preview: Preview; mapping: Record<string, number[]> },
+  state: { file: File | null; preview: Preview; mapping: Record<string, number[]> }
 ) {
   if (!batchId) return
   const key = draftKey(batchId)
@@ -485,10 +648,12 @@ async function saveDraft(
           fileName: state.file?.name ?? '',
           preview: state.preview,
           mapping: state.mapping,
-        }),
+        })
       )
       if (err instanceof DOMException && err.name === 'QuotaExceededError') {
-        toast.message('파일이 너무 커 매핑만 저장됩니다. 페이지를 나갔다 오면 파일 재업로드가 필요합니다.')
+        toast.message(
+          '파일이 너무 커 매핑만 저장됩니다. 페이지를 나갔다 오면 파일 재업로드가 필요합니다.'
+        )
       }
     } catch {
       // 아예 저장 불가 — 무시
@@ -506,7 +671,7 @@ function UploadView({
   fileRef: React.RefObject<HTMLInputElement | null>
 }) {
   return (
-    <div className="h-full flex items-center justify-center p-8">
+    <div className="flex h-full items-center justify-center p-8">
       <div
         className="w-full max-w-2xl rounded-lg border-2 border-dashed p-12 text-center transition-colors hover:border-primary/50"
         onDragOver={(e) => {
@@ -545,6 +710,16 @@ type MappingViewProps = {
   unusedColumns: { header: string; idx: number }[]
   fileMissing: boolean
   onPickFile: () => void
+  presets: Preset[]
+  onApplyPreset: (preset: Preset) => void
+  onSavePreset: (name: string) => Promise<void>
+  presetMismatch: {
+    presetName: string
+    matched: number
+    total: number
+    missingHeaders: string[]
+  } | null
+  onDismissMismatch: () => void
 }
 
 function MappingView(p: MappingViewProps) {
@@ -560,7 +735,28 @@ function MappingView(p: MappingViewProps) {
     unusedColumns,
     fileMissing,
     onPickFile,
+    presets,
+    onApplyPreset,
+    onSavePreset,
+    presetMismatch,
+    onDismissMismatch,
   } = p
+
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false)
+  const [presetName, setPresetName] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    if (!presetName.trim()) return
+    setSaving(true)
+    try {
+      await onSavePreset(presetName.trim())
+      setSaveDialogOpen(false)
+      setPresetName('')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 px-6 py-5">
@@ -578,14 +774,105 @@ function MappingView(p: MappingViewProps) {
         </div>
       )}
 
+      {/* 프리셋 partial match 안내 배너 */}
+      {presetMismatch && (
+        <div className="flex items-start justify-between rounded-md border border-amber-400/40 bg-amber-50 px-4 py-3 text-sm dark:bg-amber-950/20">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            <div>
+              <p>
+                프리셋 &quot;{presetMismatch.presetName}&quot;이 부분 적용되었습니다 (
+                {presetMismatch.matched}/{presetMismatch.total}개 컬럼 일치).
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                파일에 없는 컬럼: {presetMismatch.missingHeaders.join(', ')}
+              </p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" className="ml-2 shrink-0" onClick={onDismissMismatch}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* 프리셋 선택/저장 영역 */}
+      <section className="flex flex-wrap items-center gap-2">
+        {presets.length > 0 && (
+          <Select
+            value=""
+            onValueChange={(v) => {
+              const preset = presets.find((p) => p.id === v)
+              if (preset) onApplyPreset(preset)
+            }}
+          >
+            <SelectTrigger className="h-8 w-auto min-w-[12rem] text-xs">
+              <SelectValue placeholder="저장된 프리셋 적용..." />
+            </SelectTrigger>
+            <SelectContent>
+              {presets.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => {
+            setPresetName('')
+            setSaveDialogOpen(true)
+          }}
+        >
+          <BookmarkPlus className="mr-1 h-3.5 w-3.5" />
+          현재 매핑 저장
+        </Button>
+      </section>
+
+      {/* 프리셋 저장 다이얼로그 */}
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>컬럼 매핑 프리셋 저장</DialogTitle>
+            <DialogDescription>
+              현재 매핑을 이름을 지정하여 저장합니다. 같은 이름이 있으면 덮어씁니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="preset-name">프리셋 이름</Label>
+            <Input
+              id="preset-name"
+              placeholder="예: 쿠팡 주문서"
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && presetName.trim()) handleSave()
+              }}
+              maxLength={100}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+              취소
+            </Button>
+            <Button onClick={handleSave} disabled={!presetName.trim() || saving}>
+              <Save className="mr-1 h-4 w-4" />
+              {saving ? '저장 중...' : '저장'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 매핑 섹션 */}
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
           <div className="flex items-baseline gap-2">
             <Label className="text-sm">컬럼 매핑</Label>
             <span className="text-xs text-muted-foreground">
-              매핑 완료{' '}
-              {FIELDS.filter((f) => (mapping[f.value]?.length ?? 0) > 0).length} /{' '}
+              매핑 완료 {FIELDS.filter((f) => (mapping[f.value]?.length ?? 0) > 0).length} /{' '}
               {FIELDS.length}
             </span>
           </div>
@@ -623,9 +910,7 @@ function MappingView(p: MappingViewProps) {
 
         <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-xs">
           <Info className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-muted-foreground">
-            사용하지 않은 컬럼 ({unusedColumns.length})
-          </span>
+          <span className="text-muted-foreground">사용하지 않은 컬럼 ({unusedColumns.length})</span>
           {unusedColumns.length === 0 ? (
             <span className="text-[11px] text-muted-foreground">— 모든 컬럼을 매핑했습니다</span>
           ) : (
@@ -635,7 +920,7 @@ function MappingView(p: MappingViewProps) {
                 variant="outline"
                 className={cn(
                   'text-[11px] font-normal text-muted-foreground transition-colors',
-                  hoveredColumnIdx === idx && 'bg-primary/10 text-foreground',
+                  hoveredColumnIdx === idx && 'bg-primary/10 text-foreground'
                 )}
                 onMouseEnter={() => setHoveredColumnIdx(idx)}
                 onMouseLeave={() => setHoveredColumnIdx(null)}
@@ -648,7 +933,7 @@ function MappingView(p: MappingViewProps) {
 
         <div className="overflow-auto rounded-md border">
           <Table>
-            <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+            <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
               <TableRow>
                 {preview.headers.map((h, i) => {
                   const dimmed = !usedColumnSet.has(i)
@@ -660,7 +945,7 @@ function MappingView(p: MappingViewProps) {
                         'text-xs whitespace-nowrap transition-colors',
                         dimmed && 'text-muted-foreground opacity-60',
                         empty && 'italic opacity-40',
-                        hoveredColumnIdx === i && 'bg-primary/15 opacity-100 text-foreground',
+                        hoveredColumnIdx === i && 'bg-primary/15 text-foreground opacity-100'
                       )}
                       onMouseEnter={() => setHoveredColumnIdx(i)}
                       onMouseLeave={() => setHoveredColumnIdx(null)}
@@ -682,10 +967,10 @@ function MappingView(p: MappingViewProps) {
                         key={ci}
                         title={cell}
                         className={cn(
-                          'text-xs max-w-[240px] truncate transition-colors',
+                          'max-w-[240px] truncate text-xs transition-colors',
                           dimmed && 'text-muted-foreground opacity-60',
                           empty && 'italic opacity-40',
-                          hoveredColumnIdx === ci && 'bg-primary/10 opacity-100 text-foreground',
+                          hoveredColumnIdx === ci && 'bg-primary/10 text-foreground opacity-100'
                         )}
                         onMouseEnter={() => setHoveredColumnIdx(ci)}
                         onMouseLeave={() => setHoveredColumnIdx(null)}
@@ -733,19 +1018,19 @@ function FieldRow({
   return (
     <div className="flex items-start gap-3 px-3 py-2">
       <div className="w-28 shrink-0 pt-1.5 text-sm">
-        <span className={cn(isMissingRequired && 'text-destructive font-medium')}>
+        <span className={cn(isMissingRequired && 'font-medium text-destructive')}>
           {field.label}
         </span>
-        {field.required && <span className="text-destructive ml-0.5">*</span>}
+        {field.required && <span className="ml-0.5 text-destructive">*</span>}
       </div>
-      <div className="flex-1 flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-1 flex-wrap items-center gap-1.5">
         {columns.map((colIdx) => (
           <Badge
             key={colIdx}
             variant="secondary"
             className={cn(
-              'gap-1 pl-2 pr-1 py-0.5 text-xs font-normal transition-colors',
-              hoveredColumnIdx === colIdx && 'bg-primary/20 ring-1 ring-primary/40',
+              'gap-1 py-0.5 pr-1 pl-2 text-xs font-normal transition-colors',
+              hoveredColumnIdx === colIdx && 'bg-primary/20 ring-1 ring-primary/40'
             )}
             onMouseEnter={() => setHoveredColumnIdx(colIdx)}
             onMouseLeave={() => setHoveredColumnIdx(null)}
@@ -754,7 +1039,7 @@ function FieldRow({
             <button
               type="button"
               onClick={() => onRemove(colIdx)}
-              className="rounded-full hover:bg-muted-foreground/20 p-0.5"
+              className="rounded-full p-0.5 hover:bg-muted-foreground/20"
               aria-label={`${preview.headers[colIdx]} 매핑 제거`}
             >
               <X className="h-3 w-3" />
@@ -769,13 +1054,11 @@ function FieldRow({
         >
           <SelectTrigger
             className={cn(
-              'h-7 w-auto min-w-[9rem] text-xs border-dashed',
-              isMissingRequired && 'border-destructive/50',
+              'h-7 w-auto min-w-[9rem] border-dashed text-xs',
+              isMissingRequired && 'border-destructive/50'
             )}
           >
-            <SelectValue
-              placeholder={columns.length === 0 ? '+ 파일 컬럼 선택' : '+ 컬럼 추가'}
-            />
+            <SelectValue placeholder={columns.length === 0 ? '+ 파일 컬럼 선택' : '+ 컬럼 추가'} />
           </SelectTrigger>
           <SelectContent>
             {preview.headers
@@ -785,11 +1068,7 @@ function FieldRow({
                 const inThisField = columns.includes(idx)
                 const inOtherField = !inThisField && usedColumnSet.has(idx)
                 return (
-                  <SelectItem
-                    key={idx}
-                    value={String(idx)}
-                    disabled={inThisField || inOtherField}
-                  >
+                  <SelectItem key={idx} value={String(idx)} disabled={inThisField || inOtherField}>
                     <span className="flex items-center">
                       {header || `컬럼 ${idx + 1}`}
                       {inOtherField && (
@@ -798,9 +1077,7 @@ function FieldRow({
                         </span>
                       )}
                       {inThisField && (
-                        <span className="ml-2 text-[10px] text-muted-foreground">
-                          (매핑됨)
-                        </span>
+                        <span className="ml-2 text-[10px] text-muted-foreground">(매핑됨)</span>
                       )}
                     </span>
                   </SelectItem>
@@ -809,7 +1086,7 @@ function FieldRow({
           </SelectContent>
         </Select>
         {columns.length > 1 && (
-          <span className="text-[11px] text-muted-foreground ml-1">공백으로 결합</span>
+          <span className="ml-1 text-[11px] text-muted-foreground">공백으로 결합</span>
         )}
       </div>
     </div>
@@ -830,9 +1107,7 @@ function ImportErrorDialog({ state, onClose, onReset }: ErrorDialogProps) {
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>
-            {created === 0 ? '가져오기 실패' : '가져오기 결과'}
-          </DialogTitle>
+          <DialogTitle>{created === 0 ? '가져오기 실패' : '가져오기 결과'}</DialogTitle>
           <DialogDescription>
             {created === 0
               ? `${errorCount}건 오류로 가져오기에 실패했습니다. 오류 내역을 확인하고 매핑을 수정하거나 다른 파일을 업로드해 주세요.`
@@ -862,9 +1137,9 @@ function ImportErrorDialog({ state, onClose, onReset }: ErrorDialogProps) {
                 복사
               </Button>
             </div>
-            <div className="max-h-[50vh] overflow-y-auto rounded-md border bg-muted/30 p-2 space-y-1">
+            <div className="max-h-[50vh] space-y-1 overflow-y-auto rounded-md border bg-muted/30 p-2">
               {errors.map((e, idx) => (
-                <div key={idx} className="text-xs font-mono">
+                <div key={idx} className="font-mono text-xs">
                   <span className="text-muted-foreground">행 {e.row}</span>
                   {e.recipientName && (
                     <span className="ml-2 text-muted-foreground">({e.recipientName})</span>
@@ -873,7 +1148,7 @@ function ImportErrorDialog({ state, onClose, onReset }: ErrorDialogProps) {
                 </div>
               ))}
               {errorCount > errors.length && (
-                <div className="text-xs text-muted-foreground pt-1">
+                <div className="pt-1 text-xs text-muted-foreground">
                   ...외 {errorCount - errors.length}건 더
                 </div>
               )}

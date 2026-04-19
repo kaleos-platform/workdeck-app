@@ -24,7 +24,6 @@ import {
   type DelFormatColumn,
   type DelFieldMapping,
   FIELD_LABELS,
-  FORMAT_PRESETS,
   indexToColumnLetter,
 } from '@/lib/del/format-templates'
 
@@ -37,13 +36,6 @@ const NONE_VALUE = '__none__'
 const FIELD_OPTIONS = Object.entries(FIELD_LABELS) as [DelFieldMapping, string][]
 
 export function FormatEditor({ value, onChange }: FormatEditorProps) {
-  function applyPreset(presetId: string) {
-    const preset = FORMAT_PRESETS.find((p) => p.id === presetId)
-    if (preset) {
-      onChange([...preset.columns])
-    }
-  }
-
   function addColumn() {
     const nextLetter = indexToColumnLetter(value.length)
     onChange([...value, { column: nextLetter, field: null, label: '', defaultValue: '' }])
@@ -51,7 +43,6 @@ export function FormatEditor({ value, onChange }: FormatEditorProps) {
 
   function removeColumn(index: number) {
     const next = value.filter((_, i) => i !== index)
-    // 컬럼 문자 재정렬
     onChange(next.map((col, i) => ({ ...col, column: indexToColumnLetter(i) })))
   }
 
@@ -64,24 +55,14 @@ export function FormatEditor({ value, onChange }: FormatEditorProps) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <Label>파일 포맷 설정</Label>
-        <div className="flex items-center gap-2">
-          {FORMAT_PRESETS.map((preset) => (
-            <Button
-              key={preset.id}
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={() => applyPreset(preset.id)}
-            >
-              {preset.name} 형식
-            </Button>
-          ))}
-        </div>
+        <Button variant="outline" size="sm" type="button" onClick={addColumn}>
+          <Plus className="mr-1 h-4 w-4" />컬럼 추가
+        </Button>
       </div>
 
       {value.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          프리셋을 선택하거나 컬럼을 추가해 주세요
+          양식 파일을 업로드해 불러오거나 컬럼을 수동으로 추가해 주세요
         </p>
       ) : (
         <div className="rounded-md border">
@@ -155,10 +136,6 @@ export function FormatEditor({ value, onChange }: FormatEditorProps) {
           </Table>
         </div>
       )}
-
-      <Button variant="outline" size="sm" type="button" onClick={addColumn}>
-        <Plus className="mr-1 h-4 w-4" />컬럼 추가
-      </Button>
     </div>
   )
 }

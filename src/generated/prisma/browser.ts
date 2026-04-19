@@ -248,6 +248,11 @@ export type DelOrder = Prisma.DelOrderModel
  */
 export type DelOrderItem = Prisma.DelOrderItemModel
 /**
+ * Model DelColumnMappingPreset
+ * 
+ */
+export type DelColumnMappingPreset = Prisma.DelColumnMappingPresetModel
+/**
  * Model DelIntegrationHistory
  * 
  */
