@@ -11,6 +11,10 @@ export type FilePreview = {
   totalRows: number
   /** 전체 데이터 행에서 값이 하나도 없는 컬럼 인덱스 목록 */
   emptyColumns: number[]
+  /** 파일에 포함된 모든 시트 이름 */
+  sheetNames: string[]
+  /** 현재 파싱 대상으로 사용된 시트 이름 */
+  activeSheet: string
 }
 
 /** 컬럼 매핑 정의 — 필드당 컬럼 인덱스 1개 또는 여러 개(여러 개면 파싱 시 공백으로 결합) */
@@ -69,39 +73,48 @@ function normalizePostalCode(raw: string): string {
 
 /**
  * 파일에서 헤더와 샘플 데이터를 추출한다.
+ * 시트 이름을 지정하면 해당 시트를 읽고, 지정하지 않으면 첫 번째 시트를 읽는다.
+ * sheet_to_json 이 반환하는 희소(sparse) 배열을 정상 배열로 변환한다.
  */
-export function previewFile(buffer: ArrayBuffer): FilePreview {
+export function previewFile(buffer: ArrayBuffer, sheetName?: string): FilePreview {
   const wb = XLSX.read(buffer, { type: 'array' })
-  const ws = wb.Sheets[wb.SheetNames[0]]
-  const jsonRows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 })
+  const sheetNames = wb.SheetNames
+  const activeSheet = sheetName && sheetNames.includes(sheetName) ? sheetName : sheetNames[0]
+  const ws = wb.Sheets[activeSheet]
+  const jsonRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
 
-  const headers = (jsonRows[0] ?? []).map((v) => String(v ?? ''))
-  const dataRows = jsonRows.slice(1).filter((row) =>
-    row.some((cell) => cell != null && String(cell).trim() !== '')
-  )
-  const sampleRows = dataRows.slice(0, 5).map((row) =>
-    row.map((v) => String(v ?? ''))
-  )
+  // 헤더 행과 모든 데이터 행 중 가장 긴 길이를 컬럼 수 기준으로 사용한다.
+  const headerRow = jsonRows[0] ?? []
+  const dataRowsRaw = jsonRows
+    .slice(1)
+    .filter((row) => Array.from(row).some((cell) => cell != null && String(cell).trim() !== ''))
+  const maxColumns = Math.max(headerRow.length, ...dataRowsRaw.map((row) => row.length), 0)
 
-  // 전체 데이터 행을 스캔해 컬럼별 값 존재 여부 계산
-  const columnHasData: boolean[] = headers.map(() => false)
-  for (const row of dataRows) {
-    for (let i = 0; i < headers.length; i++) {
+  const headers = Array.from({ length: maxColumns }, (_, i) => String(headerRow[i] ?? '').trim())
+  const sampleRows = dataRowsRaw
+    .slice(0, 5)
+    .map((row) => Array.from({ length: maxColumns }, (_, i) => String(row[i] ?? '')))
+
+  const columnHasData: boolean[] = Array.from({ length: maxColumns }, () => false)
+  for (const row of dataRowsRaw) {
+    for (let i = 0; i < maxColumns; i++) {
       if (!columnHasData[i] && row[i] != null && String(row[i]).trim() !== '') {
         columnHasData[i] = true
       }
     }
   }
   const emptyColumns: number[] = []
-  for (let i = 0; i < headers.length; i++) {
+  for (let i = 0; i < maxColumns; i++) {
     if (!columnHasData[i]) emptyColumns.push(i)
   }
 
   return {
     headers,
     sampleRows,
-    totalRows: dataRows.length,
+    totalRows: dataRowsRaw.length,
     emptyColumns,
+    sheetNames,
+    activeSheet,
   }
 }
 
@@ -116,9 +129,9 @@ export function parseWithMapping(
   const ws = wb.Sheets[wb.SheetNames[0]]
   const jsonRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
 
-  const dataRows = jsonRows.slice(1).filter((row: unknown[]) =>
-    row.some((cell) => cell != null && String(cell).trim() !== '')
-  )
+  const dataRows = jsonRows
+    .slice(1)
+    .filter((row: unknown[]) => row.some((cell) => cell != null && String(cell).trim() !== ''))
   const rows: ParsedOrderRow[] = []
   const errors: { row: number; message: string }[] = []
 
@@ -177,9 +190,10 @@ export function parseWithMapping(
       orderNumber: get(mapping.orderNumber) || undefined,
       paymentAmount: paymentAmount && !isNaN(paymentAmount) ? paymentAmount : undefined,
       productName: get(mapping.productName) || undefined,
-      productQuantity: mapping.productQuantity !== undefined
-        ? Number(get(mapping.productQuantity)) || undefined
-        : undefined,
+      productQuantity:
+        mapping.productQuantity !== undefined
+          ? Number(get(mapping.productQuantity)) || undefined
+          : undefined,
       memo: get(mapping.memo) || undefined,
     })
   }
