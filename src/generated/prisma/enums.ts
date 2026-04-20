@@ -118,11 +118,3 @@ export const DelBatchStatus = {
 } as const
 
 export type DelBatchStatus = (typeof DelBatchStatus)[keyof typeof DelBatchStatus]
-
-
-export const DelChannelType = {
-  OUTBOUND: 'OUTBOUND',
-  TRANSFER: 'TRANSFER'
-} as const
-
-export type DelChannelType = (typeof DelChannelType)[keyof typeof DelChannelType]

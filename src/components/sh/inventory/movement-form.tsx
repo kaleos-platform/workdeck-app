@@ -111,8 +111,8 @@ export function MovementForm({ onCreated }: Props) {
     ;(async () => {
       try {
         const [locRes, prodRes, chRes] = await Promise.all([
-          fetch('/api/inv/locations?isActive=true'),
-          fetch('/api/inv/products?pageSize=500'),
+          fetch('/api/sh/inventory/locations?isActive=true'),
+          fetch('/api/sh/inventory/products?pageSize=500'),
           fetch('/api/inv/channels?isActive=true'),
         ])
         if (locRes.ok) {
@@ -144,7 +144,7 @@ export function MovementForm({ onCreated }: Props) {
     setLoadingOptions(true)
     ;(async () => {
       try {
-        const res = await fetch(`/api/inv/products/${productId}`)
+        const res = await fetch(`/api/sh/inventory/products/${productId}`)
         if (!res.ok) throw new Error()
         const data = await res.json()
         if (cancelled) return
@@ -253,7 +253,7 @@ export function MovementForm({ onCreated }: Props) {
       }
       if (movementType === 'ADJUSTMENT') body.reason = reason.trim()
 
-      const res = await fetch('/api/inv/movements', {
+      const res = await fetch('/api/sh/inventory/movements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

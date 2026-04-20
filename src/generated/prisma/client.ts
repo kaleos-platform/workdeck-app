@@ -195,16 +195,6 @@ export type InvProductOption = Prisma.InvProductOptionModel
  */
 export type InvStorageLocation = Prisma.InvStorageLocationModel
 /**
- * Model InvChannelGroup
- * 
- */
-export type InvChannelGroup = Prisma.InvChannelGroupModel
-/**
- * Model InvSalesChannel
- * 
- */
-export type InvSalesChannel = Prisma.InvSalesChannelModel
-/**
  * Model InvMovement
  * 
  */
@@ -244,16 +234,6 @@ export type InvSettings = Prisma.InvSettingsModel
  * 
  */
 export type DelShippingMethod = Prisma.DelShippingMethodModel
-/**
- * Model DelChannelGroup
- * 
- */
-export type DelChannelGroup = Prisma.DelChannelGroupModel
-/**
- * Model DelSalesChannel
- * 
- */
-export type DelSalesChannel = Prisma.DelSalesChannelModel
 /**
  * Model DelBatch
  * 

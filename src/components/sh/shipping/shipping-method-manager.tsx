@@ -42,7 +42,7 @@ export function ShippingMethodManager() {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/del/shipping-methods')
+      const res = await fetch('/api/sh/shipping/shipping-methods')
       if (!res.ok) throw new Error('조회 실패')
       const data = await res.json()
       setMethods(data.methods ?? [])
@@ -82,7 +82,9 @@ export function ShippingMethodManager() {
     }
     setSaving(true)
     try {
-      const url = editing ? `/api/del/shipping-methods/${editing.id}` : '/api/del/shipping-methods'
+      const url = editing
+        ? `/api/sh/shipping/shipping-methods/${editing.id}`
+        : '/api/sh/shipping/shipping-methods'
       const method = editing ? 'PATCH' : 'POST'
       const res = await fetch(url, {
         method,
@@ -104,7 +106,9 @@ export function ShippingMethodManager() {
   async function handleDelete(method: ShippingMethod) {
     if (!confirm(`"${method.name}" 배송 방식을 삭제(비활성화)하시겠습니까?`)) return
     try {
-      const res = await fetch(`/api/del/shipping-methods/${method.id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/sh/shipping/shipping-methods/${method.id}`, {
+        method: 'DELETE',
+      })
       if (!res.ok) throw new Error('삭제 실패')
       toast.success('배송 방식이 비활성화되었습니다')
       await loadData()

@@ -79,8 +79,8 @@ export default function ShippingRegistrationPage() {
   const loadBaseData = useCallback(async () => {
     try {
       const [bRes, mRes, cRes] = await Promise.all([
-        fetch('/api/del/batches?status=DRAFT&pageSize=1'),
-        fetch('/api/del/shipping-methods?isActive=true'),
+        fetch('/api/sh/shipping/batches?status=DRAFT&pageSize=1'),
+        fetch('/api/sh/shipping/shipping-methods?isActive=true'),
         fetch('/api/del/channels?isActive=true'),
       ])
       const bData = await bRes.json()
@@ -94,7 +94,7 @@ export default function ShippingRegistrationPage() {
         setActiveBatchId(bData.data[0].id)
         setOrderCount(bData.data[0].orderCount ?? 0)
       } else {
-        const createRes = await fetch('/api/del/batches', {
+        const createRes = await fetch('/api/sh/shipping/batches', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({}),
@@ -120,7 +120,7 @@ export default function ShippingRegistrationPage() {
       setRows([])
       return
     }
-    fetch(`/api/del/batches/${activeBatchId}/orders?decrypt=true&pageSize=100`)
+    fetch(`/api/sh/shipping/batches/${activeBatchId}/orders?decrypt=true&pageSize=100`)
       .then((r) => r.json())
       .then((data) => {
         if (data.data) {
@@ -154,7 +154,7 @@ export default function ShippingRegistrationPage() {
       toast.error(`${invalid.length}건의 주문에 필수 정보가 누락되었습니다 (받는분·전화·주소)`)
       return false
     }
-    const res = await fetch('/api/del/orders', {
+    const res = await fetch('/api/sh/shipping/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -202,7 +202,7 @@ export default function ShippingRegistrationPage() {
         setCompleting(false)
         return
       }
-      const res = await fetch(`/api/del/batches/${activeBatchId}`, {
+      const res = await fetch(`/api/sh/shipping/batches/${activeBatchId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'COMPLETED' }),
@@ -239,7 +239,7 @@ export default function ShippingRegistrationPage() {
       return
     }
     try {
-      const res = await fetch(`/api/del/orders/${tempId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/sh/shipping/orders/${tempId}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data?.message ?? '삭제 실패')
@@ -262,7 +262,7 @@ export default function ShippingRegistrationPage() {
     if (dbIds.length === 0) return 0
     const results = await Promise.all(
       dbIds.map((id) =>
-        fetch(`/api/del/orders/${id}`, {
+        fetch(`/api/sh/shipping/orders/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -324,7 +324,7 @@ export default function ShippingRegistrationPage() {
     await Promise.all(
       dbIds.map(async (id) => {
         try {
-          const res = await fetch(`/api/del/orders/${id}`, { method: 'DELETE' })
+          const res = await fetch(`/api/sh/shipping/orders/${id}`, { method: 'DELETE' })
           if (res.ok) deletedDbIds.push(id)
         } catch {
           /* 무시 */

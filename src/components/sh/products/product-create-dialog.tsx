@@ -59,7 +59,7 @@ export function ShProductCreateDialog({ onCreated }: Props) {
     if (!open) return
     Promise.all([
       fetch('/api/sh/brands').then((res) => (res.ok ? res.json() : null)),
-      fetch('/api/inv/product-groups').then((res) => (res.ok ? res.json() : null)),
+      fetch('/api/sh/inventory/product-groups').then((res) => (res.ok ? res.json() : null)),
     ]).then(([bData, gData]) => {
       setBrands(bData?.brands ?? [])
       setGroups(gData?.groups ?? [])

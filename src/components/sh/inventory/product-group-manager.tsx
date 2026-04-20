@@ -32,7 +32,7 @@ export function ProductGroupManager({ open, onOpenChange, onChanged }: Props) {
   const loadGroups = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/inv/product-groups')
+      const res = await fetch('/api/sh/inventory/product-groups')
       if (res.ok) {
         const json = await res.json()
         setGroups(json.groups ?? [])
@@ -51,7 +51,7 @@ export function ProductGroupManager({ open, onOpenChange, onChanged }: Props) {
     if (!name) return
     setAdding(true)
     try {
-      const res = await fetch('/api/inv/product-groups', {
+      const res = await fetch('/api/sh/inventory/product-groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -74,7 +74,7 @@ export function ProductGroupManager({ open, onOpenChange, onChanged }: Props) {
     const name = editName.trim()
     if (!name) return
     try {
-      const res = await fetch(`/api/inv/product-groups/${groupId}`, {
+      const res = await fetch(`/api/sh/inventory/product-groups/${groupId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -101,7 +101,7 @@ export function ProductGroupManager({ open, onOpenChange, onChanged }: Props) {
     )
       return
     try {
-      const res = await fetch(`/api/inv/product-groups/${group.id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/sh/inventory/product-groups/${group.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         toast.error(err.message ?? '그룹 삭제 실패')

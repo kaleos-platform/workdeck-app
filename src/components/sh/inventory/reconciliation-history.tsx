@@ -37,7 +37,7 @@ export function ReconciliationHistory({ refreshKey, onSelect, selectedId }: Prop
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/inv/reconciliation')
+      const res = await fetch('/api/sh/inventory/reconciliation')
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '조회 실패')
       setRows(data.data ?? [])

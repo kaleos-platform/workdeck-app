@@ -415,8 +415,6 @@ export const ModelName = {
   InvProduct: 'InvProduct',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
-  InvChannelGroup: 'InvChannelGroup',
-  InvSalesChannel: 'InvSalesChannel',
   InvMovement: 'InvMovement',
   InvStockLevel: 'InvStockLevel',
   InvReorderConfig: 'InvReorderConfig',
@@ -425,8 +423,6 @@ export const ModelName = {
   InvLocationProductMap: 'InvLocationProductMap',
   InvSettings: 'InvSettings',
   DelShippingMethod: 'DelShippingMethod',
-  DelChannelGroup: 'DelChannelGroup',
-  DelSalesChannel: 'DelSalesChannel',
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
@@ -453,7 +449,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invChannelGroup" | "invSalesChannel" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delChannelGroup" | "delSalesChannel" | "delBatch" | "delOrder" | "delOrderItem" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delBatch" | "delOrder" | "delOrderItem" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2751,154 +2747,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    InvChannelGroup: {
-      payload: Prisma.$InvChannelGroupPayload<ExtArgs>
-      fields: Prisma.InvChannelGroupFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.InvChannelGroupFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.InvChannelGroupFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>
-        }
-        findFirst: {
-          args: Prisma.InvChannelGroupFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.InvChannelGroupFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>
-        }
-        findMany: {
-          args: Prisma.InvChannelGroupFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>[]
-        }
-        create: {
-          args: Prisma.InvChannelGroupCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>
-        }
-        createMany: {
-          args: Prisma.InvChannelGroupCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.InvChannelGroupCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>[]
-        }
-        delete: {
-          args: Prisma.InvChannelGroupDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>
-        }
-        update: {
-          args: Prisma.InvChannelGroupUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>
-        }
-        deleteMany: {
-          args: Prisma.InvChannelGroupDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.InvChannelGroupUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.InvChannelGroupUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>[]
-        }
-        upsert: {
-          args: Prisma.InvChannelGroupUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvChannelGroupPayload>
-        }
-        aggregate: {
-          args: Prisma.InvChannelGroupAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateInvChannelGroup>
-        }
-        groupBy: {
-          args: Prisma.InvChannelGroupGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.InvChannelGroupGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.InvChannelGroupCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.InvChannelGroupCountAggregateOutputType> | number
-        }
-      }
-    }
-    InvSalesChannel: {
-      payload: Prisma.$InvSalesChannelPayload<ExtArgs>
-      fields: Prisma.InvSalesChannelFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.InvSalesChannelFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.InvSalesChannelFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>
-        }
-        findFirst: {
-          args: Prisma.InvSalesChannelFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.InvSalesChannelFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>
-        }
-        findMany: {
-          args: Prisma.InvSalesChannelFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>[]
-        }
-        create: {
-          args: Prisma.InvSalesChannelCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>
-        }
-        createMany: {
-          args: Prisma.InvSalesChannelCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.InvSalesChannelCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>[]
-        }
-        delete: {
-          args: Prisma.InvSalesChannelDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>
-        }
-        update: {
-          args: Prisma.InvSalesChannelUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>
-        }
-        deleteMany: {
-          args: Prisma.InvSalesChannelDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.InvSalesChannelUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.InvSalesChannelUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>[]
-        }
-        upsert: {
-          args: Prisma.InvSalesChannelUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvSalesChannelPayload>
-        }
-        aggregate: {
-          args: Prisma.InvSalesChannelAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateInvSalesChannel>
-        }
-        groupBy: {
-          args: Prisma.InvSalesChannelGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.InvSalesChannelGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.InvSalesChannelCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.InvSalesChannelCountAggregateOutputType> | number
-        }
-      }
-    }
     InvMovement: {
       payload: Prisma.$InvMovementPayload<ExtArgs>
       fields: Prisma.InvMovementFieldRefs
@@ -3488,154 +3336,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DelShippingMethodCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DelShippingMethodCountAggregateOutputType> | number
-        }
-      }
-    }
-    DelChannelGroup: {
-      payload: Prisma.$DelChannelGroupPayload<ExtArgs>
-      fields: Prisma.DelChannelGroupFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.DelChannelGroupFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.DelChannelGroupFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
-        }
-        findFirst: {
-          args: Prisma.DelChannelGroupFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.DelChannelGroupFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
-        }
-        findMany: {
-          args: Prisma.DelChannelGroupFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>[]
-        }
-        create: {
-          args: Prisma.DelChannelGroupCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
-        }
-        createMany: {
-          args: Prisma.DelChannelGroupCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.DelChannelGroupCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>[]
-        }
-        delete: {
-          args: Prisma.DelChannelGroupDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
-        }
-        update: {
-          args: Prisma.DelChannelGroupUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
-        }
-        deleteMany: {
-          args: Prisma.DelChannelGroupDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.DelChannelGroupUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.DelChannelGroupUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>[]
-        }
-        upsert: {
-          args: Prisma.DelChannelGroupUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelChannelGroupPayload>
-        }
-        aggregate: {
-          args: Prisma.DelChannelGroupAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateDelChannelGroup>
-        }
-        groupBy: {
-          args: Prisma.DelChannelGroupGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.DelChannelGroupGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.DelChannelGroupCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.DelChannelGroupCountAggregateOutputType> | number
-        }
-      }
-    }
-    DelSalesChannel: {
-      payload: Prisma.$DelSalesChannelPayload<ExtArgs>
-      fields: Prisma.DelSalesChannelFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.DelSalesChannelFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.DelSalesChannelFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
-        }
-        findFirst: {
-          args: Prisma.DelSalesChannelFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.DelSalesChannelFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
-        }
-        findMany: {
-          args: Prisma.DelSalesChannelFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>[]
-        }
-        create: {
-          args: Prisma.DelSalesChannelCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
-        }
-        createMany: {
-          args: Prisma.DelSalesChannelCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.DelSalesChannelCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>[]
-        }
-        delete: {
-          args: Prisma.DelSalesChannelDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
-        }
-        update: {
-          args: Prisma.DelSalesChannelUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
-        }
-        deleteMany: {
-          args: Prisma.DelSalesChannelDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.DelSalesChannelUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.DelSalesChannelUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>[]
-        }
-        upsert: {
-          args: Prisma.DelSalesChannelUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelSalesChannelPayload>
-        }
-        aggregate: {
-          args: Prisma.DelSalesChannelAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateDelSalesChannel>
-        }
-        groupBy: {
-          args: Prisma.DelSalesChannelGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.DelSalesChannelGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.DelSalesChannelCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.DelSalesChannelCountAggregateOutputType> | number
         }
       }
     }
@@ -4976,28 +4676,6 @@ export const InvStorageLocationScalarFieldEnum = {
 export type InvStorageLocationScalarFieldEnum = (typeof InvStorageLocationScalarFieldEnum)[keyof typeof InvStorageLocationScalarFieldEnum]
 
 
-export const InvChannelGroupScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  createdAt: 'createdAt'
-} as const
-
-export type InvChannelGroupScalarFieldEnum = (typeof InvChannelGroupScalarFieldEnum)[keyof typeof InvChannelGroupScalarFieldEnum]
-
-
-export const InvSalesChannelScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  groupId: 'groupId',
-  isActive: 'isActive',
-  createdAt: 'createdAt'
-} as const
-
-export type InvSalesChannelScalarFieldEnum = (typeof InvSalesChannelScalarFieldEnum)[keyof typeof InvSalesChannelScalarFieldEnum]
-
-
 export const InvMovementScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -5005,7 +4683,6 @@ export const InvMovementScalarFieldEnum = {
   locationId: 'locationId',
   toLocationId: 'toLocationId',
   channelId: 'channelId',
-  newChannelId: 'newChannelId',
   type: 'type',
   quantity: 'quantity',
   movementDate: 'movementDate',
@@ -5113,32 +4790,6 @@ export const DelShippingMethodScalarFieldEnum = {
 export type DelShippingMethodScalarFieldEnum = (typeof DelShippingMethodScalarFieldEnum)[keyof typeof DelShippingMethodScalarFieldEnum]
 
 
-export const DelChannelGroupScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  createdAt: 'createdAt'
-} as const
-
-export type DelChannelGroupScalarFieldEnum = (typeof DelChannelGroupScalarFieldEnum)[keyof typeof DelChannelGroupScalarFieldEnum]
-
-
-export const DelSalesChannelScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  groupId: 'groupId',
-  type: 'type',
-  isActive: 'isActive',
-  requireOrderNumber: 'requireOrderNumber',
-  requirePayment: 'requirePayment',
-  requireProducts: 'requireProducts',
-  createdAt: 'createdAt'
-} as const
-
-export type DelSalesChannelScalarFieldEnum = (typeof DelSalesChannelScalarFieldEnum)[keyof typeof DelSalesChannelScalarFieldEnum]
-
-
 export const DelBatchScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -5157,7 +4808,6 @@ export const DelOrderScalarFieldEnum = {
   batchId: 'batchId',
   shippingMethodId: 'shippingMethodId',
   channelId: 'channelId',
-  newChannelId: 'newChannelId',
   recipientNameEnc: 'recipientNameEnc',
   recipientNameIv: 'recipientNameIv',
   phoneEnc: 'phoneEnc',
@@ -5571,20 +5221,6 @@ export type ListEnumInvReconciliationStatusFieldRefInput<$PrismaModel> = FieldRe
 
 
 /**
- * Reference to a field of type 'DelChannelType'
- */
-export type EnumDelChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelChannelType'>
-    
-
-
-/**
- * Reference to a field of type 'DelChannelType[]'
- */
-export type ListEnumDelChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelChannelType[]'>
-    
-
-
-/**
  * Reference to a field of type 'DelBatchStatus'
  */
 export type EnumDelBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelBatchStatus'>
@@ -5737,8 +5373,6 @@ export type GlobalOmitConfig = {
   invProduct?: Prisma.InvProductOmit
   invProductOption?: Prisma.InvProductOptionOmit
   invStorageLocation?: Prisma.InvStorageLocationOmit
-  invChannelGroup?: Prisma.InvChannelGroupOmit
-  invSalesChannel?: Prisma.InvSalesChannelOmit
   invMovement?: Prisma.InvMovementOmit
   invStockLevel?: Prisma.InvStockLevelOmit
   invReorderConfig?: Prisma.InvReorderConfigOmit
@@ -5747,8 +5381,6 @@ export type GlobalOmitConfig = {
   invLocationProductMap?: Prisma.InvLocationProductMapOmit
   invSettings?: Prisma.InvSettingsOmit
   delShippingMethod?: Prisma.DelShippingMethodOmit
-  delChannelGroup?: Prisma.DelChannelGroupOmit
-  delSalesChannel?: Prisma.DelSalesChannelOmit
   delBatch?: Prisma.DelBatchOmit
   delOrder?: Prisma.DelOrderOmit
   delOrderItem?: Prisma.DelOrderItemOmit

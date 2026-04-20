@@ -61,7 +61,7 @@ export function ImportDialog({ onImported }: { onImported?: () => void }) {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const res = await fetch('/api/inv/import', { method: 'POST', body: formData })
+      const res = await fetch('/api/sh/inventory/import', { method: 'POST', body: formData })
       const json = (await res.json()) as ImportResult & {
         message?: string
         missingColumns?: string[]

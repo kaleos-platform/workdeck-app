@@ -83,7 +83,7 @@ export function IntegrationPanel() {
         page: '1',
         pageSize: '1000',
       })
-      const res = await fetch(`/api/del/batches?${params}`)
+      const res = await fetch(`/api/sh/shipping/batches?${params}`)
       if (!res.ok) throw new Error('조회 실패')
       const json = await res.json()
 
@@ -120,7 +120,7 @@ export function IntegrationPanel() {
   // Fetch integration history
   const fetchHistory = useCallback(async () => {
     try {
-      const res = await fetch('/api/del/integration/history')
+      const res = await fetch('/api/sh/shipping/integration/history')
       if (!res.ok) return
       const json = await res.json()
       setHistory(json.data ?? [])
@@ -141,7 +141,7 @@ export function IntegrationPanel() {
     }
     setDownloading(true)
     try {
-      const res = await fetch('/api/del/integration/export', {
+      const res = await fetch('/api/sh/shipping/integration/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type, dateFrom, dateTo, format }),
@@ -175,7 +175,7 @@ export function IntegrationPanel() {
     setSelectedLocationId('')
     setPushDialogOpen(true)
     try {
-      const res = await fetch('/api/inv/locations?isActive=true')
+      const res = await fetch('/api/sh/inventory/locations?isActive=true')
       if (!res.ok) throw new Error('보관 장소 조회 실패')
       const json = await res.json()
       setLocations(json.locations ?? [])
@@ -194,7 +194,7 @@ export function IntegrationPanel() {
     setPushing(true)
     setPushResult(null)
     try {
-      const res = await fetch('/api/del/integration/push', {
+      const res = await fetch('/api/sh/shipping/integration/push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dateFrom, dateTo, locationId: selectedLocationId }),

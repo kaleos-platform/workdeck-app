@@ -55,7 +55,7 @@ export function StockStatusTable() {
 
   // Fetch groups once
   useEffect(() => {
-    fetch('/api/inv/product-groups')
+    fetch('/api/sh/inventory/product-groups')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (json?.groups) setGroups(json.groups)
@@ -87,7 +87,7 @@ export function StockStatusTable() {
       if (groupFilter !== ALL) p.set('groupId', groupFilter)
       if (locationFilter !== ALL) p.set('locationId', locationFilter)
       if (debouncedSearch) p.set('search', debouncedSearch)
-      const res = await fetch(`/api/inv/stock-status?${p}`)
+      const res = await fetch(`/api/sh/inventory/stock-status?${p}`)
       if (res.ok) setData(await res.json())
     } finally {
       setLoading(false)
@@ -109,7 +109,7 @@ export function StockStatusTable() {
   // All locations (for the filter dropdown)
   const [allLocations, setAllLocations] = useState<LocationInfo[]>([])
   useEffect(() => {
-    fetch('/api/inv/locations?isActive=true')
+    fetch('/api/sh/inventory/locations?isActive=true')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (json?.locations) setAllLocations(json.locations)

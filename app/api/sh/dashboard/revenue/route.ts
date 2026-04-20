@@ -68,22 +68,22 @@ export async function GET(req: NextRequest) {
     prisma.delOrder.findMany({
       where: {
         spaceId: resolved.space.id,
-        newChannelId: { in: targetChannelIds },
+        channelId: { in: targetChannelIds },
         orderDate: { gte: from, lte: to },
       },
       select: {
-        newChannelId: true,
+        channelId: true,
         paymentAmount: true,
       },
     }),
     prisma.delOrder.findMany({
       where: {
         spaceId: resolved.space.id,
-        newChannelId: { in: targetChannelIds },
+        channelId: { in: targetChannelIds },
         orderDate: { gte: prevFrom, lte: prevTo },
       },
       select: {
-        newChannelId: true,
+        channelId: true,
         paymentAmount: true,
       },
     }),
@@ -94,18 +94,18 @@ export async function GET(req: NextRequest) {
   const prevMap = new Map<string, { totalRevenue: number }>()
 
   for (const order of currentOrders) {
-    if (!order.newChannelId) continue
-    const entry = currentMap.get(order.newChannelId) ?? { orderCount: 0, totalRevenue: 0 }
+    if (!order.channelId) continue
+    const entry = currentMap.get(order.channelId) ?? { orderCount: 0, totalRevenue: 0 }
     entry.orderCount += 1
     entry.totalRevenue += Number(order.paymentAmount ?? 0)
-    currentMap.set(order.newChannelId, entry)
+    currentMap.set(order.channelId, entry)
   }
 
   for (const order of prevOrders) {
-    if (!order.newChannelId) continue
-    const entry = prevMap.get(order.newChannelId) ?? { totalRevenue: 0 }
+    if (!order.channelId) continue
+    const entry = prevMap.get(order.channelId) ?? { totalRevenue: 0 }
     entry.totalRevenue += Number(order.paymentAmount ?? 0)
-    prevMap.set(order.newChannelId, entry)
+    prevMap.set(order.channelId, entry)
   }
 
   let totalOrderCount = 0

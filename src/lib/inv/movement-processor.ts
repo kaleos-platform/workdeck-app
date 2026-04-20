@@ -46,7 +46,12 @@ async function lockStockLevel(tx: Tx, optionId: string, locationId: string): Pro
   await tx.$queryRaw`SELECT id, quantity FROM "InvStockLevel" WHERE "optionId" = ${optionId} AND "locationId" = ${locationId} FOR UPDATE`
 }
 
-async function assertLocationInSpace(tx: Tx, spaceId: string, locationId: string, label = '보관 장소') {
+async function assertLocationInSpace(
+  tx: Tx,
+  spaceId: string,
+  locationId: string,
+  label = '보관 장소'
+) {
   const loc = await tx.invStorageLocation.findUnique({ where: { id: locationId } })
   if (!loc || loc.spaceId !== spaceId) {
     throw new MovementError(`${label}을(를) 찾을 수 없습니다`, 404)
@@ -72,7 +77,7 @@ async function assertOptionInSpace(tx: Tx, spaceId: string, optionId: string) {
 async function resolveOrCreateOption(
   tx: Tx,
   spaceId: string,
-  input: MovementInput,
+  input: MovementInput
 ): Promise<string> {
   if (input.optionId) {
     await assertOptionInSpace(tx, spaceId, input.optionId)
@@ -123,7 +128,7 @@ async function upsertStockLevel(
   spaceId: string,
   optionId: string,
   locationId: string,
-  delta: number,
+  delta: number
 ): Promise<number> {
   const existing = await tx.invStockLevel.findUnique({
     where: { optionId_locationId: { optionId, locationId } },
@@ -146,7 +151,7 @@ async function setStockLevel(
   spaceId: string,
   optionId: string,
   locationId: string,
-  absoluteQuantity: number,
+  absoluteQuantity: number
 ): Promise<{ before: number; after: number }> {
   const existing = await tx.invStockLevel.findUnique({
     where: { optionId_locationId: { optionId, locationId } },
@@ -174,7 +179,7 @@ function parseDate(value: string, field: string): Date {
 
 export async function processMovement(
   spaceId: string,
-  input: MovementInput,
+  input: MovementInput
 ): Promise<MovementResult> {
   if (!input.type) throw new MovementError('type이 필요합니다', 400)
   if (!input.locationId) throw new MovementError('locationId가 필요합니다', 400)
@@ -197,7 +202,13 @@ export async function processMovement(
         }
         const optionId = await resolveOrCreateOption(tx, spaceId, input)
         await lockStockLevel(tx, optionId, input.locationId)
-        const after = await upsertStockLevel(tx, spaceId, optionId, input.locationId, input.quantity)
+        const after = await upsertStockLevel(
+          tx,
+          spaceId,
+          optionId,
+          input.locationId,
+          input.quantity
+        )
         const movement = await tx.invMovement.create({
           data: {
             spaceId,
@@ -218,7 +229,8 @@ export async function processMovement(
         if (!input.channelId) throw new MovementError('channelId가 필요합니다', 400)
         if (input.quantity <= 0) throw new MovementError('OUTBOUND 수량은 양수여야 합니다', 400)
         await assertOptionInSpace(tx, spaceId, input.optionId)
-        const channel = await tx.invSalesChannel.findUnique({ where: { id: input.channelId } })
+        // 공용 Channel 테이블 조회 (Phase 3: InvSalesChannel 제거)
+        const channel = await tx.channel.findUnique({ where: { id: input.channelId } })
         if (!channel || channel.spaceId !== spaceId) {
           throw new MovementError('판매 채널을 찾을 수 없습니다', 404)
         }
@@ -227,7 +239,9 @@ export async function processMovement(
         }
         await lockStockLevel(tx, input.optionId, input.locationId)
         const existing = await tx.invStockLevel.findUnique({
-          where: { optionId_locationId: { optionId: input.optionId, locationId: input.locationId } },
+          where: {
+            optionId_locationId: { optionId: input.optionId, locationId: input.locationId },
+          },
         })
         const before = existing?.quantity ?? 0
         const after = before - input.quantity
@@ -247,9 +261,7 @@ export async function processMovement(
           })
         }
         if (after < 0) {
-          warnings.push(
-            `재고가 부족합니다 (현재 재고: ${before}, 출고 요청: ${input.quantity})`,
-          )
+          warnings.push(`재고가 부족합니다 (현재 재고: ${before}, 출고 요청: ${input.quantity})`)
         }
         const movement = await tx.invMovement.create({
           data: {
@@ -278,7 +290,7 @@ export async function processMovement(
           spaceId,
           input.optionId,
           input.locationId,
-          input.quantity,
+          input.quantity
         )
         const movement = await tx.invMovement.create({
           data: {
@@ -314,7 +326,9 @@ export async function processMovement(
         await lockStockLevel(tx, input.optionId, secondLoc)
 
         const source = await tx.invStockLevel.findUnique({
-          where: { optionId_locationId: { optionId: input.optionId, locationId: input.locationId } },
+          where: {
+            optionId_locationId: { optionId: input.optionId, locationId: input.locationId },
+          },
         })
         const sourceBefore = source?.quantity ?? 0
         const sourceAfter = sourceBefore - input.quantity
@@ -335,16 +349,10 @@ export async function processMovement(
         }
         if (sourceAfter < 0) {
           warnings.push(
-            `재고가 부족합니다 (현재 재고: ${sourceBefore}, 이동 요청: ${input.quantity})`,
+            `재고가 부족합니다 (현재 재고: ${sourceBefore}, 이동 요청: ${input.quantity})`
           )
         }
-        await upsertStockLevel(
-          tx,
-          spaceId,
-          input.optionId,
-          input.toLocationId,
-          input.quantity,
-        )
+        await upsertStockLevel(tx, spaceId, input.optionId, input.toLocationId, input.quantity)
 
         const movement = await tx.invMovement.create({
           data: {
@@ -370,7 +378,9 @@ export async function processMovement(
         await assertOptionInSpace(tx, spaceId, input.optionId)
         await lockStockLevel(tx, input.optionId, input.locationId)
         const existing = await tx.invStockLevel.findUnique({
-          where: { optionId_locationId: { optionId: input.optionId, locationId: input.locationId } },
+          where: {
+            optionId_locationId: { optionId: input.optionId, locationId: input.locationId },
+          },
         })
         const before = existing?.quantity ?? 0
         const targetQuantity = input.quantity
@@ -380,7 +390,7 @@ export async function processMovement(
           spaceId,
           input.optionId,
           input.locationId,
-          targetQuantity,
+          targetQuantity
         )
         if (Math.abs(delta) / Math.max(1, before) >= 0.2) {
           warnings.push('대량 조정 감지')

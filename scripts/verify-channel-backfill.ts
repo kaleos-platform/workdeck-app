@@ -1,39 +1,6 @@
-import 'dotenv/config'
-import { config } from 'dotenv'
-import { PrismaClient } from '../src/generated/prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
+// Phase 2 백필 사후 검증 스크립트 (Phase 3 완료로 obsolete)
+// newChannelId 컬럼이 channelId로 rename되어 더 이상 사용하지 않음
+// Phase 3 검증은 scripts/verify-phase3-channels.ts 참조
 
-config({ path: '.env.local', override: true })
-
-const connectionString = process.env['DIRECT_URL'] ?? process.env['DATABASE_URL']
-if (!connectionString) throw new Error('DATABASE_URL 또는 DIRECT_URL 필요')
-
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) } as never)
-
-async function main() {
-  console.log('채널 백필 사후 검증')
-
-  const unmatchedMovements = await prisma.invMovement.count({
-    where: { channelId: { not: null }, newChannelId: null },
-  })
-  const unmatchedOrders = await prisma.delOrder.count({
-    where: { channelId: { not: null }, newChannelId: null },
-  })
-
-  console.log(`InvMovement 미매칭: ${unmatchedMovements}`)
-  console.log(`DelOrder 미매칭: ${unmatchedOrders}`)
-
-  if (unmatchedMovements > 0 || unmatchedOrders > 0) {
-    console.error('[실패] 백필이 불완전합니다. 데이터 조사 필요')
-    process.exit(1)
-  } else {
-    console.log('[성공] 백필 완료')
-  }
-}
-
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(() => prisma.$disconnect())
+console.log('이 스크립트는 Phase 3 완료로 더 이상 사용하지 않습니다.')
+console.log('newChannelId → channelId rename이 적용됐습니다.')

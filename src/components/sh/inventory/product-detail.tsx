@@ -54,7 +54,7 @@ export function ProductDetail({ productId, onClose }: { productId: string; onClo
   const fetchDetail = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/inv/products/${productId}`)
+      const res = await fetch(`/api/sh/inventory/products/${productId}`)
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         toast.error(body.message ?? '상품을 불러오지 못했습니다')
@@ -77,7 +77,7 @@ export function ProductDetail({ productId, onClose }: { productId: string; onClo
 
   const fetchGroups = useCallback(async () => {
     try {
-      const res = await fetch('/api/inv/product-groups')
+      const res = await fetch('/api/sh/inventory/product-groups')
       if (res.ok) {
         const json = await res.json()
         setGroups(json.groups ?? [])
@@ -105,7 +105,7 @@ export function ProductDetail({ productId, onClose }: { productId: string; onClo
         toast.info('변경 사항이 없습니다')
         return
       }
-      const res = await fetch(`/api/inv/products/${productId}`, {
+      const res = await fetch(`/api/sh/inventory/products/${productId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -129,7 +129,7 @@ export function ProductDetail({ productId, onClose }: { productId: string; onClo
     }
     setSaving(true)
     try {
-      const res = await fetch(`/api/inv/products/${productId}/options`, {
+      const res = await fetch(`/api/sh/inventory/products/${productId}/options`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -168,7 +168,7 @@ export function ProductDetail({ productId, onClose }: { productId: string; onClo
 
     setSaving(true)
     try {
-      const res = await fetch(`/api/inv/products/${productId}/options/${optionId}`, {
+      const res = await fetch(`/api/sh/inventory/products/${productId}/options/${optionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

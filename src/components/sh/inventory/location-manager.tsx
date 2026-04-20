@@ -45,7 +45,7 @@ export function LocationManager() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/inv/locations')
+      const res = await fetch('/api/sh/inventory/locations')
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '위치 목록 조회 실패')
       setLocations(data.locations ?? [])
@@ -80,7 +80,9 @@ export function LocationManager() {
     }
     setSaving(true)
     try {
-      const url = editing ? `/api/inv/locations/${editing.id}` : '/api/inv/locations'
+      const url = editing
+        ? `/api/sh/inventory/locations/${editing.id}`
+        : '/api/sh/inventory/locations'
       const method = editing ? 'PATCH' : 'POST'
       const res = await fetch(url, {
         method,
@@ -103,7 +105,7 @@ export function LocationManager() {
     if (!confirm(`"${loc.name}" 위치를 비활성화하시겠습니까?`)) return
     setDeactivatingId(loc.id)
     try {
-      const res = await fetch(`/api/inv/locations/${loc.id}`, {
+      const res = await fetch(`/api/sh/inventory/locations/${loc.id}`, {
         method: 'DELETE',
       })
       const data = await res.json()
@@ -119,7 +121,7 @@ export function LocationManager() {
 
   async function handleReactivate(loc: LocationRow) {
     try {
-      const res = await fetch(`/api/inv/locations/${loc.id}`, {
+      const res = await fetch(`/api/sh/inventory/locations/${loc.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: true }),

@@ -107,7 +107,7 @@ export function MovementHistory() {
   useEffect(() => {
     ;(async () => {
       try {
-        const res = await fetch('/api/inv/locations')
+        const res = await fetch('/api/sh/inventory/locations')
         if (!res.ok) return
         const data = await res.json()
         setLocations(data.locations ?? [])
@@ -129,7 +129,7 @@ export function MovementHistory() {
       if (from) params.set('from', from)
       if (to) params.set('to', to)
 
-      const res = await fetch(`/api/inv/movements?${params}`)
+      const res = await fetch(`/api/sh/inventory/movements?${params}`)
       if (!res.ok) {
         setRows([])
         setTotal(0)

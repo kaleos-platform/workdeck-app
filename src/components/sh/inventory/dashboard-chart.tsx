@@ -92,7 +92,7 @@ export function DashboardChart({ filters }: Props) {
     setLoading(true)
 
     setError(null)
-    fetch(`/api/inv/dashboard/timeseries${buildQuery(filters)}`)
+    fetch(`/api/sh/inventory/dashboard/timeseries${buildQuery(filters)}`)
       .then(async (res) => {
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as { message?: string }

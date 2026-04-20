@@ -82,8 +82,6 @@ export const ModelName = {
   InvProduct: 'InvProduct',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
-  InvChannelGroup: 'InvChannelGroup',
-  InvSalesChannel: 'InvSalesChannel',
   InvMovement: 'InvMovement',
   InvStockLevel: 'InvStockLevel',
   InvReorderConfig: 'InvReorderConfig',
@@ -92,8 +90,6 @@ export const ModelName = {
   InvLocationProductMap: 'InvLocationProductMap',
   InvSettings: 'InvSettings',
   DelShippingMethod: 'DelShippingMethod',
-  DelChannelGroup: 'DelChannelGroup',
-  DelSalesChannel: 'DelSalesChannel',
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
@@ -607,28 +603,6 @@ export const InvStorageLocationScalarFieldEnum = {
 export type InvStorageLocationScalarFieldEnum = (typeof InvStorageLocationScalarFieldEnum)[keyof typeof InvStorageLocationScalarFieldEnum]
 
 
-export const InvChannelGroupScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  createdAt: 'createdAt'
-} as const
-
-export type InvChannelGroupScalarFieldEnum = (typeof InvChannelGroupScalarFieldEnum)[keyof typeof InvChannelGroupScalarFieldEnum]
-
-
-export const InvSalesChannelScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  groupId: 'groupId',
-  isActive: 'isActive',
-  createdAt: 'createdAt'
-} as const
-
-export type InvSalesChannelScalarFieldEnum = (typeof InvSalesChannelScalarFieldEnum)[keyof typeof InvSalesChannelScalarFieldEnum]
-
-
 export const InvMovementScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -636,7 +610,6 @@ export const InvMovementScalarFieldEnum = {
   locationId: 'locationId',
   toLocationId: 'toLocationId',
   channelId: 'channelId',
-  newChannelId: 'newChannelId',
   type: 'type',
   quantity: 'quantity',
   movementDate: 'movementDate',
@@ -744,32 +717,6 @@ export const DelShippingMethodScalarFieldEnum = {
 export type DelShippingMethodScalarFieldEnum = (typeof DelShippingMethodScalarFieldEnum)[keyof typeof DelShippingMethodScalarFieldEnum]
 
 
-export const DelChannelGroupScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  createdAt: 'createdAt'
-} as const
-
-export type DelChannelGroupScalarFieldEnum = (typeof DelChannelGroupScalarFieldEnum)[keyof typeof DelChannelGroupScalarFieldEnum]
-
-
-export const DelSalesChannelScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  groupId: 'groupId',
-  type: 'type',
-  isActive: 'isActive',
-  requireOrderNumber: 'requireOrderNumber',
-  requirePayment: 'requirePayment',
-  requireProducts: 'requireProducts',
-  createdAt: 'createdAt'
-} as const
-
-export type DelSalesChannelScalarFieldEnum = (typeof DelSalesChannelScalarFieldEnum)[keyof typeof DelSalesChannelScalarFieldEnum]
-
-
 export const DelBatchScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -788,7 +735,6 @@ export const DelOrderScalarFieldEnum = {
   batchId: 'batchId',
   shippingMethodId: 'shippingMethodId',
   channelId: 'channelId',
-  newChannelId: 'newChannelId',
   recipientNameEnc: 'recipientNameEnc',
   recipientNameIv: 'recipientNameIv',
   phoneEnc: 'phoneEnc',

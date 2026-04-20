@@ -77,7 +77,7 @@ export function ReorderTable() {
       if (f === 'needed') params.set('reorderNeededOnly', 'true')
       if (f === 'urgent') params.set('urgentOnly', 'true')
       const qs = params.toString()
-      const res = await fetch(`/api/inv/reorder${qs ? `?${qs}` : ''}`)
+      const res = await fetch(`/api/sh/inventory/reorder${qs ? `?${qs}` : ''}`)
       if (!res.ok) throw new Error('불러오기 실패')
       const json = (await res.json()) as { data: ReorderRow[]; windowDays: number }
       setRows(json.data)
@@ -109,7 +109,7 @@ export function ReorderTable() {
     }
     setSaving((s) => ({ ...s, [row.optionId]: true }))
     try {
-      const res = await fetch(`/api/inv/reorder/config/${row.optionId}`, {
+      const res = await fetch(`/api/sh/inventory/reorder/config/${row.optionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadTimeDays: next }),

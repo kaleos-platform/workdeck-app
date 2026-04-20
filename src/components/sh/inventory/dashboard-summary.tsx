@@ -41,7 +41,7 @@ export function DashboardSummary({ filters }: Props) {
     setLoading(true)
 
     setError(null)
-    fetch(`/api/inv/dashboard/summary${buildQuery(filters)}`)
+    fetch(`/api/sh/inventory/dashboard/summary${buildQuery(filters)}`)
       .then(async (res) => {
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as { message?: string }

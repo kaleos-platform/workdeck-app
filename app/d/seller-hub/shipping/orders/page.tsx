@@ -11,7 +11,7 @@ export default function ShippingOrdersPage() {
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([])
 
   useEffect(() => {
-    fetch('/api/del/shipping-methods?isActive=true')
+    fetch('/api/sh/shipping/shipping-methods?isActive=true')
       .then((r) => r.json())
       .then((data) => setShippingMethods(data.methods ?? []))
       .catch(() => {})

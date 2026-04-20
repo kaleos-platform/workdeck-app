@@ -57,7 +57,7 @@ export function ShProductList() {
   // 그룹/브랜드 목록 로드
   useEffect(() => {
     Promise.all([
-      fetch('/api/inv/product-groups').then((res) => (res.ok ? res.json() : null)),
+      fetch('/api/sh/inventory/product-groups').then((res) => (res.ok ? res.json() : null)),
       fetch('/api/sh/brands').then((res) => (res.ok ? res.json() : null)),
     ]).then(([gData, bData]) => {
       setGroups(gData?.groups ?? [])

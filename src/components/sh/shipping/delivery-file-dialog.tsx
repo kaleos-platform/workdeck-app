@@ -50,7 +50,7 @@ export function DeliveryFileDialog({
 
     setGenerating(true)
     try {
-      const res = await fetch('/api/del/generate-file', {
+      const res = await fetch('/api/sh/shipping/generate-file', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId, shippingMethodId: selectedMethodId }),

@@ -43,7 +43,7 @@ export function DashboardFilters({ value, onChange }: Props) {
     async function load() {
       try {
         const [locRes, chRes, grpRes] = await Promise.all([
-          fetch('/api/inv/locations?isActive=true'),
+          fetch('/api/sh/inventory/locations?isActive=true'),
           fetch('/api/inv/channels?isActive=true'),
           fetch('/api/inv/channel-groups'),
         ])

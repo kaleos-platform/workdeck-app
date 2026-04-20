@@ -161,7 +161,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/inv/reconciliation/${reconciliationId}`)
+      const res = await fetch(`/api/sh/inventory/reconciliation/${reconciliationId}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '조회 실패')
       const r = data.reconciliation as Reconciliation
@@ -311,7 +311,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   async function handleRegisterProduct() {
     setRegisterSubmitting(true)
     try {
-      const res = await fetch('/api/inv/products', {
+      const res = await fetch('/api/sh/inventory/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -359,7 +359,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         }
       }
 
-      const res = await fetch(`/api/inv/reconciliation/${recon.id}`, {
+      const res = await fetch(`/api/sh/inventory/reconciliation/${recon.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -383,7 +383,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     if (!recon) return
     if (!confirm('이 대조를 취소하시겠습니까?')) return
     try {
-      const res = await fetch(`/api/inv/reconciliation/${recon.id}`, {
+      const res = await fetch(`/api/sh/inventory/reconciliation/${recon.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'cancel' }),

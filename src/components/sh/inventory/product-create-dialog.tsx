@@ -46,7 +46,7 @@ export function ProductCreateDialog({ onCreated }: Props) {
 
   useEffect(() => {
     if (!open) return
-    fetch('/api/inv/product-groups')
+    fetch('/api/sh/inventory/product-groups')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (json?.groups) setGroups(json.groups)
@@ -58,7 +58,7 @@ export function ProductCreateDialog({ onCreated }: Props) {
     const trimmed = newGroupName.trim()
     if (!trimmed) return
     try {
-      const res = await fetch('/api/inv/product-groups', {
+      const res = await fetch('/api/sh/inventory/product-groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: trimmed }),
@@ -114,7 +114,7 @@ export function ProductCreateDialog({ onCreated }: Props) {
 
     setSaving(true)
     try {
-      const res = await fetch('/api/inv/products', {
+      const res = await fetch('/api/sh/inventory/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

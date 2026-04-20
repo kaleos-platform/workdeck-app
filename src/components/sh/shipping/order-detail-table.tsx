@@ -143,7 +143,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
         page: String(page),
         pageSize: String(PAGE_SIZE),
       })
-      const res = await fetch(`/api/del/batches/${batchId}/orders?${params}`)
+      const res = await fetch(`/api/sh/shipping/batches/${batchId}/orders?${params}`)
       if (!res.ok) throw new Error('주문 목록 조회 실패')
       const json = await res.json()
       setOrders(json.data)
@@ -196,7 +196,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
 
     setDecryptingId(orderId)
     try {
-      const res = await fetch(`/api/del/orders/${orderId}/decrypt`, { method: 'POST' })
+      const res = await fetch(`/api/sh/shipping/orders/${orderId}/decrypt`, { method: 'POST' })
       if (!res.ok) throw new Error('복호화 실패')
       const data: DecryptedPii = await res.json()
       setDecryptedRows((prev) => ({ ...prev, [orderId]: data }))
@@ -233,7 +233,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
   const openEditDialog = async (order: Order) => {
     setEditDialog({ open: true, order, pii: null, loading: true, saving: false })
     try {
-      const res = await fetch(`/api/del/orders/${order.id}/decrypt`, { method: 'POST' })
+      const res = await fetch(`/api/sh/shipping/orders/${order.id}/decrypt`, { method: 'POST' })
       if (!res.ok) throw new Error('복호화 실패')
       const pii: DecryptedPii = await res.json()
       setEditForm({
@@ -270,7 +270,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
 
     setEditDialog((prev) => ({ ...prev, saving: true }))
     try {
-      const res = await fetch(`/api/del/orders/${editDialog.order.id}`, {
+      const res = await fetch(`/api/sh/shipping/orders/${editDialog.order.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -313,7 +313,9 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     if (!confirm('이 주문을 삭제하시겠습니까?')) return
 
     try {
-      const res = await fetch(`/api/del/orders/${editDialog.order.id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/sh/shipping/orders/${editDialog.order.id}`, {
+        method: 'DELETE',
+      })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data?.message ?? '삭제 실패')

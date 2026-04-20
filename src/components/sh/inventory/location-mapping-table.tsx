@@ -37,7 +37,7 @@ export function LocationMappingTable({ locationId }: Props) {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/inv/locations/${locationId}/mappings`)
+      const res = await fetch(`/api/sh/inventory/locations/${locationId}/mappings`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '매핑 조회 실패')
       setMappings(data.mappings ?? [])
@@ -56,9 +56,12 @@ export function LocationMappingTable({ locationId }: Props) {
     if (!confirm('이 매핑을 삭제하시겠습니까?')) return
     setDeletingId(mappingId)
     try {
-      const res = await fetch(`/api/inv/locations/${locationId}/mappings?mappingId=${mappingId}`, {
-        method: 'DELETE',
-      })
+      const res = await fetch(
+        `/api/sh/inventory/locations/${locationId}/mappings?mappingId=${mappingId}`,
+        {
+          method: 'DELETE',
+        }
+      )
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '삭제 실패')
       toast.success('삭제했습니다')

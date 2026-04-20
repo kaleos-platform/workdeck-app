@@ -62,7 +62,7 @@ export function BatchList({ onSelect, selectedBatchId }: BatchListProps) {
         page: String(page),
         pageSize: String(PAGE_SIZE),
       })
-      const res = await fetch(`/api/del/batches?${params}`)
+      const res = await fetch(`/api/sh/shipping/batches?${params}`)
       if (!res.ok) throw new Error('배송 묶음 목록 조회 실패')
       const json = await res.json()
       setBatches(json.data)

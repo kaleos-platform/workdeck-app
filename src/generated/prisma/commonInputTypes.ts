@@ -551,23 +551,6 @@ export type EnumInvReconciliationStatusWithAggregatesFilter<$PrismaModel = never
   _max?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel>
 }
 
-export type EnumDelChannelTypeFilter<$PrismaModel = never> = {
-  equals?: $Enums.DelChannelType | Prisma.EnumDelChannelTypeFieldRefInput<$PrismaModel>
-  in?: $Enums.DelChannelType[] | Prisma.ListEnumDelChannelTypeFieldRefInput<$PrismaModel>
-  notIn?: $Enums.DelChannelType[] | Prisma.ListEnumDelChannelTypeFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumDelChannelTypeFilter<$PrismaModel> | $Enums.DelChannelType
-}
-
-export type EnumDelChannelTypeWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.DelChannelType | Prisma.EnumDelChannelTypeFieldRefInput<$PrismaModel>
-  in?: $Enums.DelChannelType[] | Prisma.ListEnumDelChannelTypeFieldRefInput<$PrismaModel>
-  notIn?: $Enums.DelChannelType[] | Prisma.ListEnumDelChannelTypeFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumDelChannelTypeWithAggregatesFilter<$PrismaModel> | $Enums.DelChannelType
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumDelChannelTypeFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumDelChannelTypeFilter<$PrismaModel>
-}
-
 export type EnumDelBatchStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.DelBatchStatus | Prisma.EnumDelBatchStatusFieldRefInput<$PrismaModel>
   in?: $Enums.DelBatchStatus[] | Prisma.ListEnumDelBatchStatusFieldRefInput<$PrismaModel>
@@ -1085,23 +1068,6 @@ export type NestedEnumInvReconciliationStatusWithAggregatesFilter<$PrismaModel =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumInvReconciliationStatusFilter<$PrismaModel>
-}
-
-export type NestedEnumDelChannelTypeFilter<$PrismaModel = never> = {
-  equals?: $Enums.DelChannelType | Prisma.EnumDelChannelTypeFieldRefInput<$PrismaModel>
-  in?: $Enums.DelChannelType[] | Prisma.ListEnumDelChannelTypeFieldRefInput<$PrismaModel>
-  notIn?: $Enums.DelChannelType[] | Prisma.ListEnumDelChannelTypeFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumDelChannelTypeFilter<$PrismaModel> | $Enums.DelChannelType
-}
-
-export type NestedEnumDelChannelTypeWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.DelChannelType | Prisma.EnumDelChannelTypeFieldRefInput<$PrismaModel>
-  in?: $Enums.DelChannelType[] | Prisma.ListEnumDelChannelTypeFieldRefInput<$PrismaModel>
-  notIn?: $Enums.DelChannelType[] | Prisma.ListEnumDelChannelTypeFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumDelChannelTypeWithAggregatesFilter<$PrismaModel> | $Enums.DelChannelType
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumDelChannelTypeFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumDelChannelTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumDelBatchStatusFilter<$PrismaModel = never> = {

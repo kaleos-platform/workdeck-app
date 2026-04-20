@@ -1,6 +1,8 @@
 import { RevenueKpiCards } from '@/components/sh/home/revenue-kpi-cards'
 import { ChannelRevenueChart } from '@/components/sh/home/channel-revenue-chart'
 import { ChannelRevenueTable } from '@/components/sh/home/channel-revenue-table'
+import { StockAlertsCard } from '@/components/sh/home/stock-alerts-card'
+import { ShippingTodayCard } from '@/components/sh/home/shipping-today-card'
 
 export default function SellerHubHomePage() {
   return (
@@ -12,6 +14,10 @@ export default function SellerHubHomePage() {
         </p>
       </div>
       <RevenueKpiCards />
+      <div className="grid gap-4 md:grid-cols-2">
+        <StockAlertsCard />
+        <ShippingTodayCard />
+      </div>
       <ChannelRevenueChart />
       <ChannelRevenueTable />
     </div>

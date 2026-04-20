@@ -67,7 +67,7 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
       const [prodRes, brandRes, groupRes] = await Promise.all([
         fetch(`/api/sh/products/${productId}`),
         fetch('/api/sh/brands'),
-        fetch('/api/inv/product-groups'),
+        fetch('/api/sh/inventory/product-groups'),
       ])
       if (!prodRes.ok) return
       const prod: ProductData = await prodRes.json()

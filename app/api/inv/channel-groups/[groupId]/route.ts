@@ -16,7 +16,8 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     return errorResponse('그룹 이름이 필요합니다', 400)
   }
 
-  const existing = await prisma.invChannelGroup.findUnique({
+  // Phase 3: 공용 ChannelGroup 사용 (InvChannelGroup 제거)
+  const existing = await prisma.channelGroup.findUnique({
     where: { id: groupId },
     select: { id: true, spaceId: true },
   })
@@ -24,7 +25,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     return errorResponse('그룹을 찾을 수 없습니다', 404)
   }
 
-  const duplicate = await prisma.invChannelGroup.findFirst({
+  const duplicate = await prisma.channelGroup.findFirst({
     where: { spaceId: resolved.space.id, name, NOT: { id: groupId } },
     select: { id: true },
   })
@@ -32,7 +33,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     return errorResponse('이미 존재하는 그룹 이름입니다', 409)
   }
 
-  const group = await prisma.invChannelGroup.update({
+  const group = await prisma.channelGroup.update({
     where: { id: groupId },
     data: { name },
   })
@@ -46,7 +47,7 @@ export async function DELETE(_req: NextRequest, context: RouteContext) {
 
   const { groupId } = await context.params
 
-  const existing = await prisma.invChannelGroup.findUnique({
+  const existing = await prisma.channelGroup.findUnique({
     where: { id: groupId },
     select: { id: true, spaceId: true, _count: { select: { channels: true } } },
   })
@@ -57,11 +58,11 @@ export async function DELETE(_req: NextRequest, context: RouteContext) {
   if (existing._count.channels > 0) {
     return errorResponse(
       '이 그룹에 속한 채널이 있어 삭제할 수 없습니다. 먼저 채널의 그룹을 변경해 주세요.',
-      400,
+      400
     )
   }
 
-  await prisma.invChannelGroup.delete({ where: { id: groupId } })
+  await prisma.channelGroup.delete({ where: { id: groupId } })
 
   return NextResponse.json({ success: true })
 }

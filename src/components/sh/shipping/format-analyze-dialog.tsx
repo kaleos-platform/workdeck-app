@@ -81,7 +81,7 @@ export function FormatAnalyzeDialog({ open, onOpenChange, onApply }: FormatAnaly
       const formData = new FormData()
       formData.append('file', target)
       if (sheetName) formData.append('sheetName', sheetName)
-      const res = await fetch('/api/del/shipping-methods/analyze', {
+      const res = await fetch('/api/sh/shipping/shipping-methods/analyze', {
         method: 'POST',
         body: formData,
       })

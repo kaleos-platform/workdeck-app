@@ -50,7 +50,7 @@ export function DashboardStockTable({ filters }: Props) {
         pageSize: String(PAGE_SIZE),
       })
       if (filters.locationId) p.set('locationId', filters.locationId)
-      const res = await fetch(`/api/inv/dashboard/stock-by-product?${p}`)
+      const res = await fetch(`/api/sh/inventory/dashboard/stock-by-product?${p}`)
       if (res.ok) {
         setData(await res.json())
       }

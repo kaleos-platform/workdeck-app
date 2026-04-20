@@ -427,8 +427,8 @@ export type ChannelCreateInput = {
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   group?: Prisma.ChannelGroupCreateNestedOneWithoutChannelsInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutNewChannelInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateInput = {
@@ -449,8 +449,8 @@ export type ChannelUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutNewChannelInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUpdateInput = {
@@ -471,8 +471,8 @@ export type ChannelUpdateInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   group?: Prisma.ChannelGroupUpdateOneWithoutChannelsNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutNewChannelNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateInput = {
@@ -493,8 +493,8 @@ export type ChannelUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutNewChannelNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateManyInput = {
@@ -793,8 +793,8 @@ export type ChannelCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   group?: Prisma.ChannelGroupCreateNestedOneWithoutChannelsInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutNewChannelInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutSpaceInput = {
@@ -814,8 +814,8 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutNewChannelInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutSpaceInput = {
@@ -884,7 +884,7 @@ export type ChannelCreateWithoutInvMovementsInput = {
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   group?: Prisma.ChannelGroupCreateNestedOneWithoutChannelsInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutNewChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutInvMovementsInput = {
@@ -905,7 +905,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutNewChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutInvMovementsInput = {
@@ -942,7 +942,7 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   group?: Prisma.ChannelGroupUpdateOneWithoutChannelsNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutNewChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
@@ -963,7 +963,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutNewChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutDelOrdersInput = {
@@ -984,7 +984,7 @@ export type ChannelCreateWithoutDelOrdersInput = {
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   group?: Prisma.ChannelGroupCreateNestedOneWithoutChannelsInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutDelOrdersInput = {
@@ -1005,7 +1005,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutDelOrdersInput = {
@@ -1042,7 +1042,7 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   group?: Prisma.ChannelGroupUpdateOneWithoutChannelsNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
@@ -1063,7 +1063,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutGroupInput = {
@@ -1083,8 +1083,8 @@ export type ChannelCreateWithoutGroupInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutNewChannelInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutGroupInput = {
@@ -1104,8 +1104,8 @@ export type ChannelUncheckedCreateWithoutGroupInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutNewChannelInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutGroupInput = {
@@ -1151,8 +1151,8 @@ export type ChannelCreateWithoutFeeRatesInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   group?: Prisma.ChannelGroupCreateNestedOneWithoutChannelsInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutNewChannelInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutFeeRatesInput = {
@@ -1172,8 +1172,8 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   requireProducts?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutNewChannelInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutNewChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutFeeRatesInput = {
@@ -1209,8 +1209,8 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   group?: Prisma.ChannelGroupUpdateOneWithoutChannelsNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutNewChannelNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
@@ -1230,8 +1230,8 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutNewChannelNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateManySpaceInput = {
@@ -1269,8 +1269,8 @@ export type ChannelUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.ChannelGroupUpdateOneWithoutChannelsNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutNewChannelNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutSpaceInput = {
@@ -1290,8 +1290,8 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutNewChannelNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
@@ -1347,8 +1347,8 @@ export type ChannelUpdateWithoutGroupInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutNewChannelNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutGroupInput = {
@@ -1368,8 +1368,8 @@ export type ChannelUncheckedUpdateWithoutGroupInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutNewChannelNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutNewChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateManyWithoutGroupInput = {

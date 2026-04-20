@@ -63,7 +63,7 @@ export function ProductList() {
   const [groupManagerOpen, setGroupManagerOpen] = useState(false)
 
   const fetchGroups = useCallback(() => {
-    fetch('/api/inv/product-groups')
+    fetch('/api/sh/inventory/product-groups')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (json?.groups) setGroups(json.groups)
@@ -95,7 +95,7 @@ export function ProductList() {
       })
       if (debouncedSearch) params.set('search', debouncedSearch)
       if (groupFilter !== 'all') params.set('groupId', groupFilter)
-      const res = await fetch(`/api/inv/products?${params.toString()}`)
+      const res = await fetch(`/api/sh/inventory/products?${params.toString()}`)
       if (!res.ok) {
         setRows([])
         setTotal(0)
@@ -148,7 +148,7 @@ export function ProductList() {
     const newGroupId = bulkGroupId === 'none' ? null : bulkGroupId
     await Promise.all(
       Array.from(selectedIds).map((id) =>
-        fetch(`/api/inv/products/${id}`, {
+        fetch(`/api/sh/inventory/products/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ groupId: newGroupId }),

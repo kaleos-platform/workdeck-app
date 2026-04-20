@@ -38,7 +38,7 @@ export function ReconciliationUpload({ onUploaded }: Props) {
 
   useEffect(() => {
     if (!open) return
-    fetch('/api/inv/locations?isActive=true')
+    fetch('/api/sh/inventory/locations?isActive=true')
       .then((r) => r.json())
       .then((data) => setLocations(data.locations ?? []))
       .catch(() => toast.error('보관 장소 조회 실패'))
@@ -55,7 +55,7 @@ export function ReconciliationUpload({ onUploaded }: Props) {
       fd.append('locationId', locationId)
       if (snapshotDate) fd.append('snapshotDate', snapshotDate)
 
-      const res = await fetch('/api/inv/reconciliation', {
+      const res = await fetch('/api/sh/inventory/reconciliation', {
         method: 'POST',
         body: fd,
       })

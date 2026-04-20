@@ -42,8 +42,8 @@ export function SettingsPanel() {
     setLoading(true)
     try {
       const [sRes, lRes] = await Promise.all([
-        fetch('/api/inv/settings'),
-        fetch('/api/inv/locations?isActive=true'),
+        fetch('/api/sh/inventory/settings'),
+        fetch('/api/sh/inventory/locations?isActive=true'),
       ])
       if (!sRes.ok) throw new Error('설정 조회 실패')
       if (!lRes.ok) throw new Error('위치 조회 실패')
@@ -81,7 +81,7 @@ export function SettingsPanel() {
         slackWebhookUrl: slackWebhookUrl.trim() ? slackWebhookUrl.trim() : null,
         preferences,
       }
-      const res = await fetch('/api/inv/settings', {
+      const res = await fetch('/api/sh/inventory/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
