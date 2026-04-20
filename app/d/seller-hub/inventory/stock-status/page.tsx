@@ -1,6 +1,6 @@
 'use client'
 
-import { StockStatusTable } from '@/components/inv/stock-status-table'
+import { StockStatusTable } from '@/components/sh/inventory/stock-status-table'
 
 export default function StockStatusPage() {
   return (

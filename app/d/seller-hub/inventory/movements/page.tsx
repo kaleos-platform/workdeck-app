@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { MovementForm } from '@/components/inv/movement-form'
-import { MovementHistory } from '@/components/inv/movement-history'
-import { ImportDialog } from '@/components/inv/import-dialog'
+import { MovementForm } from '@/components/sh/inventory/movement-form'
+import { MovementHistory } from '@/components/sh/inventory/movement-history'
+import { ImportDialog } from '@/components/sh/inventory/import-dialog'
 
 export default function MovementsPage() {
   const [refreshKey, setRefreshKey] = useState(0)

@@ -1,6 +1,6 @@
 'use client'
 
-import { ReorderTable } from '@/components/inv/reorder-table'
+import { ReorderTable } from '@/components/sh/inventory/reorder-table'
 
 export default function ReorderPage() {
   return (

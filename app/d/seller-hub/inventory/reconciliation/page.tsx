@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { ReconciliationUpload } from '@/components/inv/reconciliation-upload'
-import { ReconciliationHistory } from '@/components/inv/reconciliation-history'
-import { ReconciliationPreview } from '@/components/inv/reconciliation-preview'
+import { ReconciliationUpload } from '@/components/sh/inventory/reconciliation-upload'
+import { ReconciliationHistory } from '@/components/sh/inventory/reconciliation-history'
+import { ReconciliationPreview } from '@/components/sh/inventory/reconciliation-preview'
 
 export default function ReconciliationPage() {
   const [refreshKey, setRefreshKey] = useState(0)

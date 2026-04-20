@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BatchList } from '@/components/del/batch-list'
-import { OrderDetailTable } from '@/components/del/order-detail-table'
+import { BatchList } from '@/components/sh/shipping/batch-list'
+import { OrderDetailTable } from '@/components/sh/shipping/order-detail-table'
 
 type ShippingMethod = { id: string; name: string }
 

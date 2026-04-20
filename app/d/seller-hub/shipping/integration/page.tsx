@@ -1,6 +1,6 @@
 'use client'
 
-import { IntegrationPanel } from '@/components/del/integration-panel'
+import { IntegrationPanel } from '@/components/sh/shipping/integration-panel'
 
 export default function ShippingIntegrationPage() {
   return (

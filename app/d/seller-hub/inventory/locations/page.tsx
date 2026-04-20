@@ -1,6 +1,6 @@
 'use client'
 
-import { LocationManager } from '@/components/inv/location-manager'
+import { LocationManager } from '@/components/sh/inventory/location-manager'
 
 export default function LocationsPage() {
   return (

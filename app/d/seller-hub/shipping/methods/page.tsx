@@ -1,6 +1,6 @@
 'use client'
 
-import { ShippingMethodManager } from '@/components/del/shipping-method-manager'
+import { ShippingMethodManager } from '@/components/sh/shipping/shipping-method-manager'
 
 export default function ShippingMethodsPage() {
   return (

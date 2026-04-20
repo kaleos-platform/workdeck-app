@@ -29,9 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { RegistrationTable, type OrderRow } from '@/components/del/registration-table'
-import { BulkPasteDialog } from '@/components/del/bulk-paste-dialog'
-import { DeliveryFileDialog } from '@/components/del/delivery-file-dialog'
+import { RegistrationTable, type OrderRow } from '@/components/sh/shipping/registration-table'
+import { BulkPasteDialog } from '@/components/sh/shipping/bulk-paste-dialog'
+import { DeliveryFileDialog } from '@/components/sh/shipping/delivery-file-dialog'
 
 type ShippingMethod = { id: string; name: string }
 type Channel = {

@@ -15,15 +15,7 @@ import {
   Home,
   Settings,
   Package,
-  ArrowLeftRight,
-  MapPin,
   Store,
-  FileCheck,
-  Layers,
-  TrendingUp,
-  ClipboardList,
-  Archive,
-  Link2,
   Truck,
   Boxes,
 } from 'lucide-react'
@@ -39,22 +31,6 @@ import {
   COUPANG_ADS_SETTINGS_PATH,
   COUPANG_ADS_INVENTORY_PATH,
   getCoupangAdsCampaignPath,
-  INVENTORY_MGMT_BASE_PATH,
-  INVENTORY_MGMT_MOVEMENTS_PATH,
-  INVENTORY_MGMT_PRODUCTS_PATH,
-  INVENTORY_MGMT_LOCATIONS_PATH,
-  INVENTORY_MGMT_CHANNELS_PATH,
-  INVENTORY_MGMT_RECONCILIATION_PATH,
-  INVENTORY_MGMT_REORDER_PATH,
-  INVENTORY_MGMT_SETTINGS_PATH,
-  INVENTORY_MGMT_STOCK_STATUS_PATH,
-  INVENTORY_MGMT_DASHBOARD_PATH,
-  DELIVERY_MGMT_BASE_PATH,
-  DELIVERY_MGMT_REGISTRATION_PATH,
-  DELIVERY_MGMT_ORDERS_PATH,
-  DELIVERY_MGMT_INTEGRATION_PATH,
-  DELIVERY_MGMT_CHANNELS_PATH,
-  DELIVERY_MGMT_SHIPPING_PATH,
   SELLER_HUB_BASE_PATH,
   SELLER_HUB_HOME_PATH,
   SELLER_HUB_SETTINGS_PATH,
@@ -85,7 +61,7 @@ type Campaign = {
   adTypes: string[]
 }
 
-type SidebarVariant = 'workdeck' | 'coupang-ads' | 'inventory-mgmt' | 'delivery-mgmt' | 'seller-hub'
+type SidebarVariant = 'workdeck' | 'coupang-ads' | 'seller-hub'
 
 type SidebarProps = {
   workspaceName: string
@@ -97,8 +73,6 @@ type SidebarProps = {
 const NVB_AD_TYPE = '신규 구매 고객 확보'
 const DECK_ENTRY: Record<string, string> = {
   'coupang-ads': COUPANG_ADS_BASE_PATH,
-  'inventory-mgmt': INVENTORY_MGMT_BASE_PATH,
-  'delivery-mgmt': DELIVERY_MGMT_BASE_PATH,
   'seller-hub': SELLER_HUB_BASE_PATH,
 }
 
@@ -129,82 +103,6 @@ const SELLER_HUB_CHANNELS_ITEMS: SidebarItem[] = [
   { label: '채널 관리', href: SELLER_HUB_CHANNELS_PATH },
   { label: '채널 그룹', href: SELLER_HUB_CHANNEL_GROUPS_PATH },
   { label: '수수료 설정', href: SELLER_HUB_CHANNEL_FEES_PATH },
-]
-
-const INVENTORY_MAIN_ROUTES = [
-  {
-    label: '재고 현황',
-    icon: Layers,
-    href: INVENTORY_MGMT_STOCK_STATUS_PATH,
-  },
-  {
-    label: '입출고 관리',
-    icon: ArrowLeftRight,
-    href: INVENTORY_MGMT_MOVEMENTS_PATH,
-  },
-  {
-    label: '대시보드',
-    icon: LayoutDashboard,
-    href: INVENTORY_MGMT_DASHBOARD_PATH,
-  },
-  {
-    label: '상품 관리',
-    icon: Package,
-    href: INVENTORY_MGMT_PRODUCTS_PATH,
-  },
-  {
-    label: '위치 관리',
-    icon: MapPin,
-    href: INVENTORY_MGMT_LOCATIONS_PATH,
-  },
-  {
-    label: '채널 관리',
-    icon: Store,
-    href: INVENTORY_MGMT_CHANNELS_PATH,
-  },
-  {
-    label: '재고 대조',
-    icon: FileCheck,
-    href: INVENTORY_MGMT_RECONCILIATION_PATH,
-  },
-  {
-    label: '발주 예측',
-    icon: TrendingUp,
-    href: INVENTORY_MGMT_REORDER_PATH,
-  },
-  {
-    label: '설정',
-    icon: Settings,
-    href: INVENTORY_MGMT_SETTINGS_PATH,
-  },
-]
-
-const DELIVERY_MAIN_ROUTES = [
-  {
-    label: '배송 등록',
-    icon: ClipboardList,
-    href: DELIVERY_MGMT_REGISTRATION_PATH,
-  },
-  {
-    label: '주문 데이터 관리',
-    icon: Archive,
-    href: DELIVERY_MGMT_ORDERS_PATH,
-  },
-  {
-    label: '데이터 연동',
-    icon: Link2,
-    href: DELIVERY_MGMT_INTEGRATION_PATH,
-  },
-  {
-    label: '판매 채널 관리',
-    icon: Store,
-    href: DELIVERY_MGMT_CHANNELS_PATH,
-  },
-  {
-    label: '배송 방식 관리',
-    icon: Truck,
-    href: DELIVERY_MGMT_SHIPPING_PATH,
-  },
 ]
 
 const COUPANG_MAIN_ROUTES = [
@@ -256,8 +154,6 @@ export function Sidebar({
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
-  const isInventorySidebar = variant === 'inventory-mgmt'
-  const isDeliverySidebar = variant === 'delivery-mgmt'
   const isSellerHubSidebar = variant === 'seller-hub'
   const isMyDeckMode = mode === 'my-deck'
 
@@ -374,48 +270,6 @@ export function Sidebar({
               )}
             </section>
           </>
-        )}
-
-        {isInventorySidebar && (
-          <div className="space-y-1">
-            {INVENTORY_MAIN_ROUTES.map((route) => {
-              const isActive = pathname === route.href || pathname.startsWith(`${route.href}/`)
-              return (
-                <Link
-                  key={route.href}
-                  href={route.href}
-                  className={cn(
-                    'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                    isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
-                  )}
-                >
-                  <route.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  <span className="truncate">{route.label}</span>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-
-        {isDeliverySidebar && (
-          <div className="space-y-1">
-            {DELIVERY_MAIN_ROUTES.map((route) => {
-              const isActive = pathname === route.href || pathname.startsWith(`${route.href}/`)
-              return (
-                <Link
-                  key={route.href}
-                  href={route.href}
-                  className={cn(
-                    'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                    isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
-                  )}
-                >
-                  <route.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  <span className="truncate">{route.label}</span>
-                </Link>
-              )
-            })}
-          </div>
         )}
 
         {isSellerHubSidebar && (
