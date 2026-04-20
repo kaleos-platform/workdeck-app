@@ -257,3 +257,33 @@ export type DelColumnMappingPreset = Prisma.DelColumnMappingPresetModel
  * 
  */
 export type DelIntegrationHistory = Prisma.DelIntegrationHistoryModel
+/**
+ * Model Brand
+ * 
+ */
+export type Brand = Prisma.BrandModel
+/**
+ * Model ChannelGroup
+ * 
+ */
+export type ChannelGroup = Prisma.ChannelGroupModel
+/**
+ * Model Channel
+ * 
+ */
+export type Channel = Prisma.ChannelModel
+/**
+ * Model ChannelFeeRate
+ * 
+ */
+export type ChannelFeeRate = Prisma.ChannelFeeRateModel
+/**
+ * Model ProductionBatch
+ * 
+ */
+export type ProductionBatch = Prisma.ProductionBatchModel
+/**
+ * Model ProductPricingSettings
+ * 
+ */
+export type ProductPricingSettings = Prisma.ProductPricingSettingsModel

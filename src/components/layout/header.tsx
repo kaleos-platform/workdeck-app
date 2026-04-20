@@ -10,12 +10,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Moon, Sun, LogOut, LayoutGrid, BarChart2, Package, Truck } from 'lucide-react'
+import { Moon, Sun, LogOut, LayoutGrid, BarChart2, Package, Truck, ShoppingBag } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useAuth } from '@/hooks/use-auth'
-import { COUPANG_ADS_BASE_PATH, INVENTORY_MGMT_BASE_PATH, DELIVERY_MGMT_BASE_PATH } from '@/lib/deck-routes'
+import {
+  COUPANG_ADS_BASE_PATH,
+  INVENTORY_MGMT_BASE_PATH,
+  DELIVERY_MGMT_BASE_PATH,
+  SELLER_HUB_BASE_PATH,
+} from '@/lib/deck-routes'
 
-type HeaderVariant = 'workdeck' | 'coupang-ads' | 'inventory-mgmt' | 'delivery-mgmt'
+type HeaderVariant = 'workdeck' | 'coupang-ads' | 'inventory-mgmt' | 'delivery-mgmt' | 'seller-hub'
 
 type HeaderProps = {
   variant?: HeaderVariant
@@ -31,28 +36,35 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
   const isCoupangDeck = variant === 'coupang-ads'
   const isInventoryDeck = variant === 'inventory-mgmt'
   const isDeliveryDeck = variant === 'delivery-mgmt'
-  const isDeckVariant = isCoupangDeck || isInventoryDeck || isDeliveryDeck
+  const isSellerHubDeck = variant === 'seller-hub'
+  const isDeckVariant = isCoupangDeck || isInventoryDeck || isDeliveryDeck || isSellerHubDeck
   const brandHref = isCoupangDeck
     ? COUPANG_ADS_BASE_PATH
     : isInventoryDeck
       ? INVENTORY_MGMT_BASE_PATH
       : isDeliveryDeck
         ? DELIVERY_MGMT_BASE_PATH
-        : '/my-deck'
+        : isSellerHubDeck
+          ? SELLER_HUB_BASE_PATH
+          : '/my-deck'
   const brandName = isCoupangDeck
     ? '쿠팡 광고 관리자'
     : isInventoryDeck
       ? '통합 재고 관리'
       : isDeliveryDeck
         ? '통합 배송 관리'
-        : 'Workdeck'
+        : isSellerHubDeck
+          ? '셀러 허브'
+          : 'Workdeck'
   const BrandIcon = isCoupangDeck
     ? BarChart2
     : isInventoryDeck
       ? Package
       : isDeliveryDeck
         ? Truck
-        : LayoutGrid
+        : isSellerHubDeck
+          ? ShoppingBag
+          : LayoutGrid
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -70,7 +82,9 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
                   ? 'bg-gradient-to-br from-emerald-500 to-green-600'
                   : isDeliveryDeck
                     ? 'bg-gradient-to-br from-indigo-500 to-purple-600'
-                    : 'bg-gradient-to-br from-blue-600 to-cyan-500'
+                    : isSellerHubDeck
+                      ? 'bg-gradient-to-br from-violet-500 to-purple-700'
+                      : 'bg-gradient-to-br from-blue-600 to-cyan-500'
             }`}
           >
             <BrandIcon className="h-5 w-5 text-white" />

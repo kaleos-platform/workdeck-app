@@ -68,6 +68,16 @@ enum SpaceMemberRole {
   MEMBER
 }
 
+// ─── 셀러 허브 열거형 ─────────────────────────────────────────────────────────
+
+enum ChannelKind {
+  ONLINE_MARKETPLACE
+  ONLINE_MALL
+  OFFLINE
+  INTERNAL_TRANSFER
+  OTHER
+}
+
 // ─── 사용자 모델 (Supabase Auth와 연동) ──────────────────────────────────────
 
 model User {
@@ -326,6 +336,12 @@ model Space {
   delOrders                DelOrder[]
   delIntegrationHistories  DelIntegrationHistory[]
   delColumnMappingPresets  DelColumnMappingPreset[]
+
+  // 셀러 허브 공용 (Seller Hub)
+  channels               Channel[]
+  channelGroups          ChannelGroup[]
+  brands                 Brand[]
+  productPricingSettings ProductPricingSettings?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -685,8 +701,20 @@ model InvProduct {
   code    String? // 상품 코드 (space 내 unique, null 허용)
   groupId String?
 
+  // 셀러 허브 확장 필드 (모두 nullable)
+  brandId            String?
+  nameEn             String?
+  manufacturer       String?
+  manufactureCountry String?
+  manufactureDate    DateTime?
+  features           Json?
+  certifications     Json?
+  msrp               Decimal?  @db.Decimal(18, 2)
+  description        String?
+
   space   Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   group   InvProductGroup?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  brand   Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
   options InvProductOption[]
 
   createdAt DateTime @default(now())
@@ -695,6 +723,7 @@ model InvProduct {
   @@unique([spaceId, code])
   @@index([spaceId])
   @@index([groupId])
+  @@index([brandId])
 }
 
 // 상품 옵션
@@ -704,11 +733,18 @@ model InvProductOption {
   name      String
   sku       String?
 
-  product          InvProduct            @relation(fields: [productId], references: [id], onDelete: Cascade)
-  movements        InvMovement[]
-  stockLevels      InvStockLevel[]
-  reorderConfig    InvReorderConfig?
-  locationMappings InvLocationProductMap[]
+  // 셀러 허브 확장 필드 (모두 nullable)
+  costPrice    Decimal? @db.Decimal(18, 2)
+  retailPrice  Decimal? @db.Decimal(18, 2)
+  sizeLabel    String?
+  setSizeLabel String?
+
+  product           InvProduct              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  movements         InvMovement[]
+  stockLevels       InvStockLevel[]
+  reorderConfig     InvReorderConfig?
+  locationMappings  InvLocationProductMap[]
+  productionBatches ProductionBatch[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -777,7 +813,8 @@ model InvMovement {
   locationId String
 
   toLocationId    String? // TRANSFER 전용
-  channelId       String? // OUTBOUND 전용
+  channelId       String? // OUTBOUND 전용 (기존 InvSalesChannel FK, Phase 3에서 제거)
+  newChannelId    String? // 셀러 허브 공용 Channel FK (Expand 단계)
   type            InvMovementType
   quantity        Int
   movementDate    DateTime
@@ -786,12 +823,13 @@ model InvMovement {
   referenceId     String?   // 연관 이동 또는 조정 ID
   importHistoryId String?
 
-  space         Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  option        InvProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  location      InvStorageLocation @relation("MovementLocation", fields: [locationId], references: [id], onDelete: Cascade)
+  space         Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  option        InvProductOption    @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  location      InvStorageLocation  @relation("MovementLocation", fields: [locationId], references: [id], onDelete: Cascade)
   toLocation    InvStorageLocation? @relation("MovementToLocation", fields: [toLocationId], references: [id], onDelete: SetNull)
-  channel       InvSalesChannel?   @relation(fields: [channelId], references: [id], onDelete: SetNull)
-  importHistory InvImportHistory?  @relation(fields: [importHistoryId], references: [id], onDelete: SetNull)
+  channel       InvSalesChannel?    @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  newChannel    Channel?            @relation("NewInvMovementChannel", fields: [newChannelId], references: [id], onDelete: SetNull)
+  importHistory InvImportHistory?   @relation(fields: [importHistoryId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
@@ -999,7 +1037,8 @@ model DelOrder {
   spaceId          String
   batchId          String
   shippingMethodId String?
-  channelId        String?
+  channelId        String? // 기존 DelSalesChannel FK (Phase 3에서 제거)
+  newChannelId     String? // 셀러 허브 공용 Channel FK (Expand 단계)
 
   // PII 암호화 필드
   recipientNameEnc String
@@ -1017,10 +1056,11 @@ model DelOrder {
   orderNumber   String?
   paymentAmount Decimal? @db.Decimal(18, 2)
 
-  space          Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  batch          DelBatch          @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  space          Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  batch          DelBatch           @relation(fields: [batchId], references: [id], onDelete: Cascade)
   shippingMethod DelShippingMethod? @relation(fields: [shippingMethodId], references: [id])
-  channel        DelSalesChannel?  @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  channel        DelSalesChannel?   @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  newChannel     Channel?           @relation("NewDelOrderChannel", fields: [newChannelId], references: [id], onDelete: SetNull)
   items          DelOrderItem[]
 
   createdAt DateTime @default(now())
@@ -1073,4 +1113,121 @@ model DelIntegrationHistory {
   createdAt DateTime @default(now())
 
   @@index([spaceId])
+}
+
+// ─── 셀러 허브 공용 모델 ──────────────────────────────────────────────────────
+
+// 브랜드 (상품에 연결, Space 단위)
+model Brand {
+  id      String  @id @default(cuid())
+  spaceId String
+  name    String
+  logoUrl String?
+  memo    String?
+
+  space    Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  products InvProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
+}
+
+// 채널 그룹 (공용)
+model ChannelGroup {
+  id      String @id @default(cuid())
+  spaceId String
+  name    String
+
+  space    Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channels Channel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
+}
+
+// 공용 판매 채널
+model Channel {
+  id                  String      @id @default(cuid())
+  spaceId             String
+  groupId             String?
+  name                String
+  kind                ChannelKind @default(ONLINE_MARKETPLACE)
+  isActive            Boolean     @default(true)
+  adminUrl            String?
+  freeShipping        Boolean     @default(false)
+  usesMarketingBudget Boolean     @default(false)
+  shippingFee         Decimal?    @db.Decimal(18, 2)
+  vatIncludedInFee    Boolean     @default(true)
+  requireOrderNumber  Boolean     @default(true)
+  requirePayment      Boolean     @default(true)
+  requireProducts     Boolean     @default(true)
+
+  space        Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group        ChannelGroup?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  feeRates     ChannelFeeRate[]
+  invMovements InvMovement[]   @relation("NewInvMovementChannel")
+  delOrders    DelOrder[]      @relation("NewDelOrderChannel")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
+  @@index([groupId])
+}
+
+// 채널별 카테고리 수수료율
+model ChannelFeeRate {
+  id           String  @id @default(cuid())
+  channelId    String
+  categoryName String
+  ratePercent  Decimal @db.Decimal(6, 3)
+  vatIncluded  Boolean @default(true)
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([channelId, categoryName])
+  @@index([channelId])
+}
+
+// 옵션별 생산 차수
+model ProductionBatch {
+  id         String   @id @default(cuid())
+  optionId   String
+  batchNo    String
+  producedAt DateTime
+  unitCost   Decimal  @db.Decimal(18, 2)
+  quantity   Int?
+  memo       String?
+
+  option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([optionId, batchNo])
+  @@index([optionId])
+}
+
+// Space 단위 가격 시뮬레이션 기본값 (Phase 2 대비)
+model ProductPricingSettings {
+  id                      String  @id @default(cuid())
+  spaceId                 String  @unique
+  defaultOperatingCostPct Decimal @db.Decimal(6, 3) @default(0)
+  defaultAdCostPct        Decimal @db.Decimal(6, 3) @default(0)
+  defaultPackagingCost    Decimal @db.Decimal(18, 2) @default(0)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

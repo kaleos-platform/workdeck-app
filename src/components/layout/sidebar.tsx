@@ -25,6 +25,7 @@ import {
   Archive,
   Link2,
   Truck,
+  Boxes,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
@@ -54,7 +55,27 @@ import {
   DELIVERY_MGMT_INTEGRATION_PATH,
   DELIVERY_MGMT_CHANNELS_PATH,
   DELIVERY_MGMT_SHIPPING_PATH,
+  SELLER_HUB_BASE_PATH,
+  SELLER_HUB_HOME_PATH,
+  SELLER_HUB_SETTINGS_PATH,
+  SELLER_HUB_PRODUCTS_LIST_PATH,
+  SELLER_HUB_BRANDS_PATH,
+  SELLER_HUB_PRICING_SIM_PATH,
+  SELLER_HUB_LISTINGS_PATH,
+  SELLER_HUB_STOCK_STATUS_PATH,
+  SELLER_HUB_MOVEMENTS_PATH,
+  SELLER_HUB_LOCATIONS_PATH,
+  SELLER_HUB_RECONCILIATION_PATH,
+  SELLER_HUB_REORDER_PATH,
+  SELLER_HUB_SHIPPING_REGISTRATION_PATH,
+  SELLER_HUB_SHIPPING_ORDERS_PATH,
+  SELLER_HUB_SHIPPING_METHODS_PATH,
+  SELLER_HUB_SHIPPING_INTEGRATION_PATH,
+  SELLER_HUB_CHANNELS_PATH,
+  SELLER_HUB_CHANNEL_GROUPS_PATH,
+  SELLER_HUB_CHANNEL_FEES_PATH,
 } from '@/lib/deck-routes'
+import { SidebarSection, type SidebarItem } from './sidebar-section'
 
 type Campaign = {
   id: string
@@ -64,7 +85,7 @@ type Campaign = {
   adTypes: string[]
 }
 
-type SidebarVariant = 'workdeck' | 'coupang-ads' | 'inventory-mgmt' | 'delivery-mgmt'
+type SidebarVariant = 'workdeck' | 'coupang-ads' | 'inventory-mgmt' | 'delivery-mgmt' | 'seller-hub'
 
 type SidebarProps = {
   workspaceName: string
@@ -78,7 +99,37 @@ const DECK_ENTRY: Record<string, string> = {
   'coupang-ads': COUPANG_ADS_BASE_PATH,
   'inventory-mgmt': INVENTORY_MGMT_BASE_PATH,
   'delivery-mgmt': DELIVERY_MGMT_BASE_PATH,
+  'seller-hub': SELLER_HUB_BASE_PATH,
 }
+
+// ─── Seller Hub 메뉴 데이터 ───────────────────────────────────────────────────
+const SELLER_HUB_PRODUCTS_ITEMS: SidebarItem[] = [
+  { label: '상품 목록', href: SELLER_HUB_PRODUCTS_LIST_PATH },
+  { label: '브랜드', href: SELLER_HUB_BRANDS_PATH },
+  { label: '가격 시뮬레이션', href: SELLER_HUB_PRICING_SIM_PATH, disabled: true, badge: 'Phase 2' },
+  { label: '채널별 상품', href: SELLER_HUB_LISTINGS_PATH, disabled: true, badge: 'Phase 2' },
+]
+
+const SELLER_HUB_INVENTORY_ITEMS: SidebarItem[] = [
+  { label: '재고 현황', href: SELLER_HUB_STOCK_STATUS_PATH },
+  { label: '입출고 관리', href: SELLER_HUB_MOVEMENTS_PATH },
+  { label: '위치 관리', href: SELLER_HUB_LOCATIONS_PATH },
+  { label: '재고 대조', href: SELLER_HUB_RECONCILIATION_PATH },
+  { label: '발주 예측', href: SELLER_HUB_REORDER_PATH },
+]
+
+const SELLER_HUB_SHIPPING_ITEMS: SidebarItem[] = [
+  { label: '배송 등록', href: SELLER_HUB_SHIPPING_REGISTRATION_PATH },
+  { label: '주문 데이터', href: SELLER_HUB_SHIPPING_ORDERS_PATH },
+  { label: '배송 방식', href: SELLER_HUB_SHIPPING_METHODS_PATH },
+  { label: '데이터 연동', href: SELLER_HUB_SHIPPING_INTEGRATION_PATH },
+]
+
+const SELLER_HUB_CHANNELS_ITEMS: SidebarItem[] = [
+  { label: '채널 관리', href: SELLER_HUB_CHANNELS_PATH },
+  { label: '채널 그룹', href: SELLER_HUB_CHANNEL_GROUPS_PATH },
+  { label: '수수료 설정', href: SELLER_HUB_CHANNEL_FEES_PATH },
+]
 
 const INVENTORY_MAIN_ROUTES = [
   {
@@ -207,6 +258,7 @@ export function Sidebar({
   const isCoupangSidebar = variant === 'coupang-ads'
   const isInventorySidebar = variant === 'inventory-mgmt'
   const isDeliverySidebar = variant === 'delivery-mgmt'
+  const isSellerHubSidebar = variant === 'seller-hub'
   const isMyDeckMode = mode === 'my-deck'
 
   useEffect(() => {
@@ -363,6 +415,41 @@ export function Sidebar({
                 </Link>
               )
             })}
+          </div>
+        )}
+
+        {isSellerHubSidebar && (
+          <div className="space-y-2">
+            {/* 홈 */}
+            <Link
+              href={SELLER_HUB_HOME_PATH}
+              className={cn(
+                'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                pathname === SELLER_HUB_HOME_PATH ? 'bg-white/10 text-white' : 'text-zinc-400'
+              )}
+            >
+              <Home className="mr-3 h-5 w-5 flex-shrink-0" />
+              <span className="truncate">홈</span>
+            </Link>
+            {/* 섹션 그룹 */}
+            <SidebarSection label="상품" icon={Package} items={SELLER_HUB_PRODUCTS_ITEMS} />
+            <SidebarSection label="재고" icon={Boxes} items={SELLER_HUB_INVENTORY_ITEMS} />
+            <SidebarSection label="배송" icon={Truck} items={SELLER_HUB_SHIPPING_ITEMS} />
+            <SidebarSection label="채널" icon={Store} items={SELLER_HUB_CHANNELS_ITEMS} />
+            {/* 설정 */}
+            <Link
+              href={SELLER_HUB_SETTINGS_PATH}
+              className={cn(
+                'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                pathname === SELLER_HUB_SETTINGS_PATH ||
+                  pathname.startsWith(`${SELLER_HUB_SETTINGS_PATH}/`)
+                  ? 'bg-white/10 text-white'
+                  : 'text-zinc-400'
+              )}
+            >
+              <Settings className="mr-3 h-5 w-5 flex-shrink-0" />
+              <span className="truncate">설정</span>
+            </Link>
           </div>
         )}
 

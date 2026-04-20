@@ -1,8 +1,18 @@
+// @deprecated Phase 3에서 제거. 내부적으로 공용 Channel 테이블 사용.
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { ChannelKind } from '@/generated/prisma/client'
 
 type DelChannelType = 'OUTBOUND' | 'TRANSFER'
+
+// Channel.kind ↔ DelSalesChannel.type 변환 헬퍼
+function kindToDelType(kind: ChannelKind): DelChannelType {
+  return kind === 'INTERNAL_TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
+}
+function delTypeToKind(type: DelChannelType): ChannelKind {
+  return type === 'TRANSFER' ? ChannelKind.INTERNAL_TRANSFER : ChannelKind.ONLINE_MARKETPLACE
+}
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('delivery-mgmt')
@@ -16,9 +26,11 @@ export async function GET(req: NextRequest) {
   if (groupId) where.groupId = groupId
   if (isActiveParam === 'true') where.isActive = true
   else if (isActiveParam === 'false') where.isActive = false
-  if (typeParam === 'OUTBOUND' || typeParam === 'TRANSFER') where.type = typeParam
+  // type 필터 → kind 필터로 변환
+  if (typeParam === 'OUTBOUND') where.kind = { not: ChannelKind.INTERNAL_TRANSFER }
+  else if (typeParam === 'TRANSFER') where.kind = ChannelKind.INTERNAL_TRANSFER
 
-  const channels = await prisma.delSalesChannel.findMany({
+  const channels = await prisma.channel.findMany({
     where,
     orderBy: { createdAt: 'asc' },
     include: {
@@ -26,7 +38,13 @@ export async function GET(req: NextRequest) {
     },
   })
 
-  return NextResponse.json({ channels })
+  // 기존 클라이언트 호환: kind → type 필드 추가
+  const mapped = channels.map((ch) => ({
+    ...ch,
+    type: kindToDelType(ch.kind),
+  }))
+
+  return NextResponse.json({ channels: mapped })
 }
 
 export async function POST(req: NextRequest) {
@@ -47,13 +65,13 @@ export async function POST(req: NextRequest) {
     return errorResponse('유형(OUTBOUND 또는 TRANSFER)이 필요합니다', 400)
   }
 
-  const duplicate = await prisma.delSalesChannel.findFirst({
+  const duplicate = await prisma.channel.findFirst({
     where: { spaceId: resolved.space.id, name },
   })
   if (duplicate) return errorResponse('이미 존재하는 채널 이름입니다', 409)
 
   if (groupId) {
-    const group = await prisma.delChannelGroup.findUnique({
+    const group = await prisma.channelGroup.findUnique({
       where: { id: groupId },
       select: { spaceId: true },
     })
@@ -62,12 +80,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const channel = await prisma.delSalesChannel.create({
+  const channel = await prisma.channel.create({
     data: {
       spaceId: resolved.space.id,
       name,
       groupId,
-      type,
+      kind: delTypeToKind(type),
       requireOrderNumber,
       requirePayment,
       requireProducts,
@@ -75,5 +93,8 @@ export async function POST(req: NextRequest) {
     include: { group: { select: { id: true, name: true } } },
   })
 
-  return NextResponse.json({ channel }, { status: 201 })
+  return NextResponse.json(
+    { channel: { ...channel, type: kindToDelType(channel.kind) } },
+    { status: 201 }
+  )
 }

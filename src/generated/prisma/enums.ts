@@ -81,6 +81,17 @@ export const SpaceMemberRole = {
 export type SpaceMemberRole = (typeof SpaceMemberRole)[keyof typeof SpaceMemberRole]
 
 
+export const ChannelKind = {
+  ONLINE_MARKETPLACE: 'ONLINE_MARKETPLACE',
+  ONLINE_MALL: 'ONLINE_MALL',
+  OFFLINE: 'OFFLINE',
+  INTERNAL_TRANSFER: 'INTERNAL_TRANSFER',
+  OTHER: 'OTHER'
+} as const
+
+export type ChannelKind = (typeof ChannelKind)[keyof typeof ChannelKind]
+
+
 export const InvMovementType = {
   INBOUND: 'INBOUND',
   OUTBOUND: 'OUTBOUND',
