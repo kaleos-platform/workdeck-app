@@ -13,6 +13,25 @@ export const brandSchema = z.object({
 })
 export type BrandInput = z.infer<typeof brandSchema>
 
+// ─── 상품 옵션 ──────────────────────────────────────────────────────────────
+
+export const productOptionSchema = z.object({
+  name: z.string().min(1).max(200),
+  sku: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
+    .optional(),
+  costPrice: z.number().nonnegative().optional(),
+  retailPrice: z.number().nonnegative().optional(),
+  sizeLabel: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(50))
+    .optional(),
+  setSizeLabel: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(50))
+    .optional(),
+  attributeValues: z.record(z.string(), z.string()).optional(), // 예: {"사이즈":"S","색상":"파랑"}
+})
+export type ProductOptionInput = z.infer<typeof productOptionSchema>
+
 // ─── 상품 ──────────────────────────────────────────────────────────────────
 
 // 옵션 속성 항목 스키마 (예: {name: "사이즈", values: ["S","M","L"]})
@@ -39,45 +58,24 @@ export const productSchema = z.object({
   manufactureCountry: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
     .optional(),
+  // date-only(YYYY-MM-DD) / ISO datetime / null / '' 모두 허용 → 최종적으로 string | undefined
   manufactureDate: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().datetime())
-    .optional(),
-  features: z.array(z.string()).optional(),
-  certifications: z
-    .array(
-      z.object({
-        type: z.string(),
-        code: z.string().optional(),
-        issuedAt: z.string().optional(),
-      })
+    .preprocess(
+      (v) => (v === null || v === '' ? undefined : v),
+      z.string().refine((s) => !Number.isNaN(new Date(s).getTime()), '유효한 날짜가 아닙니다')
     )
     .optional(),
+  features: z.array(z.string()).optional(),
+  // 프론트가 문자열 배열로 전송 — 인증번호 한 줄씩
+  certifications: z.array(z.string()).optional(),
   msrp: z.number().nonnegative().optional(),
   description: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(2000))
     .optional(),
   optionAttributes: z.array(optionAttributeSchema).optional(),
+  options: z.array(productOptionSchema).optional(),
 })
 export type ProductInput = z.infer<typeof productSchema>
-
-// ─── 상품 옵션 ──────────────────────────────────────────────────────────────
-
-export const productOptionSchema = z.object({
-  name: z.string().min(1).max(200),
-  sku: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
-    .optional(),
-  costPrice: z.number().nonnegative().optional(),
-  retailPrice: z.number().nonnegative().optional(),
-  sizeLabel: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(50))
-    .optional(),
-  setSizeLabel: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(50))
-    .optional(),
-  attributeValues: z.record(z.string(), z.string()).optional(), // 예: {"사이즈":"S","색상":"파랑"}
-})
-export type ProductOptionInput = z.infer<typeof productOptionSchema>
 
 // ─── 생산 차수 ──────────────────────────────────────────────────────────────
 

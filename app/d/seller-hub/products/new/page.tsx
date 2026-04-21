@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Plus, X } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -34,11 +34,16 @@ export default function ProductNewPage() {
   // 기본 정보
   const [name, setName] = useState('')
   const [nameEn, setNameEn] = useState('')
+  const [code, setCode] = useState('')
   const [brandId, setBrandId] = useState('')
   const [groupId, setGroupId] = useState('')
   const [manufacturer, setManufacturer] = useState('')
+  const [manufactureCountry, setManufactureCountry] = useState('')
+  const [manufactureDate, setManufactureDate] = useState('')
   const [msrp, setMsrp] = useState('')
   const [description, setDescription] = useState('')
+  const [features, setFeatures] = useState<string[]>([])
+  const [certifications, setCertifications] = useState<string[]>([])
 
   // 선택지
   const [brands, setBrands] = useState<Brand[]>([])
@@ -96,6 +101,9 @@ export default function ProductNewPage() {
       return
     }
 
+    const trimmedFeatures = features.map((f) => f.trim()).filter((f) => f)
+    const trimmedCerts = certifications.map((c) => c.trim()).filter((c) => c)
+
     setSaving(true)
     try {
       const res = await fetch('/api/sh/products', {
@@ -104,11 +112,16 @@ export default function ProductNewPage() {
         body: JSON.stringify({
           name: name.trim(),
           nameEn: nameEn.trim() || undefined,
+          code: code.trim() || undefined,
           groupId,
           brandId: brandId || undefined,
           manufacturer: manufacturer.trim() || undefined,
+          manufactureCountry: manufactureCountry.trim() || undefined,
+          manufactureDate: manufactureDate || undefined,
           msrp: msrp ? parseFloat(msrp) : undefined,
           description: description.trim() || undefined,
+          features: trimmedFeatures.length > 0 ? trimmedFeatures : undefined,
+          certifications: trimmedCerts.length > 0 ? trimmedCerts : undefined,
           optionAttributes: useAttributeMode
             ? attributes
                 .filter((a) => a.name.trim() && a.values.length > 0)
@@ -118,10 +131,19 @@ export default function ProductNewPage() {
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message ?? '상품 생성 실패')
+      if (!res.ok) {
+        const fieldErrors = data?.errors?.fieldErrors as
+          | Record<string, string[] | undefined>
+          | undefined
+        const firstField = fieldErrors
+          ? Object.entries(fieldErrors).find(([, v]) => v && v.length > 0)
+          : undefined
+        const suffix = firstField ? ` (${firstField[0]}: ${firstField[1]?.[0]})` : ''
+        throw new Error((data?.message ?? '상품 생성 실패') + suffix)
+      }
       toast.success('상품이 생성되었습니다')
-      // 생성된 상품 상세 페이지로 이동
-      router.push(`/d/seller-hub/products/${data.id}`)
+      // 생성된 상품 상세 페이지로 이동 — 응답 shape { product: { id, ... } }
+      router.push(`/d/seller-hub/products/${data.product.id}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '생성 실패')
     } finally {
@@ -227,15 +249,15 @@ export default function ProductNewPage() {
                 </div>
               </div>
 
-              {/* 제조사 / 소비자가 */}
+              {/* 제품코드 / 소비자가 */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="new-mfr">제조사</Label>
+                  <Label htmlFor="new-code">제품코드</Label>
                   <Input
-                    id="new-mfr"
-                    value={manufacturer}
-                    onChange={(e) => setManufacturer(e.target.value)}
-                    placeholder="제조사명 (선택)"
+                    id="new-code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="예: SKU-001"
                   />
                 </div>
                 <div className="space-y-2">
@@ -251,6 +273,37 @@ export default function ProductNewPage() {
                 </div>
               </div>
 
+              {/* 제조사 / 제조국 / 제조일 */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="new-mfr">제조사</Label>
+                  <Input
+                    id="new-mfr"
+                    value={manufacturer}
+                    onChange={(e) => setManufacturer(e.target.value)}
+                    placeholder="제조사명"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-country">제조국</Label>
+                  <Input
+                    id="new-country"
+                    value={manufactureCountry}
+                    onChange={(e) => setManufactureCountry(e.target.value)}
+                    placeholder="예: 대한민국"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-mfr-date">제조일</Label>
+                  <Input
+                    id="new-mfr-date"
+                    type="date"
+                    value={manufactureDate}
+                    onChange={(e) => setManufactureDate(e.target.value)}
+                  />
+                </div>
+              </div>
+
               {/* 설명 */}
               <div className="space-y-2">
                 <Label htmlFor="new-desc">상품 설명</Label>
@@ -261,6 +314,96 @@ export default function ProductNewPage() {
                   placeholder="상품 설명을 입력하세요 (선택)"
                   rows={3}
                 />
+              </div>
+
+              {/* 특징 */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>특징 (features)</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFeatures((prev) => [...prev, ''])}
+                  >
+                    <Plus className="mr-1 h-3 w-3" />
+                    추가
+                  </Button>
+                </div>
+                <div className="space-y-1.5">
+                  {features.map((f, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Input
+                        value={f}
+                        onChange={(e) =>
+                          setFeatures((prev) =>
+                            prev.map((x, i) => (i === idx ? e.target.value : x))
+                          )
+                        }
+                        placeholder={`특징 ${idx + 1}`}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => setFeatures((prev) => prev.filter((_, i) => i !== idx))}
+                        aria-label="특징 삭제"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {features.length === 0 && (
+                    <p className="text-xs text-muted-foreground">특징을 추가하세요</p>
+                  )}
+                </div>
+              </div>
+
+              {/* 인증 정보 */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>인증 정보 (certifications)</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCertifications((prev) => [...prev, ''])}
+                  >
+                    <Plus className="mr-1 h-3 w-3" />
+                    추가
+                  </Button>
+                </div>
+                <div className="space-y-1.5">
+                  {certifications.map((c, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Input
+                        value={c}
+                        onChange={(e) =>
+                          setCertifications((prev) =>
+                            prev.map((x, i) => (i === idx ? e.target.value : x))
+                          )
+                        }
+                        placeholder={`인증 ${idx + 1} (예: KC인증번호)`}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() =>
+                          setCertifications((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                        aria-label="인증 삭제"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {certifications.length === 0 && (
+                    <p className="text-xs text-muted-foreground">인증 정보를 추가하세요</p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

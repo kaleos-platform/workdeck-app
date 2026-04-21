@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { FolderCog, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
@@ -29,11 +30,14 @@ type ProductRow = {
   nameEn: string | null
   code: string | null
   groupId: string | null
-  groupName: string | null
+  group?: { id: string; name: string } | null
+  groupName?: string | null
   brandId: string | null
-  brandName: string | null
-  optionsCount: number
-  totalStock: number
+  brand?: { id: string; name: string } | null
+  brandName?: string | null
+  // API GET은 include: { options: true } 로 배열을 반환
+  options?: { id: string }[]
+  optionsCount?: number
 }
 
 type Group = { id: string; name: string }
@@ -42,6 +46,7 @@ type Brand = { id: string; name: string }
 const PAGE_SIZE = 20
 
 export function ShProductList() {
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -194,50 +199,63 @@ export function ShProductList() {
               <TableHead>브랜드</TableHead>
               <TableHead>제품코드</TableHead>
               <TableHead className="text-right">옵션수</TableHead>
-              <TableHead className="w-20" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                   등록된 상품이 없습니다
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {row.groupName ?? '(기본)'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">{row.name}</div>
-                    {row.nameEn && (
-                      <div className="text-xs text-muted-foreground">{row.nameEn}</div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {row.brandName ? (
-                      <Badge variant="secondary">{row.brandName}</Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{row.code ?? '-'}</TableCell>
-                  <TableCell className="text-right">{row.optionsCount}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/d/seller-hub/products/${row.id}`}>상세</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+              rows.map((row) => {
+                const groupLabel = row.group?.name ?? row.groupName ?? '(기본)'
+                const brandLabel = row.brand?.name ?? row.brandName ?? null
+                const optionCount = row.optionsCount ?? row.options?.length ?? 0
+                const goDetail = () => router.push(`/d/seller-hub/products/${row.id}`)
+                return (
+                  <TableRow
+                    key={row.id}
+                    onClick={goDetail}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        goDetail()
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${row.name} 상세`}
+                    className="cursor-pointer hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
+                  >
+                    <TableCell className="text-sm text-muted-foreground">{groupLabel}</TableCell>
+                    <TableCell>
+                      <div className="font-medium">{row.name}</div>
+                      {row.nameEn && (
+                        <div className="text-xs text-muted-foreground">{row.nameEn}</div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {brandLabel ? (
+                        <Badge variant="secondary">{brandLabel}</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {row.code ?? '-'}
+                    </TableCell>
+                    <TableCell className="text-right">{optionCount}</TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>

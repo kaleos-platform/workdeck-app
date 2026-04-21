@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
     msrp,
     description,
     optionAttributes,
+    options,
   } = parsed.data
 
   // brandId 소속 검증
@@ -92,27 +93,52 @@ export async function POST(req: NextRequest) {
   })
   if (!group) return errorResponse('카테고리를 찾을 수 없습니다', 404)
 
-  const product = await prisma.invProduct.create({
-    data: {
-      spaceId: resolved.space.id,
-      name,
-      nameEn: nameEn ?? null,
-      code: code ?? null,
-      brandId: brandId ?? null,
-      groupId,
-      manufacturer: manufacturer ?? null,
-      manufactureCountry: manufactureCountry ?? null,
-      manufactureDate: manufactureDate ? new Date(manufactureDate) : null,
-      features: features ?? undefined,
-      certifications: certifications ?? undefined,
-      msrp: msrp ?? null,
-      description: description ?? null,
-      optionAttributes: optionAttributes ?? undefined,
-    },
-    include: {
-      brand: { select: { id: true, name: true } },
-      options: true,
-    },
+  // 옵션 미전송 시 기본 옵션 1건 자동 생성 — 빈 상품이 만들어지지 않도록 안전망
+  const optionsToCreate =
+    options && options.length > 0
+      ? options
+      : ([{ name: '기본' }] as typeof options & NonNullable<typeof options>)
+
+  const product = await prisma.$transaction(async (tx) => {
+    const created = await tx.invProduct.create({
+      data: {
+        spaceId: resolved.space.id,
+        name,
+        nameEn: nameEn ?? null,
+        code: code ?? null,
+        brandId: brandId ?? null,
+        groupId,
+        manufacturer: manufacturer ?? null,
+        manufactureCountry: manufactureCountry ?? null,
+        manufactureDate: manufactureDate ? new Date(manufactureDate) : null,
+        features: features ?? undefined,
+        certifications: certifications ?? undefined,
+        msrp: msrp ?? null,
+        description: description ?? null,
+        optionAttributes: optionAttributes ?? undefined,
+      },
+    })
+
+    await tx.invProductOption.createMany({
+      data: optionsToCreate.map((o) => ({
+        productId: created.id,
+        name: o.name,
+        sku: o.sku ?? null,
+        costPrice: o.costPrice ?? null,
+        retailPrice: o.retailPrice ?? null,
+        sizeLabel: o.sizeLabel ?? null,
+        setSizeLabel: o.setSizeLabel ?? null,
+        attributeValues: o.attributeValues ?? undefined,
+      })),
+    })
+
+    return tx.invProduct.findUnique({
+      where: { id: created.id },
+      include: {
+        brand: { select: { id: true, name: true } },
+        options: true,
+      },
+    })
   })
 
   return NextResponse.json({ product }, { status: 201 })
