@@ -40,11 +40,11 @@ export function RevenueKpiCards() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) {
-          // 전체 채널 합계 계산
-          const summary = data.summary ?? data
+          // API 응답 shape: { totals: { orderCount, totalRevenue, avgOrder } }
+          const totals = data.totals ?? {}
           setRevenue({
-            totalRevenue: summary.totalRevenue ?? 0,
-            totalOrders: summary.totalOrders ?? 0,
+            totalRevenue: Number(totals.totalRevenue ?? 0),
+            totalOrders: Number(totals.orderCount ?? 0),
           })
         }
       })

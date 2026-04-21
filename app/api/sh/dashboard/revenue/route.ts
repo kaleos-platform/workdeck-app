@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   const fromParam = searchParams.get('from')
   const toParam = searchParams.get('to')
   const channelIdsParam = searchParams.get('channelIds')
+  const groupBy = searchParams.get('groupBy') // 'date' | 'channel' | null (default: channel)
 
   if (!fromParam || !toParam) {
     return errorResponse('from, to 쿼리 파라미터가 필요합니다', 400)
@@ -55,6 +56,62 @@ export async function GET(req: NextRequest) {
   }
 
   const targetChannelIds = channels.map((c) => c.id)
+
+  // ───── groupBy=date: 날짜별 × 채널별 집계 (차트용) ────────────────────────
+  if (groupBy === 'date') {
+    const dateOrders = await prisma.delOrder.findMany({
+      where: {
+        spaceId: resolved.space.id,
+        channelId: { in: targetChannelIds },
+        orderDate: { gte: from, lte: to },
+      },
+      select: {
+        channelId: true,
+        orderDate: true,
+        paymentAmount: true,
+      },
+    })
+
+    const channelNameById = new Map(channels.map((c) => [c.id, c.name]))
+    type DateKey = string // YYYY-MM-DD (KST)
+    const keyMap = new Map<
+      string,
+      {
+        date: DateKey
+        channelId: string
+        channelName: string
+        totalRevenue: number
+        orderCount: number
+      }
+    >()
+
+    for (const order of dateOrders) {
+      if (!order.channelId) continue
+      // KST 기준으로 YYYY-MM-DD 계산 (UTC+9)
+      const kstMs = order.orderDate.getTime() + 9 * 60 * 60 * 1000
+      const date = new Date(kstMs).toISOString().slice(0, 10)
+      const key = `${date}|${order.channelId}`
+      const entry = keyMap.get(key) ?? {
+        date,
+        channelId: order.channelId,
+        channelName: channelNameById.get(order.channelId) ?? '',
+        totalRevenue: 0,
+        orderCount: 0,
+      }
+      entry.orderCount += 1
+      entry.totalRevenue += Number(order.paymentAmount ?? 0)
+      keyMap.set(key, entry)
+    }
+
+    const rows = Array.from(keyMap.values())
+      .map((r) => ({ ...r, totalRevenue: Math.round(r.totalRevenue) }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+
+    return NextResponse.json({
+      period: { from: fromParam, to: toParam },
+      rows,
+    })
+  }
 
   // 현재 기간 집계
   const currentPeriodDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1

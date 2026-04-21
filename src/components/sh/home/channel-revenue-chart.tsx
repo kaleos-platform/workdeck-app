@@ -27,7 +27,7 @@ type RevenueRow = {
   channelId: string
   channelName: string
   totalRevenue: number
-  totalOrders: number
+  orderCount: number
 }
 
 type ChartDataPoint = {
@@ -103,13 +103,14 @@ export function ChannelRevenueChart() {
       const res = await fetch(`/api/sh/dashboard/revenue?${params.toString()}`)
       if (!res.ok) return
       const data = await res.json()
-      const rows: RevenueRow[] = data.rows ?? data.daily ?? []
+      const rows: RevenueRow[] = data.rows ?? []
 
-      // 날짜 × 채널 구조로 변환
+      // 날짜 × 채널 구조로 변환 (row.date 가 없으면 스킵 — 채널별 집계 응답 방어)
       const byDate: Record<string, ChartDataPoint> = {}
       rows.forEach((row) => {
+        if (!row.date) return
         if (!byDate[row.date]) byDate[row.date] = { date: row.date }
-        byDate[row.date][row.channelId] = row.totalRevenue
+        byDate[row.date][row.channelId] = Number(row.totalRevenue ?? 0)
       })
 
       // 날짜 정렬

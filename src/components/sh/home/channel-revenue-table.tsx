@@ -19,9 +19,17 @@ type ChannelSummaryRow = {
   channelId: string
   channelName: string
   totalRevenue: number
-  totalOrders: number
-  avgOrderAmount: number
+  orderCount: number
+  avgOrder: number
   prevMonthRevenue: number
+}
+
+type ApiRevenueRow = {
+  channelId: string
+  channelName: string
+  totalRevenue: number
+  orderCount: number
+  avgOrder: number
 }
 
 function formatKRW(value: number): string {
@@ -72,28 +80,29 @@ export function ChannelRevenueTable() {
       ).then((res) => (res.ok ? res.json() : null)),
     ])
       .then(([thisData, prevData]) => {
-        const thisRows: Array<{
-          channelId: string
-          channelName: string
-          totalRevenue: number
-          totalOrders: number
-        }> = thisData?.channels ?? thisData?.rows ?? []
+        const thisRows: ApiRevenueRow[] = thisData?.rows ?? []
+        const prevRows: ApiRevenueRow[] = prevData?.rows ?? []
         const prevMap: Record<string, number> = {}
-        ;(prevData?.channels ?? prevData?.rows ?? []).forEach(
-          (r: { channelId: string; totalRevenue: number }) => {
-            prevMap[r.channelId] = r.totalRevenue
-          }
-        )
+        prevRows.forEach((r) => {
+          prevMap[r.channelId] = Number(r.totalRevenue ?? 0)
+        })
 
         setRows(
-          thisRows.map((r) => ({
-            channelId: r.channelId,
-            channelName: r.channelName,
-            totalRevenue: r.totalRevenue,
-            totalOrders: r.totalOrders,
-            avgOrderAmount: r.totalOrders > 0 ? Math.round(r.totalRevenue / r.totalOrders) : 0,
-            prevMonthRevenue: prevMap[r.channelId] ?? 0,
-          }))
+          thisRows.map((r) => {
+            const totalRevenue = Number(r.totalRevenue ?? 0)
+            const orderCount = Number(r.orderCount ?? 0)
+            const avgOrder =
+              Number(r.avgOrder ?? 0) ||
+              (orderCount > 0 ? Math.round(totalRevenue / orderCount) : 0)
+            return {
+              channelId: r.channelId,
+              channelName: r.channelName,
+              totalRevenue,
+              orderCount,
+              avgOrder,
+              prevMonthRevenue: prevMap[r.channelId] ?? 0,
+            }
+          })
         )
       })
       .catch(() => {})
@@ -142,10 +151,10 @@ export function ChannelRevenueTable() {
                     {formatKRW(row.totalRevenue)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {row.totalOrders.toLocaleString('ko-KR')}
+                    {row.orderCount.toLocaleString('ko-KR')}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {formatKRW(row.avgOrderAmount)}
+                    {formatKRW(row.avgOrder)}
                   </TableCell>
                   <TableCell className="text-right">
                     {renderMoM(row.totalRevenue, row.prevMonthRevenue)}
