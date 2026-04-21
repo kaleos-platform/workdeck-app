@@ -55,6 +55,11 @@ export async function PATCH(
 
   const parsed = productSchema.partial().safeParse(body)
   if (!parsed.success) {
+    console.error('[products PATCH] invalid input', {
+      productId,
+      body,
+      errors: parsed.error.flatten(),
+    })
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 

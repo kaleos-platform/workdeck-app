@@ -20,8 +20,18 @@ export const productOptionSchema = z.object({
   sku: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
     .optional(),
-  costPrice: z.number().nonnegative().optional(),
-  retailPrice: z.number().nonnegative().optional(),
+  costPrice: z
+    .preprocess(
+      (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+      z.number().nonnegative()
+    )
+    .optional(),
+  retailPrice: z
+    .preprocess(
+      (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+      z.number().nonnegative()
+    )
+    .optional(),
   sizeLabel: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(50))
     .optional(),
@@ -51,7 +61,9 @@ export const productSchema = z.object({
   brandId: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().cuid())
     .optional(),
-  groupId: z.string().cuid(), // 카테고리 필수
+  // 카테고리 필수 — POST에선 required, PATCH에선 partial()로 optional이 된다.
+  // null/'' 전달 시 undefined로 정규화해서 Zod cuid 검증을 건너뛴다 (partial에서만 OK).
+  groupId: z.preprocess((v) => (v === null || v === '' ? undefined : v), z.string().cuid()),
   manufacturer: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
     .optional(),
@@ -68,7 +80,12 @@ export const productSchema = z.object({
   features: z.array(z.string()).optional(),
   // 프론트가 문자열 배열로 전송 — 인증번호 한 줄씩
   certifications: z.array(z.string()).optional(),
-  msrp: z.number().nonnegative().optional(),
+  msrp: z
+    .preprocess(
+      (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+      z.number().nonnegative()
+    )
+    .optional(),
   description: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(2000))
     .optional(),

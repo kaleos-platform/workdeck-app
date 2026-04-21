@@ -137,7 +137,17 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
         }),
       })
       const resData = await res.json()
-      if (!res.ok) throw new Error(resData?.message ?? '저장 실패')
+      if (!res.ok) {
+        const fieldErrors = resData?.errors?.fieldErrors as
+          | Record<string, string[] | undefined>
+          | undefined
+        const firstField = fieldErrors
+          ? Object.entries(fieldErrors).find(([, v]) => v && v.length > 0)
+          : undefined
+        const suffix = firstField ? ` (${firstField[0]}: ${firstField[1]?.[0]})` : ''
+        const detail = resData?.detail ? `: ${resData.detail}` : ''
+        throw new Error((resData?.message ?? '저장 실패') + suffix + detail)
+      }
       toast.success('상품 정보가 저장되었습니다')
       onSaved?.()
     } catch (err) {
