@@ -52,6 +52,11 @@ export async function POST(
 
   const parsed = channelFeeRateSchema.safeParse(body)
   if (!parsed.success) {
+    console.error('[fee-rates POST] invalid input', {
+      channelId,
+      body,
+      errors: parsed.error.flatten(),
+    })
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
@@ -71,6 +76,15 @@ export async function POST(
     ) {
       return errorResponse('이미 동일한 카테고리명의 수수료율이 존재합니다', 409)
     }
-    throw err
+    console.error('[fee-rates POST] unexpected', {
+      channelId,
+      categoryName,
+      ratePercent,
+      vatIncluded,
+      err,
+    })
+    return errorResponse('수수료율 저장 중 오류가 발생했습니다', 500, {
+      detail: err instanceof Error ? err.message : String(err),
+    })
   }
 }

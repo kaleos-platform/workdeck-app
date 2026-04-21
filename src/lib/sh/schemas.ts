@@ -131,8 +131,16 @@ export type ChannelGroupInput = z.infer<typeof channelGroupSchema>
 // ─── 채널 수수료율 ──────────────────────────────────────────────────────────
 
 export const channelFeeRateSchema = z.object({
-  categoryName: z.string().min(1).max(100),
-  ratePercent: z.number().min(0).max(100),
+  // 클라이언트가 null/공백 전송 시에도 유효성 검증을 통과하지 않도록 preprocess로 정규화
+  categoryName: z.preprocess(
+    (v) => (typeof v === 'string' ? v.trim() : v),
+    z.string().min(1, '카테고리를 선택하세요').max(100)
+  ),
+  // 문자열로 전송되더라도 number 로 강제 변환
+  ratePercent: z.preprocess(
+    (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+    z.number().min(0).max(100)
+  ),
   vatIncluded: z.boolean().default(true),
 })
 export type ChannelFeeRateInput = z.infer<typeof channelFeeRateSchema>

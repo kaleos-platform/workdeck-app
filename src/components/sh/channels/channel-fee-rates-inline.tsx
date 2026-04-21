@@ -134,7 +134,18 @@ export function ChannelFeeRatesInline({ channelId }: Props) {
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message ?? '저장 실패')
+      if (!res.ok) {
+        // Zod 에러가 있으면 첫 번째 필드 에러를 같이 표시
+        const fieldErrors = data?.errors?.fieldErrors as
+          | Record<string, string[] | undefined>
+          | undefined
+        const firstField = fieldErrors
+          ? Object.entries(fieldErrors).find(([, v]) => v && v.length > 0)
+          : undefined
+        const suffix = firstField ? ` (${firstField[0]}: ${firstField[1]?.[0]})` : ''
+        const detail = data?.detail ? `: ${data.detail}` : ''
+        throw new Error((data?.message ?? '저장 실패') + suffix + detail)
+      }
       toast.success(editingFee ? '수수료율이 수정되었습니다' : '수수료율이 추가되었습니다')
       setDialogOpen(false)
       await loadFeeRates()
