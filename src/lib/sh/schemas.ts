@@ -2,14 +2,14 @@ import { z } from 'zod'
 
 // ─── 브랜드 ──────────────────────────────────────────────────────────────────
 
+// 빈 문자열이나 null을 undefined로 정규화하는 전처리기 — 프론트가 비어있는 필드를
+// null 또는 ''로 보내는 케이스를 모두 허용한다
+const emptyToUndefined = z.preprocess((v) => (v === null || v === '' ? undefined : v), z.string())
+
 export const brandSchema = z.object({
   name: z.string().min(1, '브랜드명을 입력하세요').max(100),
-  logoUrl: z
-    .string()
-    .url()
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  memo: z.string().max(500).optional(),
+  logoUrl: emptyToUndefined.pipe(z.string().url()).optional(),
+  memo: emptyToUndefined.pipe(z.string().max(500)).optional(),
 })
 export type BrandInput = z.infer<typeof brandSchema>
 

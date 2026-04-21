@@ -88,13 +88,15 @@ export function BrandManager() {
     try {
       const url = editing ? `/api/sh/brands/${editing.id}` : '/api/sh/brands'
       const method = editing ? 'PATCH' : 'POST'
+      const trimmedLogo = logoUrl.trim()
+      const trimmedMemo = memo.trim()
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
-          logoUrl: logoUrl.trim() || null,
-          memo: memo.trim() || null,
+          ...(trimmedLogo ? { logoUrl: trimmedLogo } : {}),
+          ...(trimmedMemo ? { memo: trimmedMemo } : {}),
         }),
       })
       const data = await res.json()

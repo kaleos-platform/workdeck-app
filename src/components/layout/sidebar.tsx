@@ -217,8 +217,8 @@ export function Sidebar({
   }
 
   return (
-    <div className="flex h-full w-64 flex-shrink-0 flex-col space-y-4 bg-slate-900 py-4 text-white">
-      <div className="px-3 py-2">
+    <div className="flex h-full w-64 flex-shrink-0 flex-col bg-slate-900 py-4 text-white">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         {isWorkdeckSidebar && (
           <>
             <div className="mb-2">
@@ -419,7 +419,7 @@ export function Sidebar({
         )}
       </div>
 
-      <div className="mt-auto px-3 py-2">
+      <div className="flex-shrink-0 border-t border-white/5 px-3 py-2">
         <Button
           variant="ghost"
           className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"
