@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -13,7 +11,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 
 type ChannelSummaryRow = {
   channelId: string
@@ -140,7 +137,6 @@ export function ChannelRevenueTable() {
                 <TableHead className="text-right">주문수</TableHead>
                 <TableHead className="text-right">평균 주문액</TableHead>
                 <TableHead className="text-right">전월 대비</TableHead>
-                <TableHead className="w-16" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -158,13 +154,6 @@ export function ChannelRevenueTable() {
                   </TableCell>
                   <TableCell className="text-right">
                     {renderMoM(row.totalRevenue, row.prevMonthRevenue)}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/d/seller-hub/channels/${row.channelId}`} aria-label="채널 상세">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

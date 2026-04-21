@@ -40,8 +40,3 @@ export const SELLER_HUB_SHIPPING_INTEGRATION_PATH = `${SELLER_HUB_BASE_PATH}/shi
 
 // 채널 섹션
 export const SELLER_HUB_CHANNELS_PATH = `${SELLER_HUB_BASE_PATH}/channels`
-export const SELLER_HUB_CHANNEL_GROUPS_PATH = `${SELLER_HUB_BASE_PATH}/channels/groups`
-export const SELLER_HUB_CHANNEL_FEES_PATH = `${SELLER_HUB_BASE_PATH}/channels/fees`
-export function getSellerHubChannelPath(id: string) {
-  return `${SELLER_HUB_CHANNELS_PATH}/${id}`
-}

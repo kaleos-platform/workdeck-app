@@ -64,21 +64,28 @@ export type ProductionBatchInput = z.infer<typeof productionBatchSchema>
 
 // ─── 채널 ──────────────────────────────────────────────────────────────────
 
+// null / '' 를 undefined 로 정규화 — 프론트가 null로 보내도 optional 필드가 안전하게 처리됨
+const toUndef = (v: unknown) => (v === null || v === '' ? undefined : v)
+
 export const channelSchema = z.object({
   name: z.string().min(1).max(100),
   kind: z
     .enum(['ONLINE_MARKETPLACE', 'ONLINE_MALL', 'OFFLINE', 'INTERNAL_TRANSFER', 'OTHER'])
     .default('ONLINE_MARKETPLACE'),
-  groupId: z.string().cuid().optional(),
+  // groupId: null|'' → undefined → cuid 검증 skip
+  groupId: z.preprocess(toUndef, z.string().cuid()).optional(),
   isActive: z.boolean().default(true),
-  adminUrl: z
-    .string()
-    .url()
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
+  // adminUrl: null|'' → undefined → url 검증 skip
+  adminUrl: z.preprocess(toUndef, z.string().url()).optional(),
   freeShipping: z.boolean().default(false),
   usesMarketingBudget: z.boolean().default(false),
-  shippingFee: z.number().nonnegative().optional(),
+  // shippingFee: null|'' → undefined → number 검증 skip
+  shippingFee: z
+    .preprocess(
+      (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+      z.number().nonnegative()
+    )
+    .optional(),
   vatIncludedInFee: z.boolean().default(true),
   requireOrderNumber: z.boolean().default(true),
   requirePayment: z.boolean().default(true),

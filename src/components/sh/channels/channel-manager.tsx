@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { Pencil, Plus } from 'lucide-react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,6 +32,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ChannelFeeRatesInline } from './channel-fee-rates-inline'
+
+// ─── 타입 ────────────────────────────────────────────────────────────────────
 
 type ChannelKind = 'ONLINE_MARKETPLACE' | 'ONLINE_MALL' | 'OFFLINE' | 'INTERNAL_TRANSFER' | 'OTHER'
 
@@ -43,7 +46,10 @@ const KIND_LABELS: Record<ChannelKind, string> = {
   OTHER: '기타',
 }
 
-type ChannelGroup = { id: string; name: string }
+type ChannelGroup = {
+  id: string
+  name: string
+}
 
 type Channel = {
   id: string
@@ -59,17 +65,33 @@ type Channel = {
   isActive: boolean
 }
 
+// 채널 편집 폼에서 그룹 없음을 표현하는 센티널 값
 const NO_GROUP = '__none__'
+// 필터에서 "전체"를 표현하는 센티널 값
+const ALL = '__all__'
+
+// ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
 export function ShChannelManager() {
+  // ── 데이터 상태 ──
   const [channels, setChannels] = useState<Channel[]>([])
   const [groups, setGroups] = useState<ChannelGroup[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<Channel | null>(null)
-  const [saving, setSaving] = useState(false)
 
-  // 폼 상태
+  // ── 채널 테이블 확장 ──
+  const [expandedChannelId, setExpandedChannelId] = useState<string | null>(null)
+
+  // ── 채널 필터 ──
+  const [filterGroupId, setFilterGroupId] = useState(ALL)
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all')
+  const [filterSearch, setFilterSearch] = useState('')
+
+  // ── 채널 다이얼로그 상태 ──
+  const [channelDialogOpen, setChannelDialogOpen] = useState(false)
+  const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
+  const [savingChannel, setSavingChannel] = useState(false)
+
+  // 채널 폼 필드
   const [fName, setFName] = useState('')
   const [fKind, setFKind] = useState<ChannelKind>('ONLINE_MARKETPLACE')
   const [fGroupId, setFGroupId] = useState(NO_GROUP)
@@ -79,6 +101,14 @@ export function ShChannelManager() {
   const [fShippingFee, setFShippingFee] = useState('')
   const [fVatIncluded, setFVatIncluded] = useState(false)
   const [fIsActive, setFIsActive] = useState(true)
+
+  // ── 그룹 다이얼로그 상태 ──
+  const [groupDialogOpen, setGroupDialogOpen] = useState(false)
+  const [editingGroup, setEditingGroup] = useState<ChannelGroup | null>(null)
+  const [gName, setGName] = useState('')
+  const [savingGroup, setSavingGroup] = useState(false)
+
+  // ── 데이터 로드 ──
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -102,8 +132,28 @@ export function ShChannelManager() {
     void loadData()
   }, [loadData])
 
-  function openNew() {
-    setEditing(null)
+  // ── 채널 필터 적용 ──
+
+  const filteredChannels = useMemo(() => {
+    return channels.filter((ch) => {
+      if (filterGroupId !== ALL) {
+        if (filterGroupId === NO_GROUP && ch.groupId !== null) return false
+        if (filterGroupId !== NO_GROUP && ch.groupId !== filterGroupId) return false
+      }
+      if (filterStatus === 'active' && !ch.isActive) return false
+      if (filterStatus === 'inactive' && ch.isActive) return false
+      if (filterSearch) {
+        const q = filterSearch.toLowerCase()
+        return ch.name.toLowerCase().includes(q)
+      }
+      return true
+    })
+  }, [channels, filterGroupId, filterStatus, filterSearch])
+
+  // ── 채널 편집 다이얼로그 ──
+
+  function openNewChannel() {
+    setEditingChannel(null)
     setFName('')
     setFKind('ONLINE_MARKETPLACE')
     setFGroupId(NO_GROUP)
@@ -113,11 +163,11 @@ export function ShChannelManager() {
     setFShippingFee('')
     setFVatIncluded(false)
     setFIsActive(true)
-    setDialogOpen(true)
+    setChannelDialogOpen(true)
   }
 
-  function openEdit(ch: Channel) {
-    setEditing(ch)
+  function openEditChannel(ch: Channel) {
+    setEditingChannel(ch)
     setFName(ch.name)
     setFKind(ch.kind)
     setFGroupId(ch.groupId ?? NO_GROUP)
@@ -127,46 +177,50 @@ export function ShChannelManager() {
     setFShippingFee(ch.shippingFee != null ? String(ch.shippingFee) : '')
     setFVatIncluded(ch.vatIncludedInFee)
     setFIsActive(ch.isActive)
-    setDialogOpen(true)
+    setChannelDialogOpen(true)
   }
 
-  async function handleSave() {
+  async function handleSaveChannel() {
     if (!fName.trim()) {
       toast.error('채널명을 입력해 주세요')
       return
     }
-    setSaving(true)
+    setSavingChannel(true)
     try {
-      const url = editing ? `/api/channels/${editing.id}` : '/api/channels'
-      const method = editing ? 'PATCH' : 'POST'
+      const url = editingChannel ? `/api/channels/${editingChannel.id}` : '/api/channels'
+      const method = editingChannel ? 'PATCH' : 'POST'
+
+      // null 키를 생략하여 전송 — Zod preprocess가 undefined로 처리하므로 optional 검증 통과
+      const body: Record<string, unknown> = {
+        name: fName.trim(),
+        kind: fKind,
+        freeShipping: fFreeShipping,
+        usesMarketingBudget: fUsesMarketing,
+        vatIncludedInFee: fVatIncluded,
+        isActive: fIsActive,
+      }
+      if (fGroupId !== NO_GROUP) body.groupId = fGroupId
+      if (fAdminUrl.trim()) body.adminUrl = fAdminUrl.trim()
+      if (fShippingFee) body.shippingFee = parseFloat(fShippingFee)
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: fName.trim(),
-          kind: fKind,
-          groupId: fGroupId !== NO_GROUP ? fGroupId : null,
-          adminUrl: fAdminUrl.trim() || null,
-          freeShipping: fFreeShipping,
-          usesMarketingBudget: fUsesMarketing,
-          shippingFee: fShippingFee ? parseFloat(fShippingFee) : null,
-          vatIncludedInFee: fVatIncluded,
-          isActive: fIsActive,
-        }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
-      toast.success(editing ? '채널이 수정되었습니다' : '채널이 생성되었습니다')
-      setDialogOpen(false)
+      toast.success(editingChannel ? '채널이 수정되었습니다' : '채널이 생성되었습니다')
+      setChannelDialogOpen(false)
       await loadData()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
     } finally {
-      setSaving(false)
+      setSavingChannel(false)
     }
   }
 
-  async function toggleActive(ch: Channel) {
+  async function toggleChannelActive(ch: Channel) {
     try {
       const res = await fetch(`/api/channels/${ch.id}`, {
         method: 'PATCH',
@@ -182,77 +236,286 @@ export function ShChannelManager() {
     }
   }
 
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between space-y-0">
-        <div>
-          <CardTitle>채널 관리</CardTitle>
-          <CardDescription>판매 채널을 등록하고 관리합니다</CardDescription>
-        </div>
-        <Button size="sm" onClick={openNew}>
-          <Plus className="mr-1 h-4 w-4" />새 채널
-        </Button>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <p className="text-sm text-muted-foreground">불러오는 중...</p>
-        ) : channels.length === 0 ? (
-          <p className="text-sm text-muted-foreground">등록된 채널이 없습니다</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>채널명</TableHead>
-                <TableHead>종류</TableHead>
-                <TableHead>그룹</TableHead>
-                <TableHead>상태</TableHead>
-                <TableHead className="text-right">액션</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {channels.map((ch) => (
-                <TableRow key={ch.id}>
-                  <TableCell className="font-medium">{ch.name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {KIND_LABELS[ch.kind]}
-                  </TableCell>
-                  <TableCell>
-                    {ch.group ? (
-                      <Badge variant="secondary">{ch.group.name}</Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {ch.isActive ? <Badge>활성</Badge> : <Badge variant="outline">비활성</Badge>}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEdit(ch)}
-                        aria-label="수정"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => toggleActive(ch)}>
-                        {ch.isActive ? '비활성화' : '활성화'}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
+  // ── 그룹 편집 다이얼로그 ──
 
-      {/* 채널 다이얼로그 */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+  function openNewGroup() {
+    setEditingGroup(null)
+    setGName('')
+    setGroupDialogOpen(true)
+  }
+
+  function openEditGroup(group: ChannelGroup) {
+    setEditingGroup(group)
+    setGName(group.name)
+    setGroupDialogOpen(true)
+  }
+
+  async function handleSaveGroup() {
+    if (!gName.trim()) {
+      toast.error('그룹 이름을 입력해 주세요')
+      return
+    }
+    setSavingGroup(true)
+    try {
+      const url = editingGroup ? `/api/channel-groups/${editingGroup.id}` : '/api/channel-groups'
+      const method = editingGroup ? 'PATCH' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: gName.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message ?? '저장 실패')
+      toast.success(editingGroup ? '그룹이 수정되었습니다' : '그룹이 생성되었습니다')
+      setGroupDialogOpen(false)
+      await loadData()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '저장 실패')
+    } finally {
+      setSavingGroup(false)
+    }
+  }
+
+  async function handleDeleteGroup(group: ChannelGroup) {
+    if (!confirm(`"${group.name}" 그룹을 삭제하시겠습니까?`)) return
+    try {
+      const res = await fetch(`/api/channel-groups/${group.id}`, { method: 'DELETE' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
+      toast.success('그룹이 삭제되었습니다')
+      await loadData()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '삭제 실패')
+    }
+  }
+
+  // ── 렌더 ──────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="space-y-6">
+      {/* ── 채널 그룹 섹션 ─────────────────────────────────────────────────── */}
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between space-y-0">
+          <div>
+            <CardTitle>채널 그룹</CardTitle>
+            <CardDescription>채널을 묶어 분류합니다</CardDescription>
+          </div>
+          <Button size="sm" variant="outline" onClick={openNewGroup}>
+            <Plus className="mr-1 h-4 w-4" />새 그룹
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">불러오는 중...</p>
+          ) : groups.length === 0 ? (
+            <p className="text-sm text-muted-foreground">등록된 그룹이 없습니다</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {groups.map((group) => {
+                // 클라이언트에서 그룹별 채널 수 계산
+                const count = channels.filter((ch) => ch.groupId === group.id).length
+                return (
+                  <div
+                    key={group.id}
+                    className="flex items-center gap-2 rounded-md border bg-card px-3 py-1.5"
+                  >
+                    <span className="text-sm font-medium">{group.name}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {count}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => openEditGroup(group)}
+                      aria-label="그룹 수정"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleDeleteGroup(group)}
+                      aria-label="그룹 삭제"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── 채널 테이블 섹션 ────────────────────────────────────────────────── */}
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between space-y-0">
+          <div>
+            <CardTitle>채널</CardTitle>
+            <CardDescription>판매 채널을 등록하고 수수료를 관리합니다</CardDescription>
+          </div>
+          <Button size="sm" onClick={openNewChannel}>
+            <Plus className="mr-1 h-4 w-4" />새 채널
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {/* 필터 바 */}
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Select value={filterGroupId} onValueChange={setFilterGroupId}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="그룹 전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>그룹 전체</SelectItem>
+                <SelectItem value={NO_GROUP}>그룹 없음</SelectItem>
+                {groups.map((g) => (
+                  <SelectItem key={g.id} value={g.id}>
+                    {g.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filterStatus}
+              onValueChange={(v) => setFilterStatus(v as typeof filterStatus)}
+            >
+              <SelectTrigger className="w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 상태</SelectItem>
+                <SelectItem value="active">활성</SelectItem>
+                <SelectItem value="inactive">비활성</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              className="w-48"
+              placeholder="채널명 검색"
+              value={filterSearch}
+              onChange={(e) => setFilterSearch(e.target.value)}
+            />
+          </div>
+
+          {/* 테이블 */}
+          {loading ? (
+            <p className="text-sm text-muted-foreground">불러오는 중...</p>
+          ) : filteredChannels.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {channels.length === 0 ? '등록된 채널이 없습니다' : '조건에 맞는 채널이 없습니다'}
+            </p>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {/* 확장 토글 열 */}
+                    <TableHead className="w-9" />
+                    <TableHead>채널명</TableHead>
+                    <TableHead>종류</TableHead>
+                    <TableHead>그룹</TableHead>
+                    <TableHead>배송비</TableHead>
+                    <TableHead>상태</TableHead>
+                    <TableHead className="text-right">액션</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredChannels.map((ch) => {
+                    const isExpanded = expandedChannelId === ch.id
+                    return (
+                      <Fragment key={ch.id}>
+                        {/* 채널 기본 행 */}
+                        <TableRow
+                          className="cursor-pointer"
+                          onClick={() =>
+                            setExpandedChannelId((cur) => (cur === ch.id ? null : ch.id))
+                          }
+                        >
+                          <TableCell>
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">{ch.name}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {KIND_LABELS[ch.kind]}
+                          </TableCell>
+                          <TableCell>
+                            {ch.group ? (
+                              <Badge variant="secondary">{ch.group.name}</Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {ch.freeShipping
+                              ? '무료'
+                              : ch.shippingFee != null
+                                ? new Intl.NumberFormat('ko-KR', {
+                                    style: 'currency',
+                                    currency: 'KRW',
+                                    maximumFractionDigits: 0,
+                                  }).format(ch.shippingFee)
+                                : '-'}
+                          </TableCell>
+                          <TableCell>
+                            {ch.isActive ? (
+                              <Badge>활성</Badge>
+                            ) : (
+                              <Badge variant="outline">비활성</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {/* stopPropagation으로 행 확장 토글과 충돌 방지 */}
+                            <div
+                              className="flex items-center justify-end gap-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openEditChannel(ch)}
+                                aria-label="수정"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleChannelActive(ch)}
+                              >
+                                {ch.isActive ? '비활성화' : '활성화'}
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* 수수료 확장 행 — 채널 클릭 시 표시 */}
+                        {isExpanded && (
+                          <TableRow className="hover:bg-transparent">
+                            <TableCell colSpan={7} className="p-0">
+                              <ChannelFeeRatesInline channelId={ch.id} />
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </Fragment>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── 채널 편집 다이얼로그 ─────────────────────────────────────────────── */}
+      <Dialog open={channelDialogOpen} onOpenChange={setChannelDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? '채널 수정' : '새 채널 만들기'}</DialogTitle>
+            <DialogTitle>{editingChannel ? '채널 수정' : '새 채널 만들기'}</DialogTitle>
             <DialogDescription>판매 채널 정보를 입력해 주세요</DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2 pr-1">
@@ -353,7 +616,7 @@ export function ShChannelManager() {
                 </div>
                 <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
               </div>
-              {editing && (
+              {editingChannel && (
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="ch-active">활성 상태</Label>
@@ -365,15 +628,50 @@ export function ShChannelManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
+            <Button
+              variant="outline"
+              onClick={() => setChannelDialogOpen(false)}
+              disabled={savingChannel}
+            >
               취소
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? '저장 중...' : '저장'}
+            <Button onClick={handleSaveChannel} disabled={savingChannel}>
+              {savingChannel ? '저장 중...' : '저장'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+
+      {/* ── 그룹 편집 다이얼로그 ──────────────────────────────────────────────── */}
+      <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingGroup ? '그룹 수정' : '새 채널 그룹'}</DialogTitle>
+            <DialogDescription>채널 그룹 이름을 입력해 주세요</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="cg-name">그룹명 *</Label>
+            <Input
+              id="cg-name"
+              value={gName}
+              onChange={(e) => setGName(e.target.value)}
+              placeholder="예: 온라인몰"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setGroupDialogOpen(false)}
+              disabled={savingGroup}
+            >
+              취소
+            </Button>
+            <Button onClick={handleSaveGroup} disabled={savingGroup}>
+              {savingGroup ? '저장 중...' : '저장'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }

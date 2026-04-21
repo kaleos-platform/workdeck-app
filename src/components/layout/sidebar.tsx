@@ -15,7 +15,6 @@ import {
   Home,
   Settings,
   Package,
-  Store,
   Truck,
   Boxes,
 } from 'lucide-react'
@@ -48,8 +47,6 @@ import {
   SELLER_HUB_SHIPPING_METHODS_PATH,
   SELLER_HUB_SHIPPING_INTEGRATION_PATH,
   SELLER_HUB_CHANNELS_PATH,
-  SELLER_HUB_CHANNEL_GROUPS_PATH,
-  SELLER_HUB_CHANNEL_FEES_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 
@@ -99,10 +96,10 @@ const SELLER_HUB_SHIPPING_ITEMS: SidebarItem[] = [
   { label: '데이터 연동', href: SELLER_HUB_SHIPPING_INTEGRATION_PATH },
 ]
 
-const SELLER_HUB_CHANNELS_ITEMS: SidebarItem[] = [
+// "설정" 섹션 — 채널 관리 + 일반 설정을 한 곳으로 통합
+const SELLER_HUB_SETTINGS_ITEMS: SidebarItem[] = [
   { label: '채널 관리', href: SELLER_HUB_CHANNELS_PATH },
-  { label: '채널 그룹', href: SELLER_HUB_CHANNEL_GROUPS_PATH },
-  { label: '수수료 설정', href: SELLER_HUB_CHANNEL_FEES_PATH },
+  { label: '일반 설정', href: SELLER_HUB_SETTINGS_PATH },
 ]
 
 const COUPANG_MAIN_ROUTES = [
@@ -289,21 +286,8 @@ export function Sidebar({
             <SidebarSection label="상품" icon={Package} items={SELLER_HUB_PRODUCTS_ITEMS} />
             <SidebarSection label="재고" icon={Boxes} items={SELLER_HUB_INVENTORY_ITEMS} />
             <SidebarSection label="배송" icon={Truck} items={SELLER_HUB_SHIPPING_ITEMS} />
-            <SidebarSection label="채널" icon={Store} items={SELLER_HUB_CHANNELS_ITEMS} />
-            {/* 설정 */}
-            <Link
-              href={SELLER_HUB_SETTINGS_PATH}
-              className={cn(
-                'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                pathname === SELLER_HUB_SETTINGS_PATH ||
-                  pathname.startsWith(`${SELLER_HUB_SETTINGS_PATH}/`)
-                  ? 'bg-white/10 text-white'
-                  : 'text-zinc-400'
-              )}
-            >
-              <Settings className="mr-3 h-5 w-5 flex-shrink-0" />
-              <span className="truncate">설정</span>
-            </Link>
+            {/* 설정 섹션 — 채널 관리 + 일반 설정 통합 */}
+            <SidebarSection label="설정" icon={Settings} items={SELLER_HUB_SETTINGS_ITEMS} />
           </div>
         )}
 
