@@ -7,7 +7,10 @@
     "app/api/reports/upload/route.ts": {
       "maxDuration": 60
     },
-    "app/api/inv/import/route.ts": {
+    "app/api/sh/inventory/import/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/sh/shipping/import/route.ts": {
       "maxDuration": 60
     }
   }
