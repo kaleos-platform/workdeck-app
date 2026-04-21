@@ -82,8 +82,6 @@ export const ModelName = {
   InvProduct: 'InvProduct',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
-  InvChannelGroup: 'InvChannelGroup',
-  InvSalesChannel: 'InvSalesChannel',
   InvMovement: 'InvMovement',
   InvStockLevel: 'InvStockLevel',
   InvReorderConfig: 'InvReorderConfig',
@@ -92,13 +90,17 @@ export const ModelName = {
   InvLocationProductMap: 'InvLocationProductMap',
   InvSettings: 'InvSettings',
   DelShippingMethod: 'DelShippingMethod',
-  DelChannelGroup: 'DelChannelGroup',
-  DelSalesChannel: 'DelSalesChannel',
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
   DelColumnMappingPreset: 'DelColumnMappingPreset',
-  DelIntegrationHistory: 'DelIntegrationHistory'
+  DelIntegrationHistory: 'DelIntegrationHistory',
+  Brand: 'Brand',
+  ChannelGroup: 'ChannelGroup',
+  Channel: 'Channel',
+  ChannelFeeRate: 'ChannelFeeRate',
+  ProductionBatch: 'ProductionBatch',
+  ProductPricingSettings: 'ProductPricingSettings'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -557,6 +559,15 @@ export const InvProductScalarFieldEnum = {
   name: 'name',
   code: 'code',
   groupId: 'groupId',
+  brandId: 'brandId',
+  nameEn: 'nameEn',
+  manufacturer: 'manufacturer',
+  manufactureCountry: 'manufactureCountry',
+  manufactureDate: 'manufactureDate',
+  features: 'features',
+  certifications: 'certifications',
+  msrp: 'msrp',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -569,6 +580,10 @@ export const InvProductOptionScalarFieldEnum = {
   productId: 'productId',
   name: 'name',
   sku: 'sku',
+  costPrice: 'costPrice',
+  retailPrice: 'retailPrice',
+  sizeLabel: 'sizeLabel',
+  setSizeLabel: 'setSizeLabel',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -586,28 +601,6 @@ export const InvStorageLocationScalarFieldEnum = {
 } as const
 
 export type InvStorageLocationScalarFieldEnum = (typeof InvStorageLocationScalarFieldEnum)[keyof typeof InvStorageLocationScalarFieldEnum]
-
-
-export const InvChannelGroupScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  createdAt: 'createdAt'
-} as const
-
-export type InvChannelGroupScalarFieldEnum = (typeof InvChannelGroupScalarFieldEnum)[keyof typeof InvChannelGroupScalarFieldEnum]
-
-
-export const InvSalesChannelScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  groupId: 'groupId',
-  isActive: 'isActive',
-  createdAt: 'createdAt'
-} as const
-
-export type InvSalesChannelScalarFieldEnum = (typeof InvSalesChannelScalarFieldEnum)[keyof typeof InvSalesChannelScalarFieldEnum]
 
 
 export const InvMovementScalarFieldEnum = {
@@ -724,32 +717,6 @@ export const DelShippingMethodScalarFieldEnum = {
 export type DelShippingMethodScalarFieldEnum = (typeof DelShippingMethodScalarFieldEnum)[keyof typeof DelShippingMethodScalarFieldEnum]
 
 
-export const DelChannelGroupScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  createdAt: 'createdAt'
-} as const
-
-export type DelChannelGroupScalarFieldEnum = (typeof DelChannelGroupScalarFieldEnum)[keyof typeof DelChannelGroupScalarFieldEnum]
-
-
-export const DelSalesChannelScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  groupId: 'groupId',
-  type: 'type',
-  isActive: 'isActive',
-  requireOrderNumber: 'requireOrderNumber',
-  requirePayment: 'requirePayment',
-  requireProducts: 'requireProducts',
-  createdAt: 'createdAt'
-} as const
-
-export type DelSalesChannelScalarFieldEnum = (typeof DelSalesChannelScalarFieldEnum)[keyof typeof DelSalesChannelScalarFieldEnum]
-
-
 export const DelBatchScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -820,6 +787,93 @@ export const DelIntegrationHistoryScalarFieldEnum = {
 } as const
 
 export type DelIntegrationHistoryScalarFieldEnum = (typeof DelIntegrationHistoryScalarFieldEnum)[keyof typeof DelIntegrationHistoryScalarFieldEnum]
+
+
+export const BrandScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  logoUrl: 'logoUrl',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BrandScalarFieldEnum = (typeof BrandScalarFieldEnum)[keyof typeof BrandScalarFieldEnum]
+
+
+export const ChannelGroupScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelGroupScalarFieldEnum = (typeof ChannelGroupScalarFieldEnum)[keyof typeof ChannelGroupScalarFieldEnum]
+
+
+export const ChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  groupId: 'groupId',
+  name: 'name',
+  kind: 'kind',
+  isActive: 'isActive',
+  adminUrl: 'adminUrl',
+  freeShipping: 'freeShipping',
+  usesMarketingBudget: 'usesMarketingBudget',
+  shippingFee: 'shippingFee',
+  vatIncludedInFee: 'vatIncludedInFee',
+  requireOrderNumber: 'requireOrderNumber',
+  requirePayment: 'requirePayment',
+  requireProducts: 'requireProducts',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelScalarFieldEnum = (typeof ChannelScalarFieldEnum)[keyof typeof ChannelScalarFieldEnum]
+
+
+export const ChannelFeeRateScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  categoryName: 'categoryName',
+  ratePercent: 'ratePercent',
+  vatIncluded: 'vatIncluded',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelFeeRateScalarFieldEnum = (typeof ChannelFeeRateScalarFieldEnum)[keyof typeof ChannelFeeRateScalarFieldEnum]
+
+
+export const ProductionBatchScalarFieldEnum = {
+  id: 'id',
+  optionId: 'optionId',
+  batchNo: 'batchNo',
+  producedAt: 'producedAt',
+  unitCost: 'unitCost',
+  quantity: 'quantity',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductionBatchScalarFieldEnum = (typeof ProductionBatchScalarFieldEnum)[keyof typeof ProductionBatchScalarFieldEnum]
+
+
+export const ProductPricingSettingsScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  defaultOperatingCostPct: 'defaultOperatingCostPct',
+  defaultAdCostPct: 'defaultAdCostPct',
+  defaultPackagingCost: 'defaultPackagingCost',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductPricingSettingsScalarFieldEnum = (typeof ProductPricingSettingsScalarFieldEnum)[keyof typeof ProductPricingSettingsScalarFieldEnum]
 
 
 export const SortOrder = {

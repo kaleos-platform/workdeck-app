@@ -9,7 +9,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if ('error' in resolved) return resolved.error
 
   const { groupId } = await params
-  const group = await prisma.delChannelGroup.findUnique({
+  // Phase 3: 공용 ChannelGroup 사용 (DelChannelGroup 제거)
+  const group = await prisma.channelGroup.findUnique({
     where: { id: groupId },
     select: { spaceId: true },
   })
@@ -21,12 +22,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const name = typeof body?.name === 'string' ? body.name.trim() : ''
   if (!name) return errorResponse('그룹 이름이 필요합니다', 400)
 
-  const duplicate = await prisma.delChannelGroup.findFirst({
+  const duplicate = await prisma.channelGroup.findFirst({
     where: { spaceId: resolved.space.id, name, id: { not: groupId } },
   })
   if (duplicate) return errorResponse('이미 존재하는 그룹 이름입니다', 409)
 
-  const updated = await prisma.delChannelGroup.update({
+  const updated = await prisma.channelGroup.update({
     where: { id: groupId },
     data: { name },
   })
@@ -39,7 +40,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if ('error' in resolved) return resolved.error
 
   const { groupId } = await params
-  const group = await prisma.delChannelGroup.findUnique({
+  const group = await prisma.channelGroup.findUnique({
     where: { id: groupId },
     select: { spaceId: true },
   })
@@ -47,7 +48,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return errorResponse('그룹을 찾을 수 없습니다', 404)
   }
 
-  const groupCount = await prisma.delChannelGroup.count({
+  const groupCount = await prisma.channelGroup.count({
     where: { spaceId: resolved.space.id },
   })
   if (groupCount <= 1) {
@@ -55,12 +56,12 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 
   // 소속 채널의 groupId를 null로 설정
-  await prisma.delSalesChannel.updateMany({
+  await prisma.channel.updateMany({
     where: { groupId },
     data: { groupId: null },
   })
 
-  await prisma.delChannelGroup.delete({ where: { id: groupId } })
+  await prisma.channelGroup.delete({ where: { id: groupId } })
 
   return NextResponse.json({ success: true })
 }

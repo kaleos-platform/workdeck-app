@@ -6,7 +6,8 @@ export async function GET(_req: NextRequest) {
   const resolved = await resolveDeckContext('delivery-mgmt')
   if ('error' in resolved) return resolved.error
 
-  let groups = await prisma.delChannelGroup.findMany({
+  // Phase 3: 공용 ChannelGroup 사용 (DelChannelGroup 제거)
+  let groups = await prisma.channelGroup.findMany({
     where: { spaceId: resolved.space.id },
     orderBy: { createdAt: 'asc' },
     include: {
@@ -15,7 +16,7 @@ export async function GET(_req: NextRequest) {
   })
 
   if (groups.length === 0) {
-    const defaultGroup = await prisma.delChannelGroup.create({
+    const defaultGroup = await prisma.channelGroup.create({
       data: { spaceId: resolved.space.id, name: '기본' },
       include: { _count: { select: { channels: true } } },
     })
@@ -40,12 +41,12 @@ export async function POST(req: NextRequest) {
 
   if (!name) return errorResponse('그룹 이름이 필요합니다', 400)
 
-  const duplicate = await prisma.delChannelGroup.findFirst({
+  const duplicate = await prisma.channelGroup.findFirst({
     where: { spaceId: resolved.space.id, name },
   })
   if (duplicate) return errorResponse('이미 존재하는 그룹 이름입니다', 409)
 
-  const group = await prisma.delChannelGroup.create({
+  const group = await prisma.channelGroup.create({
     data: { spaceId: resolved.space.id, name },
   })
 

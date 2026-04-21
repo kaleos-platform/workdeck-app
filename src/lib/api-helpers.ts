@@ -23,7 +23,10 @@ export async function resolveWorkspace() {
     const h = await headers()
     const workspaceId = h.get('x-workspace-id')
     if (workspaceId) {
-      const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true } })
+      const workspace = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: { id: true },
+      })
       if (workspace) return { workspace }
     }
     // workspace ID 미지정 시 첫 번째 워크스페이스 사용 (단일 테넌트)
@@ -90,6 +93,25 @@ export async function resolveDeckContext(deckKey = 'coupang-ads') {
   })
   if (!deckInstance?.isActive) return { error: errorResponse('카드가 활성화되지 않았습니다', 403) }
 
+  return resolved
+}
+
+// 여러 Deck 중 하나라도 활성인 경우 통과 (공용 채널 API 등에서 사용)
+export async function resolveAnyDeckContext(deckKeys: string[]) {
+  const resolved = await resolveSpaceContext()
+  if ('error' in resolved) return resolved
+
+  const activeInstances = await prisma.deckInstance.findMany({
+    where: {
+      spaceId: resolved.space.id,
+      deckAppId: { in: deckKeys },
+      isActive: true,
+    },
+    select: { deckAppId: true },
+  })
+  if (activeInstances.length === 0) {
+    return { error: errorResponse('관련 카드가 활성화되지 않았습니다', 403) }
+  }
   return resolved
 }
 

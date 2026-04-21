@@ -195,16 +195,6 @@ export type InvProductOption = Prisma.InvProductOptionModel
  */
 export type InvStorageLocation = Prisma.InvStorageLocationModel
 /**
- * Model InvChannelGroup
- * 
- */
-export type InvChannelGroup = Prisma.InvChannelGroupModel
-/**
- * Model InvSalesChannel
- * 
- */
-export type InvSalesChannel = Prisma.InvSalesChannelModel
-/**
  * Model InvMovement
  * 
  */
@@ -245,16 +235,6 @@ export type InvSettings = Prisma.InvSettingsModel
  */
 export type DelShippingMethod = Prisma.DelShippingMethodModel
 /**
- * Model DelChannelGroup
- * 
- */
-export type DelChannelGroup = Prisma.DelChannelGroupModel
-/**
- * Model DelSalesChannel
- * 
- */
-export type DelSalesChannel = Prisma.DelSalesChannelModel
-/**
  * Model DelBatch
  * 
  */
@@ -279,3 +259,33 @@ export type DelColumnMappingPreset = Prisma.DelColumnMappingPresetModel
  * 
  */
 export type DelIntegrationHistory = Prisma.DelIntegrationHistoryModel
+/**
+ * Model Brand
+ * 
+ */
+export type Brand = Prisma.BrandModel
+/**
+ * Model ChannelGroup
+ * 
+ */
+export type ChannelGroup = Prisma.ChannelGroupModel
+/**
+ * Model Channel
+ * 
+ */
+export type Channel = Prisma.ChannelModel
+/**
+ * Model ChannelFeeRate
+ * 
+ */
+export type ChannelFeeRate = Prisma.ChannelFeeRateModel
+/**
+ * Model ProductionBatch
+ * 
+ */
+export type ProductionBatch = Prisma.ProductionBatchModel
+/**
+ * Model ProductPricingSettings
+ * 
+ */
+export type ProductPricingSettings = Prisma.ProductPricingSettingsModel
