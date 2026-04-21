@@ -15,15 +15,33 @@ export type BrandInput = z.infer<typeof brandSchema>
 
 // ─── 상품 ──────────────────────────────────────────────────────────────────
 
+// 옵션 속성 항목 스키마 (예: {name: "사이즈", values: ["S","M","L"]})
+const optionAttributeSchema = z.object({
+  name: z.string().min(1).max(50),
+  values: z.array(z.string().min(1).max(50)).min(1).max(50),
+})
+
 export const productSchema = z.object({
   name: z.string().min(1).max(200),
-  nameEn: z.string().max(200).optional(),
-  code: z.string().max(100).optional(),
-  brandId: z.string().cuid().optional(),
-  groupId: z.string().cuid().optional(),
-  manufacturer: z.string().max(200).optional(),
-  manufactureCountry: z.string().max(100).optional(),
-  manufactureDate: z.string().datetime().optional(),
+  nameEn: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
+    .optional(),
+  code: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
+    .optional(),
+  brandId: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().cuid())
+    .optional(),
+  groupId: z.string().cuid(), // 카테고리 필수
+  manufacturer: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
+    .optional(),
+  manufactureCountry: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
+    .optional(),
+  manufactureDate: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().datetime())
+    .optional(),
   features: z.array(z.string()).optional(),
   certifications: z
     .array(
@@ -35,7 +53,10 @@ export const productSchema = z.object({
     )
     .optional(),
   msrp: z.number().nonnegative().optional(),
-  description: z.string().max(2000).optional(),
+  description: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(2000))
+    .optional(),
+  optionAttributes: z.array(optionAttributeSchema).optional(),
 })
 export type ProductInput = z.infer<typeof productSchema>
 
@@ -43,11 +64,18 @@ export type ProductInput = z.infer<typeof productSchema>
 
 export const productOptionSchema = z.object({
   name: z.string().min(1).max(200),
-  sku: z.string().max(100).optional(),
+  sku: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
+    .optional(),
   costPrice: z.number().nonnegative().optional(),
   retailPrice: z.number().nonnegative().optional(),
-  sizeLabel: z.string().max(50).optional(),
-  setSizeLabel: z.string().max(50).optional(),
+  sizeLabel: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(50))
+    .optional(),
+  setSizeLabel: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(50))
+    .optional(),
+  attributeValues: z.record(z.string(), z.string()).optional(), // 예: {"사이즈":"S","색상":"파랑"}
 })
 export type ProductOptionInput = z.infer<typeof productOptionSchema>
 

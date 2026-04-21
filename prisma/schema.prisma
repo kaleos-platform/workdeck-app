@@ -695,7 +695,7 @@ model InvProduct {
   spaceId String
   name    String
   code    String? // 상품 코드 (space 내 unique, null 허용)
-  groupId String?
+  groupId String  // 카테고리 필수 (non-null)
 
   // 셀러 허브 확장 필드 (모두 nullable)
   brandId            String?
@@ -707,9 +707,10 @@ model InvProduct {
   certifications     Json?
   msrp               Decimal?  @db.Decimal(18, 2)
   description        String?
+  optionAttributes   Json?     // 예: [{name:"사이즈",values:["S","M","L"]}]
 
   space   Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  group   InvProductGroup?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  group   InvProductGroup    @relation(fields: [groupId], references: [id], onDelete: Restrict)
   brand   Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
   options InvProductOption[]
 
@@ -730,10 +731,11 @@ model InvProductOption {
   sku       String?
 
   // 셀러 허브 확장 필드 (모두 nullable)
-  costPrice    Decimal? @db.Decimal(18, 2)
-  retailPrice  Decimal? @db.Decimal(18, 2)
-  sizeLabel    String?
-  setSizeLabel String?
+  costPrice       Decimal? @db.Decimal(18, 2)
+  retailPrice     Decimal? @db.Decimal(18, 2)
+  sizeLabel       String?
+  setSizeLabel    String?
+  attributeValues Json?    // 예: {"사이즈":"S","색상":"파랑"}
 
   product           InvProduct              @relation(fields: [productId], references: [id], onDelete: Cascade)
   movements         InvMovement[]

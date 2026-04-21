@@ -103,8 +103,20 @@ async function resolveOrCreateOption(
     })
   }
   if (!product) {
+    // groupId 필수 — 기본 카테고리 upsert
+    const defaultGroup = await tx.invProductGroup.upsert({
+      where: { spaceId_name: { spaceId, name: '기본' } },
+      update: {},
+      create: { spaceId, name: '기본' },
+      select: { id: true },
+    })
     product = await tx.invProduct.create({
-      data: { spaceId, name: productName, code: input.productCode ?? null },
+      data: {
+        spaceId,
+        name: productName,
+        code: input.productCode ?? null,
+        groupId: defaultGroup.id,
+      },
     })
   }
 

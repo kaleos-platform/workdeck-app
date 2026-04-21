@@ -24,7 +24,17 @@ export async function GET(
     orderBy: { name: 'asc' },
   })
 
-  return NextResponse.json({ options })
+  // 옵션별 totalStock 집계 (N+1 방지: groupBy 사용)
+  const stockGroups = await prisma.invStockLevel.groupBy({
+    by: ['optionId'],
+    where: { optionId: { in: options.map((o) => o.id) } },
+    _sum: { quantity: true },
+  })
+  const stockMap = new Map(stockGroups.map((g) => [g.optionId, g._sum.quantity ?? 0]))
+
+  return NextResponse.json({
+    options: options.map((o) => ({ ...o, totalStock: stockMap.get(o.id) ?? 0 })),
+  })
 }
 
 export async function POST(
@@ -55,7 +65,8 @@ export async function POST(
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  const { name, sku, costPrice, retailPrice, sizeLabel, setSizeLabel } = parsed.data
+  const { name, sku, costPrice, retailPrice, sizeLabel, setSizeLabel, attributeValues } =
+    parsed.data
 
   const option = await prisma.invProductOption.create({
     data: {
@@ -66,6 +77,7 @@ export async function POST(
       retailPrice: retailPrice ?? null,
       sizeLabel: sizeLabel ?? null,
       setSizeLabel: setSizeLabel ?? null,
+      attributeValues: attributeValues ?? undefined,
     },
   })
 

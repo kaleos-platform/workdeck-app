@@ -51,17 +51,19 @@ export async function DELETE(
 
   const group = await prisma.invProductGroup.findFirst({
     where: { id: groupId, spaceId: resolved.space.id },
+    include: { _count: { select: { products: true } } },
   })
   if (!group) return errorResponse('그룹을 찾을 수 없습니다', 404)
 
-  // Unlink products first (set groupId to null), then delete group
-  await prisma.$transaction([
-    prisma.invProduct.updateMany({
-      where: { groupId },
-      data: { groupId: null },
-    }),
-    prisma.invProductGroup.delete({ where: { id: groupId } }),
-  ])
+  // groupId non-null 제약 — 상품이 연결된 그룹은 삭제 불가
+  if (group._count.products > 0) {
+    return errorResponse(
+      `이 카테고리에 상품 ${group._count.products}개가 연결되어 있어 삭제할 수 없습니다. 상품을 다른 카테고리로 이동 후 삭제하세요.`,
+      409
+    )
+  }
+
+  await prisma.invProductGroup.delete({ where: { id: groupId } })
 
   return NextResponse.json({ success: true })
 }

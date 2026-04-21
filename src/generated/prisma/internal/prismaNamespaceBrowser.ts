@@ -568,6 +568,7 @@ export const InvProductScalarFieldEnum = {
   certifications: 'certifications',
   msrp: 'msrp',
   description: 'description',
+  optionAttributes: 'optionAttributes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -584,6 +585,7 @@ export const InvProductOptionScalarFieldEnum = {
   retailPrice: 'retailPrice',
   sizeLabel: 'sizeLabel',
   setSizeLabel: 'setSizeLabel',
+  attributeValues: 'attributeValues',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

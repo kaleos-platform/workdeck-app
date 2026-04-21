@@ -287,7 +287,7 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
                       />
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {opt.totalStock.toLocaleString('ko-KR')}
+                      {(opt.totalStock ?? 0).toLocaleString('ko-KR')}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

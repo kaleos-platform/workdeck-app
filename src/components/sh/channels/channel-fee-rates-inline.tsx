@@ -1,13 +1,19 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { FolderCog, Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +30,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Input } from '@/components/ui/input'
+import { ShCategoryManager } from '@/components/sh/products/category-manager'
 
 type FeeRate = {
   id: string
@@ -31,6 +39,8 @@ type FeeRate = {
   ratePercent: number
   vatIncluded: boolean
 }
+
+type ProductCategory = { id: string; name: string }
 
 type Props = {
   channelId: string
@@ -52,6 +62,10 @@ export function ChannelFeeRatesInline({ channelId }: Props) {
   const [feeVatIncluded, setFeeVatIncluded] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  // 상품 카테고리 목록 (수수료 카테고리명 선택에 활용)
+  const [productCategories, setProductCategories] = useState<ProductCategory[]>([])
+  const [categoryManagerOpen, setCategoryManagerOpen] = useState(false)
+
   const loadFeeRates = useCallback(async () => {
     setLoading(true)
     try {
@@ -66,9 +80,18 @@ export function ChannelFeeRatesInline({ channelId }: Props) {
     }
   }, [channelId])
 
+  const loadProductCategories = useCallback(async () => {
+    const res = await fetch('/api/sh/categories')
+    if (res.ok) {
+      const data = await res.json()
+      setProductCategories(data.categories ?? [])
+    }
+  }, [])
+
   useEffect(() => {
     void loadFeeRates()
-  }, [loadFeeRates])
+    void loadProductCategories()
+  }, [loadFeeRates, loadProductCategories])
 
   function openNewFee() {
     setEditingFee(null)
@@ -139,6 +162,12 @@ export function ChannelFeeRatesInline({ channelId }: Props) {
 
   return (
     <div className="bg-muted/30 px-6 py-4">
+      {/* 상품 카테고리 관리 Dialog (수수료 화면에서 인라인 오픈) */}
+      <ShCategoryManager
+        open={categoryManagerOpen}
+        onOpenChange={setCategoryManagerOpen}
+        onChanged={() => void loadProductCategories()}
+      />
       <div className="mb-3 flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">카테고리별 수수료율</p>
         <Button size="sm" variant="outline" onClick={openNewFee}>
@@ -214,13 +243,52 @@ export function ChannelFeeRatesInline({ channelId }: Props) {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="fee-cat">카테고리명 *</Label>
-              <Input
-                id="fee-cat"
-                value={feeCategoryName}
-                onChange={(e) => setFeeCategoryName(e.target.value)}
-                placeholder="예: 패션의류, 생활용품"
-              />
+              <Label htmlFor="fee-cat">
+                카테고리 <span className="text-destructive">*</span>
+              </Label>
+              {productCategories.length === 0 ? (
+                <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                  상품 카테고리를 먼저 만들어주세요.
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    className="ml-1 h-auto p-0 text-sm"
+                    onClick={() => setCategoryManagerOpen(true)}
+                  >
+                    <FolderCog className="mr-1 h-3.5 w-3.5" />
+                    카테고리 관리
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={feeCategoryName || '__none__'}
+                    onValueChange={(v) => setFeeCategoryName(v === '__none__' ? '' : v)}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="카테고리 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {productCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 shrink-0"
+                    onClick={() => setCategoryManagerOpen(true)}
+                    aria-label="카테고리 관리"
+                  >
+                    <FolderCog className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="fee-rate">수수료율 (%) *</Label>

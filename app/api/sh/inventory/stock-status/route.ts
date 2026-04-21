@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   type OptionWhere = {
     product: {
       spaceId: string
-      groupId?: string | null
+      groupId?: string
       OR?: Array<
         | { name: { contains: string; mode: 'insensitive' } }
         | { code: { contains: string; mode: 'insensitive' } }
@@ -28,9 +28,8 @@ export async function GET(req: NextRequest) {
   }
 
   const optionWhere: OptionWhere = { product: { spaceId } }
-  if (groupId === 'none') {
-    optionWhere.product.groupId = null
-  } else if (groupId) {
+  // groupId 필수 필드 — 'none' 필터는 지원하지 않음
+  if (groupId && groupId !== 'none') {
     optionWhere.product.groupId = groupId
   }
   if (search) {
@@ -52,7 +51,9 @@ export async function GET(req: NextRequest) {
   const [options, total] = await Promise.all([
     prisma.invProductOption.findMany({
       where: optionWhere,
-      include: {
+      select: {
+        id: true,
+        name: true,
         product: {
           select: {
             id: true,
@@ -78,12 +79,15 @@ export async function GET(req: NextRequest) {
       locationName: locations.find((l) => l.id === sl.locationId)?.name ?? '(알 수 없음)',
       quantity: sl.quantity,
     }))
-    const totalStock = o.stockLevels.reduce((sum, sl) => sum + sl.quantity, 0)
+    const totalStock = o.stockLevels.reduce(
+      (sum: number, sl: { quantity: number }) => sum + sl.quantity,
+      0
+    )
 
     return {
       productId: o.product.id,
       productName: o.product.name,
-      groupName: o.product.group?.name ?? null,
+      groupName: o.product.group.name,
       optionId: o.id,
       optionName: o.name,
       totalStock,

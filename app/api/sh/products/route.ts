@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
     certifications,
     msrp,
     description,
+    optionAttributes,
   } = parsed.data
 
   // brandId 소속 검증
@@ -84,14 +85,12 @@ export async function POST(req: NextRequest) {
     if (!brand) return errorResponse('브랜드를 찾을 수 없습니다', 404)
   }
 
-  // groupId 소속 검증
-  if (groupId) {
-    const group = await prisma.invProductGroup.findFirst({
-      where: { id: groupId, spaceId: resolved.space.id },
-      select: { id: true },
-    })
-    if (!group) return errorResponse('그룹을 찾을 수 없습니다', 404)
-  }
+  // groupId(카테고리) 소속 검증 — 필수 필드
+  const group = await prisma.invProductGroup.findFirst({
+    where: { id: groupId, spaceId: resolved.space.id },
+    select: { id: true },
+  })
+  if (!group) return errorResponse('카테고리를 찾을 수 없습니다', 404)
 
   const product = await prisma.invProduct.create({
     data: {
@@ -100,7 +99,7 @@ export async function POST(req: NextRequest) {
       nameEn: nameEn ?? null,
       code: code ?? null,
       brandId: brandId ?? null,
-      groupId: groupId ?? null,
+      groupId,
       manufacturer: manufacturer ?? null,
       manufactureCountry: manufactureCountry ?? null,
       manufactureDate: manufactureDate ? new Date(manufactureDate) : null,
@@ -108,6 +107,7 @@ export async function POST(req: NextRequest) {
       certifications: certifications ?? undefined,
       msrp: msrp ?? null,
       description: description ?? null,
+      optionAttributes: optionAttributes ?? undefined,
     },
     include: {
       brand: { select: { id: true, name: true } },

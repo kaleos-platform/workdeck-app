@@ -89,6 +89,7 @@ export async function PATCH(
     certifications,
     msrp,
     description,
+    optionAttributes,
   } = parsed.data
 
   const product = await prisma.invProduct.update({
@@ -98,7 +99,7 @@ export async function PATCH(
       ...(nameEn !== undefined && { nameEn: nameEn ?? null }),
       ...(code !== undefined && { code: code ?? null }),
       ...(brandId !== undefined && { brandId: brandId ?? null }),
-      ...(groupId !== undefined && { groupId: groupId ?? null }),
+      ...(groupId !== undefined && { groupId }),
       ...(manufacturer !== undefined && { manufacturer: manufacturer ?? null }),
       ...(manufactureCountry !== undefined && { manufactureCountry: manufactureCountry ?? null }),
       ...(manufactureDate !== undefined && {
@@ -108,6 +109,7 @@ export async function PATCH(
       ...(certifications !== undefined && { certifications }),
       ...(msrp !== undefined && { msrp: msrp ?? null }),
       ...(description !== undefined && { description: description ?? null }),
+      ...(optionAttributes !== undefined && { optionAttributes }),
     },
     include: {
       brand: { select: { id: true, name: true } },

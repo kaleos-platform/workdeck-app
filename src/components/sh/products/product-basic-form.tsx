@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 
 type Brand = { id: string; name: string }
-type Group = { id: string; name: string }
+type Category = { id: string; name: string }
 
 type ProductData = {
   id: string
@@ -45,7 +45,7 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
   const [saving, setSaving] = useState(false)
 
   const [brands, setBrands] = useState<Brand[]>([])
-  const [groups, setGroups] = useState<Group[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   // 편집 상태
   const [name, setName] = useState('')
@@ -64,10 +64,10 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [prodRes, brandRes, groupRes] = await Promise.all([
+      const [prodRes, brandRes, catRes] = await Promise.all([
         fetch(`/api/sh/products/${productId}`),
         fetch('/api/sh/brands'),
-        fetch('/api/sh/inventory/product-groups'),
+        fetch('/api/sh/categories'),
       ])
       if (!prodRes.ok) return
       const prod: ProductData = await prodRes.json()
@@ -81,7 +81,6 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
       setManufactureDate(prod.manufactureDate ? prod.manufactureDate.split('T')[0] : '')
       setMsrp(prod.msrp != null ? String(prod.msrp) : '')
       setBrandId(prod.brandId ?? '')
-      setGroupId(prod.groupId ?? '')
       setFeatures(Array.isArray(prod.features) ? prod.features : [])
       setCertifications(Array.isArray(prod.certifications) ? prod.certifications : [])
 
@@ -89,9 +88,12 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
         const bData = await brandRes.json()
         setBrands(bData.brands ?? [])
       }
-      if (groupRes.ok) {
-        const gData = await groupRes.json()
-        setGroups(gData.groups ?? [])
+      if (catRes.ok) {
+        const cData = await catRes.json()
+        const cats: Category[] = cData.categories ?? []
+        setCategories(cats)
+        // 상품에 groupId가 있으면 사용, 없으면 첫 번째 카테고리로 기본 설정
+        setGroupId(prod.groupId ?? cats[0]?.id ?? '')
       }
     } finally {
       setLoading(false)
@@ -105,6 +107,10 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
   async function handleSave() {
     if (!name.trim()) {
       toast.error('상품명을 입력해 주세요')
+      return
+    }
+    if (!groupId) {
+      toast.error('카테고리를 선택해 주세요')
       return
     }
     setSaving(true)
@@ -189,7 +195,7 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
         </div>
       </div>
 
-      {/* 브랜드 / 그룹 */}
+      {/* 브랜드 / 카테고리 */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>브랜드</Label>
@@ -211,19 +217,25 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>상품 그룹</Label>
+          <Label>
+            카테고리 <span className="text-destructive">*</span>
+          </Label>
           <Select
             value={groupId || '__none__'}
             onValueChange={(v) => setGroupId(v === '__none__' ? '' : v)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="(기본)" />
+              <SelectValue placeholder="카테고리 선택" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__none__">(기본)</SelectItem>
-              {groups.map((g) => (
-                <SelectItem key={g.id} value={g.id}>
-                  {g.name}
+              {categories.length === 0 && (
+                <SelectItem value="__none__" disabled>
+                  카테고리가 없습니다
+                </SelectItem>
+              )}
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -356,7 +368,7 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
         </div>
       </div>
 
-      <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
+      <Button onClick={handleSave} disabled={saving || !groupId} className="w-full sm:w-auto">
         {saving ? '저장 중...' : '저장'}
       </Button>
     </div>

@@ -83,6 +83,7 @@ export type InvProductCountAggregateOutputType = {
   certifications: number
   msrp: number
   description: number
+  optionAttributes: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -146,6 +147,7 @@ export type InvProductCountAggregateInputType = {
   certifications?: true
   msrp?: true
   description?: true
+  optionAttributes?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -242,7 +244,7 @@ export type InvProductGroupByOutputType = {
   spaceId: string
   name: string
   code: string | null
-  groupId: string | null
+  groupId: string
   brandId: string | null
   nameEn: string | null
   manufacturer: string | null
@@ -252,6 +254,7 @@ export type InvProductGroupByOutputType = {
   certifications: runtime.JsonValue | null
   msrp: runtime.Decimal | null
   description: string | null
+  optionAttributes: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
   _count: InvProductCountAggregateOutputType | null
@@ -284,7 +287,7 @@ export type InvProductWhereInput = {
   spaceId?: Prisma.StringFilter<"InvProduct"> | string
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
-  groupId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  groupId?: Prisma.StringFilter<"InvProduct"> | string
   brandId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   nameEn?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   manufacturer?: Prisma.StringNullableFilter<"InvProduct"> | string | null
@@ -294,10 +297,11 @@ export type InvProductWhereInput = {
   certifications?: Prisma.JsonNullableFilter<"InvProduct">
   msrp?: Prisma.DecimalNullableFilter<"InvProduct"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
-  group?: Prisma.XOR<Prisma.InvProductGroupNullableScalarRelationFilter, Prisma.InvProductGroupWhereInput> | null
+  group?: Prisma.XOR<Prisma.InvProductGroupScalarRelationFilter, Prisma.InvProductGroupWhereInput>
   brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
   options?: Prisma.InvProductOptionListRelationFilter
 }
@@ -307,7 +311,7 @@ export type InvProductOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
-  groupId?: Prisma.SortOrderInput | Prisma.SortOrder
+  groupId?: Prisma.SortOrder
   brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   nameEn?: Prisma.SortOrderInput | Prisma.SortOrder
   manufacturer?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -317,6 +321,7 @@ export type InvProductOrderByWithRelationInput = {
   certifications?: Prisma.SortOrderInput | Prisma.SortOrder
   msrp?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  optionAttributes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -334,7 +339,7 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   spaceId?: Prisma.StringFilter<"InvProduct"> | string
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
-  groupId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  groupId?: Prisma.StringFilter<"InvProduct"> | string
   brandId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   nameEn?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   manufacturer?: Prisma.StringNullableFilter<"InvProduct"> | string | null
@@ -344,10 +349,11 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   certifications?: Prisma.JsonNullableFilter<"InvProduct">
   msrp?: Prisma.DecimalNullableFilter<"InvProduct"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
-  group?: Prisma.XOR<Prisma.InvProductGroupNullableScalarRelationFilter, Prisma.InvProductGroupWhereInput> | null
+  group?: Prisma.XOR<Prisma.InvProductGroupScalarRelationFilter, Prisma.InvProductGroupWhereInput>
   brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
   options?: Prisma.InvProductOptionListRelationFilter
 }, "id" | "spaceId_code">
@@ -357,7 +363,7 @@ export type InvProductOrderByWithAggregationInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
-  groupId?: Prisma.SortOrderInput | Prisma.SortOrder
+  groupId?: Prisma.SortOrder
   brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   nameEn?: Prisma.SortOrderInput | Prisma.SortOrder
   manufacturer?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -367,6 +373,7 @@ export type InvProductOrderByWithAggregationInput = {
   certifications?: Prisma.SortOrderInput | Prisma.SortOrder
   msrp?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  optionAttributes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InvProductCountOrderByAggregateInput
@@ -384,7 +391,7 @@ export type InvProductScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"InvProduct"> | string
   name?: Prisma.StringWithAggregatesFilter<"InvProduct"> | string
   code?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
-  groupId?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
+  groupId?: Prisma.StringWithAggregatesFilter<"InvProduct"> | string
   brandId?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
   nameEn?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
   manufacturer?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
@@ -394,6 +401,7 @@ export type InvProductScalarWhereWithAggregatesInput = {
   certifications?: Prisma.JsonNullableWithAggregatesFilter<"InvProduct">
   msrp?: Prisma.DecimalNullableWithAggregatesFilter<"InvProduct"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
+  optionAttributes?: Prisma.JsonNullableWithAggregatesFilter<"InvProduct">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvProduct"> | Date | string
 }
@@ -410,10 +418,11 @@ export type InvProductCreateInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
-  group?: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
+  group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
 }
@@ -423,7 +432,7 @@ export type InvProductUncheckedCreateInput = {
   spaceId: string
   name: string
   code?: string | null
-  groupId?: string | null
+  groupId: string
   brandId?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -433,6 +442,7 @@ export type InvProductUncheckedCreateInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -450,10 +460,11 @@ export type InvProductUpdateInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
-  group?: Prisma.InvProductGroupUpdateOneWithoutProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
 }
@@ -463,7 +474,7 @@ export type InvProductUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -473,6 +484,7 @@ export type InvProductUncheckedUpdateInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -483,7 +495,7 @@ export type InvProductCreateManyInput = {
   spaceId: string
   name: string
   code?: string | null
-  groupId?: string | null
+  groupId: string
   brandId?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -493,6 +505,7 @@ export type InvProductCreateManyInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -509,6 +522,7 @@ export type InvProductUpdateManyMutationInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -518,7 +532,7 @@ export type InvProductUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -528,6 +542,7 @@ export type InvProductUncheckedUpdateManyInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -562,6 +577,7 @@ export type InvProductCountOrderByAggregateInput = {
   certifications?: Prisma.SortOrder
   msrp?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  optionAttributes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -765,9 +781,10 @@ export type InvProductCreateWithoutSpaceInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
-  group?: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
+  group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
 }
@@ -776,7 +793,7 @@ export type InvProductUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
   code?: string | null
-  groupId?: string | null
+  groupId: string
   brandId?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -786,6 +803,7 @@ export type InvProductUncheckedCreateWithoutSpaceInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -825,7 +843,7 @@ export type InvProductScalarWhereInput = {
   spaceId?: Prisma.StringFilter<"InvProduct"> | string
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
-  groupId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  groupId?: Prisma.StringFilter<"InvProduct"> | string
   brandId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   nameEn?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   manufacturer?: Prisma.StringNullableFilter<"InvProduct"> | string | null
@@ -835,6 +853,7 @@ export type InvProductScalarWhereInput = {
   certifications?: Prisma.JsonNullableFilter<"InvProduct">
   msrp?: Prisma.DecimalNullableFilter<"InvProduct"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
+  optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
 }
@@ -851,6 +870,7 @@ export type InvProductCreateWithoutGroupInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -872,6 +892,7 @@ export type InvProductUncheckedCreateWithoutGroupInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -915,10 +936,11 @@ export type InvProductCreateWithoutOptionsInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
-  group?: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
+  group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
 }
 
@@ -927,7 +949,7 @@ export type InvProductUncheckedCreateWithoutOptionsInput = {
   spaceId: string
   name: string
   code?: string | null
-  groupId?: string | null
+  groupId: string
   brandId?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -937,6 +959,7 @@ export type InvProductUncheckedCreateWithoutOptionsInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -969,10 +992,11 @@ export type InvProductUpdateWithoutOptionsInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
-  group?: Prisma.InvProductGroupUpdateOneWithoutProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
 }
 
@@ -981,7 +1005,7 @@ export type InvProductUncheckedUpdateWithoutOptionsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -991,6 +1015,7 @@ export type InvProductUncheckedUpdateWithoutOptionsInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1007,10 +1032,11 @@ export type InvProductCreateWithoutBrandInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
-  group?: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
+  group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
 }
 
@@ -1019,7 +1045,7 @@ export type InvProductUncheckedCreateWithoutBrandInput = {
   spaceId: string
   name: string
   code?: string | null
-  groupId?: string | null
+  groupId: string
   nameEn?: string | null
   manufacturer?: string | null
   manufactureCountry?: string | null
@@ -1028,6 +1054,7 @@ export type InvProductUncheckedCreateWithoutBrandInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -1063,7 +1090,7 @@ export type InvProductCreateManySpaceInput = {
   id?: string
   name: string
   code?: string | null
-  groupId?: string | null
+  groupId: string
   brandId?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -1073,6 +1100,7 @@ export type InvProductCreateManySpaceInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1089,9 +1117,10 @@ export type InvProductUpdateWithoutSpaceInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  group?: Prisma.InvProductGroupUpdateOneWithoutProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
 }
@@ -1100,7 +1129,7 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1110,6 +1139,7 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1119,7 +1149,7 @@ export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1129,6 +1159,7 @@ export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1147,6 +1178,7 @@ export type InvProductCreateManyGroupInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1163,6 +1195,7 @@ export type InvProductUpdateWithoutGroupInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -1184,6 +1217,7 @@ export type InvProductUncheckedUpdateWithoutGroupInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1203,6 +1237,7 @@ export type InvProductUncheckedUpdateManyWithoutGroupInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1212,7 +1247,7 @@ export type InvProductCreateManyBrandInput = {
   spaceId: string
   name: string
   code?: string | null
-  groupId?: string | null
+  groupId: string
   nameEn?: string | null
   manufacturer?: string | null
   manufactureCountry?: string | null
@@ -1221,6 +1256,7 @@ export type InvProductCreateManyBrandInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1237,10 +1273,11 @@ export type InvProductUpdateWithoutBrandInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
-  group?: Prisma.InvProductGroupUpdateOneWithoutProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
 }
 
@@ -1249,7 +1286,7 @@ export type InvProductUncheckedUpdateWithoutBrandInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufactureCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1258,6 +1295,7 @@ export type InvProductUncheckedUpdateWithoutBrandInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1268,7 +1306,7 @@ export type InvProductUncheckedUpdateManyWithoutBrandInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufactureCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1277,6 +1315,7 @@ export type InvProductUncheckedUpdateManyWithoutBrandInput = {
   certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1327,10 +1366,11 @@ export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   certifications?: boolean
   msrp?: boolean
   description?: boolean
+  optionAttributes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
-  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
+  group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
   options?: boolean | Prisma.InvProduct$optionsArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
@@ -1351,10 +1391,11 @@ export type InvProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   certifications?: boolean
   msrp?: boolean
   description?: boolean
+  optionAttributes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
-  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
+  group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
 }, ExtArgs["result"]["invProduct"]>
 
@@ -1373,10 +1414,11 @@ export type InvProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   certifications?: boolean
   msrp?: boolean
   description?: boolean
+  optionAttributes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
-  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
+  group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
 }, ExtArgs["result"]["invProduct"]>
 
@@ -1395,26 +1437,27 @@ export type InvProductSelectScalar = {
   certifications?: boolean
   msrp?: boolean
   description?: boolean
+  optionAttributes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "brandId" | "nameEn" | "manufacturer" | "manufactureCountry" | "manufactureDate" | "features" | "certifications" | "msrp" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
+export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "brandId" | "nameEn" | "manufacturer" | "manufactureCountry" | "manufactureDate" | "features" | "certifications" | "msrp" | "description" | "optionAttributes" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
 export type InvProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
-  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
+  group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
   options?: boolean | Prisma.InvProduct$optionsArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InvProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
-  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
+  group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
 }
 export type InvProductIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
-  group?: boolean | Prisma.InvProduct$groupArgs<ExtArgs>
+  group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
 }
 
@@ -1422,7 +1465,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "InvProduct"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
-    group: Prisma.$InvProductGroupPayload<ExtArgs> | null
+    group: Prisma.$InvProductGroupPayload<ExtArgs>
     brand: Prisma.$BrandPayload<ExtArgs> | null
     options: Prisma.$InvProductOptionPayload<ExtArgs>[]
   }
@@ -1431,7 +1474,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     spaceId: string
     name: string
     code: string | null
-    groupId: string | null
+    groupId: string
     brandId: string | null
     nameEn: string | null
     manufacturer: string | null
@@ -1441,6 +1484,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     certifications: runtime.JsonValue | null
     msrp: runtime.Decimal | null
     description: string | null
+    optionAttributes: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["invProduct"]>
@@ -1838,7 +1882,7 @@ readonly fields: InvProductFieldRefs;
 export interface Prisma__InvProductClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  group<T extends Prisma.InvProduct$groupArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$groupArgs<ExtArgs>>): Prisma.Prisma__InvProductGroupClient<runtime.Types.Result.GetResult<Prisma.$InvProductGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  group<T extends Prisma.InvProductGroupDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductGroupDefaultArgs<ExtArgs>>): Prisma.Prisma__InvProductGroupClient<runtime.Types.Result.GetResult<Prisma.$InvProductGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   brand<T extends Prisma.InvProduct$brandArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$brandArgs<ExtArgs>>): Prisma.Prisma__BrandClient<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   options<T extends Prisma.InvProduct$optionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$optionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1884,6 +1928,7 @@ export interface InvProductFieldRefs {
   readonly certifications: Prisma.FieldRef<"InvProduct", 'Json'>
   readonly msrp: Prisma.FieldRef<"InvProduct", 'Decimal'>
   readonly description: Prisma.FieldRef<"InvProduct", 'String'>
+  readonly optionAttributes: Prisma.FieldRef<"InvProduct", 'Json'>
   readonly createdAt: Prisma.FieldRef<"InvProduct", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvProduct", 'DateTime'>
 }
@@ -2279,25 +2324,6 @@ export type InvProductDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many InvProducts to delete.
    */
   limit?: number
-}
-
-/**
- * InvProduct.group
- */
-export type InvProduct$groupArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the InvProductGroup
-   */
-  select?: Prisma.InvProductGroupSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the InvProductGroup
-   */
-  omit?: Prisma.InvProductGroupOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.InvProductGroupInclude<ExtArgs> | null
-  where?: Prisma.InvProductGroupWhereInput
 }
 
 /**

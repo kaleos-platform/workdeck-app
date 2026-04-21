@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
+import { FolderCog, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -20,7 +21,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ShProductCreateDialog } from '@/components/sh/products/product-create-dialog'
+import { ShCategoryManager } from '@/components/sh/products/category-manager'
 
 type ProductRow = {
   id: string
@@ -53,17 +54,22 @@ export function ShProductList() {
   const [brands, setBrands] = useState<Brand[]>([])
   const [groupFilter, setGroupFilter] = useState('all')
   const [brandFilter, setBrandFilter] = useState('all')
+  const [categoryManagerOpen, setCategoryManagerOpen] = useState(false)
 
-  // 그룹/브랜드 목록 로드
-  useEffect(() => {
-    Promise.all([
-      fetch('/api/sh/inventory/product-groups').then((res) => (res.ok ? res.json() : null)),
-      fetch('/api/sh/brands').then((res) => (res.ok ? res.json() : null)),
-    ]).then(([gData, bData]) => {
-      setGroups(gData?.groups ?? [])
-      setBrands(bData?.brands ?? [])
-    })
+  // 카테고리/브랜드 목록 로드
+  const loadFilters = useCallback(async () => {
+    const [gRes, bRes] = await Promise.all([fetch('/api/sh/categories'), fetch('/api/sh/brands')])
+    const [gData, bData] = await Promise.all([
+      gRes.ok ? gRes.json() : null,
+      bRes.ok ? bRes.json() : null,
+    ])
+    setGroups(gData?.categories ?? [])
+    setBrands(bData?.brands ?? [])
   }, [])
+
+  useEffect(() => {
+    void loadFilters()
+  }, [loadFilters])
 
   // 검색어 debounce
   useEffect(() => {
@@ -109,6 +115,13 @@ export function ShProductList() {
 
   return (
     <div className="space-y-4">
+      {/* 카테고리 관리 Dialog */}
+      <ShCategoryManager
+        open={categoryManagerOpen}
+        onOpenChange={setCategoryManagerOpen}
+        onChanged={() => void loadFilters()}
+      />
+
       {/* 필터 바 */}
       <div className="flex flex-wrap items-center gap-2">
         <Input
@@ -124,11 +137,11 @@ export function ShProductList() {
             setPage(1)
           }}
         >
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="전체 그룹" />
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="전체 카테고리" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">전체 그룹</SelectItem>
+            <SelectItem value="all">전체 카테고리</SelectItem>
             <SelectItem value="none">미분류</SelectItem>
             {groups.map((g) => (
               <SelectItem key={g.id} value={g.id}>
@@ -157,8 +170,17 @@ export function ShProductList() {
             ))}
           </SelectContent>
         </Select>
+        <Button variant="outline" size="sm" onClick={() => setCategoryManagerOpen(true)}>
+          <FolderCog className="mr-1.5 h-4 w-4" />
+          카테고리 관리
+        </Button>
         <div className="ml-auto">
-          <ShProductCreateDialog onCreated={fetchProducts} />
+          <Button size="sm" asChild>
+            <Link href="/d/seller-hub/products/new">
+              <Plus className="mr-1 h-4 w-4" />
+              상품 생성
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -167,7 +189,7 @@ export function ShProductList() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>그룹</TableHead>
+              <TableHead>카테고리</TableHead>
               <TableHead>상품명</TableHead>
               <TableHead>브랜드</TableHead>
               <TableHead>제품코드</TableHead>

@@ -18,16 +18,15 @@ export async function GET(req: NextRequest) {
 
   const where: {
     spaceId: string
-    groupId?: string | null
+    groupId?: string
     OR?: Array<
       | { name: { contains: string; mode: 'insensitive' } }
       | { code: { contains: string; mode: 'insensitive' } }
     >
   } = { spaceId: resolved.space.id }
 
-  if (groupIdParam === 'none') {
-    where.groupId = null
-  } else if (groupIdParam) {
+  // groupId 필수 필드로 변경 — 'none' 필터는 더 이상 지원하지 않음
+  if (groupIdParam && groupIdParam !== 'none') {
     where.groupId = groupIdParam
   }
 
@@ -38,13 +37,18 @@ export async function GET(req: NextRequest) {
     ]
   }
 
-  const [products, total] = await Promise.all([
+  const [productsRaw, total] = await Promise.all([
     prisma.invProduct.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        createdAt: true,
+        updatedAt: true,
         group: { select: { id: true, name: true } },
         options: {
           select: {
@@ -57,18 +61,19 @@ export async function GET(req: NextRequest) {
     prisma.invProduct.count({ where }),
   ])
 
-  const data = products.map((p) => {
+  const data = productsRaw.map((p) => {
     const optionsCount = p.options.length
     const totalStock = p.options.reduce(
-      (sum, o) => sum + o.stockLevels.reduce((s, sl) => s + sl.quantity, 0),
+      (sum: number, o: { stockLevels: { quantity: number }[] }) =>
+        sum + o.stockLevels.reduce((s: number, sl: { quantity: number }) => s + sl.quantity, 0),
       0
     )
     return {
       id: p.id,
       name: p.name,
       code: p.code,
-      groupId: p.group?.id ?? null,
-      groupName: p.group?.name ?? null,
+      groupId: p.group.id,
+      groupName: p.group.name,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
       optionsCount,
@@ -113,8 +118,8 @@ export async function POST(req: NextRequest) {
 
   const code = body.code?.trim() || null
 
-  // Verify groupId if provided
-  let groupId: string | null = null
+  // groupId 필수 — 제공 없으면 "기본" 카테고리 사용 (없으면 생성)
+  let groupId: string
   if (body.groupId) {
     const group = await prisma.invProductGroup.findFirst({
       where: { id: body.groupId, spaceId: resolved.space.id },
@@ -122,6 +127,15 @@ export async function POST(req: NextRequest) {
     })
     if (!group) return errorResponse('그룹을 찾을 수 없습니다', 404)
     groupId = group.id
+  } else {
+    // 기본 카테고리 upsert
+    const defaultGroup = await prisma.invProductGroup.upsert({
+      where: { spaceId_name: { spaceId: resolved.space.id, name: '기본' } },
+      update: {},
+      create: { spaceId: resolved.space.id, name: '기본' },
+      select: { id: true },
+    })
+    groupId = defaultGroup.id
   }
 
   try {
