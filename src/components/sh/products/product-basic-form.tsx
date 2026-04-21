@@ -27,7 +27,7 @@ type ProductData = {
   manufacturer: string | null
   manufactureCountry: string | null
   manufactureDate: string | null
-  msrp: number | null
+  msrp: number | string | null
   features: string[] | null
   certifications: string[] | null
   brandId: string | null
@@ -70,7 +70,9 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
         fetch('/api/sh/categories'),
       ])
       if (!prodRes.ok) return
-      const prod: ProductData = await prodRes.json()
+      // API는 { product: {...} }로 wrap해서 응답한다
+      const json = await prodRes.json()
+      const prod: ProductData = json.product ?? json
       setData(prod)
       setName(prod.name)
       setNameEn(prod.nameEn ?? '')
@@ -79,6 +81,7 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
       setManufacturer(prod.manufacturer ?? '')
       setManufactureCountry(prod.manufactureCountry ?? '')
       setManufactureDate(prod.manufactureDate ? prod.manufactureDate.split('T')[0] : '')
+      // msrp는 Prisma Decimal이라 string/number 둘 다 올 수 있음
       setMsrp(prod.msrp != null ? String(prod.msrp) : '')
       setBrandId(prod.brandId ?? '')
       setFeatures(Array.isArray(prod.features) ? prod.features : [])

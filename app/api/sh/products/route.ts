@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
       take: pageSize,
       include: {
         brand: { select: { id: true, name: true } },
-        options: true,
+        group: { select: { id: true, name: true } },
+        options: { select: { id: true } },
       },
     }),
     prisma.invProduct.count({ where }),

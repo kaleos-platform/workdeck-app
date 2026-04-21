@@ -36,7 +36,8 @@ import { ShCategoryManager } from '@/components/sh/products/category-manager'
 type FeeRate = {
   id: string
   categoryName: string
-  ratePercent: number
+  // Prisma Decimal은 JSON 직렬화 시 string으로 나온다 — 둘 다 허용
+  ratePercent: number | string
   vatIncluded: boolean
 }
 
@@ -104,7 +105,7 @@ export function ChannelFeeRatesInline({ channelId }: Props) {
   function openEditFee(fee: FeeRate) {
     setEditingFee(fee)
     setFeeCategoryName(fee.categoryName)
-    setFeeRate(String(fee.ratePercent))
+    setFeeRate(String(Number(fee.ratePercent)))
     setFeeVatIncluded(fee.vatIncluded)
     setDialogOpen(true)
   }
@@ -206,7 +207,7 @@ export function ChannelFeeRatesInline({ channelId }: Props) {
               <TableRow key={fee.id} className="border-muted">
                 <TableCell className="py-2 text-sm font-medium">{fee.categoryName}</TableCell>
                 <TableCell className="py-2 text-right text-sm tabular-nums">
-                  {fee.ratePercent.toFixed(3)}%
+                  {Number(fee.ratePercent).toFixed(3)}%
                 </TableCell>
                 <TableCell className="py-2">
                   {fee.vatIncluded ? (
