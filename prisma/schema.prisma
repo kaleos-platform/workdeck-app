@@ -1004,18 +1004,21 @@ model DelOrderItem {
 
 // 컬럼 매핑 프리셋 (업로드 시 header name → field 매핑을 저장)
 model DelColumnMappingPreset {
-  id      String @id @default(cuid())
-  spaceId String
-  name    String
-  mapping Json   // Array<{ headerName: string; field: string }>
+  id        String  @id @default(cuid())
+  spaceId   String
+  name      String
+  mapping   Json    // Array<{ headerName: string; field: string }>
+  channelId String? // 프리셋 적용 시 배송 등록의 판매채널로 자동 입력될 채널
 
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space   Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel Channel? @relation("PresetChannel", fields: [channelId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([spaceId, name])
   @@index([spaceId])
+  @@index([channelId])
 }
 
 // 데이터 연동 이력
@@ -1093,6 +1096,7 @@ model Channel {
   feeRates     ChannelFeeRate[]
   invMovements InvMovement[]
   delOrders    DelOrder[]
+  columnMappingPresets DelColumnMappingPreset[] @relation("PresetChannel")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -122,12 +122,18 @@ type Draft = {
 
 type PresetMappingEntry = { headerName: string; field: string }
 
+type PresetChannel = { id: string; name: string }
+
 type Preset = {
   id: string
   name: string
   mapping: PresetMappingEntry[]
+  channelId: string | null
+  channel?: PresetChannel | null
   updatedAt: string
 }
+
+type Channel = { id: string; name: string }
 
 type PresetApplyResult = {
   mapping: Record<string, number[]>
@@ -260,6 +266,10 @@ function UploadPageInner() {
     missingHeaders: string[]
   } | null>(null)
 
+  // 채널 관련 — 프리셋 적용 / 저장 시 사용
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
+
   const fileRef = useRef<HTMLInputElement>(null)
   const draftLoadedRef = useRef(false)
 
@@ -286,6 +296,8 @@ function UploadPageInner() {
     if (!preview) return
     const result = applyPreset(preset.mapping, preview.headers)
     setMapping(result.mapping)
+    // 프리셋에 저장된 채널이 있으면 자동 선택 (없으면 해제)
+    setSelectedChannelId(preset.channelId ?? null)
 
     if (result.matched < result.total) {
       setPresetMismatch({
@@ -296,12 +308,13 @@ function UploadPageInner() {
       })
     } else {
       setPresetMismatch(null)
-      toast.success(`프리셋 "${preset.name}" 적용 완료`)
+      const chanSuffix = preset.channel?.name ? ` (판매채널: ${preset.channel.name})` : ''
+      toast.success(`프리셋 "${preset.name}" 적용 완료${chanSuffix}`)
     }
   }
 
   // 프리셋 저장
-  async function handleSavePreset(name: string) {
+  async function handleSavePreset(name: string, channelId: string | null) {
     if (!preview) return
     const entries = mappingToPresetEntries(mapping, preview.headers)
     if (entries.length === 0) {
@@ -313,13 +326,15 @@ function UploadPageInner() {
       const res = await fetch('/api/sh/shipping/column-mapping-presets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, mapping: entries }),
+        body: JSON.stringify({ name, mapping: entries, channelId }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data?.message ?? '저장 실패')
       }
       toast.success(`프리셋 "${name}" 저장 완료`)
+      // 저장한 채널을 현재 세션에도 반영
+      setSelectedChannelId(channelId)
       await loadPresets()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '프리셋 저장 실패')
@@ -341,6 +356,24 @@ function UploadPageInner() {
         }
       } catch {
         // 조용히 실패 — 가져오기 시점에 다시 체크
+      }
+    })()
+
+    // 채널 목록 로드 — 프리셋 저장 다이얼로그 / 임포트 기본값에 사용
+    void (async () => {
+      try {
+        const res = await fetch('/api/channels?isActive=true')
+        const data = await res.json()
+        if (!cancelled) {
+          setChannels(
+            ((data.channels ?? []) as Array<{ id: string; name: string }>).map((c) => ({
+              id: c.id,
+              name: c.name,
+            }))
+          )
+        }
+      } catch {
+        // 조용히 실패
       }
     })()
 
@@ -452,6 +485,7 @@ function UploadPageInner() {
       formData.append('file', file)
       formData.append('batchId', batchId)
       if (shippingMethodId) formData.append('shippingMethodId', shippingMethodId)
+      if (selectedChannelId) formData.append('channelId', selectedChannelId)
       formData.append('columnMapping', JSON.stringify(mapping))
 
       const res = await fetch('/api/sh/shipping/import', { method: 'POST', body: formData })
@@ -560,6 +594,9 @@ function UploadPageInner() {
             onSavePreset={handleSavePreset}
             presetMismatch={presetMismatch}
             onDismissMismatch={() => setPresetMismatch(null)}
+            channels={channels}
+            selectedChannelId={selectedChannelId}
+            onChangeChannel={setSelectedChannelId}
           />
         )}
       </div>
@@ -708,7 +745,7 @@ type MappingViewProps = {
   onPickFile: () => void
   presets: Preset[]
   onApplyPreset: (preset: Preset) => void
-  onSavePreset: (name: string) => Promise<void>
+  onSavePreset: (name: string, channelId: string | null) => Promise<void>
   presetMismatch: {
     presetName: string
     matched: number
@@ -716,6 +753,9 @@ type MappingViewProps = {
     missingHeaders: string[]
   } | null
   onDismissMismatch: () => void
+  channels: Channel[]
+  selectedChannelId: string | null
+  onChangeChannel: (channelId: string | null) => void
 }
 
 function MappingView(p: MappingViewProps) {
@@ -736,23 +776,30 @@ function MappingView(p: MappingViewProps) {
     onSavePreset,
     presetMismatch,
     onDismissMismatch,
+    channels,
+    selectedChannelId,
+    onChangeChannel,
   } = p
 
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
   const [presetName, setPresetName] = useState('')
+  const [dialogChannelId, setDialogChannelId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
     if (!presetName.trim()) return
     setSaving(true)
     try {
-      await onSavePreset(presetName.trim())
+      await onSavePreset(presetName.trim(), dialogChannelId)
       setSaveDialogOpen(false)
       setPresetName('')
     } finally {
       setSaving(false)
     }
   }
+
+  const NO_CHANNEL = '__none__'
+  const selectedChannelName = channels.find((c) => c.id === selectedChannelId)?.name ?? null
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 px-6 py-5">
@@ -807,7 +854,10 @@ function MappingView(p: MappingViewProps) {
             <SelectContent>
               {presets.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
-                  {p.name}
+                  <span>{p.name}</span>
+                  {p.channel?.name ? (
+                    <span className="ml-2 text-xs text-muted-foreground">· {p.channel.name}</span>
+                  ) : null}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -819,12 +869,39 @@ function MappingView(p: MappingViewProps) {
           className="h-8 text-xs"
           onClick={() => {
             setPresetName('')
+            setDialogChannelId(selectedChannelId)
             setSaveDialogOpen(true)
           }}
         >
           <BookmarkPlus className="mr-1 h-3.5 w-3.5" />
           현재 매핑 저장
         </Button>
+
+        {/* 판매채널 선택 — 이번 가져오기에 적용 */}
+        <div className="ml-1 flex items-center gap-1.5">
+          <Label className="text-xs text-muted-foreground">판매채널</Label>
+          <Select
+            value={selectedChannelId ?? NO_CHANNEL}
+            onValueChange={(v) => onChangeChannel(v === NO_CHANNEL ? null : v)}
+          >
+            <SelectTrigger className="h-8 w-auto min-w-[11rem] text-xs">
+              <SelectValue placeholder="지정 안 함" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_CHANNEL}>지정 안 함</SelectItem>
+              {channels.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedChannelName && (
+            <Badge variant="secondary" className="text-[10px]">
+              가져오기 후 자동 입력
+            </Badge>
+          )}
+        </div>
       </section>
 
       {/* 프리셋 저장 다이얼로그 */}
@@ -836,19 +913,43 @@ function MappingView(p: MappingViewProps) {
               현재 매핑을 이름을 지정하여 저장합니다. 같은 이름이 있으면 덮어씁니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="preset-name">프리셋 이름</Label>
-            <Input
-              id="preset-name"
-              placeholder="예: 쿠팡 주문서"
-              value={presetName}
-              onChange={(e) => setPresetName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && presetName.trim()) handleSave()
-              }}
-              maxLength={100}
-              autoFocus
-            />
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="preset-name">프리셋 이름</Label>
+              <Input
+                id="preset-name"
+                placeholder="예: 쿠팡 주문서"
+                value={presetName}
+                onChange={(e) => setPresetName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && presetName.trim()) handleSave()
+                }}
+                maxLength={100}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="preset-channel">판매채널 (선택)</Label>
+              <Select
+                value={dialogChannelId ?? NO_CHANNEL}
+                onValueChange={(v) => setDialogChannelId(v === NO_CHANNEL ? null : v)}
+              >
+                <SelectTrigger id="preset-channel">
+                  <SelectValue placeholder="판매채널 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_CHANNEL}>지정 안 함</SelectItem>
+                  {channels.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                이 프리셋을 적용하면 가져온 주문의 판매채널로 자동 지정됩니다.
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
