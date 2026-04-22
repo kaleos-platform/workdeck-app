@@ -1,19 +1,57 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Package, ArrowRight, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { SELLER_HUB_REORDER_PATH } from '@/lib/deck-routes'
 
-type ReorderRow = {
+type ReorderOptionRow = {
+  productId: string
+  productName: string
+  productCode: string | null
+  optionId: string
+  currentStock: number
+  estimatedDepletionDays: number | null
+  isUrgent: boolean
+}
+
+type ProductAlert = {
   productId: string
   productName: string
   productCode: string | null
   optionCount: number
   currentStock: number
   estimatedDepletionDays: number | null
-  isUrgent: boolean
+}
+
+function aggregateByProduct(rows: ReorderOptionRow[]): ProductAlert[] {
+  const map = new Map<string, ProductAlert>()
+  for (const r of rows) {
+    const existing = map.get(r.productId)
+    if (!existing) {
+      map.set(r.productId, {
+        productId: r.productId,
+        productName: r.productName,
+        productCode: r.productCode,
+        optionCount: 1,
+        currentStock: r.currentStock,
+        estimatedDepletionDays: r.estimatedDepletionDays,
+      })
+    } else {
+      existing.optionCount += 1
+      existing.currentStock += r.currentStock
+      // 최소 소진일(가장 긴급한 옵션) 기준
+      if (
+        r.estimatedDepletionDays !== null &&
+        (existing.estimatedDepletionDays === null ||
+          r.estimatedDepletionDays < existing.estimatedDepletionDays)
+      ) {
+        existing.estimatedDepletionDays = r.estimatedDepletionDays
+      }
+    }
+  }
+  return Array.from(map.values())
 }
 
 function DepletionBadge({ days }: { days: number | null }) {
@@ -33,7 +71,7 @@ function DepletionBadge({ days }: { days: number | null }) {
 }
 
 export function StockAlertsCard() {
-  const [rows, setRows] = useState<ReorderRow[]>([])
+  const [rawRows, setRawRows] = useState<ReorderOptionRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
@@ -43,19 +81,21 @@ export function StockAlertsCard() {
         if (!res.ok) throw new Error()
         return res.json()
       })
-      .then((data: { data: ReorderRow[] }) => {
-        // 소진 예상일 기준 오름차순, null은 마지막
-        const sorted = [...data.data].sort((a, b) => {
-          if (a.estimatedDepletionDays === null && b.estimatedDepletionDays === null) return 0
-          if (a.estimatedDepletionDays === null) return 1
-          if (b.estimatedDepletionDays === null) return -1
-          return a.estimatedDepletionDays - b.estimatedDepletionDays
-        })
-        setRows(sorted.slice(0, 5))
-      })
+      .then((data: { data: ReorderOptionRow[] }) => setRawRows(data.data))
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [])
+
+  const topProducts = useMemo(() => {
+    const aggregated = aggregateByProduct(rawRows)
+    aggregated.sort((a, b) => {
+      if (a.estimatedDepletionDays === null && b.estimatedDepletionDays === null) return 0
+      if (a.estimatedDepletionDays === null) return 1
+      if (b.estimatedDepletionDays === null) return -1
+      return a.estimatedDepletionDays - b.estimatedDepletionDays
+    })
+    return aggregated.slice(0, 5)
+  }, [rawRows])
 
   return (
     <Card>
@@ -79,13 +119,13 @@ export function StockAlertsCard() {
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>데이터를 불러오지 못했습니다.</span>
           </div>
-        ) : rows.length === 0 ? (
+        ) : topProducts.length === 0 ? (
           <p className="py-4 text-center text-sm text-muted-foreground">
             재고 경고 항목이 없습니다.
           </p>
         ) : (
           <ul className="space-y-2.5" role="list" aria-label="재고 경고 목록">
-            {rows.map((row) => (
+            {topProducts.map((row) => (
               <li key={row.productId} className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-sm leading-tight font-medium">{row.productName}</p>

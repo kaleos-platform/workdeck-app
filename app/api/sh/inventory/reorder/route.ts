@@ -8,9 +8,10 @@ const DEFAULT_LEAD_TIME_DAYS = 7
 const DEFAULT_SAFETY_STOCK_QTY = 0
 
 /**
- * 상품 단위 발주 예측.
- * - 한 상품의 모든 옵션 재고/출고를 합산한 뒤 상품별 reorderConfig로 계산한다.
- * - 필터: search(상품명·코드 부분일치), brandId.
+ * 발주 예측 — 옵션 단위 행.
+ * - 계산은 옵션 단위(재고/출고)로 수행.
+ * - 리드타임/안전재고/분석기간은 상품 단위 config(`InvReorderConfig`)를 공유.
+ * - 필터: productId(드롭다운), brandId(드롭다운).
  */
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -20,18 +21,15 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const urgentOnly = searchParams.get('urgentOnly') === 'true'
   const reorderNeededOnly = searchParams.get('reorderNeededOnly') === 'true'
-  const search = (searchParams.get('search') ?? '').trim()
   const brandId = searchParams.get('brandId')
+  const productIdFilter = searchParams.get('productId')
 
   const productWhere: Record<string, unknown> = { spaceId }
   if (brandId && brandId !== 'all') {
     productWhere.brandId = brandId === 'none' ? null : brandId
   }
-  if (search) {
-    productWhere.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
-      { code: { contains: search, mode: 'insensitive' } },
-    ]
+  if (productIdFilter && productIdFilter !== 'all') {
+    productWhere.id = productIdFilter
   }
 
   const products = await prisma.invProduct.findMany({
@@ -41,7 +39,7 @@ export async function GET(req: NextRequest) {
       name: true,
       code: true,
       brand: { select: { id: true, name: true } },
-      options: { select: { id: true } },
+      options: { select: { id: true, name: true, sku: true } },
       reorderConfig: true,
     },
     orderBy: { name: 'asc' },
@@ -51,16 +49,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: [], windowDays: DEFAULT_WINDOW_DAYS })
   }
 
-  const productIds = products.map((p) => p.id)
   const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
 
-  // 옵션 → 상품 역매핑
-  const productByOption = new Map<string, string>()
-  for (const p of products) {
-    for (const o of p.options) productByOption.set(o.id, p.id)
-  }
-
-  // 현재 재고: 옵션별 집계 → 상품별 합산
+  // 옵션별 현재 재고
   const stockGroups = optionIds.length
     ? await prisma.invStockLevel.groupBy({
         by: ['optionId'],
@@ -68,14 +59,12 @@ export async function GET(req: NextRequest) {
         _sum: { quantity: true },
       })
     : []
-  const stockByProduct = new Map<string, number>()
+  const stockByOption = new Map<string, number>()
   for (const g of stockGroups) {
-    const pid = productByOption.get(g.optionId)
-    if (!pid) continue
-    stockByProduct.set(pid, (stockByProduct.get(pid) ?? 0) + (g._sum.quantity ?? 0))
+    stockByOption.set(g.optionId, g._sum.quantity ?? 0)
   }
 
-  // 분석 기간별 버킷팅 — 대부분 기본값(90일)이라 1~2회 쿼리
+  // 분석기간(상품 config) 별로 버킷팅해 1~2회 쿼리만 발생하도록
   const windowBuckets = new Map<number, string[]>()
   for (const p of products) {
     const wd = p.reorderConfig?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
@@ -84,7 +73,7 @@ export async function GET(req: NextRequest) {
     windowBuckets.set(wd, list)
   }
 
-  const outboundByProduct = new Map<string, number>()
+  const outboundByOption = new Map<string, number>()
   const now = Date.now()
   for (const [wd, ids] of windowBuckets.entries()) {
     if (!ids.length) continue
@@ -100,54 +89,58 @@ export async function GET(req: NextRequest) {
       _sum: { quantity: true },
     })
     for (const g of outGroups) {
-      const pid = productByOption.get(g.optionId)
-      if (!pid) continue
-      outboundByProduct.set(pid, (outboundByProduct.get(pid) ?? 0) + (g._sum.quantity ?? 0))
+      outboundByOption.set(g.optionId, g._sum.quantity ?? 0)
     }
   }
 
-  const rows = products.map((p) => {
+  // 옵션 단위 행 생성
+  const rows = products.flatMap((p) => {
     const cfg = p.reorderConfig
     const windowDays = cfg?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
     const leadTimeDays = cfg?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
     const safetyStockQty = cfg?.safetyStockQty ?? DEFAULT_SAFETY_STOCK_QTY
-    const currentStock = stockByProduct.get(p.id) ?? 0
-    const totalOutbound = outboundByProduct.get(p.id) ?? 0
 
-    const calc = calculateReorder({
-      totalOutbound,
-      windowDays,
-      leadTimeDays,
-      safetyStockQty,
-      currentStock,
+    return p.options.map((o) => {
+      const currentStock = stockByOption.get(o.id) ?? 0
+      const totalOutbound = outboundByOption.get(o.id) ?? 0
+      const calc = calculateReorder({
+        totalOutbound,
+        windowDays,
+        leadTimeDays,
+        safetyStockQty,
+        currentStock,
+      })
+      return {
+        productId: p.id,
+        productName: p.name,
+        productCode: p.code,
+        brandId: p.brand?.id ?? null,
+        brandName: p.brand?.name ?? null,
+        optionId: o.id,
+        optionName: o.name,
+        sku: o.sku ?? null,
+        currentStock,
+        totalOutbound,
+        windowDays,
+        dailyAvgOutbound: calc.dailyAvgOutbound,
+        leadTimeDays,
+        safetyStockQty,
+        neededStock: calc.neededStock,
+        reorderQty: calc.reorderQty,
+        estimatedDepletionDays: calc.estimatedDepletionDays,
+        isUrgent: calc.isUrgent,
+        hasConfig: !!cfg,
+      }
     })
-
-    return {
-      productId: p.id,
-      productName: p.name,
-      productCode: p.code,
-      brandId: p.brand?.id ?? null,
-      brandName: p.brand?.name ?? null,
-      optionCount: p.options.length,
-      currentStock,
-      totalOutbound,
-      windowDays,
-      dailyAvgOutbound: calc.dailyAvgOutbound,
-      leadTimeDays,
-      safetyStockQty,
-      neededStock: calc.neededStock,
-      reorderQty: calc.reorderQty,
-      estimatedDepletionDays: calc.estimatedDepletionDays,
-      isUrgent: calc.isUrgent,
-      hasConfig: !!cfg,
-    }
   })
 
   let filtered = rows
   if (urgentOnly) filtered = filtered.filter((r) => r.isUrgent)
   if (reorderNeededOnly) filtered = filtered.filter((r) => r.reorderQty > 0)
 
+  // 정렬: 같은 상품의 옵션이 연속되도록 productName 우선, 그다음 긴급/발주필요
   filtered.sort((a, b) => {
+    if (a.productName !== b.productName) return a.productName.localeCompare(b.productName)
     if (b.reorderQty !== a.reorderQty) return b.reorderQty - a.reorderQty
     const ad = a.estimatedDepletionDays
     const bd = b.estimatedDepletionDays
@@ -159,5 +152,3 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ data: filtered, windowDays: DEFAULT_WINDOW_DAYS })
 }
-
-// 사용 가능 상품 ID — 사용처: products_used by productIds 체크. 상품 단위 이동 후엔 위 products 결과로 충분.
