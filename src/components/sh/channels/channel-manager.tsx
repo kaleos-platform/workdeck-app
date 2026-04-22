@@ -209,7 +209,16 @@ export function ShChannelManager() {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message ?? '저장 실패')
+      if (!res.ok) {
+        const fieldErrors = data?.errors?.fieldErrors as
+          | Record<string, string[] | undefined>
+          | undefined
+        const firstField = fieldErrors
+          ? Object.entries(fieldErrors).find(([, v]) => v && v.length > 0)
+          : undefined
+        const suffix = firstField ? ` (${firstField[0]}: ${firstField[1]?.[0]})` : ''
+        throw new Error((data?.message ?? '저장 실패') + suffix)
+      }
       toast.success(editingChannel ? '채널이 수정되었습니다' : '채널이 생성되었습니다')
       setChannelDialogOpen(false)
       await loadData()

@@ -48,6 +48,11 @@ export async function PATCH(
 
   const parsed = channelSchema.partial().safeParse(body)
   if (!parsed.success) {
+    console.error('[channels PATCH] invalid input', {
+      channelId,
+      body,
+      errors: parsed.error.flatten(),
+    })
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 

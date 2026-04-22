@@ -42,6 +42,11 @@ export async function POST(req: NextRequest) {
 
   const parsed = channelSchema.safeParse(body)
   if (!parsed.success) {
+    console.error('[channels POST] invalid input', {
+      spaceId: resolved.space.id,
+      body,
+      errors: parsed.error.flatten(),
+    })
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
