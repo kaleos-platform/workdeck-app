@@ -24,9 +24,9 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
   },
   {
     key: 'options',
-    label: '옵션 + 가격',
-    title: '옵션 + 가격',
-    description: '사이즈·조합별 SKU와 원가/소비자가',
+    label: '옵션 관리',
+    title: '옵션 관리',
+    description: '속성 조합별 관리코드(SKU)와 원가/소비자가',
   },
   {
     key: 'batches',

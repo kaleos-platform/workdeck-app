@@ -206,7 +206,12 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead className="min-w-[120px]">옵션명</TableHead>
-              <TableHead className="min-w-[100px]">SKU</TableHead>
+              <TableHead
+                className="min-w-[140px]"
+                title="관리코드(SKU) — 쿠팡 등 외부 엑셀의 SKU 열과 매칭되는 옵션 식별자"
+              >
+                관리코드 (SKU)
+              </TableHead>
               <TableHead className="min-w-[90px]">원가</TableHead>
               <TableHead className="min-w-[90px]">소비자가</TableHead>
               <TableHead className="min-w-[90px]">사이즈</TableHead>
@@ -245,7 +250,7 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
                     <TableCell>
                       <Input
                         value={draft.sku}
-                        placeholder="(없음)"
+                        placeholder="예: ABC-001"
                         onChange={(e) => updateDraft(opt.id, 'sku', e.target.value)}
                         className="h-8"
                       />
@@ -331,7 +336,7 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
                   <Input
                     value={newRow.sku}
                     onChange={(e) => setNewRow({ ...newRow, sku: e.target.value })}
-                    placeholder="SKU"
+                    placeholder="예: ABC-001"
                     className="h-8"
                   />
                 </TableCell>
