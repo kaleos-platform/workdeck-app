@@ -1,6 +1,12 @@
 import { z } from 'zod'
 
-// ─── 브랜드 ──────────────────────────────────────────────────────────────────
+// ─── 공용 id 검증 ──────────────────────────────────────────────────────────────
+//
+// 레거시 백필 데이터는 UUID(36자, hyphen 포함)이고, 신규 데이터는 Prisma cuid
+// (25자 이하). Zod v4의 .cuid()는 CUID1 전용이라 UUID를 거부하므로 두 포맷을
+// 모두 허용하는 완화 검증을 사용한다. 실제 소속 검증은 서버에서 findFirst로
+// 수행하므로 여기서는 "비어있지 않은 적당히 짧은 문자열" 정도만 보장한다.
+const idLike = z.string().min(8).max(64)
 
 // 빈 문자열이나 null을 undefined로 정규화하는 전처리기 — 프론트가 비어있는 필드를
 // null 또는 ''로 보내는 케이스를 모두 허용한다
@@ -58,12 +64,10 @@ export const productSchema = z.object({
   code: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
     .optional(),
-  brandId: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().cuid())
-    .optional(),
+  brandId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike).optional(),
   // 카테고리 필수 — POST에선 required, PATCH에선 partial()로 optional이 된다.
-  // null/'' 전달 시 undefined로 정규화해서 Zod cuid 검증을 건너뛴다 (partial에서만 OK).
-  groupId: z.preprocess((v) => (v === null || v === '' ? undefined : v), z.string().cuid()),
+  // null/'' 전달 시 undefined로 정규화해서 id 검증을 건너뛴다 (partial에서만 OK).
+  groupId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike),
   manufacturer: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
     .optional(),
@@ -115,8 +119,8 @@ export const channelSchema = z.object({
   kind: z
     .enum(['ONLINE_MARKETPLACE', 'ONLINE_MALL', 'OFFLINE', 'INTERNAL_TRANSFER', 'OTHER'])
     .default('ONLINE_MARKETPLACE'),
-  // groupId: null|'' → undefined → cuid 검증 skip
-  groupId: z.preprocess(toUndef, z.string().cuid()).optional(),
+  // groupId: null|'' → undefined → id 검증 skip (UUID/CUID 모두 허용)
+  groupId: z.preprocess(toUndef, idLike).optional(),
   isActive: z.boolean().default(true),
   // adminUrl: null|'' → undefined → url 검증 skip
   adminUrl: z.preprocess(toUndef, z.string().url()).optional(),
