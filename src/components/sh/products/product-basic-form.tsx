@@ -37,9 +37,21 @@ type ProductData = {
 type Props = {
   productId: string
   onSaved?: () => void
+  /** 외부 <button type="submit" form={formId}>에서 저장을 트리거할 때 사용 */
+  formId?: string
+  /** 폼 하단의 기본 "저장" 버튼을 숨긴다 — 상위에서 sticky 저장 버튼을 제공할 때 */
+  hideInlineSaveButton?: boolean
+  /** 상품명·카테고리가 모두 채워져 저장 가능해지면 true를 보고한다 */
+  onValidChange?: (valid: boolean) => void
 }
 
-export function ProductBasicForm({ productId, onSaved }: Props) {
+export function ProductBasicForm({
+  productId,
+  onSaved,
+  formId,
+  hideInlineSaveButton,
+  onValidChange,
+}: Props) {
   const [data, setData] = useState<ProductData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -107,6 +119,11 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
     void loadData()
   }, [loadData])
 
+  // 상위 sticky 저장 버튼 활성 여부를 보고한다.
+  useEffect(() => {
+    onValidChange?.(name.trim().length > 0 && groupId.length > 0 && !saving)
+  }, [name, groupId, saving, onValidChange])
+
   async function handleSave() {
     if (!name.trim()) {
       toast.error('상품명을 입력해 주세요')
@@ -166,7 +183,14 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
   }
 
   return (
-    <div className="space-y-5">
+    <form
+      id={formId}
+      onSubmit={(e) => {
+        e.preventDefault()
+        void handleSave()
+      }}
+      className="space-y-5"
+    >
       {/* 이름 */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
@@ -381,9 +405,11 @@ export function ProductBasicForm({ productId, onSaved }: Props) {
         </div>
       </div>
 
-      <Button onClick={handleSave} disabled={saving || !groupId} className="w-full sm:w-auto">
-        {saving ? '저장 중...' : '저장'}
-      </Button>
-    </div>
+      {!hideInlineSaveButton && (
+        <Button type="submit" disabled={saving || !groupId} className="w-full sm:w-auto">
+          {saving ? '저장 중...' : '저장'}
+        </Button>
+      )}
+    </form>
   )
 }
