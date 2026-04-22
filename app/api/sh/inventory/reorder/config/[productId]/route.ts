@@ -8,28 +8,28 @@ const DEFAULTS = {
   analysisWindowDays: 90,
 }
 
-async function assertOptionInSpace(optionId: string, spaceId: string) {
-  const option = await prisma.invProductOption.findFirst({
-    where: { id: optionId, product: { spaceId } },
+async function assertProductInSpace(productId: string, spaceId: string) {
+  const product = await prisma.invProduct.findFirst({
+    where: { id: productId, spaceId },
     select: { id: true },
   })
-  return option !== null
+  return product !== null
 }
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ optionId: string }> }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
 
-  const { optionId } = await params
-  const ok = await assertOptionInSpace(optionId, resolved.space.id)
-  if (!ok) return errorResponse('옵션을 찾을 수 없습니다', 404)
+  const { productId } = await params
+  const ok = await assertProductInSpace(productId, resolved.space.id)
+  if (!ok) return errorResponse('상품을 찾을 수 없습니다', 404)
 
-  const cfg = await prisma.invReorderConfig.findUnique({ where: { optionId } })
+  const cfg = await prisma.invReorderConfig.findUnique({ where: { productId } })
   return NextResponse.json({
-    optionId,
+    productId,
     leadTimeDays: cfg?.leadTimeDays ?? DEFAULTS.leadTimeDays,
     safetyStockQty: cfg?.safetyStockQty ?? DEFAULTS.safetyStockQty,
     analysisWindowDays: cfg?.analysisWindowDays ?? DEFAULTS.analysisWindowDays,
@@ -39,14 +39,14 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ optionId: string }> }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
 
-  const { optionId } = await params
-  const ok = await assertOptionInSpace(optionId, resolved.space.id)
-  if (!ok) return errorResponse('옵션을 찾을 수 없습니다', 404)
+  const { productId } = await params
+  const ok = await assertProductInSpace(productId, resolved.space.id)
+  if (!ok) return errorResponse('상품을 찾을 수 없습니다', 404)
 
   let body: Record<string, unknown>
   try {
@@ -76,7 +76,7 @@ export async function PATCH(
     return errorResponse('analysisWindowDays는 1 이상이어야 합니다', 400)
   }
 
-  const existing = await prisma.invReorderConfig.findUnique({ where: { optionId } })
+  const existing = await prisma.invReorderConfig.findUnique({ where: { productId } })
 
   const merged = {
     leadTimeDays: leadTimeDays ?? existing?.leadTimeDays ?? DEFAULTS.leadTimeDays,
@@ -86,13 +86,13 @@ export async function PATCH(
   }
 
   const cfg = await prisma.invReorderConfig.upsert({
-    where: { optionId },
-    create: { optionId, ...merged },
+    where: { productId },
+    create: { productId, ...merged },
     update: merged,
   })
 
   return NextResponse.json({
-    optionId: cfg.optionId,
+    productId: cfg.productId,
     leadTimeDays: cfg.leadTimeDays,
     safetyStockQty: cfg.safetyStockQty,
     analysisWindowDays: cfg.analysisWindowDays,

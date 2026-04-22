@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Table,
@@ -13,14 +13,21 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 type ReorderRow = {
-  optionId: string
   productId: string
   productName: string
   productCode: string | null
-  optionName: string
-  optionSku: string | null
+  brandId: string | null
+  brandName: string | null
+  optionCount: number
   currentStock: number
   totalOutbound: number
   windowDays: number
@@ -31,9 +38,14 @@ type ReorderRow = {
   reorderQty: number
   estimatedDepletionDays: number | null
   isUrgent: boolean
+  hasConfig: boolean
 }
 
+type Brand = { id: string; name: string }
 type Filter = 'all' | 'needed' | 'urgent'
+
+const ALL = 'all'
+const NO_BRAND = 'none'
 
 function statusBadge(row: ReorderRow) {
   if (row.totalOutbound === 0) {
@@ -70,12 +82,37 @@ export function ReorderTable() {
   const [editing, setEditing] = useState<Record<string, number>>({})
   const [saving, setSaving] = useState<Record<string, boolean>>({})
 
-  const fetchData = useCallback(async (f: Filter) => {
+  // 필터: 브랜드·상품 검색
+  const [brands, setBrands] = useState<Brand[]>([])
+  const [brandFilter, setBrandFilter] = useState<string>(ALL)
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [search])
+
+  // 브랜드 목록 로드 (셀러허브 공용 /api/sh/brands)
+  useEffect(() => {
+    fetch('/api/sh/brands')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setBrands(d?.brands ?? []))
+      .catch(() => setBrands([]))
+  }, [])
+
+  const fetchData = useCallback(async (f: Filter, brandId: string, q: string) => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (f === 'needed') params.set('reorderNeededOnly', 'true')
       if (f === 'urgent') params.set('urgentOnly', 'true')
+      if (brandId !== ALL) params.set('brandId', brandId)
+      if (q.trim()) params.set('search', q.trim())
       const qs = params.toString()
       const res = await fetch(`/api/sh/inventory/reorder${qs ? `?${qs}` : ''}`)
       if (!res.ok) throw new Error('불러오기 실패')
@@ -92,36 +129,36 @@ export function ReorderTable() {
   }, [])
 
   useEffect(() => {
-    fetchData(filter)
-  }, [filter, fetchData])
+    fetchData(filter, brandFilter, debouncedSearch)
+  }, [filter, brandFilter, debouncedSearch, fetchData])
 
-  const handleEditChange = (optionId: string, value: string) => {
+  const handleEditChange = (productId: string, value: string) => {
     const n = Number(value)
-    setEditing((prev) => ({ ...prev, [optionId]: Number.isFinite(n) ? n : 0 }))
+    setEditing((prev) => ({ ...prev, [productId]: Number.isFinite(n) ? n : 0 }))
   }
 
   const handleSaveLeadTime = async (row: ReorderRow) => {
-    const next = editing[row.optionId]
+    const next = editing[row.productId]
     if (next === undefined || next === row.leadTimeDays) return
     if (next < 0) {
       toast.error('리드타임은 0 이상이어야 합니다')
       return
     }
-    setSaving((s) => ({ ...s, [row.optionId]: true }))
+    setSaving((s) => ({ ...s, [row.productId]: true }))
     try {
-      const res = await fetch(`/api/sh/inventory/reorder/config/${row.optionId}`, {
+      const res = await fetch(`/api/sh/inventory/reorder/config/${row.productId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadTimeDays: next }),
       })
       if (!res.ok) throw new Error('저장 실패')
       toast.success('리드타임을 저장했습니다')
-      await fetchData(filter)
+      await fetchData(filter, brandFilter, debouncedSearch)
     } catch (err) {
       console.error(err)
       toast.error('리드타임 저장에 실패했습니다')
     } finally {
-      setSaving((s) => ({ ...s, [row.optionId]: false }))
+      setSaving((s) => ({ ...s, [row.productId]: false }))
     }
   }
 
@@ -133,6 +170,7 @@ export function ReorderTable() {
 
   return (
     <div className="space-y-4">
+      {/* 상태 필터 */}
       <div className="flex flex-wrap items-center gap-2">
         <Button
           size="sm"
@@ -161,17 +199,44 @@ export function ReorderTable() {
         </div>
       </div>
 
+      {/* 브랜드/상품 검색 필터 */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          placeholder="상품명 또는 제품코드 검색"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
+        <Select value={brandFilter} onValueChange={setBrandFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="전체 브랜드" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>전체 브랜드</SelectItem>
+            <SelectItem value={NO_BRAND}>브랜드 없음</SelectItem>
+            {brands.map((b) => (
+              <SelectItem key={b.id} value={b.id}>
+                {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>상품</TableHead>
-              <TableHead>옵션</TableHead>
+              <TableHead>브랜드</TableHead>
               <TableHead>제품코드</TableHead>
+              <TableHead className="text-right">옵션수</TableHead>
               <TableHead className="text-right">현재재고</TableHead>
-              <TableHead className="text-right">90일 출고</TableHead>
+              <TableHead className="text-right">{windowDays}일 출고</TableHead>
               <TableHead className="text-right">일평균</TableHead>
-              <TableHead className="w-[180px]">리드타임(일)</TableHead>
+              <TableHead className="w-[180px]" title="이 상품의 모든 옵션에 공통 적용됩니다">
+                리드타임(일)
+              </TableHead>
               <TableHead className="text-right">발주 필요량</TableHead>
               <TableHead className="text-right">예상 소진일</TableHead>
               <TableHead>상태</TableHead>
@@ -180,28 +245,31 @@ export function ReorderTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={10} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="py-10 text-center text-sm text-muted-foreground">
-                  분석할 출고 데이터가 없습니다
+                <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
+                  분석할 상품이 없습니다
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((row) => {
-                const editValue = editing[row.optionId] ?? row.leadTimeDays
+                const editValue = editing[row.productId] ?? row.leadTimeDays
                 const dirty = editValue !== row.leadTimeDays
-                const isSaving = saving[row.optionId] === true
+                const isSaving = saving[row.productId] === true
                 return (
-                  <TableRow key={row.optionId} className={row.isUrgent ? 'bg-red-50/40' : ''}>
+                  <TableRow key={row.productId} className={row.isUrgent ? 'bg-red-50/40' : ''}>
                     <TableCell className="font-medium">{row.productName}</TableCell>
-                    <TableCell>{row.optionName}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {row.brandName ?? '-'}
+                    </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {row.productCode ?? '-'}
                     </TableCell>
+                    <TableCell className="text-right tabular-nums">{row.optionCount}</TableCell>
                     <TableCell className="text-right tabular-nums">{row.currentStock}</TableCell>
                     <TableCell className="text-right tabular-nums">{row.totalOutbound}</TableCell>
                     <TableCell className="text-right tabular-nums">
@@ -214,7 +282,7 @@ export function ReorderTable() {
                           min={0}
                           className="h-8 w-20"
                           value={editValue}
-                          onChange={(e) => handleEditChange(row.optionId, e.target.value)}
+                          onChange={(e) => handleEditChange(row.productId, e.target.value)}
                         />
                         <Button
                           size="sm"

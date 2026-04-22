@@ -709,10 +709,11 @@ model InvProduct {
   description        String?
   optionAttributes   Json?     // 예: [{name:"사이즈",values:["S","M","L"]}]
 
-  space   Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  group   InvProductGroup    @relation(fields: [groupId], references: [id], onDelete: Restrict)
-  brand   Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  options InvProductOption[]
+  space         Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group         InvProductGroup    @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  brand         Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  options       InvProductOption[]
+  reorderConfig InvReorderConfig?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -740,7 +741,6 @@ model InvProductOption {
   product           InvProduct              @relation(fields: [productId], references: [id], onDelete: Cascade)
   movements         InvMovement[]
   stockLevels       InvStockLevel[]
-  reorderConfig     InvReorderConfig?
   locationMappings  InvLocationProductMap[]
   productionBatches ProductionBatch[]
 
@@ -821,17 +821,17 @@ model InvStockLevel {
   @@index([spaceId])
 }
 
-// 옵션별 발주 예측 설정
+// 상품별 발주 예측 설정 — 한 상품의 모든 옵션이 동일한 리드타임/안전재고를 공유
 model InvReorderConfig {
-  id                String @id @default(cuid())
-  optionId          String @unique
-  leadTimeDays      Int    @default(7)
-  safetyStockQty    Int    @default(0)
-  analysisWindowDays Int   @default(90)
+  id                 String @id @default(cuid())
+  productId          String @unique
+  leadTimeDays       Int    @default(7)
+  safetyStockQty     Int    @default(0)
+  analysisWindowDays Int    @default(90)
 
-  option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  product InvProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@index([optionId])
+  @@index([productId])
 }
 
 // 대량 가져오기 이력

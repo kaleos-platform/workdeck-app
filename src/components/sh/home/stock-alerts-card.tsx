@@ -7,9 +7,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { SELLER_HUB_REORDER_PATH } from '@/lib/deck-routes'
 
 type ReorderRow = {
-  optionId: string
+  productId: string
   productName: string
-  optionName: string
+  productCode: string | null
+  optionCount: number
   currentStock: number
   estimatedDepletionDays: number | null
   isUrgent: boolean
@@ -85,10 +86,12 @@ export function StockAlertsCard() {
         ) : (
           <ul className="space-y-2.5" role="list" aria-label="재고 경고 목록">
             {rows.map((row) => (
-              <li key={row.optionId} className="flex items-start justify-between gap-2">
+              <li key={row.productId} className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-sm leading-tight font-medium">{row.productName}</p>
-                  <p className="truncate text-xs text-muted-foreground">{row.optionName}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {row.productCode ?? `옵션 ${row.optionCount}개`}
+                  </p>
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="text-sm font-semibold tabular-nums">

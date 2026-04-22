@@ -40,7 +40,7 @@ export type InvReorderConfigSumAggregateOutputType = {
 
 export type InvReorderConfigMinAggregateOutputType = {
   id: string | null
-  optionId: string | null
+  productId: string | null
   leadTimeDays: number | null
   safetyStockQty: number | null
   analysisWindowDays: number | null
@@ -48,7 +48,7 @@ export type InvReorderConfigMinAggregateOutputType = {
 
 export type InvReorderConfigMaxAggregateOutputType = {
   id: string | null
-  optionId: string | null
+  productId: string | null
   leadTimeDays: number | null
   safetyStockQty: number | null
   analysisWindowDays: number | null
@@ -56,7 +56,7 @@ export type InvReorderConfigMaxAggregateOutputType = {
 
 export type InvReorderConfigCountAggregateOutputType = {
   id: number
-  optionId: number
+  productId: number
   leadTimeDays: number
   safetyStockQty: number
   analysisWindowDays: number
@@ -78,7 +78,7 @@ export type InvReorderConfigSumAggregateInputType = {
 
 export type InvReorderConfigMinAggregateInputType = {
   id?: true
-  optionId?: true
+  productId?: true
   leadTimeDays?: true
   safetyStockQty?: true
   analysisWindowDays?: true
@@ -86,7 +86,7 @@ export type InvReorderConfigMinAggregateInputType = {
 
 export type InvReorderConfigMaxAggregateInputType = {
   id?: true
-  optionId?: true
+  productId?: true
   leadTimeDays?: true
   safetyStockQty?: true
   analysisWindowDays?: true
@@ -94,7 +94,7 @@ export type InvReorderConfigMaxAggregateInputType = {
 
 export type InvReorderConfigCountAggregateInputType = {
   id?: true
-  optionId?: true
+  productId?: true
   leadTimeDays?: true
   safetyStockQty?: true
   analysisWindowDays?: true
@@ -189,7 +189,7 @@ export type InvReorderConfigGroupByArgs<ExtArgs extends runtime.Types.Extensions
 
 export type InvReorderConfigGroupByOutputType = {
   id: string
-  optionId: string
+  productId: string
   leadTimeDays: number
   safetyStockQty: number
   analysisWindowDays: number
@@ -220,37 +220,37 @@ export type InvReorderConfigWhereInput = {
   OR?: Prisma.InvReorderConfigWhereInput[]
   NOT?: Prisma.InvReorderConfigWhereInput | Prisma.InvReorderConfigWhereInput[]
   id?: Prisma.StringFilter<"InvReorderConfig"> | string
-  optionId?: Prisma.StringFilter<"InvReorderConfig"> | string
+  productId?: Prisma.StringFilter<"InvReorderConfig"> | string
   leadTimeDays?: Prisma.IntFilter<"InvReorderConfig"> | number
   safetyStockQty?: Prisma.IntFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntFilter<"InvReorderConfig"> | number
-  option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
+  product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
 }
 
 export type InvReorderConfigOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
-  option?: Prisma.InvProductOptionOrderByWithRelationInput
+  product?: Prisma.InvProductOrderByWithRelationInput
 }
 
 export type InvReorderConfigWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  optionId?: string
+  productId?: string
   AND?: Prisma.InvReorderConfigWhereInput | Prisma.InvReorderConfigWhereInput[]
   OR?: Prisma.InvReorderConfigWhereInput[]
   NOT?: Prisma.InvReorderConfigWhereInput | Prisma.InvReorderConfigWhereInput[]
   leadTimeDays?: Prisma.IntFilter<"InvReorderConfig"> | number
   safetyStockQty?: Prisma.IntFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntFilter<"InvReorderConfig"> | number
-  option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
-}, "id" | "optionId">
+  product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
+}, "id" | "productId">
 
 export type InvReorderConfigOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
@@ -266,7 +266,7 @@ export type InvReorderConfigScalarWhereWithAggregatesInput = {
   OR?: Prisma.InvReorderConfigScalarWhereWithAggregatesInput[]
   NOT?: Prisma.InvReorderConfigScalarWhereWithAggregatesInput | Prisma.InvReorderConfigScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"InvReorderConfig"> | string
-  optionId?: Prisma.StringWithAggregatesFilter<"InvReorderConfig"> | string
+  productId?: Prisma.StringWithAggregatesFilter<"InvReorderConfig"> | string
   leadTimeDays?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
   safetyStockQty?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
@@ -277,12 +277,12 @@ export type InvReorderConfigCreateInput = {
   leadTimeDays?: number
   safetyStockQty?: number
   analysisWindowDays?: number
-  option: Prisma.InvProductOptionCreateNestedOneWithoutReorderConfigInput
+  product: Prisma.InvProductCreateNestedOneWithoutReorderConfigInput
 }
 
 export type InvReorderConfigUncheckedCreateInput = {
   id?: string
-  optionId: string
+  productId: string
   leadTimeDays?: number
   safetyStockQty?: number
   analysisWindowDays?: number
@@ -293,12 +293,12 @@ export type InvReorderConfigUpdateInput = {
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
-  option?: Prisma.InvProductOptionUpdateOneRequiredWithoutReorderConfigNestedInput
+  product?: Prisma.InvProductUpdateOneRequiredWithoutReorderConfigNestedInput
 }
 
 export type InvReorderConfigUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -306,7 +306,7 @@ export type InvReorderConfigUncheckedUpdateInput = {
 
 export type InvReorderConfigCreateManyInput = {
   id?: string
-  optionId: string
+  productId: string
   leadTimeDays?: number
   safetyStockQty?: number
   analysisWindowDays?: number
@@ -321,7 +321,7 @@ export type InvReorderConfigUpdateManyMutationInput = {
 
 export type InvReorderConfigUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -334,7 +334,7 @@ export type InvReorderConfigNullableScalarRelationFilter = {
 
 export type InvReorderConfigCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
@@ -348,7 +348,7 @@ export type InvReorderConfigAvgOrderByAggregateInput = {
 
 export type InvReorderConfigMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
@@ -356,7 +356,7 @@ export type InvReorderConfigMaxOrderByAggregateInput = {
 
 export type InvReorderConfigMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
@@ -368,76 +368,76 @@ export type InvReorderConfigSumOrderByAggregateInput = {
   analysisWindowDays?: Prisma.SortOrder
 }
 
-export type InvReorderConfigCreateNestedOneWithoutOptionInput = {
-  create?: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutOptionInput, Prisma.InvReorderConfigUncheckedCreateWithoutOptionInput>
-  connectOrCreate?: Prisma.InvReorderConfigCreateOrConnectWithoutOptionInput
+export type InvReorderConfigCreateNestedOneWithoutProductInput = {
+  create?: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutProductInput, Prisma.InvReorderConfigUncheckedCreateWithoutProductInput>
+  connectOrCreate?: Prisma.InvReorderConfigCreateOrConnectWithoutProductInput
   connect?: Prisma.InvReorderConfigWhereUniqueInput
 }
 
-export type InvReorderConfigUncheckedCreateNestedOneWithoutOptionInput = {
-  create?: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutOptionInput, Prisma.InvReorderConfigUncheckedCreateWithoutOptionInput>
-  connectOrCreate?: Prisma.InvReorderConfigCreateOrConnectWithoutOptionInput
+export type InvReorderConfigUncheckedCreateNestedOneWithoutProductInput = {
+  create?: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutProductInput, Prisma.InvReorderConfigUncheckedCreateWithoutProductInput>
+  connectOrCreate?: Prisma.InvReorderConfigCreateOrConnectWithoutProductInput
   connect?: Prisma.InvReorderConfigWhereUniqueInput
 }
 
-export type InvReorderConfigUpdateOneWithoutOptionNestedInput = {
-  create?: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutOptionInput, Prisma.InvReorderConfigUncheckedCreateWithoutOptionInput>
-  connectOrCreate?: Prisma.InvReorderConfigCreateOrConnectWithoutOptionInput
-  upsert?: Prisma.InvReorderConfigUpsertWithoutOptionInput
+export type InvReorderConfigUpdateOneWithoutProductNestedInput = {
+  create?: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutProductInput, Prisma.InvReorderConfigUncheckedCreateWithoutProductInput>
+  connectOrCreate?: Prisma.InvReorderConfigCreateOrConnectWithoutProductInput
+  upsert?: Prisma.InvReorderConfigUpsertWithoutProductInput
   disconnect?: Prisma.InvReorderConfigWhereInput | boolean
   delete?: Prisma.InvReorderConfigWhereInput | boolean
   connect?: Prisma.InvReorderConfigWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.InvReorderConfigUpdateToOneWithWhereWithoutOptionInput, Prisma.InvReorderConfigUpdateWithoutOptionInput>, Prisma.InvReorderConfigUncheckedUpdateWithoutOptionInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvReorderConfigUpdateToOneWithWhereWithoutProductInput, Prisma.InvReorderConfigUpdateWithoutProductInput>, Prisma.InvReorderConfigUncheckedUpdateWithoutProductInput>
 }
 
-export type InvReorderConfigUncheckedUpdateOneWithoutOptionNestedInput = {
-  create?: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutOptionInput, Prisma.InvReorderConfigUncheckedCreateWithoutOptionInput>
-  connectOrCreate?: Prisma.InvReorderConfigCreateOrConnectWithoutOptionInput
-  upsert?: Prisma.InvReorderConfigUpsertWithoutOptionInput
+export type InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput = {
+  create?: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutProductInput, Prisma.InvReorderConfigUncheckedCreateWithoutProductInput>
+  connectOrCreate?: Prisma.InvReorderConfigCreateOrConnectWithoutProductInput
+  upsert?: Prisma.InvReorderConfigUpsertWithoutProductInput
   disconnect?: Prisma.InvReorderConfigWhereInput | boolean
   delete?: Prisma.InvReorderConfigWhereInput | boolean
   connect?: Prisma.InvReorderConfigWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.InvReorderConfigUpdateToOneWithWhereWithoutOptionInput, Prisma.InvReorderConfigUpdateWithoutOptionInput>, Prisma.InvReorderConfigUncheckedUpdateWithoutOptionInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvReorderConfigUpdateToOneWithWhereWithoutProductInput, Prisma.InvReorderConfigUpdateWithoutProductInput>, Prisma.InvReorderConfigUncheckedUpdateWithoutProductInput>
 }
 
-export type InvReorderConfigCreateWithoutOptionInput = {
+export type InvReorderConfigCreateWithoutProductInput = {
   id?: string
   leadTimeDays?: number
   safetyStockQty?: number
   analysisWindowDays?: number
 }
 
-export type InvReorderConfigUncheckedCreateWithoutOptionInput = {
+export type InvReorderConfigUncheckedCreateWithoutProductInput = {
   id?: string
   leadTimeDays?: number
   safetyStockQty?: number
   analysisWindowDays?: number
 }
 
-export type InvReorderConfigCreateOrConnectWithoutOptionInput = {
+export type InvReorderConfigCreateOrConnectWithoutProductInput = {
   where: Prisma.InvReorderConfigWhereUniqueInput
-  create: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutOptionInput, Prisma.InvReorderConfigUncheckedCreateWithoutOptionInput>
+  create: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutProductInput, Prisma.InvReorderConfigUncheckedCreateWithoutProductInput>
 }
 
-export type InvReorderConfigUpsertWithoutOptionInput = {
-  update: Prisma.XOR<Prisma.InvReorderConfigUpdateWithoutOptionInput, Prisma.InvReorderConfigUncheckedUpdateWithoutOptionInput>
-  create: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutOptionInput, Prisma.InvReorderConfigUncheckedCreateWithoutOptionInput>
+export type InvReorderConfigUpsertWithoutProductInput = {
+  update: Prisma.XOR<Prisma.InvReorderConfigUpdateWithoutProductInput, Prisma.InvReorderConfigUncheckedUpdateWithoutProductInput>
+  create: Prisma.XOR<Prisma.InvReorderConfigCreateWithoutProductInput, Prisma.InvReorderConfigUncheckedCreateWithoutProductInput>
   where?: Prisma.InvReorderConfigWhereInput
 }
 
-export type InvReorderConfigUpdateToOneWithWhereWithoutOptionInput = {
+export type InvReorderConfigUpdateToOneWithWhereWithoutProductInput = {
   where?: Prisma.InvReorderConfigWhereInput
-  data: Prisma.XOR<Prisma.InvReorderConfigUpdateWithoutOptionInput, Prisma.InvReorderConfigUncheckedUpdateWithoutOptionInput>
+  data: Prisma.XOR<Prisma.InvReorderConfigUpdateWithoutProductInput, Prisma.InvReorderConfigUncheckedUpdateWithoutProductInput>
 }
 
-export type InvReorderConfigUpdateWithoutOptionInput = {
+export type InvReorderConfigUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type InvReorderConfigUncheckedUpdateWithoutOptionInput = {
+export type InvReorderConfigUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
@@ -448,58 +448,58 @@ export type InvReorderConfigUncheckedUpdateWithoutOptionInput = {
 
 export type InvReorderConfigSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  optionId?: boolean
+  productId?: boolean
   leadTimeDays?: boolean
   safetyStockQty?: boolean
   analysisWindowDays?: boolean
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
 
 export type InvReorderConfigSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  optionId?: boolean
+  productId?: boolean
   leadTimeDays?: boolean
   safetyStockQty?: boolean
   analysisWindowDays?: boolean
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
 
 export type InvReorderConfigSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  optionId?: boolean
+  productId?: boolean
   leadTimeDays?: boolean
   safetyStockQty?: boolean
   analysisWindowDays?: boolean
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
 
 export type InvReorderConfigSelectScalar = {
   id?: boolean
-  optionId?: boolean
+  productId?: boolean
   leadTimeDays?: boolean
   safetyStockQty?: boolean
   analysisWindowDays?: boolean
 }
 
-export type InvReorderConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "optionId" | "leadTimeDays" | "safetyStockQty" | "analysisWindowDays", ExtArgs["result"]["invReorderConfig"]>
+export type InvReorderConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "leadTimeDays" | "safetyStockQty" | "analysisWindowDays", ExtArgs["result"]["invReorderConfig"]>
 export type InvReorderConfigInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }
 export type InvReorderConfigIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }
 export type InvReorderConfigIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }
 
 export type $InvReorderConfigPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "InvReorderConfig"
   objects: {
-    option: Prisma.$InvProductOptionPayload<ExtArgs>
+    product: Prisma.$InvProductPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    optionId: string
+    productId: string
     leadTimeDays: number
     safetyStockQty: number
     analysisWindowDays: number
@@ -897,7 +897,7 @@ readonly fields: InvReorderConfigFieldRefs;
  */
 export interface Prisma__InvReorderConfigClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  option<T extends Prisma.InvProductOptionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOptionDefaultArgs<ExtArgs>>): Prisma.Prisma__InvProductOptionClient<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  product<T extends Prisma.InvProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductDefaultArgs<ExtArgs>>): Prisma.Prisma__InvProductClient<runtime.Types.Result.GetResult<Prisma.$InvProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -928,7 +928,7 @@ export interface Prisma__InvReorderConfigClient<T, Null = never, ExtArgs extends
  */
 export interface InvReorderConfigFieldRefs {
   readonly id: Prisma.FieldRef<"InvReorderConfig", 'String'>
-  readonly optionId: Prisma.FieldRef<"InvReorderConfig", 'String'>
+  readonly productId: Prisma.FieldRef<"InvReorderConfig", 'String'>
   readonly leadTimeDays: Prisma.FieldRef<"InvReorderConfig", 'Int'>
   readonly safetyStockQty: Prisma.FieldRef<"InvReorderConfig", 'Int'>
   readonly analysisWindowDays: Prisma.FieldRef<"InvReorderConfig", 'Int'>

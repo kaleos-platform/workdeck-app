@@ -4712,7 +4712,7 @@ export type InvStockLevelScalarFieldEnum = (typeof InvStockLevelScalarFieldEnum)
 
 export const InvReorderConfigScalarFieldEnum = {
   id: 'id',
-  optionId: 'optionId',
+  productId: 'productId',
   leadTimeDays: 'leadTimeDays',
   safetyStockQty: 'safetyStockQty',
   analysisWindowDays: 'analysisWindowDays'
