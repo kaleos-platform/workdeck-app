@@ -423,6 +423,7 @@ export const ModelName = {
   InvLocationProductMap: 'InvLocationProductMap',
   InvSettings: 'InvSettings',
   DelShippingMethod: 'DelShippingMethod',
+  DelShippingMethodLabel: 'DelShippingMethodLabel',
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
@@ -450,7 +451,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3340,6 +3341,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DelShippingMethodLabel: {
+      payload: Prisma.$DelShippingMethodLabelPayload<ExtArgs>
+      fields: Prisma.DelShippingMethodLabelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DelShippingMethodLabelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DelShippingMethodLabelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>
+        }
+        findFirst: {
+          args: Prisma.DelShippingMethodLabelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DelShippingMethodLabelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>
+        }
+        findMany: {
+          args: Prisma.DelShippingMethodLabelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>[]
+        }
+        create: {
+          args: Prisma.DelShippingMethodLabelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>
+        }
+        createMany: {
+          args: Prisma.DelShippingMethodLabelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DelShippingMethodLabelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>[]
+        }
+        delete: {
+          args: Prisma.DelShippingMethodLabelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>
+        }
+        update: {
+          args: Prisma.DelShippingMethodLabelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>
+        }
+        deleteMany: {
+          args: Prisma.DelShippingMethodLabelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DelShippingMethodLabelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DelShippingMethodLabelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>[]
+        }
+        upsert: {
+          args: Prisma.DelShippingMethodLabelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DelShippingMethodLabelPayload>
+        }
+        aggregate: {
+          args: Prisma.DelShippingMethodLabelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDelShippingMethodLabel>
+        }
+        groupBy: {
+          args: Prisma.DelShippingMethodLabelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelShippingMethodLabelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DelShippingMethodLabelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DelShippingMethodLabelCountAggregateOutputType> | number
+        }
+      }
+    }
     DelBatch: {
       payload: Prisma.$DelBatchPayload<ExtArgs>
       fields: Prisma.DelBatchFieldRefs
@@ -4867,6 +4942,19 @@ export const DelShippingMethodScalarFieldEnum = {
 export type DelShippingMethodScalarFieldEnum = (typeof DelShippingMethodScalarFieldEnum)[keyof typeof DelShippingMethodScalarFieldEnum]
 
 
+export const DelShippingMethodLabelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  shippingMethodId: 'shippingMethodId',
+  optionId: 'optionId',
+  overrides: 'overrides',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DelShippingMethodLabelScalarFieldEnum = (typeof DelShippingMethodLabelScalarFieldEnum)[keyof typeof DelShippingMethodLabelScalarFieldEnum]
+
+
 export const DelBatchScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -5473,6 +5561,7 @@ export type GlobalOmitConfig = {
   invLocationProductMap?: Prisma.InvLocationProductMapOmit
   invSettings?: Prisma.InvSettingsOmit
   delShippingMethod?: Prisma.DelShippingMethodOmit
+  delShippingMethodLabel?: Prisma.DelShippingMethodLabelOmit
   delBatch?: Prisma.DelBatchOmit
   delOrder?: Prisma.DelOrderOmit
   delOrderItem?: Prisma.DelOrderItemOmit

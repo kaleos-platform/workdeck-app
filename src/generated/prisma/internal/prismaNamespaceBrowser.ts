@@ -90,6 +90,7 @@ export const ModelName = {
   InvLocationProductMap: 'InvLocationProductMap',
   InvSettings: 'InvSettings',
   DelShippingMethod: 'DelShippingMethod',
+  DelShippingMethodLabel: 'DelShippingMethodLabel',
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
@@ -718,6 +719,19 @@ export const DelShippingMethodScalarFieldEnum = {
 } as const
 
 export type DelShippingMethodScalarFieldEnum = (typeof DelShippingMethodScalarFieldEnum)[keyof typeof DelShippingMethodScalarFieldEnum]
+
+
+export const DelShippingMethodLabelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  shippingMethodId: 'shippingMethodId',
+  optionId: 'optionId',
+  overrides: 'overrides',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DelShippingMethodLabelScalarFieldEnum = (typeof DelShippingMethodLabelScalarFieldEnum)[keyof typeof DelShippingMethodLabelScalarFieldEnum]
 
 
 export const DelBatchScalarFieldEnum = {

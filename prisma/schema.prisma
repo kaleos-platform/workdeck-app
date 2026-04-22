@@ -333,6 +333,7 @@ model Space {
   delIntegrationHistories  DelIntegrationHistory[]
   delColumnMappingPresets  DelColumnMappingPreset[]
   channelProductAliases    ChannelProductAlias[]
+  delShippingMethodLabels  DelShippingMethodLabel[]
 
   // 셀러 허브 공용 (Seller Hub)
   channels               Channel[]
@@ -746,6 +747,7 @@ model InvProductOption {
   productionBatches ProductionBatch[]
   delOrderItems     DelOrderItem[]
   channelAliases    ChannelProductAlias[]
+  shippingLabels    DelShippingMethodLabel[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -931,12 +933,33 @@ model DelShippingMethod {
 
   space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   orders DelOrder[]
+  productLabels DelShippingMethodLabel[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([spaceId, name])
   @@index([spaceId])
+}
+
+// 배송 방식 × 옵션별 필드 오버라이드 (배송 파일 생성 시 적용)
+model DelShippingMethodLabel {
+  id               String @id @default(cuid())
+  spaceId          String
+  shippingMethodId String
+  optionId         String
+  overrides        Json   // { [field: DelFieldMapping]: string }
+
+  space          Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  shippingMethod DelShippingMethod @relation(fields: [shippingMethodId], references: [id], onDelete: Cascade)
+  option         InvProductOption  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shippingMethodId, optionId])
+  @@index([spaceId])
+  @@index([optionId])
 }
 
 // 배송 배치 (한 번의 배송 등록 작업 단위)

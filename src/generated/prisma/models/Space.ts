@@ -199,6 +199,7 @@ export type SpaceWhereInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryListRelationFilter
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetListRelationFilter
   channelProductAliases?: Prisma.ChannelProductAliasListRelationFilter
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelListRelationFilter
   channels?: Prisma.ChannelListRelationFilter
   channelGroups?: Prisma.ChannelGroupListRelationFilter
   brands?: Prisma.BrandListRelationFilter
@@ -228,6 +229,7 @@ export type SpaceOrderByWithRelationInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryOrderByRelationAggregateInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetOrderByRelationAggregateInput
   channelProductAliases?: Prisma.ChannelProductAliasOrderByRelationAggregateInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelOrderByRelationAggregateInput
   channels?: Prisma.ChannelOrderByRelationAggregateInput
   channelGroups?: Prisma.ChannelGroupOrderByRelationAggregateInput
   brands?: Prisma.BrandOrderByRelationAggregateInput
@@ -260,6 +262,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   delIntegrationHistories?: Prisma.DelIntegrationHistoryListRelationFilter
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetListRelationFilter
   channelProductAliases?: Prisma.ChannelProductAliasListRelationFilter
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelListRelationFilter
   channels?: Prisma.ChannelListRelationFilter
   channelGroups?: Prisma.ChannelGroupListRelationFilter
   brands?: Prisma.BrandListRelationFilter
@@ -311,6 +314,7 @@ export type SpaceCreateInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -340,6 +344,7 @@ export type SpaceUncheckedCreateInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -369,6 +374,7 @@ export type SpaceUpdateInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -398,6 +404,7 @@ export type SpaceUncheckedUpdateInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -629,6 +636,20 @@ export type SpaceUpdateOneRequiredWithoutDelShippingMethodsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutDelShippingMethodsInput, Prisma.SpaceUpdateWithoutDelShippingMethodsInput>, Prisma.SpaceUncheckedUpdateWithoutDelShippingMethodsInput>
 }
 
+export type SpaceCreateNestedOneWithoutDelShippingMethodLabelsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutDelShippingMethodLabelsInput, Prisma.SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutDelShippingMethodLabelsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutDelShippingMethodLabelsInput, Prisma.SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput
+  upsert?: Prisma.SpaceUpsertWithoutDelShippingMethodLabelsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutDelShippingMethodLabelsInput, Prisma.SpaceUpdateWithoutDelShippingMethodLabelsInput>, Prisma.SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput>
+}
+
 export type SpaceCreateNestedOneWithoutDelBatchesInput = {
   create?: Prisma.XOR<Prisma.SpaceCreateWithoutDelBatchesInput, Prisma.SpaceUncheckedCreateWithoutDelBatchesInput>
   connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutDelBatchesInput
@@ -777,6 +798,7 @@ export type SpaceCreateWithoutMembersInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -805,6 +827,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -849,6 +872,7 @@ export type SpaceUpdateWithoutMembersInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -877,6 +901,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -905,6 +930,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -933,6 +959,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -977,6 +1004,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -1005,6 +1033,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1033,6 +1062,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -1061,6 +1091,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -1105,6 +1136,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -1133,6 +1165,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1161,6 +1194,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -1189,6 +1223,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -1233,6 +1268,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -1261,6 +1297,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1289,6 +1326,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -1317,6 +1355,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -1361,6 +1400,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -1389,6 +1429,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1417,6 +1458,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -1445,6 +1487,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -1489,6 +1532,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -1517,6 +1561,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1545,6 +1590,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -1573,6 +1619,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -1617,6 +1664,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -1645,6 +1693,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1673,6 +1722,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -1701,6 +1751,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -1745,6 +1796,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -1773,6 +1825,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1801,6 +1854,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -1829,6 +1883,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -1873,6 +1928,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -1901,6 +1957,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1929,6 +1986,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -1957,6 +2015,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -2001,6 +2060,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -2029,6 +2089,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2057,6 +2118,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -2085,6 +2147,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -2129,6 +2192,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -2157,6 +2221,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2185,6 +2250,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -2213,6 +2279,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -2257,6 +2324,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -2280,6 +2348,139 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutDelShippingMethodLabelsInput, Prisma.SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput>
+}
+
+export type SpaceUpsertWithoutDelShippingMethodLabelsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutDelShippingMethodLabelsInput, Prisma.SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutDelShippingMethodLabelsInput, Prisma.SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutDelShippingMethodLabelsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutDelShippingMethodLabelsInput, Prisma.SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput>
+}
+
+export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2313,6 +2514,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -2341,6 +2543,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -2385,6 +2588,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -2413,6 +2617,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2441,6 +2646,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -2469,6 +2675,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -2513,6 +2720,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -2541,6 +2749,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2569,6 +2778,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -2597,6 +2807,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -2641,6 +2852,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -2669,6 +2881,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2697,6 +2910,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -2725,6 +2939,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -2769,6 +2984,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -2797,6 +3013,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2825,6 +3042,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -2853,6 +3071,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -2897,6 +3116,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -2925,6 +3145,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2954,6 +3175,7 @@ export type SpaceCreateWithoutBrandsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
@@ -2982,6 +3204,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
@@ -3026,6 +3249,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
@@ -3054,6 +3278,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
@@ -3082,6 +3307,7 @@ export type SpaceCreateWithoutChannelGroupsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
@@ -3110,6 +3336,7 @@ export type SpaceUncheckedCreateWithoutChannelGroupsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
@@ -3154,6 +3381,7 @@ export type SpaceUpdateWithoutChannelGroupsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
@@ -3182,6 +3410,7 @@ export type SpaceUncheckedUpdateWithoutChannelGroupsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
@@ -3210,6 +3439,7 @@ export type SpaceCreateWithoutChannelsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
@@ -3238,6 +3468,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
@@ -3282,6 +3513,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
@@ -3310,6 +3542,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
@@ -3338,6 +3571,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
@@ -3366,6 +3600,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
   channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
   channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
@@ -3410,6 +3645,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
@@ -3438,6 +3674,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
   delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
   channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
   channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
   channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3465,6 +3702,7 @@ export type SpaceCountOutputType = {
   delIntegrationHistories: number
   delColumnMappingPresets: number
   channelProductAliases: number
+  delShippingMethodLabels: number
   channels: number
   channelGroups: number
   brands: number
@@ -3487,6 +3725,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   delIntegrationHistories?: boolean | SpaceCountOutputTypeCountDelIntegrationHistoriesArgs
   delColumnMappingPresets?: boolean | SpaceCountOutputTypeCountDelColumnMappingPresetsArgs
   channelProductAliases?: boolean | SpaceCountOutputTypeCountChannelProductAliasesArgs
+  delShippingMethodLabels?: boolean | SpaceCountOutputTypeCountDelShippingMethodLabelsArgs
   channels?: boolean | SpaceCountOutputTypeCountChannelsArgs
   channelGroups?: boolean | SpaceCountOutputTypeCountChannelGroupsArgs
   brands?: boolean | SpaceCountOutputTypeCountBrandsArgs
@@ -3617,6 +3856,13 @@ export type SpaceCountOutputTypeCountChannelProductAliasesArgs<ExtArgs extends r
 /**
  * SpaceCountOutputType without action
  */
+export type SpaceCountOutputTypeCountDelShippingMethodLabelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DelShippingMethodLabelWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
 export type SpaceCountOutputTypeCountChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ChannelWhereInput
 }
@@ -3659,6 +3905,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   delIntegrationHistories?: boolean | Prisma.Space$delIntegrationHistoriesArgs<ExtArgs>
   delColumnMappingPresets?: boolean | Prisma.Space$delColumnMappingPresetsArgs<ExtArgs>
   channelProductAliases?: boolean | Prisma.Space$channelProductAliasesArgs<ExtArgs>
+  delShippingMethodLabels?: boolean | Prisma.Space$delShippingMethodLabelsArgs<ExtArgs>
   channels?: boolean | Prisma.Space$channelsArgs<ExtArgs>
   channelGroups?: boolean | Prisma.Space$channelGroupsArgs<ExtArgs>
   brands?: boolean | Prisma.Space$brandsArgs<ExtArgs>
@@ -3709,6 +3956,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   delIntegrationHistories?: boolean | Prisma.Space$delIntegrationHistoriesArgs<ExtArgs>
   delColumnMappingPresets?: boolean | Prisma.Space$delColumnMappingPresetsArgs<ExtArgs>
   channelProductAliases?: boolean | Prisma.Space$channelProductAliasesArgs<ExtArgs>
+  delShippingMethodLabels?: boolean | Prisma.Space$delShippingMethodLabelsArgs<ExtArgs>
   channels?: boolean | Prisma.Space$channelsArgs<ExtArgs>
   channelGroups?: boolean | Prisma.Space$channelGroupsArgs<ExtArgs>
   brands?: boolean | Prisma.Space$brandsArgs<ExtArgs>
@@ -3738,6 +3986,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     delIntegrationHistories: Prisma.$DelIntegrationHistoryPayload<ExtArgs>[]
     delColumnMappingPresets: Prisma.$DelColumnMappingPresetPayload<ExtArgs>[]
     channelProductAliases: Prisma.$ChannelProductAliasPayload<ExtArgs>[]
+    delShippingMethodLabels: Prisma.$DelShippingMethodLabelPayload<ExtArgs>[]
     channels: Prisma.$ChannelPayload<ExtArgs>[]
     channelGroups: Prisma.$ChannelGroupPayload<ExtArgs>[]
     brands: Prisma.$BrandPayload<ExtArgs>[]
@@ -4160,6 +4409,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   delIntegrationHistories<T extends Prisma.Space$delIntegrationHistoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$delIntegrationHistoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelIntegrationHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   delColumnMappingPresets<T extends Prisma.Space$delColumnMappingPresetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$delColumnMappingPresetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelColumnMappingPresetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channelProductAliases<T extends Prisma.Space$channelProductAliasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$channelProductAliasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelProductAliasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  delShippingMethodLabels<T extends Prisma.Space$delShippingMethodLabelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$delShippingMethodLabelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelShippingMethodLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channels<T extends Prisma.Space$channelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$channelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channelGroups<T extends Prisma.Space$channelGroupsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$channelGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   brands<T extends Prisma.Space$brandsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$brandsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4986,6 +5236,30 @@ export type Space$channelProductAliasesArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.ChannelProductAliasScalarFieldEnum | Prisma.ChannelProductAliasScalarFieldEnum[]
+}
+
+/**
+ * Space.delShippingMethodLabels
+ */
+export type Space$delShippingMethodLabelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DelShippingMethodLabel
+   */
+  select?: Prisma.DelShippingMethodLabelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DelShippingMethodLabel
+   */
+  omit?: Prisma.DelShippingMethodLabelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DelShippingMethodLabelInclude<ExtArgs> | null
+  where?: Prisma.DelShippingMethodLabelWhereInput
+  orderBy?: Prisma.DelShippingMethodLabelOrderByWithRelationInput | Prisma.DelShippingMethodLabelOrderByWithRelationInput[]
+  cursor?: Prisma.DelShippingMethodLabelWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DelShippingMethodLabelScalarFieldEnum | Prisma.DelShippingMethodLabelScalarFieldEnum[]
 }
 
 /**

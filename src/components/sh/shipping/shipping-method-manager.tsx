@@ -1,8 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
-import { Pencil, Plus, Trash2, Upload } from 'lucide-react'
+import { Pencil, Plus, Tag, Trash2, Upload } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -152,6 +153,12 @@ export function ShippingMethodManager() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge>활성</Badge>
+                    <Button asChild variant="ghost" size="sm" title="상품 라벨 관리">
+                      <Link href={`/d/seller-hub/shipping/methods/${method.id}`}>
+                        <Tag className="mr-1 h-4 w-4" />
+                        상품 라벨
+                      </Link>
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => openEdit(method)}>
                       <Pencil className="h-4 w-4" />
                     </Button>

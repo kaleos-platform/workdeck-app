@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { generateDeliveryFile } from '@/lib/del/delivery-file-generator'
-import type { DelFormatColumn } from '@/lib/del/format-templates'
+import type { DelFieldMapping, DelFormatColumn } from '@/lib/del/format-templates'
 
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     return errorResponse('배송 방식을 찾을 수 없습니다', 404)
   }
 
-  // 해당 배송 묶음 + 배송방식의 주문 조회
+  // 해당 배송 묶음 + 배송방식의 주문 조회 — 매칭된 옵션 정보도 같이 로드
   const orders = await prisma.delOrder.findMany({
     where: {
       batchId,
@@ -42,7 +42,17 @@ export async function POST(req: NextRequest) {
       spaceId: resolved.space.id,
     },
     include: {
-      items: true,
+      items: {
+        include: {
+          option: {
+            select: {
+              id: true,
+              name: true,
+              product: { select: { name: true } },
+            },
+          },
+        },
+      },
       channel: { select: { name: true } },
     },
   })
@@ -51,8 +61,36 @@ export async function POST(req: NextRequest) {
     return errorResponse('해당 배송 방식의 주문이 없습니다', 400)
   }
 
+  // 배송 방식 × 옵션 오버라이드 일괄 조회 → Map
+  const optionIds = Array.from(
+    new Set(orders.flatMap((o) => o.items.map((i) => i.optionId).filter((v): v is string => !!v)))
+  )
+  const labelRows = optionIds.length
+    ? await prisma.delShippingMethodLabel.findMany({
+        where: { shippingMethodId, optionId: { in: optionIds } },
+        select: { optionId: true, overrides: true },
+      })
+    : []
+  const overridesByOption = new Map<string, Partial<Record<DelFieldMapping, string>>>()
+  for (const row of labelRows) {
+    overridesByOption.set(
+      row.optionId,
+      (row.overrides as Partial<Record<DelFieldMapping, string>>) ?? {}
+    )
+  }
+
+  const ordersForGenerator = orders.map((o) => ({
+    ...o,
+    items: o.items.map((i) => ({
+      name: i.name,
+      quantity: i.quantity,
+      option: i.option ? { name: i.option.name, product: { name: i.option.product.name } } : null,
+      overrides: i.optionId ? (overridesByOption.get(i.optionId) ?? null) : null,
+    })),
+  }))
+
   const formatConfig = method.formatConfig as DelFormatColumn[]
-  const buffer = generateDeliveryFile(orders, formatConfig)
+  const buffer = generateDeliveryFile(ordersForGenerator, formatConfig)
 
   const filename = encodeURIComponent(`${method.name}_배송파일.xlsx`)
 

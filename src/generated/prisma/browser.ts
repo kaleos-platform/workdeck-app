@@ -213,6 +213,11 @@ export type InvSettings = Prisma.InvSettingsModel
  */
 export type DelShippingMethod = Prisma.DelShippingMethodModel
 /**
+ * Model DelShippingMethodLabel
+ * 
+ */
+export type DelShippingMethodLabel = Prisma.DelShippingMethodLabelModel
+/**
  * Model DelBatch
  * 
  */
