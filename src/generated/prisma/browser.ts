@@ -228,6 +228,11 @@ export type DelOrder = Prisma.DelOrderModel
  */
 export type DelOrderItem = Prisma.DelOrderItemModel
 /**
+ * Model ChannelProductAlias
+ * 
+ */
+export type ChannelProductAlias = Prisma.ChannelProductAliasModel
+/**
  * Model DelColumnMappingPreset
  * 
  */

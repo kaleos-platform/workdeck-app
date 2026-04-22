@@ -15,7 +15,7 @@ type OrderInput = {
   orderDate: string
   orderNumber?: string | null
   paymentAmount?: number | null
-  items?: { name: string; quantity: number }[]
+  items?: { name: string; quantity: number; optionId?: string | null }[]
 }
 
 const MAX_ITEMS_PER_ORDER = 10
@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
             create: items.map((item) => ({
               name: item.name,
               quantity: item.quantity,
+              optionId: item.optionId ?? null,
             })),
           },
         },

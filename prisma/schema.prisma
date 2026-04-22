@@ -332,6 +332,7 @@ model Space {
   delOrders                DelOrder[]
   delIntegrationHistories  DelIntegrationHistory[]
   delColumnMappingPresets  DelColumnMappingPreset[]
+  channelProductAliases    ChannelProductAlias[]
 
   // 셀러 허브 공용 (Seller Hub)
   channels               Channel[]
@@ -743,6 +744,8 @@ model InvProductOption {
   stockLevels       InvStockLevel[]
   locationMappings  InvLocationProductMap[]
   productionBatches ProductionBatch[]
+  delOrderItems     DelOrderItem[]
+  channelAliases    ChannelProductAlias[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -992,14 +995,37 @@ model DelOrder {
 
 // 주문 상품 (max 10, 앱 레벨 검증)
 model DelOrderItem {
-  id      String @id @default(cuid())
-  orderId String
-  name    String // 상품+옵션명
+  id       String  @id @default(cuid())
+  orderId  String
+  name     String  // 원본 텍스트 — 미매칭 fallback 및 감사용
   quantity Int
+  optionId String? // 카탈로그 매칭 — 성공 시 InvProductOption.id
 
-  order DelOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order  DelOrder          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  option InvProductOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
+  @@index([optionId])
+}
+
+// 채널별 상품 별칭 사전 — 채널에서 들어온 원본 상품명을 카탈로그 옵션에 매핑
+model ChannelProductAlias {
+  id        String @id @default(cuid())
+  spaceId   String
+  channelId String
+  aliasName String // 정규화된 원본 상품명 (normalizeAlias 출력)
+  optionId  String
+
+  space   Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  option  InvProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([channelId, aliasName])
+  @@index([spaceId])
+  @@index([optionId])
 }
 
 // 컬럼 매핑 프리셋 (업로드 시 header name → field 매핑을 저장)
@@ -1097,6 +1123,7 @@ model Channel {
   invMovements InvMovement[]
   delOrders    DelOrder[]
   columnMappingPresets DelColumnMappingPreset[] @relation("PresetChannel")
+  productAliases       ChannelProductAlias[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

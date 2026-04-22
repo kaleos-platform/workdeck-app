@@ -426,6 +426,7 @@ export const ModelName = {
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
+  ChannelProductAlias: 'ChannelProductAlias',
   DelColumnMappingPreset: 'DelColumnMappingPreset',
   DelIntegrationHistory: 'DelIntegrationHistory',
   Brand: 'Brand',
@@ -449,7 +450,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delBatch" | "delOrder" | "delOrderItem" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3561,6 +3562,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ChannelProductAlias: {
+      payload: Prisma.$ChannelProductAliasPayload<ExtArgs>
+      fields: Prisma.ChannelProductAliasFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChannelProductAliasFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChannelProductAliasFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>
+        }
+        findFirst: {
+          args: Prisma.ChannelProductAliasFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChannelProductAliasFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>
+        }
+        findMany: {
+          args: Prisma.ChannelProductAliasFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>[]
+        }
+        create: {
+          args: Prisma.ChannelProductAliasCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>
+        }
+        createMany: {
+          args: Prisma.ChannelProductAliasCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChannelProductAliasCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>[]
+        }
+        delete: {
+          args: Prisma.ChannelProductAliasDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>
+        }
+        update: {
+          args: Prisma.ChannelProductAliasUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChannelProductAliasDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChannelProductAliasUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChannelProductAliasUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChannelProductAliasUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductAliasPayload>
+        }
+        aggregate: {
+          args: Prisma.ChannelProductAliasAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelProductAlias>
+        }
+        groupBy: {
+          args: Prisma.ChannelProductAliasGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelProductAliasGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChannelProductAliasCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelProductAliasCountAggregateOutputType> | number
+        }
+      }
+    }
     DelColumnMappingPreset: {
       payload: Prisma.$DelColumnMappingPresetPayload<ExtArgs>
       fields: Prisma.DelColumnMappingPresetFieldRefs
@@ -4832,10 +4907,24 @@ export const DelOrderItemScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   name: 'name',
-  quantity: 'quantity'
+  quantity: 'quantity',
+  optionId: 'optionId'
 } as const
 
 export type DelOrderItemScalarFieldEnum = (typeof DelOrderItemScalarFieldEnum)[keyof typeof DelOrderItemScalarFieldEnum]
+
+
+export const ChannelProductAliasScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  aliasName: 'aliasName',
+  optionId: 'optionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelProductAliasScalarFieldEnum = (typeof ChannelProductAliasScalarFieldEnum)[keyof typeof ChannelProductAliasScalarFieldEnum]
 
 
 export const DelColumnMappingPresetScalarFieldEnum = {
@@ -4843,6 +4932,7 @@ export const DelColumnMappingPresetScalarFieldEnum = {
   spaceId: 'spaceId',
   name: 'name',
   mapping: 'mapping',
+  channelId: 'channelId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -5386,6 +5476,7 @@ export type GlobalOmitConfig = {
   delBatch?: Prisma.DelBatchOmit
   delOrder?: Prisma.DelOrderOmit
   delOrderItem?: Prisma.DelOrderItemOmit
+  channelProductAlias?: Prisma.ChannelProductAliasOmit
   delColumnMappingPreset?: Prisma.DelColumnMappingPresetOmit
   delIntegrationHistory?: Prisma.DelIntegrationHistoryOmit
   brand?: Prisma.BrandOmit

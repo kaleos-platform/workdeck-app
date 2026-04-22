@@ -32,6 +32,7 @@ import {
 import { RegistrationTable, type OrderRow } from '@/components/sh/shipping/registration-table'
 import { BulkPasteDialog } from '@/components/sh/shipping/bulk-paste-dialog'
 import { DeliveryFileDialog } from '@/components/sh/shipping/delivery-file-dialog'
+import { ProductMatchDialog, type MatchResult } from '@/components/sh/shipping/product-match-dialog'
 
 type ShippingMethod = { id: string; name: string }
 type Channel = {
@@ -65,6 +66,13 @@ export default function ShippingRegistrationPage() {
     onConfirm: () => void | Promise<void>
   } | null>(null)
   const [confirming, setConfirming] = useState(false)
+  const [matchTarget, setMatchTarget] = useState<{
+    orderId: string
+    itemId: string
+    rawName: string
+    channelId: string
+    itemIndex: number
+  } | null>(null)
 
   useEffect(() => {
     const raw = searchParams.get('imported')
@@ -120,6 +128,17 @@ export default function ShippingRegistrationPage() {
       setRows([])
       return
     }
+    type OrderItemApi = {
+      id: string
+      name: string
+      quantity: number
+      optionId: string | null
+      option: {
+        id: string
+        name: string
+        product: { id: string; name: string }
+      } | null
+    }
     fetch(`/api/sh/shipping/batches/${activeBatchId}/orders?decrypt=true&pageSize=100`)
       .then((r) => r.json())
       .then((data) => {
@@ -137,7 +156,19 @@ export default function ShippingRegistrationPage() {
               channelId: (order.channel as { id: string } | null)?.id ?? '',
               orderNumber: (order.orderNumber as string) ?? '',
               paymentAmount: order.paymentAmount != null ? String(order.paymentAmount) : '',
-              items: (order.items as { name: string; quantity: number }[]) ?? [],
+              items: ((order.items as OrderItemApi[]) ?? []).map((it) => ({
+                itemId: it.id,
+                name: it.name,
+                quantity: it.quantity,
+                optionId: it.optionId,
+                matched: it.option
+                  ? {
+                      optionId: it.option.id,
+                      productName: it.option.product.name,
+                      optionName: it.option.name,
+                    }
+                  : null,
+              })),
               memo: (order.memo as string) ?? '',
             }))
           )
@@ -520,7 +551,54 @@ export default function ShippingRegistrationPage() {
         onRemove={handleRemoveRow}
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
+        onOpenMatch={(row, itemIndex) => {
+          const item = row.items[itemIndex]
+          if (!item?.itemId) return
+          setMatchTarget({
+            orderId: row.tempId,
+            itemId: item.itemId,
+            rawName: item.name,
+            channelId: row.channelId,
+            itemIndex,
+          })
+        }}
       />
+
+      {matchTarget && (
+        <ProductMatchDialog
+          open={!!matchTarget}
+          onOpenChange={(v) => {
+            if (!v) setMatchTarget(null)
+          }}
+          orderId={matchTarget.orderId}
+          itemId={matchTarget.itemId}
+          rawName={matchTarget.rawName}
+          channelName={channels.find((c) => c.id === matchTarget.channelId)?.name ?? null}
+          channelSet={!!matchTarget.channelId}
+          onMatched={(result: MatchResult) => {
+            setRows((prev) =>
+              prev.map((r) => {
+                if (r.tempId !== matchTarget.orderId) return r
+                const nextItems = r.items.map((it, idx) =>
+                  idx === matchTarget.itemIndex
+                    ? {
+                        ...it,
+                        optionId: result.optionId,
+                        matched: {
+                          optionId: result.optionId,
+                          productName: result.productName,
+                          optionName: result.optionName,
+                        },
+                      }
+                    : it
+                )
+                return { ...r, items: nextItems }
+              })
+            )
+            setMatchTarget(null)
+          }}
+        />
+      )}
 
       <Dialog open={importedCount !== null} onOpenChange={(v) => !v && setImportedCount(null)}>
         <DialogContent className="sm:max-w-md">

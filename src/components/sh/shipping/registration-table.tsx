@@ -59,6 +59,7 @@ type RegistrationTableProps = {
   onRemove?: (tempId: string) => void | Promise<void>
   selectedIds?: Set<string>
   onSelectionChange?: (ids: Set<string>) => void
+  onOpenMatch?: (row: OrderRow, itemIndex: number) => void
 }
 
 let tempCounter = 0
@@ -97,6 +98,7 @@ export function RegistrationTable({
   onRemove,
   selectedIds,
   onSelectionChange,
+  onOpenMatch,
 }: RegistrationTableProps) {
   const selectionEnabled = !!selectedIds && !!onSelectionChange
 
@@ -299,6 +301,8 @@ export function RegistrationTable({
                         value={row.items}
                         onChange={(items) => updateRow(row.tempId, 'items', items)}
                         invalid={missingProducts}
+                        matchEnabled={!row.tempId.startsWith('temp-') && !!row.channelId}
+                        onOpenMatch={(idx) => onOpenMatch?.(row, idx)}
                       />
                     </TableCell>
                     <TableCell>

@@ -3,6 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { parseWithMapping, type ColumnMapping } from '@/lib/del/channel-import-parser'
 import { encryptOrderPii } from '@/lib/del/encryption'
+import { buildAliasLookup, normalizeAlias } from '@/lib/sh/product-matching'
 
 /**
  * 에러 메시지를 사용자 친화적인 한글로 변환
@@ -100,8 +101,28 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 채널별 상품 별칭 사전을 한 번에 조회해 자동 매칭에 사용한다.
+  // channelId가 없으면 매칭 skip (별칭은 채널 스코프).
+  let aliasLookup = new Map<string, string>()
+  if (channelId) {
+    const uniqueNames = new Set<string>()
+    for (const group of groups.values()) {
+      for (const r of group.rows) {
+        if (r.productName) uniqueNames.add(normalizeAlias(r.productName as string))
+      }
+    }
+    if (uniqueNames.size > 0) {
+      const aliasRows = await prisma.channelProductAlias.findMany({
+        where: { channelId, aliasName: { in: Array.from(uniqueNames) } },
+        select: { aliasName: true, optionId: true },
+      })
+      aliasLookup = buildAliasLookup(aliasRows)
+    }
+  }
+
   // 주문 생성
   let created = 0
+  let matchedItemCount = 0
   const createErrors: { row: number; recipientName?: string; message: string }[] = [...parseErrors]
 
   for (const group of groups.values()) {
@@ -117,7 +138,16 @@ export async function POST(req: NextRequest) {
 
       const items = group.rows
         .filter((r) => r.productName)
-        .map((r) => ({ name: r.productName as string, quantity: r.productQuantity ?? 1 }))
+        .map((r) => {
+          const rawName = r.productName as string
+          const optionId = aliasLookup.get(normalizeAlias(rawName)) ?? null
+          if (optionId) matchedItemCount++
+          return {
+            name: rawName,
+            quantity: r.productQuantity ?? 1,
+            optionId,
+          }
+        })
 
       const hasPayment = group.rows.some((r) => r.paymentAmount != null)
       const paymentSum = group.rows.reduce((sum, r) => sum + (r.paymentAmount ?? 0), 0)
@@ -152,6 +182,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     totalRows: rows.length + parseErrors.length,
     created,
+    matchedItemCount,
     errorCount: createErrors.length,
     errors: createErrors.slice(0, 50),
   })

@@ -93,6 +93,7 @@ export const ModelName = {
   DelBatch: 'DelBatch',
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
+  ChannelProductAlias: 'ChannelProductAlias',
   DelColumnMappingPreset: 'DelColumnMappingPreset',
   DelIntegrationHistory: 'DelIntegrationHistory',
   Brand: 'Brand',
@@ -759,10 +760,24 @@ export const DelOrderItemScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   name: 'name',
-  quantity: 'quantity'
+  quantity: 'quantity',
+  optionId: 'optionId'
 } as const
 
 export type DelOrderItemScalarFieldEnum = (typeof DelOrderItemScalarFieldEnum)[keyof typeof DelOrderItemScalarFieldEnum]
+
+
+export const ChannelProductAliasScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  aliasName: 'aliasName',
+  optionId: 'optionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelProductAliasScalarFieldEnum = (typeof ChannelProductAliasScalarFieldEnum)[keyof typeof ChannelProductAliasScalarFieldEnum]
 
 
 export const DelColumnMappingPresetScalarFieldEnum = {
@@ -770,6 +785,7 @@ export const DelColumnMappingPresetScalarFieldEnum = {
   spaceId: 'spaceId',
   name: 'name',
   mapping: 'mapping',
+  channelId: 'channelId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

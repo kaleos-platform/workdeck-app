@@ -35,7 +35,17 @@ export async function GET(req: NextRequest, { params }: Params) {
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
-        items: true,
+        items: {
+          include: {
+            option: {
+              select: {
+                id: true,
+                name: true,
+                product: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
         channel: { select: { id: true, name: true } },
         shippingMethod: { select: { id: true, name: true } },
       },
@@ -88,6 +98,14 @@ export async function GET(req: NextRequest, { params }: Params) {
         id: item.id,
         name: item.name,
         quantity: item.quantity,
+        optionId: item.optionId,
+        option: item.option
+          ? {
+              id: item.option.id,
+              name: item.option.name,
+              product: item.option.product,
+            }
+          : null,
       })),
       createdAt: order.createdAt,
     }

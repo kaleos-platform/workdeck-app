@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       include: {
         brand: { select: { id: true, name: true } },
         group: { select: { id: true, name: true } },
-        options: { select: { id: true } },
+        options: { select: { id: true, name: true, sku: true } },
       },
     }),
     prisma.invProduct.count({ where }),
