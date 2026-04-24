@@ -12,9 +12,13 @@ import { SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 import { KeywordEditor } from './keyword-editor'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
 import { GroupBulkEditBar, type BulkPatch } from './group-bulk-edit-bar'
-import { GroupBaseInfoCard } from './group-base-info-card'
-
-type OptionAttribute = { name: string; values: Array<{ value: string }> }
+import {
+  GroupBaseInfoCard,
+  type OptionAttribute,
+  buildSuffix,
+  deriveBaseValues,
+  joinName,
+} from './group-base-info-card'
 
 type GroupListingFull = GroupListingRow & {
   memo: string | null
@@ -42,12 +46,18 @@ type Props = {
 export function GroupDetailView({ productId, channelId }: Props) {
   const [data, setData] = useState<GroupDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  // 편집 state
   const [keywords, setKeywords] = useState<string[]>([])
   const [rows, setRows] = useState<GroupListingFull[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [savingKeywords, setSavingKeywords] = useState(false)
-  const [savingRow, setSavingRow] = useState<string | null>(null)
-  const [bulkApplying, setBulkApplying] = useState(false)
+
+  // 기본 정보 편집 state
+  const [baseSearchName, setBaseSearchName] = useState('')
+  const [baseDisplayName, setBaseDisplayName] = useState('')
+  const [baseInternalCode, setBaseInternalCode] = useState('')
+  const [memo, setMemo] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -61,6 +71,24 @@ export function GroupDetailView({ productId, channelId }: Props) {
       setKeywords(d.meta.keywords ?? [])
       setRows(d.listings)
       setSelected(new Set())
+      const derived = deriveBaseValues(
+        d.listings.map((l) => ({
+          id: l.id,
+          searchName: l.searchName,
+          displayName: l.displayName,
+          internalCode: l.internalCode,
+          memo: l.memo,
+          items: l.items.map((it) => ({
+            optionId: it.optionId,
+            attributeValues: it.attributeValues,
+          })),
+        })),
+        d.product.optionAttributes
+      )
+      setBaseSearchName(derived.baseSearchName)
+      setBaseDisplayName(derived.baseDisplayName)
+      setBaseInternalCode(derived.baseInternalCode)
+      setMemo(derived.memo)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '그룹 조회 실패')
     } finally {
@@ -82,75 +110,171 @@ export function GroupDetailView({ productId, channelId }: Props) {
     return Array.from(set)
   }, [data])
 
-  async function handleKeywordsSave() {
-    setSavingKeywords(true)
-    try {
-      const res = await fetch(`/api/sh/products/listings/groups/${productId}/${channelId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keywords }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.message ?? '저장 실패')
-      }
-      toast.success('키워드가 저장되었습니다')
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장 실패')
-    } finally {
-      setSavingKeywords(false)
+  const derivedBase = useMemo(() => {
+    if (!data) return null
+    return deriveBaseValues(
+      data.listings.map((l) => ({
+        id: l.id,
+        searchName: l.searchName,
+        displayName: l.displayName,
+        internalCode: l.internalCode,
+        memo: l.memo,
+        items: l.items.map((it) => ({
+          optionId: it.optionId,
+          attributeValues: it.attributeValues,
+        })),
+      })),
+      data.product.optionAttributes
+    )
+  }, [data])
+
+  const baseDirty = useMemo(() => {
+    if (!derivedBase) return false
+    return (
+      baseSearchName !== derivedBase.baseSearchName ||
+      baseDisplayName !== derivedBase.baseDisplayName ||
+      baseInternalCode !== derivedBase.baseInternalCode ||
+      memo !== derivedBase.memo
+    )
+  }, [derivedBase, baseSearchName, baseDisplayName, baseInternalCode, memo])
+
+  const keywordsDirty = useMemo(() => {
+    const original = data?.meta.keywords ?? []
+    if (keywords.length !== original.length) return true
+    return keywords.some((k, i) => k !== original[i])
+  }, [keywords, data])
+
+  const dirtyRowIds = useMemo(() => {
+    const set = new Set<string>()
+    if (!data) return set
+    const origById = new Map(data.listings.map((l) => [l.id, l]))
+    for (const r of rows) {
+      const o = origById.get(r.id)
+      if (!o) continue
+      if (r.retailPrice !== o.retailPrice || r.status !== o.status) set.add(r.id)
     }
+    return set
+  }, [rows, data])
+
+  const totalDirty = baseDirty || keywordsDirty || dirtyRowIds.size > 0
+  const dirtyCount = (baseDirty ? 1 : 0) + (keywordsDirty ? 1 : 0) + dirtyRowIds.size
+
+  function handleRowChange(id: string, patch: BulkPatch) {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r
+        const next = { ...r }
+        if (patch.retailPrice !== undefined) next.retailPrice = patch.retailPrice
+        if (patch.status !== undefined) next.status = patch.status
+        return next
+      })
+    )
   }
 
-  async function handleRowSave(
-    id: string,
-    patch: { retailPrice?: number | null; status?: 'ACTIVE' | 'SUSPENDED' }
-  ) {
-    setSavingRow(id)
-    try {
-      const res = await fetch(`/api/sh/products/listings/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.message ?? '저장 실패')
-      }
-      toast.success('변경사항이 저장되었습니다')
-      await load()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장 실패')
-    } finally {
-      setSavingRow(null)
-    }
-  }
-
-  async function handleBulkApply(patch: BulkPatch) {
+  function applyBulkPatch(patch: BulkPatch) {
     if (selected.size === 0) return
-    setBulkApplying(true)
-    try {
-      const body: { ids: string[]; patch: BulkPatch } = {
-        ids: Array.from(selected),
-        patch,
-      }
-      const res = await fetch('/api/sh/products/listings/bulk', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+    setRows((prev) =>
+      prev.map((r) => {
+        if (!selected.has(r.id)) return r
+        const next = { ...r }
+        if (patch.retailPrice !== undefined) next.retailPrice = patch.retailPrice
+        if (patch.status !== undefined) next.status = patch.status
+        return next
       })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.message ?? '일괄 수정 실패')
+    )
+    toast.success(`${selected.size}개 listing의 값이 변경되었습니다 (저장 버튼으로 반영)`)
+  }
+
+  async function handleSaveAll() {
+    if (!data || !totalDirty) return
+    setSaving(true)
+    const origById = new Map(data.listings.map((l) => [l.id, l]))
+    const failures: string[] = []
+    let updatedCount = 0
+
+    for (const l of data.listings) {
+      const current = rows.find((r) => r.id === l.id)
+      if (!current) continue
+      const patch: {
+        searchName?: string
+        displayName?: string
+        internalCode?: string | null
+        memo?: string | null
+        retailPrice?: number | null
+        status?: 'ACTIVE' | 'SUSPENDED'
+      } = {}
+
+      if (baseDirty) {
+        const suffix = buildSuffix(
+          {
+            id: l.id,
+            searchName: l.searchName,
+            displayName: l.displayName,
+            internalCode: l.internalCode,
+            memo: l.memo,
+            items: l.items.map((it) => ({
+              optionId: it.optionId,
+              attributeValues: it.attributeValues,
+            })),
+          },
+          data.product.optionAttributes
+        )
+        patch.searchName = joinName(baseSearchName.trim(), suffix) || l.searchName
+        patch.displayName = joinName(baseDisplayName.trim(), suffix) || l.displayName
+        patch.internalCode = baseInternalCode.trim()
+          ? joinName(baseInternalCode.trim(), suffix)
+          : null
+        patch.memo = memo.trim() || null
       }
-      const result: { updated: number } = await res.json()
-      toast.success(`${result.updated}개 listing이 일괄 수정되었습니다`)
-      await load()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '일괄 수정 실패')
-    } finally {
-      setBulkApplying(false)
+
+      const orig = origById.get(l.id)!
+      if (current.retailPrice !== orig.retailPrice) patch.retailPrice = current.retailPrice
+      if (current.status !== orig.status) patch.status = current.status
+
+      if (Object.keys(patch).length === 0) continue
+
+      try {
+        const res = await fetch(`/api/sh/products/listings/${l.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          failures.push(`${l.searchName}: ${err?.message ?? '저장 실패'}`)
+        } else {
+          updatedCount += 1
+        }
+      } catch (err) {
+        failures.push(`${l.searchName}: ${err instanceof Error ? err.message : '저장 실패'}`)
+      }
     }
+
+    if (keywordsDirty) {
+      try {
+        const res = await fetch(`/api/sh/products/listings/groups/${productId}/${channelId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keywords }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          failures.push(`키워드: ${err?.message ?? '저장 실패'}`)
+        }
+      } catch (err) {
+        failures.push(`키워드: ${err instanceof Error ? err.message : '저장 실패'}`)
+      }
+    }
+
+    setSaving(false)
+    if (failures.length > 0) {
+      toast.warning(`일부 저장 실패 (${failures.length}건). ${failures.slice(0, 2).join(' / ')}`)
+    } else {
+      toast.success(
+        updatedCount > 0 || keywordsDirty ? '변경사항이 저장되었습니다' : '변경사항이 없습니다'
+      )
+    }
+    await load()
   }
 
   if (loading && !data) {
@@ -159,10 +283,6 @@ export function GroupDetailView({ productId, channelId }: Props) {
   if (!data) {
     return <p className="text-sm text-muted-foreground">그룹 정보를 불러올 수 없습니다.</p>
   }
-
-  const keywordsDirty =
-    keywords.length !== (data.meta.keywords?.length ?? 0) ||
-    keywords.some((k, i) => k !== data.meta.keywords?.[i])
 
   return (
     <div className="space-y-6">
@@ -174,10 +294,16 @@ export function GroupDetailView({ productId, channelId }: Props) {
           <ArrowLeft className="h-4 w-4" />
           목록으로
         </Link>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className="mr-1 h-4 w-4" />
-          새로고침
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={load} disabled={loading || saving}>
+            <RefreshCw className="mr-1 h-4 w-4" />
+            새로고침
+          </Button>
+          <Button size="sm" onClick={handleSaveAll} disabled={!totalDirty || saving}>
+            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+            {totalDirty ? `저장 (${dirtyCount}건 변경)` : '저장'}
+          </Button>
+        </div>
       </div>
 
       <div>
@@ -192,37 +318,24 @@ export function GroupDetailView({ productId, channelId }: Props) {
 
       <GroupBaseInfoCard
         channelName={data.channel.name}
-        optionAttributes={data.product.optionAttributes}
-        listings={data.listings.map((l) => ({
-          id: l.id,
-          searchName: l.searchName,
-          displayName: l.displayName,
-          internalCode: l.internalCode,
-          memo: l.memo,
-          items: l.items.map((it) => ({
-            optionId: it.optionId,
-            attributeValues: it.attributeValues,
-          })),
-        }))}
-        onSaved={load}
+        baseSearchName={baseSearchName}
+        baseDisplayName={baseDisplayName}
+        baseInternalCode={baseInternalCode}
+        memo={memo}
+        inconsistentBases={derivedBase?.inconsistentBases ?? []}
+        onBaseSearchNameChange={setBaseSearchName}
+        onBaseDisplayNameChange={setBaseDisplayName}
+        onBaseInternalCodeChange={setBaseInternalCode}
+        onMemoChange={setMemo}
+        disabled={saving}
       />
 
       <Card>
-        <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
-          <div>
-            <CardTitle className="text-lg">키워드 (상품 단위)</CardTitle>
-            <CardDescription>
-              {data.channel.name} 상의 이 상품에 공통 적용되는 검색 키워드입니다. 최대 30개.
-            </CardDescription>
-          </div>
-          <Button
-            size="sm"
-            onClick={handleKeywordsSave}
-            disabled={!keywordsDirty || savingKeywords}
-          >
-            {savingKeywords && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-            키워드 저장
-          </Button>
+        <CardHeader>
+          <CardTitle className="text-lg">키워드 (상품 단위)</CardTitle>
+          <CardDescription>
+            {data.channel.name} 상의 이 상품에 공통 적용되는 검색 키워드입니다. 최대 30개.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <KeywordEditor value={keywords} onChange={setKeywords} suggestions={keywordSuggestions} />
@@ -233,8 +346,9 @@ export function GroupDetailView({ productId, channelId }: Props) {
         <CardHeader>
           <CardTitle className="text-lg">옵션 구성 ({rows.length}개)</CardTitle>
           <CardDescription>
-            체크박스로 여러 옵션을 선택하면 판매가·판매상태를 한 번에 수정할 수 있습니다. 소비자가는
-            상품의 옵션 소비자가에서 자동 계산됩니다.
+            체크박스로 여러 옵션을 선택하면 판매가·판매상태를 한 번에 바꿀 수 있습니다. 모든 변경은
+            상단의 &lsquo;저장&rsquo; 버튼을 눌러야 반영됩니다. 소비자가는 상품의 옵션 소비자가에서
+            자동 계산됩니다.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -242,16 +356,16 @@ export function GroupDetailView({ productId, channelId }: Props) {
             <GroupBulkEditBar
               selectedCount={selected.size}
               onClear={() => setSelected(new Set())}
-              onApply={handleBulkApply}
-              loading={bulkApplying}
+              onApply={async (patch) => applyBulkPatch(patch)}
             />
           )}
           <GroupListingsTable
             rows={rows}
             selected={selected}
             onSelectedChange={setSelected}
-            onRowSave={handleRowSave}
-            savingRowId={savingRow}
+            onRowChange={handleRowChange}
+            dirtyIds={dirtyRowIds}
+            disabled={saving}
           />
         </CardContent>
       </Card>

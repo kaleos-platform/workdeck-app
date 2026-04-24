@@ -1,10 +1,5 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
-
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,112 +21,56 @@ export type GroupListingForBase = {
   }>
 }
 
-type OptionAttribute = { name: string; values: Array<{ value: string }> }
+export type OptionAttribute = { name: string; values: Array<{ value: string }> }
 
 type Props = {
   channelName: string
-  optionAttributes: OptionAttribute[]
-  listings: GroupListingForBase[]
-  onSaved: () => void
+  baseSearchName: string
+  baseDisplayName: string
+  baseInternalCode: string
+  memo: string
+  inconsistentBases: string[]
+  onBaseSearchNameChange: (v: string) => void
+  onBaseDisplayNameChange: (v: string) => void
+  onBaseInternalCodeChange: (v: string) => void
+  onMemoChange: (v: string) => void
+  disabled?: boolean
 }
 
 /**
- * 그룹 상세의 "기본 정보" 섹션 — 공통 base(검색명/노출명/관리 코드/메모)를 편집하면
- * 각 listing의 suffix(속성값)를 유지한 채로 이름·코드가 일괄 재작성된다.
- *
- * suffix 추론: listing.items[0].attributeValues를 product.optionAttributes 순서대로
- * 공백으로 join한 문자열 (예: "S 누드"). searchName이 해당 suffix로 끝나면 base로 인정.
+ * 그룹 상세의 "기본 정보" 섹션 (controlled).
+ * 공통 base를 편집하면 상위 컴포넌트가 각 listing의 suffix를 유지한 채 이름을 재구성한다.
+ * 저장 버튼은 상위 GroupDetailView의 단일 저장 버튼을 공유한다.
  */
-export function GroupBaseInfoCard({ channelName, optionAttributes, listings, onSaved }: Props) {
-  const derived = useMemo(
-    () => deriveBaseValues(listings, optionAttributes),
-    [listings, optionAttributes]
-  )
-
-  const [baseSearchName, setBaseSearchName] = useState(derived.baseSearchName)
-  const [baseDisplayName, setBaseDisplayName] = useState(derived.baseDisplayName)
-  const [baseInternalCode, setBaseInternalCode] = useState(derived.baseInternalCode)
-  const [memo, setMemo] = useState(derived.memo)
-  const [saving, setSaving] = useState(false)
-
+export function GroupBaseInfoCard({
+  channelName,
+  baseSearchName,
+  baseDisplayName,
+  baseInternalCode,
+  memo,
+  inconsistentBases,
+  onBaseSearchNameChange,
+  onBaseDisplayNameChange,
+  onBaseInternalCodeChange,
+  onMemoChange,
+  disabled,
+}: Props) {
   const nameLimit = getChannelNameLimit(channelName)
-
-  const dirty =
-    baseSearchName !== derived.baseSearchName ||
-    baseDisplayName !== derived.baseDisplayName ||
-    baseInternalCode !== derived.baseInternalCode ||
-    memo !== derived.memo
-
-  async function handleSave() {
-    if (!dirty) return
-    setSaving(true)
-    const failures: string[] = []
-    for (const l of listings) {
-      const suffix = buildSuffix(l, optionAttributes)
-      const newSearch = joinName(baseSearchName.trim(), suffix)
-      const newDisplay = joinName(baseDisplayName.trim(), suffix)
-      const newCode = baseInternalCode.trim() ? joinName(baseInternalCode.trim(), suffix) : null
-      const patch = {
-        searchName: newSearch || l.searchName,
-        displayName: newDisplay || l.displayName,
-        internalCode: newCode,
-        memo: memo.trim() || null,
-      }
-      try {
-        const res = await fetch(`/api/sh/products/listings/${l.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(patch),
-        })
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          failures.push(`${l.searchName}: ${err?.message ?? '저장 실패'}`)
-        }
-      } catch (err) {
-        failures.push(`${l.searchName}: ${err instanceof Error ? err.message : '저장 실패'}`)
-      }
-    }
-    setSaving(false)
-    if (failures.length > 0) {
-      toast.warning(`${listings.length - failures.length}개 저장 · ${failures.length}개 실패`)
-    } else {
-      toast.success('기본 정보가 저장되었습니다')
-    }
-    onSaved()
-  }
-
-  function reset() {
-    setBaseSearchName(derived.baseSearchName)
-    setBaseDisplayName(derived.baseDisplayName)
-    setBaseInternalCode(derived.baseInternalCode)
-    setMemo(derived.memo)
-  }
 
   return (
     <Card>
-      <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
-        <div>
-          <CardTitle className="text-lg">기본 정보</CardTitle>
-          <CardDescription>
-            이 그룹의 모든 listing에 공통으로 적용되는 값. 각 listing의 속성 suffix(예: &lsquo;S
-            누드&rsquo;)는 그대로 유지되고 앞부분만 일괄 재작성됩니다.
-          </CardDescription>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Button variant="outline" size="sm" onClick={reset} disabled={!dirty || saving}>
-            되돌리기
-          </Button>
-          <Button size="sm" onClick={handleSave} disabled={!dirty || saving}>
-            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-            기본 정보 저장
-          </Button>
-        </div>
+      <CardHeader>
+        <CardTitle className="text-lg">기본 정보</CardTitle>
+        <CardDescription>
+          이 그룹의 모든 listing에 공통으로 적용되는 값. 각 listing의 속성 suffix(예: &lsquo;S
+          누드&rsquo;)는 그대로 유지되고 앞부분만 일괄 재작성됩니다.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        {derived.inconsistentBases.length > 0 && (
+        {inconsistentBases.length > 0 && (
           <p className="text-xs text-amber-600">
-            ⚠ {derived.inconsistentBases.join(' · ')}의 base가 listing마다 달라 대표값을 표시합니다.
-            저장 시 모든 listing에 동일하게 적용됩니다.
+            ⚠ {inconsistentBases.join(' · ')}의 base가 listing마다 달라 대표값을 표시합니다. 저장 시
+            모든 listing에 동일하게 적용됩니다.
           </p>
         )}
         <div className="grid gap-5 md:grid-cols-2">
@@ -144,10 +83,10 @@ export function GroupBaseInfoCard({ channelName, optionAttributes, listings, onS
             <Input
               id="group-code"
               value={baseInternalCode}
-              onChange={(e) => setBaseInternalCode(e.target.value)}
+              onChange={(e) => onBaseInternalCodeChange(e.target.value)}
               placeholder="예: CP-MUD — suffix가 붙어 각 listing에 설정됩니다"
               maxLength={50}
-              disabled={saving}
+              disabled={disabled}
             />
           </div>
         </div>
@@ -159,10 +98,10 @@ export function GroupBaseInfoCard({ channelName, optionAttributes, listings, onS
           <Input
             id="group-search"
             value={baseSearchName}
-            onChange={(e) => setBaseSearchName(e.target.value)}
+            onChange={(e) => onBaseSearchNameChange(e.target.value)}
             placeholder="예: 프리미엄 머드팬티"
             maxLength={MAX_NAME_LENGTH - 30}
-            disabled={saving}
+            disabled={disabled}
           />
         </div>
         <div className="space-y-1.5">
@@ -173,10 +112,10 @@ export function GroupBaseInfoCard({ channelName, optionAttributes, listings, onS
           <Input
             id="group-display"
             value={baseDisplayName}
-            onChange={(e) => setBaseDisplayName(e.target.value)}
+            onChange={(e) => onBaseDisplayNameChange(e.target.value)}
             placeholder="상세 페이지에 표시되는 상품명"
             maxLength={MAX_NAME_LENGTH - 30}
-            disabled={saving}
+            disabled={disabled}
           />
         </div>
         <div className="space-y-1.5">
@@ -184,10 +123,10 @@ export function GroupBaseInfoCard({ channelName, optionAttributes, listings, onS
           <Textarea
             id="group-memo"
             value={memo}
-            onChange={(e) => setMemo(e.target.value)}
+            onChange={(e) => onMemoChange(e.target.value)}
             placeholder="내부 참고용 메모 — 저장 시 모든 listing에 동일하게 적용"
             rows={2}
-            disabled={saving}
+            disabled={disabled}
           />
         </div>
       </CardContent>
@@ -195,7 +134,7 @@ export function GroupBaseInfoCard({ channelName, optionAttributes, listings, onS
   )
 }
 
-function buildSuffix(listing: GroupListingForBase, attrs: OptionAttribute[]): string {
+export function buildSuffix(listing: GroupListingForBase, attrs: OptionAttribute[]): string {
   const firstItem = listing.items[0]
   if (!firstItem) return ''
   const values = firstItem.attributeValues ?? {}
@@ -207,6 +146,12 @@ function buildSuffix(listing: GroupListingForBase, attrs: OptionAttribute[]): st
   return parts.join(' ')
 }
 
+export function joinName(base: string, suffix: string): string {
+  if (!base) return suffix
+  if (!suffix) return base
+  return `${base} ${suffix}`
+}
+
 function stripSuffix(value: string | null, suffix: string): string {
   if (!value) return ''
   if (!suffix) return value
@@ -216,13 +161,7 @@ function stripSuffix(value: string | null, suffix: string): string {
   return value
 }
 
-function joinName(base: string, suffix: string): string {
-  if (!base) return suffix
-  if (!suffix) return base
-  return `${base} ${suffix}`
-}
-
-function deriveBaseValues(
+export function deriveBaseValues(
   listings: GroupListingForBase[],
   attrs: OptionAttribute[]
 ): {
