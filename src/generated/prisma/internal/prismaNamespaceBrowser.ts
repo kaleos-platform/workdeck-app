@@ -118,6 +118,7 @@ export const ModelName = {
   ChannelCredential: 'ChannelCredential',
   DeploymentMetric: 'DeploymentMetric',
   SalesContentJob: 'SalesContentJob',
+  ContentVersion: 'ContentVersion',
   ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea',
   ImprovementRule: 'ImprovementRule'
@@ -1211,6 +1212,22 @@ export const SalesContentJobScalarFieldEnum = {
 } as const
 
 export type SalesContentJobScalarFieldEnum = (typeof SalesContentJobScalarFieldEnum)[keyof typeof SalesContentJobScalarFieldEnum]
+
+
+export const ContentVersionScalarFieldEnum = {
+  id: 'id',
+  contentId: 'contentId',
+  spaceId: 'spaceId',
+  versionNumber: 'versionNumber',
+  title: 'title',
+  doc: 'doc',
+  snapshotHash: 'snapshotHash',
+  createdByUserId: 'createdByUserId',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type ContentVersionScalarFieldEnum = (typeof ContentVersionScalarFieldEnum)[keyof typeof ContentVersionScalarFieldEnum]
 
 
 export const ContentAssetScalarFieldEnum = {

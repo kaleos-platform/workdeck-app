@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { contentUpdateSchema } from '@/lib/sc/schemas'
+import { snapshotContent } from '@/lib/sc/content-versions'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -49,6 +50,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!parsed.success) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
+
+  // 변경 직전 스냅샷 보존
+  await snapshotContent({
+    contentId: id,
+    userId: resolved.user?.id,
+    note: '자동 스냅샷 (PATCH)',
+  })
 
   const updated = await prisma.content.update({
     where: { id },

@@ -354,6 +354,7 @@ model Space {
   salesContentChannels SalesContentChannel[]
   contents             Content[]
   contentAssets        ContentAsset[]
+  contentVersions      ContentVersion[]
   contentDeployments   ContentDeployment[]
   contentClickEvents   ContentClickEvent[]
   channelCredentials   ChannelCredential[]
@@ -1531,6 +1532,7 @@ model Content {
 
   space       Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   assets      ContentAsset[]
+  versions    ContentVersion[]
   channel     SalesContentChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
   deployments ContentDeployment[]
 
@@ -1702,6 +1704,30 @@ model SalesContentJob {
   @@index([status, scheduledAt])
   @@index([spaceId, status])
   @@index([kind, status])
+}
+
+// ─── Sales Content Deck (콘텐츠 버전 히스토리) ───────────────────────────────
+
+// Content 수정 직전 상태를 스냅샷으로 보존. versionNumber 는 contentId 범위 내 1부터 증가.
+model ContentVersion {
+  id              String   @id @default(cuid())
+  contentId       String
+  spaceId         String
+  versionNumber   Int      // content 별 1부터 증가
+  title           String
+  doc             Json     // 스냅샷 시점의 TipTap Doc
+  snapshotHash    String?  // 변경 감지용
+  createdByUserId String?  // 이 버전을 만든 사용자 (nullable — 시스템 생성 가능)
+  note            String?  // "자동 스냅샷 (PATCH)", "수동 저장", "롤백 from v3" 같은 메타
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  space   Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([contentId, versionNumber])
+  @@index([contentId, createdAt])
+  @@index([spaceId, createdAt])
 }
 
 // 콘텐츠 첨부 에셋 (이미지 · 링크). 이미지 URL 은 Unit 7 Supabase Storage 결과.

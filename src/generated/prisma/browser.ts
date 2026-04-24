@@ -353,6 +353,11 @@ export type DeploymentMetric = Prisma.DeploymentMetricModel
  */
 export type SalesContentJob = Prisma.SalesContentJobModel
 /**
+ * Model ContentVersion
+ * 
+ */
+export type ContentVersion = Prisma.ContentVersionModel
+/**
  * Model ContentAsset
  * 
  */

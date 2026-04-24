@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { ContentEditor } from '@/components/sc/contents/content-editor'
+import { VersionHistoryPanel } from '@/components/sc/contents/version-history-panel'
 import { nextAllowed } from '@/lib/sc/content-state'
 import { SALES_CONTENT_CONTENTS_PATH } from '@/lib/deck-routes'
 
@@ -14,9 +15,16 @@ export default async function EditContentPage({ params }: Props) {
   if ('error' in resolved) redirect('/my-deck')
 
   const { id } = await params
-  const content = await prisma.content.findFirst({
-    where: { id, spaceId: resolved.space.id },
-  })
+  const [content, latestVersion] = await Promise.all([
+    prisma.content.findFirst({
+      where: { id, spaceId: resolved.space.id },
+    }),
+    prisma.contentVersion.findFirst({
+      where: { contentId: id },
+      orderBy: { versionNumber: 'desc' },
+      select: { versionNumber: true },
+    }),
+  ])
   if (!content) notFound()
 
   return (
@@ -33,6 +41,10 @@ export default async function EditContentPage({ params }: Props) {
         initialDoc={content.doc}
         status={content.status}
         nextAllowed={nextAllowed(content.status)}
+      />
+      <VersionHistoryPanel
+        contentId={content.id}
+        currentVersionNumber={latestVersion?.versionNumber}
       />
     </div>
   )

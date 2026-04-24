@@ -77,3 +77,6 @@ docs/source_ref/
 prisma/dev.db
 # Prisma 로컬 스크립트 (QA/디버그용, 커밋 안 함)
 prisma/scripts/
+
+.omc/
+.claude/scheduled_tasks.lock

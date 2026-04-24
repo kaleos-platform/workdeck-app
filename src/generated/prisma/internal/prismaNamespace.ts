@@ -451,6 +451,7 @@ export const ModelName = {
   ChannelCredential: 'ChannelCredential',
   DeploymentMetric: 'DeploymentMetric',
   SalesContentJob: 'SalesContentJob',
+  ContentVersion: 'ContentVersion',
   ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea',
   ImprovementRule: 'ImprovementRule'
@@ -469,7 +470,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentAsset" | "contentIdea" | "improvementRule"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "contentIdea" | "improvementRule"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5431,6 +5432,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ContentVersion: {
+      payload: Prisma.$ContentVersionPayload<ExtArgs>
+      fields: Prisma.ContentVersionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ContentVersionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ContentVersionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>
+        }
+        findFirst: {
+          args: Prisma.ContentVersionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ContentVersionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>
+        }
+        findMany: {
+          args: Prisma.ContentVersionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>[]
+        }
+        create: {
+          args: Prisma.ContentVersionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>
+        }
+        createMany: {
+          args: Prisma.ContentVersionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ContentVersionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>[]
+        }
+        delete: {
+          args: Prisma.ContentVersionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>
+        }
+        update: {
+          args: Prisma.ContentVersionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ContentVersionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ContentVersionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ContentVersionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ContentVersionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentVersionPayload>
+        }
+        aggregate: {
+          args: Prisma.ContentVersionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContentVersion>
+        }
+        groupBy: {
+          args: Prisma.ContentVersionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentVersionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ContentVersionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentVersionCountAggregateOutputType> | number
+        }
+      }
+    }
     ContentAsset: {
       payload: Prisma.$ContentAssetPayload<ExtArgs>
       fields: Prisma.ContentAssetFieldRefs
@@ -6766,6 +6841,22 @@ export const SalesContentJobScalarFieldEnum = {
 export type SalesContentJobScalarFieldEnum = (typeof SalesContentJobScalarFieldEnum)[keyof typeof SalesContentJobScalarFieldEnum]
 
 
+export const ContentVersionScalarFieldEnum = {
+  id: 'id',
+  contentId: 'contentId',
+  spaceId: 'spaceId',
+  versionNumber: 'versionNumber',
+  title: 'title',
+  doc: 'doc',
+  snapshotHash: 'snapshotHash',
+  createdByUserId: 'createdByUserId',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type ContentVersionScalarFieldEnum = (typeof ContentVersionScalarFieldEnum)[keyof typeof ContentVersionScalarFieldEnum]
+
+
 export const ContentAssetScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -7523,6 +7614,7 @@ export type GlobalOmitConfig = {
   channelCredential?: Prisma.ChannelCredentialOmit
   deploymentMetric?: Prisma.DeploymentMetricOmit
   salesContentJob?: Prisma.SalesContentJobOmit
+  contentVersion?: Prisma.ContentVersionOmit
   contentAsset?: Prisma.ContentAssetOmit
   contentIdea?: Prisma.ContentIdeaOmit
   improvementRule?: Prisma.ImprovementRuleOmit

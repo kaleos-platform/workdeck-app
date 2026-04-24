@@ -310,6 +310,7 @@ export type ContentWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Content"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   assets?: Prisma.ContentAssetListRelationFilter
+  versions?: Prisma.ContentVersionListRelationFilter
   channel?: Prisma.XOR<Prisma.SalesContentChannelNullableScalarRelationFilter, Prisma.SalesContentChannelWhereInput> | null
   deployments?: Prisma.ContentDeploymentListRelationFilter
 }
@@ -334,6 +335,7 @@ export type ContentOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   assets?: Prisma.ContentAssetOrderByRelationAggregateInput
+  versions?: Prisma.ContentVersionOrderByRelationAggregateInput
   channel?: Prisma.SalesContentChannelOrderByWithRelationInput
   deployments?: Prisma.ContentDeploymentOrderByRelationAggregateInput
 }
@@ -361,6 +363,7 @@ export type ContentWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Content"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   assets?: Prisma.ContentAssetListRelationFilter
+  versions?: Prisma.ContentVersionListRelationFilter
   channel?: Prisma.XOR<Prisma.SalesContentChannelNullableScalarRelationFilter, Prisma.SalesContentChannelWhereInput> | null
   deployments?: Prisma.ContentDeploymentListRelationFilter
 }, "id">
@@ -431,6 +434,7 @@ export type ContentCreateInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
   deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutContentInput
 }
@@ -454,6 +458,7 @@ export type ContentUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
 }
 
@@ -475,6 +480,7 @@ export type ContentUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
   deployments?: Prisma.ContentDeploymentUpdateManyWithoutContentNestedInput
 }
@@ -498,6 +504,7 @@ export type ContentUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
 }
 
@@ -742,6 +749,20 @@ export type ContentUpdateOneRequiredWithoutDeploymentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContentUpdateToOneWithWhereWithoutDeploymentsInput, Prisma.ContentUpdateWithoutDeploymentsInput>, Prisma.ContentUncheckedUpdateWithoutDeploymentsInput>
 }
 
+export type ContentCreateNestedOneWithoutVersionsInput = {
+  create?: Prisma.XOR<Prisma.ContentCreateWithoutVersionsInput, Prisma.ContentUncheckedCreateWithoutVersionsInput>
+  connectOrCreate?: Prisma.ContentCreateOrConnectWithoutVersionsInput
+  connect?: Prisma.ContentWhereUniqueInput
+}
+
+export type ContentUpdateOneRequiredWithoutVersionsNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentCreateWithoutVersionsInput, Prisma.ContentUncheckedCreateWithoutVersionsInput>
+  connectOrCreate?: Prisma.ContentCreateOrConnectWithoutVersionsInput
+  upsert?: Prisma.ContentUpsertWithoutVersionsInput
+  connect?: Prisma.ContentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentUpdateToOneWithWhereWithoutVersionsInput, Prisma.ContentUpdateWithoutVersionsInput>, Prisma.ContentUncheckedUpdateWithoutVersionsInput>
+}
+
 export type ContentCreateNestedOneWithoutAssetsInput = {
   create?: Prisma.XOR<Prisma.ContentCreateWithoutAssetsInput, Prisma.ContentUncheckedCreateWithoutAssetsInput>
   connectOrCreate?: Prisma.ContentCreateOrConnectWithoutAssetsInput
@@ -773,6 +794,7 @@ export type ContentCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
   deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutContentInput
 }
@@ -795,6 +817,7 @@ export type ContentUncheckedCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
 }
 
@@ -865,6 +888,7 @@ export type ContentCreateWithoutChannelInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutContentInput
 }
 
@@ -886,6 +910,7 @@ export type ContentUncheckedCreateWithoutChannelInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
 }
 
@@ -933,6 +958,7 @@ export type ContentCreateWithoutDeploymentsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
 }
 
@@ -955,6 +981,7 @@ export type ContentUncheckedCreateWithoutDeploymentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
 }
 
 export type ContentCreateOrConnectWithoutDeploymentsInput = {
@@ -991,6 +1018,7 @@ export type ContentUpdateWithoutDeploymentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
 }
 
@@ -1013,6 +1041,111 @@ export type ContentUncheckedUpdateWithoutDeploymentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
+}
+
+export type ContentCreateWithoutVersionsInput = {
+  id?: string
+  userId?: string | null
+  title: string
+  status?: $Enums.ContentStatus
+  templateId?: string | null
+  ideationId?: string | null
+  ideaIndex?: number | null
+  productId?: string | null
+  personaId?: string | null
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  snapshotHash?: string | null
+  publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutContentsInput
+  assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
+  channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
+  deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutContentInput
+}
+
+export type ContentUncheckedCreateWithoutVersionsInput = {
+  id?: string
+  spaceId: string
+  userId?: string | null
+  title: string
+  status?: $Enums.ContentStatus
+  templateId?: string | null
+  ideationId?: string | null
+  ideaIndex?: number | null
+  productId?: string | null
+  personaId?: string | null
+  channelId?: string | null
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  snapshotHash?: string | null
+  publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
+  deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
+}
+
+export type ContentCreateOrConnectWithoutVersionsInput = {
+  where: Prisma.ContentWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentCreateWithoutVersionsInput, Prisma.ContentUncheckedCreateWithoutVersionsInput>
+}
+
+export type ContentUpsertWithoutVersionsInput = {
+  update: Prisma.XOR<Prisma.ContentUpdateWithoutVersionsInput, Prisma.ContentUncheckedUpdateWithoutVersionsInput>
+  create: Prisma.XOR<Prisma.ContentCreateWithoutVersionsInput, Prisma.ContentUncheckedCreateWithoutVersionsInput>
+  where?: Prisma.ContentWhereInput
+}
+
+export type ContentUpdateToOneWithWhereWithoutVersionsInput = {
+  where?: Prisma.ContentWhereInput
+  data: Prisma.XOR<Prisma.ContentUpdateWithoutVersionsInput, Prisma.ContentUncheckedUpdateWithoutVersionsInput>
+}
+
+export type ContentUpdateWithoutVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+  templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  personaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
+  assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
+  channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
+  deployments?: Prisma.ContentDeploymentUpdateManyWithoutContentNestedInput
+}
+
+export type ContentUncheckedUpdateWithoutVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+  templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  personaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
+  deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
 }
 
 export type ContentCreateWithoutAssetsInput = {
@@ -1032,6 +1165,7 @@ export type ContentCreateWithoutAssetsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
+  versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
   deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutContentInput
 }
@@ -1054,6 +1188,7 @@ export type ContentUncheckedCreateWithoutAssetsInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
 }
 
@@ -1090,6 +1225,7 @@ export type ContentUpdateWithoutAssetsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
+  versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
   deployments?: Prisma.ContentDeploymentUpdateManyWithoutContentNestedInput
 }
@@ -1112,6 +1248,7 @@ export type ContentUncheckedUpdateWithoutAssetsInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
 }
 
@@ -1151,6 +1288,7 @@ export type ContentUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
   deployments?: Prisma.ContentDeploymentUpdateManyWithoutContentNestedInput
 }
@@ -1173,6 +1311,7 @@ export type ContentUncheckedUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
 }
 
@@ -1232,6 +1371,7 @@ export type ContentUpdateWithoutChannelInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUpdateManyWithoutContentNestedInput
 }
 
@@ -1253,6 +1393,7 @@ export type ContentUncheckedUpdateWithoutChannelInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
 }
 
@@ -1282,11 +1423,13 @@ export type ContentUncheckedUpdateManyWithoutChannelInput = {
 
 export type ContentCountOutputType = {
   assets: number
+  versions: number
   deployments: number
 }
 
 export type ContentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   assets?: boolean | ContentCountOutputTypeCountAssetsArgs
+  versions?: boolean | ContentCountOutputTypeCountVersionsArgs
   deployments?: boolean | ContentCountOutputTypeCountDeploymentsArgs
 }
 
@@ -1305,6 +1448,13 @@ export type ContentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
  */
 export type ContentCountOutputTypeCountAssetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ContentAssetWhereInput
+}
+
+/**
+ * ContentCountOutputType without action
+ */
+export type ContentCountOutputTypeCountVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ContentVersionWhereInput
 }
 
 /**
@@ -1335,6 +1485,7 @@ export type ContentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   assets?: boolean | Prisma.Content$assetsArgs<ExtArgs>
+  versions?: boolean | Prisma.Content$versionsArgs<ExtArgs>
   channel?: boolean | Prisma.Content$channelArgs<ExtArgs>
   deployments?: boolean | Prisma.Content$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.ContentCountOutputTypeDefaultArgs<ExtArgs>
@@ -1408,6 +1559,7 @@ export type ContentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 export type ContentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   assets?: boolean | Prisma.Content$assetsArgs<ExtArgs>
+  versions?: boolean | Prisma.Content$versionsArgs<ExtArgs>
   channel?: boolean | Prisma.Content$channelArgs<ExtArgs>
   deployments?: boolean | Prisma.Content$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.ContentCountOutputTypeDefaultArgs<ExtArgs>
@@ -1426,6 +1578,7 @@ export type $ContentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
     assets: Prisma.$ContentAssetPayload<ExtArgs>[]
+    versions: Prisma.$ContentVersionPayload<ExtArgs>[]
     channel: Prisma.$SalesContentChannelPayload<ExtArgs> | null
     deployments: Prisma.$ContentDeploymentPayload<ExtArgs>[]
   }
@@ -1843,6 +1996,7 @@ export interface Prisma__ContentClient<T, Null = never, ExtArgs extends runtime.
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   assets<T extends Prisma.Content$assetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Content$assetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  versions<T extends Prisma.Content$versionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Content$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channel<T extends Prisma.Content$channelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Content$channelArgs<ExtArgs>>): Prisma.Prisma__SalesContentChannelClient<runtime.Types.Result.GetResult<Prisma.$SalesContentChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   deployments<T extends Prisma.Content$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Content$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentDeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2308,6 +2462,30 @@ export type Content$assetsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.ContentAssetScalarFieldEnum | Prisma.ContentAssetScalarFieldEnum[]
+}
+
+/**
+ * Content.versions
+ */
+export type Content$versionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentVersion
+   */
+  select?: Prisma.ContentVersionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContentVersion
+   */
+  omit?: Prisma.ContentVersionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContentVersionInclude<ExtArgs> | null
+  where?: Prisma.ContentVersionWhereInput
+  orderBy?: Prisma.ContentVersionOrderByWithRelationInput | Prisma.ContentVersionOrderByWithRelationInput[]
+  cursor?: Prisma.ContentVersionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ContentVersionScalarFieldEnum | Prisma.ContentVersionScalarFieldEnum[]
 }
 
 /**
