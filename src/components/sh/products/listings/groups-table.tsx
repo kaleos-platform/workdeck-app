@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronRight, Plus, Search } from 'lucide-react'
 
@@ -253,14 +254,18 @@ function GroupRowView({
   isOpen: boolean
   onToggle: () => void
 }) {
+  const router = useRouter()
   const groupHref = getSellerHubListingGroupPath(group.productId, group.channelId)
   return (
     <>
-      <TableRow className="hover:bg-muted/40">
+      <TableRow className="cursor-pointer hover:bg-muted/40" onClick={() => router.push(groupHref)}>
         <TableCell>
           <button
             type="button"
-            onClick={onToggle}
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggle()
+            }}
             className="flex h-8 w-8 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label={isOpen ? '접기' : '펼치기'}
           >
@@ -268,9 +273,7 @@ function GroupRowView({
           </button>
         </TableCell>
         <TableCell>
-          <Link href={groupHref} className="font-medium hover:underline">
-            {group.productName}
-          </Link>
+          <p className="font-medium">{group.productName}</p>
           <p className="text-xs text-muted-foreground">{group.channelName}</p>
         </TableCell>
         <TableCell className="text-right text-sm">{group.listingCount}</TableCell>
@@ -295,13 +298,7 @@ function GroupRowView({
           </div>
         </TableCell>
         <TableCell>
-          <Link
-            href={groupHref}
-            aria-label={`${group.productName} 그룹 상세`}
-            className="inline-flex text-muted-foreground hover:text-foreground"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Link>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </TableCell>
       </TableRow>
       {isOpen &&
@@ -315,12 +312,10 @@ function GroupRowView({
               <Badge>판매중</Badge>
             )
           return (
-            <TableRow key={l.id} className="bg-muted/20 hover:bg-muted/40">
+            <TableRow key={l.id} className="bg-muted/20">
               <TableCell />
               <TableCell className="pl-8 text-sm">
-                <Link href={getSellerHubListingPath(l.id)} className="hover:underline">
-                  {l.searchName}
-                </Link>
+                {l.searchName}
                 {l.internalCode && (
                   <p className="text-xs text-muted-foreground">{l.internalCode}</p>
                 )}
@@ -338,15 +333,7 @@ function GroupRowView({
                 {l.retailPrice != null ? `${l.retailPrice.toLocaleString('ko-KR')}원` : '-'}
               </TableCell>
               <TableCell>{badge}</TableCell>
-              <TableCell>
-                <Link
-                  href={getSellerHubListingPath(l.id)}
-                  aria-label={`${l.searchName} 상세`}
-                  className="inline-flex text-muted-foreground hover:text-foreground"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              </TableCell>
+              <TableCell />
             </TableRow>
           )
         })}

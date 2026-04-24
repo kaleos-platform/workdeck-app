@@ -25,15 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { SELLER_HUB_LISTINGS_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
-import { computeListingRetailBaseline } from '@/lib/sh/listing-calc'
-
 import {
-  CompositionBuilder,
-  type BuiltGroup,
-  type ItemEntry,
-  type ProductContext,
-} from './composition-builder'
+  SELLER_HUB_LISTINGS_PATH,
+  getSellerHubListingGroupPath,
+  getSellerHubListingPath,
+} from '@/lib/deck-routes'
+
+import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
+import { CompositionRowsTable, type CompositionRow } from './composition-rows-table'
 import { KeywordEditor } from './keyword-editor'
 import { countChars, getChannelNameLimit } from './channel-name-limits'
 
@@ -53,12 +52,11 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const [baseDisplayName, setBaseDisplayName] = useState('')
   const [internalCode, setInternalCode] = useState('')
   const [memo, setMemo] = useState('')
-  const [retailPrice, setRetailPrice] = useState('')
   const [keywords, setKeywords] = useState<string[]>([])
-  const [status, setStatus] = useState<'ACTIVE' | 'SUSPENDED'>('ACTIVE')
 
   const [productCtx, setProductCtx] = useState<ProductContext | null>(null)
-  const [groups, setGroups] = useState<BuiltGroup[] | null>(null)
+  const [rows, setRows] = useState<CompositionRow[]>([])
+  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [builderOpen, setBuilderOpen] = useState(false)
 
@@ -89,81 +87,65 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       set.add(productCtx.displayName)
       if (productCtx.brandName) set.add(productCtx.brandName)
     }
-    if (groups) {
-      for (const g of groups) {
-        for (const s of g.suffixParts) set.add(s)
-      }
+    for (const r of rows) {
+      for (const s of r.suffixParts) set.add(s)
+      for (const it of r.items) set.add(it.optionName)
     }
     return Array.from(set)
-  }, [productCtx, groups])
+  }, [productCtx, rows])
 
-  function handleCommit(ctx: ProductContext, newGroups: BuiltGroup[]) {
+  function handleBuilderCommit(ctx: ProductContext, newGroups: BuiltGroup[]) {
     setProductCtx(ctx)
-    setGroups(newGroups)
+    setRows(buildRowsFromGroups(newGroups))
+    setSelected(new Set())
     if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
     if (!baseDisplayName.trim()) setBaseDisplayName(ctx.displayName)
     setBuilderOpen(false)
-    toast.success(`${newGroups.length}개의 listing 구성이 준비되었습니다`)
+    toast.success(`${newGroups.length}개의 옵션 구성이 준비되었습니다`)
   }
 
   function resetComposition() {
     setProductCtx(null)
-    setGroups(null)
+    setRows([])
+    setSelected(new Set())
     setBuilderOpen(true)
   }
-
-  function previewName(suffix: string[], base: string) {
-    if (!base) return ''
-    if (suffix.length === 0) return base
-    return `${base} ${suffix.join(' ')}`
-  }
-
-  function baselineOf(entries: ItemEntry[]): number | null {
-    return computeListingRetailBaseline(
-      entries.map((it) => ({ quantity: it.quantity, retailPrice: it.retailPrice }))
-    )
-  }
-
-  const baselineSummary = useMemo(() => {
-    if (!groups || groups.length === 0) return null
-    const values = groups.map((g) => baselineOf(g.items))
-    if (values.some((v) => v == null)) return null
-    const nums = values as number[]
-    const min = Math.min(...nums)
-    const max = Math.max(...nums)
-    return { min, max, same: min === max }
-  }, [groups])
 
   const readyToSave =
     channelId.trim().length > 0 &&
     baseSearchName.trim().length > 0 &&
     baseDisplayName.trim().length > 0 &&
-    !!groups &&
-    groups.length > 0
+    rows.length > 0
 
   async function handleSave() {
-    if (!readyToSave || !groups) {
+    if (!readyToSave) {
       toast.error('필수 항목과 구성을 확인해 주세요')
       return
     }
     setSaving(true)
 
-    const results: Array<{ ok: boolean; id?: string; error?: string; suffix: string[] }> = []
-    for (const group of groups) {
-      const searchName = previewName(group.suffixParts, baseSearchName.trim())
-      const displayName = previewName(group.suffixParts, baseDisplayName.trim())
+    const results: Array<{
+      ok: boolean
+      id?: string
+      error?: string
+      suffix: string[]
+    }> = []
+    for (const row of rows) {
+      const searchName = previewName(row.suffixParts, baseSearchName.trim())
+      const displayName = previewName(row.suffixParts, baseDisplayName.trim())
       const payload = {
         channelId,
         searchName,
         displayName,
         internalCode: internalCode.trim()
-          ? previewName(group.suffixParts, internalCode.trim())
+          ? previewName(row.suffixParts, internalCode.trim())
           : undefined,
         memo: memo.trim() || undefined,
-        retailPrice: retailPrice.trim() === '' ? undefined : Number(retailPrice),
-        keywords,
-        status,
-        items: group.items.map((it: ItemEntry, idx: number) => ({
+        retailPrice: row.retailPrice.trim() === '' ? undefined : Number(row.retailPrice),
+        // 키워드는 ProductChannelGroupMeta에 저장 — 개별 listing에는 빈 배열
+        keywords: [],
+        status: row.status,
+        items: row.items.map((it, idx) => ({
           optionId: it.optionId,
           quantity: it.quantity,
           sortOrder: idx,
@@ -180,22 +162,36 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           results.push({
             ok: false,
             error: data?.message ?? '저장 실패',
-            suffix: group.suffixParts,
+            suffix: row.suffixParts,
           })
         } else {
-          results.push({ ok: true, id: data.listing.id, suffix: group.suffixParts })
+          results.push({ ok: true, id: data.listing.id, suffix: row.suffixParts })
         }
       } catch (err) {
         results.push({
           ok: false,
           error: err instanceof Error ? err.message : '저장 실패',
-          suffix: group.suffixParts,
+          suffix: row.suffixParts,
         })
       }
     }
 
     const okResults = results.filter((r) => r.ok)
     const failResults = results.filter((r) => !r.ok)
+
+    // 키워드 저장 (ProductChannelGroupMeta)
+    if (okResults.length > 0 && productCtx && keywords.length > 0) {
+      try {
+        await fetch(`/api/sh/products/listings/groups/${productCtx.id}/${channelId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keywords }),
+        })
+      } catch {
+        // 키워드 저장 실패는 치명적이지 않음 — 토스트 경고만
+        toast.warning('listing은 생성되었으나 키워드 저장에 실패했습니다')
+      }
+    }
 
     setSaving(false)
 
@@ -213,8 +209,10 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       toast.success(`${okResults.length}개의 판매채널 상품이 생성되었습니다`)
     }
 
-    // 1개면 상세로, 여러 개면 목록으로 이동
-    if (okResults.length === 1 && okResults[0].id) {
+    // 상품 × 채널 그룹 상세로 이동 (productCtx 있을 때), 아니면 목록으로
+    if (productCtx) {
+      router.push(getSellerHubListingGroupPath(productCtx.id, channelId))
+    } else if (okResults.length === 1 && okResults[0].id) {
       router.push(getSellerHubListingPath(okResults[0].id))
     } else {
       router.push(SELLER_HUB_LISTINGS_PATH)
@@ -237,16 +235,17 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           </Button>
           <Button onClick={handleSave} disabled={!readyToSave || saving}>
             {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-            저장 ({groups?.length ?? 0}개 생성)
+            저장 ({rows.length}개 생성)
           </Button>
         </div>
       </div>
 
+      {/* 1) 기본 정보 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">기본 정보</CardTitle>
           <CardDescription>
-            여러 listing이 만들어지면 모든 listing에 공통으로 적용됩니다
+            생성될 모든 listing에 공통으로 적용되는 값. 개별 옵션 suffix는 자동으로 덧붙습니다.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -319,41 +318,24 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         </CardContent>
       </Card>
 
-      {/* 구성 빌더 CTA or 프리뷰 */}
-      {groups && productCtx ? (
-        <Card>
-          <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
-            <div>
-              <CardTitle className="text-lg">생성될 listing 구성</CardTitle>
-              <CardDescription>{groups.length}개의 판매채널 상품이 만들어집니다</CardDescription>
-            </div>
-            <Button type="button" variant="outline" size="sm" onClick={resetComposition}>
-              <X className="mr-1 h-4 w-4" />
-              구성 다시 만들기
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {groups.map((g, idx) => {
-                const baseline = baselineOf(g.items)
-                return (
-                  <li key={idx} className="rounded-md border bg-background px-3 py-2.5 text-sm">
-                    <p className="font-medium">
-                      {previewName(g.suffixParts, baseSearchName || productCtx.displayName)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {g.items.map((it) => `${it.optionName} ×${it.quantity}`).join(' · ')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      소비자가 {baseline != null ? `${baseline.toLocaleString('ko-KR')}원` : '-'}
-                    </p>
-                  </li>
-                )
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-      ) : (
+      {/* 2) 키워드 (상품 단위) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">키워드 (상품 단위)</CardTitle>
+          <CardDescription>
+            {currentChannel
+              ? `${currentChannel.name} 상의 이 상품에 공통 적용되는 검색 키워드`
+              : '채널을 선택하면 이 상품의 검색 키워드가 저장됩니다'}
+            . 최대 30개.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <KeywordEditor value={keywords} onChange={setKeywords} suggestions={keywordSuggestions} />
+        </CardContent>
+      </Card>
+
+      {/* 3) 구성 옵션 — 편집 테이블 or CTA */}
+      {rows.length === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">구성 옵션</CardTitle>
@@ -378,6 +360,32 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             </button>
           </CardContent>
         </Card>
+      ) : (
+        <Card>
+          <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
+            <div>
+              <CardTitle className="text-lg">구성 옵션 ({rows.length}개)</CardTitle>
+              <CardDescription>
+                각 행마다 판매가·판매상태를 설정하세요. 체크박스로 여러 옵션을 선택하면 한번에
+                수정할 수 있습니다. 소비자가는 옵션 소비자가에서 자동 계산됩니다.
+              </CardDescription>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={resetComposition}>
+              <X className="mr-1 h-4 w-4" />
+              구성 다시 만들기
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <CompositionRowsTable
+              rows={rows}
+              baseSearchName={baseSearchName}
+              onRowsChange={setRows}
+              selected={selected}
+              onSelectedChange={setSelected}
+              disabled={saving}
+            />
+          </CardContent>
+        </Card>
       )}
 
       <Dialog
@@ -394,67 +402,27 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               생성됩니다.
             </DialogDescription>
           </DialogHeader>
-          <CompositionBuilder onCommit={handleCommit} disabled={saving} />
+          <CompositionBuilder onCommit={handleBuilderCommit} disabled={saving} />
         </DialogContent>
       </Dialog>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">가격</CardTitle>
-          <CardDescription>모든 listing에 공통 적용됩니다 (생성 후 개별 수정 가능)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {baselineSummary && (
-            <p className="text-xs text-muted-foreground">
-              자동 계산 소비자가:{' '}
-              {baselineSummary.same
-                ? `${baselineSummary.min.toLocaleString('ko-KR')}원`
-                : `${baselineSummary.min.toLocaleString('ko-KR')}원 ~ ${baselineSummary.max.toLocaleString('ko-KR')}원`}{' '}
-              · 구성 옵션의 소비자가 합계이며 상품 옵션을 수정하면 자동으로 반영됩니다
-            </p>
-          )}
-          <div className="space-y-1.5">
-            <Label htmlFor="listing-price">판매가격 (원)</Label>
-            <Input
-              id="listing-price"
-              type="number"
-              min={0}
-              value={retailPrice}
-              onChange={(e) => setRetailPrice(e.target.value)}
-              placeholder="예: 35000"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">키워드</CardTitle>
-          <CardDescription>최대 30개. 모든 listing에 공통 적용됩니다</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <KeywordEditor value={keywords} onChange={setKeywords} suggestions={keywordSuggestions} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">판매 상태</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={status} onValueChange={(v) => setStatus(v as 'ACTIVE' | 'SUSPENDED')}>
-            <SelectTrigger className="max-w-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ACTIVE">판매중</SelectItem>
-              <SelectItem value="SUSPENDED">판매중지</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
     </div>
   )
+}
+
+function previewName(suffix: string[], base: string) {
+  if (!base) return ''
+  if (suffix.length === 0) return base
+  return `${base} ${suffix.join(' ')}`
+}
+
+function buildRowsFromGroups(groups: BuiltGroup[]): CompositionRow[] {
+  return groups.map((g, idx) => ({
+    key: `g${idx}-${g.suffixParts.join('-') || 'default'}`,
+    suffixParts: g.suffixParts,
+    items: g.items,
+    retailPrice: '',
+    status: 'ACTIVE',
+  }))
 }
 
 function NameCounter({ value, limit }: { value: string; limit?: number }) {
