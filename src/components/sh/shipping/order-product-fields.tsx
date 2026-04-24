@@ -122,7 +122,7 @@ function MatchSummary({
           'flex w-full flex-col gap-0.5 rounded-sm border border-emerald-200 bg-emerald-50/60 p-1 text-left',
           canMatch && 'cursor-pointer hover:bg-emerald-50'
         )}
-        title={canMatch ? '매칭 수정' : '저장된 주문만 매칭 가능합니다'}
+        title={canMatch ? '매칭 수정' : '판매채널을 먼저 지정해 주세요'}
       >
         {fulfillmentsForTree.map((f, fi) => {
           const perSet = product.quantity > 0 ? f.quantity / product.quantity : 0
@@ -162,10 +162,10 @@ function MatchSummary({
           'inline-flex w-full items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-left text-[10px] leading-tight text-amber-700',
           canMatch && 'cursor-pointer hover:bg-amber-100'
         )}
-        title={canMatch ? '상품 옵션 매칭' : '저장된 주문만 매칭 가능합니다'}
+        title={canMatch ? '상품 옵션 매칭' : '판매채널을 먼저 지정해 주세요'}
       >
         <Sparkles className="h-3 w-3 shrink-0" />
-        <span>{canMatch ? '상품 옵션 매칭' : '미매칭'}</span>
+        <span>{canMatch ? '상품 옵션 매칭' : '미매칭 (채널 필요)'}</span>
       </button>
     )
   }
@@ -227,7 +227,8 @@ export function OrderProductNamesCell({
   return (
     <div className="space-y-2">
       {value.map((product, i) => {
-        const canMatch = matchEnabled && !!product.itemId
+        // 채널이 있으면 매칭 가능 — itemId가 없어도(미저장 행) 부모가 저장 후 다이얼로그 오픈
+        const canMatch = matchEnabled
         return (
           <div key={i} className="space-y-1">
             <div className="flex items-start gap-1">

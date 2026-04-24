@@ -162,74 +162,103 @@ export default function ShippingRegistrationPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.data) {
-          setRows(
-            data.data.map((order: Record<string, unknown>) => ({
-              tempId: order.id as string,
-              shippingMethodId: (order.shippingMethod as { id: string })?.id ?? '',
-              recipientName: order.recipientName as string,
-              phone: order.phone as string,
-              address: order.address as string,
-              postalCode: (order.postalCode as string) ?? '',
-              deliveryMessage: (order.deliveryMessage as string) ?? '',
-              orderDate: (order.orderDate as string)?.split('T')[0] ?? '',
-              channelId: (order.channel as { id: string } | null)?.id ?? '',
-              orderNumber: (order.orderNumber as string) ?? '',
-              paymentAmount: order.paymentAmount != null ? String(order.paymentAmount) : '',
-              items: ((order.items as OrderItemApi[]) ?? []).map((it) => {
-                // matched 표시: 단일 옵션 매칭 또는 listing 매칭
-                const matched = it.option?.product
+          const dbRows = data.data.map((order: Record<string, unknown>) => ({
+            tempId: order.id as string,
+            shippingMethodId: (order.shippingMethod as { id: string })?.id ?? '',
+            recipientName: order.recipientName as string,
+            phone: order.phone as string,
+            address: order.address as string,
+            postalCode: (order.postalCode as string) ?? '',
+            deliveryMessage: (order.deliveryMessage as string) ?? '',
+            orderDate: (order.orderDate as string)?.split('T')[0] ?? '',
+            channelId: (order.channel as { id: string } | null)?.id ?? '',
+            orderNumber: (order.orderNumber as string) ?? '',
+            paymentAmount: order.paymentAmount != null ? String(order.paymentAmount) : '',
+            items: ((order.items as OrderItemApi[]) ?? []).map((it) => {
+              // matched 표시: 단일 옵션 매칭 또는 listing 매칭
+              const matched = it.option?.product
+                ? {
+                    optionId: it.option.id,
+                    productName: it.option.product.displayName,
+                    optionName: it.option.name,
+                  }
+                : it.listing
                   ? {
-                      optionId: it.option.id,
-                      productName: it.option.product.displayName,
-                      optionName: it.option.name,
+                      optionId: '',
+                      productName: it.listing.searchName,
+                      optionName: '판매채널 상품 묶음',
                     }
-                  : it.listing
-                    ? {
-                        optionId: '',
-                        productName: it.listing.searchName,
-                        optionName: '판매채널 상품 묶음',
-                      }
-                    : null
-                return {
-                  itemId: it.id,
-                  name: it.name,
-                  quantity: it.quantity,
-                  optionId: it.optionId,
-                  listingId: it.listingId,
-                  matched,
-                  fulfillments:
-                    it.fulfillments && it.fulfillments.length > 0
-                      ? it.fulfillments.map((f) => ({
-                          optionId: f.optionId,
-                          productName: f.productName,
-                          optionName: f.optionName,
-                          quantity: f.quantity,
-                        }))
-                      : null,
-                }
-              }),
-              memo: (order.memo as string) ?? '',
-            }))
-          )
+                  : null
+              return {
+                itemId: it.id,
+                name: it.name,
+                quantity: it.quantity,
+                optionId: it.optionId,
+                listingId: it.listingId,
+                matched,
+                fulfillments:
+                  it.fulfillments && it.fulfillments.length > 0
+                    ? it.fulfillments.map((f) => ({
+                        optionId: f.optionId,
+                        productName: f.productName,
+                        optionName: f.optionName,
+                        quantity: f.quantity,
+                      }))
+                    : null,
+              }
+            }),
+            memo: (order.memo as string) ?? '',
+          }))
+          // 기존 tempId(미저장) 행은 재fetch 시에도 유지 — 파일 업로드 후 수동 입력 행 누적 보존
+          setRows((prev) => {
+            const tempRows = prev.filter((r) => r.tempId.startsWith('temp-'))
+            return [...dbRows, ...tempRows]
+          })
         }
       })
       .catch(() => toast.error('주문 로드 실패'))
   }, [activeBatchId, refreshKey])
 
-  async function saveNewRows(): Promise<boolean> {
+  type SaveResult = {
+    ok: boolean
+    // tempId → 저장된 주문의 실제 id + itemId 매핑
+    tempToSaved: Map<string, { orderId: string; itemIds: string[] /* name 있는 items 순서 */ }>
+  }
+
+  /**
+   * 미저장(tempId) 행들을 서버에 저장.
+   * - 필수 필드(받는분·전화·주소·주문일자)가 비어 있는 행은 skip하고 나머지만 POST
+   * - 성공한 행은 tempId → 실제 orderId로 교체하고 itemId도 반영 (로컬 state 유지)
+   * - strict=true (처리 완료) 모드에서는 skip된 행이 있으면 false 반환
+   */
+  async function saveNewRows(opts: { strict?: boolean } = {}): Promise<SaveResult> {
+    const strict = opts.strict ?? false
+    const empty: SaveResult = { ok: true, tempToSaved: new Map() }
     const newRows = rows.filter((r) => r.tempId.startsWith('temp-'))
-    if (newRows.length === 0) return true
-    const invalid = newRows.filter((r) => !r.recipientName || !r.phone || !r.address)
-    if (invalid.length > 0) {
-      toast.error(`${invalid.length}건의 주문에 필수 정보가 누락되었습니다 (받는분·전화·주소)`)
-      return false
+    if (newRows.length === 0) return empty
+
+    const isSavable = (r: (typeof newRows)[number]) =>
+      !!(r.recipientName && r.phone && r.address && r.orderDate)
+    const savableRows = newRows.filter(isSavable)
+    const skippedCount = newRows.length - savableRows.length
+
+    if (strict && skippedCount > 0) {
+      toast.error(
+        `${skippedCount}건의 주문에 필수 정보가 누락되었습니다 (받는분·전화·주소·주문일자)`
+      )
+      return { ok: false, tempToSaved: new Map() }
     }
+    if (savableRows.length === 0) {
+      // 저장 가능한 행이 없어도 에러는 아님 — 실패 시점에서만 처리
+      return empty
+    }
+
     const res = await fetch('/api/sh/shipping/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         batchId: activeBatchId,
-        orders: newRows.map((r) => ({
+        orders: savableRows.map((r) => ({
           shippingMethodId: r.shippingMethodId,
           channelId: r.channelId || null,
           recipientName: r.recipientName,
@@ -248,9 +277,47 @@ export default function ShippingRegistrationPage() {
     const data = await res.json()
     if (!res.ok) {
       toast.error(data?.message ?? '저장 실패')
-      return false
+      return { ok: false, tempToSaved: new Map() }
     }
-    return true
+
+    // 서버 응답: { orders: [{ index, id, items: [{ id, name, quantity }] }] }
+    // index는 savableRows 내 index임.
+    const savedOrders = (data.orders ?? []) as Array<{
+      index: number
+      id: string
+      items: Array<{ id: string; name: string; quantity: number }>
+    }>
+    const tempToSaved = new Map<string, { orderId: string; itemIds: string[] }>()
+    for (const s of savedOrders) {
+      const savableRow = savableRows[s.index]
+      if (savableRow) {
+        tempToSaved.set(savableRow.tempId, {
+          orderId: s.id,
+          itemIds: s.items.map((it) => it.id),
+        })
+      }
+    }
+
+    setRows((prev) =>
+      prev.map((r) => {
+        const saved = tempToSaved.get(r.tempId)
+        if (!saved) return r
+        // savableRow의 name 있는 items 순서대로 서버 itemId 매핑
+        let savedIdx = 0
+        return {
+          ...r,
+          tempId: saved.orderId,
+          items: r.items.map((it) => {
+            if (!it.name) return it
+            const matchedId = saved.itemIds[savedIdx]
+            savedIdx++
+            return matchedId ? { ...it, itemId: matchedId } : it
+          }),
+        }
+      })
+    )
+
+    return { ok: true, tempToSaved }
   }
 
   function handleComplete() {
@@ -267,8 +334,8 @@ export default function ShippingRegistrationPage() {
     if (!activeBatchId) return
     setCompleting(true)
     try {
-      const saved = await saveNewRows()
-      if (!saved) {
+      const saveResult = await saveNewRows({ strict: true })
+      if (!saveResult.ok) {
         setCompleting(false)
         return
       }
@@ -553,16 +620,18 @@ export default function ShippingRegistrationPage() {
       <div className="flex items-center gap-2">
         <BulkPasteDialog onParsed={handleBulkPaste} />
         <Button
-          asChild
           variant="outline"
           size="sm"
           disabled={!activeBatchId}
-          className={!activeBatchId ? 'pointer-events-none opacity-50' : undefined}
+          onClick={async () => {
+            if (!activeBatchId) return
+            // 기존 미저장 수동 행을 먼저 저장해 파일 업로드 후에도 누적 유지되도록
+            await saveNewRows()
+            router.push(`/d/seller-hub/shipping/registration/upload?batchId=${activeBatchId}`)
+          }}
         >
-          <Link href={`/d/seller-hub/shipping/registration/upload?batchId=${activeBatchId}`}>
-            <Upload className="mr-1 h-4 w-4" />
-            파일 업로드
-          </Link>
+          <Upload className="mr-1 h-4 w-4" />
+          파일 업로드
         </Button>
       </div>
 
@@ -644,12 +713,38 @@ export default function ShippingRegistrationPage() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         onItemPatch={handleItemPatch}
-        onOpenMatch={(row, itemIndex) => {
+        onOpenMatch={async (row, itemIndex) => {
           const item = row.items[itemIndex]
-          if (!item?.itemId) return
+          if (!item) return
+
+          let orderId = row.tempId
+          let itemId = item.itemId ?? null
+
+          // 미저장 행이면 먼저 자동 저장 — 반환된 tempToSaved 맵에서 새 id를 바로 사용
+          if (!itemId) {
+            const saveResult = await saveNewRows()
+            if (!saveResult.ok) return
+            const saved = saveResult.tempToSaved.get(row.tempId)
+            if (!saved) {
+              // 필수 필드 누락 등으로 이 행이 저장되지 않음
+              toast.error('받는분·전화·주소·주문일자를 먼저 입력해 주세요')
+              return
+            }
+            // savableRow.items에서 name 있는 items 순서로 itemIds가 왔으므로
+            // 현재 item이 그 중 몇 번째 '이름 있는' 아이템인지 계산
+            const nameIndex = row.items.slice(0, itemIndex + 1).filter((it) => !!it.name).length - 1
+            const savedItemId = nameIndex >= 0 ? saved.itemIds[nameIndex] : null
+            if (!savedItemId) {
+              toast.error('상품명이 비어 있어 저장되지 않았습니다')
+              return
+            }
+            orderId = saved.orderId
+            itemId = savedItemId
+          }
+
           setMatchTarget({
-            orderId: row.tempId,
-            itemId: item.itemId,
+            orderId,
+            itemId,
             rawName: item.name,
             orderQty: item.quantity,
             channelId: row.channelId,

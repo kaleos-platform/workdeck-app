@@ -310,7 +310,7 @@ export function RegistrationTable({
                         value={row.items}
                         onChange={(items) => updateRow(row.tempId, 'items', items)}
                         invalid={missingProducts}
-                        matchEnabled={!row.tempId.startsWith('temp-') && !!row.channelId}
+                        matchEnabled={!!row.channelId}
                         onOpenMatch={(idx) => onOpenMatch?.(row, idx)}
                         allowAdd={row.tempId.startsWith('temp-')}
                       />
