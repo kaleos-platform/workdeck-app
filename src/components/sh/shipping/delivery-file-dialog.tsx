@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
 type ShippingMethod = { id: string; name: string }
 
@@ -40,6 +41,7 @@ export function DeliveryFileDialog({
 }: DeliveryFileDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedMethodId, setSelectedMethodId] = useState('')
+  const [splitMode, setSplitMode] = useState<'order' | 'option'>('order')
   const [generating, setGenerating] = useState(false)
 
   async function handleGenerate() {
@@ -53,7 +55,7 @@ export function DeliveryFileDialog({
       const res = await fetch('/api/sh/shipping/generate-file', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ batchId, shippingMethodId: selectedMethodId }),
+        body: JSON.stringify({ batchId, shippingMethodId: selectedMethodId, splitMode }),
       })
 
       if (!res.ok) {
@@ -120,6 +122,54 @@ export function DeliveryFileDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>파일 구성</Label>
+            <div className="space-y-2">
+              <label
+                className={cn(
+                  'flex cursor-pointer items-start gap-2 rounded-md border p-3 transition',
+                  splitMode === 'order' ? 'border-primary bg-primary/5' : 'hover:bg-muted'
+                )}
+              >
+                <input
+                  type="radio"
+                  name="splitMode"
+                  value="order"
+                  checked={splitMode === 'order'}
+                  onChange={() => setSplitMode('order')}
+                  className="mt-1"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">주문당 1행 (상품 묶음 텍스트)</p>
+                  <p className="text-xs text-muted-foreground">
+                    1 주문 = 1 행. 상품명 컬럼에 모든 옵션을 concat. 일반 택배사·쇼핑몰 포맷.
+                  </p>
+                </div>
+              </label>
+              <label
+                className={cn(
+                  'flex cursor-pointer items-start gap-2 rounded-md border p-3 transition',
+                  splitMode === 'option' ? 'border-primary bg-primary/5' : 'hover:bg-muted'
+                )}
+              >
+                <input
+                  type="radio"
+                  name="splitMode"
+                  value="option"
+                  checked={splitMode === 'option'}
+                  onChange={() => setSplitMode('option')}
+                  className="mt-1"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">옵션당 1행 (개별 상품 행)</p>
+                  <p className="text-xs text-muted-foreground">
+                    옵션 1개 = 1 행. 수취인 정보가 반복됨. 3PL·물류센터 포맷.
+                  </p>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
 

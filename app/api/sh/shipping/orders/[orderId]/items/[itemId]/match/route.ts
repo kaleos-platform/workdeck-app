@@ -10,6 +10,7 @@ type Params = { params: Promise<{ orderId: string; itemId: string }> }
  * body:
  *   { mode: 'listing', listingId: string, saveAlias?: boolean }
  *   { mode: 'option',  optionId: string,  saveAlias?: boolean }
+ *   { mode: 'manual',  fulfillments: [{ optionId, quantity }] }  // 카탈로그에 없는 복합 구성 수동 입력
  *   { mode: 'clear' }   // 매칭 해제 (별칭은 남김)
  *
  * 하위 호환: { optionId } 만 전달하면 'option' 모드로 처리.
@@ -21,9 +22,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { orderId, itemId } = await params
 
   const body = await req.json().catch(() => ({}))
-  let mode: 'listing' | 'option' | 'clear' =
+  let mode: 'listing' | 'option' | 'manual' | 'clear' =
     typeof body?.mode === 'string' &&
-    (body.mode === 'listing' || body.mode === 'option' || body.mode === 'clear')
+    (body.mode === 'listing' ||
+      body.mode === 'option' ||
+      body.mode === 'manual' ||
+      body.mode === 'clear')
       ? body.mode
       : 'option'
   const rawOptionId = body?.optionId
@@ -105,6 +109,54 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         displayName: listing.displayName,
       },
       aliasSaved: saveAlias && !!item.order.channelId,
+    })
+  }
+
+  if (mode === 'manual') {
+    type ManualFulfillment = { optionId: string; quantity: number }
+    const raw: unknown[] = Array.isArray(body?.fulfillments) ? body.fulfillments : []
+    const list: ManualFulfillment[] = []
+    for (const f of raw) {
+      if (typeof f !== 'object' || !f) continue
+      const optionId = (f as { optionId?: unknown }).optionId
+      const quantity = Number((f as { quantity?: unknown }).quantity)
+      if (typeof optionId !== 'string' || !optionId.trim()) continue
+      if (!Number.isFinite(quantity) || quantity < 1) continue
+      list.push({ optionId, quantity: Math.floor(quantity) })
+    }
+    if (list.length === 0) return errorResponse('출고 옵션을 1개 이상 입력해 주세요', 400)
+    if (list.length > 50) return errorResponse('출고 옵션은 최대 50개까지 입력 가능합니다', 400)
+
+    const optionIds: string[] = Array.from(new Set(list.map((f) => f.optionId)))
+    const validOptions = await prisma.invProductOption.findMany({
+      where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
+      select: { id: true },
+    })
+    if (validOptions.length !== optionIds.length) {
+      return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.delOrderItem.update({
+        where: { id: itemId },
+        data: { optionId: null, listingId: null },
+      })
+      await tx.delOrderItemFulfillment.deleteMany({ where: { orderItemId: itemId } })
+      await tx.delOrderItemFulfillment.createMany({
+        data: list.map((f) => ({
+          orderItemId: itemId,
+          optionId: f.optionId,
+          quantity: f.quantity,
+        })),
+      })
+    })
+
+    const totalQuantity = list.reduce((s, f) => s + f.quantity, 0)
+    return NextResponse.json({
+      ok: true,
+      mode: 'manual',
+      fulfillmentCount: list.length,
+      totalQuantity,
     })
   }
 

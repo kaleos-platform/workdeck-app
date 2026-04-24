@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const batchId = typeof body?.batchId === 'string' ? body.batchId : ''
   const shippingMethodId = typeof body?.shippingMethodId === 'string' ? body.shippingMethodId : ''
+  const splitMode: 'order' | 'option' = body?.splitMode === 'option' ? 'option' : 'order'
 
   if (!batchId || !shippingMethodId) {
     return errorResponse('batchId와 shippingMethodId가 필요합니다', 400)
@@ -150,7 +151,7 @@ export async function POST(req: NextRequest) {
   }))
 
   const formatConfig = method.formatConfig as DelFormatColumn[]
-  const buffer = generateDeliveryFile(ordersForGenerator, formatConfig)
+  const buffer = generateDeliveryFile(ordersForGenerator, formatConfig, { splitMode })
 
   const filename = encodeURIComponent(`${method.name}_배송파일.xlsx`)
 

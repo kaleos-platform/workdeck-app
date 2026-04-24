@@ -303,6 +303,7 @@ export function RegistrationTable({
                         invalid={missingProducts}
                         matchEnabled={!row.tempId.startsWith('temp-') && !!row.channelId}
                         onOpenMatch={(idx) => onOpenMatch?.(row, idx)}
+                        allowAdd={row.tempId.startsWith('temp-')}
                       />
                     </TableCell>
                     <TableCell>

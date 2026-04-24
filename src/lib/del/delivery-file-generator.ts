@@ -63,52 +63,23 @@ function resolveItemField(item: ItemLine, field: DelFieldMapping): string | null
 
 /**
  * 주문 데이터로부터 배송 파일 Excel 버퍼를 생성한다.
+ *
+ * splitMode:
+ *  - 'order' (기본): 1 주문 = 1 행. 상품명 컬럼에 모든 옵션을 concat. 일반 택배사·쇼핑몰 포맷.
+ *  - 'option': 옵션 fulfillment 1개 = 1 행. 수취인 정보가 반복됨. 3PL·물류센터 포맷.
  */
 export function generateDeliveryFile(
   orders: OrderWithItems[],
-  formatConfig: DelFormatColumn[]
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' } = {}
 ): Buffer {
+  const splitMode = opts.splitMode ?? 'order'
   const wb = XLSX.utils.book_new()
 
   // 데이터 행 생성
   const rows: Record<string, string | number>[] = []
 
-  for (const order of orders) {
-    // PII 복호화
-    const recipientName = decryptPii(order.recipientNameEnc, order.recipientNameIv)
-    const phone = decryptPii(order.phoneEnc, order.phoneIv)
-    const address = decryptPii(order.addressEnc, order.addressIv)
-
-    // 상품명: 아이템별로 오버라이드/매칭 적용 후 concat
-    const productNames = order.items
-      .map((i) => {
-        const n = resolveItemField(i, 'productName') ?? i.name
-        return `${n}(${i.quantity})`
-      })
-      .join(', ')
-    const totalQuantity = order.items.reduce((sum, i) => sum + i.quantity, 0)
-    // 바코드: override 있는 아이템만 모아 concat (없으면 빈 문자열)
-    const barcodes = order.items
-      .map((i) => resolveItemField(i, 'barcode'))
-      .filter((v): v is string => !!v)
-      .join(', ')
-
-    // 필드 값 매핑
-    const fieldValues: Record<string, string | number> = {
-      recipientName,
-      phone,
-      postalCode: order.postalCode ?? '',
-      fullAddress: address,
-      deliveryMessage: order.deliveryMessage ?? '',
-      productName: productNames,
-      productQuantity: totalQuantity,
-      orderNumber: order.orderNumber ?? '',
-      orderDate: formatDate(order.orderDate),
-      channelName: order.channel?.name ?? '',
-      trackingNumber: '',
-      barcode: barcodes,
-    }
-
+  function renderRow(fieldValues: Record<string, string | number>) {
     const row: Record<string, string | number> = {}
     for (const col of formatConfig) {
       if (col.field) {
@@ -120,6 +91,63 @@ export function generateDeliveryFile(
       }
     }
     rows.push(row)
+  }
+
+  for (const order of orders) {
+    // PII 복호화
+    const recipientName = decryptPii(order.recipientNameEnc, order.recipientNameIv)
+    const phone = decryptPii(order.phoneEnc, order.phoneIv)
+    const address = decryptPii(order.addressEnc, order.addressIv)
+
+    const baseFields: Record<string, string | number> = {
+      recipientName,
+      phone,
+      postalCode: order.postalCode ?? '',
+      fullAddress: address,
+      deliveryMessage: order.deliveryMessage ?? '',
+      orderNumber: order.orderNumber ?? '',
+      orderDate: formatDate(order.orderDate),
+      channelName: order.channel?.name ?? '',
+      trackingNumber: '',
+    }
+
+    if (splitMode === 'option') {
+      // 옵션 fulfillment 단위 행 — 각 ItemLine이 1 행
+      if (order.items.length === 0) {
+        renderRow({ ...baseFields, productName: '', productQuantity: 0, barcode: '' })
+        continue
+      }
+      for (const item of order.items) {
+        const productName = resolveItemField(item, 'productName') ?? item.name
+        const barcode = resolveItemField(item, 'barcode') ?? ''
+        renderRow({
+          ...baseFields,
+          productName,
+          productQuantity: item.quantity,
+          barcode,
+        })
+      }
+    } else {
+      // 주문 단위 행 — 상품명 concat (기존 동작)
+      const productNames = order.items
+        .map((i) => {
+          const n = resolveItemField(i, 'productName') ?? i.name
+          return `${n}(${i.quantity})`
+        })
+        .join(', ')
+      const totalQuantity = order.items.reduce((sum, i) => sum + i.quantity, 0)
+      const barcodes = order.items
+        .map((i) => resolveItemField(i, 'barcode'))
+        .filter((v): v is string => !!v)
+        .join(', ')
+
+      renderRow({
+        ...baseFields,
+        productName: productNames,
+        productQuantity: totalQuantity,
+        barcode: barcodes,
+      })
+    }
   }
 
   // 워크시트 생성

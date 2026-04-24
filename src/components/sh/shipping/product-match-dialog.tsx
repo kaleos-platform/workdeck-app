@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Layers, Search } from 'lucide-react'
+import { CheckCircle2, Layers, Pencil, Plus, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { productDisplayName } from '@/lib/sh/product-display'
+import { cn } from '@/lib/utils'
 
 type ProductRow = {
   id: string
@@ -62,6 +63,24 @@ export type MatchResult =
       displayName: string
       savedAlias: boolean
     }
+  | {
+      mode: 'manual'
+      fulfillmentCount: number
+      totalQuantity: number
+      fulfillments: Array<{
+        optionId: string
+        productName: string
+        optionName: string
+        quantity: number
+      }>
+    }
+
+type ManualItem = {
+  optionId: string
+  optionName: string
+  productName: string
+  quantity: number
+}
 
 type Props = {
   open: boolean
@@ -87,7 +106,7 @@ export function ProductMatchDialog({
   onMatched,
 }: Props) {
   const defaultTab = channelSet ? 'listing' : 'option'
-  const [tab, setTab] = useState<'listing' | 'option'>(defaultTab)
+  const [tab, setTab] = useState<'listing' | 'option' | 'manual'>(defaultTab)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [saveAlias, setSaveAlias] = useState(true)
@@ -97,12 +116,14 @@ export function ProductMatchDialog({
   const [listingResults, setListingResults] = useState<ListingEntry[]>([])
   const [optionLoading, setOptionLoading] = useState(false)
   const [listingLoading, setListingLoading] = useState(false)
+  const [manualItems, setManualItems] = useState<ManualItem[]>([])
 
   useEffect(() => {
     if (open) {
       setSearch(rawName)
       setDebouncedSearch(rawName)
       setTab(channelSet ? 'listing' : 'option')
+      setManualItems([])
     }
   }, [open, rawName, channelSet])
 
@@ -111,9 +132,9 @@ export function ProductMatchDialog({
     return () => clearTimeout(t)
   }, [search])
 
-  // 옵션 검색 (탭 'option')
+  // 옵션 검색 (탭 'option' · 'manual')
   useEffect(() => {
-    if (!open || tab !== 'option') return
+    if (!open || (tab !== 'option' && tab !== 'manual')) return
     const q = debouncedSearch.trim()
     setOptionLoading(true)
     const url = q
@@ -214,6 +235,74 @@ export function ProductMatchDialog({
     }
   }
 
+  function addManualOption(entry: OptionEntry) {
+    setManualItems((prev) => {
+      const existing = prev.findIndex((m) => m.optionId === entry.optionId)
+      if (existing >= 0) {
+        return prev.map((m, i) => (i === existing ? { ...m, quantity: m.quantity + 1 } : m))
+      }
+      return [
+        ...prev,
+        {
+          optionId: entry.optionId,
+          optionName: entry.optionName,
+          productName: entry.productName,
+          quantity: 1,
+        },
+      ]
+    })
+  }
+
+  function updateManualQty(optionId: string, quantity: number) {
+    setManualItems((prev) =>
+      prev.map((m) => (m.optionId === optionId ? { ...m, quantity: Math.max(1, quantity) } : m))
+    )
+  }
+
+  function removeManualOption(optionId: string) {
+    setManualItems((prev) => prev.filter((m) => m.optionId !== optionId))
+  }
+
+  async function saveManual() {
+    if (manualItems.length === 0) {
+      toast.error('출고 옵션을 1개 이상 추가해 주세요')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/sh/shipping/orders/${orderId}/items/${itemId}/match`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'manual',
+          fulfillments: manualItems.map((m) => ({ optionId: m.optionId, quantity: m.quantity })),
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.message ?? '저장 실패')
+      }
+      const totalQuantity = manualItems.reduce((s, m) => s + m.quantity, 0)
+      toast.success(`수동 입력 완료 · 출고 옵션 ${manualItems.length}종 총 ${totalQuantity}개`)
+      onMatched({
+        mode: 'manual',
+        fulfillmentCount: manualItems.length,
+        totalQuantity,
+        fulfillments: manualItems.map((m) => ({
+          optionId: m.optionId,
+          productName: m.productName,
+          optionName: m.optionName,
+          quantity: m.quantity,
+        })),
+      })
+      onOpenChange(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '저장 실패')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   async function pickListing(entry: ListingEntry) {
     setSubmitting(true)
     try {
@@ -282,13 +371,17 @@ export function ProductMatchDialog({
             </div>
           </div>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as 'listing' | 'option')}>
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as 'listing' | 'option' | 'manual')}>
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="listing" disabled={!channelSet}>
                 <Layers className="mr-1 h-4 w-4" />
                 판매채널 상품
               </TabsTrigger>
               <TabsTrigger value="option">개별 옵션</TabsTrigger>
+              <TabsTrigger value="manual">
+                <Pencil className="mr-1 h-4 w-4" />
+                수동 입력
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="listing" className="mt-3">
@@ -360,21 +453,131 @@ export function ProductMatchDialog({
                 )}
               </div>
             </TabsContent>
+
+            <TabsContent value="manual" className="mt-3 space-y-3">
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-muted-foreground">옵션 검색</p>
+                <div className="max-h-[25vh] space-y-1 overflow-y-auto rounded-md border p-1">
+                  {optionLoading ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">검색 중...</p>
+                  ) : optionResults.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">
+                      검색 결과가 없습니다
+                    </p>
+                  ) : (
+                    optionResults.map((e) => {
+                      const added = manualItems.some((m) => m.optionId === e.optionId)
+                      return (
+                        <button
+                          key={e.optionId}
+                          type="button"
+                          disabled={submitting}
+                          onClick={() => addManualOption(e)}
+                          className={cn(
+                            'flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50',
+                            added && 'bg-primary/5'
+                          )}
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">
+                              {e.productName}{' '}
+                              <span className="text-muted-foreground">— {e.optionName}</span>
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {e.brandName ? `${e.brandName} · ` : ''}
+                              {e.sku ? `SKU ${e.sku}` : '관리코드 없음'}
+                            </p>
+                          </div>
+                          {added ? (
+                            <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                          ) : (
+                            <Plus className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          )}
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground">출고 옵션</p>
+                  {manualItems.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {manualItems.length}종 · 총 {manualItems.reduce((s, m) => s + m.quantity, 0)}
+                      개
+                    </p>
+                  )}
+                </div>
+                {manualItems.length === 0 ? (
+                  <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
+                    위에서 옵션을 검색하고 클릭해 추가하세요
+                  </div>
+                ) : (
+                  <ul className="space-y-1 rounded-md border p-1">
+                    {manualItems.map((m) => (
+                      <li
+                        key={m.optionId}
+                        className="flex items-center gap-2 rounded-sm bg-primary/5 px-2 py-1.5"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{m.productName}</p>
+                          <p className="truncate text-xs text-muted-foreground">{m.optionName}</p>
+                        </div>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={m.quantity}
+                          onChange={(e) => updateManualQty(m.optionId, Number(e.target.value) || 1)}
+                          className="h-8 w-16 [appearance:textfield] text-center text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0"
+                          onClick={() => removeManualOption(m.optionId)}
+                          disabled={submitting}
+                          title="삭제"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <Button
+                type="button"
+                onClick={saveManual}
+                disabled={submitting || manualItems.length === 0}
+                className="w-full"
+              >
+                {submitting ? '저장 중...' : '수동 매칭 저장'}
+              </Button>
+            </TabsContent>
           </Tabs>
 
           <label className="flex items-center gap-2 text-sm">
             <Checkbox
-              checked={saveAlias}
+              checked={saveAlias && tab !== 'manual'}
               onCheckedChange={(v) => setSaveAlias(v === true)}
-              disabled={!channelSet}
+              disabled={!channelSet || tab === 'manual'}
             />
-            <span className={channelSet ? undefined : 'text-muted-foreground'}>
+            <span className={channelSet && tab !== 'manual' ? undefined : 'text-muted-foreground'}>
               이 채널의 별칭으로 저장 — 다음부터 자동 매칭
             </span>
           </label>
           {!channelSet && (
             <p className="text-xs text-muted-foreground">
               주문에 판매 채널이 지정되어 있지 않아 별칭을 저장할 수 없습니다
+            </p>
+          )}
+          {tab === 'manual' && (
+            <p className="text-xs text-muted-foreground">
+              수동 입력은 단일 옵션이 아니므로 자동 매칭 대상이 아닙니다
             </p>
           )}
         </div>

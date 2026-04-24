@@ -133,6 +133,7 @@ export default function ShippingRegistrationPage() {
       name: string
       quantity: number
       optionId: string | null
+      listingId: string | null
       option: {
         id: string
         name: string
@@ -143,6 +144,18 @@ export default function ShippingRegistrationPage() {
           displayName: string // 내부 표시용 — 관리명 우선, 없으면 공식명
         } | null
       } | null
+      listing: {
+        id: string
+        searchName: string
+        displayName: string
+      } | null
+      fulfillments: Array<{
+        id: string
+        optionId: string
+        quantity: number
+        optionName: string
+        productName: string
+      }>
     }
     fetch(`/api/sh/shipping/batches/${activeBatchId}/orders?decrypt=true&pageSize=100`)
       .then((r) => r.json())
@@ -161,20 +174,39 @@ export default function ShippingRegistrationPage() {
               channelId: (order.channel as { id: string } | null)?.id ?? '',
               orderNumber: (order.orderNumber as string) ?? '',
               paymentAmount: order.paymentAmount != null ? String(order.paymentAmount) : '',
-              items: ((order.items as OrderItemApi[]) ?? []).map((it) => ({
-                itemId: it.id,
-                name: it.name,
-                quantity: it.quantity,
-                optionId: it.optionId,
-                matched: it.option?.product
+              items: ((order.items as OrderItemApi[]) ?? []).map((it) => {
+                // matched 표시: 단일 옵션 매칭 또는 listing 매칭
+                const matched = it.option?.product
                   ? {
                       optionId: it.option.id,
-                      // 배송 등록 UI는 내부 식별용 — 관리명 우선 표시
                       productName: it.option.product.displayName,
                       optionName: it.option.name,
                     }
-                  : null,
-              })),
+                  : it.listing
+                    ? {
+                        optionId: '',
+                        productName: it.listing.searchName,
+                        optionName: '판매채널 상품 묶음',
+                      }
+                    : null
+                return {
+                  itemId: it.id,
+                  name: it.name,
+                  quantity: it.quantity,
+                  optionId: it.optionId,
+                  listingId: it.listingId,
+                  matched,
+                  fulfillments:
+                    it.fulfillments && it.fulfillments.length > 0
+                      ? it.fulfillments.map((f) => ({
+                          optionId: f.optionId,
+                          productName: f.productName,
+                          optionName: f.optionName,
+                          quantity: f.quantity,
+                        }))
+                      : null,
+                }
+              }),
               memo: (order.memo as string) ?? '',
             }))
           )
@@ -592,28 +624,45 @@ export default function ShippingRegistrationPage() {
                     return {
                       ...it,
                       optionId: result.optionId,
+                      listingId: null,
                       matched: {
                         optionId: result.optionId,
                         productName: result.productName,
                         optionName: result.optionName,
                       },
+                      fulfillments: null,
                     }
                   }
-                  // listing 모드: 단일 optionId가 없으므로 optionId는 비우고,
-                  // 표시용 정보만 matched에 기록 (서버 DelOrderItem은 listingId + fulfillments로 저장됨)
+                  if (result.mode === 'listing') {
+                    return {
+                      ...it,
+                      optionId: null,
+                      listingId: result.listingId,
+                      matched: {
+                        optionId: '',
+                        productName: result.searchName,
+                        optionName: '판매채널 상품 묶음',
+                      },
+                      // 서버에서 재조회 전이지만 UI에 즉시 반영되도록 비움(상세 로드 시 fulfillments 재수신)
+                      fulfillments: null,
+                    }
+                  }
+                  // manual 모드
                   return {
                     ...it,
-                    optionId: undefined,
-                    matched: {
-                      optionId: '',
-                      productName: result.searchName,
-                      optionName: '판매채널 상품 묶음',
-                    },
+                    optionId: null,
+                    listingId: null,
+                    matched: null,
+                    fulfillments: result.fulfillments,
                   }
                 })
                 return { ...r, items: nextItems }
               })
             )
+            // 매칭 결과가 fulfillments에 영향을 주는 경우(listing/manual) 서버 재조회로 최신화
+            if (result.mode === 'listing' || result.mode === 'manual') {
+              setRefreshKey((k) => k + 1)
+            }
             setMatchTarget(null)
           }}
         />
