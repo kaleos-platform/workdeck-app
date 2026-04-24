@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, Loader2, Plus, Search } from 'lucide-react'
+import { ChevronLeft, Plus, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -9,16 +9,19 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { productDisplayName } from '@/lib/sh/product-display'
 
 /**
- * 판매채널 상품 구성 빌더 — 단계별 선택 UX.
+ * 판매채널 상품 구성 빌더.
  *
+ * 단계별 UX:
  * 1) 상품 1개 선택
- * 2) 속성 중 지정할 것 체크 (중복 가능)
- *    - 선택된 속성의 값을 체크 + 값별 수량 입력
- *    - 선택 안 된 속성은 "기본 적용" — cartesian으로 펼쳐 listing 여러 개로 자동 분할
- * 3) "추가하기" → groups 반환 (group이 2개 이상이면 상위에서 listing 여러 개 생성)
+ * 2) 모드 선택
+ *    - simple(수량 세트만 구성): 세트 수량 N 지정 → 모든 속성 cartesian으로 펼쳐 listing N개 생성
+ *      (각 listing은 1옵션 × N수량)
+ *    - advanced(옵션 선택 구성): 속성 체크 + 값별 수량 지정. 선택 안 된 속성은 모든 값 펼침
+ * 3) 추가하기 → BuiltGroup[] 반환
  */
 
 type ProductRow = {
@@ -52,6 +55,8 @@ type AttrState = {
   valueQuantities: Record<string, number>
 }
 
+type BuilderMode = 'simple' | 'advanced'
+
 export type ItemEntry = {
   optionId: string
   optionName: string
@@ -79,13 +84,21 @@ type Props = {
 
 export function CompositionBuilder({ onCommit, disabled }: Props) {
   const [product, setProduct] = useState<ProductDetail | null>(null)
-  const [attrState, setAttrState] = useState<Record<string, AttrState>>({})
   const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState<BuilderMode>('simple')
 
-  // 상품이 바뀌면 속성 상태 초기화
+  // simple 모드
+  const [setQty, setSetQty] = useState<number>(1)
+
+  // advanced 모드
+  const [attrState, setAttrState] = useState<Record<string, AttrState>>({})
+
+  // 상품이 바뀌면 상태 초기화
   useEffect(() => {
     if (!product) {
       setAttrState({})
+      setSetQty(1)
+      setMode('simple')
       return
     }
     const next: Record<string, AttrState> = {}
@@ -173,30 +186,108 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
     })
   }
 
-  function resetAndCommit() {
+  function emit(groups: BuiltGroup[]) {
+    if (!product) return
+    const ctx: ProductContext = {
+      id: product.id,
+      displayName: productDisplayName(product),
+      officialName: product.name,
+      brandName: product.brand?.name ?? null,
+    }
+    onCommit(ctx, groups)
+  }
+
+  function handleCommit() {
+    if (!product) return
+    if (mode === 'simple') commitSimple()
+    else commitAdvanced()
+  }
+
+  function commitSimple() {
     if (!product) return
     const attrs = product.optionAttributes ?? []
+    const qty = Math.max(1, setQty)
 
-    // 속성이 없는 상품(옵션 1개) — 옵션 전체를 수량 1로 묶음
     if (attrs.length === 0) {
-      if (product.options.length === 0) {
+      const defaultOpt = product.options[0]
+      if (!defaultOpt) {
         toast.error('이 상품에는 선택할 옵션이 없습니다')
         return
       }
-      const defaultOpt = product.options[0]
-      const group: BuiltGroup = {
-        suffixParts: [],
+      emit([
+        {
+          suffixParts: [],
+          items: [
+            {
+              optionId: defaultOpt.id,
+              optionName: defaultOpt.name,
+              sku: defaultOpt.sku,
+              quantity: qty,
+              attributeValues: defaultOpt.attributeValues,
+            },
+          ],
+        },
+      ])
+      return
+    }
+
+    // 모든 속성의 cartesian 펼침
+    const combos = attrs.reduce<Array<Record<string, string>>>((acc, attr) => {
+      const vals = attr.values.map((v) => v.value)
+      if (acc.length === 0) return vals.map((v) => ({ [attr.name]: v }))
+      return acc.flatMap((prev) => vals.map((v) => ({ ...prev, [attr.name]: v })))
+    }, [])
+
+    const groups: BuiltGroup[] = []
+    for (const combo of combos) {
+      const opt = findOption(product.options, combo)
+      if (!opt) continue
+      groups.push({
+        suffixParts: attrs.map((a) => combo[a.name]),
         items: [
           {
-            optionId: defaultOpt.id,
-            optionName: defaultOpt.name,
-            sku: defaultOpt.sku,
-            quantity: 1,
-            attributeValues: defaultOpt.attributeValues,
+            optionId: opt.id,
+            optionName: opt.name,
+            sku: opt.sku,
+            quantity: qty,
+            attributeValues: opt.attributeValues,
           },
         ],
+      })
+    }
+
+    if (groups.length === 0) {
+      toast.error('생성 가능한 옵션 조합이 없습니다')
+      return
+    }
+    emit(groups)
+  }
+
+  function commitAdvanced() {
+    if (!product) return
+    const attrs = product.optionAttributes ?? []
+
+    // 속성 없는 상품 — simple과 동일하게 처리
+    if (attrs.length === 0) {
+      const defaultOpt = product.options[0]
+      if (!defaultOpt) {
+        toast.error('이 상품에는 선택할 옵션이 없습니다')
+        return
       }
-      emit(group)
+      emit([
+        {
+          suffixParts: [],
+          items: [
+            {
+              optionId: defaultOpt.id,
+              optionName: defaultOpt.name,
+              sku: defaultOpt.sku,
+              quantity: 1,
+              attributeValues: defaultOpt.attributeValues,
+            },
+          ],
+        },
+      ])
       return
     }
 
@@ -222,8 +313,6 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
       return
     }
 
-    // unselected cartesian (선택 안 된 속성의 모든 값 조합)
-    // 배열 원소: Record<attrName, value>
     const combos: Array<Record<string, string>> = unselected.reduce<Array<Record<string, string>>>(
       (acc, attr) => {
         if (acc.length === 0) return attr.values.map((v) => ({ [attr.name]: v }))
@@ -237,18 +326,13 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
       },
       [] as Array<Record<string, string>>
     )
-    // unselected가 없으면 combos 빈 배열 → 1개 group으로 취급
     const effectiveCombos = combos.length > 0 ? combos : [{}]
 
-    // 각 combo × 각 selected attr value(수량 포함) → option 매칭
     const groups: BuiltGroup[] = []
     for (const combo of effectiveCombos) {
-      // combo에 selected 속성의 각 value를 덮어씌워 최종 attributeValues 조합을 만든다
       const groupItems: ItemEntry[] = []
 
-      // selected 속성들의 value × quantity Cartesian — 모두 포함
-      // 예: 선택된 속성 1개(색상), values {블랙:2, 화이트:1} → (색상=블랙, qty 2), (색상=화이트, qty 1)
-      // 선택된 속성 2개(색상,재질)라면 두 축 cartesian
+      // selected 속성들의 value × quantity Cartesian
       type SelectedCombo = { values: Record<string, string>; qty: number }
       let selectedCombos: SelectedCombo[] = [{ values: {}, qty: 1 }]
       for (const s of selected) {
@@ -257,25 +341,17 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
           for (const [value, q] of Object.entries(s.valueQuantities)) {
             expanded.push({
               values: { ...prev.values, [s.name]: value },
-              qty: prev.qty === 1 ? q : prev.qty * q, // 다차원 선택 시 곱. 단일 속성이면 그대로.
+              qty: prev.qty === 1 ? q : prev.qty * q,
             })
           }
         }
         selectedCombos = expanded
       }
-      // 하지만 실제 요구사항은 "각 속성값 조합에 각 수량"이므로
-      // 다차원에서 qty를 "마지막 속성값 수량"으로 해석. 안전하게 다시 계산.
-      // 위 qty 로직은 의도와 다를 수 있으므로 단일 속성 경우만 의미가 있도록 단순화:
-      // selected 속성이 1개면 value별 수량. 2개 이상이면 각 cartesian 셀마다 "그 값의 수량 합"이 모호.
-      // 현재 요구는 "속성 값 기준 수량" + "cartesian 시 각 복제" — 다속성은 곱 적용으로 처리.
 
       for (const sc of selectedCombos) {
         const target = { ...combo, ...sc.values }
         const opt = findOption(product.options, target)
-        if (!opt) {
-          // 해당 조합에 옵션 row가 없으면 skip (옵션이 모든 cartesian을 갖지 않을 수도)
-          continue
-        }
+        if (!opt) continue
         groupItems.push({
           optionId: opt.id,
           optionName: opt.name,
@@ -286,10 +362,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
       }
 
       if (groupItems.length === 0) continue
-
-      // suffix는 unselected 속성의 값 (combo의 values)
       const suffixParts = unselected.map((a) => combo[a.name]).filter(Boolean)
-
       groups.push({ suffixParts, items: groupItems })
     }
 
@@ -297,36 +370,13 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
       toast.error('구성 가능한 옵션 조합이 없습니다')
       return
     }
-
-    emitMany(groups)
-  }
-
-  function emit(group: BuiltGroup) {
-    if (!product) return
-    const ctx: ProductContext = {
-      id: product.id,
-      displayName: productDisplayName(product),
-      officialName: product.name,
-      brandName: product.brand?.name ?? null,
-    }
-    onCommit(ctx, [group])
-  }
-
-  function emitMany(groups: BuiltGroup[]) {
-    if (!product) return
-    const ctx: ProductContext = {
-      id: product.id,
-      displayName: productDisplayName(product),
-      officialName: product.name,
-      brandName: product.brand?.name ?? null,
-    }
-    onCommit(ctx, groups)
+    emit(groups)
   }
 
   return (
-    <div className="space-y-4 rounded-md border bg-muted/10 p-4">
+    <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">구성 만들기</h3>
+        <h3 className="text-sm font-semibold">{product ? '구성 설정' : '1) 상품 선택'}</h3>
         {product && (
           <Button
             type="button"
@@ -343,26 +393,43 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
 
       {!product ? (
         <ProductSearchPane onPick={handlePickProduct} />
+      ) : loading ? (
+        <p className="text-sm text-muted-foreground">불러오는 중...</p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <SelectedProductHeader product={product} />
-          {loading ? (
-            <p className="text-sm text-muted-foreground">불러오는 중...</p>
-          ) : (
-            <AttributesPicker
-              product={product}
-              attrState={attrState}
-              onToggleAttr={toggleAttr}
-              onToggleValue={toggleValue}
-              onUpdateQty={updateValueQty}
-            />
-          )}
-          <PreviewAndCommit
-            product={product}
-            attrState={attrState}
-            onCommit={resetAndCommit}
-            disabled={disabled}
-          />
+
+          <div className="space-y-2">
+            <Label>2) 구성 방식</Label>
+            <Tabs value={mode} onValueChange={(v) => setMode(v as BuilderMode)}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="simple">수량 세트만 구성</TabsTrigger>
+                <TabsTrigger value="advanced">옵션 선택 구성</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="simple" className="mt-3">
+                <SimpleModeSettings product={product} setQty={setQty} onSetQtyChange={setSetQty} />
+              </TabsContent>
+
+              <TabsContent value="advanced" className="mt-3">
+                <AttributesPicker
+                  product={product}
+                  attrState={attrState}
+                  onToggleAttr={toggleAttr}
+                  onToggleValue={toggleValue}
+                  onUpdateQty={updateValueQty}
+                />
+                <AdvancedPreview product={product} attrState={attrState} />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <div className="flex justify-end border-t pt-3">
+            <Button type="button" onClick={handleCommit} disabled={disabled}>
+              <Plus className="mr-1 h-4 w-4" />
+              추가하기
+            </Button>
+          </div>
         </div>
       )}
     </div>
@@ -408,18 +475,17 @@ function ProductSearchPane({ onPick }: { onPick: (p: ProductRow) => void }) {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="composition-product-search">1) 상품 선택</Label>
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          id="composition-product-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="상품명·관리코드 검색"
           className="pl-9"
+          autoFocus
         />
       </div>
-      <div className="max-h-[30vh] overflow-y-auto rounded-md border bg-background">
+      <div className="max-h-[45vh] overflow-y-auto rounded-md border bg-background">
         {loading ? (
           <div className="p-6 text-center text-sm text-muted-foreground">검색 중...</div>
         ) : results.length === 0 ? (
@@ -468,7 +534,60 @@ function SelectedProductHeader({ product }: { product: ProductDetail }) {
   )
 }
 
-// ─── 하위: 속성 / 값 체크 ────────────────────────────────────────────────────
+// ─── Simple 모드 ─────────────────────────────────────────────────────────────
+function SimpleModeSettings({
+  product,
+  setQty,
+  onSetQtyChange,
+}: {
+  product: ProductDetail
+  setQty: number
+  onSetQtyChange: (v: number) => void
+}) {
+  const attrs = product.optionAttributes ?? []
+  const comboCount =
+    attrs.length === 0
+      ? product.options.length > 0
+        ? 1
+        : 0
+      : attrs.reduce((n, a) => n * a.values.length, 1)
+  const sample =
+    attrs.length === 0
+      ? (product.options[0]?.name ?? null)
+      : attrs
+          .map((a) => a.values[0]?.value)
+          .filter(Boolean)
+          .join(' / ')
+
+  return (
+    <div className="space-y-3 rounded-md border bg-background p-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="set-qty">세트 수량</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            id="set-qty"
+            type="number"
+            min={1}
+            max={999}
+            value={setQty}
+            onChange={(e) => onSetQtyChange(Math.max(1, Number(e.target.value || 1)))}
+            className="h-9 w-24"
+          />
+          <span className="text-xs text-muted-foreground">
+            이 수량이 모든 옵션 조합에 각각 적용됩니다
+          </span>
+        </div>
+      </div>
+      <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+        <strong className="text-foreground">{comboCount}</strong>개의 listing이 생성됩니다 · 각
+        listing = 1 옵션 × {setQty} 수량
+        {sample && <span className="block">예: {sample}</span>}
+      </div>
+    </div>
+  )
+}
+
+// ─── Advanced 모드 ───────────────────────────────────────────────────────────
 function AttributesPicker({
   product,
   attrState,
@@ -492,7 +611,6 @@ function AttributesPicker({
   }
   return (
     <div className="space-y-3">
-      <Label>2) 속성과 값 선택</Label>
       <p className="text-xs text-muted-foreground">
         선택 안 된 속성은 모든 값에 기본 적용되어 listing이 자동으로 나뉘어 생성됩니다
       </p>
@@ -559,44 +677,29 @@ function AttributesPicker({
   )
 }
 
-function PreviewAndCommit({
+function AdvancedPreview({
   product,
   attrState,
-  onCommit,
-  disabled,
 }: {
   product: ProductDetail
   attrState: Record<string, AttrState>
-  onCommit: () => void
-  disabled?: boolean
 }) {
-  const preview = useMemo(() => computePreview(product, attrState), [product, attrState])
-  const canCommit =
-    !disabled &&
-    ((product.optionAttributes?.length ?? 0) === 0 ||
-      preview.selectedCount > 0 ||
-      product.options.length > 0)
+  const preview = useMemo(() => computeAdvancedPreview(product, attrState), [product, attrState])
   return (
-    <div className="space-y-2">
+    <div className="mt-3 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
       {preview.groupCount > 0 ? (
-        <p className="text-xs text-muted-foreground">
-          추가하기를 누르면 <strong>{preview.groupCount}</strong>개의 listing 조합이 생성됩니다
-          {preview.sample && <> · 예: {preview.sample}</>}
-        </p>
+        <>
+          <strong className="text-foreground">{preview.groupCount}</strong>개의 listing이 생성됩니다
+          {preview.sample && <span className="block">예: {preview.sample}</span>}
+        </>
       ) : (
-        <p className="text-xs text-muted-foreground">
-          수량을 지정한 속성·값이 있으면 미리 보기가 표시됩니다
-        </p>
+        <span>수량을 지정한 속성·값이 있으면 미리 보기가 표시됩니다</span>
       )}
-      <Button type="button" onClick={onCommit} disabled={!canCommit}>
-        <Plus className="mr-1 h-4 w-4" />
-        추가하기
-      </Button>
     </div>
   )
 }
 
-// ─── 로직: 옵션 매칭 & 프리뷰 ─────────────────────────────────────────────────
+// ─── 로직 유틸 ───────────────────────────────────────────────────────────────
 
 function findOption(options: OptionRow[], target: Record<string, string>): OptionRow | null {
   const keys = Object.keys(target)
@@ -614,7 +717,7 @@ function findOption(options: OptionRow[], target: Record<string, string>): Optio
   return null
 }
 
-function computePreview(
+function computeAdvancedPreview(
   product: ProductDetail,
   attrState: Record<string, AttrState>
 ): { groupCount: number; selectedCount: number; sample: string | null } {
@@ -624,13 +727,11 @@ function computePreview(
   }
   let selectedCount = 0
   const unselectedValues: string[][] = []
-  const selectedNames: string[] = []
   for (const a of attrs) {
     const st = attrState[a.name]
     const hasQty = st?.enabled && Object.keys(st.valueQuantities).length > 0
     if (hasQty) {
       selectedCount += Object.keys(st!.valueQuantities).length
-      selectedNames.push(a.name)
     } else {
       unselectedValues.push(a.values.map((v) => v.value))
     }

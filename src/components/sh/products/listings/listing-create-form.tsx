@@ -3,11 +3,18 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Loader2, X } from 'lucide-react'
+import { ArrowLeft, Layers, Loader2, Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -52,6 +59,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const [productCtx, setProductCtx] = useState<ProductContext | null>(null)
   const [groups, setGroups] = useState<BuiltGroup[] | null>(null)
   const [saving, setSaving] = useState(false)
+  const [builderOpen, setBuilderOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -93,12 +101,14 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     setGroups(newGroups)
     if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
     if (!baseDisplayName.trim()) setBaseDisplayName(ctx.displayName)
+    setBuilderOpen(false)
     toast.success(`${newGroups.length}개의 listing 구성이 준비되었습니다`)
   }
 
   function resetComposition() {
     setProductCtx(null)
     setGroups(null)
+    setBuilderOpen(true)
   }
 
   function previewName(suffix: string[], base: string) {
@@ -292,7 +302,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         </CardContent>
       </Card>
 
-      {/* 구성 빌더 or 프리뷰 */}
+      {/* 구성 빌더 CTA or 프리뷰 */}
       {groups && productCtx ? (
         <Card>
           <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
@@ -321,8 +331,49 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           </CardContent>
         </Card>
       ) : (
-        <CompositionBuilder onCommit={handleCommit} disabled={saving} />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">구성 옵션</CardTitle>
+            <CardDescription>묶음에 포함할 상품과 옵션을 선택합니다</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <button
+              type="button"
+              onClick={() => setBuilderOpen(true)}
+              disabled={saving}
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-muted/20 px-4 py-10 text-sm text-muted-foreground transition hover:border-primary/50 hover:bg-muted/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <div className="flex items-center gap-2 text-base font-medium text-foreground">
+                <Layers className="h-5 w-5" />
+                구성 만들기
+              </div>
+              <span className="text-xs">상품과 속성을 단계별로 선택해 묶음 구성을 만듭니다</span>
+              <span className="mt-2 inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground">
+                <Plus className="h-3.5 w-3.5" />
+                시작
+              </span>
+            </button>
+          </CardContent>
+        </Card>
       )}
+
+      <Dialog
+        open={builderOpen}
+        onOpenChange={(v) => {
+          if (!saving) setBuilderOpen(v)
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>판매채널 상품 구성 만들기</DialogTitle>
+            <DialogDescription>
+              상품과 속성을 선택해 묶음 구성을 만듭니다. 여러 조합이 나오면 listing이 자동으로 분할
+              생성됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <CompositionBuilder onCommit={handleCommit} disabled={saving} />
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
