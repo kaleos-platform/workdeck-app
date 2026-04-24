@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Editor } from '@/components/sc/editor/editor'
+import { ImagePicker } from '@/components/sc/editor/image-picker'
 import { ContentStatusBadge } from './content-status-badge'
 
 type Status = 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'SCHEDULED' | 'PUBLISHED' | 'ANALYZED'
@@ -125,6 +126,8 @@ export function ContentEditor({ contentId, initialTitle, initialDoc, status, nex
           <Editor initialDoc={doc} editable={editable} onChange={setDoc} />
         </CardContent>
       </Card>
+
+      {editable && <ImagePicker contentId={contentId} />}
 
       {error && (
         <p className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
