@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { generateDeliveryFile } from '@/lib/del/delivery-file-generator'
+import { buildDeliveryRows, generateDeliveryFile } from '@/lib/del/delivery-file-generator'
 import type { DelFieldMapping, DelFormatColumn } from '@/lib/del/format-templates'
+
+const PREVIEW_LIMIT = 10
 
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -12,6 +14,7 @@ export async function POST(req: NextRequest) {
   const batchId = typeof body?.batchId === 'string' ? body.batchId : ''
   const shippingMethodId = typeof body?.shippingMethodId === 'string' ? body.shippingMethodId : ''
   const splitMode: 'order' | 'option' = body?.splitMode === 'option' ? 'option' : 'order'
+  const preview = body?.preview === true
 
   if (!batchId || !shippingMethodId) {
     return errorResponse('batchId와 shippingMethodId가 필요합니다', 400)
@@ -44,12 +47,14 @@ export async function POST(req: NextRequest) {
   )
 
   // 해당 배송 묶음 + 배송방식의 주문 조회 — listing 매칭은 fulfillment로 팬아웃해 파일에 반영
+  // preview 모드면 처음 PREVIEW_LIMIT건만 조회 (성능)
   const orders = await prisma.delOrder.findMany({
     where: {
       batchId,
       shippingMethodId,
       spaceId: resolved.space.id,
     },
+    ...(preview ? { take: PREVIEW_LIMIT } : {}),
     include: {
       items: {
         include: {
@@ -151,8 +156,23 @@ export async function POST(req: NextRequest) {
   }))
 
   const formatConfig = method.formatConfig as DelFormatColumn[]
-  const buffer = generateDeliveryFile(ordersForGenerator, formatConfig, { splitMode })
 
+  if (preview) {
+    const { headers, rows } = buildDeliveryRows(ordersForGenerator, formatConfig, { splitMode })
+    const totalOrders = await prisma.delOrder.count({
+      where: { batchId, shippingMethodId, spaceId: resolved.space.id },
+    })
+    return NextResponse.json({
+      headers,
+      rows,
+      columnFields: formatConfig.map((col) => ({ column: col.column, field: col.field ?? null })),
+      previewOrderCount: orders.length,
+      totalOrders,
+      splitMode,
+    })
+  }
+
+  const buffer = generateDeliveryFile(ordersForGenerator, formatConfig, { splitMode })
   const filename = encodeURIComponent(`${method.name}_배송파일.xlsx`)
 
   return new NextResponse(new Uint8Array(buffer), {

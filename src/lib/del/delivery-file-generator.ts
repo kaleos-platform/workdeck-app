@@ -62,6 +62,20 @@ function resolveItemField(item: ItemLine, field: DelFieldMapping): string | null
 }
 
 /**
+ * 주문 데이터로부터 배송 파일의 { headers, rows } 를 계산한다.
+ * Excel 생성 전 단계로 미리보기·Excel 생성 양쪽에서 공유.
+ */
+export function buildDeliveryRows(
+  orders: OrderWithItems[],
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' } = {}
+): { headers: string[]; rows: Record<string, string | number>[] } {
+  const rows = buildRowsInternal(orders, formatConfig, opts)
+  const headers = formatConfig.map((col) => col.label || '')
+  return { headers, rows }
+}
+
+/**
  * 주문 데이터로부터 배송 파일 Excel 버퍼를 생성한다.
  *
  * splitMode:
@@ -73,10 +87,41 @@ export function generateDeliveryFile(
   formatConfig: DelFormatColumn[],
   opts: { splitMode?: 'order' | 'option' } = {}
 ): Buffer {
-  const splitMode = opts.splitMode ?? 'order'
-  const wb = XLSX.utils.book_new()
+  const rows = buildRowsInternal(orders, formatConfig, opts)
 
-  // 데이터 행 생성
+  const wb = XLSX.utils.book_new()
+  const wsData: (string | number)[][] = []
+
+  // 헤더
+  wsData.push(formatConfig.map((col) => col.label || ''))
+  // 데이터 행
+  for (const row of rows) {
+    wsData.push(formatConfig.map((col) => row[col.column] ?? ''))
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData)
+  XLSX.utils.book_append_sheet(wb, ws, '배송')
+
+  return Buffer.from(XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }))
+}
+
+function formatDate(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/**
+ * splitMode에 따라 주문을 행 단위로 펼친 최종 rows를 반환한다.
+ * PII는 복호화되어 포함됨 (호출부에서 권한 확인 선행 필요).
+ */
+function buildRowsInternal(
+  orders: OrderWithItems[],
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' }
+): Record<string, string | number>[] {
+  const splitMode = opts.splitMode ?? 'order'
   const rows: Record<string, string | number>[] = []
 
   function renderRow(fieldValues: Record<string, string | number>) {
@@ -94,7 +139,6 @@ export function generateDeliveryFile(
   }
 
   for (const order of orders) {
-    // PII 복호화
     const recipientName = decryptPii(order.recipientNameEnc, order.recipientNameIv)
     const phone = decryptPii(order.phoneEnc, order.phoneIv)
     const address = decryptPii(order.addressEnc, order.addressIv)
@@ -112,7 +156,6 @@ export function generateDeliveryFile(
     }
 
     if (splitMode === 'option') {
-      // 옵션 fulfillment 단위 행 — 각 ItemLine이 1 행
       if (order.items.length === 0) {
         renderRow({ ...baseFields, productName: '', productQuantity: 0, barcode: '' })
         continue
@@ -128,7 +171,6 @@ export function generateDeliveryFile(
         })
       }
     } else {
-      // 주문 단위 행 — 상품명 concat (기존 동작)
       const productNames = order.items
         .map((i) => {
           const n = resolveItemField(i, 'productName') ?? i.name
@@ -150,34 +192,5 @@ export function generateDeliveryFile(
     }
   }
 
-  // 워크시트 생성
-  const wsData: (string | number)[][] = []
-
-  // 헤더 행
-  const headerRow: (string | number)[] = []
-  for (const col of formatConfig) {
-    headerRow.push(col.label || '')
-  }
-  wsData.push(headerRow)
-
-  // 데이터 행
-  for (const row of rows) {
-    const dataRow: (string | number)[] = []
-    for (const col of formatConfig) {
-      dataRow.push(row[col.column] ?? '')
-    }
-    wsData.push(dataRow)
-  }
-
-  const ws = XLSX.utils.aoa_to_sheet(wsData)
-  XLSX.utils.book_append_sheet(wb, ws, '배송')
-
-  return Buffer.from(XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }))
-}
-
-function formatDate(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
+  return rows
 }
