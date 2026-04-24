@@ -78,10 +78,11 @@ export function OptionPickerDialog({
         if (debounced.trim()) qs.set('search', debounced.trim())
         const res = await fetch(`/api/sh/products?${qs.toString()}`)
         if (!res.ok) throw new Error('검색 실패')
-        const data: { products: ProductRow[] } = await res.json()
+        const data: { data?: ProductRow[]; products?: ProductRow[] } = await res.json()
         if (cancelled) return
+        const products = data.data ?? data.products ?? []
         const flat: PickedOption[] = []
-        for (const p of data.products ?? []) {
+        for (const p of products) {
           for (const o of p.options ?? []) {
             flat.push({
               optionId: o.id,
