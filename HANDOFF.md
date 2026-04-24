@@ -87,12 +87,16 @@
 **다음:**
 
 - [~] Phase 2 실제 외부 통합
-  - [x] **Unit 14** (commit `TBD`) — AI Insight Generator (셀프-임프루빙 루프 완성)
+  - [x] **Unit 14** (commit `10c2c39`) — AI Insight Generator (셀프-임프루빙 루프 완성)
     - `src/lib/sc/insights.ts`: `aggregateDeploymentPerformance` (채널×템플릿×상품 버킷), `buildInsightPrompt` (JSON schema + 활성 규칙 중복 방지), `parseInsightResponse` (zod), `runInsightGeneration` 오케스트레이터
     - `POST /api/sc/insights/generate` — 세션/워커 양쪽 인증
     - `src/components/sc/rules/ai-insight-button.tsx` — 규칙 페이지 수동 트리거
     - `worker/src/sc/insight-generator.ts` — INSIGHT_SWEEP job 핸들러 (웹 API 호출 위임)
     - 테스트: `src/lib/sc/__tests__/insights.test.ts` 8 케이스 green
+  - [x] **Unit 15** (commit `TBD`) — INSIGHT_SWEEP 스케줄러
+    - `src/lib/sc/insight-scheduler.ts`: 대상 Space 선정(최근 N일 PUBLISHED 배포 있는 곳) + 12시간 내 PENDING/CLAIMED 중복 방지 + INSIGHT_SWEEP job enqueue
+    - `POST /api/sc/insights/schedule` — 세션(현재 Space) / 워커(x-workspace-id 또는 allSpaces=true)
+    - 맥미니 cron 에서 주 1회 `curl -H "x-worker-api-key: ..." -d '{"allSpaces":true}'` 로 전체 스윕 실행
   - [ ] Bridge ACP 라우트 (`POST /sales-content/generate` + `GET /health`) — `claude-code-bridge` 프로젝트
   - [ ] Threads API 실구현 (OAuth 토큰 + Graph API)
   - [ ] 네이버 블로그 Playwright 실구현 (수동 로그인 세션 쿠키)
