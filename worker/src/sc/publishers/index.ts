@@ -40,10 +40,22 @@ export interface PublishContext {
   deploymentUrl: string
 }
 
+// 재시도 가능 여부 판단에 사용하는 에러 코드.
+// AUTH_FAILED / RATE_LIMITED 는 재시도 불필요(자격증명 갱신 필요),
+// NETWORK / PLATFORM_ERROR 는 재시도 가능.
+export type PublishErrorCode =
+  | 'AUTH_FAILED'
+  | 'RATE_LIMITED'
+  | 'VALIDATION'
+  | 'PLATFORM_ERROR'
+  | 'NOT_IMPLEMENTED'
+  | 'NETWORK'
+
 export interface PublishResult {
   ok: boolean
   platformUrl?: string
   errorMessage?: string
+  errorCode?: PublishErrorCode
 }
 
 export interface Publisher {

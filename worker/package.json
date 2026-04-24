@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "collect": "tsx src/collect-once.ts"
+    "collect": "tsx src/collect-once.ts",
+    "sc": "tsx src/sc/index.ts"
   },
   "dependencies": {
     "dotenv": "^16.0.0",

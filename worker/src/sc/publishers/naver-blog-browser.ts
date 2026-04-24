@@ -17,12 +17,14 @@ export class NaverBlogBrowserPublisher implements Publisher {
     if (!storageState) {
       return {
         ok: false,
+        errorCode: 'AUTH_FAILED',
         errorMessage:
           '네이버 블로그 자격증명(storageState)이 없습니다. 채널 자격증명을 등록하거나 수동 재로그인이 필요합니다.',
       }
     }
     return {
       ok: false,
+      errorCode: 'NOT_IMPLEMENTED',
       errorMessage:
         '네이버 블로그 Playwright 자동화는 아직 구현되지 않음 (Phase 2). 현재는 MANUAL 로 전환해 사용하세요.',
     }

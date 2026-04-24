@@ -14,18 +14,21 @@ export class ThreadsApiCollector implements Collector {
     if (!token) {
       return {
         ok: false,
+        errorCode: 'AUTH_FAILED',
         errorMessage: 'Threads accessToken 이 저장되지 않았습니다',
       }
     }
     if (!ctx.deployment.platformUrl) {
       return {
         ok: false,
+        errorCode: 'VALIDATION',
         errorMessage: 'platformUrl 이 아직 채워지지 않았습니다 (배포 성공 후 수집 가능)',
       }
     }
     // PoC 스켈레톤: 실제 insights API 호출은 토큰 발급 후.
     return {
       ok: false,
+      errorCode: 'NOT_IMPLEMENTED',
       errorMessage:
         'Threads API 수집기는 아직 구현되지 않음 (Phase 2). 수동 입력으로 대체하거나 collectorMode=MANUAL 로 전환.',
     }

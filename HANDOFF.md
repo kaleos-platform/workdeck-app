@@ -93,14 +93,27 @@
     - `src/components/sc/rules/ai-insight-button.tsx` — 규칙 페이지 수동 트리거
     - `worker/src/sc/insight-generator.ts` — INSIGHT_SWEEP job 핸들러 (웹 API 호출 위임)
     - 테스트: `src/lib/sc/__tests__/insights.test.ts` 8 케이스 green
-  - [x] **Unit 15** (commit `TBD`) — INSIGHT_SWEEP 스케줄러
+  - [x] **Unit 15** (commit `3cd4a9b`) — INSIGHT_SWEEP 스케줄러
     - `src/lib/sc/insight-scheduler.ts`: 대상 Space 선정(최근 N일 PUBLISHED 배포 있는 곳) + 12시간 내 PENDING/CLAIMED 중복 방지 + INSIGHT_SWEEP job enqueue
     - `POST /api/sc/insights/schedule` — 세션(현재 Space) / 워커(x-workspace-id 또는 allSpaces=true)
     - 맥미니 cron 에서 주 1회 `curl -H "x-worker-api-key: ..." -d '{"allSpaces":true}'` 로 전체 스윕 실행
+  - [x] **Unit 16** (commit `e07d94d`) — 콘텐츠 버전 히스토리·롤백
+    - Prisma `ContentVersion` + migration `20260428000000`
+    - `src/lib/sc/content-versions.ts` — `snapshotContent` (P2002 동시성 재시도), `rollbackContent` (트랜잭션 + 자동 스냅샷), `nextVersionNumber` 순수 함수
+    - API 3종: GET 목록 / GET 단건 / POST rollback — 모두 Space ownership 검증
+    - PATCH `/api/sc/contents/[id]` 훅으로 자동 스냅샷
+    - `src/components/sc/contents/version-history-panel.tsx` — Dialog 미리보기 + 롤백 확인
+    - 테스트 5 케이스 (버전 계산 순수 함수)
+    - 팀: 번스타인(backend) + 시라노(frontend)
+  - [x] **Unit 17** (commit `TBD`) — SC 워커 엔트리포인트 + Publisher/Collector 에러 코드
+    - `worker/src/sc/runner.ts` — kind 별 라우팅(PUBLISH/COLLECT_METRIC/INSIGHT_SWEEP) + `runScLoop` 무한 루프 + SIGTERM/SIGINT graceful shutdown
+    - `worker/src/sc/index.ts` CLI + `npm run sc` 스크립트
+    - `PublishResult.errorCode` / `CollectResult.errorCode` 추가 (AUTH_FAILED · RATE_LIMITED · VALIDATION · PLATFORM_ERROR · NOT_IMPLEMENTED · NETWORK)
+    - 10개 유닛 테스트 (PUBLISH 4 + COLLECT 4 + INSIGHT 2)
   - [ ] Bridge ACP 라우트 (`POST /sales-content/generate` + `GET /health`) — `claude-code-bridge` 프로젝트
   - [ ] Threads API 실구현 (OAuth 토큰 + Graph API)
   - [ ] 네이버 블로그 Playwright 실구현 (수동 로그인 세션 쿠키)
-- [x] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화) — commit `ef486c8`, `jest.config.ts` next/jest preset 적용, 12 suites / 101 tests 전부 green
+- [x] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화) — commit `ef486c8`, `jest.config.ts` next/jest preset 적용, 14 suites / 116 tests 전부 green
 - [ ] First smoke test — 실제 Bridge + Gemini + Supabase Storage 연결 후 end-to-end 통과
 
 ## 확정된 의사결정

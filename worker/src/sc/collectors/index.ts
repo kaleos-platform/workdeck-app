@@ -26,10 +26,21 @@ export interface CollectedMetric {
   externalClicks?: number
 }
 
+// 재시도 가능 여부 판단에 사용하는 에러 코드.
+// PublishErrorCode 와 동일한 값 집합을 사용한다.
+export type CollectErrorCode =
+  | 'AUTH_FAILED'
+  | 'RATE_LIMITED'
+  | 'VALIDATION'
+  | 'PLATFORM_ERROR'
+  | 'NOT_IMPLEMENTED'
+  | 'NETWORK'
+
 export interface CollectResult {
   ok: boolean
   metrics?: CollectedMetric[]
   errorMessage?: string
+  errorCode?: CollectErrorCode
 }
 
 export interface Collector {

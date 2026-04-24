@@ -4,6 +4,7 @@
 // 현재는 PoC 로 최소 구조만 잡고, 실제 API 심사/통합은 후속.
 
 import type { Publisher, PublishContext, PublishResult } from './index'
+// PublishErrorCode 는 PublishResult 안에 포함되므로 별도 import 불필요
 
 export class ThreadsApiPublisher implements Publisher {
   readonly name = 'threads-api'
@@ -16,6 +17,7 @@ export class ThreadsApiPublisher implements Publisher {
     if (!token) {
       return {
         ok: false,
+        errorCode: 'AUTH_FAILED',
         errorMessage: 'Threads accessToken 이 저장되지 않았습니다 (채널 자격증명 등록 필요)',
       }
     }
@@ -24,6 +26,7 @@ export class ThreadsApiPublisher implements Publisher {
     // 현재는 "도달했지만 구현되지 않음" 상태 반환.
     return {
       ok: false,
+      errorCode: 'NOT_IMPLEMENTED',
       errorMessage:
         'Threads API 퍼블리셔는 아직 구현되지 않음 (Phase 2 또는 Unit 10 후속). 현재는 MANUAL 로 전환해 사용하세요.',
     }
