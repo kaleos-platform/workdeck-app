@@ -1,8 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
-import { Check, ChevronRight, Loader2, X } from 'lucide-react'
+import { Check, Loader2, X } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,7 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getSellerHubListingPath } from '@/lib/deck-routes'
 
 export type GroupListingRow = {
   id: string
@@ -225,46 +223,35 @@ function GroupListingRowView({
         </div>
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex items-center justify-end gap-0.5">
-          {dirty ? (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={reset}
-                disabled={saving}
-                aria-label="되돌리기"
-                title="되돌리기"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                className="h-8 w-8"
-                onClick={save}
-                disabled={saving}
-                aria-label="저장"
-                title="저장"
-              >
-                {saving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Check className="h-4 w-4" />
-                )}
-              </Button>
-            </>
-          ) : (
-            <Link
-              href={getSellerHubListingPath(row.id)}
-              aria-label={`${row.searchName} 상세`}
-              className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground hover:text-foreground"
-              title="단일 상세"
+        {dirty && (
+          <div className="flex items-center justify-end gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={reset}
+              disabled={saving}
+              aria-label="되돌리기"
+              title="되돌리기"
             >
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          )}
-        </div>
+              <X className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              className="h-8 w-8"
+              onClick={save}
+              disabled={saving}
+              aria-label="저장"
+              title="저장"
+            >
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        )}
       </TableCell>
     </TableRow>
   )
