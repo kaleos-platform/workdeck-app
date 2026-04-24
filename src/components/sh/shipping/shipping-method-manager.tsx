@@ -21,12 +21,16 @@ import {
 import { FormatEditor } from '@/components/sh/shipping/format-editor'
 import { FormatAnalyzeDialog } from '@/components/sh/shipping/format-analyze-dialog'
 import type { DelFormatColumn } from '@/lib/del/format-templates'
+import { cn } from '@/lib/utils'
+
+type SplitMode = 'order' | 'option'
 
 type ShippingMethod = {
   id: string
   name: string
   isActive: boolean
   formatConfig: DelFormatColumn[]
+  defaultSplitMode?: SplitMode
 }
 
 export function ShippingMethodManager() {
@@ -37,6 +41,7 @@ export function ShippingMethodManager() {
   const [editing, setEditing] = useState<ShippingMethod | null>(null)
   const [name, setName] = useState('')
   const [formatConfig, setFormatConfig] = useState<DelFormatColumn[]>([])
+  const [defaultSplitMode, setDefaultSplitMode] = useState<SplitMode>('order')
   const [saving, setSaving] = useState(false)
   const [analyzeOpen, setAnalyzeOpen] = useState(false)
 
@@ -62,6 +67,7 @@ export function ShippingMethodManager() {
     setEditing(null)
     setName('')
     setFormatConfig([])
+    setDefaultSplitMode('order')
     setDialogOpen(true)
   }
 
@@ -69,6 +75,7 @@ export function ShippingMethodManager() {
     setEditing(method)
     setName(method.name)
     setFormatConfig(method.formatConfig)
+    setDefaultSplitMode(method.defaultSplitMode ?? 'order')
     setDialogOpen(true)
   }
 
@@ -90,7 +97,7 @@ export function ShippingMethodManager() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), formatConfig }),
+        body: JSON.stringify({ name: name.trim(), formatConfig, defaultSplitMode }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
@@ -221,6 +228,56 @@ export function ShippingMethodManager() {
                 <Upload className="mr-1 h-4 w-4" />
                 양식 업로드
               </Button>
+            </div>
+            <div className="space-y-2">
+              <Label>파일 구성 기본값</Label>
+              <p className="text-xs text-muted-foreground">
+                배송 파일 생성 시 기본 선택됩니다. 생성 시 변경 가능.
+              </p>
+              <div className="space-y-2">
+                <label
+                  className={cn(
+                    'flex cursor-pointer items-start gap-2 rounded-md border p-3 transition',
+                    defaultSplitMode === 'order' ? 'border-primary bg-primary/5' : 'hover:bg-muted'
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="method-split-mode"
+                    value="order"
+                    checked={defaultSplitMode === 'order'}
+                    onChange={() => setDefaultSplitMode('order')}
+                    className="mt-1"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">주문당 1행 (상품 묶음 텍스트)</p>
+                    <p className="text-xs text-muted-foreground">
+                      1 주문 = 1 행. 상품명 컬럼에 모든 옵션을 concat. 일반 택배사·쇼핑몰 포맷.
+                    </p>
+                  </div>
+                </label>
+                <label
+                  className={cn(
+                    'flex cursor-pointer items-start gap-2 rounded-md border p-3 transition',
+                    defaultSplitMode === 'option' ? 'border-primary bg-primary/5' : 'hover:bg-muted'
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="method-split-mode"
+                    value="option"
+                    checked={defaultSplitMode === 'option'}
+                    onChange={() => setDefaultSplitMode('option')}
+                    className="mt-1"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">옵션당 1행 (개별 상품 행)</p>
+                    <p className="text-xs text-muted-foreground">
+                      옵션 1개 = 1 행. 수취인 정보가 반복됨. 3PL·물류센터 포맷.
+                    </p>
+                  </div>
+                </label>
+              </div>
             </div>
             <FormatEditor value={formatConfig} onChange={setFormatConfig} />
           </div>

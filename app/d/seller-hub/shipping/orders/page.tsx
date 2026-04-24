@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { BatchList } from '@/components/sh/shipping/batch-list'
 import { OrderDetailTable } from '@/components/sh/shipping/order-detail-table'
 
-type ShippingMethod = { id: string; name: string }
+type ShippingMethod = { id: string; name: string; defaultSplitMode?: 'order' | 'option' }
 
 export default function ShippingOrdersPage() {
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)

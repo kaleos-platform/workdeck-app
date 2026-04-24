@@ -88,6 +88,8 @@ type Props = {
   orderId: string
   itemId: string
   rawName: string
+  // 주문 행의 수량 — 수동 입력 탭에서 '1주문당' × orderQty 미리보기용
+  orderQty?: number
   channelId?: string | null
   channelName?: string | null
   channelSet: boolean
@@ -100,6 +102,7 @@ export function ProductMatchDialog({
   orderId,
   itemId,
   rawName,
+  orderQty = 1,
   channelId,
   channelName,
   channelSet,
@@ -270,6 +273,7 @@ export function ProductMatchDialog({
     }
     setSubmitting(true)
     try {
+      // 입력된 수량은 "1주문당" 수량. 서버에서 orderItem.quantity를 곱해 총 출고 수량으로 저장됨.
       const res = await fetch(`/api/sh/shipping/orders/${orderId}/items/${itemId}/match`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -282,17 +286,19 @@ export function ProductMatchDialog({
         const data = await res.json().catch(() => ({}))
         throw new Error(data?.message ?? '저장 실패')
       }
-      const totalQuantity = manualItems.reduce((s, m) => s + m.quantity, 0)
+      const perSetTotal = manualItems.reduce((s, m) => s + m.quantity, 0)
+      const totalQuantity = perSetTotal * orderQty
       toast.success(`수동 입력 완료 · 출고 옵션 ${manualItems.length}종 총 ${totalQuantity}개`)
       onMatched({
         mode: 'manual',
         fulfillmentCount: manualItems.length,
         totalQuantity,
+        // UI 즉시 반영용 — 서버와 동일하게 orderQty 곱한 최종 수량으로 전달
         fulfillments: manualItems.map((m) => ({
           optionId: m.optionId,
           productName: m.productName,
           optionName: m.optionName,
-          quantity: m.quantity,
+          quantity: m.quantity * orderQty,
         })),
       })
       onOpenChange(false)
@@ -501,12 +507,17 @@ export function ProductMatchDialog({
               </div>
 
               <div>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <p className="text-xs font-medium text-muted-foreground">출고 옵션</p>
+                <div className="mb-1.5 flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">출고 옵션</p>
+                    <p className="text-[10px] leading-tight text-muted-foreground">
+                      1 주문당 수량을 입력 — 주문 수량 {orderQty}개 × 입력값 = 총 출고
+                    </p>
+                  </div>
                   {manualItems.length > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      {manualItems.length}종 · 총 {manualItems.reduce((s, m) => s + m.quantity, 0)}
-                      개
+                    <p className="shrink-0 text-xs text-muted-foreground">
+                      {manualItems.length}종 · 총{' '}
+                      {manualItems.reduce((s, m) => s + m.quantity, 0) * orderQty}개
                     </p>
                   )}
                 </div>
@@ -525,13 +536,22 @@ export function ProductMatchDialog({
                           <p className="truncate text-sm font-medium">{m.productName}</p>
                           <p className="truncate text-xs text-muted-foreground">{m.optionName}</p>
                         </div>
-                        <Input
-                          type="number"
-                          min={1}
-                          value={m.quantity}
-                          onChange={(e) => updateManualQty(m.optionId, Number(e.target.value) || 1)}
-                          className="h-8 w-16 [appearance:textfield] text-center text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                        />
+                        <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                          <Input
+                            type="number"
+                            min={1}
+                            value={m.quantity}
+                            onChange={(e) =>
+                              updateManualQty(m.optionId, Number(e.target.value) || 1)
+                            }
+                            className="h-8 w-14 [appearance:textfield] text-center text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            title="1 주문당 수량"
+                          />
+                          <span>장 × {orderQty}개 =</span>
+                          <span className="font-medium text-foreground">
+                            {m.quantity * orderQty}개
+                          </span>
+                        </div>
                         <Button
                           type="button"
                           variant="ghost"

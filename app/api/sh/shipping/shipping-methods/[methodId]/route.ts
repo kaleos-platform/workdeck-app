@@ -52,6 +52,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data.formatConfig = body.formatConfig
   }
   if (typeof body?.isActive === 'boolean') data.isActive = body.isActive
+  if (body?.defaultSplitMode === 'option' || body?.defaultSplitMode === 'order') {
+    data.defaultSplitMode = body.defaultSplitMode
+  }
   if (Array.isArray(body?.labelColumns)) {
     // 유효한 DelFieldMapping 값만 남기고 최대 MAX_LABEL_COLUMNS개로 잘라냄.
     const seen = new Set<string>()

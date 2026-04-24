@@ -113,7 +113,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   if (mode === 'manual') {
-    type ManualFulfillment = { optionId: string; quantity: number }
+    // 사용자가 입력하는 값은 "1 주문당" per-set 수량. 저장 시 orderItem.quantity를 곱해 총 출고 수량으로 스토어.
+    // (listing 매칭과 동일한 의미론: fulfillment.quantity = perSet × orderItem.quantity)
+    type ManualFulfillment = { optionId: string; perSetQuantity: number }
     const raw: unknown[] = Array.isArray(body?.fulfillments) ? body.fulfillments : []
     const list: ManualFulfillment[] = []
     for (const f of raw) {
@@ -122,7 +124,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const quantity = Number((f as { quantity?: unknown }).quantity)
       if (typeof optionId !== 'string' || !optionId.trim()) continue
       if (!Number.isFinite(quantity) || quantity < 1) continue
-      list.push({ optionId, quantity: Math.floor(quantity) })
+      list.push({ optionId, perSetQuantity: Math.floor(quantity) })
     }
     if (list.length === 0) return errorResponse('출고 옵션을 1개 이상 입력해 주세요', 400)
     if (list.length > 50) return errorResponse('출고 옵션은 최대 50개까지 입력 가능합니다', 400)
@@ -136,6 +138,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
     }
 
+    const orderQty = item.quantity
     await prisma.$transaction(async (tx) => {
       await tx.delOrderItem.update({
         where: { id: itemId },
@@ -146,12 +149,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         data: list.map((f) => ({
           orderItemId: itemId,
           optionId: f.optionId,
-          quantity: f.quantity,
+          quantity: f.perSetQuantity * orderQty,
         })),
       })
     })
 
-    const totalQuantity = list.reduce((s, f) => s + f.quantity, 0)
+    const totalQuantity = list.reduce((s, f) => s + f.perSetQuantity * orderQty, 0)
     return NextResponse.json({
       ok: true,
       mode: 'manual',

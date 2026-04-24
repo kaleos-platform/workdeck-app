@@ -938,12 +938,13 @@ enum DelBatchStatus {
 
 // 배송 방식 (택배사 + 파일 포맷)
 model DelShippingMethod {
-  id           String  @id @default(cuid())
-  spaceId      String
-  name         String
-  isActive     Boolean @default(true)
-  formatConfig Json    // DelFormatColumn[] — 배송 파일 컬럼 매핑
-  labelColumns Json    @default("[]")  // string[] — 활성화된 DelFieldMapping 키 (max 3). 배송 파일 생성 시 이 컬럼만 옵션별 값으로 덮어씀.
+  id               String  @id @default(cuid())
+  spaceId          String
+  name             String
+  isActive         Boolean @default(true)
+  formatConfig     Json    // DelFormatColumn[] — 배송 파일 컬럼 매핑
+  labelColumns     Json    @default("[]")  // string[] — 활성화된 DelFieldMapping 키 (max 3). 배송 파일 생성 시 이 컬럼만 옵션별 값으로 덮어씀.
+  defaultSplitMode String  @default("order")  // 'order' | 'option' — 배송 파일 생성 시 기본 분할 모드
 
   space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   orders DelOrder[]

@@ -34,7 +34,7 @@ import { BulkPasteDialog } from '@/components/sh/shipping/bulk-paste-dialog'
 import { DeliveryFileDialog } from '@/components/sh/shipping/delivery-file-dialog'
 import { ProductMatchDialog, type MatchResult } from '@/components/sh/shipping/product-match-dialog'
 
-type ShippingMethod = { id: string; name: string }
+type ShippingMethod = { id: string; name: string; defaultSplitMode?: 'order' | 'option' }
 type Channel = {
   id: string
   name: string
@@ -70,6 +70,7 @@ export default function ShippingRegistrationPage() {
     orderId: string
     itemId: string
     rawName: string
+    orderQty: number
     channelId: string
     itemIndex: number
   } | null>(null)
@@ -596,6 +597,7 @@ export default function ShippingRegistrationPage() {
             orderId: row.tempId,
             itemId: item.itemId,
             rawName: item.name,
+            orderQty: item.quantity,
             channelId: row.channelId,
             itemIndex,
           })
@@ -611,6 +613,7 @@ export default function ShippingRegistrationPage() {
           orderId={matchTarget.orderId}
           itemId={matchTarget.itemId}
           rawName={matchTarget.rawName}
+          orderQty={matchTarget.orderQty}
           channelId={matchTarget.channelId ?? null}
           channelName={channels.find((c) => c.id === matchTarget.channelId)?.name ?? null}
           channelSet={!!matchTarget.channelId}

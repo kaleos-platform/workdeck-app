@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FileDown } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -24,7 +24,8 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
-type ShippingMethod = { id: string; name: string }
+type SplitMode = 'order' | 'option'
+type ShippingMethod = { id: string; name: string; defaultSplitMode?: SplitMode }
 
 type DeliveryFileDialogProps = {
   batchId: string
@@ -41,8 +42,17 @@ export function DeliveryFileDialog({
 }: DeliveryFileDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedMethodId, setSelectedMethodId] = useState('')
-  const [splitMode, setSplitMode] = useState<'order' | 'option'>('order')
+  const [splitMode, setSplitMode] = useState<SplitMode>('order')
   const [generating, setGenerating] = useState(false)
+
+  // 배송 방식이 변경되면 해당 방식의 기본값으로 splitMode 갱신 (사용자는 이후 수동 변경 가능)
+  useEffect(() => {
+    if (!selectedMethodId) return
+    const method = shippingMethods.find((m) => m.id === selectedMethodId)
+    if (method?.defaultSplitMode) {
+      setSplitMode(method.defaultSplitMode)
+    }
+  }, [selectedMethodId, shippingMethods])
 
   async function handleGenerate() {
     if (!selectedMethodId) {

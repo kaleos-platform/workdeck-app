@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle2, Plus, Sparkles, X } from 'lucide-react'
+import { Plus, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -122,69 +122,88 @@ export function OrderProductFields({
                 <X className="h-3 w-3" />
               </Button>
             </div>
-            {matched ? (
-              <button
-                type="button"
-                disabled={!canMatch}
-                onClick={canMatch ? () => onOpenMatch?.(i) : undefined}
-                className={cn(
-                  'inline-flex w-full items-center gap-1 rounded-sm border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-left text-[10px] leading-tight text-emerald-700',
-                  canMatch && 'cursor-pointer hover:bg-emerald-100'
-                )}
-                title="매칭된 카탈로그 옵션"
-              >
-                <CheckCircle2 className="h-3 w-3 shrink-0" />
-                <span className="truncate">
-                  {matched.productName}
-                  {matched.optionName ? ` — ${matched.optionName}` : ''}
-                </span>
-              </button>
-            ) : product.fulfillments && product.fulfillments.length > 0 ? (
-              <button
-                type="button"
-                disabled={!canMatch}
-                onClick={canMatch ? () => onOpenMatch?.(i) : undefined}
-                className={cn(
-                  'inline-flex w-full items-center gap-1 rounded-sm border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-left text-[10px] leading-tight text-sky-700',
-                  canMatch && 'cursor-pointer hover:bg-sky-100'
-                )}
-                title="수동 입력된 출고 옵션"
-              >
-                <CheckCircle2 className="h-3 w-3 shrink-0" />
-                <span className="truncate">수동 입력 · {product.fulfillments.length}종</span>
-              </button>
-            ) : product.name ? (
-              <button
-                type="button"
-                disabled={!canMatch}
-                onClick={canMatch ? () => onOpenMatch?.(i) : undefined}
-                className={cn(
-                  'inline-flex w-full items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-left text-[10px] leading-tight text-amber-700',
-                  canMatch && 'cursor-pointer hover:bg-amber-100'
-                )}
-                title={canMatch ? '카탈로그 옵션에 매칭' : '저장된 주문만 매칭 가능합니다'}
-              >
-                <Sparkles className="h-3 w-3 shrink-0" />
-                <span>{canMatch ? '카탈로그 매칭' : '미매칭'}</span>
-              </button>
-            ) : null}
-            {product.fulfillments && product.fulfillments.length > 0 && (
-              <p
-                className="truncate text-[10px] leading-tight text-muted-foreground"
-                title={product.fulfillments
-                  .map((f) => `${f.optionName} ×${f.quantity}`)
-                  .join(' · ')}
-              >
-                →{' '}
-                {product.fulfillments
-                  .slice(0, 2)
-                  .map((f) => `${f.optionName} ×${f.quantity}`)
-                  .join(' · ')}
-                {product.fulfillments.length > 2
-                  ? ` · 외 ${product.fulfillments.length - 2}개`
-                  : ''}
-              </p>
-            )}
+            {(() => {
+              // 트리 데이터: 출고 옵션들의 통합 뷰
+              // - fulfillments 있음 → 그대로 사용 (listing/manual)
+              // - optionId만 있음 → matched 기반 단일 가상 엔트리 (option mode)
+              // - 둘 다 없음 → 미매칭
+              const fulfillmentsForTree: OrderFulfillment[] =
+                product.fulfillments && product.fulfillments.length > 0
+                  ? product.fulfillments
+                  : matched && product.optionId
+                    ? [
+                        {
+                          optionId: product.optionId,
+                          productName: matched.productName,
+                          optionName: matched.optionName,
+                          quantity: product.quantity,
+                        },
+                      ]
+                    : []
+
+              if (fulfillmentsForTree.length > 0) {
+                return (
+                  <button
+                    type="button"
+                    disabled={!canMatch}
+                    onClick={canMatch ? () => onOpenMatch?.(i) : undefined}
+                    className={cn(
+                      'flex w-full flex-col gap-0.5 rounded-sm border border-emerald-200 bg-emerald-50/60 p-1 text-left',
+                      canMatch && 'cursor-pointer hover:bg-emerald-50'
+                    )}
+                    title={canMatch ? '매칭 수정' : '저장된 주문만 매칭 가능합니다'}
+                  >
+                    {fulfillmentsForTree.map((f, fi) => {
+                      const perSet = product.quantity > 0 ? f.quantity / product.quantity : 0
+                      const showBreakdown =
+                        Number.isInteger(perSet) && perSet >= 1 && product.quantity > 1
+                      return (
+                        <div
+                          key={`${f.optionId}-${fi}`}
+                          className="flex items-baseline gap-1 text-[10px] leading-tight text-emerald-800"
+                        >
+                          <span className="shrink-0 text-emerald-600/70">ㄴ</span>
+                          <span className="truncate font-medium">
+                            {f.productName}{' '}
+                            {f.optionName && (
+                              <span className="font-normal text-emerald-700/90">
+                                {f.optionName}
+                              </span>
+                            )}
+                          </span>
+                          <span className="shrink-0">/ {f.quantity}개</span>
+                          {showBreakdown && (
+                            <span className="shrink-0 text-emerald-700/70">
+                              ({perSet}장 × {product.quantity}개)
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </button>
+                )
+              }
+
+              if (product.name) {
+                return (
+                  <button
+                    type="button"
+                    disabled={!canMatch}
+                    onClick={canMatch ? () => onOpenMatch?.(i) : undefined}
+                    className={cn(
+                      'inline-flex w-full items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-left text-[10px] leading-tight text-amber-700',
+                      canMatch && 'cursor-pointer hover:bg-amber-100'
+                    )}
+                    title={canMatch ? '상품 옵션 매칭' : '저장된 주문만 매칭 가능합니다'}
+                  >
+                    <Sparkles className="h-3 w-3 shrink-0" />
+                    <span>{canMatch ? '상품 옵션 매칭' : '미매칭'}</span>
+                  </button>
+                )
+              }
+
+              return null
+            })()}
           </div>
         )
       })}

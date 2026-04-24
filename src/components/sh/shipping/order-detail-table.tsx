@@ -93,6 +93,7 @@ interface Channel {
 interface ShippingMethod {
   id: string
   name: string
+  defaultSplitMode?: 'order' | 'option'
 }
 
 interface Order {
