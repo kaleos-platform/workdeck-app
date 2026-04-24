@@ -758,6 +758,7 @@ model InvProductOption {
   productionBatches ProductionBatch[]
   delOrderItems     DelOrderItem[]
   channelAliases    ChannelProductAlias[]
+  aliasFulfillments ChannelProductAliasFulfillment[]
   shippingLabels    DelShippingMethodLabel[]
   listingItems      ProductListingItem[]
   fulfillments      DelOrderItemFulfillment[]
@@ -1060,11 +1061,14 @@ model ChannelProductAlias {
   aliasName String  // 정규화된 원본 상품명 (normalizeAlias 출력)
   optionId  String?
   listingId String?
+  // multi-target 수동 매칭: fulfillments가 있으면 listingId·optionId 대신 사용
+  // (우선순위: fulfillments[] > listingId > optionId)
 
-  space   Space             @relation(fields: [spaceId],   references: [id], onDelete: Cascade)
-  channel Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  option  InvProductOption? @relation(fields: [optionId],  references: [id], onDelete: Cascade)
-  listing ProductListing?   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  space        Space                           @relation(fields: [spaceId],   references: [id], onDelete: Cascade)
+  channel      Channel                         @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  option       InvProductOption?               @relation(fields: [optionId],  references: [id], onDelete: Cascade)
+  listing      ProductListing?                 @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  fulfillments ChannelProductAliasFulfillment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1073,6 +1077,22 @@ model ChannelProductAlias {
   @@index([spaceId])
   @@index([optionId])
   @@index([listingId])
+}
+
+// 수동 매칭 alias의 다중 fulfillment 자식 테이블.
+// 한 raw name이 여러 (옵션, 수량)으로 팬아웃되는 경우(예: "블랙 2 + 화이트 1") 사용.
+// quantity 의미: "1 주문당 perSet 수량" — import 시점에 orderItem.quantity 곱해져 실제 출고 수량 산출.
+model ChannelProductAliasFulfillment {
+  id       String @id @default(cuid())
+  aliasId  String
+  optionId String
+  quantity Int
+
+  alias  ChannelProductAlias @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+  option InvProductOption    @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@index([aliasId])
+  @@index([optionId])
 }
 
 // 컬럼 매핑 프리셋 (업로드 시 header name → field 매핑을 저장)

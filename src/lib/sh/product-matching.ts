@@ -6,9 +6,13 @@
  * 단순 정규화 정확 일치만 지원 (퍼지 매칭은 후속).
  */
 
+export type AliasManualFulfillment = { optionId: string; quantity: number }
+
 export type MatchTarget = {
   listingId?: string | null
   optionId?: string | null
+  // 다중 수동 매칭: fulfillments가 있으면 우선 사용 (listingId/optionId 무시)
+  fulfillments?: AliasManualFulfillment[] | null
 }
 
 /**
@@ -25,11 +29,12 @@ type AliasRow = {
   aliasName: string
   optionId?: string | null
   listingId?: string | null
+  fulfillments?: AliasManualFulfillment[] | null
 }
 
 /**
  * 채널별 별칭 사전을 "정규화 alias → MatchTarget" 맵으로 변환한다.
- * 같은 aliasName에 두 행이 있을 경우 listingId 우선.
+ * 우선순위: fulfillments(다중 수동) > listingId > optionId
  */
 export function buildAliasLookup(rows: AliasRow[]): Map<string, MatchTarget> {
   const map = new Map<string, MatchTarget>()
@@ -38,13 +43,16 @@ export function buildAliasLookup(rows: AliasRow[]): Map<string, MatchTarget> {
     const incoming: MatchTarget = {
       listingId: r.listingId ?? null,
       optionId: r.optionId ?? null,
+      fulfillments: r.fulfillments && r.fulfillments.length > 0 ? r.fulfillments : null,
     }
     if (!current) {
       map.set(r.aliasName, incoming)
       continue
     }
-    // listing이 optionId보다 우선
-    if (incoming.listingId && !current.listingId) {
+    // 우선순위: fulfillments > listing > option
+    const incomingPriority = incoming.fulfillments ? 3 : incoming.listingId ? 2 : 1
+    const currentPriority = current.fulfillments ? 3 : current.listingId ? 2 : 1
+    if (incomingPriority > currentPriority) {
       map.set(r.aliasName, incoming)
     }
   }

@@ -280,6 +280,8 @@ export function ProductMatchDialog({
         body: JSON.stringify({
           mode: 'manual',
           fulfillments: manualItems.map((m) => ({ optionId: m.optionId, quantity: m.quantity })),
+          // 다중 fulfillment alias 저장 (ChannelProductAliasFulfillment): 채널 지정 + saveAlias 체크 시
+          saveAlias: saveAlias && channelSet,
         }),
       })
       if (!res.ok) {
@@ -288,7 +290,10 @@ export function ProductMatchDialog({
       }
       const perSetTotal = manualItems.reduce((s, m) => s + m.quantity, 0)
       const totalQuantity = perSetTotal * orderQty
-      toast.success(`수동 입력 완료 · 출고 옵션 ${manualItems.length}종 총 ${totalQuantity}개`)
+      const aliasSaved = saveAlias && channelSet
+      toast.success(
+        `수동 입력 완료 · 출고 옵션 ${manualItems.length}종 총 ${totalQuantity}개${aliasSaved ? ' · 별칭으로 저장' : ''}`
+      )
       onMatched({
         mode: 'manual',
         fulfillmentCount: manualItems.length,
@@ -582,11 +587,11 @@ export function ProductMatchDialog({
 
           <label className="flex items-center gap-2 text-sm">
             <Checkbox
-              checked={saveAlias && tab !== 'manual'}
+              checked={saveAlias}
               onCheckedChange={(v) => setSaveAlias(v === true)}
-              disabled={!channelSet || tab === 'manual'}
+              disabled={!channelSet}
             />
-            <span className={channelSet && tab !== 'manual' ? undefined : 'text-muted-foreground'}>
+            <span className={channelSet ? undefined : 'text-muted-foreground'}>
               이 채널의 별칭으로 저장 — 다음부터 자동 매칭
             </span>
           </label>
@@ -595,9 +600,9 @@ export function ProductMatchDialog({
               주문에 판매 채널이 지정되어 있지 않아 별칭을 저장할 수 없습니다
             </p>
           )}
-          {tab === 'manual' && (
+          {tab === 'manual' && channelSet && (
             <p className="text-xs text-muted-foreground">
-              수동 입력은 단일 옵션이 아니므로 자동 매칭 대상이 아닙니다
+              저장 시 동일한 원본 상품명이 다음 업로드에서 동일한 옵션 조합으로 자동 매칭됩니다
             </p>
           )}
         </div>

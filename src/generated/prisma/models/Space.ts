@@ -206,6 +206,7 @@ export type SpaceWhereInput = {
   productPricingSettings?: Prisma.XOR<Prisma.ProductPricingSettingsNullableScalarRelationFilter, Prisma.ProductPricingSettingsWhereInput> | null
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasListRelationFilter
   productListings?: Prisma.ProductListingListRelationFilter
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaListRelationFilter
 }
 
 export type SpaceOrderByWithRelationInput = {
@@ -238,6 +239,7 @@ export type SpaceOrderByWithRelationInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsOrderByWithRelationInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasOrderByRelationAggregateInput
   productListings?: Prisma.ProductListingOrderByRelationAggregateInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaOrderByRelationAggregateInput
 }
 
 export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -273,6 +275,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   productPricingSettings?: Prisma.XOR<Prisma.ProductPricingSettingsNullableScalarRelationFilter, Prisma.ProductPricingSettingsWhereInput> | null
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasListRelationFilter
   productListings?: Prisma.ProductListingListRelationFilter
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaListRelationFilter
 }, "id">
 
 export type SpaceOrderByWithAggregationInput = {
@@ -327,6 +330,7 @@ export type SpaceCreateInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateInput = {
@@ -359,6 +363,7 @@ export type SpaceUncheckedCreateInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUpdateInput = {
@@ -391,6 +396,7 @@ export type SpaceUpdateInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateInput = {
@@ -423,6 +429,7 @@ export type SpaceUncheckedUpdateInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateManyInput = {
@@ -818,6 +825,20 @@ export type SpaceUpdateOneRequiredWithoutProductListingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutProductListingsInput, Prisma.SpaceUpdateWithoutProductListingsInput>, Prisma.SpaceUncheckedUpdateWithoutProductListingsInput>
 }
 
+export type SpaceCreateNestedOneWithoutProductChannelGroupMetaInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutProductChannelGroupMetaInput, Prisma.SpaceUncheckedCreateWithoutProductChannelGroupMetaInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutProductChannelGroupMetaInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutProductChannelGroupMetaNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutProductChannelGroupMetaInput, Prisma.SpaceUncheckedCreateWithoutProductChannelGroupMetaInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutProductChannelGroupMetaInput
+  upsert?: Prisma.SpaceUpsertWithoutProductChannelGroupMetaInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutProductChannelGroupMetaInput, Prisma.SpaceUpdateWithoutProductChannelGroupMetaInput>, Prisma.SpaceUncheckedUpdateWithoutProductChannelGroupMetaInput>
+}
+
 export type SpaceCreateWithoutMembersInput = {
   id?: string
   name: string
@@ -847,6 +868,7 @@ export type SpaceCreateWithoutMembersInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutMembersInput = {
@@ -878,6 +900,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutMembersInput = {
@@ -925,6 +948,7 @@ export type SpaceUpdateWithoutMembersInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutMembersInput = {
@@ -956,6 +980,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeckInstancesInput = {
@@ -987,6 +1012,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
@@ -1018,6 +1044,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeckInstancesInput = {
@@ -1065,6 +1092,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
@@ -1096,6 +1124,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductGroupsInput = {
@@ -1127,6 +1156,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
@@ -1158,6 +1188,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductGroupsInput = {
@@ -1205,6 +1236,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
@@ -1236,6 +1268,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductsInput = {
@@ -1267,6 +1300,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductsInput = {
@@ -1298,6 +1332,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductsInput = {
@@ -1345,6 +1380,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductsInput = {
@@ -1376,6 +1412,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationsInput = {
@@ -1407,6 +1444,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationsInput = {
@@ -1438,6 +1476,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationsInput = {
@@ -1485,6 +1524,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
@@ -1516,6 +1556,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvMovementsInput = {
@@ -1547,6 +1588,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvMovementsInput = {
@@ -1578,6 +1620,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvMovementsInput = {
@@ -1625,6 +1668,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
@@ -1656,6 +1700,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvStockLevelsInput = {
@@ -1687,6 +1732,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
@@ -1718,6 +1764,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvStockLevelsInput = {
@@ -1765,6 +1812,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
@@ -1796,6 +1844,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvImportHistoriesInput = {
@@ -1827,6 +1876,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
@@ -1858,6 +1908,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvImportHistoriesInput = {
@@ -1905,6 +1956,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
@@ -1936,6 +1988,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvReconciliationsInput = {
@@ -1967,6 +2020,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
@@ -1998,6 +2052,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvReconciliationsInput = {
@@ -2045,6 +2100,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
@@ -2076,6 +2132,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationMappingsInput = {
@@ -2107,6 +2164,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
@@ -2138,6 +2196,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationMappingsInput = {
@@ -2185,6 +2244,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
@@ -2216,6 +2276,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvSettingsInput = {
@@ -2247,6 +2308,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvSettingsInput = {
@@ -2278,6 +2340,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvSettingsInput = {
@@ -2325,6 +2388,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
@@ -2356,6 +2420,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodsInput = {
@@ -2387,6 +2452,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
@@ -2418,6 +2484,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodsInput = {
@@ -2465,6 +2532,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
@@ -2496,6 +2564,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
@@ -2527,6 +2596,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
@@ -2558,6 +2628,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput = {
@@ -2605,6 +2676,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
@@ -2636,6 +2708,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelBatchesInput = {
@@ -2667,6 +2740,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelBatchesInput = {
@@ -2698,6 +2772,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelBatchesInput = {
@@ -2745,6 +2820,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
@@ -2776,6 +2852,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelOrdersInput = {
@@ -2807,6 +2884,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelOrdersInput = {
@@ -2838,6 +2916,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelOrdersInput = {
@@ -2885,6 +2964,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
@@ -2916,6 +2996,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductAliasesInput = {
@@ -2947,6 +3028,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
@@ -2978,6 +3060,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductAliasesInput = {
@@ -3025,6 +3108,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
@@ -3056,6 +3140,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
@@ -3087,6 +3172,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
@@ -3118,6 +3204,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelColumnMappingPresetsInput = {
@@ -3165,6 +3252,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
@@ -3196,6 +3284,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
@@ -3227,6 +3316,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
@@ -3258,6 +3348,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelIntegrationHistoriesInput = {
@@ -3305,6 +3396,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
@@ -3336,6 +3428,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandsInput = {
@@ -3367,6 +3460,7 @@ export type SpaceCreateWithoutBrandsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandsInput = {
@@ -3398,6 +3492,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandsInput = {
@@ -3445,6 +3540,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandsInput = {
@@ -3476,6 +3572,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelGroupsInput = {
@@ -3507,6 +3604,7 @@ export type SpaceCreateWithoutChannelGroupsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelGroupsInput = {
@@ -3538,6 +3636,7 @@ export type SpaceUncheckedCreateWithoutChannelGroupsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelGroupsInput = {
@@ -3585,6 +3684,7 @@ export type SpaceUpdateWithoutChannelGroupsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelGroupsInput = {
@@ -3616,6 +3716,7 @@ export type SpaceUncheckedUpdateWithoutChannelGroupsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelsInput = {
@@ -3647,6 +3748,7 @@ export type SpaceCreateWithoutChannelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelsInput = {
@@ -3678,6 +3780,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelsInput = {
@@ -3725,6 +3828,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelsInput = {
@@ -3756,6 +3860,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductPricingSettingsInput = {
@@ -3787,6 +3892,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
@@ -3818,6 +3924,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductPricingSettingsInput = {
@@ -3865,6 +3972,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
@@ -3896,6 +4004,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutOptionCodeAliasesInput = {
@@ -3927,6 +4036,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
@@ -3958,6 +4068,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutOptionCodeAliasesInput = {
@@ -4005,6 +4116,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
@@ -4036,6 +4148,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductListingsInput = {
@@ -4067,6 +4180,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductListingsInput = {
@@ -4098,6 +4212,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductListingsInput = {
@@ -4145,6 +4260,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductListingsInput = {
@@ -4176,6 +4292,151 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutProductChannelGroupMetaInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutProductChannelGroupMetaInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutProductChannelGroupMetaInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutProductChannelGroupMetaInput, Prisma.SpaceUncheckedCreateWithoutProductChannelGroupMetaInput>
+}
+
+export type SpaceUpsertWithoutProductChannelGroupMetaInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutProductChannelGroupMetaInput, Prisma.SpaceUncheckedUpdateWithoutProductChannelGroupMetaInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutProductChannelGroupMetaInput, Prisma.SpaceUncheckedCreateWithoutProductChannelGroupMetaInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutProductChannelGroupMetaInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutProductChannelGroupMetaInput, Prisma.SpaceUncheckedUpdateWithoutProductChannelGroupMetaInput>
+}
+
+export type SpaceUpdateWithoutProductChannelGroupMetaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutProductChannelGroupMetaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -4206,6 +4467,7 @@ export type SpaceCountOutputType = {
   brands: number
   optionCodeAliases: number
   productListings: number
+  productChannelGroupMeta: number
 }
 
 export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4231,6 +4493,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   brands?: boolean | SpaceCountOutputTypeCountBrandsArgs
   optionCodeAliases?: boolean | SpaceCountOutputTypeCountOptionCodeAliasesArgs
   productListings?: boolean | SpaceCountOutputTypeCountProductListingsArgs
+  productChannelGroupMeta?: boolean | SpaceCountOutputTypeCountProductChannelGroupMetaArgs
 }
 
 /**
@@ -4397,6 +4660,13 @@ export type SpaceCountOutputTypeCountProductListingsArgs<ExtArgs extends runtime
   where?: Prisma.ProductListingWhereInput
 }
 
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountProductChannelGroupMetaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductChannelGroupMetaWhereInput
+}
+
 
 export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -4428,6 +4698,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   productPricingSettings?: boolean | Prisma.Space$productPricingSettingsArgs<ExtArgs>
   optionCodeAliases?: boolean | Prisma.Space$optionCodeAliasesArgs<ExtArgs>
   productListings?: boolean | Prisma.Space$productListingsArgs<ExtArgs>
+  productChannelGroupMeta?: boolean | Prisma.Space$productChannelGroupMetaArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["space"]>
 
@@ -4481,6 +4752,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   productPricingSettings?: boolean | Prisma.Space$productPricingSettingsArgs<ExtArgs>
   optionCodeAliases?: boolean | Prisma.Space$optionCodeAliasesArgs<ExtArgs>
   productListings?: boolean | Prisma.Space$productListingsArgs<ExtArgs>
+  productChannelGroupMeta?: boolean | Prisma.Space$productChannelGroupMetaArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -4513,6 +4785,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     productPricingSettings: Prisma.$ProductPricingSettingsPayload<ExtArgs> | null
     optionCodeAliases: Prisma.$SpaceOptionCodeAliasPayload<ExtArgs>[]
     productListings: Prisma.$ProductListingPayload<ExtArgs>[]
+    productChannelGroupMeta: Prisma.$ProductChannelGroupMetaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4938,6 +5211,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   productPricingSettings<T extends Prisma.Space$productPricingSettingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$productPricingSettingsArgs<ExtArgs>>): Prisma.Prisma__ProductPricingSettingsClient<runtime.Types.Result.GetResult<Prisma.$ProductPricingSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   optionCodeAliases<T extends Prisma.Space$optionCodeAliasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$optionCodeAliasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceOptionCodeAliasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productListings<T extends Prisma.Space$productListingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$productListingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductListingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  productChannelGroupMeta<T extends Prisma.Space$productChannelGroupMetaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$productChannelGroupMetaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductChannelGroupMetaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5923,6 +6197,30 @@ export type Space$productListingsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.ProductListingScalarFieldEnum | Prisma.ProductListingScalarFieldEnum[]
+}
+
+/**
+ * Space.productChannelGroupMeta
+ */
+export type Space$productChannelGroupMetaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductChannelGroupMeta
+   */
+  select?: Prisma.ProductChannelGroupMetaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProductChannelGroupMeta
+   */
+  omit?: Prisma.ProductChannelGroupMetaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductChannelGroupMetaInclude<ExtArgs> | null
+  where?: Prisma.ProductChannelGroupMetaWhereInput
+  orderBy?: Prisma.ProductChannelGroupMetaOrderByWithRelationInput | Prisma.ProductChannelGroupMetaOrderByWithRelationInput[]
+  cursor?: Prisma.ProductChannelGroupMetaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductChannelGroupMetaScalarFieldEnum | Prisma.ProductChannelGroupMetaScalarFieldEnum[]
 }
 
 /**

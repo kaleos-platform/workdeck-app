@@ -154,12 +154,46 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       })
     })
 
+    // alias 저장 (saveAlias=true + channelId 있을 때만)
+    // 저장된 perSet 값 기준으로 alias fulfillments upsert → 다음 업로드 시 자동 매칭
+    let savedAlias = false
+    if (saveAlias && item.order.channelId) {
+      const aliasName = normalizeAlias(item.name)
+      if (aliasName) {
+        await prisma.$transaction(async (tx) => {
+          const alias = await tx.channelProductAlias.upsert({
+            where: {
+              channelId_aliasName: { channelId: item.order.channelId!, aliasName },
+            },
+            update: { listingId: null, optionId: null },
+            create: {
+              spaceId: resolved.space.id,
+              channelId: item.order.channelId!,
+              aliasName,
+              listingId: null,
+              optionId: null,
+            },
+          })
+          await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
+          await tx.channelProductAliasFulfillment.createMany({
+            data: list.map((f) => ({
+              aliasId: alias.id,
+              optionId: f.optionId,
+              quantity: f.perSetQuantity,
+            })),
+          })
+        })
+        savedAlias = true
+      }
+    }
+
     const totalQuantity = list.reduce((s, f) => s + f.perSetQuantity * orderQty, 0)
     return NextResponse.json({
       ok: true,
       mode: 'manual',
       fulfillmentCount: list.length,
       totalQuantity,
+      savedAlias,
     })
   }
 

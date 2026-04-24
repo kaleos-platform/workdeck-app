@@ -95,6 +95,7 @@ export const ModelName = {
   DelOrder: 'DelOrder',
   DelOrderItem: 'DelOrderItem',
   ChannelProductAlias: 'ChannelProductAlias',
+  ChannelProductAliasFulfillment: 'ChannelProductAliasFulfillment',
   DelColumnMappingPreset: 'DelColumnMappingPreset',
   DelIntegrationHistory: 'DelIntegrationHistory',
   Brand: 'Brand',
@@ -106,7 +107,8 @@ export const ModelName = {
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
   ProductListing: 'ProductListing',
   ProductListingItem: 'ProductListingItem',
-  DelOrderItemFulfillment: 'DelOrderItemFulfillment'
+  DelOrderItemFulfillment: 'DelOrderItemFulfillment',
+  ProductChannelGroupMeta: 'ProductChannelGroupMeta'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -720,6 +722,7 @@ export const DelShippingMethodScalarFieldEnum = {
   isActive: 'isActive',
   formatConfig: 'formatConfig',
   labelColumns: 'labelColumns',
+  defaultSplitMode: 'defaultSplitMode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -800,6 +803,16 @@ export const ChannelProductAliasScalarFieldEnum = {
 } as const
 
 export type ChannelProductAliasScalarFieldEnum = (typeof ChannelProductAliasScalarFieldEnum)[keyof typeof ChannelProductAliasScalarFieldEnum]
+
+
+export const ChannelProductAliasFulfillmentScalarFieldEnum = {
+  id: 'id',
+  aliasId: 'aliasId',
+  optionId: 'optionId',
+  quantity: 'quantity'
+} as const
+
+export type ChannelProductAliasFulfillmentScalarFieldEnum = (typeof ChannelProductAliasFulfillmentScalarFieldEnum)[keyof typeof ChannelProductAliasFulfillmentScalarFieldEnum]
 
 
 export const DelColumnMappingPresetScalarFieldEnum = {
@@ -966,6 +979,19 @@ export const DelOrderItemFulfillmentScalarFieldEnum = {
 } as const
 
 export type DelOrderItemFulfillmentScalarFieldEnum = (typeof DelOrderItemFulfillmentScalarFieldEnum)[keyof typeof DelOrderItemFulfillmentScalarFieldEnum]
+
+
+export const ProductChannelGroupMetaScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  productId: 'productId',
+  channelId: 'channelId',
+  keywords: 'keywords',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductChannelGroupMetaScalarFieldEnum = (typeof ProductChannelGroupMetaScalarFieldEnum)[keyof typeof ProductChannelGroupMetaScalarFieldEnum]
 
 
 export const SortOrder = {

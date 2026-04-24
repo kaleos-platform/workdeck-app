@@ -29,6 +29,7 @@ export type DelShippingMethodMinAggregateOutputType = {
   spaceId: string | null
   name: string | null
   isActive: boolean | null
+  defaultSplitMode: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +39,7 @@ export type DelShippingMethodMaxAggregateOutputType = {
   spaceId: string | null
   name: string | null
   isActive: boolean | null
+  defaultSplitMode: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -49,6 +51,7 @@ export type DelShippingMethodCountAggregateOutputType = {
   isActive: number
   formatConfig: number
   labelColumns: number
+  defaultSplitMode: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -60,6 +63,7 @@ export type DelShippingMethodMinAggregateInputType = {
   spaceId?: true
   name?: true
   isActive?: true
+  defaultSplitMode?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -69,6 +73,7 @@ export type DelShippingMethodMaxAggregateInputType = {
   spaceId?: true
   name?: true
   isActive?: true
+  defaultSplitMode?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -80,6 +85,7 @@ export type DelShippingMethodCountAggregateInputType = {
   isActive?: true
   formatConfig?: true
   labelColumns?: true
+  defaultSplitMode?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -164,6 +170,7 @@ export type DelShippingMethodGroupByOutputType = {
   isActive: boolean
   formatConfig: runtime.JsonValue
   labelColumns: runtime.JsonValue
+  defaultSplitMode: string
   createdAt: Date
   updatedAt: Date
   _count: DelShippingMethodCountAggregateOutputType | null
@@ -196,6 +203,7 @@ export type DelShippingMethodWhereInput = {
   isActive?: Prisma.BoolFilter<"DelShippingMethod"> | boolean
   formatConfig?: Prisma.JsonFilter<"DelShippingMethod">
   labelColumns?: Prisma.JsonFilter<"DelShippingMethod">
+  defaultSplitMode?: Prisma.StringFilter<"DelShippingMethod"> | string
   createdAt?: Prisma.DateTimeFilter<"DelShippingMethod"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelShippingMethod"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -210,6 +218,7 @@ export type DelShippingMethodOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   formatConfig?: Prisma.SortOrder
   labelColumns?: Prisma.SortOrder
+  defaultSplitMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -228,6 +237,7 @@ export type DelShippingMethodWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"DelShippingMethod"> | boolean
   formatConfig?: Prisma.JsonFilter<"DelShippingMethod">
   labelColumns?: Prisma.JsonFilter<"DelShippingMethod">
+  defaultSplitMode?: Prisma.StringFilter<"DelShippingMethod"> | string
   createdAt?: Prisma.DateTimeFilter<"DelShippingMethod"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelShippingMethod"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -242,6 +252,7 @@ export type DelShippingMethodOrderByWithAggregationInput = {
   isActive?: Prisma.SortOrder
   formatConfig?: Prisma.SortOrder
   labelColumns?: Prisma.SortOrder
+  defaultSplitMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DelShippingMethodCountOrderByAggregateInput
@@ -259,6 +270,7 @@ export type DelShippingMethodScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"DelShippingMethod"> | boolean
   formatConfig?: Prisma.JsonWithAggregatesFilter<"DelShippingMethod">
   labelColumns?: Prisma.JsonWithAggregatesFilter<"DelShippingMethod">
+  defaultSplitMode?: Prisma.StringWithAggregatesFilter<"DelShippingMethod"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DelShippingMethod"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DelShippingMethod"> | Date | string
 }
@@ -269,6 +281,7 @@ export type DelShippingMethodCreateInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelShippingMethodsInput
@@ -283,6 +296,7 @@ export type DelShippingMethodUncheckedCreateInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutShippingMethodInput
@@ -295,6 +309,7 @@ export type DelShippingMethodUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelShippingMethodsNestedInput
@@ -309,6 +324,7 @@ export type DelShippingMethodUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.DelOrderUncheckedUpdateManyWithoutShippingMethodNestedInput
@@ -322,6 +338,7 @@ export type DelShippingMethodCreateManyInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -332,6 +349,7 @@ export type DelShippingMethodUpdateManyMutationInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -343,6 +361,7 @@ export type DelShippingMethodUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -369,6 +388,7 @@ export type DelShippingMethodCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   formatConfig?: Prisma.SortOrder
   labelColumns?: Prisma.SortOrder
+  defaultSplitMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -378,6 +398,7 @@ export type DelShippingMethodMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  defaultSplitMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -387,6 +408,7 @@ export type DelShippingMethodMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  defaultSplitMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -479,6 +501,7 @@ export type DelShippingMethodCreateWithoutSpaceInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.DelOrderCreateNestedManyWithoutShippingMethodInput
@@ -491,6 +514,7 @@ export type DelShippingMethodUncheckedCreateWithoutSpaceInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutShippingMethodInput
@@ -533,6 +557,7 @@ export type DelShippingMethodScalarWhereInput = {
   isActive?: Prisma.BoolFilter<"DelShippingMethod"> | boolean
   formatConfig?: Prisma.JsonFilter<"DelShippingMethod">
   labelColumns?: Prisma.JsonFilter<"DelShippingMethod">
+  defaultSplitMode?: Prisma.StringFilter<"DelShippingMethod"> | string
   createdAt?: Prisma.DateTimeFilter<"DelShippingMethod"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelShippingMethod"> | Date | string
 }
@@ -543,6 +568,7 @@ export type DelShippingMethodCreateWithoutProductLabelsInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelShippingMethodsInput
@@ -556,6 +582,7 @@ export type DelShippingMethodUncheckedCreateWithoutProductLabelsInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutShippingMethodInput
@@ -583,6 +610,7 @@ export type DelShippingMethodUpdateWithoutProductLabelsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelShippingMethodsNestedInput
@@ -596,6 +624,7 @@ export type DelShippingMethodUncheckedUpdateWithoutProductLabelsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.DelOrderUncheckedUpdateManyWithoutShippingMethodNestedInput
@@ -607,6 +636,7 @@ export type DelShippingMethodCreateWithoutOrdersInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelShippingMethodsInput
@@ -620,6 +650,7 @@ export type DelShippingMethodUncheckedCreateWithoutOrdersInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   productLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutShippingMethodInput
@@ -647,6 +678,7 @@ export type DelShippingMethodUpdateWithoutOrdersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelShippingMethodsNestedInput
@@ -660,6 +692,7 @@ export type DelShippingMethodUncheckedUpdateWithoutOrdersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   productLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutShippingMethodNestedInput
@@ -671,6 +704,7 @@ export type DelShippingMethodCreateManySpaceInput = {
   isActive?: boolean
   formatConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -681,6 +715,7 @@ export type DelShippingMethodUpdateWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.DelOrderUpdateManyWithoutShippingMethodNestedInput
@@ -693,6 +728,7 @@ export type DelShippingMethodUncheckedUpdateWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.DelOrderUncheckedUpdateManyWithoutShippingMethodNestedInput
@@ -705,6 +741,7 @@ export type DelShippingMethodUncheckedUpdateManyWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   formatConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   labelColumns?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  defaultSplitMode?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -756,6 +793,7 @@ export type DelShippingMethodSelect<ExtArgs extends runtime.Types.Extensions.Int
   isActive?: boolean
   formatConfig?: boolean
   labelColumns?: boolean
+  defaultSplitMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -771,6 +809,7 @@ export type DelShippingMethodSelectCreateManyAndReturn<ExtArgs extends runtime.T
   isActive?: boolean
   formatConfig?: boolean
   labelColumns?: boolean
+  defaultSplitMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -783,6 +822,7 @@ export type DelShippingMethodSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   isActive?: boolean
   formatConfig?: boolean
   labelColumns?: boolean
+  defaultSplitMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -795,11 +835,12 @@ export type DelShippingMethodSelectScalar = {
   isActive?: boolean
   formatConfig?: boolean
   labelColumns?: boolean
+  defaultSplitMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DelShippingMethodOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "isActive" | "formatConfig" | "labelColumns" | "createdAt" | "updatedAt", ExtArgs["result"]["delShippingMethod"]>
+export type DelShippingMethodOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "isActive" | "formatConfig" | "labelColumns" | "defaultSplitMode" | "createdAt" | "updatedAt", ExtArgs["result"]["delShippingMethod"]>
 export type DelShippingMethodInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   orders?: boolean | Prisma.DelShippingMethod$ordersArgs<ExtArgs>
@@ -827,6 +868,7 @@ export type $DelShippingMethodPayload<ExtArgs extends runtime.Types.Extensions.I
     isActive: boolean
     formatConfig: runtime.JsonValue
     labelColumns: runtime.JsonValue
+    defaultSplitMode: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["delShippingMethod"]>
@@ -1261,6 +1303,7 @@ export interface DelShippingMethodFieldRefs {
   readonly isActive: Prisma.FieldRef<"DelShippingMethod", 'Boolean'>
   readonly formatConfig: Prisma.FieldRef<"DelShippingMethod", 'Json'>
   readonly labelColumns: Prisma.FieldRef<"DelShippingMethod", 'Json'>
+  readonly defaultSplitMode: Prisma.FieldRef<"DelShippingMethod", 'String'>
   readonly createdAt: Prisma.FieldRef<"DelShippingMethod", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DelShippingMethod", 'DateTime'>
 }

@@ -116,9 +116,24 @@ export async function POST(req: NextRequest) {
     if (uniqueNames.size > 0) {
       const aliasRows = await prisma.channelProductAlias.findMany({
         where: { channelId, aliasName: { in: Array.from(uniqueNames) } },
-        select: { aliasName: true, optionId: true, listingId: true },
+        select: {
+          aliasName: true,
+          optionId: true,
+          listingId: true,
+          fulfillments: { select: { optionId: true, quantity: true } },
+        },
       })
-      aliasLookup = buildAliasLookup(aliasRows)
+      aliasLookup = buildAliasLookup(
+        aliasRows.map((r) => ({
+          aliasName: r.aliasName,
+          optionId: r.optionId,
+          listingId: r.listingId,
+          fulfillments:
+            r.fulfillments.length > 0
+              ? r.fulfillments.map((f) => ({ optionId: f.optionId, quantity: f.quantity }))
+              : null,
+        }))
+      )
 
       // listing 매칭에 필요한 item 구성 정보 로드
       const listingIds = Array.from(
@@ -173,6 +188,21 @@ export async function POST(req: NextRequest) {
           const rawName = r.productName as string
           const qty = r.productQuantity ?? 1
           const target = aliasLookup.get(normalizeAlias(rawName))
+          // 우선순위: fulfillments(다중 수동) > listing > option
+          if (target?.fulfillments && target.fulfillments.length > 0) {
+            matchedItemCount++
+            return {
+              name: rawName,
+              quantity: qty,
+              optionId: null,
+              listingId: null,
+              // alias.quantity는 "1 주문당 perSet" → orderItem.quantity(qty)만큼 곱함
+              fulfillments: target.fulfillments.map((f) => ({
+                optionId: f.optionId,
+                quantity: f.quantity * qty,
+              })),
+            }
+          }
           if (target?.listingId) {
             matchedItemCount++
             const listingItems = listingItemsMap.get(target.listingId) ?? []

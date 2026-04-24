@@ -238,6 +238,11 @@ export type DelOrderItem = Prisma.DelOrderItemModel
  */
 export type ChannelProductAlias = Prisma.ChannelProductAliasModel
 /**
+ * Model ChannelProductAliasFulfillment
+ * 
+ */
+export type ChannelProductAliasFulfillment = Prisma.ChannelProductAliasFulfillmentModel
+/**
  * Model DelColumnMappingPreset
  * 
  */
@@ -297,3 +302,8 @@ export type ProductListingItem = Prisma.ProductListingItemModel
  * 
  */
 export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel
+/**
+ * Model ProductChannelGroupMeta
+ * 
+ */
+export type ProductChannelGroupMeta = Prisma.ProductChannelGroupMetaModel
