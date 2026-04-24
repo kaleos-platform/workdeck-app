@@ -753,6 +753,46 @@ export default function ShippingRegistrationPage() {
             itemIndex,
           })
         }}
+        onClearMatch={async (row, itemIndex) => {
+          const item = row.items[itemIndex]
+          if (!item?.itemId) return // 아직 DB에 저장 전이면 매칭이 없음
+          try {
+            const res = await fetch(
+              `/api/sh/shipping/orders/${row.tempId}/items/${item.itemId}/match`,
+              {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'clear' }),
+              }
+            )
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}))
+              throw new Error(data?.message ?? '매칭 해제 실패')
+            }
+            setRows((prev) =>
+              prev.map((r) =>
+                r.tempId !== row.tempId
+                  ? r
+                  : {
+                      ...r,
+                      items: r.items.map((it, idx) =>
+                        idx !== itemIndex
+                          ? it
+                          : {
+                              ...it,
+                              optionId: null,
+                              listingId: null,
+                              matched: null,
+                              fulfillments: null,
+                            }
+                      ),
+                    }
+              )
+            )
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : '매칭 해제 실패')
+          }
+        }}
       />
 
       {matchTarget && (

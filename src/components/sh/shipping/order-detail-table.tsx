@@ -624,6 +624,27 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                             channelId: order.channel?.id ?? null,
                           })
                         }}
+                        onClearMatch={async (idx) => {
+                          const item = order.items[idx]
+                          if (!item) return
+                          try {
+                            const res = await fetch(
+                              `/api/sh/shipping/orders/${order.id}/items/${item.id}/match`,
+                              {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ mode: 'clear' }),
+                              }
+                            )
+                            if (!res.ok) {
+                              const data = await res.json().catch(() => ({}))
+                              throw new Error(data?.message ?? '매칭 해제 실패')
+                            }
+                            fetchOrders()
+                          } catch (err) {
+                            toast.error(err instanceof Error ? err.message : '매칭 해제 실패')
+                          }
+                        }}
                       />
                     )}
                   </TableCell>

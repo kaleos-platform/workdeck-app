@@ -58,6 +58,10 @@ export function GroupDetailView({ productId, channelId }: Props) {
   const [saving, setSaving] = useState(false)
   const [lastError, setLastError] = useState<string | null>(null)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // 자동 재시도 (실패 후 backoff): 10s → 30s → 60s 후 수동 전환
+  const autoRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoRetryCountRef = useRef(0)
+  const AUTO_RETRY_DELAYS = [10_000, 30_000, 60_000]
 
   // 편집 state
   const [keywords, setKeywords] = useState<string[]>([])
@@ -577,9 +581,31 @@ export function GroupDetailView({ productId, channelId }: Props) {
     setSaving(false)
     if (failures.length > 0) {
       setLastError(failures.slice(0, 2).join(' · '))
-      toast.warning(`일부 저장 실패 (${failures.length}건). ${failures.slice(0, 2).join(' / ')}`)
+      // 자동 재시도: 3회까지 backoff 후 수동 대기
+      const nth = autoRetryCountRef.current
+      if (nth < AUTO_RETRY_DELAYS.length) {
+        const delay = AUTO_RETRY_DELAYS[nth]
+        autoRetryCountRef.current = nth + 1
+        if (nth === 0) {
+          toast.warning(`저장 실패. ${Math.round(delay / 1000)}초 후 자동 재시도합니다.`)
+        }
+        if (autoRetryTimerRef.current) clearTimeout(autoRetryTimerRef.current)
+        autoRetryTimerRef.current = setTimeout(() => {
+          autoRetryTimerRef.current = null
+          void runAutoSaveRef.current()
+        }, delay)
+      } else {
+        toast.error(
+          `자동 재시도 ${AUTO_RETRY_DELAYS.length}회 모두 실패. "재시도" 버튼을 눌러주세요.`
+        )
+      }
     } else {
       setLastError(null)
+      autoRetryCountRef.current = 0
+      if (autoRetryTimerRef.current) {
+        clearTimeout(autoRetryTimerRef.current)
+        autoRetryTimerRef.current = null
+      }
     }
   }
 
@@ -589,6 +615,13 @@ export function GroupDetailView({ productId, channelId }: Props) {
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current)
     }
+    // 새 사용자 편집이 들어왔으므로 대기 중인 backoff 재시도는 폐기하고
+    // 재시도 카운터도 리셋 — 새 저장으로 성공 가능성이 있음
+    if (autoRetryTimerRef.current) {
+      clearTimeout(autoRetryTimerRef.current)
+      autoRetryTimerRef.current = null
+    }
+    autoRetryCountRef.current = 0
     autoSaveTimerRef.current = setTimeout(() => {
       autoSaveTimerRef.current = null
       void runAutoSaveRef.current()
@@ -615,6 +648,9 @@ export function GroupDetailView({ productId, channelId }: Props) {
     return () => {
       if (autoSaveTimerRef.current) {
         clearTimeout(autoSaveTimerRef.current)
+      }
+      if (autoRetryTimerRef.current) {
+        clearTimeout(autoRetryTimerRef.current)
       }
     }
   }, [])
@@ -655,6 +691,12 @@ export function GroupDetailView({ productId, channelId }: Props) {
           error={lastError}
           onRetry={() => {
             setLastError(null)
+            // 수동 재시도: 자동 backoff 카운터 리셋하고 즉시 저장 시도
+            autoRetryCountRef.current = 0
+            if (autoRetryTimerRef.current) {
+              clearTimeout(autoRetryTimerRef.current)
+              autoRetryTimerRef.current = null
+            }
             void runAutoSave()
           }}
         />

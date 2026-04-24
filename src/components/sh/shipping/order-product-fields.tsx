@@ -92,10 +92,12 @@ function MatchSummary({
   product,
   canMatch,
   onOpen,
+  onClear,
 }: {
   product: OrderProduct
   canMatch: boolean
   onOpen?: () => void
+  onClear?: () => void
 }) {
   const matched = product.matched ?? null
   const fulfillmentsForTree: OrderFulfillment[] =
@@ -114,41 +116,62 @@ function MatchSummary({
 
   if (fulfillmentsForTree.length > 0) {
     return (
-      <button
-        type="button"
-        disabled={!canMatch}
-        onClick={canMatch ? onOpen : undefined}
+      <div
         className={cn(
-          'flex w-full flex-col gap-0.5 rounded-sm border border-emerald-200 bg-emerald-50/60 p-1 text-left',
-          canMatch && 'cursor-pointer hover:bg-emerald-50'
+          'flex w-full items-start gap-1 rounded-sm border border-emerald-200 bg-emerald-50/60 p-1',
+          canMatch && 'hover:bg-emerald-50'
         )}
-        title={canMatch ? '매칭 수정' : '판매채널을 먼저 지정해 주세요'}
       >
-        {fulfillmentsForTree.map((f, fi) => {
-          const perSet = product.quantity > 0 ? f.quantity / product.quantity : 0
-          const showBreakdown = Number.isInteger(perSet) && perSet >= 1 && product.quantity > 1
-          return (
-            <div
-              key={`${f.optionId}-${fi}`}
-              className="flex items-baseline gap-1 text-[10px] leading-tight text-emerald-800"
-            >
-              <span className="shrink-0 text-emerald-600/70">ㄴ</span>
-              <span className="truncate font-medium">
-                {f.productName}{' '}
-                {f.optionName && (
-                  <span className="font-normal text-emerald-700/90">{f.optionName}</span>
-                )}
-              </span>
-              <span className="shrink-0">/ {f.quantity}개</span>
-              {showBreakdown && (
-                <span className="shrink-0 text-emerald-700/70">
-                  ({perSet}장 × {product.quantity}개)
+        <button
+          type="button"
+          disabled={!canMatch}
+          onClick={canMatch ? onOpen : undefined}
+          className={cn(
+            'flex min-w-0 flex-1 flex-col gap-0.5 text-left',
+            canMatch && 'cursor-pointer'
+          )}
+          title={canMatch ? '매칭 수정' : '판매채널을 먼저 지정해 주세요'}
+        >
+          {fulfillmentsForTree.map((f, fi) => {
+            const perSet = product.quantity > 0 ? f.quantity / product.quantity : 0
+            const showBreakdown = Number.isInteger(perSet) && perSet >= 1 && product.quantity > 1
+            return (
+              <div
+                key={`${f.optionId}-${fi}`}
+                className="flex items-baseline gap-1 text-[10px] leading-tight text-emerald-800"
+              >
+                <span className="shrink-0 text-emerald-600/70">ㄴ</span>
+                <span className="truncate font-medium">
+                  {f.productName}{' '}
+                  {f.optionName && (
+                    <span className="font-normal text-emerald-700/90">{f.optionName}</span>
+                  )}
                 </span>
-              )}
-            </div>
-          )
-        })}
-      </button>
+                <span className="shrink-0">/ {f.quantity}개</span>
+                {showBreakdown && (
+                  <span className="shrink-0 text-emerald-700/70">
+                    ({perSet}장 × {product.quantity}개)
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </button>
+        {canMatch && onClear && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onClear()
+            }}
+            className="shrink-0 rounded-sm p-0.5 text-emerald-700/60 transition-colors hover:bg-emerald-100 hover:text-emerald-900"
+            title="매칭 해제"
+            aria-label="매칭 해제"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
     )
   }
 
@@ -183,6 +206,7 @@ export function OrderProductNamesCell({
   maxItems = 10,
   invalid = false,
   onOpenMatch,
+  onClearMatch,
   matchEnabled = false,
   allowAdd = true,
   allowRemove = true,
@@ -193,6 +217,7 @@ export function OrderProductNamesCell({
   maxItems?: number
   invalid?: boolean
   onOpenMatch?: (index: number) => void
+  onClearMatch?: (index: number) => void
   matchEnabled?: boolean
   allowAdd?: boolean
   allowRemove?: boolean
@@ -257,7 +282,12 @@ export function OrderProductNamesCell({
                 </Button>
               )}
             </div>
-            <MatchSummary product={product} canMatch={canMatch} onOpen={() => onOpenMatch?.(i)} />
+            <MatchSummary
+              product={product}
+              canMatch={canMatch}
+              onOpen={() => onOpenMatch?.(i)}
+              onClear={onClearMatch ? () => onClearMatch(i) : undefined}
+            />
           </div>
         )
       })}

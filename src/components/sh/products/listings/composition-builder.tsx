@@ -561,13 +561,34 @@ function SimpleModeSettings({
         ? 1
         : 0
       : attrs.reduce((n, a) => n * a.values.length, 1)
-  const sample =
-    attrs.length === 0
-      ? (product.options[0]?.name ?? null)
-      : attrs
-          .map((a) => a.values[0]?.value)
-          .filter(Boolean)
-          .join(' / ')
+
+  // 샘플: cartesian 조합 중 최대 3개만 표시
+  const samples: string[] = (() => {
+    if (attrs.length === 0) {
+      const first = product.options[0]?.name
+      return first ? [first] : []
+    }
+    // 첫 3조합만 펼침 (조기 slice로 폭주 방지)
+    let combos: Record<string, string>[] = [{}]
+    for (const a of attrs) {
+      const next: Record<string, string>[] = []
+      for (const prev of combos) {
+        for (const v of a.values) {
+          next.push({ ...prev, [a.name]: v.value })
+          if (next.length >= 3) break
+        }
+        if (next.length >= 3) break
+      }
+      combos = next
+      if (combos.length >= 3) break
+    }
+    return combos.slice(0, 3).map((c) =>
+      attrs
+        .map((a) => c[a.name])
+        .filter(Boolean)
+        .join(' / ')
+    )
+  })()
 
   return (
     <div className="space-y-3 rounded-md border bg-background p-3">
@@ -591,7 +612,12 @@ function SimpleModeSettings({
       <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
         <strong className="text-foreground">{comboCount}</strong>개의 listing이 생성됩니다 · 각
         listing = 1 옵션 × {setQty} 수량
-        {sample && <span className="block">예: {sample}</span>}
+        {samples.length > 0 && (
+          <span className="mt-0.5 block">
+            예: {samples.join(', ')}
+            {comboCount > samples.length && ` 외 ${comboCount - samples.length}개`}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -700,7 +726,13 @@ function AdvancedPreview({
       {preview.groupCount > 0 ? (
         <>
           <strong className="text-foreground">{preview.groupCount}</strong>개의 listing이 생성됩니다
-          {preview.sample && <span className="block">예: {preview.sample}</span>}
+          {preview.samples.length > 0 && (
+            <span className="mt-0.5 block">
+              예: {preview.samples.join(', ')}
+              {preview.groupCount > preview.samples.length &&
+                ` 외 ${preview.groupCount - preview.samples.length}개`}
+            </span>
+          )}
         </>
       ) : (
         <span>수량을 지정한 속성·값이 있으면 미리 보기가 표시됩니다</span>
@@ -730,10 +762,10 @@ function findOption(options: OptionRow[], target: Record<string, string>): Optio
 function computeAdvancedPreview(
   product: ProductDetail,
   attrState: Record<string, AttrState>
-): { groupCount: number; selectedCount: number; sample: string | null } {
+): { groupCount: number; selectedCount: number; samples: string[] } {
   const attrs = product.optionAttributes ?? []
   if (attrs.length === 0) {
-    return { groupCount: product.options.length > 0 ? 1 : 0, selectedCount: 0, sample: null }
+    return { groupCount: product.options.length > 0 ? 1 : 0, selectedCount: 0, samples: [] }
   }
   let selectedCount = 0
   const unselectedValues: string[][] = []
@@ -746,9 +778,24 @@ function computeAdvancedPreview(
       unselectedValues.push(a.values.map((v) => v.value))
     }
   }
-  if (selectedCount === 0) return { groupCount: 0, selectedCount: 0, sample: null }
+  if (selectedCount === 0) return { groupCount: 0, selectedCount: 0, samples: [] }
   const groupCount = unselectedValues.reduce((n, arr) => n * arr.length, 1)
-  const sampleValues = unselectedValues.map((vs) => vs[0])
-  const sample = sampleValues.length > 0 ? sampleValues.join(' / ') : null
-  return { groupCount, selectedCount, sample }
+
+  // 샘플: unselected 속성의 cartesian 중 최대 3개
+  let combos: string[][] = [[]]
+  for (const vs of unselectedValues) {
+    const next: string[][] = []
+    for (const prev of combos) {
+      for (const v of vs) {
+        next.push([...prev, v])
+        if (next.length >= 3) break
+      }
+      if (next.length >= 3) break
+    }
+    combos = next
+    if (combos.length >= 3) break
+  }
+  const samples = combos.length === 0 ? [] : combos.slice(0, 3).map((c) => c.join(' / '))
+  // selected만 있고 unselected 없는 경우 samples 비어있음 → 빈 배열 그대로 (groupCount=1)
+  return { groupCount, selectedCount, samples }
 }

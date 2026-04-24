@@ -61,6 +61,7 @@ type RegistrationTableProps = {
   selectedIds?: Set<string>
   onSelectionChange?: (ids: Set<string>) => void
   onOpenMatch?: (row: OrderRow, itemIndex: number) => void
+  onClearMatch?: (row: OrderRow, itemIndex: number) => void | Promise<void>
   // 저장된 DB 아이템 수량 변경 시 서버 PATCH 콜백
   onItemPatch?: (
     orderId: string,
@@ -106,6 +107,7 @@ export function RegistrationTable({
   selectedIds,
   onSelectionChange,
   onOpenMatch,
+  onClearMatch,
   onItemPatch,
 }: RegistrationTableProps) {
   const selectionEnabled = !!selectedIds && !!onSelectionChange
@@ -312,6 +314,7 @@ export function RegistrationTable({
                         invalid={missingProducts}
                         matchEnabled={!!row.channelId}
                         onOpenMatch={(idx) => onOpenMatch?.(row, idx)}
+                        onClearMatch={onClearMatch ? (idx) => onClearMatch(row, idx) : undefined}
                         allowAdd={row.tempId.startsWith('temp-')}
                       />
                     </TableCell>
