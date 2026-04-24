@@ -80,3 +80,4 @@ prisma/scripts/
 
 .omc/
 .claude/scheduled_tasks.lock
+scripts/sc/_debug/

@@ -112,7 +112,13 @@
     - 10개 유닛 테스트 (PUBLISH 4 + COLLECT 4 + INSIGHT 2)
   - [ ] Bridge ACP 라우트 (`POST /sales-content/generate` + `GET /health`) — `claude-code-bridge` 프로젝트
   - [ ] Threads API 실구현 (OAuth 토큰 + Graph API)
-  - [ ] 네이버 블로그 Playwright 실구현 (수동 로그인 세션 쿠키)
+  - [x] **Unit 18** (commit `TBD`) — 네이버 블로그 Playwright 실구현
+    - `scripts/sc/acquire-naver-session.ts` — `--auto` (env ID/PW) / `--manual` 두 모드. NID_AUT·NID_SES 쿠키 polling 으로 감지 후 storageState JSON 저장
+    - `worker/src/sc/publishers/naver-blog-browser.ts` — SmartEditor ONE 대응: iframe(PostWriteForm) → 제목 클릭/타이핑 → 본문 클릭/타이핑 → 발행 버튼 → 최종 URL 캡처. 세션 만료 시 AUTH_FAILED 반환.
+    - `worker/src/sc/publishers/_naver-doc-text.ts` — TipTap Doc → 문단 구분 plain text + CTA 삽입 (6 테스트)
+    - `worker/src/sc/collectors/naver-blog-browser.ts` — 공개 포스트 DOM 파싱 (views/likes/comments, 셀렉터 폴백 체인)
+    - `src/components/sc/channels/naver-credential-form.tsx` + 채널 상세 페이지 통합 — storageState.json 업로드 + blogId 입력 UI (BLOG_NAVER 플랫폼에서만 노출)
+    - **검증 완료**: 실 계정(meaning-lab) 로그인 → 제목/본문 에디터 주입 → 5문단 정확히 반영 확인 (발행 단계는 공개 포스트 생성을 피해 draft 단계까지만 테스트)
 - [x] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화) — commit `ef486c8`, `jest.config.ts` next/jest preset 적용, 14 suites / 116 tests 전부 green
 - [ ] First smoke test — 실제 Bridge + Gemini + Supabase Storage 연결 후 end-to-end 통과
 
