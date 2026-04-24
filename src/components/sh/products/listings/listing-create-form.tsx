@@ -1,0 +1,387 @@
+'use client'
+
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowLeft, Loader2, X } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { SELLER_HUB_LISTINGS_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
+
+import {
+  CompositionBuilder,
+  type BuiltGroup,
+  type ItemEntry,
+  type ProductContext,
+} from './composition-builder'
+import { KeywordEditor } from './keyword-editor'
+import { countChars, getChannelNameLimit } from './channel-name-limits'
+
+const MAX_NAME_LENGTH = 200
+
+type Channel = { id: string; name: string; kind: string }
+
+type Props = {
+  defaultChannelId?: string | null
+}
+
+export function ListingCreateForm({ defaultChannelId }: Props) {
+  const router = useRouter()
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [channelId, setChannelId] = useState<string>(defaultChannelId ?? '')
+  const [baseSearchName, setBaseSearchName] = useState('')
+  const [baseDisplayName, setBaseDisplayName] = useState('')
+  const [internalCode, setInternalCode] = useState('')
+  const [memo, setMemo] = useState('')
+  const [retailPrice, setRetailPrice] = useState('')
+  const [keywords, setKeywords] = useState<string[]>([])
+  const [status, setStatus] = useState<'ACTIVE' | 'SUSPENDED'>('ACTIVE')
+
+  const [productCtx, setProductCtx] = useState<ProductContext | null>(null)
+  const [groups, setGroups] = useState<BuiltGroup[] | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch('/api/channels?isActive=true')
+        if (!res.ok) throw new Error('채널 조회 실패')
+        const data: { channels: Channel[] } = await res.json()
+        if (!cancelled) setChannels(data.channels ?? [])
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '채널 조회 실패')
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const currentChannel = channels.find((c) => c.id === channelId) ?? null
+  const nameLimit = getChannelNameLimit(currentChannel?.name ?? null)
+
+  const keywordSuggestions = useMemo(() => {
+    const set = new Set<string>()
+    if (productCtx) {
+      set.add(productCtx.displayName)
+      if (productCtx.brandName) set.add(productCtx.brandName)
+    }
+    if (groups) {
+      for (const g of groups) {
+        for (const s of g.suffixParts) set.add(s)
+      }
+    }
+    return Array.from(set)
+  }, [productCtx, groups])
+
+  function handleCommit(ctx: ProductContext, newGroups: BuiltGroup[]) {
+    setProductCtx(ctx)
+    setGroups(newGroups)
+    if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
+    if (!baseDisplayName.trim()) setBaseDisplayName(ctx.displayName)
+    toast.success(`${newGroups.length}개의 listing 구성이 준비되었습니다`)
+  }
+
+  function resetComposition() {
+    setProductCtx(null)
+    setGroups(null)
+  }
+
+  function previewName(suffix: string[], base: string) {
+    if (!base) return ''
+    if (suffix.length === 0) return base
+    return `${base} ${suffix.join(' ')}`
+  }
+
+  const readyToSave =
+    channelId.trim().length > 0 &&
+    baseSearchName.trim().length > 0 &&
+    baseDisplayName.trim().length > 0 &&
+    !!groups &&
+    groups.length > 0
+
+  async function handleSave() {
+    if (!readyToSave || !groups) {
+      toast.error('필수 항목과 구성을 확인해 주세요')
+      return
+    }
+    setSaving(true)
+
+    const results: Array<{ ok: boolean; id?: string; error?: string; suffix: string[] }> = []
+    for (const group of groups) {
+      const searchName = previewName(group.suffixParts, baseSearchName.trim())
+      const displayName = previewName(group.suffixParts, baseDisplayName.trim())
+      const payload = {
+        channelId,
+        searchName,
+        displayName,
+        internalCode: internalCode.trim()
+          ? previewName(group.suffixParts, internalCode.trim())
+          : undefined,
+        memo: memo.trim() || undefined,
+        retailPrice: retailPrice.trim() === '' ? undefined : Number(retailPrice),
+        keywords,
+        status,
+        items: group.items.map((it: ItemEntry, idx: number) => ({
+          optionId: it.optionId,
+          quantity: it.quantity,
+          sortOrder: idx,
+        })),
+      }
+      try {
+        const res = await fetch('/api/sh/products/listings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          results.push({
+            ok: false,
+            error: data?.message ?? '저장 실패',
+            suffix: group.suffixParts,
+          })
+        } else {
+          results.push({ ok: true, id: data.listing.id, suffix: group.suffixParts })
+        }
+      } catch (err) {
+        results.push({
+          ok: false,
+          error: err instanceof Error ? err.message : '저장 실패',
+          suffix: group.suffixParts,
+        })
+      }
+    }
+
+    const okResults = results.filter((r) => r.ok)
+    const failResults = results.filter((r) => !r.ok)
+
+    setSaving(false)
+
+    if (okResults.length === 0) {
+      toast.error(failResults[0]?.error ?? '저장 실패')
+      return
+    }
+    if (failResults.length > 0) {
+      toast.warning(
+        `${okResults.length}개 저장 성공 · ${failResults.length}개 실패 — ${failResults
+          .map((r) => r.suffix.join(' '))
+          .join(', ')}`
+      )
+    } else {
+      toast.success(`${okResults.length}개의 판매채널 상품이 생성되었습니다`)
+    }
+
+    // 1개면 상세로, 여러 개면 목록으로 이동
+    if (okResults.length === 1 && okResults[0].id) {
+      router.push(getSellerHubListingPath(okResults[0].id))
+    } else {
+      router.push(SELLER_HUB_LISTINGS_PATH)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href={SELLER_HUB_LISTINGS_PATH}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          목록으로
+        </Link>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => router.back()} disabled={saving}>
+            취소
+          </Button>
+          <Button onClick={handleSave} disabled={!readyToSave || saving}>
+            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+            저장 ({groups?.length ?? 0}개 생성)
+          </Button>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">기본 정보</CardTitle>
+          <CardDescription>
+            여러 listing이 만들어지면 모든 listing에 공통으로 적용됩니다
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="listing-channel">판매채널 *</Label>
+              <Select value={channelId} onValueChange={setChannelId}>
+                <SelectTrigger id="listing-channel">
+                  <SelectValue placeholder="채널을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {channels.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="listing-code">관리 코드 (접두어)</Label>
+              <Input
+                id="listing-code"
+                value={internalCode}
+                onChange={(e) => setInternalCode(e.target.value)}
+                placeholder="예: CP-MUD — 뒤에 속성 suffix가 붙어 각 listing에 설정됩니다"
+                maxLength={50}
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="listing-search">상품명 (검색용) *</Label>
+              <NameCounter value={baseSearchName} limit={nameLimit.searchName} />
+            </div>
+            <Input
+              id="listing-search"
+              value={baseSearchName}
+              onChange={(e) => setBaseSearchName(e.target.value)}
+              placeholder="예: 프리미엄 머드팬티"
+              maxLength={MAX_NAME_LENGTH - 30}
+            />
+            <p className="text-xs text-muted-foreground">
+              생성 시 속성값(예: S / M / L)이 자동으로 뒤에 붙습니다
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="listing-display">상품명 (노출용) *</Label>
+              <NameCounter value={baseDisplayName} limit={nameLimit.displayName} />
+            </div>
+            <Input
+              id="listing-display"
+              value={baseDisplayName}
+              onChange={(e) => setBaseDisplayName(e.target.value)}
+              placeholder="상세 페이지에 표시되는 상품명"
+              maxLength={MAX_NAME_LENGTH - 30}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="listing-memo">메모</Label>
+            <Textarea
+              id="listing-memo"
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              placeholder="내부 참고용 메모"
+              rows={2}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 구성 빌더 or 프리뷰 */}
+      {groups && productCtx ? (
+        <Card>
+          <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
+            <div>
+              <CardTitle className="text-lg">생성될 listing 구성</CardTitle>
+              <CardDescription>{groups.length}개의 판매채널 상품이 만들어집니다</CardDescription>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={resetComposition}>
+              <X className="mr-1 h-4 w-4" />
+              구성 다시 만들기
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {groups.map((g, idx) => (
+                <li key={idx} className="rounded-md border bg-background px-3 py-2.5 text-sm">
+                  <p className="font-medium">
+                    {previewName(g.suffixParts, baseSearchName || productCtx.displayName)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {g.items.map((it) => `${it.optionName} ×${it.quantity}`).join(' · ')}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : (
+        <CompositionBuilder onCommit={handleCommit} disabled={saving} />
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">가격</CardTitle>
+          <CardDescription>모든 listing에 공통 적용됩니다 (생성 후 개별 수정 가능)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1.5">
+            <Label htmlFor="listing-price">판매가격 (원)</Label>
+            <Input
+              id="listing-price"
+              type="number"
+              min={0}
+              value={retailPrice}
+              onChange={(e) => setRetailPrice(e.target.value)}
+              placeholder="예: 35000"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">키워드</CardTitle>
+          <CardDescription>최대 30개. 모든 listing에 공통 적용됩니다</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <KeywordEditor value={keywords} onChange={setKeywords} suggestions={keywordSuggestions} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">판매 상태</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={status} onValueChange={(v) => setStatus(v as 'ACTIVE' | 'SUSPENDED')}>
+            <SelectTrigger className="max-w-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ACTIVE">판매중</SelectItem>
+              <SelectItem value="SUSPENDED">판매중지</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function NameCounter({ value, limit }: { value: string; limit?: number }) {
+  const n = countChars(value)
+  const overflow = limit != null && n > limit
+  const color = overflow ? 'text-destructive' : 'text-muted-foreground'
+  return (
+    <span className={`text-xs ${color}`}>
+      {n}
+      {limit != null ? ` / ${limit}(가이드)` : ` / ${MAX_NAME_LENGTH - 30}`}
+    </span>
+  )
+}

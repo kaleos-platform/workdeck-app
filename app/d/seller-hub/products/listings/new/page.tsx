@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 
-import { ListingForm } from '@/components/sh/products/listings/listing-form'
+import { ListingCreateForm } from '@/components/sh/products/listings/listing-create-form'
 
 export default function NewListingPage() {
   const sp = useSearchParams()
@@ -13,10 +13,10 @@ export default function NewListingPage() {
       <div>
         <h1 className="text-2xl font-bold">새 판매채널 상품</h1>
         <p className="text-sm text-muted-foreground">
-          판매할 상품 옵션을 묶어 채널 전용 상세를 구성합니다
+          상품을 선택하고 속성별로 구성하면 필요한 listing이 자동으로 만들어집니다
         </p>
       </div>
-      <ListingForm mode="create" defaultChannelId={channelId} />
+      <ListingCreateForm defaultChannelId={channelId} />
     </div>
   )
 }
