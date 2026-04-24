@@ -343,13 +343,15 @@ model Space {
   optionCodeAliases      SpaceOptionCodeAlias[]
 
   // ─── Sales Content Deck ───
-  b2bProducts         B2BProduct[]
-  personas            Persona[]
-  brandProfile        BrandProfile?
-  workspaceAiCredits  WorkspaceAiCredit[]
-  imageGenerationLogs ImageGenerationLog[]
-  textGenerationLogs  TextGenerationLog[]
-  contentIdeas        ContentIdea[]
+  b2bProducts          B2BProduct[]
+  personas             Persona[]
+  brandProfile         BrandProfile?
+  workspaceAiCredits   WorkspaceAiCredit[]
+  imageGenerationLogs  ImageGenerationLog[]
+  textGenerationLogs   TextGenerationLog[]
+  contentIdeas         ContentIdea[]
+  templates            Template[]
+  salesContentChannels SalesContentChannel[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1389,6 +1391,90 @@ model TextGenerationLog {
 
   @@index([spaceId, createdAt])
   @@index([status])
+}
+
+// ─── Sales Content Deck (템플릿 · 채널) ──────────────────────────────────────
+
+enum TemplateKind {
+  BLOG
+  SOCIAL
+  CARDNEWS
+}
+
+enum SalesContentPlatform {
+  BLOG_NAVER
+  BLOG_TISTORY
+  BLOG_WORDPRESS
+  THREADS
+  X
+  LINKEDIN
+  FACEBOOK
+  INSTAGRAM
+  YOUTUBE_SHORTS
+  OTHER
+}
+
+enum SalesContentChannelKind {
+  BLOG
+  SOCIAL
+}
+
+enum PublisherMode {
+  API
+  BROWSER
+  MANUAL
+}
+
+enum CollectorMode {
+  API
+  BROWSER
+  MANUAL
+  NONE
+}
+
+// 콘텐츠 템플릿. spaceId=null + isSystem=true 인 경우 모든 공간이 공유하는 시스템 템플릿.
+// sections 의 세부 구조는 template-engine.ts 가 zod 로 검증한다.
+model Template {
+  id       String       @id @default(cuid())
+  spaceId  String? // null = 시스템 템플릿
+  name     String
+  slug     String
+  kind     TemplateKind
+  sections Json // kind=BLOG|SOCIAL: { sections: [...] }, kind=CARDNEWS: { slides: [...] }
+  isSystem Boolean      @default(false)
+  isActive Boolean      @default(true)
+
+  space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, slug])
+  @@index([spaceId])
+  @@index([kind])
+}
+
+// 배포 채널 (블로그 · 소셜). seller-hub 의 Channel 과는 구분되는 별도 엔터티.
+model SalesContentChannel {
+  id            String                  @id @default(cuid())
+  spaceId       String
+  platform      SalesContentPlatform
+  kind          SalesContentChannelKind
+  name          String // 사용자 표기명
+  platformSlug  String // utm_source 용 kebab
+  publisherMode PublisherMode           @default(MANUAL)
+  collectorMode CollectorMode           @default(MANUAL)
+  isActive      Boolean                 @default(true)
+  config        Json? // 채널별 구성 (blog base URL, API endpoint 등)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, platformSlug])
+  @@index([spaceId])
+  @@index([platform])
 }
 
 // ─── Sales Content Deck (아이데이션) ─────────────────────────────────────────

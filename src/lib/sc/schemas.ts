@@ -107,3 +107,41 @@ export const userIdeationSchema = z.object({
     .max(10),
 })
 export type UserIdeationInput = z.infer<typeof userIdeationSchema>
+
+// ─── Template ───────────────────────────────────────────────────────────────
+// 섹션 구조 검증은 template-engine.ts 의 sectionsSchemaForKind 에 위임.
+
+export const templateInputSchema = z.object({
+  name: z.string().min(1).max(120),
+  slug: slugSchema,
+  kind: z.enum(['BLOG', 'SOCIAL', 'CARDNEWS']),
+  // sections 는 서버에서 sectionsSchemaForKind(kind) 로 별도 검증.
+  sections: z.unknown(),
+  isActive: z.boolean().optional(),
+})
+export type TemplateInput = z.infer<typeof templateInputSchema>
+
+// ─── SalesContentChannel ────────────────────────────────────────────────────
+
+export const salesContentChannelInputSchema = z.object({
+  name: z.string().min(1).max(120),
+  platformSlug: slugSchema,
+  platform: z.enum([
+    'BLOG_NAVER',
+    'BLOG_TISTORY',
+    'BLOG_WORDPRESS',
+    'THREADS',
+    'X',
+    'LINKEDIN',
+    'FACEBOOK',
+    'INSTAGRAM',
+    'YOUTUBE_SHORTS',
+    'OTHER',
+  ]),
+  kind: z.enum(['BLOG', 'SOCIAL']),
+  publisherMode: z.enum(['API', 'BROWSER', 'MANUAL']).optional(),
+  collectorMode: z.enum(['API', 'BROWSER', 'MANUAL', 'NONE']).optional(),
+  isActive: z.boolean().optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
+})
+export type SalesContentChannelInput = z.infer<typeof salesContentChannelInputSchema>

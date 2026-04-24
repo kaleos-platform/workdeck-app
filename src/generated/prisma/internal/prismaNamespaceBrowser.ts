@@ -110,6 +110,8 @@ export const ModelName = {
   WorkspaceAiCredit: 'WorkspaceAiCredit',
   ImageGenerationLog: 'ImageGenerationLog',
   TextGenerationLog: 'TextGenerationLog',
+  Template: 'Template',
+  SalesContentChannel: 'SalesContentChannel',
   ContentIdea: 'ContentIdea'
 } as const
 
@@ -1051,6 +1053,40 @@ export const TextGenerationLogScalarFieldEnum = {
 } as const
 
 export type TextGenerationLogScalarFieldEnum = (typeof TextGenerationLogScalarFieldEnum)[keyof typeof TextGenerationLogScalarFieldEnum]
+
+
+export const TemplateScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  slug: 'slug',
+  kind: 'kind',
+  sections: 'sections',
+  isSystem: 'isSystem',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TemplateScalarFieldEnum = (typeof TemplateScalarFieldEnum)[keyof typeof TemplateScalarFieldEnum]
+
+
+export const SalesContentChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  platform: 'platform',
+  kind: 'kind',
+  name: 'name',
+  platformSlug: 'platformSlug',
+  publisherMode: 'publisherMode',
+  collectorMode: 'collectorMode',
+  isActive: 'isActive',
+  config: 'config',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SalesContentChannelScalarFieldEnum = (typeof SalesContentChannelScalarFieldEnum)[keyof typeof SalesContentChannelScalarFieldEnum]
 
 
 export const ContentIdeaScalarFieldEnum = {

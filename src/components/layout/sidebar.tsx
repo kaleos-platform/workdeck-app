@@ -129,11 +129,11 @@ const SALES_CONTENT_SETTINGS_ITEMS: SidebarItem[] = [
 const SALES_CONTENT_CREATE_ITEMS: SidebarItem[] = [
   { label: '아이데이션', href: SALES_CONTENT_IDEATION_PATH },
   { label: '콘텐츠', href: SALES_CONTENT_CONTENTS_PATH, disabled: true, badge: '준비 중' },
-  { label: '템플릿', href: SALES_CONTENT_TEMPLATES_PATH, disabled: true, badge: '준비 중' },
+  { label: '템플릿', href: SALES_CONTENT_TEMPLATES_PATH },
 ]
 
 const SALES_CONTENT_DISTRIBUTE_ITEMS: SidebarItem[] = [
-  { label: '채널', href: SALES_CONTENT_CHANNELS_PATH, disabled: true, badge: '준비 중' },
+  { label: '채널', href: SALES_CONTENT_CHANNELS_PATH },
   { label: '배포 내역', href: SALES_CONTENT_DEPLOYMENTS_PATH, disabled: true, badge: '준비 중' },
 ]
 

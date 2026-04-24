@@ -130,6 +130,58 @@ export const AiGenerationStatus = {
 export type AiGenerationStatus = (typeof AiGenerationStatus)[keyof typeof AiGenerationStatus]
 
 
+export const TemplateKind = {
+  BLOG: 'BLOG',
+  SOCIAL: 'SOCIAL',
+  CARDNEWS: 'CARDNEWS'
+} as const
+
+export type TemplateKind = (typeof TemplateKind)[keyof typeof TemplateKind]
+
+
+export const SalesContentPlatform = {
+  BLOG_NAVER: 'BLOG_NAVER',
+  BLOG_TISTORY: 'BLOG_TISTORY',
+  BLOG_WORDPRESS: 'BLOG_WORDPRESS',
+  THREADS: 'THREADS',
+  X: 'X',
+  LINKEDIN: 'LINKEDIN',
+  FACEBOOK: 'FACEBOOK',
+  INSTAGRAM: 'INSTAGRAM',
+  YOUTUBE_SHORTS: 'YOUTUBE_SHORTS',
+  OTHER: 'OTHER'
+} as const
+
+export type SalesContentPlatform = (typeof SalesContentPlatform)[keyof typeof SalesContentPlatform]
+
+
+export const SalesContentChannelKind = {
+  BLOG: 'BLOG',
+  SOCIAL: 'SOCIAL'
+} as const
+
+export type SalesContentChannelKind = (typeof SalesContentChannelKind)[keyof typeof SalesContentChannelKind]
+
+
+export const PublisherMode = {
+  API: 'API',
+  BROWSER: 'BROWSER',
+  MANUAL: 'MANUAL'
+} as const
+
+export type PublisherMode = (typeof PublisherMode)[keyof typeof PublisherMode]
+
+
+export const CollectorMode = {
+  API: 'API',
+  BROWSER: 'BROWSER',
+  MANUAL: 'MANUAL',
+  NONE: 'NONE'
+} as const
+
+export type CollectorMode = (typeof CollectorMode)[keyof typeof CollectorMode]
+
+
 export const IdeaGeneratedBy = {
   USER: 'USER',
   AI: 'AI'

@@ -313,6 +313,16 @@ export type ImageGenerationLog = Prisma.ImageGenerationLogModel
  */
 export type TextGenerationLog = Prisma.TextGenerationLogModel
 /**
+ * Model Template
+ * 
+ */
+export type Template = Prisma.TemplateModel
+/**
+ * Model SalesContentChannel
+ * 
+ */
+export type SalesContentChannel = Prisma.SalesContentChannelModel
+/**
  * Model ContentIdea
  * 
  */

@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { config } from 'dotenv'
 import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
+import { SYSTEM_TEMPLATES } from '../src/lib/sc/template-engine'
 
 config({ path: '.env.local', override: true })
 
@@ -31,6 +32,40 @@ async function main() {
       update: { name: app.name, isActive: app.isActive },
     })
     console.log(`  ✔ DeckApp [${app.id}] upsert 완료`)
+  }
+
+  console.log('🌱 Sales Content 시스템 템플릿 seed...')
+  for (const t of SYSTEM_TEMPLATES) {
+    // spaceId=null 인 행은 unique(spaceId, slug) 가 null 중복을 허용하므로 findFirst → update/create.
+    const existing = await prisma.template.findFirst({
+      where: { spaceId: null, slug: t.slug },
+      select: { id: true },
+    })
+    if (existing) {
+      await prisma.template.update({
+        where: { id: existing.id },
+        data: {
+          name: t.name,
+          kind: t.kind,
+          sections: t.sections,
+          isSystem: true,
+          isActive: true,
+        },
+      })
+    } else {
+      await prisma.template.create({
+        data: {
+          spaceId: null,
+          slug: t.slug,
+          name: t.name,
+          kind: t.kind,
+          sections: t.sections,
+          isSystem: true,
+          isActive: true,
+        },
+      })
+    }
+    console.log(`  ✔ Template [${t.slug}] upsert 완료`)
   }
 
   console.log('✅ 시드 완료')
