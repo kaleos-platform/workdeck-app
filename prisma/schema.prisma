@@ -932,6 +932,7 @@ model DelShippingMethod {
   name         String
   isActive     Boolean @default(true)
   formatConfig Json    // DelFormatColumn[] — 배송 파일 컬럼 매핑
+  labelColumns Json    @default("[]")  // string[] — 활성화된 DelFieldMapping 키 (max 3). 배송 파일 생성 시 이 컬럼만 옵션별 값으로 덮어씀.
 
   space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   orders DelOrder[]

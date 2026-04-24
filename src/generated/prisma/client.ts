@@ -304,3 +304,18 @@ export type ProductPricingSettings = Prisma.ProductPricingSettingsModel
  * 
  */
 export type SpaceOptionCodeAlias = Prisma.SpaceOptionCodeAliasModel
+/**
+ * Model B2BProduct
+ * 
+ */
+export type B2BProduct = Prisma.B2BProductModel
+/**
+ * Model Persona
+ * 
+ */
+export type Persona = Prisma.PersonaModel
+/**
+ * Model BrandProfile
+ * 
+ */
+export type BrandProfile = Prisma.BrandProfileModel

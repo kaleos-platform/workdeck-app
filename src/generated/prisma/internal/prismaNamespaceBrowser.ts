@@ -103,7 +103,10 @@ export const ModelName = {
   ChannelFeeRate: 'ChannelFeeRate',
   ProductionBatch: 'ProductionBatch',
   ProductPricingSettings: 'ProductPricingSettings',
-  SpaceOptionCodeAlias: 'SpaceOptionCodeAlias'
+  SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
+  B2BProduct: 'B2BProduct',
+  Persona: 'Persona',
+  BrandProfile: 'BrandProfile'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -716,6 +719,7 @@ export const DelShippingMethodScalarFieldEnum = {
   name: 'name',
   isActive: 'isActive',
   formatConfig: 'formatConfig',
+  labelColumns: 'labelColumns',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -921,6 +925,74 @@ export const SpaceOptionCodeAliasScalarFieldEnum = {
 } as const
 
 export type SpaceOptionCodeAliasScalarFieldEnum = (typeof SpaceOptionCodeAliasScalarFieldEnum)[keyof typeof SpaceOptionCodeAliasScalarFieldEnum]
+
+
+export const B2BProductScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  slug: 'slug',
+  oneLinerPitch: 'oneLinerPitch',
+  valueProposition: 'valueProposition',
+  targetCustomers: 'targetCustomers',
+  keyFeatures: 'keyFeatures',
+  differentiators: 'differentiators',
+  painPointsAddressed: 'painPointsAddressed',
+  proofPoints: 'proofPoints',
+  pricingModel: 'pricingModel',
+  priceMin: 'priceMin',
+  priceMax: 'priceMax',
+  ctaTargetUrl: 'ctaTargetUrl',
+  isActive: 'isActive',
+  sourceInvProductId: 'sourceInvProductId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type B2BProductScalarFieldEnum = (typeof B2BProductScalarFieldEnum)[keyof typeof B2BProductScalarFieldEnum]
+
+
+export const PersonaScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  slug: 'slug',
+  jobTitle: 'jobTitle',
+  industry: 'industry',
+  companySize: 'companySize',
+  seniority: 'seniority',
+  decisionRole: 'decisionRole',
+  goals: 'goals',
+  painPoints: 'painPoints',
+  objections: 'objections',
+  preferredChannels: 'preferredChannels',
+  toneHints: 'toneHints',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PersonaScalarFieldEnum = (typeof PersonaScalarFieldEnum)[keyof typeof PersonaScalarFieldEnum]
+
+
+export const BrandProfileScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  companyName: 'companyName',
+  shortDescription: 'shortDescription',
+  missionStatement: 'missionStatement',
+  toneOfVoice: 'toneOfVoice',
+  forbiddenPhrases: 'forbiddenPhrases',
+  preferredPhrases: 'preferredPhrases',
+  styleGuideUrl: 'styleGuideUrl',
+  primaryColor: 'primaryColor',
+  secondaryColor: 'secondaryColor',
+  logoUrl: 'logoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BrandProfileScalarFieldEnum = (typeof BrandProfileScalarFieldEnum)[keyof typeof BrandProfileScalarFieldEnum]
 
 
 export const SortOrder = {
