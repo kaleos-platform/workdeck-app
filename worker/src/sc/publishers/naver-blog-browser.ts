@@ -1,22 +1,22 @@
 // 네이버 블로그 브라우저 자동화 퍼블리셔 — Playwright storageState 기반.
 // SmartEditor ONE (v4) 대응. 흐름:
-//   1) chromium + storageState 로드
+//   1) chromium + storageState 로드 + navigator.webdriver 스푸핑 (addInitScript)
 //   2) /{blogId}?Redirect=Write 이동 → iframe(PostWriteForm.naver) 대기
 //   3) 임시저장 팝업 있으면 취소
 //   4) 제목 영역 클릭 → keyboard.type(title)
 //   5) 본문 영역 클릭 → paragraph 별 keyboard.type + Enter
-//   6) 발행 버튼 클릭 → 설정 팝업 → 최종 발행
+//   6) 발행 버튼 클릭 (iframe DOM click) → 설정 팝업 오픈 → 최종 발행 (iframe DOM click)
 //   7) post URL 이 https://blog.naver.com/{blogId}/{postId} 로 리다이렉트되면 성공
 //
 // 세션 만료(로그인 페이지로 튕김) 시 AUTH_FAILED 반환.
 // DOM 변경·타임아웃 시 PLATFORM_ERROR.
 //
-// ⚠️ 알려진 이슈 (추가 조사 필요):
-//   SmartEditor 의 발행 버튼 클릭 후 설정 모달이 간헐적으로 오픈되지 않는 경우가 있음.
-//   동일 플로우를 standalone 스크립트(scripts/sc/_debug/trace-publish.ts)로 돌리면
-//   모달이 정상 오픈되지만, 이 class 경유 flow 에서는 재현이 어려움.
-//   워커라운드: 한 번 실패 시 DOM click 재시도 2회 수행.
-//   근본 원인(에디터 자동저장 타이밍? context 재사용 이슈?)은 follow-up 에서 특정.
+// 주의사항 (실 발행 E2E 로 확정된 제약):
+//   - 발행/최종발행 버튼 모두 Playwright locator.click() 은 사용하지 않는다.
+//     iframe 내 se-help-layer("모바일 화면 미리보기") 가 좌표상 overlay 로 click 을 가로채
+//     SmartEditor 의 React onClick 이 trigger 되지 않는 경우가 있음 → iframe DOM click 사용.
+//   - publish modal 이 열린 뒤 ESC 를 누르면 modal 이 닫힌다.
+//     따라서 modal open 후에는 fallback ESC 로직을 실행하지 않는다.
 
 import { chromium, type Browser, type Page, type Frame } from 'playwright'
 import type { Publisher, PublishContext, PublishResult } from './index.js'
@@ -57,6 +57,12 @@ export class NaverBlogBrowserPublisher implements Publisher {
         storageState: storageState as never,
         viewport: { width: 1280, height: 900 },
         locale: 'ko-KR',
+      })
+      // navigator.webdriver 스푸핑 — 네이버 SmartEditor 의 발행 버튼 onClick 이 이 값을 확인하고
+      // 자동화 탐지 시 모달을 열지 않고 silent no-op 하는 것으로 확인됨.
+      // trace-publish.ts 와 동일한 init script 를 Publisher 에도 적용.
+      await context.addInitScript(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined })
       })
 
       const page = await context.newPage()
@@ -112,83 +118,71 @@ export class NaverBlogBrowserPublisher implements Publisher {
         }
       }
 
-      // 에디터 저장 상태 안정화 대기 — SmartEditor 는 debounce 기반 자동저장을 수행하고
-      // 그 동안 발행 버튼이 내부적으로 disabled 가 아니지만 onClick 핸들러가 소극적으로 반응.
-      await page.waitForTimeout(2500)
+      // 본문 입력 완료 후 짧은 대기 — SmartEditor 자동저장 debounce 안정화.
+      await page.waitForTimeout(400)
 
-      // 포커스 해제 — ESC 후 에디터 상태 고정
+      // 포커스 해제 — 도움말 오버레이 닫기 + 에디터 상태 고정.
       await page.keyboard.press('Escape')
-      await page.waitForTimeout(800)
+      await page.waitForTimeout(500)
 
-      // 발행 버튼 (툴바) — 2회 재시도 전략: Playwright click 실패 시 DOM click
-      const pubBtn = editorFrame.locator('button.publish_btn__m9KHH').first()
-      await pubBtn.click({ force: true, timeout: 10000 })
-      await page.waitForTimeout(3000)
-
-      // 모달이 열리지 않으면 한 번 더 DOM click 재시도 (간헐적 실패 워커라운드)
-      const modalOpen = await editorFrame
-        .locator('[class^="layer_publish"], [class^="layer_content_set_publish"]')
-        .first()
-        .isVisible()
-        .catch(() => false)
-      if (!modalOpen) {
-        await editorFrame.evaluate(`document.querySelector('button.publish_btn__m9KHH')?.click()`)
-        await page.waitForTimeout(3000)
-      }
-
-      // 설정 팝업 진입 대기 — 실제 class 는 layer_publish__{해시} 로 suffix 붙음
-      const popupDialog = editorFrame.locator(
-        '[class^="layer_publish"], [class*=" layer_publish"], [class^="layer_content_set_publish"]'
-      )
-      await popupDialog
-        .first()
-        .waitFor({ state: 'visible', timeout: 10000 })
-        .catch(() => {
-          // 팝업 못 찾아도 일단 다음 단계 시도
-        })
-
-      // 팝업 내 도움말 해제
-      await dismissHelpOverlay(editorFrame, page).catch(() => {})
-
-      // 최종 발행 — 모달 내 confirm 버튼 (Playwright click, force:true 로 overlay 통과)
-      const confirmBtn = editorFrame.locator('button[data-click-area="tpb*i.publish"]').first()
-      let finalClicked: string | null = null
-      if ((await confirmBtn.count()) > 0) {
-        try {
-          await confirmBtn.click({ force: true, timeout: 8000 })
-          finalClicked = 'data-click-area'
-        } catch (e) {
-          finalClicked = null
-        }
-      }
-      if (!finalClicked) {
-        const diag = await editorFrame.evaluate(
-          `(() => {
-            const modals = document.querySelectorAll('[class^="layer_publish"], [class^="layer_content_set_publish"]');
-            const confirmBtns = document.querySelectorAll('[class^="confirm_btn"], button[data-click-area*="publish"]');
-            return {
-              modalCount: modals.length,
-              modalVisible: Array.from(modals).filter(m => m.offsetWidth > 100 && m.offsetHeight > 100).length,
-              confirmBtnCount: confirmBtns.length,
-              confirmBtnTexts: Array.from(confirmBtns).slice(0, 5).map(b => (b.textContent || '').trim() + '|' + b.getAttribute('data-click-area')),
-            };
-          })()`
-        )
+      // 발행 버튼 (툴바). iframe 내부 DOM click 으로 React onClick 을 트리거.
+      const publishClicked = await editorFrame.evaluate(() => {
+        const btn = document.querySelector<HTMLButtonElement>('button.publish_btn__m9KHH')
+        if (!btn) return false
+        btn.click()
+        return true
+      })
+      if (!publishClicked) {
         await safeClose(browser)
         return {
           ok: false,
           errorCode: 'PLATFORM_ERROR',
-          errorMessage: `최종 발행 버튼을 찾지 못했습니다 — diag: ${JSON.stringify(diag)}`,
+          errorMessage: '툴바 발행 버튼을 찾지 못했습니다.',
+        }
+      }
+
+      // 설정 팝업(layer_publish__{해시}) 오픈 대기.
+      const popupDialog = editorFrame.locator(
+        '[class^="layer_publish"], [class*=" layer_publish"], [class^="layer_content_set_publish"]'
+      )
+      const popupOpened = await popupDialog
+        .first()
+        .waitFor({ state: 'visible', timeout: 10000 })
+        .then(() => true)
+        .catch(() => false)
+      if (!popupOpened) {
+        await safeClose(browser)
+        return {
+          ok: false,
+          errorCode: 'PLATFORM_ERROR',
+          errorMessage: '발행 설정 팝업이 오픈되지 않았습니다.',
+        }
+      }
+
+      // 최종 발행 — 모달 내 confirm 버튼. Playwright locator.click 은 iframe 내 se-help-layer
+      // overlay 에 가로채일 수 있어 iframe DOM click 을 사용.
+      const finalClicked = await editorFrame.evaluate(() => {
+        const btn = document.querySelector<HTMLButtonElement>(
+          'button[data-click-area="tpb*i.publish"]'
+        )
+        if (!btn) return false
+        btn.click()
+        return true
+      })
+      if (!finalClicked) {
+        await safeClose(browser)
+        return {
+          ok: false,
+          errorCode: 'PLATFORM_ERROR',
+          errorMessage: '최종 발행 버튼(tpb*i.publish)을 찾지 못했습니다.',
         }
       }
 
       // 결과 URL 대기 — blog.naver.com/{blogId}/{postId}
-      const resultUrl = await Promise.race([
-        page
-          .waitForURL(new RegExp(`blog\\.naver\\.com/${blogId}/\\d+`), { timeout: 60000 })
-          .then(() => page.url()),
-        page.waitForTimeout(60000).then(() => null),
-      ])
+      const resultUrl = await page
+        .waitForURL(new RegExp(`blog\\.naver\\.com/${blogId}/\\d+`), { timeout: 60000 })
+        .then(() => page.url())
+        .catch(() => null)
 
       if (!resultUrl) {
         await safeClose(browser)
@@ -230,24 +224,6 @@ async function dismissDraftDialog(frame: Frame): Promise<void> {
   if ((await cancel.count()) > 0) {
     await cancel.first().click({ timeout: 2000 })
   }
-}
-
-async function dismissHelpOverlay(frame: Frame, page: Page): Promise<void> {
-  // se-help-title 근처의 close 버튼 후보들
-  const helpClose = frame.locator(
-    '.se-help-title ~ .se-help-close, .se-help-close-button, button[data-log="hlp.close"], .container__HW_tc button[aria-label*="닫기"]'
-  )
-  if ((await helpClose.count()) > 0) {
-    await helpClose
-      .first()
-      .click({ timeout: 2000 })
-      .catch(() => {})
-    await page.waitForTimeout(500)
-    return
-  }
-  // fallback — ESC 키
-  await page.keyboard.press('Escape')
-  await page.waitForTimeout(500)
 }
 
 async function safeClose(browser: Browser | null): Promise<void> {
