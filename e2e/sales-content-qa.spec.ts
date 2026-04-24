@@ -72,15 +72,6 @@ test.describe('Step 2 - my-deck에서 세일즈 콘텐츠 진입', () => {
     await loginUser(page)
 
     // 세일즈 콘텐츠 카드 내 빠르게 진입 버튼 클릭
-    // 카드 컨테이너를 먼저 찾고 그 안의 버튼 클릭
-    const salesCard = page
-      .locator('[aria-labelledby="active-decks-heading"]')
-      .getByText('세일즈 콘텐츠')
-      .locator('..')
-      .locator('..')
-    const entryBtn = salesCard.getByRole('link', { name: /빠르게 진입/i })
-
-    // 대안: 전체 페이지에서 세일즈 콘텐츠 관련 "빠르게 진입" 링크 탐색
     const allEntryLinks = page.getByRole('link', { name: /빠르게 진입/i })
     const count = await allEntryLinks.count()
     console.log('빠르게 진입 버튼 수:', count)

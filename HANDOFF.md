@@ -87,7 +87,7 @@
 **다음:**
 
 - [ ] Phase 2 실제 외부 통합 — Bridge ACP 라우트, Threads/네이버 blog 자동화, Insight-generator AI 규칙 생성 파이프라인
-- [ ] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화)
+- [x] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화) — commit `TBD`, `jest.config.ts` next/jest preset 적용, 11 suites / 93 tests 전부 green
 - [ ] First smoke test — 실제 Bridge + Gemini + Supabase Storage 연결 후 end-to-end 통과
 
 ## 확정된 의사결정
