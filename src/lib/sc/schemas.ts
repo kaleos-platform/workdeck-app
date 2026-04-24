@@ -145,3 +145,42 @@ export const salesContentChannelInputSchema = z.object({
   config: z.record(z.string(), z.unknown()).optional(),
 })
 export type SalesContentChannelInput = z.infer<typeof salesContentChannelInputSchema>
+
+// ─── Content ────────────────────────────────────────────────────────────────
+
+export const contentCreateSchema = z.object({
+  title: z.string().min(1).max(300),
+  templateId: z.string().cuid().optional().nullable(),
+  ideationId: z.string().cuid().optional().nullable(),
+  ideaIndex: z.number().int().min(0).max(19).optional().nullable(),
+  productId: z.string().cuid().optional().nullable(),
+  personaId: z.string().cuid().optional().nullable(),
+  channelId: z.string().cuid().optional().nullable(),
+})
+export type ContentCreateInput = z.infer<typeof contentCreateSchema>
+
+export const contentUpdateSchema = z.object({
+  title: z.string().min(1).max(300).optional(),
+  doc: z.unknown().optional(),
+  channelId: z.string().cuid().optional().nullable(),
+  scheduledAt: z.string().datetime().optional().nullable(),
+})
+export type ContentUpdateInput = z.infer<typeof contentUpdateSchema>
+
+export const contentTransitionSchema = z.object({
+  to: z.enum(['DRAFT', 'IN_REVIEW', 'APPROVED', 'SCHEDULED', 'PUBLISHED', 'ANALYZED']),
+})
+
+export const contentGenerateSectionSchema = z.object({
+  sectionKey: z.string().min(1).max(40),
+  sectionLabel: z.string().min(1).max(80),
+  sectionKind: z.enum(['text', 'imageSlot', 'cta']),
+  sectionGuidance: emptyToUndefined.pipe(z.string().max(1000)).optional(),
+  constraints: z
+    .object({
+      maxLength: z.number().int().positive().optional(),
+      required: z.boolean().optional(),
+    })
+    .optional(),
+  additionalInstruction: emptyToUndefined.pipe(z.string().max(1000)).optional(),
+})

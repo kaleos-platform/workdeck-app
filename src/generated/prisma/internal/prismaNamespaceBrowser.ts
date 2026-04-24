@@ -112,6 +112,8 @@ export const ModelName = {
   TextGenerationLog: 'TextGenerationLog',
   Template: 'Template',
   SalesContentChannel: 'SalesContentChannel',
+  Content: 'Content',
+  ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea'
 } as const
 
@@ -1087,6 +1089,48 @@ export const SalesContentChannelScalarFieldEnum = {
 } as const
 
 export type SalesContentChannelScalarFieldEnum = (typeof SalesContentChannelScalarFieldEnum)[keyof typeof SalesContentChannelScalarFieldEnum]
+
+
+export const ContentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  title: 'title',
+  status: 'status',
+  templateId: 'templateId',
+  ideationId: 'ideationId',
+  ideaIndex: 'ideaIndex',
+  productId: 'productId',
+  personaId: 'personaId',
+  channelId: 'channelId',
+  doc: 'doc',
+  snapshotHash: 'snapshotHash',
+  publishedAt: 'publishedAt',
+  scheduledAt: 'scheduledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContentScalarFieldEnum = (typeof ContentScalarFieldEnum)[keyof typeof ContentScalarFieldEnum]
+
+
+export const ContentAssetScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  contentId: 'contentId',
+  kind: 'kind',
+  slotKey: 'slotKey',
+  url: 'url',
+  title: 'title',
+  alt: 'alt',
+  width: 'width',
+  height: 'height',
+  mimeType: 'mimeType',
+  storagePath: 'storagePath',
+  createdAt: 'createdAt'
+} as const
+
+export type ContentAssetScalarFieldEnum = (typeof ContentAssetScalarFieldEnum)[keyof typeof ContentAssetScalarFieldEnum]
 
 
 export const ContentIdeaScalarFieldEnum = {

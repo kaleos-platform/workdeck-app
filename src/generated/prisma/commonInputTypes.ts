@@ -687,6 +687,40 @@ export type EnumCollectorModeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumCollectorModeFilter<$PrismaModel>
 }
 
+export type EnumContentStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ContentStatus | Prisma.EnumContentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ContentStatus[] | Prisma.ListEnumContentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ContentStatus[] | Prisma.ListEnumContentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumContentStatusFilter<$PrismaModel> | $Enums.ContentStatus
+}
+
+export type EnumContentStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ContentStatus | Prisma.EnumContentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ContentStatus[] | Prisma.ListEnumContentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ContentStatus[] | Prisma.ListEnumContentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumContentStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContentStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumContentStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumContentStatusFilter<$PrismaModel>
+}
+
+export type EnumContentAssetKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ContentAssetKind | Prisma.EnumContentAssetKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ContentAssetKind[] | Prisma.ListEnumContentAssetKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ContentAssetKind[] | Prisma.ListEnumContentAssetKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumContentAssetKindFilter<$PrismaModel> | $Enums.ContentAssetKind
+}
+
+export type EnumContentAssetKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ContentAssetKind | Prisma.EnumContentAssetKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ContentAssetKind[] | Prisma.ListEnumContentAssetKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ContentAssetKind[] | Prisma.ListEnumContentAssetKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumContentAssetKindWithAggregatesFilter<$PrismaModel> | $Enums.ContentAssetKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumContentAssetKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumContentAssetKindFilter<$PrismaModel>
+}
+
 export type EnumIdeaGeneratedByFilter<$PrismaModel = never> = {
   equals?: $Enums.IdeaGeneratedBy | Prisma.EnumIdeaGeneratedByFieldRefInput<$PrismaModel>
   in?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
@@ -1323,6 +1357,40 @@ export type NestedEnumCollectorModeWithAggregatesFilter<$PrismaModel = never> = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCollectorModeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCollectorModeFilter<$PrismaModel>
+}
+
+export type NestedEnumContentStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ContentStatus | Prisma.EnumContentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ContentStatus[] | Prisma.ListEnumContentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ContentStatus[] | Prisma.ListEnumContentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumContentStatusFilter<$PrismaModel> | $Enums.ContentStatus
+}
+
+export type NestedEnumContentStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ContentStatus | Prisma.EnumContentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ContentStatus[] | Prisma.ListEnumContentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ContentStatus[] | Prisma.ListEnumContentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumContentStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContentStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumContentStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumContentStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumContentAssetKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ContentAssetKind | Prisma.EnumContentAssetKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ContentAssetKind[] | Prisma.ListEnumContentAssetKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ContentAssetKind[] | Prisma.ListEnumContentAssetKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumContentAssetKindFilter<$PrismaModel> | $Enums.ContentAssetKind
+}
+
+export type NestedEnumContentAssetKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ContentAssetKind | Prisma.EnumContentAssetKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ContentAssetKind[] | Prisma.ListEnumContentAssetKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ContentAssetKind[] | Prisma.ListEnumContentAssetKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumContentAssetKindWithAggregatesFilter<$PrismaModel> | $Enums.ContentAssetKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumContentAssetKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumContentAssetKindFilter<$PrismaModel>
 }
 
 export type NestedEnumIdeaGeneratedByFilter<$PrismaModel = never> = {

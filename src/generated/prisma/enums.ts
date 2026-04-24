@@ -188,3 +188,23 @@ export const IdeaGeneratedBy = {
 } as const
 
 export type IdeaGeneratedBy = (typeof IdeaGeneratedBy)[keyof typeof IdeaGeneratedBy]
+
+
+export const ContentStatus = {
+  DRAFT: 'DRAFT',
+  IN_REVIEW: 'IN_REVIEW',
+  APPROVED: 'APPROVED',
+  SCHEDULED: 'SCHEDULED',
+  PUBLISHED: 'PUBLISHED',
+  ANALYZED: 'ANALYZED'
+} as const
+
+export type ContentStatus = (typeof ContentStatus)[keyof typeof ContentStatus]
+
+
+export const ContentAssetKind = {
+  IMAGE: 'IMAGE',
+  LINK: 'LINK'
+} as const
+
+export type ContentAssetKind = (typeof ContentAssetKind)[keyof typeof ContentAssetKind]

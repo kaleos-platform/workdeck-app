@@ -445,6 +445,8 @@ export const ModelName = {
   TextGenerationLog: 'TextGenerationLog',
   Template: 'Template',
   SalesContentChannel: 'SalesContentChannel',
+  Content: 'Content',
+  ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea'
 } as const
 
@@ -461,7 +463,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "contentIdea"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentAsset" | "contentIdea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4979,6 +4981,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Content: {
+      payload: Prisma.$ContentPayload<ExtArgs>
+      fields: Prisma.ContentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ContentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ContentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>
+        }
+        findFirst: {
+          args: Prisma.ContentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ContentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>
+        }
+        findMany: {
+          args: Prisma.ContentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>[]
+        }
+        create: {
+          args: Prisma.ContentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>
+        }
+        createMany: {
+          args: Prisma.ContentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ContentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>[]
+        }
+        delete: {
+          args: Prisma.ContentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>
+        }
+        update: {
+          args: Prisma.ContentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>
+        }
+        deleteMany: {
+          args: Prisma.ContentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ContentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ContentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>[]
+        }
+        upsert: {
+          args: Prisma.ContentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentPayload>
+        }
+        aggregate: {
+          args: Prisma.ContentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContent>
+        }
+        groupBy: {
+          args: Prisma.ContentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ContentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentCountAggregateOutputType> | number
+        }
+      }
+    }
+    ContentAsset: {
+      payload: Prisma.$ContentAssetPayload<ExtArgs>
+      fields: Prisma.ContentAssetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ContentAssetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ContentAssetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>
+        }
+        findFirst: {
+          args: Prisma.ContentAssetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ContentAssetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>
+        }
+        findMany: {
+          args: Prisma.ContentAssetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>[]
+        }
+        create: {
+          args: Prisma.ContentAssetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>
+        }
+        createMany: {
+          args: Prisma.ContentAssetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ContentAssetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>[]
+        }
+        delete: {
+          args: Prisma.ContentAssetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>
+        }
+        update: {
+          args: Prisma.ContentAssetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>
+        }
+        deleteMany: {
+          args: Prisma.ContentAssetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ContentAssetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ContentAssetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>[]
+        }
+        upsert: {
+          args: Prisma.ContentAssetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentAssetPayload>
+        }
+        aggregate: {
+          args: Prisma.ContentAssetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContentAsset>
+        }
+        groupBy: {
+          args: Prisma.ContentAssetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentAssetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ContentAssetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentAssetCountAggregateOutputType> | number
+        }
+      }
+    }
     ContentIdea: {
       payload: Prisma.$ContentIdeaPayload<ExtArgs>
       fields: Prisma.ContentIdeaFieldRefs
@@ -6050,6 +6200,48 @@ export const SalesContentChannelScalarFieldEnum = {
 export type SalesContentChannelScalarFieldEnum = (typeof SalesContentChannelScalarFieldEnum)[keyof typeof SalesContentChannelScalarFieldEnum]
 
 
+export const ContentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  title: 'title',
+  status: 'status',
+  templateId: 'templateId',
+  ideationId: 'ideationId',
+  ideaIndex: 'ideaIndex',
+  productId: 'productId',
+  personaId: 'personaId',
+  channelId: 'channelId',
+  doc: 'doc',
+  snapshotHash: 'snapshotHash',
+  publishedAt: 'publishedAt',
+  scheduledAt: 'scheduledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContentScalarFieldEnum = (typeof ContentScalarFieldEnum)[keyof typeof ContentScalarFieldEnum]
+
+
+export const ContentAssetScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  contentId: 'contentId',
+  kind: 'kind',
+  slotKey: 'slotKey',
+  url: 'url',
+  title: 'title',
+  alt: 'alt',
+  width: 'width',
+  height: 'height',
+  mimeType: 'mimeType',
+  storagePath: 'storagePath',
+  createdAt: 'createdAt'
+} as const
+
+export type ContentAssetScalarFieldEnum = (typeof ContentAssetScalarFieldEnum)[keyof typeof ContentAssetScalarFieldEnum]
+
+
 export const ContentIdeaScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -6454,6 +6646,34 @@ export type ListEnumCollectorModeFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'ContentStatus'
+ */
+export type EnumContentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ContentStatus[]'
+ */
+export type ListEnumContentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ContentAssetKind'
+ */
+export type EnumContentAssetKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentAssetKind'>
+    
+
+
+/**
+ * Reference to a field of type 'ContentAssetKind[]'
+ */
+export type ListEnumContentAssetKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentAssetKind[]'>
+    
+
+
+/**
  * Reference to a field of type 'IdeaGeneratedBy'
  */
 export type EnumIdeaGeneratedByFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IdeaGeneratedBy'>
@@ -6622,6 +6842,8 @@ export type GlobalOmitConfig = {
   textGenerationLog?: Prisma.TextGenerationLogOmit
   template?: Prisma.TemplateOmit
   salesContentChannel?: Prisma.SalesContentChannelOmit
+  content?: Prisma.ContentOmit
+  contentAsset?: Prisma.ContentAssetOmit
   contentIdea?: Prisma.ContentIdeaOmit
 }
 

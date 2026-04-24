@@ -352,6 +352,8 @@ model Space {
   contentIdeas         ContentIdea[]
   templates            Template[]
   salesContentChannels SalesContentChannel[]
+  contents             Content[]
+  contentAssets        ContentAsset[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1467,7 +1469,8 @@ model SalesContentChannel {
   isActive      Boolean                 @default(true)
   config        Json? // 채널별 구성 (blog base URL, API endpoint 등)
 
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space    Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  contents Content[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1482,6 +1485,76 @@ model SalesContentChannel {
 enum IdeaGeneratedBy {
   USER
   AI
+}
+
+// ─── Sales Content Deck (콘텐츠 제작) ────────────────────────────────────────
+
+enum ContentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+  ANALYZED
+}
+
+enum ContentAssetKind {
+  IMAGE
+  LINK
+}
+
+// 콘텐츠 1건 = Template + Idea 의 구현물. doc(Json) 은 TipTap Doc.
+model Content {
+  id           String        @id @default(cuid())
+  spaceId      String
+  userId       String? // 작성자
+  title        String
+  status       ContentStatus @default(DRAFT)
+  templateId   String?
+  ideationId   String? // ContentIdea.id
+  ideaIndex    Int? // ContentIdea.ideas 의 인덱스
+  productId    String?
+  personaId    String?
+  channelId    String? // 배포 채널 (선택)
+  doc          Json // TipTap doc (또는 render 결과)
+  snapshotHash String? // 변경 감지용 해시
+  publishedAt  DateTime?
+  scheduledAt  DateTime?
+
+  space   Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  assets  ContentAsset[]
+  channel SalesContentChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([spaceId, createdAt])
+  @@index([channelId])
+}
+
+// 콘텐츠 첨부 에셋 (이미지 · 링크). 이미지 URL 은 Unit 7 Supabase Storage 결과.
+model ContentAsset {
+  id         String           @id @default(cuid())
+  spaceId    String
+  contentId  String
+  kind       ContentAssetKind
+  slotKey    String? // TipTap 노드 key
+  url        String
+  title      String?
+  alt        String?
+  width      Int?
+  height     Int?
+  mimeType   String?
+  storagePath String? // supabase path (이미지인 경우)
+
+  space   Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([contentId])
+  @@index([spaceId])
 }
 
 // 한 번의 아이데이션 실행 결과. ideas(Json) 는 생성된 후보 카드의 배열.

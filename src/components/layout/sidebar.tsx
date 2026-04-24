@@ -128,7 +128,7 @@ const SALES_CONTENT_SETTINGS_ITEMS: SidebarItem[] = [
 
 const SALES_CONTENT_CREATE_ITEMS: SidebarItem[] = [
   { label: '아이데이션', href: SALES_CONTENT_IDEATION_PATH },
-  { label: '콘텐츠', href: SALES_CONTENT_CONTENTS_PATH, disabled: true, badge: '준비 중' },
+  { label: '콘텐츠', href: SALES_CONTENT_CONTENTS_PATH },
   { label: '템플릿', href: SALES_CONTENT_TEMPLATES_PATH },
 ]
 

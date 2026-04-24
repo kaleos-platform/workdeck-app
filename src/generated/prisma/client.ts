@@ -345,6 +345,16 @@ export type Template = Prisma.TemplateModel
  */
 export type SalesContentChannel = Prisma.SalesContentChannelModel
 /**
+ * Model Content
+ * 
+ */
+export type Content = Prisma.ContentModel
+/**
+ * Model ContentAsset
+ * 
+ */
+export type ContentAsset = Prisma.ContentAssetModel
+/**
  * Model ContentIdea
  * 
  */
