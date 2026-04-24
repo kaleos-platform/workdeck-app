@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
               id: true,
               retailPrice: true,
               productId: true,
-              product: { select: { id: true, name: true, internalName: true } },
+              product: { select: { id: true, name: true, internalName: true, msrp: true } },
             },
           },
         },
@@ -116,7 +116,12 @@ export async function GET(req: NextRequest) {
     const baseline = computeListingRetailBaseline(
       l.items.map((it) => ({
         quantity: it.quantity,
-        retailPrice: it.option.retailPrice != null ? Number(it.option.retailPrice) : null,
+        retailPrice:
+          it.option.retailPrice != null
+            ? Number(it.option.retailPrice)
+            : it.option.product?.msrp != null
+              ? Number(it.option.product.msrp)
+              : null,
       }))
     )
     const available = computeListingAvailableStock(

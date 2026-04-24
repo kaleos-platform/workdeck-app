@@ -121,6 +121,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
             id: string
             name: string
             internalName: string | null
+            msrp?: string | number | null
             optionAttributes: AttributeDef[] | null
             brand: { id: string; name: string } | null
             options: Array<{
@@ -133,6 +134,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
           }
         } = await res.json()
         const prod = data.product
+        const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
         setProduct({
           id: prod.id,
           name: prod.name,
@@ -143,7 +145,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
             id: o.id,
             name: o.name,
             sku: o.sku,
-            retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
+            retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
             attributeValues: o.attributeValues ?? {},
           })),
         })

@@ -22,6 +22,7 @@ type ProductRow = {
   name: string
   internalName?: string | null
   code: string | null
+  msrp?: string | number | null
   brand?: { id: string; name: string } | null
   options: {
     id: string
@@ -89,6 +90,7 @@ export function OptionPickerDialog({
         const products = data.data ?? data.products ?? []
         const flat: PickedOption[] = []
         for (const p of products) {
+          const productMsrp = p.msrp != null ? Number(p.msrp) : null
           for (const o of p.options ?? []) {
             flat.push({
               optionId: o.id,
@@ -97,7 +99,7 @@ export function OptionPickerDialog({
               productName: productDisplayName(p),
               sku: o.sku,
               brandName: p.brand?.name ?? null,
-              retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
+              retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
             })
           }
         }

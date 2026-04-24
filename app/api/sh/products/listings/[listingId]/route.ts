@@ -38,6 +38,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
                   id: true,
                   name: true,
                   internalName: true,
+                  msrp: true,
                   brand: { select: { id: true, name: true } },
                 },
               },
@@ -62,7 +63,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   const priceSnapshots = listing.items.map((it) => ({
     quantity: it.quantity,
-    retailPrice: it.option.retailPrice != null ? Number(it.option.retailPrice) : null,
+    retailPrice:
+      it.option.retailPrice != null
+        ? Number(it.option.retailPrice)
+        : it.option.product?.msrp != null
+          ? Number(it.option.product.msrp)
+          : null,
   }))
   const stockSnapshots = listing.items.map((it) => ({
     quantity: it.quantity,
@@ -98,7 +104,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
         productName: productDisplayName(it.option.product),
         productOfficialName: it.option.product.name,
         brandName: it.option.product.brand?.name ?? null,
-        retailPrice: it.option.retailPrice != null ? Number(it.option.retailPrice) : null,
+        retailPrice:
+          it.option.retailPrice != null
+            ? Number(it.option.retailPrice)
+            : it.option.product?.msrp != null
+              ? Number(it.option.product.msrp)
+              : null,
         costPrice: it.option.costPrice != null ? Number(it.option.costPrice) : null,
         quantity: it.quantity,
         sortOrder: it.sortOrder,

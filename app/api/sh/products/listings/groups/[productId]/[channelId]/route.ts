@@ -33,6 +33,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         id: true,
         name: true,
         internalName: true,
+        msrp: true,
         optionAttributes: true,
         brand: { select: { id: true, name: true } },
       },
@@ -91,10 +92,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
     for (const r of rows) stockMap.set(r.optionId, r._sum.quantity ?? 0)
   }
 
+  const productMsrp = product.msrp != null ? Number(product.msrp) : null
   const listings = singleProductListings.map((l) => {
     const priceSnapshots = l.items.map((it) => ({
       quantity: it.quantity,
-      retailPrice: it.option.retailPrice != null ? Number(it.option.retailPrice) : null,
+      retailPrice: it.option.retailPrice != null ? Number(it.option.retailPrice) : productMsrp,
     }))
     const stockSnapshots = l.items.map((it) => ({
       quantity: it.quantity,
