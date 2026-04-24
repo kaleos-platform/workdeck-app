@@ -50,6 +50,8 @@ type Props = {
   onCombinationsChange: (rows: CombinationRow[]) => void
   /** SKU 자동 조립에 사용할 상품 코드 (없으면 속성 코드만 조립) */
   productCode?: string | null
+  /** 조합 프리뷰 테이블 렌더 여부. 기본 true(상품 등록용); 상세에서는 false로 옵션 테이블이 대체. */
+  showCombinationsPreview?: boolean
 }
 
 function cartesian(arrays: string[][]): string[][] {
@@ -95,6 +97,7 @@ export function ProductOptionAttributesEditor({
   onAttributesChange,
   onCombinationsChange,
   productCode,
+  showCombinationsPreview = true,
 }: Props) {
   const [valueInputs, setValueInputs] = useState<Record<number, string>>({})
   const [aliasMap, setAliasMap] = useState<Map<string, string> | null>(null)
@@ -325,88 +328,97 @@ export function ProductOptionAttributesEditor({
           </p>
         )}
 
-        {attributes.map((attr, attrIdx) => (
-          <div key={attrIdx} className="space-y-2 rounded-sm bg-muted/20 p-3">
-            <div className="flex items-center gap-2">
-              <Input
-                value={attr.name}
-                onChange={(e) => updateAttributeName(attrIdx, e.target.value)}
-                placeholder="속성명 (예: 사이즈)"
-                className="h-8 max-w-[200px]"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0"
-                onClick={() => removeAttribute(attrIdx)}
-                aria-label="속성 삭제"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* 값 리스트 (값 + 코드 + 삭제) */}
-            <div className="space-y-1">
-              {attr.values.map((v, valueIdx) => (
-                <div key={`${v.value}-${valueIdx}`} className="flex items-center gap-2">
-                  <Input
-                    value={v.value}
-                    readOnly
-                    className="h-7 max-w-[160px] bg-background text-xs"
-                  />
-                  <span className="text-xs text-muted-foreground">코드</span>
-                  <Input
-                    value={v.code}
-                    onChange={(e) => updateValueCode(attrIdx, valueIdx, e.target.value)}
-                    placeholder="자동"
-                    className="h-7 w-16 text-xs uppercase"
-                    maxLength={3}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => removeValue(attrIdx, v.value)}
-                    aria-label={`${v.value} 제거`}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {attributes.map((attr, attrIdx) => (
+            <div key={attrIdx} className="flex flex-col gap-2 rounded-md border bg-muted/20 p-3">
               <div className="flex items-center gap-2">
                 <Input
-                  value={valueInputs[attrIdx] ?? ''}
-                  onChange={(e) =>
-                    setValueInputs((prev) => ({ ...prev, [attrIdx]: e.target.value }))
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      addValue(attrIdx)
-                    }
-                  }}
-                  placeholder="값 입력 후 Enter (예: S, M, 누드)"
-                  className="h-7 max-w-[220px] text-xs"
+                  value={attr.name}
+                  onChange={(e) => updateAttributeName(attrIdx, e.target.value)}
+                  placeholder="속성명 (예: 사이즈)"
+                  className="h-8 flex-1"
                 />
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => addValue(attrIdx)}
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={() => removeAttribute(attrIdx)}
+                  aria-label="속성 삭제"
                 >
-                  <Plus className="h-3 w-3" />
-                  추가
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
+
+              <div className="space-y-1">
+                {attr.values.map((v, valueIdx) => (
+                  <div key={`${v.value}-${valueIdx}`} className="flex items-center gap-1.5">
+                    <Input value={v.value} readOnly className="h-7 flex-1 bg-background text-xs" />
+                    <span className="text-[10px] text-muted-foreground">코드</span>
+                    <Input
+                      value={v.code}
+                      onChange={(e) => updateValueCode(attrIdx, valueIdx, e.target.value)}
+                      placeholder="자동"
+                      className="h-7 w-14 text-xs uppercase"
+                      maxLength={3}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0"
+                      onClick={() => removeValue(attrIdx, v.value)}
+                      aria-label={`${v.value} 제거`}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+                <div className="flex items-center gap-1.5 pt-1">
+                  <Input
+                    value={valueInputs[attrIdx] ?? ''}
+                    onChange={(e) =>
+                      setValueInputs((prev) => ({ ...prev, [attrIdx]: e.target.value }))
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        addValue(attrIdx)
+                      }
+                    }}
+                    placeholder="값 입력 후 Enter (예: S, M, 누드)"
+                    className="h-7 flex-1 text-xs"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => addValue(attrIdx)}
+                  >
+                    <Plus className="h-3 w-3" />
+                    추가
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+
+          {canAddAttr && (
+            <button
+              type="button"
+              onClick={addAttribute}
+              className="flex min-h-[140px] flex-col items-center justify-center gap-1 rounded-md border border-dashed text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/40 hover:text-foreground"
+              aria-label="속성 추가"
+            >
+              <Plus className="h-4 w-4" />
+              속성 추가 ({attributes.length}/{MAX_ATTRIBUTES})
+            </button>
+          )}
+        </div>
       </div>
 
-      {hasCombinations && (
+      {hasCombinations && showCombinationsPreview && (
         <div className="rounded-md border">
           <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
             <p className="text-sm font-semibold">

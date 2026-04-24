@@ -201,7 +201,12 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         }
       }
 
-      toast.success('옵션 속성이 저장되었습니다')
+      const preHad = (product.options?.length ?? 0) > 0
+      if (!preHad) {
+        toast.success(`${combinations.length}개 옵션이 생성되었습니다`)
+      } else {
+        toast.success('옵션 속성이 저장되었습니다')
+      }
       setConfirmOpen(false)
       await load()
       onSaved?.()
@@ -212,25 +217,57 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
     }
   }
 
-  // 저장 후보 — 기존 데이터가 변경될 수 있는지 빠른 판단 (삭제 조합이 있는지)
-  function hasDestructiveChange(): boolean {
-    if (!product) return false
+  // 속성/조합 vs 기존 옵션 비교로 추가·유지·삭제 조합 라벨을 뽑는다.
+  function computeDiff(): { added: string[]; kept: string[]; removed: string[] } {
+    if (!product) return { added: [], kept: [], removed: [] }
     const validAttrs = attributes.filter((a) => a.name.trim() && a.values.length > 0)
-    if (validAttrs.length === 0) return false
+    if (validAttrs.length === 0) return { added: [], kept: [], removed: [] }
+
+    const existingKeys = new Set(
+      product.options.map((o) => {
+        const av = o.attributeValues ?? {}
+        return validAttrs.map((a) => String(av[a.name] ?? '')).join('|')
+      })
+    )
     const targetKeys = new Set(combinations.map((r) => r.combination.join('|')))
+
+    const added: string[] = []
+    const kept: string[] = []
+    for (const row of combinations) {
+      const key = row.combination.join('|')
+      const label = row.combination.join(' / ')
+      if (existingKeys.has(key)) kept.push(label)
+      else added.push(label)
+    }
+
+    const removed: string[] = []
     for (const o of product.options) {
       const av = o.attributeValues ?? {}
       const comb = validAttrs.map((a) => String(av[a.name] ?? ''))
-      if (!targetKeys.has(comb.join('|'))) return true
+      if (!targetKeys.has(comb.join('|'))) removed.push(comb.join(' / '))
     }
-    return false
+
+    return { added, kept, removed }
+  }
+
+  function handleSaveClick() {
+    // 저장 클릭 — 기존 옵션이 0개면 즉시 저장, 아니면 diff 모달.
+    const hasExisting = (product?.options?.length ?? 0) > 0
+    if (!hasExisting) {
+      void handleSave()
+    } else {
+      setConfirmOpen(true)
+    }
   }
 
   if (loading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>
   }
 
-  const destructive = hasDestructiveChange()
+  const diff = computeDiff()
+  const destructive = diff.removed.length > 0
+  const sample = (arr: string[], n = 3) =>
+    arr.length <= n ? arr.join(', ') : `${arr.slice(0, n).join(', ')} …`
 
   return (
     <div className="space-y-4">
@@ -240,10 +277,11 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         onAttributesChange={setAttributes}
         onCombinationsChange={setCombinations}
         productCode={product?.code ?? null}
+        showCombinationsPreview={false}
       />
 
       <div className="flex items-center justify-end">
-        <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={saving}>
+        <Button size="sm" onClick={handleSaveClick} disabled={saving}>
           {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
           속성/조합 저장
         </Button>
@@ -258,18 +296,28 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
             </DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-2 text-sm">
-                <p>속성을 저장하면 다음 작업이 실행됩니다:</p>
+                <p>저장 시 다음이 적용됩니다:</p>
                 <ul className="list-disc pl-5 text-xs">
-                  <li>상품의 속성 정의(이름·값·코드)가 갱신됩니다.</li>
-                  <li>신규 조합은 옵션이 자동 추가됩니다.</li>
-                  <li>기존 조합의 관리코드·원가·소비자가가 입력값으로 갱신됩니다.</li>
                   <li>
-                    {destructive ? (
-                      <span className="text-destructive">
-                        속성 값이 삭제된 경우 관련 옵션이 삭제됩니다 (재고/입출고 기록도 함께).
-                      </span>
-                    ) : (
-                      <span>삭제되는 옵션은 없습니다.</span>
+                    <span className="font-medium">추가: {diff.added.length}개</span>
+                    {diff.added.length > 0 && (
+                      <span className="text-muted-foreground"> — {sample(diff.added)}</span>
+                    )}
+                  </li>
+                  <li>
+                    <span className="font-medium">유지: {diff.kept.length}개</span>
+                    <span className="text-muted-foreground">
+                      {' '}
+                      (관리코드·원가·소비자가는 입력값으로 갱신)
+                    </span>
+                  </li>
+                  <li className={destructive ? 'text-destructive' : undefined}>
+                    <span className="font-medium">삭제: {diff.removed.length}개</span>
+                    {destructive && (
+                      <>
+                        <span> — {sample(diff.removed)}</span>
+                        <span className="block text-xs">⚠ 재고/입출고 기록도 함께 삭제됩니다.</span>
+                      </>
                     )}
                   </li>
                 </ul>

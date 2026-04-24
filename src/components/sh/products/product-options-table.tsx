@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Loader2, Sparkles, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Loader2, RefreshCw, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -317,9 +317,10 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
               className="h-7 text-xs"
               onClick={regenerateSku}
               disabled={bulkSaving}
+              title="현재 속성 코드 규칙({상품코드}-{속성코드들})으로 관리코드를 다시 만들어 덮어씁니다"
             >
-              <Sparkles className="mr-1 h-3 w-3" />
-              관리코드 재생성
+              <RefreshCw className="mr-1 h-3 w-3" />
+              관리코드(SKU) 재반영
             </Button>
             <Button
               variant="outline"
