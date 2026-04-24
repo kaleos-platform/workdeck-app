@@ -28,11 +28,19 @@ export async function POST(req: NextRequest) {
   // 배송 방식 확인
   const method = await prisma.delShippingMethod.findUnique({
     where: { id: shippingMethodId },
-    select: { spaceId: true, name: true, formatConfig: true },
+    select: { spaceId: true, name: true, formatConfig: true, labelColumns: true },
   })
   if (!method || method.spaceId !== resolved.space.id) {
     return errorResponse('배송 방식을 찾을 수 없습니다', 404)
   }
+
+  // 배송 라벨 컬럼으로 허용된 field만 override 적용 대상.
+  // 과거 DB에 남아 있는 다른 키는 배송 파일에 반영하지 않는다.
+  const allowedLabelKeys = new Set<DelFieldMapping>(
+    (Array.isArray(method.labelColumns) ? method.labelColumns : []).filter(
+      (v): v is DelFieldMapping => typeof v === 'string'
+    )
+  )
 
   // 해당 배송 묶음 + 배송방식의 주문 조회 — 매칭된 옵션 정보도 같이 로드
   const orders = await prisma.delOrder.findMany({
@@ -73,10 +81,13 @@ export async function POST(req: NextRequest) {
     : []
   const overridesByOption = new Map<string, Partial<Record<DelFieldMapping, string>>>()
   for (const row of labelRows) {
-    overridesByOption.set(
-      row.optionId,
-      (row.overrides as Partial<Record<DelFieldMapping, string>>) ?? {}
-    )
+    const raw = (row.overrides as Partial<Record<DelFieldMapping, string>>) ?? {}
+    // 현재 배송방식에 활성화된 라벨 컬럼만 적용.
+    const filtered: Partial<Record<DelFieldMapping, string>> = {}
+    for (const key of Object.keys(raw) as DelFieldMapping[]) {
+      if (allowedLabelKeys.has(key)) filtered[key] = raw[key]
+    }
+    overridesByOption.set(row.optionId, filtered)
   }
 
   const ordersForGenerator = orders.map((o) => ({

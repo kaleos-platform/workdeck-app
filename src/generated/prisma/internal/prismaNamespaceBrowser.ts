@@ -716,6 +716,7 @@ export const DelShippingMethodScalarFieldEnum = {
   name: 'name',
   isActive: 'isActive',
   formatConfig: 'formatConfig',
+  labelColumns: 'labelColumns',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

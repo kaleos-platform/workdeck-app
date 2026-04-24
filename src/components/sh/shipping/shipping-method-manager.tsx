@@ -153,10 +153,10 @@ export function ShippingMethodManager() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge>활성</Badge>
-                    <Button asChild variant="ghost" size="sm" title="상품 라벨 관리">
+                    <Button asChild variant="ghost" size="sm" title="배송 라벨 관리">
                       <Link href={`/d/seller-hub/shipping/methods/${method.id}`}>
                         <Tag className="mr-1 h-4 w-4" />
-                        상품 라벨
+                        배송 라벨
                       </Link>
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => openEdit(method)}>
