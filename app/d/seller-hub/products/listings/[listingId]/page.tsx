@@ -1,12 +1,13 @@
 'use client'
 
 import { use, useEffect, useState } from 'react'
-import { notFound } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 
 import {
   ListingForm,
   type ListingFormInitial,
 } from '@/components/sh/products/listings/listing-form'
+import { getSellerHubListingGroupPath } from '@/lib/deck-routes'
 
 type ListingDetail = {
   id: string
@@ -41,6 +42,7 @@ type ListingDetail = {
 
 export default function ListingDetailPage({ params }: { params: Promise<{ listingId: string }> }) {
   const { listingId } = use(params)
+  const router = useRouter()
   const [listing, setListing] = useState<ListingDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFoundFlag, setNotFoundFlag] = useState(false)
@@ -57,7 +59,15 @@ export default function ListingDetailPage({ params }: { params: Promise<{ listin
         }
         if (!res.ok) throw new Error('조회 실패')
         const data: { listing: ListingDetail } = await res.json()
-        if (!cancelled) setListing(data.listing)
+        if (cancelled) return
+        // 단일 상품 구성이면 상품×채널 그룹 상세로 리다이렉트
+        const productIds = Array.from(new Set(data.listing.items.map((it) => it.productId)))
+        if (productIds.length === 1) {
+          router.replace(getSellerHubListingGroupPath(productIds[0], data.listing.channel.id))
+          return
+        }
+        // 혼합 구성 → 기존 단일 편집 폼으로 fallback
+        setListing(data.listing)
       } catch {
         if (!cancelled) setListing(null)
       } finally {
@@ -68,7 +78,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ listin
     return () => {
       cancelled = true
     }
-  }, [listingId])
+  }, [listingId, router])
 
   if (notFoundFlag) notFound()
   if (loading) {

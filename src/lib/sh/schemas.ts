@@ -286,3 +286,31 @@ export const productListingPatchSchema = z
     }
   })
 export type ProductListingPatchInput = z.infer<typeof productListingPatchSchema>
+
+// 그룹(상품 × 채널) 메타 — 키워드 공통 저장
+export const productChannelGroupMetaSchema = z.object({
+  keywords: z
+    .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
+    .max(30)
+    .default([]),
+})
+export type ProductChannelGroupMetaInput = z.infer<typeof productChannelGroupMetaSchema>
+
+// 여러 listing 일괄 수정 — 판매가·상태만 현재 지원
+export const productListingBulkPatchSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(100),
+  patch: z
+    .object({
+      retailPrice: z
+        .preprocess(
+          (v) => (v === null || v === '' ? null : v === undefined ? undefined : Number(v)),
+          z.union([z.number().min(0).max(99_999_999), z.null()])
+        )
+        .optional(),
+      status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
+    })
+    .refine((p) => p.retailPrice !== undefined || p.status !== undefined, {
+      message: '변경할 필드가 없습니다',
+    }),
+})
+export type ProductListingBulkPatchInput = z.infer<typeof productListingBulkPatchSchema>

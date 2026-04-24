@@ -28,6 +28,9 @@ export function getSellerHubProductPath(id: string) {
 export function getSellerHubListingPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/listings/${id}`
 }
+export function getSellerHubListingGroupPath(productId: string, channelId: string) {
+  return `${SELLER_HUB_BASE_PATH}/products/listings/groups/${productId}/${channelId}`
+}
 
 // 재고 섹션
 export const SELLER_HUB_STOCK_STATUS_PATH = `${SELLER_HUB_BASE_PATH}/inventory/stock-status`

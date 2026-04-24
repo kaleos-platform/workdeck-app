@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { SELLER_HUB_LISTING_NEW_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
+import { SELLER_HUB_LISTING_NEW_PATH, getSellerHubListingGroupPath } from '@/lib/deck-routes'
 
 type ListingForProduct = {
   listingId: string
@@ -113,7 +113,7 @@ export function ProductListingsPanel({ productId }: Props) {
                 <TableCell className="text-sm">{r.channelName}</TableCell>
                 <TableCell>
                   <Link
-                    href={getSellerHubListingPath(r.listingId)}
+                    href={getSellerHubListingGroupPath(productId, r.channelId)}
                     className="font-medium hover:underline"
                   >
                     {r.searchName}
@@ -134,7 +134,7 @@ export function ProductListingsPanel({ productId }: Props) {
                 <TableCell>{statusBadge}</TableCell>
                 <TableCell>
                   <Link
-                    href={getSellerHubListingPath(r.listingId)}
+                    href={getSellerHubListingGroupPath(productId, r.channelId)}
                     aria-label={`${r.searchName} 상세`}
                     className="inline-flex text-muted-foreground hover:text-foreground"
                   >
