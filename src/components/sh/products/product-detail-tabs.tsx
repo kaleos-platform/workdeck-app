@@ -7,6 +7,7 @@ import { ProductBasicForm } from '@/components/sh/products/product-basic-form'
 import { ProductAttributesEditor } from '@/components/sh/products/product-attributes-editor'
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
 import { ProductionBatchTable } from '@/components/sh/products/production-batch-table'
+import { ProductListingsPanel } from '@/components/sh/products/listings/product-listings-panel'
 
 type Props = {
   productId: string
@@ -14,7 +15,7 @@ type Props = {
 
 const BASIC_FORM_ID = 'product-basic-form'
 
-type SectionKey = 'basic' | 'options' | 'batches'
+type SectionKey = 'basic' | 'options' | 'batches' | 'listings'
 
 const SECTIONS: { key: SectionKey; label: string; title: string; description: string }[] = [
   {
@@ -35,6 +36,12 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
     title: '생산 차수',
     description: '옵션별 생산 배치와 단가 이력',
   },
+  {
+    key: 'listings',
+    label: '판매채널 현황',
+    title: '판매채널 현황',
+    description: '이 상품이 등록된 판매채널 상품 목록',
+  },
 ]
 
 /**
@@ -51,6 +58,7 @@ export function ProductDetailTabs({ productId }: Props) {
     basic: null,
     options: null,
     batches: null,
+    listings: null,
   })
 
   const goto = useCallback((key: SectionKey) => {
@@ -166,6 +174,18 @@ export function ProductDetailTabs({ productId }: Props) {
       >
         <SectionHeader title={SECTIONS[2].title} description={SECTIONS[2].description} />
         <ProductionBatchTable productId={productId} />
+      </section>
+
+      <section
+        id="section-listings"
+        data-section="listings"
+        ref={(el) => {
+          sectionRefs.current.listings = el
+        }}
+        className="scroll-mt-24 space-y-4 border-t pt-8"
+      >
+        <SectionHeader title={SECTIONS[3].title} description={SECTIONS[3].description} />
+        <ProductListingsPanel key={`listings-${refreshKey}`} productId={productId} />
       </section>
     </div>
   )
