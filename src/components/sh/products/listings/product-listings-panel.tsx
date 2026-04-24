@@ -88,6 +88,7 @@ export function ProductListingsPanel({ productId }: Props) {
             <TableHead>채널</TableHead>
             <TableHead>검색명</TableHead>
             <TableHead>이 상품의 구성</TableHead>
+            <TableHead className="text-right">소비자가</TableHead>
             <TableHead className="text-right">판매가</TableHead>
             <TableHead className="text-right">재고</TableHead>
             <TableHead>상태</TableHead>
@@ -119,6 +120,9 @@ export function ProductListingsPanel({ productId }: Props) {
                   </Link>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">{composition}</TableCell>
+                <TableCell className="text-right text-sm text-muted-foreground">
+                  {r.baselinePrice != null ? `${r.baselinePrice.toLocaleString('ko-KR')}원` : '-'}
+                </TableCell>
                 <TableCell className="text-right">
                   {r.retailPrice != null ? `${r.retailPrice.toLocaleString('ko-KR')}원` : '-'}
                 </TableCell>

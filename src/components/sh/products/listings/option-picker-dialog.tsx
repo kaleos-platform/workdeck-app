@@ -23,7 +23,12 @@ type ProductRow = {
   internalName?: string | null
   code: string | null
   brand?: { id: string; name: string } | null
-  options: { id: string; name: string; sku: string | null }[]
+  options: {
+    id: string
+    name: string
+    sku: string | null
+    retailPrice?: string | number | null
+  }[]
 }
 
 export type PickedOption = {
@@ -33,6 +38,7 @@ export type PickedOption = {
   productName: string
   sku: string | null
   brandName: string | null
+  retailPrice: number | null
 }
 
 type Props = {
@@ -91,6 +97,7 @@ export function OptionPickerDialog({
               productName: productDisplayName(p),
               sku: o.sku,
               brandName: p.brand?.name ?? null,
+              retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
             })
           }
         }

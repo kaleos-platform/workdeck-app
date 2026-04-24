@@ -38,6 +38,7 @@ type OptionRow = {
   id: string
   name: string
   sku: string | null
+  retailPrice: number | null
   attributeValues: Record<string, string>
 }
 
@@ -62,6 +63,7 @@ export type ItemEntry = {
   optionName: string
   sku: string | null
   quantity: number
+  retailPrice: number | null
   attributeValues: Record<string, string>
 }
 
@@ -125,6 +127,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
               id: string
               name: string
               sku: string | null
+              retailPrice?: string | number | null
               attributeValues: Record<string, string> | null
             }>
           }
@@ -140,6 +143,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
             id: o.id,
             name: o.name,
             sku: o.sku,
+            retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
             attributeValues: o.attributeValues ?? {},
           })),
         })
@@ -223,6 +227,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
               optionName: defaultOpt.name,
               sku: defaultOpt.sku,
               quantity: qty,
+              retailPrice: defaultOpt.retailPrice,
               attributeValues: defaultOpt.attributeValues,
             },
           ],
@@ -250,6 +255,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
             optionName: opt.name,
             sku: opt.sku,
             quantity: qty,
+            retailPrice: opt.retailPrice,
             attributeValues: opt.attributeValues,
           },
         ],
@@ -283,6 +289,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
               optionName: defaultOpt.name,
               sku: defaultOpt.sku,
               quantity: 1,
+              retailPrice: defaultOpt.retailPrice,
               attributeValues: defaultOpt.attributeValues,
             },
           ],
@@ -357,6 +364,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
           optionName: opt.name,
           sku: opt.sku,
           quantity: sc.qty,
+          retailPrice: opt.retailPrice,
           attributeValues: opt.attributeValues,
         })
       }

@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SELLER_HUB_LISTINGS_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
+import { computeListingRetailBaseline } from '@/lib/sh/listing-calc'
 
 import {
   CompositionBuilder,
@@ -116,6 +117,22 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     if (suffix.length === 0) return base
     return `${base} ${suffix.join(' ')}`
   }
+
+  function baselineOf(entries: ItemEntry[]): number | null {
+    return computeListingRetailBaseline(
+      entries.map((it) => ({ quantity: it.quantity, retailPrice: it.retailPrice }))
+    )
+  }
+
+  const baselineSummary = useMemo(() => {
+    if (!groups || groups.length === 0) return null
+    const values = groups.map((g) => baselineOf(g.items))
+    if (values.some((v) => v == null)) return null
+    const nums = values as number[]
+    const min = Math.min(...nums)
+    const max = Math.max(...nums)
+    return { min, max, same: min === max }
+  }, [groups])
 
   const readyToSave =
     channelId.trim().length > 0 &&
@@ -317,16 +334,22 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {groups.map((g, idx) => (
-                <li key={idx} className="rounded-md border bg-background px-3 py-2.5 text-sm">
-                  <p className="font-medium">
-                    {previewName(g.suffixParts, baseSearchName || productCtx.displayName)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {g.items.map((it) => `${it.optionName} ×${it.quantity}`).join(' · ')}
-                  </p>
-                </li>
-              ))}
+              {groups.map((g, idx) => {
+                const baseline = baselineOf(g.items)
+                return (
+                  <li key={idx} className="rounded-md border bg-background px-3 py-2.5 text-sm">
+                    <p className="font-medium">
+                      {previewName(g.suffixParts, baseSearchName || productCtx.displayName)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {g.items.map((it) => `${it.optionName} ×${it.quantity}`).join(' · ')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      소비자가 {baseline != null ? `${baseline.toLocaleString('ko-KR')}원` : '-'}
+                    </p>
+                  </li>
+                )
+              })}
             </ul>
           </CardContent>
         </Card>
@@ -380,7 +403,16 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           <CardTitle className="text-lg">가격</CardTitle>
           <CardDescription>모든 listing에 공통 적용됩니다 (생성 후 개별 수정 가능)</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          {baselineSummary && (
+            <p className="text-xs text-muted-foreground">
+              자동 계산 소비자가:{' '}
+              {baselineSummary.same
+                ? `${baselineSummary.min.toLocaleString('ko-KR')}원`
+                : `${baselineSummary.min.toLocaleString('ko-KR')}원 ~ ${baselineSummary.max.toLocaleString('ko-KR')}원`}{' '}
+              · 구성 옵션의 소비자가 합계이며 상품 옵션을 수정하면 자동으로 반영됩니다
+            </p>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="listing-price">판매가격 (원)</Label>
             <Input
