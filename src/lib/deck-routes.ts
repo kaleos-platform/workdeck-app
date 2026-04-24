@@ -21,8 +21,12 @@ export const SELLER_HUB_PRODUCTS_LIST_PATH = `${SELLER_HUB_BASE_PATH}/products/l
 export const SELLER_HUB_BRANDS_PATH = `${SELLER_HUB_BASE_PATH}/products/brands`
 export const SELLER_HUB_PRICING_SIM_PATH = `${SELLER_HUB_BASE_PATH}/products/pricing-sim`
 export const SELLER_HUB_LISTINGS_PATH = `${SELLER_HUB_BASE_PATH}/products/listings`
+export const SELLER_HUB_LISTING_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/new`
 export function getSellerHubProductPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/${id}`
+}
+export function getSellerHubListingPath(id: string) {
+  return `${SELLER_HUB_BASE_PATH}/products/listings/${id}`
 }
 
 // 재고 섹션

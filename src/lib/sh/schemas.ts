@@ -196,3 +196,93 @@ export const pricingSettingsSchema = z.object({
   defaultPackagingCost: z.number().nonnegative(),
 })
 export type PricingSettingsInput = z.infer<typeof pricingSettingsSchema>
+
+// ─── 판매채널 상품 (ProductListing) ──────────────────────────────────────────
+// 채널별 상품 묶음. 구성 옵션 1~50개, 키워드 최대 30개, 상품명 200자 소프트 상한.
+
+const listingNameSchema = z.preprocess(
+  (v) => (typeof v === 'string' ? v.trim() : v),
+  z.string().min(1, '상품명을 입력하세요').max(200)
+)
+
+export const productListingItemSchema = z.object({
+  optionId: idLike,
+  quantity: z.preprocess(
+    (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+    z.number().int().min(1, '수량은 1 이상이어야 합니다').max(999)
+  ),
+  sortOrder: z
+    .preprocess(
+      (v) => (v === null || v === '' || v === undefined ? 0 : Number(v)),
+      z.number().int().min(0)
+    )
+    .default(0),
+})
+export type ProductListingItemInput = z.infer<typeof productListingItemSchema>
+
+export const productListingSchema = z
+  .object({
+    channelId: idLike,
+    internalCode: emptyToUndefined.pipe(z.string().trim().max(50)).optional(),
+    searchName: listingNameSchema,
+    displayName: listingNameSchema,
+    keywords: z
+      .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
+      .max(30)
+      .default([]),
+    retailPrice: z
+      .preprocess(
+        (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+        z.number().min(0).max(99_999_999)
+      )
+      .optional(),
+    status: z.enum(['ACTIVE', 'SUSPENDED']).default('ACTIVE'),
+    memo: emptyToUndefined.pipe(z.string().trim().max(500)).optional(),
+    items: z.array(productListingItemSchema).min(1, '구성 옵션을 1개 이상 추가해 주세요').max(50),
+  })
+  .superRefine((v, ctx) => {
+    const ids = new Set<string>()
+    for (const it of v.items) {
+      if (ids.has(it.optionId)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: '같은 옵션이 중복되었습니다',
+          path: ['items'],
+        })
+      }
+      ids.add(it.optionId)
+    }
+  })
+export type ProductListingInput = z.infer<typeof productListingSchema>
+
+// PATCH — 모든 필드 선택. items는 있으면 전체 교체.
+export const productListingPatchSchema = z
+  .object({
+    internalCode: emptyToUndefined.pipe(z.string().trim().max(50)).optional().nullable(),
+    searchName: listingNameSchema.optional(),
+    displayName: listingNameSchema.optional(),
+    keywords: z
+      .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
+      .max(30)
+      .optional(),
+    retailPrice: z
+      .preprocess(
+        (v) => (v === null || v === '' ? null : v === undefined ? undefined : Number(v)),
+        z.union([z.number().min(0).max(99_999_999), z.null()])
+      )
+      .optional(),
+    status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
+    memo: emptyToUndefined.pipe(z.string().trim().max(500)).optional().nullable(),
+    items: z.array(productListingItemSchema).min(1).max(50).optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (!v.items) return
+    const ids = new Set<string>()
+    for (const it of v.items) {
+      if (ids.has(it.optionId)) {
+        ctx.addIssue({ code: 'custom', message: '같은 옵션이 중복되었습니다', path: ['items'] })
+      }
+      ids.add(it.optionId)
+    }
+  })
+export type ProductListingPatchInput = z.infer<typeof productListingPatchSchema>
