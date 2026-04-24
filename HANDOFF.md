@@ -1,7 +1,7 @@
-# Sales Content Deck — 인수인계 (2026-04-24, 업데이트)
+# Sales Content Deck — Phase 1 완주 (2026-04-24)
 
-> 이전 Claude Code 세션(`/Users/kaleos/projects/workdeck-app`, develop 브랜치)에서 이어지는 작업입니다.
-> 새 세션 시작 시 **가장 먼저 이 문서를 읽고** 이어가세요. 이 파일 자체는 git에 커밋하지 않아도 됩니다 (필요 시 .gitignore 추가).
+> Phase 1 (13 Unit) 전부 구현 완료. 이 문서는 구현 이후 연속 진행 사항을 요약하고,
+> 실제 스모크 테스트 · 외부 통합 작업에 필요한 맥락을 모아둔다.
 
 ## 지금 어디까지 왔나
 
@@ -34,9 +34,61 @@
   - ⚠️ **End-to-end 실제 실행은 아직 안 됨**: Bridge 쪽 `/sales-content/generate` 라우트 미구현 + 로컬 Ollama 미기동 → 첫 실제 ideation 호출이 진짜 스모크 테스트. 현재는 build/lint/schema 레벨에서만 검증.
   - `ImprovementRule` 주입은 `loadActiveRules()` 스텁으로 자리만 확보 (Unit 13 에서 본체 교체).
 
+- [x] **Unit 5** (`9a13694`) — 템플릿 시스템
+  - Template (spaceId nullable — null+isSystem=시스템) + SalesContentChannel + 5개 enum
+  - 시스템 템플릿 3종(블로그 장문·소셜 텍스트·카드뉴스) seed 완료
+  - `src/lib/sc/template-engine.ts` — zod 분기 검증 + skeleton 렌더
+  - API 4종 + 사이드바 "템플릿", "채널" 활성화
+- [x] **Unit 6** (`6ff8d73`) — 콘텐츠 제작 + TipTap
+  - Content + ContentAsset + ContentStatus(6단계) + ContentAssetKind
+  - TipTap (`@tiptap/react` 외 5개) 설치 + 경량 에디터 + 툴바
+  - 상태 머신 `src/lib/sc/content-state.ts` — 전이 허용 매트릭스 + 최소 본문 길이 검증(50자)
+  - API 4종 (GET/POST list, GET/PATCH/DELETE [id], POST transition, POST generate)
+  - 사이드바 "콘텐츠" 활성화
+- [x] **Unit 7** (`f987fad`) — 이미지 업로드 + AI 생성
+  - `src/lib/supabase/storage.ts` — 버킷 `sales-content-assets`, path `{spaceId}/content/{contentId}/{uuid}.{ext}`
+  - POST `/api/sc/contents/[id]/assets` 이원화: multipart 업로드 / `mode:'ai'` (Gemini → Storage put → ContentAsset)
+  - `ImagePicker` UI, ContentEditor 에 integration
+  - ⚠️ Supabase 대시보드에서 `sales-content-assets` 버킷 수동 생성 필요 (public, 20MB)
+- [x] **Unit 8** (`b6f5aa6`) — UTM 빌더 + `/c/[slug]` 리다이렉터
+  - ContentDeployment + ContentClickEvent + DeploymentStatus enum
+  - `src/lib/sc/utm.ts` — normalizeKebab, buildTargetUrl, deriveUtmDefaults, generateShortSlug, hashIp
+  - `/c/[slug]` 302 + fire-and-forget ContentClickEvent INSERT
+  - DeployButton → 배포 예약 폼, 배포 상세 페이지
+  - 사이드바 "배포 내역" 활성화
+- [x] **Unit 9** (`ad3cb6d`) — 자격증명 + 작업 큐 + 워커 poller
+  - ChannelCredential(AES-256-CBC, del/encryption 재사용) + SalesContentJob + 3개 enum
+  - `claimJobs` — Postgres `FOR UPDATE SKIP LOCKED` 로 다중 워커 atomic 클레임
+  - attempts 한도 3 초과 시 FAILED, 이내면 지수 백오프(1m/5m/15m)
+  - `/api/sc/channels/[id]/credentials`, `/api/sc/jobs/worker`, `/api/sc/jobs/[id]/complete`
+  - `worker/src/sc/job-poller.ts` polling 루프 스켈레톤
+- [x] **Unit 10** (`67798a1`) — 배포 실행 Publisher
+  - Exporter 3종 (blog-markdown, social-text, cardnews)
+  - Publisher factory + Manual/Threads-api/Naver-blog-browser 스켈레톤 (실제 플랫폼 통합은 Phase 2)
+  - POST `/api/sc/deployments/[id]/execute` → PUBLISH job enqueue + SCHEDULED→PUBLISHING
+  - ExecuteDeploymentButton, 배포 상세 페이지
+- [x] **Unit 11** (`9a5fd22`) — 성과 대시보드
+  - DeploymentMetric + MetricSource enum (MANUAL/API/BROWSER/INTERNAL)
+  - `getDeploymentMetricsTotal`, `getSpaceAnalyticsSummary` (groupBy 로 N+1 방지)
+  - POST/GET `/api/sc/metrics/[deploymentId]`, GET `/api/sc/analytics/summary`
+  - `/d/sales-content/analytics{,/[deploymentId]}` + MetricForm (6개 지표 수동 입력)
+  - 사이드바 "성과" 활성화
+- [x] **Unit 12** (`f80d193`) — Collectors 스켈레톤 + 스케줄러
+  - Collector factory + Threads/네이버 블로그 스켈레톤
+  - `src/lib/sc/collector-scheduler.ts` → PUBLISHED 배포에 대해 COLLECT_METRIC job 일괄 enqueue
+  - POST `/api/sc/analytics/schedule-collection` (수동 트리거)
+- [x] **Unit 13** (`ece3193`) — 개선 규칙 + 셀프-임프루빙 루프 연결
+  - ImprovementRule + 3개 enum (RuleSource · RuleStatus · RuleScope)
+  - `src/lib/sc/improvement.ts` `loadActiveImprovementRules` — scope 별 필터 + weight/updatedAt 정렬
+  - **Unit 4 `loadActiveRules` 스텁을 dynamic import 로 실제 구현에 배선 완료**
+  - `/api/sc/improvement-rules`, RuleList/RuleForm + `/d/sales-content/rules`
+  - 사이드바 "개선 규칙" 활성화
+
 **다음:**
 
-- [ ] Unit 5 — 템플릿 시스템 (시스템 기본 + 사용자 저장)
+- [ ] Phase 2 실제 외부 통합 — Bridge ACP 라우트, Threads/네이버 blog 자동화, Insight-generator AI 규칙 생성 파이프라인
+- [ ] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화)
+- [ ] First smoke test — 실제 Bridge + Gemini + Supabase Storage 연결 후 end-to-end 통과
 
 ## 확정된 의사결정
 
