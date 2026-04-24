@@ -103,7 +103,9 @@ export async function POST(req: NextRequest) {
 
   // 채널별 상품 별칭 사전을 한 번에 조회해 자동 매칭에 사용한다.
   // channelId가 없으면 매칭 skip (별칭은 채널 스코프).
-  let aliasLookup = new Map<string, string>()
+  // 별칭은 listingId 또는 optionId 중 하나를 가리키며, listing이 우선.
+  let aliasLookup = new Map<string, import('@/lib/sh/product-matching').MatchTarget>()
+  const listingItemsMap = new Map<string, Array<{ optionId: string; quantity: number }>>()
   if (channelId) {
     const uniqueNames = new Set<string>()
     for (const group of groups.values()) {
@@ -113,18 +115,28 @@ export async function POST(req: NextRequest) {
     }
     if (uniqueNames.size > 0) {
       const aliasRows = await prisma.channelProductAlias.findMany({
-        where: {
-          channelId,
-          aliasName: { in: Array.from(uniqueNames) },
-          optionId: { not: null },
-        },
-        select: { aliasName: true, optionId: true },
+        where: { channelId, aliasName: { in: Array.from(uniqueNames) } },
+        select: { aliasName: true, optionId: true, listingId: true },
       })
-      // optionId가 null이 아닌 행만 통과 (PR #4에서 listingId 분기 도입 시 교체 예정)
-      const nonNullRows = aliasRows.flatMap((r) =>
-        r.optionId ? [{ aliasName: r.aliasName, optionId: r.optionId }] : []
+      aliasLookup = buildAliasLookup(aliasRows)
+
+      // listing 매칭에 필요한 item 구성 정보 로드
+      const listingIds = Array.from(
+        new Set(
+          Array.from(aliasLookup.values())
+            .map((t) => t.listingId)
+            .filter((v): v is string => !!v)
+        )
       )
-      aliasLookup = buildAliasLookup(nonNullRows)
+      if (listingIds.length > 0) {
+        const listings = await prisma.productListing.findMany({
+          where: { id: { in: listingIds }, spaceId: resolved.space.id },
+          include: { items: { select: { optionId: true, quantity: true } } },
+        })
+        for (const l of listings) {
+          listingItemsMap.set(l.id, l.items)
+        }
+      }
     }
   }
 
@@ -144,37 +156,95 @@ export async function POST(req: NextRequest) {
         address: first.address,
       })
 
-      const items = group.rows
+      // items 구성:
+      //  - listing 매칭 → DelOrderItem.listingId + 자식 fulfillments (listingItem.qty × orderItem.qty)
+      //  - option 매칭  → DelOrderItem.optionId
+      //  - 미매칭       → 둘 다 null
+      type ItemCreate = {
+        name: string
+        quantity: number
+        optionId: string | null
+        listingId: string | null
+        fulfillments: Array<{ optionId: string; quantity: number }>
+      }
+      const items: ItemCreate[] = group.rows
         .filter((r) => r.productName)
         .map((r) => {
           const rawName = r.productName as string
-          const optionId = aliasLookup.get(normalizeAlias(rawName)) ?? null
-          if (optionId) matchedItemCount++
+          const qty = r.productQuantity ?? 1
+          const target = aliasLookup.get(normalizeAlias(rawName))
+          if (target?.listingId) {
+            matchedItemCount++
+            const listingItems = listingItemsMap.get(target.listingId) ?? []
+            return {
+              name: rawName,
+              quantity: qty,
+              optionId: null,
+              listingId: target.listingId,
+              fulfillments: listingItems.map((li) => ({
+                optionId: li.optionId,
+                quantity: li.quantity * qty,
+              })),
+            }
+          }
+          if (target?.optionId) {
+            matchedItemCount++
+            return {
+              name: rawName,
+              quantity: qty,
+              optionId: target.optionId,
+              listingId: null,
+              fulfillments: [],
+            }
+          }
           return {
             name: rawName,
-            quantity: r.productQuantity ?? 1,
-            optionId,
+            quantity: qty,
+            optionId: null,
+            listingId: null,
+            fulfillments: [],
           }
         })
 
       const hasPayment = group.rows.some((r) => r.paymentAmount != null)
       const paymentSum = group.rows.reduce((sum, r) => sum + (r.paymentAmount ?? 0), 0)
 
-      await prisma.delOrder.create({
-        data: {
-          spaceId: resolved.space.id,
-          batchId,
-          shippingMethodId: shippingMethodId || null,
-          channelId: channelId || null,
-          ...encrypted,
-          postalCode: first.postalCode || null,
-          deliveryMessage: first.deliveryMessage || null,
-          memo: first.memo || null,
-          orderDate: new Date(first.orderDate),
-          orderNumber: first.orderNumber || null,
-          paymentAmount: hasPayment ? paymentSum : null,
-          items: items.length > 0 ? { create: items } : undefined,
-        },
+      await prisma.$transaction(async (tx) => {
+        const order = await tx.delOrder.create({
+          data: {
+            spaceId: resolved.space.id,
+            batchId,
+            shippingMethodId: shippingMethodId || null,
+            channelId: channelId || null,
+            ...encrypted,
+            postalCode: first.postalCode || null,
+            deliveryMessage: first.deliveryMessage || null,
+            memo: first.memo || null,
+            orderDate: new Date(first.orderDate),
+            orderNumber: first.orderNumber || null,
+            paymentAmount: hasPayment ? paymentSum : null,
+          },
+        })
+        for (const it of items) {
+          const created = await tx.delOrderItem.create({
+            data: {
+              orderId: order.id,
+              name: it.name,
+              quantity: it.quantity,
+              optionId: it.optionId,
+              listingId: it.listingId,
+            },
+          })
+          if (it.fulfillments.length > 0) {
+            await tx.delOrderItemFulfillment.createMany({
+              data: it.fulfillments.map((f) => ({
+                orderItemId: created.id,
+                optionId: f.optionId,
+                quantity: f.quantity,
+              })),
+            })
+          }
+        }
       })
       created++
     } catch (err) {

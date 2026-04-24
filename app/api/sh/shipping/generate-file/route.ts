@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     )
   )
 
-  // 해당 배송 묶음 + 배송방식의 주문 조회 — 매칭된 옵션 정보도 같이 로드
+  // 해당 배송 묶음 + 배송방식의 주문 조회 — listing 매칭은 fulfillment로 팬아웃해 파일에 반영
   const orders = await prisma.delOrder.findMany({
     where: {
       batchId,
@@ -59,6 +59,17 @@ export async function POST(req: NextRequest) {
               product: { select: { name: true, internalName: true } },
             },
           },
+          fulfillments: {
+            include: {
+              option: {
+                select: {
+                  id: true,
+                  name: true,
+                  product: { select: { name: true, internalName: true } },
+                },
+              },
+            },
+          },
         },
       },
       channel: { select: { name: true } },
@@ -69,9 +80,18 @@ export async function POST(req: NextRequest) {
     return errorResponse('해당 배송 방식의 주문이 없습니다', 400)
   }
 
-  // 배송 방식 × 옵션 오버라이드 일괄 조회 → Map
+  // 배송 방식 × 옵션 오버라이드 일괄 조회 — fulfillment 포함 모든 option 수집
   const optionIds = Array.from(
-    new Set(orders.flatMap((o) => o.items.map((i) => i.optionId).filter((v): v is string => !!v)))
+    new Set(
+      orders.flatMap((o) =>
+        o.items.flatMap((i) => {
+          const ids: string[] = []
+          if (i.optionId) ids.push(i.optionId)
+          for (const f of i.fulfillments) ids.push(f.optionId)
+          return ids
+        })
+      )
+    )
   )
   const labelRows = optionIds.length
     ? await prisma.delShippingMethodLabel.findMany({
@@ -82,7 +102,6 @@ export async function POST(req: NextRequest) {
   const overridesByOption = new Map<string, Partial<Record<DelFieldMapping, string>>>()
   for (const row of labelRows) {
     const raw = (row.overrides as Partial<Record<DelFieldMapping, string>>) ?? {}
-    // 현재 배송방식에 활성화된 라벨 컬럼만 적용.
     const filtered: Partial<Record<DelFieldMapping, string>> = {}
     for (const key of Object.keys(raw) as DelFieldMapping[]) {
       if (allowedLabelKeys.has(key)) filtered[key] = raw[key]
@@ -90,22 +109,44 @@ export async function POST(req: NextRequest) {
     overridesByOption.set(row.optionId, filtered)
   }
 
+  // DelOrderItem을 generator용 ItemLine으로 변환.
+  //  - fulfillments 있으면 각각을 별도 ItemLine으로 펼침 (listing 팬아웃)
+  //  - 단일 옵션 매칭은 기존 1:1
+  //  - 미매칭은 raw name fallback
   const ordersForGenerator = orders.map((o) => ({
     ...o,
-    items: o.items.map((i) => ({
-      name: i.name,
-      quantity: i.quantity,
-      option: i.option
-        ? {
-            name: i.option.name,
+    items: o.items.flatMap((i) => {
+      if (i.fulfillments.length > 0) {
+        return i.fulfillments.map((f) => ({
+          name: i.name,
+          quantity: f.quantity,
+          option: {
+            name: f.option.name,
             product: {
-              name: i.option.product.name, // 공식명
-              internalName: i.option.product.internalName, // 관리명
+              name: f.option.product.name,
+              internalName: f.option.product.internalName,
             },
-          }
-        : null,
-      overrides: i.optionId ? (overridesByOption.get(i.optionId) ?? null) : null,
-    })),
+          },
+          overrides: overridesByOption.get(f.optionId) ?? null,
+        }))
+      }
+      return [
+        {
+          name: i.name,
+          quantity: i.quantity,
+          option: i.option
+            ? {
+                name: i.option.name,
+                product: {
+                  name: i.option.product.name,
+                  internalName: i.option.product.internalName,
+                },
+              }
+            : null,
+          overrides: i.optionId ? (overridesByOption.get(i.optionId) ?? null) : null,
+        },
+      ]
+    }),
   }))
 
   const formatConfig = method.formatConfig as DelFormatColumn[]
