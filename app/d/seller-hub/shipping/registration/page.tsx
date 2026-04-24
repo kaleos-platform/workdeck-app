@@ -298,6 +298,59 @@ export default function ShippingRegistrationPage() {
     setRows((prev) => [...prev, ...pastedRows])
   }
 
+  async function handleItemPatch(orderId: string, itemId: string, patch: { quantity: number }) {
+    if (orderId.startsWith('temp-')) return // 아직 저장 전이면 로컬만
+    try {
+      const res = await fetch(`/api/sh/shipping/orders/${orderId}/items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.message ?? '수량 저장 실패')
+      }
+      const data = await res.json()
+      if (data.noChange || !data.item) return
+      // 응답으로 받은 최신 quantity + fulfillments 반영
+      setRows((prev) =>
+        prev.map((r) =>
+          r.tempId === orderId
+            ? {
+                ...r,
+                items: r.items.map((it) =>
+                  it.itemId === itemId
+                    ? {
+                        ...it,
+                        quantity: data.item.quantity,
+                        fulfillments:
+                          Array.isArray(data.item.fulfillments) && data.item.fulfillments.length > 0
+                            ? data.item.fulfillments.map(
+                                (f: {
+                                  optionId: string
+                                  productName: string
+                                  optionName: string
+                                  quantity: number
+                                }) => ({
+                                  optionId: f.optionId,
+                                  productName: f.productName,
+                                  optionName: f.optionName,
+                                  quantity: f.quantity,
+                                })
+                              )
+                            : null,
+                      }
+                    : it
+                ),
+              }
+            : r
+        )
+      )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '수량 저장 실패')
+    }
+  }
+
   async function handleRemoveRow(tempId: string) {
     if (tempId.startsWith('temp-')) {
       setRows((prev) => prev.filter((r) => r.tempId !== tempId))
@@ -590,6 +643,7 @@ export default function ShippingRegistrationPage() {
         onRemove={handleRemoveRow}
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
+        onItemPatch={handleItemPatch}
         onOpenMatch={(row, itemIndex) => {
           const item = row.items[itemIndex]
           if (!item?.itemId) return
