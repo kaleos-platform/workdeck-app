@@ -105,7 +105,7 @@
     - `src/components/sc/contents/version-history-panel.tsx` — Dialog 미리보기 + 롤백 확인
     - 테스트 5 케이스 (버전 계산 순수 함수)
     - 팀: 번스타인(backend) + 시라노(frontend)
-  - [x] **Unit 17** (commit `TBD`) — SC 워커 엔트리포인트 + Publisher/Collector 에러 코드
+  - [x] **Unit 17** (commit `8473bb0`) — SC 워커 엔트리포인트 + Publisher/Collector 에러 코드
     - `worker/src/sc/runner.ts` — kind 별 라우팅(PUBLISH/COLLECT_METRIC/INSIGHT_SWEEP) + `runScLoop` 무한 루프 + SIGTERM/SIGINT graceful shutdown
     - `worker/src/sc/index.ts` CLI + `npm run sc` 스크립트
     - `PublishResult.errorCode` / `CollectResult.errorCode` 추가 (AUTH_FAILED · RATE_LIMITED · VALIDATION · PLATFORM_ERROR · NOT_IMPLEMENTED · NETWORK)
