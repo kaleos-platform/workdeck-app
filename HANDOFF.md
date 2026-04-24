@@ -112,7 +112,7 @@
     - 10개 유닛 테스트 (PUBLISH 4 + COLLECT 4 + INSIGHT 2)
   - [ ] Bridge ACP 라우트 (`POST /sales-content/generate` + `GET /health`) — `claude-code-bridge` 프로젝트
   - [ ] Threads API 실구현 (OAuth 토큰 + Graph API)
-  - [x] **Unit 18** (commit `TBD`) — 네이버 블로그 Playwright 실구현
+  - [x] **Unit 18** (commit `fb42b65`) — 네이버 블로그 Playwright 실구현
     - `scripts/sc/acquire-naver-session.ts` — `--auto` (env ID/PW) / `--manual` 두 모드. NID_AUT·NID_SES 쿠키 polling 으로 감지 후 storageState JSON 저장
     - `worker/src/sc/publishers/naver-blog-browser.ts` — SmartEditor ONE 대응: iframe(PostWriteForm) → 제목 클릭/타이핑 → 본문 클릭/타이핑 → 발행 버튼 → 최종 URL 캡처. 세션 만료 시 AUTH_FAILED 반환.
     - `worker/src/sc/publishers/_naver-doc-text.ts` — TipTap Doc → 문단 구분 plain text + CTA 삽입 (6 테스트)
