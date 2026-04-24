@@ -340,6 +340,7 @@ model Space {
   channelGroups          ChannelGroup[]
   brands                 Brand[]
   productPricingSettings ProductPricingSettings?
+  optionCodeAliases      SpaceOptionCodeAlias[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1205,4 +1206,23 @@ model ProductPricingSettings {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Space별 옵션 값-코드 자동 학습 사전
+// 사용자가 상품 저장 시 속성 값의 코드를 수정하면 여기에 자동 upsert되고,
+// 다음 상품 생성 시 에디터가 자동 제안한다 (Space 격리 + 시스템 사전보다 우선).
+model SpaceOptionCodeAlias {
+  id            String @id @default(cuid())
+  spaceId       String
+  attributeName String // "사이즈", "색상", "재질" ...
+  value         String // "누드", "블랙" ...
+  code          String // "NDE", "BLK" ... 사용자 커스텀 축약
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, attributeName, value])
+  @@index([spaceId])
 }

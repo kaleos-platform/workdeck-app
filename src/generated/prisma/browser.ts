@@ -277,3 +277,8 @@ export type ProductionBatch = Prisma.ProductionBatchModel
  * 
  */
 export type ProductPricingSettings = Prisma.ProductPricingSettingsModel
+/**
+ * Model SpaceOptionCodeAlias
+ * 
+ */
+export type SpaceOptionCodeAlias = Prisma.SpaceOptionCodeAliasModel

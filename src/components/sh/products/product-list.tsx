@@ -222,10 +222,6 @@ export function ShProductList() {
                 const brandLabel = row.brand?.name ?? row.brandName ?? null
                 const optionCount = row.optionsCount ?? row.options?.length ?? 0
                 const displayName = productDisplayName(row)
-                const showOfficialHint =
-                  row.internalName &&
-                  row.internalName.trim().length > 0 &&
-                  row.internalName !== row.name
                 const goDetail = () => router.push(`/d/seller-hub/products/${row.id}`)
                 return (
                   <TableRow
@@ -245,12 +241,6 @@ export function ShProductList() {
                     <TableCell className="text-sm text-muted-foreground">{groupLabel}</TableCell>
                     <TableCell>
                       <div className="font-medium">{displayName}</div>
-                      {showOfficialHint && (
-                        <div className="text-xs text-muted-foreground">공식: {row.name}</div>
-                      )}
-                      {row.nameEn && (
-                        <div className="text-xs text-muted-foreground">{row.nameEn}</div>
-                      )}
                     </TableCell>
                     <TableCell>
                       {brandLabel ? (

@@ -102,7 +102,8 @@ export const ModelName = {
   Channel: 'Channel',
   ChannelFeeRate: 'ChannelFeeRate',
   ProductionBatch: 'ProductionBatch',
-  ProductPricingSettings: 'ProductPricingSettings'
+  ProductPricingSettings: 'ProductPricingSettings',
+  SpaceOptionCodeAlias: 'SpaceOptionCodeAlias'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -907,6 +908,19 @@ export const ProductPricingSettingsScalarFieldEnum = {
 } as const
 
 export type ProductPricingSettingsScalarFieldEnum = (typeof ProductPricingSettingsScalarFieldEnum)[keyof typeof ProductPricingSettingsScalarFieldEnum]
+
+
+export const SpaceOptionCodeAliasScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  attributeName: 'attributeName',
+  value: 'value',
+  code: 'code',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceOptionCodeAliasScalarFieldEnum = (typeof SpaceOptionCodeAliasScalarFieldEnum)[keyof typeof SpaceOptionCodeAliasScalarFieldEnum]
 
 
 export const SortOrder = {

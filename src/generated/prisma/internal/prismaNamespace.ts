@@ -435,7 +435,8 @@ export const ModelName = {
   Channel: 'Channel',
   ChannelFeeRate: 'ChannelFeeRate',
   ProductionBatch: 'ProductionBatch',
-  ProductPricingSettings: 'ProductPricingSettings'
+  ProductPricingSettings: 'ProductPricingSettings',
+  SpaceOptionCodeAlias: 'SpaceOptionCodeAlias'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -451,7 +452,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4303,6 +4304,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SpaceOptionCodeAlias: {
+      payload: Prisma.$SpaceOptionCodeAliasPayload<ExtArgs>
+      fields: Prisma.SpaceOptionCodeAliasFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceOptionCodeAliasFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceOptionCodeAliasFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceOptionCodeAliasFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceOptionCodeAliasFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceOptionCodeAliasFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceOptionCodeAliasCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceOptionCodeAliasCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceOptionCodeAliasCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceOptionCodeAliasDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>
+        }
+        update: {
+          args: Prisma.SpaceOptionCodeAliasUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceOptionCodeAliasDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceOptionCodeAliasUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceOptionCodeAliasUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceOptionCodeAliasUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceOptionCodeAliasPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceOptionCodeAliasAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceOptionCodeAlias>
+        }
+        groupBy: {
+          args: Prisma.SpaceOptionCodeAliasGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceOptionCodeAliasGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceOptionCodeAliasCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceOptionCodeAliasCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -5130,6 +5205,19 @@ export const ProductPricingSettingsScalarFieldEnum = {
 export type ProductPricingSettingsScalarFieldEnum = (typeof ProductPricingSettingsScalarFieldEnum)[keyof typeof ProductPricingSettingsScalarFieldEnum]
 
 
+export const SpaceOptionCodeAliasScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  attributeName: 'attributeName',
+  value: 'value',
+  code: 'code',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceOptionCodeAliasScalarFieldEnum = (typeof SpaceOptionCodeAliasScalarFieldEnum)[keyof typeof SpaceOptionCodeAliasScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -5575,6 +5663,7 @@ export type GlobalOmitConfig = {
   channelFeeRate?: Prisma.ChannelFeeRateOmit
   productionBatch?: Prisma.ProductionBatchOmit
   productPricingSettings?: Prisma.ProductPricingSettingsOmit
+  spaceOptionCodeAlias?: Prisma.SpaceOptionCodeAliasOmit
 }
 
 /* Types for Logging */

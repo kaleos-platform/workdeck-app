@@ -50,10 +50,23 @@ export type ProductOptionInput = z.infer<typeof productOptionSchema>
 
 // ─── 상품 ──────────────────────────────────────────────────────────────────
 
-// 옵션 속성 항목 스키마 (예: {name: "사이즈", values: ["S","M","L"]})
+// 옵션 속성 값 스키마 — {value, code} 구조.
+// 레거시 호환: 문자열로 들어오면 code 미지정(빈 문자열)으로 정규화.
+const optionAttributeValueSchema = z.preprocess(
+  (v) => {
+    if (typeof v === 'string') return { value: v, code: '' }
+    return v
+  },
+  z.object({
+    value: z.string().min(1).max(50),
+    code: z.string().max(10).optional().default(''),
+  })
+)
+
+// 옵션 속성 항목 스키마 (예: {name:"사이즈", values:[{value:"S",code:"S"}, ...]})
 const optionAttributeSchema = z.object({
   name: z.string().min(1).max(50),
-  values: z.array(z.string().min(1).max(50)).min(1).max(50),
+  values: z.array(optionAttributeValueSchema).min(1).max(50),
 })
 
 export const productSchema = z.object({

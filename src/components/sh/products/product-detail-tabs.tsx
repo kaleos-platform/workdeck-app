@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ProductBasicForm } from '@/components/sh/products/product-basic-form'
+import { ProductAttributesEditor } from '@/components/sh/products/product-attributes-editor'
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
 import { ProductionBatchTable } from '@/components/sh/products/production-batch-table'
 
@@ -140,10 +141,19 @@ export function ProductDetailTabs({ productId }: Props) {
         ref={(el) => {
           sectionRefs.current.options = el
         }}
-        className="scroll-mt-24 space-y-4 border-t pt-8"
+        className="scroll-mt-24 space-y-6 border-t pt-8"
       >
         <SectionHeader title={SECTIONS[1].title} description={SECTIONS[1].description} />
-        <ProductOptionsTable key={refreshKey} productId={productId} />
+        <ProductAttributesEditor
+          key={`attrs-${refreshKey}`}
+          productId={productId}
+          onSaved={() => setRefreshKey((k) => k + 1)}
+        />
+        <ProductOptionsTable
+          key={`opts-${refreshKey}`}
+          productId={productId}
+          onChanged={() => setRefreshKey((k) => k + 1)}
+        />
       </section>
 
       <section

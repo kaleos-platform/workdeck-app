@@ -436,6 +436,7 @@ export default function ProductNewPage() {
                 combinations={combinations}
                 onAttributesChange={setAttributes}
                 onCombinationsChange={setCombinations}
+                productCode={code}
               />
               {!useAttributeMode && (
                 <p className="mt-3 text-xs text-muted-foreground">

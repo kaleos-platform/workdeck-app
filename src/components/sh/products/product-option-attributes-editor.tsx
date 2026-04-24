@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -14,34 +13,45 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  aliasMapKey,
+  generateOptionSku,
+  resolveValueCode,
+  type AttrCodeSpec,
+} from '@/lib/sh/option-code'
 
-/** 속성 하나 (예: { name: "사이즈", values: ["S","M","L"] }) */
+const MAX_ATTRIBUTES = 3
+
+/** 속성 값 — 값(사용자 입력) + 코드(자동 또는 수동) */
+export type OptionAttributeValue = { value: string; code: string }
+
+/** 속성 하나 (예: { name: "사이즈", values: [{value:"S",code:"S"}, ...] }) */
 export type OptionAttribute = {
   name: string
-  values: string[]
+  values: OptionAttributeValue[]
 }
 
-/** 조합 행 하나 (예: { combination: ["파랑","S"], sku: "", costPrice: "", retailPrice: "" }) */
+/** 조합 행 하나 */
 export type CombinationRow = {
-  /** 각 속성의 값 배열 (속성 순서 기준) */
+  /** 각 속성의 값 (속성 순서 기준) */
   combination: string[]
+  /** 관리코드 — 자동 or 수동 */
   sku: string
+  /** 사용자가 직접 수정했는지 (true면 자동 재계산에서 제외) */
+  skuManual: boolean
   costPrice: string
   retailPrice: string
 }
 
 type Props = {
-  /** 현재 속성 목록 */
   attributes: OptionAttribute[]
-  /** 현재 조합 행 목록 */
   combinations: CombinationRow[]
-  /** 속성 변경 시 호출 */
   onAttributesChange: (attrs: OptionAttribute[]) => void
-  /** 조합 행 변경 시 호출 */
   onCombinationsChange: (rows: CombinationRow[]) => void
+  /** SKU 자동 조립에 사용할 상품 코드 (없으면 속성 코드만 조립) */
+  productCode?: string | null
 }
 
-/** 카티션 곱 계산 */
 function cartesian(arrays: string[][]): string[][] {
   if (arrays.length === 0) return []
   return arrays.reduce<string[][]>(
@@ -50,114 +60,262 @@ function cartesian(arrays: string[][]): string[][] {
   )
 }
 
-/** 조합 배열을 표시명으로 변환 */
 function combinationLabel(comb: string[]): string {
   return comb.join(' / ')
 }
 
 /**
- * 옵션 속성 정의 + 자동 조합 생성 에디터.
- * Controlled 컴포넌트 — 부모가 attributes/combinations 상태를 소유한다.
+ * 한 조합의 SKU를 자동 계산한다.
+ * 속성별 값 → 해당 값의 코드 조회 → 긴 코드 앞 정렬 규칙으로 조립.
+ */
+function computeSkuForCombination(params: {
+  combination: string[]
+  validAttrs: OptionAttribute[]
+  productCode?: string | null
+}): string {
+  const specs: AttrCodeSpec[] = params.validAttrs.map((attr, attrIdx) => {
+    const val = params.combination[attrIdx]
+    const match = attr.values.find((v) => v.value === val)
+    const code = match?.code?.trim() ?? ''
+    const maxLen = Math.max(0, ...attr.values.map((v) => v.code?.length ?? 0))
+    return { attrIdx, code, maxLen }
+  })
+  return generateOptionSku({ productCode: params.productCode, attributeCodes: specs })
+}
+
+/**
+ * 옵션 속성 에디터.
+ * - 속성 최대 3개
+ * - 각 값에 자동 코드 생성(Space alias 우선 → 시스템 규칙) + 수동 수정 가능
+ * - 조합 자동 생성 + SKU 자동 조립(수동 수정 시 skuManual=true로 보존)
  */
 export function ProductOptionAttributesEditor({
   attributes,
   combinations,
   onAttributesChange,
   onCombinationsChange,
+  productCode,
 }: Props) {
-  // 값 입력 임시 상태 (속성 인덱스 → 현재 입력중인 값)
   const [valueInputs, setValueInputs] = useState<Record<number, string>>({})
+  const [aliasMap, setAliasMap] = useState<Map<string, string> | null>(null)
 
-  // 속성 변경 시 조합 재계산 (sku/costPrice/retailPrice는 기존 값 최대한 보존)
+  // Space alias prefetch (1회)
   useEffect(() => {
-    const validAttrs = attributes.filter((a) => a.name.trim() && a.values.length > 0)
+    let cancelled = false
+    fetch('/api/sh/option-code-aliases')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.data) return
+        const map = new Map<string, string>()
+        for (const entry of data.data as Array<{
+          attributeName: string
+          value: string
+          code: string
+        }>) {
+          map.set(aliasMapKey(entry.attributeName, entry.value), entry.code)
+        }
+        setAliasMap(map)
+      })
+      .catch(() => {
+        // alias 조회 실패해도 에디터는 정상 동작 (시스템 사전 폴백)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // 유효 속성 (이름+값 있음)
+  const validAttrs = useMemo(
+    () => attributes.filter((a) => a.name.trim() && a.values.length > 0),
+    [attributes]
+  )
+
+  // attributes 변경 시 조합 재계산 (sku/costPrice/retailPrice 보존)
+  const attributesKey = useMemo(
+    () =>
+      attributes
+        .map((a) => `${a.name}::${a.values.map((v) => `${v.value}|${v.code}`).join(',')}`)
+        .join(';'),
+    [attributes]
+  )
+  const prevAttrKeyRef = useRef<string>('')
+
+  useEffect(() => {
+    if (attributesKey === prevAttrKeyRef.current) return
+    prevAttrKeyRef.current = attributesKey
+
     if (validAttrs.length === 0) {
-      onCombinationsChange([])
+      if (combinations.length > 0) onCombinationsChange([])
       return
     }
-    const valueArrays = validAttrs.map((a) => a.values)
-    const newCombs = cartesian(valueArrays)
 
-    // 기존 조합 key → row 맵 (보존용)
+    const valueArrays = validAttrs.map((a) => a.values.map((v) => v.value))
+    const newCombs = cartesian(valueArrays)
     const existingMap = new Map(combinations.map((r) => [r.combination.join('|'), r]))
 
     const newRows: CombinationRow[] = newCombs.map((comb) => {
       const key = comb.join('|')
       const existing = existingMap.get(key)
-      return existing ?? { combination: comb, sku: '', costPrice: '', retailPrice: '' }
+      const autoSku = computeSkuForCombination({
+        combination: comb,
+        validAttrs,
+        productCode,
+      })
+      if (existing) {
+        // sku가 수동 수정된 조합은 사용자 입력 유지, 아니면 재계산
+        return {
+          ...existing,
+          combination: comb,
+          sku: existing.skuManual ? existing.sku : autoSku,
+        }
+      }
+      return {
+        combination: comb,
+        sku: autoSku,
+        skuManual: false,
+        costPrice: '',
+        retailPrice: '',
+      }
     })
     onCombinationsChange(newRows)
+    // attributesKey 변경만 트리거. combinations는 양방향 의존을 피하기 위해 제외.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attributes])
+  }, [attributesKey, productCode])
 
-  // 속성 추가
-  function addAttribute() {
-    onAttributesChange([...attributes, { name: '', values: [] }])
-  }
-
-  // 속성 제거
-  function removeAttribute(idx: number) {
-    onAttributesChange(attributes.filter((_, i) => i !== idx))
-    setValueInputs((prev) => {
-      const next = { ...prev }
-      delete next[idx]
-      return next
+  // productCode 변경 시 자동 sku 갱신 (skuManual=false인 것만)
+  useEffect(() => {
+    if (combinations.length === 0) return
+    const updated = combinations.map((row) => {
+      if (row.skuManual) return row
+      const autoSku = computeSkuForCombination({
+        combination: row.combination,
+        validAttrs,
+        productCode,
+      })
+      return row.sku === autoSku ? row : { ...row, sku: autoSku }
     })
-  }
+    if (updated.some((r, i) => r !== combinations[i])) {
+      onCombinationsChange(updated)
+    }
+    // productCode 변경만 트리거
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productCode])
 
-  // 속성명 변경
-  function updateAttributeName(idx: number, value: string) {
-    onAttributesChange(attributes.map((a, i) => (i === idx ? { ...a, name: value } : a)))
-  }
+  const addAttribute = useCallback(() => {
+    if (attributes.length >= MAX_ATTRIBUTES) return
+    onAttributesChange([...attributes, { name: '', values: [] }])
+  }, [attributes, onAttributesChange])
 
-  // 속성 값 추가
-  function addValue(attrIdx: number) {
-    const val = (valueInputs[attrIdx] ?? '').trim()
-    if (!val) return
-    const attr = attributes[attrIdx]
-    if (attr.values.includes(val)) return
-    onAttributesChange(
-      attributes.map((a, i) => (i === attrIdx ? { ...a, values: [...a.values, val] } : a))
-    )
-    setValueInputs((prev) => ({ ...prev, [attrIdx]: '' }))
-  }
+  const removeAttribute = useCallback(
+    (idx: number) => {
+      onAttributesChange(attributes.filter((_, i) => i !== idx))
+      setValueInputs((prev) => {
+        const next = { ...prev }
+        delete next[idx]
+        return next
+      })
+    },
+    [attributes, onAttributesChange]
+  )
 
-  // 속성 값 제거
-  function removeValue(attrIdx: number, val: string) {
-    onAttributesChange(
-      attributes.map((a, i) =>
-        i === attrIdx ? { ...a, values: a.values.filter((v) => v !== val) } : a
+  const updateAttributeName = useCallback(
+    (idx: number, name: string) => {
+      onAttributesChange(attributes.map((a, i) => (i === idx ? { ...a, name } : a)))
+    },
+    [attributes, onAttributesChange]
+  )
+
+  const addValue = useCallback(
+    (attrIdx: number) => {
+      const raw = (valueInputs[attrIdx] ?? '').trim()
+      if (!raw) return
+      const attr = attributes[attrIdx]
+      if (attr.values.some((v) => v.value === raw)) return
+      const code = resolveValueCode({
+        attributeName: attr.name,
+        value: raw,
+        spaceAliasMap: aliasMap,
+      })
+      onAttributesChange(
+        attributes.map((a, i) =>
+          i === attrIdx ? { ...a, values: [...a.values, { value: raw, code }] } : a
+        )
       )
-    )
-  }
+      setValueInputs((prev) => ({ ...prev, [attrIdx]: '' }))
+    },
+    [valueInputs, attributes, aliasMap, onAttributesChange]
+  )
 
-  // 조합 행 편집
-  function updateCombination(
-    rowIdx: number,
-    field: 'sku' | 'costPrice' | 'retailPrice',
-    value: string
-  ) {
-    onCombinationsChange(combinations.map((r, i) => (i === rowIdx ? { ...r, [field]: value } : r)))
-  }
+  const removeValue = useCallback(
+    (attrIdx: number, value: string) => {
+      onAttributesChange(
+        attributes.map((a, i) =>
+          i === attrIdx ? { ...a, values: a.values.filter((v) => v.value !== value) } : a
+        )
+      )
+    },
+    [attributes, onAttributesChange]
+  )
+
+  const updateValueCode = useCallback(
+    (attrIdx: number, valueIdx: number, code: string) => {
+      // 대문자 + 영숫자만 + 3자 절삭
+      const normalized = code
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '')
+        .slice(0, 3)
+      onAttributesChange(
+        attributes.map((a, i) =>
+          i === attrIdx
+            ? {
+                ...a,
+                values: a.values.map((v, j) => (j === valueIdx ? { ...v, code: normalized } : v)),
+              }
+            : a
+        )
+      )
+    },
+    [attributes, onAttributesChange]
+  )
+
+  const updateCombination = useCallback(
+    (rowIdx: number, field: 'sku' | 'costPrice' | 'retailPrice', value: string) => {
+      onCombinationsChange(
+        combinations.map((r, i) => {
+          if (i !== rowIdx) return r
+          if (field === 'sku') return { ...r, sku: value, skuManual: true }
+          return { ...r, [field]: value }
+        })
+      )
+    },
+    [combinations, onCombinationsChange]
+  )
 
   const hasAttributes = attributes.length > 0
   const hasCombinations = combinations.length > 0
-
-  // 유효한 속성 이름 목록 (테이블 헤더용)
-  const validAttrNames = useMemo(
-    () => attributes.filter((a) => a.name.trim()).map((a) => a.name),
-    [attributes]
-  )
+  const canAddAttr = attributes.length < MAX_ATTRIBUTES
+  const validAttrNames = validAttrs.map((a) => a.name)
 
   return (
     <div className="space-y-4">
-      {/* 속성 정의 섹션 */}
       <div className="space-y-3 rounded-md border p-4">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-semibold">옵션 속성 정의</Label>
-          <Button type="button" variant="ghost" size="sm" onClick={addAttribute}>
+          <div>
+            <Label className="text-sm font-semibold">옵션 속성 정의</Label>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              최대 {MAX_ATTRIBUTES}개 속성. 값의 코드는 자동 제안되며 직접 수정 가능합니다.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={addAttribute}
+            disabled={!canAddAttr}
+            title={canAddAttr ? '속성 추가' : `최대 ${MAX_ATTRIBUTES}개까지 가능합니다`}
+          >
             <Plus className="mr-1 h-3 w-3" />
-            속성 추가
+            속성 추가 ({attributes.length}/{MAX_ATTRIBUTES})
           </Button>
         </div>
 
@@ -168,14 +326,13 @@ export function ProductOptionAttributesEditor({
         )}
 
         {attributes.map((attr, attrIdx) => (
-          <div key={attrIdx} className="space-y-2">
-            {/* 속성명 행 */}
+          <div key={attrIdx} className="space-y-2 rounded-sm bg-muted/20 p-3">
             <div className="flex items-center gap-2">
               <Input
                 value={attr.name}
                 onChange={(e) => updateAttributeName(attrIdx, e.target.value)}
                 placeholder="속성명 (예: 사이즈)"
-                className="h-8 max-w-[180px]"
+                className="h-8 max-w-[200px]"
               />
               <Button
                 type="button"
@@ -189,22 +346,36 @@ export function ProductOptionAttributesEditor({
               </Button>
             </div>
 
-            {/* 값 태그 + 추가 입력 */}
-            <div className="flex flex-wrap items-center gap-1.5 pl-1">
-              {attr.values.map((val) => (
-                <Badge key={val} variant="secondary" className="gap-1 pr-1">
-                  {val}
-                  <button
+            {/* 값 리스트 (값 + 코드 + 삭제) */}
+            <div className="space-y-1">
+              {attr.values.map((v, valueIdx) => (
+                <div key={`${v.value}-${valueIdx}`} className="flex items-center gap-2">
+                  <Input
+                    value={v.value}
+                    readOnly
+                    className="h-7 max-w-[160px] bg-background text-xs"
+                  />
+                  <span className="text-xs text-muted-foreground">코드</span>
+                  <Input
+                    value={v.code}
+                    onChange={(e) => updateValueCode(attrIdx, valueIdx, e.target.value)}
+                    placeholder="자동"
+                    className="h-7 w-16 text-xs uppercase"
+                    maxLength={3}
+                  />
+                  <Button
                     type="button"
-                    onClick={() => removeValue(attrIdx, val)}
-                    className="ml-0.5 rounded-sm hover:text-destructive"
-                    aria-label={`${val} 제거`}
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => removeValue(attrIdx, v.value)}
+                    aria-label={`${v.value} 제거`}
                   >
                     <X className="h-3 w-3" />
-                  </button>
-                </Badge>
+                  </Button>
+                </div>
               ))}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <Input
                   value={valueInputs[attrIdx] ?? ''}
                   onChange={(e) =>
@@ -216,8 +387,8 @@ export function ProductOptionAttributesEditor({
                       addValue(attrIdx)
                     }
                   }}
-                  placeholder="값 입력 후 Enter"
-                  className="h-7 w-28 text-xs"
+                  placeholder="값 입력 후 Enter (예: S, M, 누드)"
+                  className="h-7 max-w-[220px] text-xs"
                 />
                 <Button
                   type="button"
@@ -227,6 +398,7 @@ export function ProductOptionAttributesEditor({
                   onClick={() => addValue(attrIdx)}
                 >
                   <Plus className="h-3 w-3" />
+                  추가
                 </Button>
               </div>
             </div>
@@ -234,13 +406,15 @@ export function ProductOptionAttributesEditor({
         ))}
       </div>
 
-      {/* 자동 생성 조합 테이블 */}
       {hasCombinations && (
         <div className="rounded-md border">
           <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
             <p className="text-sm font-semibold">
               자동 생성 조합{' '}
               <span className="font-normal text-muted-foreground">({combinations.length}개)</span>
+            </p>
+            <p className="text-xs text-muted-foreground">
+              관리코드는 자동 조립되며, 직접 수정하면 유지됩니다.
             </p>
           </div>
           <div className="overflow-x-auto">
@@ -252,7 +426,7 @@ export function ProductOptionAttributesEditor({
                       {attrName}
                     </TableHead>
                   ))}
-                  <TableHead className="min-w-[110px] text-xs">SKU</TableHead>
+                  <TableHead className="min-w-[140px] text-xs">관리코드 (SKU)</TableHead>
                   <TableHead className="min-w-[90px] text-xs">원가</TableHead>
                   <TableHead className="min-w-[90px] text-xs">소비자가</TableHead>
                 </TableRow>

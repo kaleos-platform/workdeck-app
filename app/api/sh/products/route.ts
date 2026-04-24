@@ -138,6 +138,34 @@ export async function POST(req: NextRequest) {
       })),
     })
 
+    // Space 커스텀 사전 자동 학습 — 사용자가 입력한 값-코드를 Space alias에 upsert
+    if (optionAttributes && Array.isArray(optionAttributes)) {
+      for (const attr of optionAttributes) {
+        if (!attr?.name?.trim() || !Array.isArray(attr.values)) continue
+        for (const v of attr.values) {
+          const value = String(v?.value ?? '').trim()
+          const code = String(v?.code ?? '').trim()
+          if (!value || !code) continue
+          await tx.spaceOptionCodeAlias.upsert({
+            where: {
+              spaceId_attributeName_value: {
+                spaceId: resolved.space.id,
+                attributeName: attr.name.trim(),
+                value,
+              },
+            },
+            create: {
+              spaceId: resolved.space.id,
+              attributeName: attr.name.trim(),
+              value,
+              code,
+            },
+            update: { code },
+          })
+        }
+      }
+    }
+
     return tx.invProduct.findUnique({
       where: { id: created.id },
       include: {
