@@ -40,3 +40,42 @@ export const SELLER_HUB_SHIPPING_INTEGRATION_PATH = `${SELLER_HUB_BASE_PATH}/shi
 
 // 채널 섹션
 export const SELLER_HUB_CHANNELS_PATH = `${SELLER_HUB_BASE_PATH}/channels`
+
+// ─── Sales Content (B2B 마케팅) ───────────────────────────────────────────────
+export const SALES_CONTENT_DECK_ID = 'sales-content'
+export const SALES_CONTENT_BASE_PATH = '/d/sales-content'
+export const SALES_CONTENT_HOME_PATH = `${SALES_CONTENT_BASE_PATH}/home`
+
+// 정보 세팅 섹션
+export const SALES_CONTENT_PRODUCTS_PATH = `${SALES_CONTENT_BASE_PATH}/settings/products`
+export const SALES_CONTENT_PERSONAS_PATH = `${SALES_CONTENT_BASE_PATH}/settings/personas`
+export const SALES_CONTENT_BRAND_PROFILE_PATH = `${SALES_CONTENT_BASE_PATH}/settings/brand-profile`
+
+// 제작 섹션
+export const SALES_CONTENT_IDEATION_PATH = `${SALES_CONTENT_BASE_PATH}/ideation`
+export const SALES_CONTENT_CONTENTS_PATH = `${SALES_CONTENT_BASE_PATH}/contents`
+export const SALES_CONTENT_TEMPLATES_PATH = `${SALES_CONTENT_BASE_PATH}/templates`
+
+// 배포 섹션
+export const SALES_CONTENT_CHANNELS_PATH = `${SALES_CONTENT_BASE_PATH}/channels`
+export const SALES_CONTENT_DEPLOYMENTS_PATH = `${SALES_CONTENT_BASE_PATH}/deployments`
+
+// 성과·규칙 섹션
+export const SALES_CONTENT_ANALYTICS_PATH = `${SALES_CONTENT_BASE_PATH}/analytics`
+export const SALES_CONTENT_RULES_PATH = `${SALES_CONTENT_BASE_PATH}/rules`
+
+export function getSalesContentIdeationPath(id: string): string {
+  return `${SALES_CONTENT_IDEATION_PATH}/${id}`
+}
+
+export function getSalesContentContentPath(id: string): string {
+  return `${SALES_CONTENT_CONTENTS_PATH}/${id}`
+}
+
+export function getSalesContentDeploymentPath(id: string): string {
+  return `${SALES_CONTENT_DEPLOYMENTS_PATH}/${id}`
+}
+
+export function getSalesContentAnalyticsPath(deploymentId: string): string {
+  return `${SALES_CONTENT_ANALYTICS_PATH}/${deploymentId}`
+}
