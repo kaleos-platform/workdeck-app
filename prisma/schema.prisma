@@ -342,6 +342,14 @@ model Space {
   productPricingSettings ProductPricingSettings?
   optionCodeAliases      SpaceOptionCodeAlias[]
 
+  // ─── Sales Content Deck ───
+  b2bProducts         B2BProduct[]
+  personas            Persona[]
+  brandProfile        BrandProfile?
+  workspaceAiCredits  WorkspaceAiCredit[]
+  imageGenerationLogs ImageGenerationLog[]
+  textGenerationLogs  TextGenerationLog[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -1226,4 +1234,156 @@ model SpaceOptionCodeAlias {
 
   @@unique([spaceId, attributeName, value])
   @@index([spaceId])
+}
+
+// ─── Sales Content Deck (정보 세팅) ───────────────────────────────────────────
+
+model B2BProduct {
+  id                  String   @id @default(cuid())
+  spaceId             String
+  name                String
+  slug                String
+  oneLinerPitch       String?
+  valueProposition    String?
+  targetCustomers     String?
+  keyFeatures         Json?
+  differentiators     Json?
+  painPointsAddressed Json?
+  proofPoints         Json?
+  pricingModel        String?
+  priceMin            Decimal? @db.Decimal(18, 2)
+  priceMax            Decimal? @db.Decimal(18, 2)
+  ctaTargetUrl        String?
+  isActive            Boolean  @default(true)
+  sourceInvProductId  String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, slug])
+  @@index([spaceId])
+}
+
+model Persona {
+  id                String   @id @default(cuid())
+  spaceId           String
+  name              String
+  slug              String
+  jobTitle          String?
+  industry          String?
+  companySize       String?
+  seniority         String?
+  decisionRole      String?
+  goals             Json?
+  painPoints        Json?
+  objections        Json?
+  preferredChannels Json?
+  toneHints         String?
+  isActive          Boolean  @default(true)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, slug])
+  @@index([spaceId])
+}
+
+model BrandProfile {
+  id               String   @id @default(cuid())
+  spaceId          String   @unique
+  companyName      String
+  shortDescription String?
+  missionStatement String?
+  toneOfVoice      Json?
+  forbiddenPhrases Json?
+  preferredPhrases Json?
+  styleGuideUrl    String?
+  primaryColor     String?
+  secondaryColor   String?
+  logoUrl          String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Sales Content Deck (AI 어댑터) ───────────────────────────────────────────
+
+enum AiGenerationStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+// Space(워크스페이스) 월간 AI 이미지 크레딧 — (spaceId, yearMonth) 단위로 카운터.
+// atomic UPDATE ... WHERE imageUsed < imageQuota 로 동시성 안전하게 예약.
+model WorkspaceAiCredit {
+  id         String @id @default(cuid())
+  spaceId    String
+  yearMonth  String // "YYYY-MM"
+  imageUsed  Int    @default(0)
+  imageQuota Int    @default(50)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, yearMonth])
+  @@index([spaceId])
+}
+
+// 이미지 생성 이력. reservationId 반환용 id.
+model ImageGenerationLog {
+  id             String             @id @default(cuid())
+  spaceId        String
+  userId         String?
+  provider       String // 'gemini-imagen' 등
+  model          String // 'imagen-4.0-generate-001' 등
+  prompt         String
+  negativePrompt String?
+  aspectRatio    String?
+  status         AiGenerationStatus @default(PENDING)
+  outputCount    Int                @default(0)
+  creditMonth    String? // 연결된 WorkspaceAiCredit.yearMonth — refund 판단용
+  errorCode      String?
+  errorMessage   String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, createdAt])
+  @@index([status])
+}
+
+// 텍스트 생성 이력. Claude Code ACP / Ollama.
+model TextGenerationLog {
+  id             String             @id @default(cuid())
+  spaceId        String
+  userId         String?
+  provider       String // 'claude-code-acp' | 'ollama'
+  model          String? // 모델명(Ollama) 혹은 null(ACP)
+  responseFormat String? // 'text' | 'json'
+  status         AiGenerationStatus @default(PENDING)
+  contentPreview String? // 응답 앞 500자 (감사/디버그용)
+  inputTokens    Int?
+  outputTokens   Int?
+  latencyMs      Int?
+  errorCode      String?
+  errorMessage   String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId, createdAt])
+  @@index([status])
 }

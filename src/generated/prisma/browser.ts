@@ -297,3 +297,18 @@ export type Persona = Prisma.PersonaModel
  * 
  */
 export type BrandProfile = Prisma.BrandProfileModel
+/**
+ * Model WorkspaceAiCredit
+ * 
+ */
+export type WorkspaceAiCredit = Prisma.WorkspaceAiCreditModel
+/**
+ * Model ImageGenerationLog
+ * 
+ */
+export type ImageGenerationLog = Prisma.ImageGenerationLogModel
+/**
+ * Model TextGenerationLog
+ * 
+ */
+export type TextGenerationLog = Prisma.TextGenerationLogModel

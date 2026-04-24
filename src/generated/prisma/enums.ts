@@ -118,3 +118,13 @@ export const DelBatchStatus = {
 } as const
 
 export type DelBatchStatus = (typeof DelBatchStatus)[keyof typeof DelBatchStatus]
+
+
+export const AiGenerationStatus = {
+  PENDING: 'PENDING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type AiGenerationStatus = (typeof AiGenerationStatus)[keyof typeof AiGenerationStatus]

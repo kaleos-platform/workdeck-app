@@ -338,7 +338,7 @@ export type BrandProfileCreateInput = {
   logoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutScBrandProfileInput
+  space: Prisma.SpaceCreateNestedOneWithoutBrandProfileInput
 }
 
 export type BrandProfileUncheckedCreateInput = {
@@ -372,7 +372,7 @@ export type BrandProfileUpdateInput = {
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutScBrandProfileNestedInput
+  space?: Prisma.SpaceUpdateOneRequiredWithoutBrandProfileNestedInput
 }
 
 export type BrandProfileUncheckedUpdateInput = {

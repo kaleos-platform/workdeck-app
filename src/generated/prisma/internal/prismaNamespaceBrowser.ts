@@ -106,7 +106,10 @@ export const ModelName = {
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
   B2BProduct: 'B2BProduct',
   Persona: 'Persona',
-  BrandProfile: 'BrandProfile'
+  BrandProfile: 'BrandProfile',
+  WorkspaceAiCredit: 'WorkspaceAiCredit',
+  ImageGenerationLog: 'ImageGenerationLog',
+  TextGenerationLog: 'TextGenerationLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -993,6 +996,60 @@ export const BrandProfileScalarFieldEnum = {
 } as const
 
 export type BrandProfileScalarFieldEnum = (typeof BrandProfileScalarFieldEnum)[keyof typeof BrandProfileScalarFieldEnum]
+
+
+export const WorkspaceAiCreditScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  yearMonth: 'yearMonth',
+  imageUsed: 'imageUsed',
+  imageQuota: 'imageQuota',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkspaceAiCreditScalarFieldEnum = (typeof WorkspaceAiCreditScalarFieldEnum)[keyof typeof WorkspaceAiCreditScalarFieldEnum]
+
+
+export const ImageGenerationLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  provider: 'provider',
+  model: 'model',
+  prompt: 'prompt',
+  negativePrompt: 'negativePrompt',
+  aspectRatio: 'aspectRatio',
+  status: 'status',
+  outputCount: 'outputCount',
+  creditMonth: 'creditMonth',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImageGenerationLogScalarFieldEnum = (typeof ImageGenerationLogScalarFieldEnum)[keyof typeof ImageGenerationLogScalarFieldEnum]
+
+
+export const TextGenerationLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  provider: 'provider',
+  model: 'model',
+  responseFormat: 'responseFormat',
+  status: 'status',
+  contentPreview: 'contentPreview',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  latencyMs: 'latencyMs',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt'
+} as const
+
+export type TextGenerationLogScalarFieldEnum = (typeof TextGenerationLogScalarFieldEnum)[keyof typeof TextGenerationLogScalarFieldEnum]
 
 
 export const SortOrder = {

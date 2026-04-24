@@ -374,7 +374,7 @@ export type PersonaCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutScPersonasInput
+  space: Prisma.SpaceCreateNestedOneWithoutPersonasInput
 }
 
 export type PersonaUncheckedCreateInput = {
@@ -414,7 +414,7 @@ export type PersonaUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutScPersonasNestedInput
+  space?: Prisma.SpaceUpdateOneRequiredWithoutPersonasNestedInput
 }
 
 export type PersonaUncheckedUpdateInput = {

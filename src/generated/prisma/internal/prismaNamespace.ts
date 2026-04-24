@@ -439,7 +439,10 @@ export const ModelName = {
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
   B2BProduct: 'B2BProduct',
   Persona: 'Persona',
-  BrandProfile: 'BrandProfile'
+  BrandProfile: 'BrandProfile',
+  WorkspaceAiCredit: 'WorkspaceAiCredit',
+  ImageGenerationLog: 'ImageGenerationLog',
+  TextGenerationLog: 'TextGenerationLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -455,7 +458,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4603,6 +4606,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WorkspaceAiCredit: {
+      payload: Prisma.$WorkspaceAiCreditPayload<ExtArgs>
+      fields: Prisma.WorkspaceAiCreditFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WorkspaceAiCreditFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WorkspaceAiCreditFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>
+        }
+        findFirst: {
+          args: Prisma.WorkspaceAiCreditFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WorkspaceAiCreditFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>
+        }
+        findMany: {
+          args: Prisma.WorkspaceAiCreditFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>[]
+        }
+        create: {
+          args: Prisma.WorkspaceAiCreditCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>
+        }
+        createMany: {
+          args: Prisma.WorkspaceAiCreditCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WorkspaceAiCreditCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>[]
+        }
+        delete: {
+          args: Prisma.WorkspaceAiCreditDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>
+        }
+        update: {
+          args: Prisma.WorkspaceAiCreditUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>
+        }
+        deleteMany: {
+          args: Prisma.WorkspaceAiCreditDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WorkspaceAiCreditUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WorkspaceAiCreditUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>[]
+        }
+        upsert: {
+          args: Prisma.WorkspaceAiCreditUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkspaceAiCreditPayload>
+        }
+        aggregate: {
+          args: Prisma.WorkspaceAiCreditAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWorkspaceAiCredit>
+        }
+        groupBy: {
+          args: Prisma.WorkspaceAiCreditGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkspaceAiCreditGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WorkspaceAiCreditCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkspaceAiCreditCountAggregateOutputType> | number
+        }
+      }
+    }
+    ImageGenerationLog: {
+      payload: Prisma.$ImageGenerationLogPayload<ExtArgs>
+      fields: Prisma.ImageGenerationLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImageGenerationLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImageGenerationLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>
+        }
+        findFirst: {
+          args: Prisma.ImageGenerationLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImageGenerationLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>
+        }
+        findMany: {
+          args: Prisma.ImageGenerationLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>[]
+        }
+        create: {
+          args: Prisma.ImageGenerationLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>
+        }
+        createMany: {
+          args: Prisma.ImageGenerationLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ImageGenerationLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>[]
+        }
+        delete: {
+          args: Prisma.ImageGenerationLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>
+        }
+        update: {
+          args: Prisma.ImageGenerationLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.ImageGenerationLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImageGenerationLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImageGenerationLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.ImageGenerationLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGenerationLogPayload>
+        }
+        aggregate: {
+          args: Prisma.ImageGenerationLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImageGenerationLog>
+        }
+        groupBy: {
+          args: Prisma.ImageGenerationLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageGenerationLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImageGenerationLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageGenerationLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    TextGenerationLog: {
+      payload: Prisma.$TextGenerationLogPayload<ExtArgs>
+      fields: Prisma.TextGenerationLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TextGenerationLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TextGenerationLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>
+        }
+        findFirst: {
+          args: Prisma.TextGenerationLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TextGenerationLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>
+        }
+        findMany: {
+          args: Prisma.TextGenerationLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>[]
+        }
+        create: {
+          args: Prisma.TextGenerationLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>
+        }
+        createMany: {
+          args: Prisma.TextGenerationLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TextGenerationLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>[]
+        }
+        delete: {
+          args: Prisma.TextGenerationLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>
+        }
+        update: {
+          args: Prisma.TextGenerationLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.TextGenerationLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TextGenerationLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TextGenerationLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.TextGenerationLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextGenerationLogPayload>
+        }
+        aggregate: {
+          args: Prisma.TextGenerationLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTextGenerationLog>
+        }
+        groupBy: {
+          args: Prisma.TextGenerationLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TextGenerationLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TextGenerationLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TextGenerationLogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -5512,6 +5737,60 @@ export const BrandProfileScalarFieldEnum = {
 export type BrandProfileScalarFieldEnum = (typeof BrandProfileScalarFieldEnum)[keyof typeof BrandProfileScalarFieldEnum]
 
 
+export const WorkspaceAiCreditScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  yearMonth: 'yearMonth',
+  imageUsed: 'imageUsed',
+  imageQuota: 'imageQuota',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkspaceAiCreditScalarFieldEnum = (typeof WorkspaceAiCreditScalarFieldEnum)[keyof typeof WorkspaceAiCreditScalarFieldEnum]
+
+
+export const ImageGenerationLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  provider: 'provider',
+  model: 'model',
+  prompt: 'prompt',
+  negativePrompt: 'negativePrompt',
+  aspectRatio: 'aspectRatio',
+  status: 'status',
+  outputCount: 'outputCount',
+  creditMonth: 'creditMonth',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImageGenerationLogScalarFieldEnum = (typeof ImageGenerationLogScalarFieldEnum)[keyof typeof ImageGenerationLogScalarFieldEnum]
+
+
+export const TextGenerationLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  provider: 'provider',
+  model: 'model',
+  responseFormat: 'responseFormat',
+  status: 'status',
+  contentPreview: 'contentPreview',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  latencyMs: 'latencyMs',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt'
+} as const
+
+export type TextGenerationLogScalarFieldEnum = (typeof TextGenerationLogScalarFieldEnum)[keyof typeof TextGenerationLogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -5810,6 +6089,20 @@ export type EnumChannelKindFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
 export type ListEnumChannelKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChannelKind[]'>
     
 
+
+/**
+ * Reference to a field of type 'AiGenerationStatus'
+ */
+export type EnumAiGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiGenerationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AiGenerationStatus[]'
+ */
+export type ListEnumAiGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiGenerationStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -5961,6 +6254,9 @@ export type GlobalOmitConfig = {
   b2BProduct?: Prisma.B2BProductOmit
   persona?: Prisma.PersonaOmit
   brandProfile?: Prisma.BrandProfileOmit
+  workspaceAiCredit?: Prisma.WorkspaceAiCreditOmit
+  imageGenerationLog?: Prisma.ImageGenerationLogOmit
+  textGenerationLog?: Prisma.TextGenerationLogOmit
 }
 
 /* Types for Logging */

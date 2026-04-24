@@ -440,7 +440,7 @@ export type B2BProductCreateInput = {
   sourceInvProductId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutScB2bProductsInput
+  space: Prisma.SpaceCreateNestedOneWithoutB2bProductsInput
 }
 
 export type B2BProductUncheckedCreateInput = {
@@ -484,7 +484,7 @@ export type B2BProductUpdateInput = {
   sourceInvProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutScB2bProductsNestedInput
+  space?: Prisma.SpaceUpdateOneRequiredWithoutB2bProductsNestedInput
 }
 
 export type B2BProductUncheckedUpdateInput = {
