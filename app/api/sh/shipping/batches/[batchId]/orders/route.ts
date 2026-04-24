@@ -41,7 +41,9 @@ export async function GET(req: NextRequest, { params }: Params) {
               select: {
                 id: true,
                 name: true,
-                product: { select: { id: true, name: true } },
+                product: {
+                  select: { id: true, name: true, internalName: true },
+                },
               },
             },
           },
@@ -94,19 +96,36 @@ export async function GET(req: NextRequest, { params }: Params) {
       paymentAmount: order.paymentAmount,
       channel: order.channel,
       shippingMethod: order.shippingMethod,
-      items: order.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity,
-        optionId: item.optionId,
-        option: item.option
-          ? {
-              id: item.option.id,
-              name: item.option.name,
-              product: item.option.product,
-            }
-          : null,
-      })),
+      items: order.items.map((item) => {
+        const opt = item.option
+        const prod = opt?.product
+        // 매칭된 상품 표시명 — 관리명이 있으면 관리명, 없으면 공식명
+        const productDisplay = prod
+          ? prod.internalName && prod.internalName.trim().length > 0
+            ? prod.internalName
+            : prod.name
+          : null
+        return {
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          optionId: item.optionId,
+          option: opt
+            ? {
+                id: opt.id,
+                name: opt.name,
+                product: prod
+                  ? {
+                      id: prod.id,
+                      name: prod.name, // 공식명 유지
+                      internalName: prod.internalName, // 관리명
+                      displayName: productDisplay, // 내부 표시용 계산 결과
+                    }
+                  : null,
+              }
+            : null,
+        }
+      }),
       createdAt: order.createdAt,
     }
   })

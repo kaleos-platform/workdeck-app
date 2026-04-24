@@ -57,7 +57,12 @@ const optionAttributeSchema = z.object({
 })
 
 export const productSchema = z.object({
-  name: z.string().min(1).max(200),
+  // 공식 상품명 — 판매채널 노출명 (필수)
+  name: z.string().min(1, '공식 상품명을 입력해주세요').max(200),
+  // 관리 상품명 — 내부 식별용 (선택, 비어있으면 표시 시 name으로 fallback)
+  internalName: z
+    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
+    .optional(),
   nameEn: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
     .optional(),

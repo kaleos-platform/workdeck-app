@@ -20,8 +20,10 @@ export async function GET(req: NextRequest) {
     spaceId: string
     groupId?: string
     OR?: Array<
-      | { name: { contains: string; mode: 'insensitive' } }
+      | { internalName: { contains: string; mode: 'insensitive' } }
       | { code: { contains: string; mode: 'insensitive' } }
+      | { options: { some: { name: { contains: string; mode: 'insensitive' } } } }
+      | { options: { some: { sku: { contains: string; mode: 'insensitive' } } } }
     >
   } = { spaceId: resolved.space.id }
 
@@ -31,9 +33,12 @@ export async function GET(req: NextRequest) {
   }
 
   if (search) {
+    // 검색은 관리 상품명(internalName) 기준 — 공식명(name) 제외
     where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
+      { internalName: { contains: search, mode: 'insensitive' } },
       { code: { contains: search, mode: 'insensitive' } },
+      { options: { some: { name: { contains: search, mode: 'insensitive' } } } },
+      { options: { some: { sku: { contains: search, mode: 'insensitive' } } } },
     ]
   }
 
@@ -46,6 +51,7 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         name: true,
+        internalName: true,
         code: true,
         createdAt: true,
         updatedAt: true,
@@ -70,7 +76,10 @@ export async function GET(req: NextRequest) {
     )
     return {
       id: p.id,
-      name: p.name,
+      // 내부 표시용 이름 — 관리명이 있으면 관리명, 없으면 공식명
+      name: p.internalName ?? p.name,
+      internalName: p.internalName,
+      officialName: p.name,
       code: p.code,
       groupId: p.group.id,
       groupName: p.group.name,

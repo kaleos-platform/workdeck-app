@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
             select: {
               id: true,
               name: true,
-              product: { select: { name: true } },
+              product: { select: { name: true, internalName: true } },
             },
           },
         },
@@ -84,7 +84,15 @@ export async function POST(req: NextRequest) {
     items: o.items.map((i) => ({
       name: i.name,
       quantity: i.quantity,
-      option: i.option ? { name: i.option.name, product: { name: i.option.product.name } } : null,
+      option: i.option
+        ? {
+            name: i.option.name,
+            product: {
+              name: i.option.product.name, // 공식명
+              internalName: i.option.product.internalName, // 관리명
+            },
+          }
+        : null,
       overrides: i.optionId ? (overridesByOption.get(i.optionId) ?? null) : null,
     })),
   }))

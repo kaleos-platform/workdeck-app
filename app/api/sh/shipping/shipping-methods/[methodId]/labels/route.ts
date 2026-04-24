@@ -33,8 +33,9 @@ export async function GET(req: NextRequest, { params }: Params) {
     productWhere.brandId = brandId === 'none' ? null : brandId
   }
   if (search) {
+    // 검색은 관리 상품명(internalName) 기준 — 공식명(name) 제외
     productWhere.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
+      { internalName: { contains: search, mode: 'insensitive' } },
       { nameEn: { contains: search, mode: 'insensitive' } },
       { code: { contains: search, mode: 'insensitive' } },
       { options: { some: { name: { contains: search, mode: 'insensitive' } } } },
@@ -51,6 +52,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       select: {
         id: true,
         name: true,
+        internalName: true,
         code: true,
         brand: { select: { id: true, name: true } },
         options: { select: { id: true, name: true, sku: true } },
@@ -77,12 +79,16 @@ export async function GET(req: NextRequest, { params }: Params) {
     })
   }
 
-  const rows = products.flatMap((p) =>
-    p.options.map((o) => {
+  const rows = products.flatMap((p) => {
+    // 내부 표시용 — 관리명 우선, 없으면 공식명
+    const internal = p.internalName?.trim()
+    const productName = internal && internal.length > 0 ? internal : p.name
+    return p.options.map((o) => {
       const entry = overridesByOption.get(o.id)
       return {
         productId: p.id,
-        productName: p.name,
+        productName,
+        productOfficialName: p.name, // 공식명 원본 (UI에서 힌트로 필요시 표시)
         productCode: p.code,
         brandName: p.brand?.name ?? null,
         optionId: o.id,
@@ -92,7 +98,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         updatedAt: entry?.updatedAt ?? null,
       }
     })
-  )
+  })
 
   return NextResponse.json({
     method: { id: method.id, name: method.name, formatConfig: method.formatConfig },

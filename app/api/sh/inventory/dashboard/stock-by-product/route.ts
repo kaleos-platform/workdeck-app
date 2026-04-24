@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     prisma.invProductOption.findMany({
       where: optionWhere,
       include: {
-        product: { select: { name: true } },
+        product: { select: { name: true, internalName: true } },
         stockLevels: {
           where: locationId ? { locationId } : undefined,
           select: { quantity: true },
@@ -52,12 +52,17 @@ export async function GET(req: NextRequest) {
 
   const outboundMap = new Map(outboundAgg.map((a) => [a.optionId, Math.abs(a._sum.quantity ?? 0)]))
 
-  const data = options.map((o) => ({
-    productName: o.product.name,
-    optionName: o.name,
-    stock: o.stockLevels.reduce((sum, sl) => sum + sl.quantity, 0),
-    outbound90d: outboundMap.get(o.id) ?? 0,
-  }))
+  const data = options.map((o) => {
+    // 내부 표시용 — 관리명 우선, 없으면 공식명
+    const internal = o.product.internalName?.trim()
+    const productName = internal && internal.length > 0 ? internal : o.product.name
+    return {
+      productName,
+      optionName: o.name,
+      stock: o.stockLevels.reduce((sum, sl) => sum + sl.quantity, 0),
+      outbound90d: outboundMap.get(o.id) ?? 0,
+    }
+  })
 
   return NextResponse.json({ data, total, page, pageSize })
 }

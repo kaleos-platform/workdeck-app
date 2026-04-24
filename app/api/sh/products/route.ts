@@ -20,10 +20,13 @@ export async function GET(req: NextRequest) {
   else if (groupId) where.groupId = groupId
 
   if (search) {
+    // 검색은 관리 상품명(internalName) 기준 — 공식명(name)은 제외
     where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
+      { internalName: { contains: search, mode: 'insensitive' } },
       { nameEn: { contains: search, mode: 'insensitive' } },
       { code: { contains: search, mode: 'insensitive' } },
+      { options: { some: { name: { contains: search, mode: 'insensitive' } } } },
+      { options: { some: { sku: { contains: search, mode: 'insensitive' } } } },
     ]
   }
 
@@ -63,6 +66,7 @@ export async function POST(req: NextRequest) {
 
   const {
     name,
+    internalName,
     nameEn,
     code,
     brandId,
@@ -105,6 +109,7 @@ export async function POST(req: NextRequest) {
       data: {
         spaceId: resolved.space.id,
         name,
+        internalName: internalName ?? null,
         nameEn: nameEn ?? null,
         code: code ?? null,
         brandId: brandId ?? null,

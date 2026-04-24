@@ -136,7 +136,12 @@ export default function ShippingRegistrationPage() {
       option: {
         id: string
         name: string
-        product: { id: string; name: string }
+        product: {
+          id: string
+          name: string
+          internalName: string | null
+          displayName: string // 내부 표시용 — 관리명 우선, 없으면 공식명
+        } | null
       } | null
     }
     fetch(`/api/sh/shipping/batches/${activeBatchId}/orders?decrypt=true&pageSize=100`)
@@ -161,10 +166,11 @@ export default function ShippingRegistrationPage() {
                 name: it.name,
                 quantity: it.quantity,
                 optionId: it.optionId,
-                matched: it.option
+                matched: it.option?.product
                   ? {
                       optionId: it.option.id,
-                      productName: it.option.product.name,
+                      // 배송 등록 UI는 내부 식별용 — 관리명 우선 표시
+                      productName: it.option.product.displayName,
                       optionName: it.option.name,
                     }
                   : null,

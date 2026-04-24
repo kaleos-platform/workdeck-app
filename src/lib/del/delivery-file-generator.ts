@@ -14,7 +14,10 @@ type ItemLine = {
   quantity: number
   option?: {
     name: string
-    product: { name: string }
+    product: {
+      name: string // 공식 상품명
+      internalName?: string | null // 관리 상품명 (선택)
+    }
   } | null
   overrides?: Partial<Record<DelFieldMapping, string>> | null
 }
@@ -36,16 +39,21 @@ type OrderWithItems = {
 
 /**
  * 한 아이템에 대해 지정 field 의 표시 값을 결정한다.
- * 우선순위: overrides[field] > 카탈로그 기본(productName의 경우 product.name + option.name) > 원본 name/빈값
+ * 우선순위: overrides[field] > 카탈로그 기본 > 원본 name/빈값
+ *
+ * productName 기본값 계산은 **관리 상품명(internalName) 우선**, 없으면 공식명(name).
+ * 3PL 실무자 대상 파일이므로 내부 식별용 관리명이 적합하다.
  */
 function resolveItemField(item: ItemLine, field: DelFieldMapping): string | null {
   const ov = item.overrides?.[field]
   if (ov && ov.trim() !== '') return ov
   if (field === 'productName') {
     if (item.option) {
-      const p = item.option.product.name.trim()
-      const o = item.option.name.trim()
-      return p && o ? `${p} ${o}` : p || o || item.name
+      const internal = item.option.product.internalName?.trim()
+      const official = item.option.product.name.trim()
+      const productLabel = internal && internal.length > 0 ? internal : official
+      const opt = item.option.name.trim()
+      return productLabel && opt ? `${productLabel} ${opt}` : productLabel || opt || item.name
     }
     return item.name
   }

@@ -23,10 +23,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ShCategoryManager } from '@/components/sh/products/category-manager'
+import { productDisplayName } from '@/lib/sh/product-display'
 
 type ProductRow = {
   id: string
-  name: string
+  name: string // 공식 상품명
+  internalName?: string | null // 관리 상품명
   nameEn: string | null
   code: string | null
   groupId: string | null
@@ -130,7 +132,7 @@ export function ShProductList() {
       {/* 필터 바 */}
       <div className="flex flex-wrap items-center gap-2">
         <Input
-          placeholder="상품명 또는 제품코드 검색"
+          placeholder="관리 상품명·영문명·제품코드·옵션 검색"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
@@ -219,6 +221,11 @@ export function ShProductList() {
                 const groupLabel = row.group?.name ?? row.groupName ?? '(기본)'
                 const brandLabel = row.brand?.name ?? row.brandName ?? null
                 const optionCount = row.optionsCount ?? row.options?.length ?? 0
+                const displayName = productDisplayName(row)
+                const showOfficialHint =
+                  row.internalName &&
+                  row.internalName.trim().length > 0 &&
+                  row.internalName !== row.name
                 const goDetail = () => router.push(`/d/seller-hub/products/${row.id}`)
                 return (
                   <TableRow
@@ -232,12 +239,15 @@ export function ShProductList() {
                     }}
                     tabIndex={0}
                     role="button"
-                    aria-label={`${row.name} 상세`}
+                    aria-label={`${displayName} 상세`}
                     className="cursor-pointer hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
                   >
                     <TableCell className="text-sm text-muted-foreground">{groupLabel}</TableCell>
                     <TableCell>
-                      <div className="font-medium">{row.name}</div>
+                      <div className="font-medium">{displayName}</div>
+                      {showOfficialHint && (
+                        <div className="text-xs text-muted-foreground">공식: {row.name}</div>
+                      )}
                       {row.nameEn && (
                         <div className="text-xs text-muted-foreground">{row.nameEn}</div>
                       )}

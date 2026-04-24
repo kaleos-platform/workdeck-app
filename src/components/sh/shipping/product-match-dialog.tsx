@@ -15,10 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { productDisplayName } from '@/lib/sh/product-display'
 
 type ProductRow = {
   id: string
-  name: string
+  name: string // 공식 상품명
+  internalName?: string | null // 관리 상품명
   code: string | null
   brand?: { id: string; name: string } | null
   options: { id: string; name: string; sku: string | null }[]
@@ -96,12 +98,14 @@ export function ProductMatchDialog({
         const rows: ProductRow[] = data?.data ?? []
         const flattened: OptionEntry[] = []
         for (const p of rows) {
+          // 매칭 UI는 내부 식별용 — 관리명 우선 표시
+          const productName = productDisplayName(p)
           for (const o of p.options ?? []) {
             flattened.push({
               optionId: o.id,
               optionName: o.name,
               productId: p.id,
-              productName: p.name,
+              productName,
               sku: o.sku,
               brandName: p.brand?.name ?? null,
             })
@@ -164,7 +168,7 @@ export function ProductMatchDialog({
               <Input
                 id="match-search"
                 className="pl-8"
-                placeholder="상품명 또는 제품코드"
+                placeholder="관리 상품명·영문명·제품코드·옵션"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 autoFocus

@@ -85,6 +85,7 @@ export async function PATCH(
 
   const {
     name,
+    internalName,
     nameEn,
     code,
     manufacturer,
@@ -101,6 +102,7 @@ export async function PATCH(
     where: { id: productId },
     data: {
       ...(name !== undefined && { name }),
+      ...(internalName !== undefined && { internalName: internalName ?? null }),
       ...(nameEn !== undefined && { nameEn: nameEn ?? null }),
       ...(code !== undefined && { code: code ?? null }),
       ...(brandId !== undefined && { brandId: brandId ?? null }),

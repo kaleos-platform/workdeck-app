@@ -32,7 +32,8 @@ export default function ProductNewPage() {
   const [saving, setSaving] = useState(false)
 
   // 기본 정보
-  const [name, setName] = useState('')
+  const [name, setName] = useState('') // 공식 상품명 (판매채널 노출)
+  const [internalName, setInternalName] = useState('') // 관리 상품명 (내부 식별)
   const [nameEn, setNameEn] = useState('')
   const [code, setCode] = useState('')
   const [brandId, setBrandId] = useState('')
@@ -71,7 +72,7 @@ export default function ProductNewPage() {
 
   async function handleSave() {
     if (!name.trim()) {
-      toast.error('상품명을 입력해 주세요')
+      toast.error('공식 상품명을 입력해 주세요')
       return
     }
     if (!groupId) {
@@ -111,6 +112,7 @@ export default function ProductNewPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
+          internalName: internalName.trim() || undefined,
           nameEn: nameEn.trim() || undefined,
           code: code.trim() || undefined,
           groupId,
@@ -175,27 +177,42 @@ export default function ProductNewPage() {
               <CardTitle>기본 정보</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* 상품명 */}
+              {/* 공식 상품명 (판매채널 노출) — 필수 */}
+              <div className="space-y-2">
+                <Label htmlFor="new-name">
+                  공식 상품명 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="new-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="판매채널(쿠팡 등)에 노출되는 정식 상품명"
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground">판매채널에 노출되는 이름입니다.</p>
+              </div>
+
+              {/* 관리 상품명 (내부 식별) — 선택 */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="new-name">
-                    상품명 (한국어) <span className="text-destructive">*</span>
-                  </Label>
+                  <Label htmlFor="new-internal-name">관리 상품명</Label>
                   <Input
-                    id="new-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="상품명"
-                    autoFocus
+                    id="new-internal-name"
+                    value={internalName}
+                    onChange={(e) => setInternalName(e.target.value)}
+                    placeholder="내부 식별용 짧은 이름 (선택)"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    비워두면 공식 상품명이 표시됩니다.
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="new-name-en">상품명 (영문)</Label>
+                  <Label htmlFor="new-name-en">영문 상품명</Label>
                   <Input
                     id="new-name-en"
                     value={nameEn}
                     onChange={(e) => setNameEn(e.target.value)}
-                    placeholder="Product Name"
+                    placeholder="Product Name (선택)"
                   />
                 </div>
               </div>

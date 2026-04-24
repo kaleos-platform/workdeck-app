@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       name: true,
+      internalName: true,
       code: true,
       brand: { select: { id: true, name: true } },
       options: { select: { id: true, name: true, sku: true } },
@@ -100,6 +101,7 @@ export async function GET(req: NextRequest) {
     const leadTimeDays = cfg?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
     const safetyStockQty = cfg?.safetyStockQty ?? DEFAULT_SAFETY_STOCK_QTY
 
+    const displayName = p.internalName && p.internalName.trim().length > 0 ? p.internalName : p.name
     return p.options.map((o) => {
       const currentStock = stockByOption.get(o.id) ?? 0
       const totalOutbound = outboundByOption.get(o.id) ?? 0
@@ -112,7 +114,8 @@ export async function GET(req: NextRequest) {
       })
       return {
         productId: p.id,
-        productName: p.name,
+        // 내부 표시용 — 관리명 우선, 없으면 공식명
+        productName: displayName,
         productCode: p.code,
         brandId: p.brand?.id ?? null,
         brandName: p.brand?.name ?? null,
