@@ -1,4 +1,5 @@
 import { PricingSettingsForm } from '@/components/sh/settings/pricing-settings-form'
+import { AliasBulkImportCard } from '@/components/sh/shipping/alias-bulk-import-card'
 
 export default function SellerHubSettingsPage() {
   return (
@@ -8,6 +9,7 @@ export default function SellerHubSettingsPage() {
         <p className="text-sm text-muted-foreground">셀러 허브 운영 설정을 관리합니다</p>
       </div>
       <PricingSettingsForm />
+      <AliasBulkImportCard />
     </div>
   )
 }
