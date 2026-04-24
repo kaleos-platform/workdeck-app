@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 
 import { ChannelRail } from './channel-rail'
-import { ListingsTable } from './listings-table'
+import { GroupsTable } from './groups-table'
 
 export function ListingsTwoPane() {
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
@@ -16,7 +16,7 @@ export function ListingsTwoPane() {
         <ChannelRail selectedChannelId={selectedChannelId} onSelectChannel={setSelectedChannelId} />
       </Card>
       <div>
-        <ListingsTable channelId={selectedChannelId} />
+        <GroupsTable channelId={selectedChannelId} />
       </div>
     </div>
   )
