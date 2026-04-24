@@ -448,6 +448,8 @@ export const ModelName = {
   Content: 'Content',
   ContentDeployment: 'ContentDeployment',
   ContentClickEvent: 'ContentClickEvent',
+  ChannelCredential: 'ChannelCredential',
+  SalesContentJob: 'SalesContentJob',
   ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea'
 } as const
@@ -465,7 +467,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "contentAsset" | "contentIdea"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "salesContentJob" | "contentAsset" | "contentIdea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5205,6 +5207,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ChannelCredential: {
+      payload: Prisma.$ChannelCredentialPayload<ExtArgs>
+      fields: Prisma.ChannelCredentialFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChannelCredentialFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChannelCredentialFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>
+        }
+        findFirst: {
+          args: Prisma.ChannelCredentialFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChannelCredentialFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>
+        }
+        findMany: {
+          args: Prisma.ChannelCredentialFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>[]
+        }
+        create: {
+          args: Prisma.ChannelCredentialCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>
+        }
+        createMany: {
+          args: Prisma.ChannelCredentialCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChannelCredentialCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>[]
+        }
+        delete: {
+          args: Prisma.ChannelCredentialDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>
+        }
+        update: {
+          args: Prisma.ChannelCredentialUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChannelCredentialDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChannelCredentialUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChannelCredentialUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChannelCredentialUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelCredentialPayload>
+        }
+        aggregate: {
+          args: Prisma.ChannelCredentialAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelCredential>
+        }
+        groupBy: {
+          args: Prisma.ChannelCredentialGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelCredentialGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChannelCredentialCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelCredentialCountAggregateOutputType> | number
+        }
+      }
+    }
+    SalesContentJob: {
+      payload: Prisma.$SalesContentJobPayload<ExtArgs>
+      fields: Prisma.SalesContentJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SalesContentJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SalesContentJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>
+        }
+        findFirst: {
+          args: Prisma.SalesContentJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SalesContentJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>
+        }
+        findMany: {
+          args: Prisma.SalesContentJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>[]
+        }
+        create: {
+          args: Prisma.SalesContentJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>
+        }
+        createMany: {
+          args: Prisma.SalesContentJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SalesContentJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>[]
+        }
+        delete: {
+          args: Prisma.SalesContentJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>
+        }
+        update: {
+          args: Prisma.SalesContentJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.SalesContentJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SalesContentJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SalesContentJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.SalesContentJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentJobPayload>
+        }
+        aggregate: {
+          args: Prisma.SalesContentJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSalesContentJob>
+        }
+        groupBy: {
+          args: Prisma.SalesContentJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SalesContentJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SalesContentJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SalesContentJobCountAggregateOutputType> | number
+        }
+      }
+    }
     ContentAsset: {
       payload: Prisma.$ContentAssetPayload<ExtArgs>
       fields: Prisma.ContentAssetFieldRefs
@@ -6410,6 +6560,43 @@ export const ContentClickEventScalarFieldEnum = {
 export type ContentClickEventScalarFieldEnum = (typeof ContentClickEventScalarFieldEnum)[keyof typeof ContentClickEventScalarFieldEnum]
 
 
+export const ChannelCredentialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  kind: 'kind',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  expiresAt: 'expiresAt',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelCredentialScalarFieldEnum = (typeof ChannelCredentialScalarFieldEnum)[keyof typeof ChannelCredentialScalarFieldEnum]
+
+
+export const SalesContentJobScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  status: 'status',
+  targetId: 'targetId',
+  payload: 'payload',
+  scheduledAt: 'scheduledAt',
+  claimedAt: 'claimedAt',
+  claimedBy: 'claimedBy',
+  completedAt: 'completedAt',
+  attempts: 'attempts',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SalesContentJobScalarFieldEnum = (typeof SalesContentJobScalarFieldEnum)[keyof typeof SalesContentJobScalarFieldEnum]
+
+
 export const ContentAssetScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -6861,6 +7048,48 @@ export type ListEnumDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'ChannelCredentialKind'
+ */
+export type EnumChannelCredentialKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChannelCredentialKind'>
+    
+
+
+/**
+ * Reference to a field of type 'ChannelCredentialKind[]'
+ */
+export type ListEnumChannelCredentialKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChannelCredentialKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SalesContentJobKind'
+ */
+export type EnumSalesContentJobKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SalesContentJobKind'>
+    
+
+
+/**
+ * Reference to a field of type 'SalesContentJobKind[]'
+ */
+export type ListEnumSalesContentJobKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SalesContentJobKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SalesContentJobStatus'
+ */
+export type EnumSalesContentJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SalesContentJobStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SalesContentJobStatus[]'
+ */
+export type ListEnumSalesContentJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SalesContentJobStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'ContentAssetKind'
  */
 export type EnumContentAssetKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentAssetKind'>
@@ -7046,6 +7275,8 @@ export type GlobalOmitConfig = {
   content?: Prisma.ContentOmit
   contentDeployment?: Prisma.ContentDeploymentOmit
   contentClickEvent?: Prisma.ContentClickEventOmit
+  channelCredential?: Prisma.ChannelCredentialOmit
+  salesContentJob?: Prisma.SalesContentJobOmit
   contentAsset?: Prisma.ContentAssetOmit
   contentIdea?: Prisma.ContentIdeaOmit
 }

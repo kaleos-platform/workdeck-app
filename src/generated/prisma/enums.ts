@@ -219,3 +219,31 @@ export const DeploymentStatus = {
 } as const
 
 export type DeploymentStatus = (typeof DeploymentStatus)[keyof typeof DeploymentStatus]
+
+
+export const ChannelCredentialKind = {
+  COOKIE: 'COOKIE',
+  OAUTH: 'OAUTH',
+  API_KEY: 'API_KEY'
+} as const
+
+export type ChannelCredentialKind = (typeof ChannelCredentialKind)[keyof typeof ChannelCredentialKind]
+
+
+export const SalesContentJobKind = {
+  PUBLISH: 'PUBLISH',
+  COLLECT_METRIC: 'COLLECT_METRIC',
+  INSIGHT_SWEEP: 'INSIGHT_SWEEP'
+} as const
+
+export type SalesContentJobKind = (typeof SalesContentJobKind)[keyof typeof SalesContentJobKind]
+
+
+export const SalesContentJobStatus = {
+  PENDING: 'PENDING',
+  CLAIMED: 'CLAIMED',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type SalesContentJobStatus = (typeof SalesContentJobStatus)[keyof typeof SalesContentJobStatus]

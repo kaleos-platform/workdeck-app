@@ -115,6 +115,8 @@ export const ModelName = {
   Content: 'Content',
   ContentDeployment: 'ContentDeployment',
   ContentClickEvent: 'ContentClickEvent',
+  ChannelCredential: 'ChannelCredential',
+  SalesContentJob: 'SalesContentJob',
   ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea'
 } as const
@@ -1151,6 +1153,43 @@ export const ContentClickEventScalarFieldEnum = {
 } as const
 
 export type ContentClickEventScalarFieldEnum = (typeof ContentClickEventScalarFieldEnum)[keyof typeof ContentClickEventScalarFieldEnum]
+
+
+export const ChannelCredentialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  kind: 'kind',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  expiresAt: 'expiresAt',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelCredentialScalarFieldEnum = (typeof ChannelCredentialScalarFieldEnum)[keyof typeof ChannelCredentialScalarFieldEnum]
+
+
+export const SalesContentJobScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  status: 'status',
+  targetId: 'targetId',
+  payload: 'payload',
+  scheduledAt: 'scheduledAt',
+  claimedAt: 'claimedAt',
+  claimedBy: 'claimedBy',
+  completedAt: 'completedAt',
+  attempts: 'attempts',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SalesContentJobScalarFieldEnum = (typeof SalesContentJobScalarFieldEnum)[keyof typeof SalesContentJobScalarFieldEnum]
 
 
 export const ContentAssetScalarFieldEnum = {

@@ -356,6 +356,8 @@ model Space {
   contentAssets        ContentAsset[]
   contentDeployments   ContentDeployment[]
   contentClickEvents   ContentClickEvent[]
+  channelCredentials   ChannelCredential[]
+  salesContentJobs     SalesContentJob[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1474,6 +1476,7 @@ model SalesContentChannel {
   space       Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   contents    Content[]
   deployments ContentDeployment[]
+  credentials ChannelCredential[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1595,6 +1598,73 @@ model ContentClickEvent {
 
   @@index([deploymentId, createdAt])
   @@index([spaceId, createdAt])
+}
+
+// ─── Sales Content Deck (자격증명 · 작업 큐) ────────────────────────────────
+
+enum ChannelCredentialKind {
+  COOKIE // Playwright storageState JSON
+  OAUTH // access/refresh token 쌍
+  API_KEY
+}
+
+model ChannelCredential {
+  id               String                @id @default(cuid())
+  spaceId          String
+  channelId        String
+  kind             ChannelCredentialKind
+  encryptedPayload String // hex 인코딩 AES-256-CBC
+  iv               String // hex iv
+  expiresAt        DateTime?
+  lastVerifiedAt   DateTime?
+  lastError        String?
+
+  space   Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel SalesContentChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([channelId, kind])
+  @@index([spaceId])
+}
+
+enum SalesContentJobKind {
+  PUBLISH
+  COLLECT_METRIC
+  INSIGHT_SWEEP
+}
+
+enum SalesContentJobStatus {
+  PENDING
+  CLAIMED
+  COMPLETED
+  FAILED
+}
+
+// DB-backed 작업 큐. 맥미니 워커가 주기 polling 해서 claim → 처리 → complete.
+model SalesContentJob {
+  id           String                @id @default(cuid())
+  spaceId      String
+  kind         SalesContentJobKind
+  status       SalesContentJobStatus @default(PENDING)
+  targetId     String? // deploymentId 등 대상 엔터티 id
+  payload      Json? // kind 별 페이로드
+  scheduledAt  DateTime              @default(now())
+  claimedAt    DateTime?
+  claimedBy    String? // 워커 instance id
+  completedAt  DateTime?
+  attempts     Int                   @default(0)
+  errorMessage String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([spaceId, status])
+  @@index([kind, status])
 }
 
 // 콘텐츠 첨부 에셋 (이미지 · 링크). 이미지 URL 은 Unit 7 Supabase Storage 결과.

@@ -360,6 +360,16 @@ export type ContentDeployment = Prisma.ContentDeploymentModel
  */
 export type ContentClickEvent = Prisma.ContentClickEventModel
 /**
+ * Model ChannelCredential
+ * 
+ */
+export type ChannelCredential = Prisma.ChannelCredentialModel
+/**
+ * Model SalesContentJob
+ * 
+ */
+export type SalesContentJob = Prisma.SalesContentJobModel
+/**
  * Model ContentAsset
  * 
  */
