@@ -32,10 +32,57 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { DeliveryFileDialog } from '@/components/sh/shipping/delivery-file-dialog'
 
+interface OrderItemOption {
+  id: string
+  name: string
+  product?: {
+    id: string
+    name: string
+    internalName?: string | null
+    displayName?: string | null
+  } | null
+}
+
+interface OrderItemListing {
+  id: string
+  searchName: string
+  displayName: string
+}
+
+interface OrderItemFulfillment {
+  id: string
+  optionId: string
+  quantity: number
+  optionName: string
+  productName: string
+}
+
 interface OrderItem {
   id: string
   name: string
   quantity: number
+  optionId?: string | null
+  listingId?: string | null
+  option?: OrderItemOption | null
+  listing?: OrderItemListing | null
+  fulfillments?: OrderItemFulfillment[]
+}
+
+function formatItemLabel(i: OrderItem): string {
+  if (i.listing) {
+    const summary = (i.fulfillments ?? []).map((f) => `${f.optionName}×${f.quantity}`).join(', ')
+    const head = `${i.listing.displayName} ×${i.quantity}`
+    return summary ? `${head} (→ ${summary})` : head
+  }
+  if (i.option) {
+    const prodName =
+      i.option.product?.displayName ||
+      i.option.product?.internalName ||
+      i.option.product?.name ||
+      ''
+    return `${prodName ? prodName + ' ' : ''}${i.option.name} ×${i.quantity}`
+  }
+  return `${i.name} ×${i.quantity}`
 }
 
 interface Channel {
@@ -486,15 +533,15 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                   <TableCell className="text-right text-xs whitespace-nowrap">
                     {formatAmount(order.paymentAmount)}
                   </TableCell>
-                  <TableCell className="max-w-[220px] min-w-[150px]">
+                  <TableCell className="max-w-[260px] min-w-[170px]">
                     {order.items.length === 0 ? (
                       <span className="text-xs">-</span>
                     ) : (
                       <span
-                        className="line-clamp-2 text-xs break-keep"
-                        title={order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
+                        className="line-clamp-3 text-xs break-keep"
+                        title={order.items.map(formatItemLabel).join('\n')}
                       >
-                        {order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
+                        {order.items.map(formatItemLabel).join(', ')}
                       </span>
                     )}
                   </TableCell>

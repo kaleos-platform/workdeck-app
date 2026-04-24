@@ -579,25 +579,38 @@ export default function ShippingRegistrationPage() {
           orderId={matchTarget.orderId}
           itemId={matchTarget.itemId}
           rawName={matchTarget.rawName}
+          channelId={matchTarget.channelId ?? null}
           channelName={channels.find((c) => c.id === matchTarget.channelId)?.name ?? null}
           channelSet={!!matchTarget.channelId}
           onMatched={(result: MatchResult) => {
             setRows((prev) =>
               prev.map((r) => {
                 if (r.tempId !== matchTarget.orderId) return r
-                const nextItems = r.items.map((it, idx) =>
-                  idx === matchTarget.itemIndex
-                    ? {
-                        ...it,
+                const nextItems = r.items.map((it, idx) => {
+                  if (idx !== matchTarget.itemIndex) return it
+                  if (result.mode === 'option') {
+                    return {
+                      ...it,
+                      optionId: result.optionId,
+                      matched: {
                         optionId: result.optionId,
-                        matched: {
-                          optionId: result.optionId,
-                          productName: result.productName,
-                          optionName: result.optionName,
-                        },
-                      }
-                    : it
-                )
+                        productName: result.productName,
+                        optionName: result.optionName,
+                      },
+                    }
+                  }
+                  // listing 모드: 단일 optionId가 없으므로 optionId는 비우고,
+                  // 표시용 정보만 matched에 기록 (서버 DelOrderItem은 listingId + fulfillments로 저장됨)
+                  return {
+                    ...it,
+                    optionId: undefined,
+                    matched: {
+                      optionId: '',
+                      productName: result.searchName,
+                      optionName: '판매채널 상품 묶음',
+                    },
+                  }
+                })
                 return { ...r, items: nextItems }
               })
             )
