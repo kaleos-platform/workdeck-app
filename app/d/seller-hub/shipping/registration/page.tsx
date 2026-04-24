@@ -33,6 +33,7 @@ import { RegistrationTable, type OrderRow } from '@/components/sh/shipping/regis
 import { BulkPasteDialog } from '@/components/sh/shipping/bulk-paste-dialog'
 import { DeliveryFileDialog } from '@/components/sh/shipping/delivery-file-dialog'
 import { ProductMatchDialog, type MatchResult } from '@/components/sh/shipping/product-match-dialog'
+import { UploadDialog } from '@/components/sh/shipping/upload-dialog'
 
 type ShippingMethod = { id: string; name: string; defaultSplitMode?: 'order' | 'option' }
 type Channel = {
@@ -74,6 +75,7 @@ export default function ShippingRegistrationPage() {
     channelId: string
     itemIndex: number
   } | null>(null)
+  const [uploadOpen, setUploadOpen] = useState(false)
 
   useEffect(() => {
     const raw = searchParams.get('imported')
@@ -625,9 +627,9 @@ export default function ShippingRegistrationPage() {
           disabled={!activeBatchId}
           onClick={async () => {
             if (!activeBatchId) return
-            // 기존 미저장 수동 행을 먼저 저장해 파일 업로드 후에도 누적 유지되도록
+            // 미저장 수동 행을 먼저 저장 (실패 행은 skip, rows state는 Dialog 열어도 유지됨)
             await saveNewRows()
-            router.push(`/d/seller-hub/shipping/registration/upload?batchId=${activeBatchId}`)
+            setUploadOpen(true)
           }}
         >
           <Upload className="mr-1 h-4 w-4" />
@@ -819,6 +821,16 @@ export default function ShippingRegistrationPage() {
           }}
         />
       )}
+
+      <UploadDialog
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        batchId={activeBatchId}
+        onImported={(n) => {
+          setImportedCount(n)
+          setRefreshKey((k) => k + 1)
+        }}
+      />
 
       <Dialog open={importedCount !== null} onOpenChange={(v) => !v && setImportedCount(null)}>
         <DialogContent className="sm:max-w-md">
