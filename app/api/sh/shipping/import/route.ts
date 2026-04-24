@@ -113,10 +113,18 @@ export async function POST(req: NextRequest) {
     }
     if (uniqueNames.size > 0) {
       const aliasRows = await prisma.channelProductAlias.findMany({
-        where: { channelId, aliasName: { in: Array.from(uniqueNames) } },
+        where: {
+          channelId,
+          aliasName: { in: Array.from(uniqueNames) },
+          optionId: { not: null },
+        },
         select: { aliasName: true, optionId: true },
       })
-      aliasLookup = buildAliasLookup(aliasRows)
+      // optionId가 null이 아닌 행만 통과 (PR #4에서 listingId 분기 도입 시 교체 예정)
+      const nonNullRows = aliasRows.flatMap((r) =>
+        r.optionId ? [{ aliasName: r.aliasName, optionId: r.optionId }] : []
+      )
+      aliasLookup = buildAliasLookup(nonNullRows)
     }
   }
 

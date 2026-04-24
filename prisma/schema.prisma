@@ -78,6 +78,12 @@ enum ChannelKind {
   OTHER
 }
 
+// 판매채널 상품 상태 — 시스템 재고 0일 때는 effective status가 SOLD_OUT으로 표시됨 (DB에는 저장 X).
+enum ProductListingStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 // ─── 사용자 모델 (Supabase Auth와 연동) ──────────────────────────────────────
 
 model User {
@@ -341,6 +347,7 @@ model Space {
   brands                 Brand[]
   productPricingSettings ProductPricingSettings?
   optionCodeAliases      SpaceOptionCodeAlias[]
+  productListings        ProductListing[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -750,6 +757,8 @@ model InvProductOption {
   delOrderItems     DelOrderItem[]
   channelAliases    ChannelProductAlias[]
   shippingLabels    DelShippingMethodLabel[]
+  listingItems      ProductListingItem[]
+  fulfillments      DelOrderItemFulfillment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1021,30 +1030,38 @@ model DelOrder {
 
 // 주문 상품 (max 10, 앱 레벨 검증)
 model DelOrderItem {
-  id       String  @id @default(cuid())
-  orderId  String
-  name     String  // 원본 텍스트 — 미매칭 fallback 및 감사용
-  quantity Int
-  optionId String? // 카탈로그 매칭 — 성공 시 InvProductOption.id
+  id        String  @id @default(cuid())
+  orderId   String
+  name      String  // 원본 텍스트 — 미매칭 fallback 및 감사용
+  quantity  Int
+  optionId  String? // 단일 옵션 매칭 — InvProductOption.id (listingId와 상호 배타)
+  listingId String? // 판매채널 상품(ProductListing) 매칭 — fulfillments로 실제 출고 옵션·수량 팬아웃
 
-  order  DelOrder          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  option InvProductOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
+  order        DelOrder                  @relation(fields: [orderId],   references: [id], onDelete: Cascade)
+  option       InvProductOption?         @relation(fields: [optionId],  references: [id], onDelete: SetNull)
+  listing      ProductListing?           @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  fulfillments DelOrderItemFulfillment[]
 
   @@index([orderId])
   @@index([optionId])
+  @@index([listingId])
 }
 
-// 채널별 상품 별칭 사전 — 채널에서 들어온 원본 상품명을 카탈로그 옵션에 매핑
+// 채널별 상품 별칭 사전 — 원본 상품명을 판매채널 상품(listing) 또는 단일 옵션에 매핑.
+// optionId 또는 listingId 중 하나가 필수 (CHECK 제약으로 보장).
+// 매칭 우선순위: listingId 있으면 listing, 아니면 optionId.
 model ChannelProductAlias {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   spaceId   String
   channelId String
-  aliasName String // 정규화된 원본 상품명 (normalizeAlias 출력)
-  optionId  String
+  aliasName String  // 정규화된 원본 상품명 (normalizeAlias 출력)
+  optionId  String?
+  listingId String?
 
-  space   Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  channel Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  option  InvProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  space   Space             @relation(fields: [spaceId],   references: [id], onDelete: Cascade)
+  channel Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  option  InvProductOption? @relation(fields: [optionId],  references: [id], onDelete: Cascade)
+  listing ProductListing?   @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1052,6 +1069,7 @@ model ChannelProductAlias {
   @@unique([channelId, aliasName])
   @@index([spaceId])
   @@index([optionId])
+  @@index([listingId])
 }
 
 // 컬럼 매핑 프리셋 (업로드 시 header name → field 매핑을 저장)
@@ -1150,6 +1168,7 @@ model Channel {
   delOrders    DelOrder[]
   columnMappingPresets DelColumnMappingPreset[] @relation("PresetChannel")
   productAliases       ChannelProductAlias[]
+  productListings      ProductListing[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1226,4 +1245,63 @@ model SpaceOptionCodeAlias {
 
   @@unique([spaceId, attributeName, value])
   @@index([spaceId])
+}
+
+// ─── 판매채널 상품 (ProductListing) ─────────────────────────────────────────────
+// 채널별로 상품을 묶음 단위(N개 옵션 × 수량)로 구성해 전용 상품명·키워드·판매가로 노출.
+// 배송 업로드 매칭의 기본 단위 — 한 listing은 여러 fulfillment(실제 출고 옵션·수량)로 펼쳐진다.
+
+model ProductListing {
+  id           String               @id @default(cuid())
+  spaceId      String
+  channelId    String
+  internalCode String?              // 사용자 관리용 식별자 (선택)
+  searchName   String               // 상품명(검색용) — 채널 리스팅 상단 노출
+  displayName  String               // 상품명(노출용) — 상세 페이지 타이틀
+  keywords     Json                 @default("[]") // string[] — 사용자 확정 키워드
+  retailPrice  Decimal?             @db.Decimal(18, 2) // 판매가격 (소비자가는 구성품에서 자동 계산)
+  status       ProductListingStatus @default(ACTIVE)
+  memo         String?
+
+  space    Space                 @relation(fields: [spaceId],   references: [id], onDelete: Cascade)
+  channel  Channel               @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  items    ProductListingItem[]
+  aliases  ChannelProductAlias[]
+  delItems DelOrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([channelId, searchName])
+  @@index([spaceId, channelId])
+  @@index([status])
+}
+
+// 판매채널 상품의 구성 옵션 (InvProductOption × 수량)
+model ProductListingItem {
+  id        String @id @default(cuid())
+  listingId String
+  optionId  String
+  quantity  Int    // 묶음 내 수량 (세트면 2, 3 등)
+  sortOrder Int    @default(0)
+
+  listing ProductListing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  option  InvProductOption @relation(fields: [optionId],  references: [id], onDelete: Restrict)
+
+  @@unique([listingId, optionId])
+  @@index([optionId])
+}
+
+// 배송 주문 아이템의 실제 출고 단위 — listing 매칭이면 1:N, 단일 옵션이면 비어있음
+model DelOrderItemFulfillment {
+  id          String @id @default(cuid())
+  orderItemId String
+  optionId    String
+  quantity    Int    // listingItem.quantity × orderItem.quantity
+
+  orderItem DelOrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  option    InvProductOption @relation(fields: [optionId],    references: [id], onDelete: Restrict)
+
+  @@index([orderItemId])
+  @@index([optionId])
 }

@@ -304,3 +304,18 @@ export type ProductPricingSettings = Prisma.ProductPricingSettingsModel
  * 
  */
 export type SpaceOptionCodeAlias = Prisma.SpaceOptionCodeAliasModel
+/**
+ * Model ProductListing
+ * 
+ */
+export type ProductListing = Prisma.ProductListingModel
+/**
+ * Model ProductListingItem
+ * 
+ */
+export type ProductListingItem = Prisma.ProductListingItemModel
+/**
+ * Model DelOrderItemFulfillment
+ * 
+ */
+export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel

@@ -103,7 +103,10 @@ export const ModelName = {
   ChannelFeeRate: 'ChannelFeeRate',
   ProductionBatch: 'ProductionBatch',
   ProductPricingSettings: 'ProductPricingSettings',
-  SpaceOptionCodeAlias: 'SpaceOptionCodeAlias'
+  SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
+  ProductListing: 'ProductListing',
+  ProductListingItem: 'ProductListingItem',
+  DelOrderItemFulfillment: 'DelOrderItemFulfillment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -778,7 +781,8 @@ export const DelOrderItemScalarFieldEnum = {
   orderId: 'orderId',
   name: 'name',
   quantity: 'quantity',
-  optionId: 'optionId'
+  optionId: 'optionId',
+  listingId: 'listingId'
 } as const
 
 export type DelOrderItemScalarFieldEnum = (typeof DelOrderItemScalarFieldEnum)[keyof typeof DelOrderItemScalarFieldEnum]
@@ -790,6 +794,7 @@ export const ChannelProductAliasScalarFieldEnum = {
   channelId: 'channelId',
   aliasName: 'aliasName',
   optionId: 'optionId',
+  listingId: 'listingId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -922,6 +927,45 @@ export const SpaceOptionCodeAliasScalarFieldEnum = {
 } as const
 
 export type SpaceOptionCodeAliasScalarFieldEnum = (typeof SpaceOptionCodeAliasScalarFieldEnum)[keyof typeof SpaceOptionCodeAliasScalarFieldEnum]
+
+
+export const ProductListingScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  internalCode: 'internalCode',
+  searchName: 'searchName',
+  displayName: 'displayName',
+  keywords: 'keywords',
+  retailPrice: 'retailPrice',
+  status: 'status',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductListingScalarFieldEnum = (typeof ProductListingScalarFieldEnum)[keyof typeof ProductListingScalarFieldEnum]
+
+
+export const ProductListingItemScalarFieldEnum = {
+  id: 'id',
+  listingId: 'listingId',
+  optionId: 'optionId',
+  quantity: 'quantity',
+  sortOrder: 'sortOrder'
+} as const
+
+export type ProductListingItemScalarFieldEnum = (typeof ProductListingItemScalarFieldEnum)[keyof typeof ProductListingItemScalarFieldEnum]
+
+
+export const DelOrderItemFulfillmentScalarFieldEnum = {
+  id: 'id',
+  orderItemId: 'orderItemId',
+  optionId: 'optionId',
+  quantity: 'quantity'
+} as const
+
+export type DelOrderItemFulfillmentScalarFieldEnum = (typeof DelOrderItemFulfillmentScalarFieldEnum)[keyof typeof DelOrderItemFulfillmentScalarFieldEnum]
 
 
 export const SortOrder = {

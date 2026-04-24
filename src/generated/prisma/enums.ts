@@ -92,6 +92,14 @@ export const ChannelKind = {
 export type ChannelKind = (typeof ChannelKind)[keyof typeof ChannelKind]
 
 
+export const ProductListingStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type ProductListingStatus = (typeof ProductListingStatus)[keyof typeof ProductListingStatus]
+
+
 export const InvMovementType = {
   INBOUND: 'INBOUND',
   OUTBOUND: 'OUTBOUND',
