@@ -134,7 +134,7 @@ const SALES_CONTENT_CREATE_ITEMS: SidebarItem[] = [
 
 const SALES_CONTENT_DISTRIBUTE_ITEMS: SidebarItem[] = [
   { label: '채널', href: SALES_CONTENT_CHANNELS_PATH },
-  { label: '배포 내역', href: SALES_CONTENT_DEPLOYMENTS_PATH, disabled: true, badge: '준비 중' },
+  { label: '배포 내역', href: SALES_CONTENT_DEPLOYMENTS_PATH },
 ]
 
 const SALES_CONTENT_INSIGHTS_ITEMS: SidebarItem[] = [

@@ -354,6 +354,8 @@ model Space {
   salesContentChannels SalesContentChannel[]
   contents             Content[]
   contentAssets        ContentAsset[]
+  contentDeployments   ContentDeployment[]
+  contentClickEvents   ContentClickEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1469,8 +1471,9 @@ model SalesContentChannel {
   isActive      Boolean                 @default(true)
   config        Json? // 채널별 구성 (blog base URL, API endpoint 등)
 
-  space    Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  contents Content[]
+  space       Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  contents    Content[]
+  deployments ContentDeployment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1521,9 +1524,10 @@ model Content {
   publishedAt  DateTime?
   scheduledAt  DateTime?
 
-  space   Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  assets  ContentAsset[]
-  channel SalesContentChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  space       Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  assets      ContentAsset[]
+  channel     SalesContentChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  deployments ContentDeployment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1531,6 +1535,66 @@ model Content {
   @@index([spaceId, status])
   @@index([spaceId, createdAt])
   @@index([channelId])
+}
+
+// ─── Sales Content Deck (배포 · UTM · 클릭) ─────────────────────────────────
+
+enum DeploymentStatus {
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+  CANCELED
+}
+
+// 한 건의 Content 를 한 채널에 배포한 기록. shortSlug 은 /c/{slug} 리다이렉터 키.
+model ContentDeployment {
+  id           String           @id @default(cuid())
+  spaceId      String
+  contentId    String
+  channelId    String
+  shortSlug    String           @unique
+  targetUrl    String // 최종 목적지 (상품/랜딩 페이지)
+  platformUrl  String? // 실제 게시물 URL (Unit 10 에서 채움)
+  status       DeploymentStatus @default(SCHEDULED)
+  scheduledAt  DateTime?
+  publishedAt  DateTime?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  utmContent   String?
+  utmTerm      String?
+  errorMessage String?
+
+  space       Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  content     Content             @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  channel     SalesContentChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  clickEvents ContentClickEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([contentId])
+  @@index([channelId])
+}
+
+// /c/{slug} 리다이렉터 진입 이벤트. ip 는 SHA-256 + salt 로 익명화.
+model ContentClickEvent {
+  id           String  @id @default(cuid())
+  spaceId      String
+  deploymentId String
+  ipHash       String?
+  userAgent    String?
+  referrer     String?
+
+  space      Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  deployment ContentDeployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([deploymentId, createdAt])
+  @@index([spaceId, createdAt])
 }
 
 // 콘텐츠 첨부 에셋 (이미지 · 링크). 이미지 URL 은 Unit 7 Supabase Storage 결과.

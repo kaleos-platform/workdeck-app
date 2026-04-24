@@ -184,3 +184,23 @@ export const contentGenerateSectionSchema = z.object({
     .optional(),
   additionalInstruction: emptyToUndefined.pipe(z.string().max(1000)).optional(),
 })
+
+// ─── Deployment ─────────────────────────────────────────────────────────────
+
+export const deploymentCreateSchema = z.object({
+  contentId: z.string().cuid(),
+  channelId: z.string().cuid(),
+  targetUrl: z.string().url().max(2000),
+  scheduledAt: z.string().datetime().optional().nullable(),
+  utmCampaign: emptyToUndefined.pipe(z.string().max(80)).optional(),
+  utmContent: emptyToUndefined.pipe(z.string().max(80)).optional(),
+  utmTerm: emptyToUndefined.pipe(z.string().max(80)).optional(),
+  utmSource: emptyToUndefined.pipe(z.string().max(80)).optional(),
+  utmMedium: emptyToUndefined.pipe(z.string().max(80)).optional(),
+})
+export type DeploymentCreateInput = z.infer<typeof deploymentCreateSchema>
+
+export const deploymentUpdateSchema = deploymentCreateSchema.partial().extend({
+  status: z.enum(['SCHEDULED', 'PUBLISHING', 'PUBLISHED', 'FAILED', 'CANCELED']).optional(),
+  platformUrl: emptyToUndefined.pipe(z.string().url().max(2000)).optional(),
+})

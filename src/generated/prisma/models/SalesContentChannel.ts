@@ -236,6 +236,7 @@ export type SalesContentChannelWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"SalesContentChannel"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   contents?: Prisma.ContentListRelationFilter
+  deployments?: Prisma.ContentDeploymentListRelationFilter
 }
 
 export type SalesContentChannelOrderByWithRelationInput = {
@@ -253,6 +254,7 @@ export type SalesContentChannelOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   contents?: Prisma.ContentOrderByRelationAggregateInput
+  deployments?: Prisma.ContentDeploymentOrderByRelationAggregateInput
 }
 
 export type SalesContentChannelWhereUniqueInput = Prisma.AtLeast<{
@@ -274,6 +276,7 @@ export type SalesContentChannelWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"SalesContentChannel"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   contents?: Prisma.ContentListRelationFilter
+  deployments?: Prisma.ContentDeploymentListRelationFilter
 }, "id" | "spaceId_platformSlug">
 
 export type SalesContentChannelOrderByWithAggregationInput = {
@@ -326,6 +329,7 @@ export type SalesContentChannelCreateInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutSalesContentChannelsInput
   contents?: Prisma.ContentCreateNestedManyWithoutChannelInput
+  deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutChannelInput
 }
 
 export type SalesContentChannelUncheckedCreateInput = {
@@ -342,6 +346,7 @@ export type SalesContentChannelUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   contents?: Prisma.ContentUncheckedCreateNestedManyWithoutChannelInput
+  deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type SalesContentChannelUpdateInput = {
@@ -358,6 +363,7 @@ export type SalesContentChannelUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutSalesContentChannelsNestedInput
   contents?: Prisma.ContentUpdateManyWithoutChannelNestedInput
+  deployments?: Prisma.ContentDeploymentUpdateManyWithoutChannelNestedInput
 }
 
 export type SalesContentChannelUncheckedUpdateInput = {
@@ -374,6 +380,7 @@ export type SalesContentChannelUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contents?: Prisma.ContentUncheckedUpdateManyWithoutChannelNestedInput
+  deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type SalesContentChannelCreateManyInput = {
@@ -483,6 +490,11 @@ export type SalesContentChannelNullableScalarRelationFilter = {
   isNot?: Prisma.SalesContentChannelWhereInput | null
 }
 
+export type SalesContentChannelScalarRelationFilter = {
+  is?: Prisma.SalesContentChannelWhereInput
+  isNot?: Prisma.SalesContentChannelWhereInput
+}
+
 export type SalesContentChannelCreateNestedManyWithoutSpaceInput = {
   create?: Prisma.XOR<Prisma.SalesContentChannelCreateWithoutSpaceInput, Prisma.SalesContentChannelUncheckedCreateWithoutSpaceInput> | Prisma.SalesContentChannelCreateWithoutSpaceInput[] | Prisma.SalesContentChannelUncheckedCreateWithoutSpaceInput[]
   connectOrCreate?: Prisma.SalesContentChannelCreateOrConnectWithoutSpaceInput | Prisma.SalesContentChannelCreateOrConnectWithoutSpaceInput[]
@@ -557,6 +569,20 @@ export type SalesContentChannelUpdateOneWithoutContentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SalesContentChannelUpdateToOneWithWhereWithoutContentsInput, Prisma.SalesContentChannelUpdateWithoutContentsInput>, Prisma.SalesContentChannelUncheckedUpdateWithoutContentsInput>
 }
 
+export type SalesContentChannelCreateNestedOneWithoutDeploymentsInput = {
+  create?: Prisma.XOR<Prisma.SalesContentChannelCreateWithoutDeploymentsInput, Prisma.SalesContentChannelUncheckedCreateWithoutDeploymentsInput>
+  connectOrCreate?: Prisma.SalesContentChannelCreateOrConnectWithoutDeploymentsInput
+  connect?: Prisma.SalesContentChannelWhereUniqueInput
+}
+
+export type SalesContentChannelUpdateOneRequiredWithoutDeploymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.SalesContentChannelCreateWithoutDeploymentsInput, Prisma.SalesContentChannelUncheckedCreateWithoutDeploymentsInput>
+  connectOrCreate?: Prisma.SalesContentChannelCreateOrConnectWithoutDeploymentsInput
+  upsert?: Prisma.SalesContentChannelUpsertWithoutDeploymentsInput
+  connect?: Prisma.SalesContentChannelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SalesContentChannelUpdateToOneWithWhereWithoutDeploymentsInput, Prisma.SalesContentChannelUpdateWithoutDeploymentsInput>, Prisma.SalesContentChannelUncheckedUpdateWithoutDeploymentsInput>
+}
+
 export type SalesContentChannelCreateWithoutSpaceInput = {
   id?: string
   platform: $Enums.SalesContentPlatform
@@ -570,6 +596,7 @@ export type SalesContentChannelCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   contents?: Prisma.ContentCreateNestedManyWithoutChannelInput
+  deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutChannelInput
 }
 
 export type SalesContentChannelUncheckedCreateWithoutSpaceInput = {
@@ -585,6 +612,7 @@ export type SalesContentChannelUncheckedCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   contents?: Prisma.ContentUncheckedCreateNestedManyWithoutChannelInput
+  deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type SalesContentChannelCreateOrConnectWithoutSpaceInput = {
@@ -644,6 +672,7 @@ export type SalesContentChannelCreateWithoutContentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutSalesContentChannelsInput
+  deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutChannelInput
 }
 
 export type SalesContentChannelUncheckedCreateWithoutContentsInput = {
@@ -659,6 +688,7 @@ export type SalesContentChannelUncheckedCreateWithoutContentsInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type SalesContentChannelCreateOrConnectWithoutContentsInput = {
@@ -690,6 +720,7 @@ export type SalesContentChannelUpdateWithoutContentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutSalesContentChannelsNestedInput
+  deployments?: Prisma.ContentDeploymentUpdateManyWithoutChannelNestedInput
 }
 
 export type SalesContentChannelUncheckedUpdateWithoutContentsInput = {
@@ -705,6 +736,87 @@ export type SalesContentChannelUncheckedUpdateWithoutContentsInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutChannelNestedInput
+}
+
+export type SalesContentChannelCreateWithoutDeploymentsInput = {
+  id?: string
+  platform: $Enums.SalesContentPlatform
+  kind: $Enums.SalesContentChannelKind
+  name: string
+  platformSlug: string
+  publisherMode?: $Enums.PublisherMode
+  collectorMode?: $Enums.CollectorMode
+  isActive?: boolean
+  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutSalesContentChannelsInput
+  contents?: Prisma.ContentCreateNestedManyWithoutChannelInput
+}
+
+export type SalesContentChannelUncheckedCreateWithoutDeploymentsInput = {
+  id?: string
+  spaceId: string
+  platform: $Enums.SalesContentPlatform
+  kind: $Enums.SalesContentChannelKind
+  name: string
+  platformSlug: string
+  publisherMode?: $Enums.PublisherMode
+  collectorMode?: $Enums.CollectorMode
+  isActive?: boolean
+  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutChannelInput
+}
+
+export type SalesContentChannelCreateOrConnectWithoutDeploymentsInput = {
+  where: Prisma.SalesContentChannelWhereUniqueInput
+  create: Prisma.XOR<Prisma.SalesContentChannelCreateWithoutDeploymentsInput, Prisma.SalesContentChannelUncheckedCreateWithoutDeploymentsInput>
+}
+
+export type SalesContentChannelUpsertWithoutDeploymentsInput = {
+  update: Prisma.XOR<Prisma.SalesContentChannelUpdateWithoutDeploymentsInput, Prisma.SalesContentChannelUncheckedUpdateWithoutDeploymentsInput>
+  create: Prisma.XOR<Prisma.SalesContentChannelCreateWithoutDeploymentsInput, Prisma.SalesContentChannelUncheckedCreateWithoutDeploymentsInput>
+  where?: Prisma.SalesContentChannelWhereInput
+}
+
+export type SalesContentChannelUpdateToOneWithWhereWithoutDeploymentsInput = {
+  where?: Prisma.SalesContentChannelWhereInput
+  data: Prisma.XOR<Prisma.SalesContentChannelUpdateWithoutDeploymentsInput, Prisma.SalesContentChannelUncheckedUpdateWithoutDeploymentsInput>
+}
+
+export type SalesContentChannelUpdateWithoutDeploymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  platform?: Prisma.EnumSalesContentPlatformFieldUpdateOperationsInput | $Enums.SalesContentPlatform
+  kind?: Prisma.EnumSalesContentChannelKindFieldUpdateOperationsInput | $Enums.SalesContentChannelKind
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  platformSlug?: Prisma.StringFieldUpdateOperationsInput | string
+  publisherMode?: Prisma.EnumPublisherModeFieldUpdateOperationsInput | $Enums.PublisherMode
+  collectorMode?: Prisma.EnumCollectorModeFieldUpdateOperationsInput | $Enums.CollectorMode
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutSalesContentChannelsNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutChannelNestedInput
+}
+
+export type SalesContentChannelUncheckedUpdateWithoutDeploymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  platform?: Prisma.EnumSalesContentPlatformFieldUpdateOperationsInput | $Enums.SalesContentPlatform
+  kind?: Prisma.EnumSalesContentChannelKindFieldUpdateOperationsInput | $Enums.SalesContentChannelKind
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  platformSlug?: Prisma.StringFieldUpdateOperationsInput | string
+  publisherMode?: Prisma.EnumPublisherModeFieldUpdateOperationsInput | $Enums.PublisherMode
+  collectorMode?: Prisma.EnumCollectorModeFieldUpdateOperationsInput | $Enums.CollectorMode
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type SalesContentChannelCreateManySpaceInput = {
@@ -734,6 +846,7 @@ export type SalesContentChannelUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contents?: Prisma.ContentUpdateManyWithoutChannelNestedInput
+  deployments?: Prisma.ContentDeploymentUpdateManyWithoutChannelNestedInput
 }
 
 export type SalesContentChannelUncheckedUpdateWithoutSpaceInput = {
@@ -749,6 +862,7 @@ export type SalesContentChannelUncheckedUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contents?: Prisma.ContentUncheckedUpdateManyWithoutChannelNestedInput
+  deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type SalesContentChannelUncheckedUpdateManyWithoutSpaceInput = {
@@ -772,10 +886,12 @@ export type SalesContentChannelUncheckedUpdateManyWithoutSpaceInput = {
 
 export type SalesContentChannelCountOutputType = {
   contents: number
+  deployments: number
 }
 
 export type SalesContentChannelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   contents?: boolean | SalesContentChannelCountOutputTypeCountContentsArgs
+  deployments?: boolean | SalesContentChannelCountOutputTypeCountDeploymentsArgs
 }
 
 /**
@@ -795,6 +911,13 @@ export type SalesContentChannelCountOutputTypeCountContentsArgs<ExtArgs extends 
   where?: Prisma.ContentWhereInput
 }
 
+/**
+ * SalesContentChannelCountOutputType without action
+ */
+export type SalesContentChannelCountOutputTypeCountDeploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ContentDeploymentWhereInput
+}
+
 
 export type SalesContentChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -811,6 +934,7 @@ export type SalesContentChannelSelect<ExtArgs extends runtime.Types.Extensions.I
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   contents?: boolean | Prisma.SalesContentChannel$contentsArgs<ExtArgs>
+  deployments?: boolean | Prisma.SalesContentChannel$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.SalesContentChannelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["salesContentChannel"]>
 
@@ -865,6 +989,7 @@ export type SalesContentChannelOmit<ExtArgs extends runtime.Types.Extensions.Int
 export type SalesContentChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   contents?: boolean | Prisma.SalesContentChannel$contentsArgs<ExtArgs>
+  deployments?: boolean | Prisma.SalesContentChannel$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.SalesContentChannelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SalesContentChannelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -879,6 +1004,7 @@ export type $SalesContentChannelPayload<ExtArgs extends runtime.Types.Extensions
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
     contents: Prisma.$ContentPayload<ExtArgs>[]
+    deployments: Prisma.$ContentDeploymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1289,6 +1415,7 @@ export interface Prisma__SalesContentChannelClient<T, Null = never, ExtArgs exte
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   contents<T extends Prisma.SalesContentChannel$contentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SalesContentChannel$contentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deployments<T extends Prisma.SalesContentChannel$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SalesContentChannel$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentDeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1747,6 +1874,30 @@ export type SalesContentChannel$contentsArgs<ExtArgs extends runtime.Types.Exten
   take?: number
   skip?: number
   distinct?: Prisma.ContentScalarFieldEnum | Prisma.ContentScalarFieldEnum[]
+}
+
+/**
+ * SalesContentChannel.deployments
+ */
+export type SalesContentChannel$deploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentDeployment
+   */
+  select?: Prisma.ContentDeploymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContentDeployment
+   */
+  omit?: Prisma.ContentDeploymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContentDeploymentInclude<ExtArgs> | null
+  where?: Prisma.ContentDeploymentWhereInput
+  orderBy?: Prisma.ContentDeploymentOrderByWithRelationInput | Prisma.ContentDeploymentOrderByWithRelationInput[]
+  cursor?: Prisma.ContentDeploymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ContentDeploymentScalarFieldEnum | Prisma.ContentDeploymentScalarFieldEnum[]
 }
 
 /**

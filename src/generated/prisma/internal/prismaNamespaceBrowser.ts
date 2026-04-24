@@ -113,6 +113,8 @@ export const ModelName = {
   Template: 'Template',
   SalesContentChannel: 'SalesContentChannel',
   Content: 'Content',
+  ContentDeployment: 'ContentDeployment',
+  ContentClickEvent: 'ContentClickEvent',
   ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea'
 } as const
@@ -1112,6 +1114,43 @@ export const ContentScalarFieldEnum = {
 } as const
 
 export type ContentScalarFieldEnum = (typeof ContentScalarFieldEnum)[keyof typeof ContentScalarFieldEnum]
+
+
+export const ContentDeploymentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  contentId: 'contentId',
+  channelId: 'channelId',
+  shortSlug: 'shortSlug',
+  targetUrl: 'targetUrl',
+  platformUrl: 'platformUrl',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  publishedAt: 'publishedAt',
+  utmSource: 'utmSource',
+  utmMedium: 'utmMedium',
+  utmCampaign: 'utmCampaign',
+  utmContent: 'utmContent',
+  utmTerm: 'utmTerm',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContentDeploymentScalarFieldEnum = (typeof ContentDeploymentScalarFieldEnum)[keyof typeof ContentDeploymentScalarFieldEnum]
+
+
+export const ContentClickEventScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  deploymentId: 'deploymentId',
+  ipHash: 'ipHash',
+  userAgent: 'userAgent',
+  referrer: 'referrer',
+  createdAt: 'createdAt'
+} as const
+
+export type ContentClickEventScalarFieldEnum = (typeof ContentClickEventScalarFieldEnum)[keyof typeof ContentClickEventScalarFieldEnum]
 
 
 export const ContentAssetScalarFieldEnum = {

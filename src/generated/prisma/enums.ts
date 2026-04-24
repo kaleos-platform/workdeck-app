@@ -208,3 +208,14 @@ export const ContentAssetKind = {
 } as const
 
 export type ContentAssetKind = (typeof ContentAssetKind)[keyof typeof ContentAssetKind]
+
+
+export const DeploymentStatus = {
+  SCHEDULED: 'SCHEDULED',
+  PUBLISHING: 'PUBLISHING',
+  PUBLISHED: 'PUBLISHED',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED'
+} as const
+
+export type DeploymentStatus = (typeof DeploymentStatus)[keyof typeof DeploymentStatus]

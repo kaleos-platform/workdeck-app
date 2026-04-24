@@ -328,6 +328,16 @@ export type SalesContentChannel = Prisma.SalesContentChannelModel
  */
 export type Content = Prisma.ContentModel
 /**
+ * Model ContentDeployment
+ * 
+ */
+export type ContentDeployment = Prisma.ContentDeploymentModel
+/**
+ * Model ContentClickEvent
+ * 
+ */
+export type ContentClickEvent = Prisma.ContentClickEventModel
+/**
  * Model ContentAsset
  * 
  */

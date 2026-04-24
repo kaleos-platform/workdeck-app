@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { ContentStatusBadge } from '@/components/sc/contents/content-status-badge'
+import { DeployButton } from '@/components/sc/contents/deploy-button'
 import { SALES_CONTENT_CONTENTS_PATH } from '@/lib/deck-routes'
 import { nextAllowed } from '@/lib/sc/content-state'
 
@@ -15,13 +16,28 @@ export default async function ContentDetailPage({ params }: Props) {
   if ('error' in resolved) redirect('/my-deck')
 
   const { id } = await params
-  const content = await prisma.content.findFirst({
-    where: { id, spaceId: resolved.space.id },
-    include: {
-      assets: true,
-      channel: { select: { id: true, name: true, platform: true } },
-    },
-  })
+  const [content, channels, deployments] = await Promise.all([
+    prisma.content.findFirst({
+      where: { id, spaceId: resolved.space.id },
+      include: {
+        assets: true,
+        channel: { select: { id: true, name: true, platform: true } },
+      },
+    }),
+    prisma.salesContentChannel.findMany({
+      where: { spaceId: resolved.space.id, isActive: true },
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, platform: true },
+    }),
+    prisma.contentDeployment.findMany({
+      where: { contentId: id, spaceId: resolved.space.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        channel: { select: { name: true, platform: true } },
+        _count: { select: { clickEvents: true } },
+      },
+    }),
+  ])
   if (!content) notFound()
 
   return (
@@ -71,6 +87,39 @@ export default async function ContentDetailPage({ params }: Props) {
                   [{a.kind}] {a.title ?? a.url}
                 </div>
               ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">배포 ({deployments.length}건)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {deployments.length === 0 ? (
+            <p className="text-xs text-muted-foreground">아직 예약된 배포가 없습니다.</p>
+          ) : (
+            <div className="space-y-2">
+              {deployments.map((d) => (
+                <div key={d.id} className="rounded border p-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono">
+                      {d.status} · /c/{d.shortSlug} · 클릭 {d._count.clickEvents}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {d.channel.name} ({d.channel.platform})
+                    </span>
+                  </div>
+                  <div className="mt-1 truncate text-muted-foreground">→ {d.targetUrl}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          <DeployButton
+            contentId={content.id}
+            contentTitle={content.title}
+            defaultChannelId={content.channelId}
+            channels={channels}
+          />
         </CardContent>
       </Card>
     </div>
