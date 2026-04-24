@@ -348,6 +348,7 @@ model Space {
   productPricingSettings ProductPricingSettings?
   optionCodeAliases      SpaceOptionCodeAlias[]
   productListings        ProductListing[]
+  productChannelGroupMeta ProductChannelGroupMeta[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -720,11 +721,12 @@ model InvProduct {
   description        String?
   optionAttributes   Json?     // 예: [{name:"사이즈",values:["S","M","L"]}]
 
-  space         Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  group         InvProductGroup    @relation(fields: [groupId], references: [id], onDelete: Restrict)
-  brand         Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  options       InvProductOption[]
-  reorderConfig InvReorderConfig?
+  space            Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group            InvProductGroup           @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  brand            Brand?                    @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  options          InvProductOption[]
+  reorderConfig    InvReorderConfig?
+  channelGroupMeta ProductChannelGroupMeta[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1169,6 +1171,7 @@ model Channel {
   columnMappingPresets DelColumnMappingPreset[] @relation("PresetChannel")
   productAliases       ChannelProductAlias[]
   productListings      ProductListing[]
+  productGroupMeta     ProductChannelGroupMeta[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1304,4 +1307,24 @@ model DelOrderItemFulfillment {
 
   @@index([orderItemId])
   @@index([optionId])
+}
+
+// 상품 × 채널 그룹 단위 메타 — 같은 상품의 옵션 listing들을 한 상세 화면에서 묶어 관리할 때 공유되는 값
+// 현재는 키워드만, 추후 대표 이미지/설명 등 확장 예정
+model ProductChannelGroupMeta {
+  id        String @id @default(cuid())
+  spaceId   String
+  productId String
+  channelId String
+  keywords  Json   @default("[]") // string[]
+
+  space   Space      @relation(fields: [spaceId],   references: [id], onDelete: Cascade)
+  product InvProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  channel Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, channelId])
+  @@index([spaceId, channelId])
 }
