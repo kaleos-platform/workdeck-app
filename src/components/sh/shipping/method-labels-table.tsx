@@ -128,10 +128,18 @@ export function MethodLabelsTable({ methodId }: { methodId: string }) {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{method?.name ?? '배송 방식'}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {method?.name ?? <span className="text-muted-foreground">불러오는 중...</span>}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          옵션별로 배송 파일에 쓰이는 값을 지정할 수 있습니다 · 오버라이드 {overriddenCount}건 /
-          노출 {rows.length}건 (전체 옵션 {total}건)
+          {method ? (
+            <>
+              옵션별로 배송 파일에 쓰이는 값을 지정할 수 있습니다 · 오버라이드 {overriddenCount}건 /
+              노출 {rows.length}건 (전체 옵션 {total}건)
+            </>
+          ) : (
+            '옵션별로 배송 파일에 쓰이는 값을 지정할 수 있습니다'
+          )}
         </p>
       </div>
 
@@ -158,7 +166,7 @@ export function MethodLabelsTable({ methodId }: { methodId: string }) {
         </Select>
       </div>
 
-      {availableFields.length === 0 && (
+      {method && availableFields.length === 0 && (
         <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
           이 배송 방식의 컬럼 매핑이 비어있어 오버라이드할 필드가 없습니다. 먼저 배송 방식 관리에서
           컬럼 매핑을 설정해 주세요.
