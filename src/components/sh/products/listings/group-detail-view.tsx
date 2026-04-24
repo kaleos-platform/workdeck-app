@@ -12,6 +12,13 @@ import { SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 import { KeywordEditor } from './keyword-editor'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
 import { GroupBulkEditBar, type BulkPatch } from './group-bulk-edit-bar'
+import { GroupBaseInfoCard } from './group-base-info-card'
+
+type OptionAttribute = { name: string; values: Array<{ value: string }> }
+
+type GroupListingFull = GroupListingRow & {
+  memo: string | null
+}
 
 type GroupDetail = {
   product: {
@@ -20,10 +27,11 @@ type GroupDetail = {
     internalName: string | null
     displayName: string
     brand: { id: string; name: string } | null
+    optionAttributes: OptionAttribute[]
   }
   channel: { id: string; name: string; kind: string }
   meta: { keywords: string[] }
-  listings: GroupListingRow[]
+  listings: GroupListingFull[]
 }
 
 type Props = {
@@ -35,7 +43,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
   const [data, setData] = useState<GroupDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [keywords, setKeywords] = useState<string[]>([])
-  const [rows, setRows] = useState<GroupListingRow[]>([])
+  const [rows, setRows] = useState<GroupListingFull[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [savingKeywords, setSavingKeywords] = useState(false)
   const [savingRow, setSavingRow] = useState<string | null>(null)
@@ -181,6 +189,23 @@ export function GroupDetailView({ productId, channelId }: Props) {
           <p className="mt-1 text-sm text-muted-foreground">{data.product.brand.name}</p>
         )}
       </div>
+
+      <GroupBaseInfoCard
+        channelName={data.channel.name}
+        optionAttributes={data.product.optionAttributes}
+        listings={data.listings.map((l) => ({
+          id: l.id,
+          searchName: l.searchName,
+          displayName: l.displayName,
+          internalCode: l.internalCode,
+          memo: l.memo,
+          items: l.items.map((it) => ({
+            optionId: it.optionId,
+            attributeValues: it.attributeValues,
+          })),
+        }))}
+        onSaved={load}
+      />
 
       <Card>
         <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">

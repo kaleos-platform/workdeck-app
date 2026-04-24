@@ -33,6 +33,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         id: true,
         name: true,
         internalName: true,
+        optionAttributes: true,
         brand: { select: { id: true, name: true } },
       },
     }),
@@ -109,6 +110,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       searchName: l.searchName,
       displayName: l.displayName,
       internalCode: l.internalCode,
+      memo: l.memo,
       status: l.status,
       effectiveStatus: effective,
       retailPrice,
@@ -134,6 +136,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
   })
   const keywords = Array.isArray(meta?.keywords) ? (meta!.keywords as string[]) : []
 
+  const optionAttributes = Array.isArray(product.optionAttributes)
+    ? (product.optionAttributes as Array<{ name: string; values: Array<{ value: string }> }>)
+    : []
+
   return NextResponse.json({
     product: {
       id: product.id,
@@ -141,6 +147,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       internalName: product.internalName,
       displayName: productDisplayName(product),
       brand: product.brand,
+      optionAttributes,
     },
     channel: { id: channel.id, name: channel.name, kind: channel.kind },
     meta: { keywords },
