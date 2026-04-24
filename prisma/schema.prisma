@@ -358,6 +358,7 @@ model Space {
   contentClickEvents   ContentClickEvent[]
   channelCredentials   ChannelCredential[]
   salesContentJobs     SalesContentJob[]
+  deploymentMetrics    DeploymentMetric[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1573,6 +1574,7 @@ model ContentDeployment {
   content     Content             @relation(fields: [contentId], references: [id], onDelete: Cascade)
   channel     SalesContentChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
   clickEvents ContentClickEvent[]
+  metrics     DeploymentMetric[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1640,6 +1642,40 @@ enum SalesContentJobStatus {
   CLAIMED
   COMPLETED
   FAILED
+}
+
+// ─── Sales Content Deck (성과 지표) ────────────────────────────────────────
+
+enum MetricSource {
+  MANUAL
+  API
+  BROWSER
+  INTERNAL // /c/[slug] 자체 집계
+}
+
+// 배포 1건 × 일자 단위 성과 지표. Unit 11 수동 입력 + Unit 12 자동 수집 공통.
+model DeploymentMetric {
+  id             String       @id @default(cuid())
+  spaceId        String
+  deploymentId   String
+  date           DateTime     @db.Date
+  impressions    Int?
+  views          Int?
+  likes          Int?
+  comments       Int?
+  shares         Int?
+  externalClicks Int? // 플랫폼 자체 집계 클릭 (내부 /c/[slug] 와 구분)
+  source         MetricSource @default(MANUAL)
+
+  space      Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  deployment ContentDeployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([deploymentId, date, source])
+  @@index([spaceId, date])
+  @@index([deploymentId, date])
 }
 
 // DB-backed 작업 큐. 맥미니 워커가 주기 polling 해서 claim → 처리 → complete.

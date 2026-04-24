@@ -116,6 +116,7 @@ export const ModelName = {
   ContentDeployment: 'ContentDeployment',
   ContentClickEvent: 'ContentClickEvent',
   ChannelCredential: 'ChannelCredential',
+  DeploymentMetric: 'DeploymentMetric',
   SalesContentJob: 'SalesContentJob',
   ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea'
@@ -1170,6 +1171,25 @@ export const ChannelCredentialScalarFieldEnum = {
 } as const
 
 export type ChannelCredentialScalarFieldEnum = (typeof ChannelCredentialScalarFieldEnum)[keyof typeof ChannelCredentialScalarFieldEnum]
+
+
+export const DeploymentMetricScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  deploymentId: 'deploymentId',
+  date: 'date',
+  impressions: 'impressions',
+  views: 'views',
+  likes: 'likes',
+  comments: 'comments',
+  shares: 'shares',
+  externalClicks: 'externalClicks',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DeploymentMetricScalarFieldEnum = (typeof DeploymentMetricScalarFieldEnum)[keyof typeof DeploymentMetricScalarFieldEnum]
 
 
 export const SalesContentJobScalarFieldEnum = {

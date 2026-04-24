@@ -290,6 +290,7 @@ export type ContentDeploymentWhereInput = {
   content?: Prisma.XOR<Prisma.ContentScalarRelationFilter, Prisma.ContentWhereInput>
   channel?: Prisma.XOR<Prisma.SalesContentChannelScalarRelationFilter, Prisma.SalesContentChannelWhereInput>
   clickEvents?: Prisma.ContentClickEventListRelationFilter
+  metrics?: Prisma.DeploymentMetricListRelationFilter
 }
 
 export type ContentDeploymentOrderByWithRelationInput = {
@@ -315,6 +316,7 @@ export type ContentDeploymentOrderByWithRelationInput = {
   content?: Prisma.ContentOrderByWithRelationInput
   channel?: Prisma.SalesContentChannelOrderByWithRelationInput
   clickEvents?: Prisma.ContentClickEventOrderByRelationAggregateInput
+  metrics?: Prisma.DeploymentMetricOrderByRelationAggregateInput
 }
 
 export type ContentDeploymentWhereUniqueInput = Prisma.AtLeast<{
@@ -343,6 +345,7 @@ export type ContentDeploymentWhereUniqueInput = Prisma.AtLeast<{
   content?: Prisma.XOR<Prisma.ContentScalarRelationFilter, Prisma.ContentWhereInput>
   channel?: Prisma.XOR<Prisma.SalesContentChannelScalarRelationFilter, Prisma.SalesContentChannelWhereInput>
   clickEvents?: Prisma.ContentClickEventListRelationFilter
+  metrics?: Prisma.DeploymentMetricListRelationFilter
 }, "id" | "shortSlug">
 
 export type ContentDeploymentOrderByWithAggregationInput = {
@@ -413,6 +416,7 @@ export type ContentDeploymentCreateInput = {
   content: Prisma.ContentCreateNestedOneWithoutDeploymentsInput
   channel: Prisma.SalesContentChannelCreateNestedOneWithoutDeploymentsInput
   clickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutDeploymentInput
+  metrics?: Prisma.DeploymentMetricCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentUncheckedCreateInput = {
@@ -435,6 +439,7 @@ export type ContentDeploymentUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
+  metrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentUpdateInput = {
@@ -457,6 +462,7 @@ export type ContentDeploymentUpdateInput = {
   content?: Prisma.ContentUpdateOneRequiredWithoutDeploymentsNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneRequiredWithoutDeploymentsNestedInput
   clickEvents?: Prisma.ContentClickEventUpdateManyWithoutDeploymentNestedInput
+  metrics?: Prisma.DeploymentMetricUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentUncheckedUpdateInput = {
@@ -479,6 +485,7 @@ export type ContentDeploymentUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
+  metrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentCreateManyInput = {
@@ -763,6 +770,20 @@ export type ContentDeploymentUpdateOneRequiredWithoutClickEventsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContentDeploymentUpdateToOneWithWhereWithoutClickEventsInput, Prisma.ContentDeploymentUpdateWithoutClickEventsInput>, Prisma.ContentDeploymentUncheckedUpdateWithoutClickEventsInput>
 }
 
+export type ContentDeploymentCreateNestedOneWithoutMetricsInput = {
+  create?: Prisma.XOR<Prisma.ContentDeploymentCreateWithoutMetricsInput, Prisma.ContentDeploymentUncheckedCreateWithoutMetricsInput>
+  connectOrCreate?: Prisma.ContentDeploymentCreateOrConnectWithoutMetricsInput
+  connect?: Prisma.ContentDeploymentWhereUniqueInput
+}
+
+export type ContentDeploymentUpdateOneRequiredWithoutMetricsNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentDeploymentCreateWithoutMetricsInput, Prisma.ContentDeploymentUncheckedCreateWithoutMetricsInput>
+  connectOrCreate?: Prisma.ContentDeploymentCreateOrConnectWithoutMetricsInput
+  upsert?: Prisma.ContentDeploymentUpsertWithoutMetricsInput
+  connect?: Prisma.ContentDeploymentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentDeploymentUpdateToOneWithWhereWithoutMetricsInput, Prisma.ContentDeploymentUpdateWithoutMetricsInput>, Prisma.ContentDeploymentUncheckedUpdateWithoutMetricsInput>
+}
+
 export type ContentDeploymentCreateWithoutSpaceInput = {
   id?: string
   shortSlug: string
@@ -782,6 +803,7 @@ export type ContentDeploymentCreateWithoutSpaceInput = {
   content: Prisma.ContentCreateNestedOneWithoutDeploymentsInput
   channel: Prisma.SalesContentChannelCreateNestedOneWithoutDeploymentsInput
   clickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutDeploymentInput
+  metrics?: Prisma.DeploymentMetricCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentUncheckedCreateWithoutSpaceInput = {
@@ -803,6 +825,7 @@ export type ContentDeploymentUncheckedCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
+  metrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentCreateOrConnectWithoutSpaceInput = {
@@ -874,6 +897,7 @@ export type ContentDeploymentCreateWithoutChannelInput = {
   space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
   content: Prisma.ContentCreateNestedOneWithoutDeploymentsInput
   clickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutDeploymentInput
+  metrics?: Prisma.DeploymentMetricCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentUncheckedCreateWithoutChannelInput = {
@@ -895,6 +919,7 @@ export type ContentDeploymentUncheckedCreateWithoutChannelInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
+  metrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentCreateOrConnectWithoutChannelInput = {
@@ -942,6 +967,7 @@ export type ContentDeploymentCreateWithoutContentInput = {
   space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
   channel: Prisma.SalesContentChannelCreateNestedOneWithoutDeploymentsInput
   clickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutDeploymentInput
+  metrics?: Prisma.DeploymentMetricCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentUncheckedCreateWithoutContentInput = {
@@ -963,6 +989,7 @@ export type ContentDeploymentUncheckedCreateWithoutContentInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
+  metrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentCreateOrConnectWithoutContentInput = {
@@ -1010,6 +1037,7 @@ export type ContentDeploymentCreateWithoutClickEventsInput = {
   space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
   content: Prisma.ContentCreateNestedOneWithoutDeploymentsInput
   channel: Prisma.SalesContentChannelCreateNestedOneWithoutDeploymentsInput
+  metrics?: Prisma.DeploymentMetricCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentUncheckedCreateWithoutClickEventsInput = {
@@ -1031,6 +1059,7 @@ export type ContentDeploymentUncheckedCreateWithoutClickEventsInput = {
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  metrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutDeploymentInput
 }
 
 export type ContentDeploymentCreateOrConnectWithoutClickEventsInput = {
@@ -1068,6 +1097,7 @@ export type ContentDeploymentUpdateWithoutClickEventsInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
   content?: Prisma.ContentUpdateOneRequiredWithoutDeploymentsNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneRequiredWithoutDeploymentsNestedInput
+  metrics?: Prisma.DeploymentMetricUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentUncheckedUpdateWithoutClickEventsInput = {
@@ -1089,6 +1119,111 @@ export type ContentDeploymentUncheckedUpdateWithoutClickEventsInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutDeploymentNestedInput
+}
+
+export type ContentDeploymentCreateWithoutMetricsInput = {
+  id?: string
+  shortSlug: string
+  targetUrl: string
+  platformUrl?: string | null
+  status?: $Enums.DeploymentStatus
+  scheduledAt?: Date | string | null
+  publishedAt?: Date | string | null
+  utmSource?: string | null
+  utmMedium?: string | null
+  utmCampaign?: string | null
+  utmContent?: string | null
+  utmTerm?: string | null
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
+  content: Prisma.ContentCreateNestedOneWithoutDeploymentsInput
+  channel: Prisma.SalesContentChannelCreateNestedOneWithoutDeploymentsInput
+  clickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutDeploymentInput
+}
+
+export type ContentDeploymentUncheckedCreateWithoutMetricsInput = {
+  id?: string
+  spaceId: string
+  contentId: string
+  channelId: string
+  shortSlug: string
+  targetUrl: string
+  platformUrl?: string | null
+  status?: $Enums.DeploymentStatus
+  scheduledAt?: Date | string | null
+  publishedAt?: Date | string | null
+  utmSource?: string | null
+  utmMedium?: string | null
+  utmCampaign?: string | null
+  utmContent?: string | null
+  utmTerm?: string | null
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
+}
+
+export type ContentDeploymentCreateOrConnectWithoutMetricsInput = {
+  where: Prisma.ContentDeploymentWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentDeploymentCreateWithoutMetricsInput, Prisma.ContentDeploymentUncheckedCreateWithoutMetricsInput>
+}
+
+export type ContentDeploymentUpsertWithoutMetricsInput = {
+  update: Prisma.XOR<Prisma.ContentDeploymentUpdateWithoutMetricsInput, Prisma.ContentDeploymentUncheckedUpdateWithoutMetricsInput>
+  create: Prisma.XOR<Prisma.ContentDeploymentCreateWithoutMetricsInput, Prisma.ContentDeploymentUncheckedCreateWithoutMetricsInput>
+  where?: Prisma.ContentDeploymentWhereInput
+}
+
+export type ContentDeploymentUpdateToOneWithWhereWithoutMetricsInput = {
+  where?: Prisma.ContentDeploymentWhereInput
+  data: Prisma.XOR<Prisma.ContentDeploymentUpdateWithoutMetricsInput, Prisma.ContentDeploymentUncheckedUpdateWithoutMetricsInput>
+}
+
+export type ContentDeploymentUpdateWithoutMetricsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  shortSlug?: Prisma.StringFieldUpdateOperationsInput | string
+  targetUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  platformUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  utmSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  utmMedium?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  utmCampaign?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
+  content?: Prisma.ContentUpdateOneRequiredWithoutDeploymentsNestedInput
+  channel?: Prisma.SalesContentChannelUpdateOneRequiredWithoutDeploymentsNestedInput
+  clickEvents?: Prisma.ContentClickEventUpdateManyWithoutDeploymentNestedInput
+}
+
+export type ContentDeploymentUncheckedUpdateWithoutMetricsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  shortSlug?: Prisma.StringFieldUpdateOperationsInput | string
+  targetUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  platformUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  utmSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  utmMedium?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  utmCampaign?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentCreateManySpaceInput = {
@@ -1130,6 +1265,7 @@ export type ContentDeploymentUpdateWithoutSpaceInput = {
   content?: Prisma.ContentUpdateOneRequiredWithoutDeploymentsNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneRequiredWithoutDeploymentsNestedInput
   clickEvents?: Prisma.ContentClickEventUpdateManyWithoutDeploymentNestedInput
+  metrics?: Prisma.DeploymentMetricUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentUncheckedUpdateWithoutSpaceInput = {
@@ -1151,6 +1287,7 @@ export type ContentDeploymentUncheckedUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
+  metrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentUncheckedUpdateManyWithoutSpaceInput = {
@@ -1212,6 +1349,7 @@ export type ContentDeploymentUpdateWithoutChannelInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
   content?: Prisma.ContentUpdateOneRequiredWithoutDeploymentsNestedInput
   clickEvents?: Prisma.ContentClickEventUpdateManyWithoutDeploymentNestedInput
+  metrics?: Prisma.DeploymentMetricUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentUncheckedUpdateWithoutChannelInput = {
@@ -1233,6 +1371,7 @@ export type ContentDeploymentUncheckedUpdateWithoutChannelInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
+  metrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentUncheckedUpdateManyWithoutChannelInput = {
@@ -1294,6 +1433,7 @@ export type ContentDeploymentUpdateWithoutContentInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneRequiredWithoutDeploymentsNestedInput
   clickEvents?: Prisma.ContentClickEventUpdateManyWithoutDeploymentNestedInput
+  metrics?: Prisma.DeploymentMetricUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentUncheckedUpdateWithoutContentInput = {
@@ -1315,6 +1455,7 @@ export type ContentDeploymentUncheckedUpdateWithoutContentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
+  metrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutDeploymentNestedInput
 }
 
 export type ContentDeploymentUncheckedUpdateManyWithoutContentInput = {
@@ -1344,10 +1485,12 @@ export type ContentDeploymentUncheckedUpdateManyWithoutContentInput = {
 
 export type ContentDeploymentCountOutputType = {
   clickEvents: number
+  metrics: number
 }
 
 export type ContentDeploymentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   clickEvents?: boolean | ContentDeploymentCountOutputTypeCountClickEventsArgs
+  metrics?: boolean | ContentDeploymentCountOutputTypeCountMetricsArgs
 }
 
 /**
@@ -1365,6 +1508,13 @@ export type ContentDeploymentCountOutputTypeDefaultArgs<ExtArgs extends runtime.
  */
 export type ContentDeploymentCountOutputTypeCountClickEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ContentClickEventWhereInput
+}
+
+/**
+ * ContentDeploymentCountOutputType without action
+ */
+export type ContentDeploymentCountOutputTypeCountMetricsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeploymentMetricWhereInput
 }
 
 
@@ -1391,6 +1541,7 @@ export type ContentDeploymentSelect<ExtArgs extends runtime.Types.Extensions.Int
   content?: boolean | Prisma.ContentDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.SalesContentChannelDefaultArgs<ExtArgs>
   clickEvents?: boolean | Prisma.ContentDeployment$clickEventsArgs<ExtArgs>
+  metrics?: boolean | Prisma.ContentDeployment$metricsArgs<ExtArgs>
   _count?: boolean | Prisma.ContentDeploymentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contentDeployment"]>
 
@@ -1469,6 +1620,7 @@ export type ContentDeploymentInclude<ExtArgs extends runtime.Types.Extensions.In
   content?: boolean | Prisma.ContentDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.SalesContentChannelDefaultArgs<ExtArgs>
   clickEvents?: boolean | Prisma.ContentDeployment$clickEventsArgs<ExtArgs>
+  metrics?: boolean | Prisma.ContentDeployment$metricsArgs<ExtArgs>
   _count?: boolean | Prisma.ContentDeploymentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ContentDeploymentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1489,6 +1641,7 @@ export type $ContentDeploymentPayload<ExtArgs extends runtime.Types.Extensions.I
     content: Prisma.$ContentPayload<ExtArgs>
     channel: Prisma.$SalesContentChannelPayload<ExtArgs>
     clickEvents: Prisma.$ContentClickEventPayload<ExtArgs>[]
+    metrics: Prisma.$DeploymentMetricPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1907,6 +2060,7 @@ export interface Prisma__ContentDeploymentClient<T, Null = never, ExtArgs extend
   content<T extends Prisma.ContentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentDefaultArgs<ExtArgs>>): Prisma.Prisma__ContentClient<runtime.Types.Result.GetResult<Prisma.$ContentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   channel<T extends Prisma.SalesContentChannelDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SalesContentChannelDefaultArgs<ExtArgs>>): Prisma.Prisma__SalesContentChannelClient<runtime.Types.Result.GetResult<Prisma.$SalesContentChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   clickEvents<T extends Prisma.ContentDeployment$clickEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentDeployment$clickEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentClickEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  metrics<T extends Prisma.ContentDeployment$metricsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentDeployment$metricsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentMetricPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2371,6 +2525,30 @@ export type ContentDeployment$clickEventsArgs<ExtArgs extends runtime.Types.Exte
   take?: number
   skip?: number
   distinct?: Prisma.ContentClickEventScalarFieldEnum | Prisma.ContentClickEventScalarFieldEnum[]
+}
+
+/**
+ * ContentDeployment.metrics
+ */
+export type ContentDeployment$metricsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeploymentMetric
+   */
+  select?: Prisma.DeploymentMetricSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeploymentMetric
+   */
+  omit?: Prisma.DeploymentMetricOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeploymentMetricInclude<ExtArgs> | null
+  where?: Prisma.DeploymentMetricWhereInput
+  orderBy?: Prisma.DeploymentMetricOrderByWithRelationInput | Prisma.DeploymentMetricOrderByWithRelationInput[]
+  cursor?: Prisma.DeploymentMetricWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeploymentMetricScalarFieldEnum | Prisma.DeploymentMetricScalarFieldEnum[]
 }
 
 /**

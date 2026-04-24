@@ -138,7 +138,7 @@ const SALES_CONTENT_DISTRIBUTE_ITEMS: SidebarItem[] = [
 ]
 
 const SALES_CONTENT_INSIGHTS_ITEMS: SidebarItem[] = [
-  { label: '성과', href: SALES_CONTENT_ANALYTICS_PATH, disabled: true, badge: '준비 중' },
+  { label: '성과', href: SALES_CONTENT_ANALYTICS_PATH },
   { label: '개선 규칙', href: SALES_CONTENT_RULES_PATH, disabled: true, badge: '준비 중' },
 ]
 

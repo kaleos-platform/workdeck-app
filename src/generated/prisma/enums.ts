@@ -247,3 +247,13 @@ export const SalesContentJobStatus = {
 } as const
 
 export type SalesContentJobStatus = (typeof SalesContentJobStatus)[keyof typeof SalesContentJobStatus]
+
+
+export const MetricSource = {
+  MANUAL: 'MANUAL',
+  API: 'API',
+  BROWSER: 'BROWSER',
+  INTERNAL: 'INTERNAL'
+} as const
+
+export type MetricSource = (typeof MetricSource)[keyof typeof MetricSource]

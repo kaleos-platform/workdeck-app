@@ -738,6 +738,23 @@ export type EnumChannelCredentialKindWithAggregatesFilter<$PrismaModel = never> 
   _max?: Prisma.NestedEnumChannelCredentialKindFilter<$PrismaModel>
 }
 
+export type EnumMetricSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.MetricSource | Prisma.EnumMetricSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.MetricSource[] | Prisma.ListEnumMetricSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MetricSource[] | Prisma.ListEnumMetricSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMetricSourceFilter<$PrismaModel> | $Enums.MetricSource
+}
+
+export type EnumMetricSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MetricSource | Prisma.EnumMetricSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.MetricSource[] | Prisma.ListEnumMetricSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MetricSource[] | Prisma.ListEnumMetricSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMetricSourceWithAggregatesFilter<$PrismaModel> | $Enums.MetricSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMetricSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMetricSourceFilter<$PrismaModel>
+}
+
 export type EnumSalesContentJobKindFilter<$PrismaModel = never> = {
   equals?: $Enums.SalesContentJobKind | Prisma.EnumSalesContentJobKindFieldRefInput<$PrismaModel>
   in?: $Enums.SalesContentJobKind[] | Prisma.ListEnumSalesContentJobKindFieldRefInput<$PrismaModel>
@@ -1476,6 +1493,23 @@ export type NestedEnumChannelCredentialKindWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumChannelCredentialKindFilter<$PrismaModel>
   _max?: Prisma.NestedEnumChannelCredentialKindFilter<$PrismaModel>
+}
+
+export type NestedEnumMetricSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.MetricSource | Prisma.EnumMetricSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.MetricSource[] | Prisma.ListEnumMetricSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MetricSource[] | Prisma.ListEnumMetricSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMetricSourceFilter<$PrismaModel> | $Enums.MetricSource
+}
+
+export type NestedEnumMetricSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MetricSource | Prisma.EnumMetricSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.MetricSource[] | Prisma.ListEnumMetricSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MetricSource[] | Prisma.ListEnumMetricSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMetricSourceWithAggregatesFilter<$PrismaModel> | $Enums.MetricSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMetricSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMetricSourceFilter<$PrismaModel>
 }
 
 export type NestedEnumSalesContentJobKindFilter<$PrismaModel = never> = {

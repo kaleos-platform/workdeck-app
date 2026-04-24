@@ -449,6 +449,7 @@ export const ModelName = {
   ContentDeployment: 'ContentDeployment',
   ContentClickEvent: 'ContentClickEvent',
   ChannelCredential: 'ChannelCredential',
+  DeploymentMetric: 'DeploymentMetric',
   SalesContentJob: 'SalesContentJob',
   ContentAsset: 'ContentAsset',
   ContentIdea: 'ContentIdea'
@@ -467,7 +468,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "salesContentJob" | "contentAsset" | "contentIdea"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentAsset" | "contentIdea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5281,6 +5282,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DeploymentMetric: {
+      payload: Prisma.$DeploymentMetricPayload<ExtArgs>
+      fields: Prisma.DeploymentMetricFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeploymentMetricFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeploymentMetricFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>
+        }
+        findFirst: {
+          args: Prisma.DeploymentMetricFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeploymentMetricFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>
+        }
+        findMany: {
+          args: Prisma.DeploymentMetricFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>[]
+        }
+        create: {
+          args: Prisma.DeploymentMetricCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>
+        }
+        createMany: {
+          args: Prisma.DeploymentMetricCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeploymentMetricCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>[]
+        }
+        delete: {
+          args: Prisma.DeploymentMetricDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>
+        }
+        update: {
+          args: Prisma.DeploymentMetricUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeploymentMetricDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeploymentMetricUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeploymentMetricUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeploymentMetricUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentMetricPayload>
+        }
+        aggregate: {
+          args: Prisma.DeploymentMetricAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeploymentMetric>
+        }
+        groupBy: {
+          args: Prisma.DeploymentMetricGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeploymentMetricGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeploymentMetricCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeploymentMetricCountAggregateOutputType> | number
+        }
+      }
+    }
     SalesContentJob: {
       payload: Prisma.$SalesContentJobPayload<ExtArgs>
       fields: Prisma.SalesContentJobFieldRefs
@@ -6577,6 +6652,25 @@ export const ChannelCredentialScalarFieldEnum = {
 export type ChannelCredentialScalarFieldEnum = (typeof ChannelCredentialScalarFieldEnum)[keyof typeof ChannelCredentialScalarFieldEnum]
 
 
+export const DeploymentMetricScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  deploymentId: 'deploymentId',
+  date: 'date',
+  impressions: 'impressions',
+  views: 'views',
+  likes: 'likes',
+  comments: 'comments',
+  shares: 'shares',
+  externalClicks: 'externalClicks',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DeploymentMetricScalarFieldEnum = (typeof DeploymentMetricScalarFieldEnum)[keyof typeof DeploymentMetricScalarFieldEnum]
+
+
 export const SalesContentJobScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -7062,6 +7156,20 @@ export type ListEnumChannelCredentialKindFieldRefInput<$PrismaModel> = FieldRefI
 
 
 /**
+ * Reference to a field of type 'MetricSource'
+ */
+export type EnumMetricSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MetricSource'>
+    
+
+
+/**
+ * Reference to a field of type 'MetricSource[]'
+ */
+export type ListEnumMetricSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MetricSource[]'>
+    
+
+
+/**
  * Reference to a field of type 'SalesContentJobKind'
  */
 export type EnumSalesContentJobKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SalesContentJobKind'>
@@ -7276,6 +7384,7 @@ export type GlobalOmitConfig = {
   contentDeployment?: Prisma.ContentDeploymentOmit
   contentClickEvent?: Prisma.ContentClickEventOmit
   channelCredential?: Prisma.ChannelCredentialOmit
+  deploymentMetric?: Prisma.DeploymentMetricOmit
   salesContentJob?: Prisma.SalesContentJobOmit
   contentAsset?: Prisma.ContentAssetOmit
   contentIdea?: Prisma.ContentIdeaOmit

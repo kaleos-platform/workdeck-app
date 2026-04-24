@@ -365,6 +365,11 @@ export type ContentClickEvent = Prisma.ContentClickEventModel
  */
 export type ChannelCredential = Prisma.ChannelCredentialModel
 /**
+ * Model DeploymentMetric
+ * 
+ */
+export type DeploymentMetric = Prisma.DeploymentMetricModel
+/**
  * Model SalesContentJob
  * 
  */

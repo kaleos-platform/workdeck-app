@@ -220,6 +220,7 @@ export type SpaceWhereInput = {
   contentClickEvents?: Prisma.ContentClickEventListRelationFilter
   channelCredentials?: Prisma.ChannelCredentialListRelationFilter
   salesContentJobs?: Prisma.SalesContentJobListRelationFilter
+  deploymentMetrics?: Prisma.DeploymentMetricListRelationFilter
 }
 
 export type SpaceOrderByWithRelationInput = {
@@ -266,6 +267,7 @@ export type SpaceOrderByWithRelationInput = {
   contentClickEvents?: Prisma.ContentClickEventOrderByRelationAggregateInput
   channelCredentials?: Prisma.ChannelCredentialOrderByRelationAggregateInput
   salesContentJobs?: Prisma.SalesContentJobOrderByRelationAggregateInput
+  deploymentMetrics?: Prisma.DeploymentMetricOrderByRelationAggregateInput
 }
 
 export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -315,6 +317,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   contentClickEvents?: Prisma.ContentClickEventListRelationFilter
   channelCredentials?: Prisma.ChannelCredentialListRelationFilter
   salesContentJobs?: Prisma.SalesContentJobListRelationFilter
+  deploymentMetrics?: Prisma.DeploymentMetricListRelationFilter
 }, "id">
 
 export type SpaceOrderByWithAggregationInput = {
@@ -383,6 +386,7 @@ export type SpaceCreateInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateInput = {
@@ -429,6 +433,7 @@ export type SpaceUncheckedCreateInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUpdateInput = {
@@ -475,6 +480,7 @@ export type SpaceUpdateInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateInput = {
@@ -521,6 +527,7 @@ export type SpaceUncheckedUpdateInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateManyInput = {
@@ -1077,6 +1084,20 @@ export type SpaceUpdateOneRequiredWithoutChannelCredentialsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutChannelCredentialsInput, Prisma.SpaceUpdateWithoutChannelCredentialsInput>, Prisma.SpaceUncheckedUpdateWithoutChannelCredentialsInput>
 }
 
+export type SpaceCreateNestedOneWithoutDeploymentMetricsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutDeploymentMetricsInput, Prisma.SpaceUncheckedCreateWithoutDeploymentMetricsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutDeploymentMetricsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutDeploymentMetricsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutDeploymentMetricsInput, Prisma.SpaceUncheckedCreateWithoutDeploymentMetricsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutDeploymentMetricsInput
+  upsert?: Prisma.SpaceUpsertWithoutDeploymentMetricsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutDeploymentMetricsInput, Prisma.SpaceUpdateWithoutDeploymentMetricsInput>, Prisma.SpaceUncheckedUpdateWithoutDeploymentMetricsInput>
+}
+
 export type SpaceCreateNestedOneWithoutSalesContentJobsInput = {
   create?: Prisma.XOR<Prisma.SpaceCreateWithoutSalesContentJobsInput, Prisma.SpaceUncheckedCreateWithoutSalesContentJobsInput>
   connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutSalesContentJobsInput
@@ -1162,6 +1183,7 @@ export type SpaceCreateWithoutMembersInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutMembersInput = {
@@ -1207,6 +1229,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutMembersInput = {
@@ -1268,6 +1291,7 @@ export type SpaceUpdateWithoutMembersInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutMembersInput = {
@@ -1313,6 +1337,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeckInstancesInput = {
@@ -1358,6 +1383,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
@@ -1403,6 +1429,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeckInstancesInput = {
@@ -1464,6 +1491,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
@@ -1509,6 +1537,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductGroupsInput = {
@@ -1554,6 +1583,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
@@ -1599,6 +1629,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductGroupsInput = {
@@ -1660,6 +1691,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
@@ -1705,6 +1737,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductsInput = {
@@ -1750,6 +1783,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductsInput = {
@@ -1795,6 +1829,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductsInput = {
@@ -1856,6 +1891,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductsInput = {
@@ -1901,6 +1937,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationsInput = {
@@ -1946,6 +1983,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationsInput = {
@@ -1991,6 +2029,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationsInput = {
@@ -2052,6 +2091,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
@@ -2097,6 +2137,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvMovementsInput = {
@@ -2142,6 +2183,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvMovementsInput = {
@@ -2187,6 +2229,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvMovementsInput = {
@@ -2248,6 +2291,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
@@ -2293,6 +2337,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvStockLevelsInput = {
@@ -2338,6 +2383,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
@@ -2383,6 +2429,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvStockLevelsInput = {
@@ -2444,6 +2491,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
@@ -2489,6 +2537,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvImportHistoriesInput = {
@@ -2534,6 +2583,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
@@ -2579,6 +2629,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvImportHistoriesInput = {
@@ -2640,6 +2691,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
@@ -2685,6 +2737,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvReconciliationsInput = {
@@ -2730,6 +2783,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
@@ -2775,6 +2829,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvReconciliationsInput = {
@@ -2836,6 +2891,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
@@ -2881,6 +2937,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationMappingsInput = {
@@ -2926,6 +2983,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
@@ -2971,6 +3029,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationMappingsInput = {
@@ -3032,6 +3091,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
@@ -3077,6 +3137,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvSettingsInput = {
@@ -3122,6 +3183,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvSettingsInput = {
@@ -3167,6 +3229,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvSettingsInput = {
@@ -3228,6 +3291,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
@@ -3273,6 +3337,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodsInput = {
@@ -3318,6 +3383,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
@@ -3363,6 +3429,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodsInput = {
@@ -3424,6 +3491,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
@@ -3469,6 +3537,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
@@ -3514,6 +3583,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
@@ -3559,6 +3629,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput = {
@@ -3620,6 +3691,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
@@ -3665,6 +3737,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelBatchesInput = {
@@ -3710,6 +3783,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelBatchesInput = {
@@ -3755,6 +3829,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelBatchesInput = {
@@ -3816,6 +3891,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
@@ -3861,6 +3937,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelOrdersInput = {
@@ -3906,6 +3983,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelOrdersInput = {
@@ -3951,6 +4029,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelOrdersInput = {
@@ -4012,6 +4091,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
@@ -4057,6 +4137,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductAliasesInput = {
@@ -4102,6 +4183,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
@@ -4147,6 +4229,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductAliasesInput = {
@@ -4208,6 +4291,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
@@ -4253,6 +4337,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
@@ -4298,6 +4383,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
@@ -4343,6 +4429,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelColumnMappingPresetsInput = {
@@ -4404,6 +4491,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
@@ -4449,6 +4537,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
@@ -4494,6 +4583,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
@@ -4539,6 +4629,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelIntegrationHistoriesInput = {
@@ -4600,6 +4691,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
@@ -4645,6 +4737,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandsInput = {
@@ -4690,6 +4783,7 @@ export type SpaceCreateWithoutBrandsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandsInput = {
@@ -4735,6 +4829,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandsInput = {
@@ -4796,6 +4891,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandsInput = {
@@ -4841,6 +4937,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelGroupsInput = {
@@ -4886,6 +4983,7 @@ export type SpaceCreateWithoutChannelGroupsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelGroupsInput = {
@@ -4931,6 +5029,7 @@ export type SpaceUncheckedCreateWithoutChannelGroupsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelGroupsInput = {
@@ -4992,6 +5091,7 @@ export type SpaceUpdateWithoutChannelGroupsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelGroupsInput = {
@@ -5037,6 +5137,7 @@ export type SpaceUncheckedUpdateWithoutChannelGroupsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelsInput = {
@@ -5082,6 +5183,7 @@ export type SpaceCreateWithoutChannelsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelsInput = {
@@ -5127,6 +5229,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelsInput = {
@@ -5188,6 +5291,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelsInput = {
@@ -5233,6 +5337,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductPricingSettingsInput = {
@@ -5278,6 +5383,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
@@ -5323,6 +5429,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductPricingSettingsInput = {
@@ -5384,6 +5491,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
@@ -5429,6 +5537,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutOptionCodeAliasesInput = {
@@ -5474,6 +5583,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
@@ -5519,6 +5629,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutOptionCodeAliasesInput = {
@@ -5580,6 +5691,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
@@ -5625,6 +5737,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutB2bProductsInput = {
@@ -5670,6 +5783,7 @@ export type SpaceCreateWithoutB2bProductsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutB2bProductsInput = {
@@ -5715,6 +5829,7 @@ export type SpaceUncheckedCreateWithoutB2bProductsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutB2bProductsInput = {
@@ -5776,6 +5891,7 @@ export type SpaceUpdateWithoutB2bProductsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutB2bProductsInput = {
@@ -5821,6 +5937,7 @@ export type SpaceUncheckedUpdateWithoutB2bProductsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutPersonasInput = {
@@ -5866,6 +5983,7 @@ export type SpaceCreateWithoutPersonasInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutPersonasInput = {
@@ -5911,6 +6029,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutPersonasInput = {
@@ -5972,6 +6091,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutPersonasInput = {
@@ -6017,6 +6137,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandProfileInput = {
@@ -6062,6 +6183,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandProfileInput = {
@@ -6107,6 +6229,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandProfileInput = {
@@ -6168,6 +6291,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
@@ -6213,6 +6337,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
@@ -6258,6 +6383,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
@@ -6303,6 +6429,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutWorkspaceAiCreditsInput = {
@@ -6364,6 +6491,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
@@ -6409,6 +6537,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutImageGenerationLogsInput = {
@@ -6454,6 +6583,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
@@ -6499,6 +6629,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutImageGenerationLogsInput = {
@@ -6560,6 +6691,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
@@ -6605,6 +6737,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTextGenerationLogsInput = {
@@ -6650,6 +6783,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
@@ -6695,6 +6829,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTextGenerationLogsInput = {
@@ -6756,6 +6891,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
@@ -6801,6 +6937,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTemplatesInput = {
@@ -6846,6 +6983,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTemplatesInput = {
@@ -6891,6 +7029,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTemplatesInput = {
@@ -6952,6 +7091,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTemplatesInput = {
@@ -6997,6 +7137,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSalesContentChannelsInput = {
@@ -7042,6 +7183,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
@@ -7087,6 +7229,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentChannelsInput = {
@@ -7148,6 +7291,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
@@ -7193,6 +7337,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentsInput = {
@@ -7238,6 +7383,7 @@ export type SpaceCreateWithoutContentsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentsInput = {
@@ -7283,6 +7429,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentsInput = {
@@ -7344,6 +7491,7 @@ export type SpaceUpdateWithoutContentsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentsInput = {
@@ -7389,6 +7537,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentDeploymentsInput = {
@@ -7434,6 +7583,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
@@ -7479,6 +7629,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentDeploymentsInput = {
@@ -7540,6 +7691,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
@@ -7585,6 +7737,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentClickEventsInput = {
@@ -7630,6 +7783,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
@@ -7675,6 +7829,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentClickEventsInput = {
@@ -7736,6 +7891,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
@@ -7781,6 +7937,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelCredentialsInput = {
@@ -7826,6 +7983,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
@@ -7871,6 +8029,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelCredentialsInput = {
@@ -7932,6 +8091,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
@@ -7976,6 +8136,207 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
   contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutDeploymentMetricsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  b2bProducts?: Prisma.B2BProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  b2bProducts?: Prisma.B2BProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutDeploymentMetricsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutDeploymentMetricsInput, Prisma.SpaceUncheckedCreateWithoutDeploymentMetricsInput>
+}
+
+export type SpaceUpsertWithoutDeploymentMetricsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutDeploymentMetricsInput, Prisma.SpaceUncheckedUpdateWithoutDeploymentMetricsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutDeploymentMetricsInput, Prisma.SpaceUncheckedCreateWithoutDeploymentMetricsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutDeploymentMetricsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutDeploymentMetricsInput, Prisma.SpaceUncheckedUpdateWithoutDeploymentMetricsInput>
+}
+
+export type SpaceUpdateWithoutDeploymentMetricsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  b2bProducts?: Prisma.B2BProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  b2bProducts?: Prisma.B2BProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
@@ -8022,6 +8383,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
@@ -8067,6 +8429,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentJobsInput = {
@@ -8128,6 +8491,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
@@ -8173,6 +8537,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentAssetsInput = {
@@ -8218,6 +8583,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentAssetsInput = {
@@ -8263,6 +8629,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentAssetsInput = {
@@ -8324,6 +8691,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
@@ -8369,6 +8737,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentIdeasInput = {
@@ -8414,6 +8783,7 @@ export type SpaceCreateWithoutContentIdeasInput = {
   contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentIdeasInput = {
@@ -8459,6 +8829,7 @@ export type SpaceUncheckedCreateWithoutContentIdeasInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentIdeasInput = {
@@ -8520,6 +8891,7 @@ export type SpaceUpdateWithoutContentIdeasInput = {
   contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentIdeasInput = {
@@ -8565,6 +8937,7 @@ export type SpaceUncheckedUpdateWithoutContentIdeasInput = {
   contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -8608,6 +8981,7 @@ export type SpaceCountOutputType = {
   contentClickEvents: number
   channelCredentials: number
   salesContentJobs: number
+  deploymentMetrics: number
 }
 
 export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -8646,6 +9020,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   contentClickEvents?: boolean | SpaceCountOutputTypeCountContentClickEventsArgs
   channelCredentials?: boolean | SpaceCountOutputTypeCountChannelCredentialsArgs
   salesContentJobs?: boolean | SpaceCountOutputTypeCountSalesContentJobsArgs
+  deploymentMetrics?: boolean | SpaceCountOutputTypeCountDeploymentMetricsArgs
 }
 
 /**
@@ -8903,6 +9278,13 @@ export type SpaceCountOutputTypeCountSalesContentJobsArgs<ExtArgs extends runtim
   where?: Prisma.SalesContentJobWhereInput
 }
 
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountDeploymentMetricsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeploymentMetricWhereInput
+}
+
 
 export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -8948,6 +9330,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   contentClickEvents?: boolean | Prisma.Space$contentClickEventsArgs<ExtArgs>
   channelCredentials?: boolean | Prisma.Space$channelCredentialsArgs<ExtArgs>
   salesContentJobs?: boolean | Prisma.Space$salesContentJobsArgs<ExtArgs>
+  deploymentMetrics?: boolean | Prisma.Space$deploymentMetricsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["space"]>
 
@@ -9015,6 +9398,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   contentClickEvents?: boolean | Prisma.Space$contentClickEventsArgs<ExtArgs>
   channelCredentials?: boolean | Prisma.Space$channelCredentialsArgs<ExtArgs>
   salesContentJobs?: boolean | Prisma.Space$salesContentJobsArgs<ExtArgs>
+  deploymentMetrics?: boolean | Prisma.Space$deploymentMetricsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -9061,6 +9445,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     contentClickEvents: Prisma.$ContentClickEventPayload<ExtArgs>[]
     channelCredentials: Prisma.$ChannelCredentialPayload<ExtArgs>[]
     salesContentJobs: Prisma.$SalesContentJobPayload<ExtArgs>[]
+    deploymentMetrics: Prisma.$DeploymentMetricPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -9500,6 +9885,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   contentClickEvents<T extends Prisma.Space$contentClickEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$contentClickEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentClickEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channelCredentials<T extends Prisma.Space$channelCredentialsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$channelCredentialsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelCredentialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   salesContentJobs<T extends Prisma.Space$salesContentJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$salesContentJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SalesContentJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deploymentMetrics<T extends Prisma.Space$deploymentMetricsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$deploymentMetricsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentMetricPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10816,6 +11202,30 @@ export type Space$salesContentJobsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.SalesContentJobScalarFieldEnum | Prisma.SalesContentJobScalarFieldEnum[]
+}
+
+/**
+ * Space.deploymentMetrics
+ */
+export type Space$deploymentMetricsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeploymentMetric
+   */
+  select?: Prisma.DeploymentMetricSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeploymentMetric
+   */
+  omit?: Prisma.DeploymentMetricOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeploymentMetricInclude<ExtArgs> | null
+  where?: Prisma.DeploymentMetricWhereInput
+  orderBy?: Prisma.DeploymentMetricOrderByWithRelationInput | Prisma.DeploymentMetricOrderByWithRelationInput[]
+  cursor?: Prisma.DeploymentMetricWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeploymentMetricScalarFieldEnum | Prisma.DeploymentMetricScalarFieldEnum[]
 }
 
 /**
