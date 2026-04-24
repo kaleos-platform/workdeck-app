@@ -185,6 +185,8 @@ export function OrderProductNamesCell({
   onOpenMatch,
   matchEnabled = false,
   allowAdd = true,
+  allowRemove = true,
+  allowNameEdit = true,
 }: {
   value: OrderProduct[]
   onChange: (products: OrderProduct[]) => void
@@ -193,6 +195,8 @@ export function OrderProductNamesCell({
   onOpenMatch?: (index: number) => void
   matchEnabled?: boolean
   allowAdd?: boolean
+  allowRemove?: boolean
+  allowNameEdit?: boolean
 }) {
   function addProduct() {
     if (value.length >= maxItems) return
@@ -230,23 +234,27 @@ export function OrderProductNamesCell({
               <Textarea
                 rows={1}
                 title={product.name}
+                readOnly={!allowNameEdit}
                 className={cn(
                   'field-sizing-content max-h-12 min-h-7 resize-none px-2 py-1 text-xs leading-tight font-medium shadow-none md:text-xs',
-                  invalid && !product.name && 'border-destructive/50 ring-2 ring-destructive/50'
+                  invalid && !product.name && 'border-destructive/50 ring-2 ring-destructive/50',
+                  !allowNameEdit && 'cursor-default bg-muted/30'
                 )}
                 value={product.name}
                 onChange={(e) => updateName(i, trimStart(e.target.value))}
                 placeholder={invalid ? '상품명 *' : '상품명'}
               />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 flex-shrink-0"
-                onClick={() => removeProduct(i)}
-                title="삭제"
-              >
-                <X className="h-3 w-3" />
-              </Button>
+              {allowRemove && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 flex-shrink-0"
+                  onClick={() => removeProduct(i)}
+                  title="삭제"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
             </div>
             <MatchSummary product={product} canMatch={canMatch} onOpen={() => onOpenMatch?.(i)} />
           </div>

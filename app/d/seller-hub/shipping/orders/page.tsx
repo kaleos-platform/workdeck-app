@@ -19,7 +19,7 @@ export default function ShippingOrdersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">주문 데이터 관리</h1>
+      <h1 className="text-2xl font-bold tracking-tight">배송 데이터 관리</h1>
       <div className="rounded-lg border bg-card p-3">
         <BatchList onSelect={setSelectedBatchId} selectedBatchId={selectedBatchId} />
       </div>

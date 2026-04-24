@@ -91,7 +91,7 @@ const SELLER_HUB_INVENTORY_ITEMS: SidebarItem[] = [
 
 const SELLER_HUB_SHIPPING_ITEMS: SidebarItem[] = [
   { label: '배송 등록', href: SELLER_HUB_SHIPPING_REGISTRATION_PATH },
-  { label: '주문 데이터', href: SELLER_HUB_SHIPPING_ORDERS_PATH },
+  { label: '배송 데이터', href: SELLER_HUB_SHIPPING_ORDERS_PATH },
   { label: '배송 방식', href: SELLER_HUB_SHIPPING_METHODS_PATH },
   { label: '데이터 연동', href: SELLER_HUB_SHIPPING_INTEGRATION_PATH },
 ]

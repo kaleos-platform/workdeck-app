@@ -257,7 +257,7 @@ export default function ShippingRegistrationPage() {
     if (!activeBatchId) return
     setConfirmDialog({
       title: '처리 완료',
-      description: '처리 완료하시겠습니까? 완료된 데이터는 주문 데이터 관리에서 조회됩니다.',
+      description: '처리 완료하시겠습니까? 완료된 데이터는 배송 데이터 관리에서 조회됩니다.',
       confirmLabel: '완료',
       onConfirm: performComplete,
     })
