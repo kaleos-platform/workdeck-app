@@ -77,3 +77,33 @@ export const brandProfileSchema = z.object({
   logoUrl: emptyToUndefined.pipe(z.string().url()).optional(),
 })
 export type BrandProfileInput = z.infer<typeof brandProfileSchema>
+
+// ─── Ideation ───────────────────────────────────────────────────────────────
+
+export const runIdeationSchema = z.object({
+  productId: z.string().cuid().optional().nullable(),
+  personaId: z.string().cuid().optional().nullable(),
+  userPromptInput: emptyToUndefined.pipe(z.string().max(2000)).optional(),
+  count: z.number().int().min(3).max(10).optional(),
+})
+export type RunIdeationInput = z.infer<typeof runIdeationSchema>
+
+export const userIdeationSchema = z.object({
+  productId: z.string().cuid().optional().nullable(),
+  personaId: z.string().cuid().optional().nullable(),
+  userPromptInput: emptyToUndefined.pipe(z.string().max(2000)).optional(),
+  ideas: z
+    .array(
+      z.object({
+        title: z.string().min(1).max(200),
+        hook: z.string().min(1).max(300),
+        angle: z.string().min(1).max(400),
+        keyPoints: z.array(z.string().min(1).max(300)).min(1).max(8),
+        targetChannel: z.enum(['blog', 'social', 'cardnews']),
+        reasoning: z.string().min(1).max(1000),
+      })
+    )
+    .min(1)
+    .max(10),
+})
+export type UserIdeationInput = z.infer<typeof userIdeationSchema>

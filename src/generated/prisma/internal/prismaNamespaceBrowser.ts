@@ -109,7 +109,8 @@ export const ModelName = {
   BrandProfile: 'BrandProfile',
   WorkspaceAiCredit: 'WorkspaceAiCredit',
   ImageGenerationLog: 'ImageGenerationLog',
-  TextGenerationLog: 'TextGenerationLog'
+  TextGenerationLog: 'TextGenerationLog',
+  ContentIdea: 'ContentIdea'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1050,6 +1051,26 @@ export const TextGenerationLogScalarFieldEnum = {
 } as const
 
 export type TextGenerationLogScalarFieldEnum = (typeof TextGenerationLogScalarFieldEnum)[keyof typeof TextGenerationLogScalarFieldEnum]
+
+
+export const ContentIdeaScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  productId: 'productId',
+  personaId: 'personaId',
+  userPromptInput: 'userPromptInput',
+  generatedBy: 'generatedBy',
+  ideas: 'ideas',
+  promptTraceHash: 'promptTraceHash',
+  ruleIdsSnapshot: 'ruleIdsSnapshot',
+  providerName: 'providerName',
+  providerModel: 'providerModel',
+  latencyMs: 'latencyMs',
+  createdAt: 'createdAt'
+} as const
+
+export type ContentIdeaScalarFieldEnum = (typeof ContentIdeaScalarFieldEnum)[keyof typeof ContentIdeaScalarFieldEnum]
 
 
 export const SortOrder = {

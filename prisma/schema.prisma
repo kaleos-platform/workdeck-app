@@ -349,6 +349,7 @@ model Space {
   workspaceAiCredits  WorkspaceAiCredit[]
   imageGenerationLogs ImageGenerationLog[]
   textGenerationLogs  TextGenerationLog[]
+  contentIdeas        ContentIdea[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1257,7 +1258,8 @@ model B2BProduct {
   isActive            Boolean  @default(true)
   sourceInvProductId  String?
 
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space        Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  contentIdeas ContentIdea[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1283,7 +1285,8 @@ model Persona {
   toneHints         String?
   isActive          Boolean  @default(true)
 
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space        Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  contentIdeas ContentIdea[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1386,4 +1389,41 @@ model TextGenerationLog {
 
   @@index([spaceId, createdAt])
   @@index([status])
+}
+
+// ─── Sales Content Deck (아이데이션) ─────────────────────────────────────────
+
+enum IdeaGeneratedBy {
+  USER
+  AI
+}
+
+// 한 번의 아이데이션 실행 결과. ideas(Json) 는 생성된 후보 카드의 배열.
+// 개별 idea 를 Unit 6 Content 에서 참조할 때는 (ideationId, ideaIndex) 페어를 사용.
+model ContentIdea {
+  id              String          @id @default(cuid())
+  spaceId         String
+  userId          String? // 실행한 사용자
+  productId       String?
+  personaId       String?
+  userPromptInput String? // 사용자 자유 입력 지시
+  generatedBy     IdeaGeneratedBy
+  // [{ title, hook, angle, keyPoints[], targetChannel, reasoning }]
+  ideas           Json
+  // 재현 가능성 — 프롬프트 빌더 입력의 SHA-256 해시 + 적용 규칙 id 스냅샷
+  promptTraceHash String?
+  ruleIdsSnapshot Json?
+  providerName    String? // 'claude-code-acp' | 'ollama' | null(USER)
+  providerModel   String?
+  latencyMs       Int?
+
+  space   Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product B2BProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  persona Persona?    @relation(fields: [personaId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId, createdAt])
+  @@index([productId])
+  @@index([personaId])
 }

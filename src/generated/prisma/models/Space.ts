@@ -211,6 +211,7 @@ export type SpaceWhereInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditListRelationFilter
   imageGenerationLogs?: Prisma.ImageGenerationLogListRelationFilter
   textGenerationLogs?: Prisma.TextGenerationLogListRelationFilter
+  contentIdeas?: Prisma.ContentIdeaListRelationFilter
 }
 
 export type SpaceOrderByWithRelationInput = {
@@ -248,6 +249,7 @@ export type SpaceOrderByWithRelationInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditOrderByRelationAggregateInput
   imageGenerationLogs?: Prisma.ImageGenerationLogOrderByRelationAggregateInput
   textGenerationLogs?: Prisma.TextGenerationLogOrderByRelationAggregateInput
+  contentIdeas?: Prisma.ContentIdeaOrderByRelationAggregateInput
 }
 
 export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -288,6 +290,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   workspaceAiCredits?: Prisma.WorkspaceAiCreditListRelationFilter
   imageGenerationLogs?: Prisma.ImageGenerationLogListRelationFilter
   textGenerationLogs?: Prisma.TextGenerationLogListRelationFilter
+  contentIdeas?: Prisma.ContentIdeaListRelationFilter
 }, "id">
 
 export type SpaceOrderByWithAggregationInput = {
@@ -347,6 +350,7 @@ export type SpaceCreateInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateInput = {
@@ -384,6 +388,7 @@ export type SpaceUncheckedCreateInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUpdateInput = {
@@ -421,6 +426,7 @@ export type SpaceUpdateInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateInput = {
@@ -458,6 +464,7 @@ export type SpaceUncheckedUpdateInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateManyInput = {
@@ -923,6 +930,20 @@ export type SpaceUpdateOneRequiredWithoutTextGenerationLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutTextGenerationLogsInput, Prisma.SpaceUpdateWithoutTextGenerationLogsInput>, Prisma.SpaceUncheckedUpdateWithoutTextGenerationLogsInput>
 }
 
+export type SpaceCreateNestedOneWithoutContentIdeasInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutContentIdeasInput, Prisma.SpaceUncheckedCreateWithoutContentIdeasInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutContentIdeasInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutContentIdeasNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutContentIdeasInput, Prisma.SpaceUncheckedCreateWithoutContentIdeasInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutContentIdeasInput
+  upsert?: Prisma.SpaceUpsertWithoutContentIdeasInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutContentIdeasInput, Prisma.SpaceUpdateWithoutContentIdeasInput>, Prisma.SpaceUncheckedUpdateWithoutContentIdeasInput>
+}
+
 export type SpaceCreateWithoutMembersInput = {
   id?: string
   name: string
@@ -957,6 +978,7 @@ export type SpaceCreateWithoutMembersInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutMembersInput = {
@@ -993,6 +1015,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutMembersInput = {
@@ -1045,6 +1068,7 @@ export type SpaceUpdateWithoutMembersInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutMembersInput = {
@@ -1081,6 +1105,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeckInstancesInput = {
@@ -1117,6 +1142,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
@@ -1153,6 +1179,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeckInstancesInput = {
@@ -1205,6 +1232,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
@@ -1241,6 +1269,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductGroupsInput = {
@@ -1277,6 +1306,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
@@ -1313,6 +1343,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductGroupsInput = {
@@ -1365,6 +1396,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
@@ -1401,6 +1433,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductsInput = {
@@ -1437,6 +1470,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductsInput = {
@@ -1473,6 +1507,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductsInput = {
@@ -1525,6 +1560,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductsInput = {
@@ -1561,6 +1597,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationsInput = {
@@ -1597,6 +1634,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationsInput = {
@@ -1633,6 +1671,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationsInput = {
@@ -1685,6 +1724,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
@@ -1721,6 +1761,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvMovementsInput = {
@@ -1757,6 +1798,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvMovementsInput = {
@@ -1793,6 +1835,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvMovementsInput = {
@@ -1845,6 +1888,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
@@ -1881,6 +1925,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvStockLevelsInput = {
@@ -1917,6 +1962,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
@@ -1953,6 +1999,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvStockLevelsInput = {
@@ -2005,6 +2052,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
@@ -2041,6 +2089,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvImportHistoriesInput = {
@@ -2077,6 +2126,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
@@ -2113,6 +2163,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvImportHistoriesInput = {
@@ -2165,6 +2216,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
@@ -2201,6 +2253,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvReconciliationsInput = {
@@ -2237,6 +2290,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
@@ -2273,6 +2327,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvReconciliationsInput = {
@@ -2325,6 +2380,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
@@ -2361,6 +2417,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationMappingsInput = {
@@ -2397,6 +2454,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
@@ -2433,6 +2491,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationMappingsInput = {
@@ -2485,6 +2544,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
@@ -2521,6 +2581,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvSettingsInput = {
@@ -2557,6 +2618,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvSettingsInput = {
@@ -2593,6 +2655,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvSettingsInput = {
@@ -2645,6 +2708,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
@@ -2681,6 +2745,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodsInput = {
@@ -2717,6 +2782,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
@@ -2753,6 +2819,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodsInput = {
@@ -2805,6 +2872,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
@@ -2841,6 +2909,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
@@ -2877,6 +2946,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
@@ -2913,6 +2983,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput = {
@@ -2965,6 +3036,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
@@ -3001,6 +3073,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelBatchesInput = {
@@ -3037,6 +3110,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelBatchesInput = {
@@ -3073,6 +3147,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelBatchesInput = {
@@ -3125,6 +3200,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
@@ -3161,6 +3237,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelOrdersInput = {
@@ -3197,6 +3274,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelOrdersInput = {
@@ -3233,6 +3311,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelOrdersInput = {
@@ -3285,6 +3364,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
@@ -3321,6 +3401,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductAliasesInput = {
@@ -3357,6 +3438,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
@@ -3393,6 +3475,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductAliasesInput = {
@@ -3445,6 +3528,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
@@ -3481,6 +3565,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
@@ -3517,6 +3602,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
@@ -3553,6 +3639,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelColumnMappingPresetsInput = {
@@ -3605,6 +3692,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
@@ -3641,6 +3729,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
@@ -3677,6 +3766,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
@@ -3713,6 +3803,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelIntegrationHistoriesInput = {
@@ -3765,6 +3856,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
@@ -3801,6 +3893,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandsInput = {
@@ -3837,6 +3930,7 @@ export type SpaceCreateWithoutBrandsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandsInput = {
@@ -3873,6 +3967,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandsInput = {
@@ -3925,6 +4020,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandsInput = {
@@ -3961,6 +4057,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelGroupsInput = {
@@ -3997,6 +4094,7 @@ export type SpaceCreateWithoutChannelGroupsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelGroupsInput = {
@@ -4033,6 +4131,7 @@ export type SpaceUncheckedCreateWithoutChannelGroupsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelGroupsInput = {
@@ -4085,6 +4184,7 @@ export type SpaceUpdateWithoutChannelGroupsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelGroupsInput = {
@@ -4121,6 +4221,7 @@ export type SpaceUncheckedUpdateWithoutChannelGroupsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelsInput = {
@@ -4157,6 +4258,7 @@ export type SpaceCreateWithoutChannelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelsInput = {
@@ -4193,6 +4295,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelsInput = {
@@ -4245,6 +4348,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelsInput = {
@@ -4281,6 +4385,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductPricingSettingsInput = {
@@ -4317,6 +4422,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
@@ -4353,6 +4459,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductPricingSettingsInput = {
@@ -4405,6 +4512,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
@@ -4441,6 +4549,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutOptionCodeAliasesInput = {
@@ -4477,6 +4586,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
@@ -4513,6 +4623,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutOptionCodeAliasesInput = {
@@ -4565,6 +4676,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
@@ -4601,6 +4713,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutB2bProductsInput = {
@@ -4637,6 +4750,7 @@ export type SpaceCreateWithoutB2bProductsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutB2bProductsInput = {
@@ -4673,6 +4787,7 @@ export type SpaceUncheckedCreateWithoutB2bProductsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutB2bProductsInput = {
@@ -4725,6 +4840,7 @@ export type SpaceUpdateWithoutB2bProductsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutB2bProductsInput = {
@@ -4761,6 +4877,7 @@ export type SpaceUncheckedUpdateWithoutB2bProductsInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutPersonasInput = {
@@ -4797,6 +4914,7 @@ export type SpaceCreateWithoutPersonasInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutPersonasInput = {
@@ -4833,6 +4951,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutPersonasInput = {
@@ -4885,6 +5004,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutPersonasInput = {
@@ -4921,6 +5041,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandProfileInput = {
@@ -4957,6 +5078,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandProfileInput = {
@@ -4993,6 +5115,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandProfileInput = {
@@ -5045,6 +5168,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
@@ -5081,6 +5205,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
@@ -5117,6 +5242,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
@@ -5153,6 +5279,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutWorkspaceAiCreditsInput = {
@@ -5205,6 +5332,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
@@ -5241,6 +5369,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutImageGenerationLogsInput = {
@@ -5277,6 +5406,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
@@ -5313,6 +5443,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutImageGenerationLogsInput = {
@@ -5365,6 +5496,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
@@ -5401,6 +5533,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTextGenerationLogsInput = {
@@ -5437,6 +5570,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
   workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
@@ -5473,6 +5607,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTextGenerationLogsInput = {
@@ -5525,6 +5660,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
@@ -5561,6 +5697,171 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
   workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
   imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutContentIdeasInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelGroups?: Prisma.ChannelGroupCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  b2bProducts?: Prisma.B2BProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutContentIdeasInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelGroups?: Prisma.ChannelGroupUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  b2bProducts?: Prisma.B2BProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutContentIdeasInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutContentIdeasInput, Prisma.SpaceUncheckedCreateWithoutContentIdeasInput>
+}
+
+export type SpaceUpsertWithoutContentIdeasInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutContentIdeasInput, Prisma.SpaceUncheckedUpdateWithoutContentIdeasInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutContentIdeasInput, Prisma.SpaceUncheckedCreateWithoutContentIdeasInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutContentIdeasInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutContentIdeasInput, Prisma.SpaceUncheckedUpdateWithoutContentIdeasInput>
+}
+
+export type SpaceUpdateWithoutContentIdeasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelGroups?: Prisma.ChannelGroupUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  b2bProducts?: Prisma.B2BProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutContentIdeasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelGroups?: Prisma.ChannelGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  b2bProducts?: Prisma.B2BProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -5595,6 +5896,7 @@ export type SpaceCountOutputType = {
   workspaceAiCredits: number
   imageGenerationLogs: number
   textGenerationLogs: number
+  contentIdeas: number
 }
 
 export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5624,6 +5926,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   workspaceAiCredits?: boolean | SpaceCountOutputTypeCountWorkspaceAiCreditsArgs
   imageGenerationLogs?: boolean | SpaceCountOutputTypeCountImageGenerationLogsArgs
   textGenerationLogs?: boolean | SpaceCountOutputTypeCountTextGenerationLogsArgs
+  contentIdeas?: boolean | SpaceCountOutputTypeCountContentIdeasArgs
 }
 
 /**
@@ -5818,6 +6121,13 @@ export type SpaceCountOutputTypeCountTextGenerationLogsArgs<ExtArgs extends runt
   where?: Prisma.TextGenerationLogWhereInput
 }
 
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountContentIdeasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ContentIdeaWhereInput
+}
+
 
 export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -5854,6 +6164,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   workspaceAiCredits?: boolean | Prisma.Space$workspaceAiCreditsArgs<ExtArgs>
   imageGenerationLogs?: boolean | Prisma.Space$imageGenerationLogsArgs<ExtArgs>
   textGenerationLogs?: boolean | Prisma.Space$textGenerationLogsArgs<ExtArgs>
+  contentIdeas?: boolean | Prisma.Space$contentIdeasArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["space"]>
 
@@ -5912,6 +6223,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   workspaceAiCredits?: boolean | Prisma.Space$workspaceAiCreditsArgs<ExtArgs>
   imageGenerationLogs?: boolean | Prisma.Space$imageGenerationLogsArgs<ExtArgs>
   textGenerationLogs?: boolean | Prisma.Space$textGenerationLogsArgs<ExtArgs>
+  contentIdeas?: boolean | Prisma.Space$contentIdeasArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -5949,6 +6261,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     workspaceAiCredits: Prisma.$WorkspaceAiCreditPayload<ExtArgs>[]
     imageGenerationLogs: Prisma.$ImageGenerationLogPayload<ExtArgs>[]
     textGenerationLogs: Prisma.$TextGenerationLogPayload<ExtArgs>[]
+    contentIdeas: Prisma.$ContentIdeaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -6379,6 +6692,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   workspaceAiCredits<T extends Prisma.Space$workspaceAiCreditsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$workspaceAiCreditsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkspaceAiCreditPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   imageGenerationLogs<T extends Prisma.Space$imageGenerationLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$imageGenerationLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImageGenerationLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   textGenerationLogs<T extends Prisma.Space$textGenerationLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$textGenerationLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TextGenerationLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  contentIdeas<T extends Prisma.Space$contentIdeasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$contentIdeasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentIdeaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7479,6 +7793,30 @@ export type Space$textGenerationLogsArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.TextGenerationLogScalarFieldEnum | Prisma.TextGenerationLogScalarFieldEnum[]
+}
+
+/**
+ * Space.contentIdeas
+ */
+export type Space$contentIdeasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentIdea
+   */
+  select?: Prisma.ContentIdeaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContentIdea
+   */
+  omit?: Prisma.ContentIdeaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContentIdeaInclude<ExtArgs> | null
+  where?: Prisma.ContentIdeaWhereInput
+  orderBy?: Prisma.ContentIdeaOrderByWithRelationInput | Prisma.ContentIdeaOrderByWithRelationInput[]
+  cursor?: Prisma.ContentIdeaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ContentIdeaScalarFieldEnum | Prisma.ContentIdeaScalarFieldEnum[]
 }
 
 /**

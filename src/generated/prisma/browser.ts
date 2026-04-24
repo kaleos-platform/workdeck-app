@@ -312,3 +312,8 @@ export type ImageGenerationLog = Prisma.ImageGenerationLogModel
  * 
  */
 export type TextGenerationLog = Prisma.TextGenerationLogModel
+/**
+ * Model ContentIdea
+ * 
+ */
+export type ContentIdea = Prisma.ContentIdeaModel

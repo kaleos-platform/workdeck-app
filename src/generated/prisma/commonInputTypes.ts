@@ -602,6 +602,23 @@ export type EnumAiGenerationStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumAiGenerationStatusFilter<$PrismaModel>
 }
 
+export type EnumIdeaGeneratedByFilter<$PrismaModel = never> = {
+  equals?: $Enums.IdeaGeneratedBy | Prisma.EnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  in?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIdeaGeneratedByFilter<$PrismaModel> | $Enums.IdeaGeneratedBy
+}
+
+export type EnumIdeaGeneratedByWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.IdeaGeneratedBy | Prisma.EnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  in?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIdeaGeneratedByWithAggregatesFilter<$PrismaModel> | $Enums.IdeaGeneratedBy
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumIdeaGeneratedByFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumIdeaGeneratedByFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1136,6 +1153,23 @@ export type NestedEnumAiGenerationStatusWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAiGenerationStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAiGenerationStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumIdeaGeneratedByFilter<$PrismaModel = never> = {
+  equals?: $Enums.IdeaGeneratedBy | Prisma.EnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  in?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIdeaGeneratedByFilter<$PrismaModel> | $Enums.IdeaGeneratedBy
+}
+
+export type NestedEnumIdeaGeneratedByWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.IdeaGeneratedBy | Prisma.EnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  in?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IdeaGeneratedBy[] | Prisma.ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIdeaGeneratedByWithAggregatesFilter<$PrismaModel> | $Enums.IdeaGeneratedBy
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumIdeaGeneratedByFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumIdeaGeneratedByFilter<$PrismaModel>
 }
 
 

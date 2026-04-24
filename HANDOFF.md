@@ -22,10 +22,21 @@
   - API: `/api/sc/ai/generate-text`, `/api/sc/ai/generate-image`, `/api/sc/ai/credit`
   - `.env.local.example` 신규 (기존 저장소에 없었음) + Unit 3 env 항목
   - 테스트 파일 2개 (credit, ACP provider — 저장소 jest 설정 미완으로 실행은 불가, 아래 참조)
+- [x] **Unit 4** — 아이데이션 (글감 후보 생성)
+  - Prisma: `ContentIdea` 모델 + `IdeaGeneratedBy` enum + Space/B2BProduct/Persona 역관계
+  - Migration `20260424080000_feat_sales_content_ideation` 작성 + **dev DB 배포 완료**
+  - `src/lib/sc/prompts.ts` — ideation prompt builder (상품·페르소나·브랜드·규칙 렌더) + 정규화 SHA-256 trace hash
+  - `src/lib/sc/ideation.ts` — orchestrator: 맥락 로드 → `generateTextWithFallback` 호출 (1회 재시도) → JSON parse + zod 검증 → `ContentIdea` 저장. `runIdeation` / `saveUserIdeation` export.
+  - API: `GET/POST /api/sc/ideations`, `GET/DELETE /api/sc/ideations/[id]` (`mode: 'ai' | 'user'`)
+  - UI: `IdeationForm` (상품·페르소나 Select + 지시 Textarea + 개수 Select), `IdeaCard`, `IdeationList` + `/d/sales-content/ideation{,/[id]}` 페이지 2종
+  - 사이드바 "아이데이션" 메뉴 활성화
+  - `src/lib/sc/__tests__/prompts.test.ts` — builder / traceHash 단위 테스트 (저장소 jest 미완으로 실행은 불가)
+  - ⚠️ **End-to-end 실제 실행은 아직 안 됨**: Bridge 쪽 `/sales-content/generate` 라우트 미구현 + 로컬 Ollama 미기동 → 첫 실제 ideation 호출이 진짜 스모크 테스트. 현재는 build/lint/schema 레벨에서만 검증.
+  - `ImprovementRule` 주입은 `loadActiveRules()` 스텁으로 자리만 확보 (Unit 13 에서 본체 교체).
 
 **다음:**
 
-- [ ] Unit 4 — 아이데이션 (글감 후보 생성)
+- [ ] Unit 5 — 템플릿 시스템 (시스템 기본 + 사용자 저장)
 
 ## 확정된 의사결정
 
@@ -89,30 +100,34 @@ SALES_CONTENT_IMAGE_MONTHLY_QUOTA=50
 - feat/sales-content-deck (이 워크트리) 는 그 WIP와 독립적으로 커밋됨. 단, `prisma/schema.prisma`와 `src/generated/prisma/*`는 Unit 2 커밋 시점에 shipping hunk도 섞여 들어갔을 가능성 있음 → PR 머지 시점에 develop의 shipping 변경과 3-way merge로 자연 병합.
 - 충돌 위험 파일에 수정 시 **주석 블록(`// ─── <Deck 이름> ───`)**으로 영역 구분 (sidebar.tsx, schema.prisma, seed.ts 등).
 
-## Unit 4 구현 지침 (다음 착수) — 아이데이션 (글감 후보 생성)
+## Unit 5 구현 지침 (다음 착수) — 템플릿 시스템
 
-**Goal:** 세팅값(B2BProduct · Persona · BrandProfile · 활성 ImprovementRule) + 사용자 프롬프트 → Claude Code ACP 로 글감 후보 N개 생성.
+**Goal:** 채널별 기본 템플릿 시스템 + 사용자 커스텀 저장. Unit 6 콘텐츠 제작의 기반.
 
-**Requirements:** R2, R15 (규칙 주입 지점)
+**Requirements:** R3
 
-**Dependencies:** Unit 2 (세팅 데이터), Unit 3 (AIProvider).
+**Dependencies:** Unit 1.
 
 **Files:**
 
-- Modify: `prisma/schema.prisma` — `ContentIdea { id, spaceId, promptInput, productId?, personaId?, output(json), generatedBy(USER|AI), promptTraceHash, createdAt }` + 관련 enum 필요 시.
-- Create: `src/lib/sc/prompts.ts` — ideation prompt builder (활성 ImprovementRule 병합 포함).
-- Create: `app/api/sc/ideations/route.ts`, `[id]/route.ts`.
-- Create: `src/components/sc/ideation/{ideation-form,idea-card,idea-list}.tsx`.
-- Create: `app/d/sales-content/ideation/{page,[id]/page}.tsx`.
-- Test: `src/lib/sc/__tests__/prompts.test.ts`.
+- Modify: `prisma/schema.prisma` — `Template { id, spaceId?(nullable=system), name, slug, kind('blog'|'social'|'cardnews'), sections(Json), isSystem }`, `Channel { platform, kind, publisherMode, collectorMode }` 기본 필드.
+- Modify: `prisma/seed.ts` — 시스템 템플릿 3종 (블로그 장문 · 소셜 텍스트 · 카드뉴스) seed. 존재 시 upsert.
+- Create: `src/lib/sc/template-engine.ts` — 템플릿 구조 zod + skeleton 렌더 유틸.
+- Create: `app/api/sc/templates/{route,[id]/route}.ts`, `app/api/sc/channels/{route,[id]/route}.ts`.
+- Create: `src/components/sc/templates/{template-list,template-form,template-preview}.tsx`, `src/components/sc/channels/channel-form.tsx`.
+- Create: `app/d/sales-content/templates/{page,[id]/page,new/page}.tsx`, `app/d/sales-content/channels/{page,[id]/page}.tsx`.
+- Test: `src/lib/sc/__tests__/template-engine.test.ts`.
 
 **Approach:**
 
-- Unit 3 의 `generateTextWithFallback` 을 직접 호출 (API 라우트 경유 아님 — 서버 내부).
-- `responseFormat: 'json'` 지시 + JSON schema 를 system prompt 에 명시.
-- `promptTrace` 는 (builder hash, rule id 목록) 스냅샷을 저장해 규칙 변경 후 재현 가능.
+- `Template.sections: [{ key, kind: 'text'|'imageSlot'|'cta', label, guidance, constraints }]`. 카드뉴스는 `slides[]` 구조.
+- `isSystem=true` 직접 수정 금지 (403). 복제해서 사용자 소유로 저장 가능.
+- Channel 의 `publisherMode` / `collectorMode` 는 Unit 9~11 에서 실제 사용됨 — Unit 5 는 데이터 모델·UI 만.
 
-**착수 전 확인:** Bridge 쪽 `POST /sales-content/generate` 라우트가 준비돼 있어야 실제 호출이 된다. 없으면 Unit 4 는 UI/DB 만 구현하고 실제 AI 호출은 Ollama (로컬) 로 검증.
+**착수 전 확인:**
+
+- 시스템 템플릿 seed 전략: `spaceId=null` 로 구분 vs 별도 플래그. plan 권장은 `isSystem` 플래그 + `spaceId=null`.
+- 사이드바 "콘텐츠 제작 · 템플릿" 항목 활성화 대상.
 
 ## 과거 Unit 3 구현 지침 (완료 — 참고용)
 

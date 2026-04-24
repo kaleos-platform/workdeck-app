@@ -128,3 +128,11 @@ export const AiGenerationStatus = {
 } as const
 
 export type AiGenerationStatus = (typeof AiGenerationStatus)[keyof typeof AiGenerationStatus]
+
+
+export const IdeaGeneratedBy = {
+  USER: 'USER',
+  AI: 'AI'
+} as const
+
+export type IdeaGeneratedBy = (typeof IdeaGeneratedBy)[keyof typeof IdeaGeneratedBy]

@@ -317,6 +317,7 @@ export type B2BProductWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"B2BProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"B2BProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  contentIdeas?: Prisma.ContentIdeaListRelationFilter
 }
 
 export type B2BProductOrderByWithRelationInput = {
@@ -340,6 +341,7 @@ export type B2BProductOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
+  contentIdeas?: Prisma.ContentIdeaOrderByRelationAggregateInput
 }
 
 export type B2BProductWhereUniqueInput = Prisma.AtLeast<{
@@ -367,6 +369,7 @@ export type B2BProductWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"B2BProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"B2BProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  contentIdeas?: Prisma.ContentIdeaListRelationFilter
 }, "id" | "spaceId_slug">
 
 export type B2BProductOrderByWithAggregationInput = {
@@ -441,6 +444,7 @@ export type B2BProductCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutB2bProductsInput
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutProductInput
 }
 
 export type B2BProductUncheckedCreateInput = {
@@ -463,6 +467,7 @@ export type B2BProductUncheckedCreateInput = {
   sourceInvProductId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type B2BProductUpdateInput = {
@@ -485,6 +490,7 @@ export type B2BProductUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutB2bProductsNestedInput
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutProductNestedInput
 }
 
 export type B2BProductUncheckedUpdateInput = {
@@ -507,6 +513,7 @@ export type B2BProductUncheckedUpdateInput = {
   sourceInvProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type B2BProductCreateManyInput = {
@@ -657,6 +664,11 @@ export type B2BProductSumOrderByAggregateInput = {
   priceMax?: Prisma.SortOrder
 }
 
+export type B2BProductNullableScalarRelationFilter = {
+  is?: Prisma.B2BProductWhereInput | null
+  isNot?: Prisma.B2BProductWhereInput | null
+}
+
 export type B2BProductCreateNestedManyWithoutSpaceInput = {
   create?: Prisma.XOR<Prisma.B2BProductCreateWithoutSpaceInput, Prisma.B2BProductUncheckedCreateWithoutSpaceInput> | Prisma.B2BProductCreateWithoutSpaceInput[] | Prisma.B2BProductUncheckedCreateWithoutSpaceInput[]
   connectOrCreate?: Prisma.B2BProductCreateOrConnectWithoutSpaceInput | Prisma.B2BProductCreateOrConnectWithoutSpaceInput[]
@@ -699,6 +711,22 @@ export type B2BProductUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.B2BProductScalarWhereInput | Prisma.B2BProductScalarWhereInput[]
 }
 
+export type B2BProductCreateNestedOneWithoutContentIdeasInput = {
+  create?: Prisma.XOR<Prisma.B2BProductCreateWithoutContentIdeasInput, Prisma.B2BProductUncheckedCreateWithoutContentIdeasInput>
+  connectOrCreate?: Prisma.B2BProductCreateOrConnectWithoutContentIdeasInput
+  connect?: Prisma.B2BProductWhereUniqueInput
+}
+
+export type B2BProductUpdateOneWithoutContentIdeasNestedInput = {
+  create?: Prisma.XOR<Prisma.B2BProductCreateWithoutContentIdeasInput, Prisma.B2BProductUncheckedCreateWithoutContentIdeasInput>
+  connectOrCreate?: Prisma.B2BProductCreateOrConnectWithoutContentIdeasInput
+  upsert?: Prisma.B2BProductUpsertWithoutContentIdeasInput
+  disconnect?: Prisma.B2BProductWhereInput | boolean
+  delete?: Prisma.B2BProductWhereInput | boolean
+  connect?: Prisma.B2BProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.B2BProductUpdateToOneWithWhereWithoutContentIdeasInput, Prisma.B2BProductUpdateWithoutContentIdeasInput>, Prisma.B2BProductUncheckedUpdateWithoutContentIdeasInput>
+}
+
 export type B2BProductCreateWithoutSpaceInput = {
   id?: string
   name: string
@@ -718,6 +746,7 @@ export type B2BProductCreateWithoutSpaceInput = {
   sourceInvProductId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutProductInput
 }
 
 export type B2BProductUncheckedCreateWithoutSpaceInput = {
@@ -739,6 +768,7 @@ export type B2BProductUncheckedCreateWithoutSpaceInput = {
   sourceInvProductId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type B2BProductCreateOrConnectWithoutSpaceInput = {
@@ -792,6 +822,110 @@ export type B2BProductScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"B2BProduct"> | Date | string
 }
 
+export type B2BProductCreateWithoutContentIdeasInput = {
+  id?: string
+  name: string
+  slug: string
+  oneLinerPitch?: string | null
+  valueProposition?: string | null
+  targetCustomers?: string | null
+  keyFeatures?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  differentiators?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  painPointsAddressed?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  proofPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pricingModel?: string | null
+  priceMin?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceMax?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  ctaTargetUrl?: string | null
+  isActive?: boolean
+  sourceInvProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutB2bProductsInput
+}
+
+export type B2BProductUncheckedCreateWithoutContentIdeasInput = {
+  id?: string
+  spaceId: string
+  name: string
+  slug: string
+  oneLinerPitch?: string | null
+  valueProposition?: string | null
+  targetCustomers?: string | null
+  keyFeatures?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  differentiators?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  painPointsAddressed?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  proofPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pricingModel?: string | null
+  priceMin?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceMax?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  ctaTargetUrl?: string | null
+  isActive?: boolean
+  sourceInvProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type B2BProductCreateOrConnectWithoutContentIdeasInput = {
+  where: Prisma.B2BProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.B2BProductCreateWithoutContentIdeasInput, Prisma.B2BProductUncheckedCreateWithoutContentIdeasInput>
+}
+
+export type B2BProductUpsertWithoutContentIdeasInput = {
+  update: Prisma.XOR<Prisma.B2BProductUpdateWithoutContentIdeasInput, Prisma.B2BProductUncheckedUpdateWithoutContentIdeasInput>
+  create: Prisma.XOR<Prisma.B2BProductCreateWithoutContentIdeasInput, Prisma.B2BProductUncheckedCreateWithoutContentIdeasInput>
+  where?: Prisma.B2BProductWhereInput
+}
+
+export type B2BProductUpdateToOneWithWhereWithoutContentIdeasInput = {
+  where?: Prisma.B2BProductWhereInput
+  data: Prisma.XOR<Prisma.B2BProductUpdateWithoutContentIdeasInput, Prisma.B2BProductUncheckedUpdateWithoutContentIdeasInput>
+}
+
+export type B2BProductUpdateWithoutContentIdeasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  oneLinerPitch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  valueProposition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetCustomers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyFeatures?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  differentiators?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  painPointsAddressed?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  proofPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pricingModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceMin?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceMax?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  ctaTargetUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceInvProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutB2bProductsNestedInput
+}
+
+export type B2BProductUncheckedUpdateWithoutContentIdeasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  oneLinerPitch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  valueProposition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetCustomers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyFeatures?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  differentiators?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  painPointsAddressed?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  proofPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pricingModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceMin?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceMax?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  ctaTargetUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceInvProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type B2BProductCreateManySpaceInput = {
   id?: string
   name: string
@@ -832,6 +966,7 @@ export type B2BProductUpdateWithoutSpaceInput = {
   sourceInvProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutProductNestedInput
 }
 
 export type B2BProductUncheckedUpdateWithoutSpaceInput = {
@@ -853,6 +988,7 @@ export type B2BProductUncheckedUpdateWithoutSpaceInput = {
   sourceInvProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type B2BProductUncheckedUpdateManyWithoutSpaceInput = {
@@ -877,6 +1013,35 @@ export type B2BProductUncheckedUpdateManyWithoutSpaceInput = {
 }
 
 
+/**
+ * Count Type B2BProductCountOutputType
+ */
+
+export type B2BProductCountOutputType = {
+  contentIdeas: number
+}
+
+export type B2BProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  contentIdeas?: boolean | B2BProductCountOutputTypeCountContentIdeasArgs
+}
+
+/**
+ * B2BProductCountOutputType without action
+ */
+export type B2BProductCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the B2BProductCountOutputType
+   */
+  select?: Prisma.B2BProductCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * B2BProductCountOutputType without action
+ */
+export type B2BProductCountOutputTypeCountContentIdeasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ContentIdeaWhereInput
+}
+
 
 export type B2BProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -899,6 +1064,8 @@ export type B2BProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  contentIdeas?: boolean | Prisma.B2BProduct$contentIdeasArgs<ExtArgs>
+  _count?: boolean | Prisma.B2BProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["b2BProduct"]>
 
 export type B2BProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -972,6 +1139,8 @@ export type B2BProductSelectScalar = {
 export type B2BProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "slug" | "oneLinerPitch" | "valueProposition" | "targetCustomers" | "keyFeatures" | "differentiators" | "painPointsAddressed" | "proofPoints" | "pricingModel" | "priceMin" | "priceMax" | "ctaTargetUrl" | "isActive" | "sourceInvProductId" | "createdAt" | "updatedAt", ExtArgs["result"]["b2BProduct"]>
 export type B2BProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  contentIdeas?: boolean | Prisma.B2BProduct$contentIdeasArgs<ExtArgs>
+  _count?: boolean | Prisma.B2BProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type B2BProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -984,6 +1153,7 @@ export type $B2BProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "B2BProduct"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
+    contentIdeas: Prisma.$ContentIdeaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1400,6 +1570,7 @@ readonly fields: B2BProductFieldRefs;
 export interface Prisma__B2BProductClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  contentIdeas<T extends Prisma.B2BProduct$contentIdeasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.B2BProduct$contentIdeasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentIdeaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1841,6 +2012,30 @@ export type B2BProductDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many B2BProducts to delete.
    */
   limit?: number
+}
+
+/**
+ * B2BProduct.contentIdeas
+ */
+export type B2BProduct$contentIdeasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentIdea
+   */
+  select?: Prisma.ContentIdeaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContentIdea
+   */
+  omit?: Prisma.ContentIdeaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContentIdeaInclude<ExtArgs> | null
+  where?: Prisma.ContentIdeaWhereInput
+  orderBy?: Prisma.ContentIdeaOrderByWithRelationInput | Prisma.ContentIdeaOrderByWithRelationInput[]
+  cursor?: Prisma.ContentIdeaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ContentIdeaScalarFieldEnum | Prisma.ContentIdeaScalarFieldEnum[]
 }
 
 /**

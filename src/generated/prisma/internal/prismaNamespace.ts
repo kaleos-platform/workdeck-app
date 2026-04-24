@@ -442,7 +442,8 @@ export const ModelName = {
   BrandProfile: 'BrandProfile',
   WorkspaceAiCredit: 'WorkspaceAiCredit',
   ImageGenerationLog: 'ImageGenerationLog',
-  TextGenerationLog: 'TextGenerationLog'
+  TextGenerationLog: 'TextGenerationLog',
+  ContentIdea: 'ContentIdea'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -458,7 +459,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "contentIdea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4828,6 +4829,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ContentIdea: {
+      payload: Prisma.$ContentIdeaPayload<ExtArgs>
+      fields: Prisma.ContentIdeaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ContentIdeaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ContentIdeaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>
+        }
+        findFirst: {
+          args: Prisma.ContentIdeaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ContentIdeaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>
+        }
+        findMany: {
+          args: Prisma.ContentIdeaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>[]
+        }
+        create: {
+          args: Prisma.ContentIdeaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>
+        }
+        createMany: {
+          args: Prisma.ContentIdeaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ContentIdeaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>[]
+        }
+        delete: {
+          args: Prisma.ContentIdeaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>
+        }
+        update: {
+          args: Prisma.ContentIdeaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>
+        }
+        deleteMany: {
+          args: Prisma.ContentIdeaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ContentIdeaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ContentIdeaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>[]
+        }
+        upsert: {
+          args: Prisma.ContentIdeaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentIdeaPayload>
+        }
+        aggregate: {
+          args: Prisma.ContentIdeaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContentIdea>
+        }
+        groupBy: {
+          args: Prisma.ContentIdeaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentIdeaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ContentIdeaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentIdeaCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -5791,6 +5866,26 @@ export const TextGenerationLogScalarFieldEnum = {
 export type TextGenerationLogScalarFieldEnum = (typeof TextGenerationLogScalarFieldEnum)[keyof typeof TextGenerationLogScalarFieldEnum]
 
 
+export const ContentIdeaScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  productId: 'productId',
+  personaId: 'personaId',
+  userPromptInput: 'userPromptInput',
+  generatedBy: 'generatedBy',
+  ideas: 'ideas',
+  promptTraceHash: 'promptTraceHash',
+  ruleIdsSnapshot: 'ruleIdsSnapshot',
+  providerName: 'providerName',
+  providerModel: 'providerModel',
+  latencyMs: 'latencyMs',
+  createdAt: 'createdAt'
+} as const
+
+export type ContentIdeaScalarFieldEnum = (typeof ContentIdeaScalarFieldEnum)[keyof typeof ContentIdeaScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -6103,6 +6198,20 @@ export type EnumAiGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputTyp
 export type ListEnumAiGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiGenerationStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'IdeaGeneratedBy'
+ */
+export type EnumIdeaGeneratedByFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IdeaGeneratedBy'>
+    
+
+
+/**
+ * Reference to a field of type 'IdeaGeneratedBy[]'
+ */
+export type ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IdeaGeneratedBy[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -6257,6 +6366,7 @@ export type GlobalOmitConfig = {
   workspaceAiCredit?: Prisma.WorkspaceAiCreditOmit
   imageGenerationLog?: Prisma.ImageGenerationLogOmit
   textGenerationLog?: Prisma.TextGenerationLogOmit
+  contentIdea?: Prisma.ContentIdeaOmit
 }
 
 /* Types for Logging */
