@@ -204,3 +204,17 @@ export const deploymentUpdateSchema = deploymentCreateSchema.partial().extend({
   status: z.enum(['SCHEDULED', 'PUBLISHING', 'PUBLISHED', 'FAILED', 'CANCELED']).optional(),
   platformUrl: emptyToUndefined.pipe(z.string().url().max(2000)).optional(),
 })
+
+// ─── ImprovementRule ────────────────────────────────────────────────────────
+
+export const improvementRuleInputSchema = z.object({
+  scope: z.enum(['WORKSPACE', 'PRODUCT', 'PERSONA', 'CHANNEL', 'COMBINATION']),
+  title: z.string().min(1).max(200),
+  body: z.string().min(1).max(4000),
+  weight: z.number().int().min(0).max(100).optional(),
+  targetProductId: z.string().cuid().optional().nullable(),
+  targetPersonaId: z.string().cuid().optional().nullable(),
+  targetChannelId: z.string().cuid().optional().nullable(),
+  status: z.enum(['PROPOSED', 'ACTIVE', 'ARCHIVED']).optional(),
+})
+export type ImprovementRuleInput = z.infer<typeof improvementRuleInputSchema>

@@ -54,15 +54,14 @@ export interface RunIdeationFailure {
 
 export type RunIdeationResult = RunIdeationSuccess | RunIdeationFailure
 
-// Unit 13 에서 ImprovementRule 테이블이 추가되면 이 함수를 교체한다.
-// 현재는 scope 필터링의 자리만 마련하고 빈 배열을 반환.
+// Unit 13 에서 교체 — ImprovementRule 테이블에서 ACTIVE 규칙을 scope 매치로 조회.
 async function loadActiveRules(params: {
   spaceId: string
   productId?: string | null
   personaId?: string | null
 }): Promise<IdeationRule[]> {
-  void params
-  return []
+  const { loadActiveImprovementRules } = await import('./improvement')
+  return loadActiveImprovementRules(params)
 }
 
 async function loadBuilderContext(input: RunIdeationInput): Promise<{

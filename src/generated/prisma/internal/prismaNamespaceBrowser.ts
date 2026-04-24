@@ -119,7 +119,8 @@ export const ModelName = {
   DeploymentMetric: 'DeploymentMetric',
   SalesContentJob: 'SalesContentJob',
   ContentAsset: 'ContentAsset',
-  ContentIdea: 'ContentIdea'
+  ContentIdea: 'ContentIdea',
+  ImprovementRule: 'ImprovementRule'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1249,6 +1250,26 @@ export const ContentIdeaScalarFieldEnum = {
 } as const
 
 export type ContentIdeaScalarFieldEnum = (typeof ContentIdeaScalarFieldEnum)[keyof typeof ContentIdeaScalarFieldEnum]
+
+
+export const ImprovementRuleScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  scope: 'scope',
+  source: 'source',
+  status: 'status',
+  title: 'title',
+  body: 'body',
+  weight: 'weight',
+  targetProductId: 'targetProductId',
+  targetPersonaId: 'targetPersonaId',
+  targetChannelId: 'targetChannelId',
+  evidenceDeploymentIds: 'evidenceDeploymentIds',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImprovementRuleScalarFieldEnum = (typeof ImprovementRuleScalarFieldEnum)[keyof typeof ImprovementRuleScalarFieldEnum]
 
 
 export const SortOrder = {

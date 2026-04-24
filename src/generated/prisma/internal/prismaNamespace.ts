@@ -452,7 +452,8 @@ export const ModelName = {
   DeploymentMetric: 'DeploymentMetric',
   SalesContentJob: 'SalesContentJob',
   ContentAsset: 'ContentAsset',
-  ContentIdea: 'ContentIdea'
+  ContentIdea: 'ContentIdea',
+  ImprovementRule: 'ImprovementRule'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -468,7 +469,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentAsset" | "contentIdea"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionBatch" | "productPricingSettings" | "spaceOptionCodeAlias" | "b2BProduct" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentAsset" | "contentIdea" | "improvementRule"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5578,6 +5579,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ImprovementRule: {
+      payload: Prisma.$ImprovementRulePayload<ExtArgs>
+      fields: Prisma.ImprovementRuleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImprovementRuleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImprovementRuleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>
+        }
+        findFirst: {
+          args: Prisma.ImprovementRuleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImprovementRuleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>
+        }
+        findMany: {
+          args: Prisma.ImprovementRuleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>[]
+        }
+        create: {
+          args: Prisma.ImprovementRuleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>
+        }
+        createMany: {
+          args: Prisma.ImprovementRuleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ImprovementRuleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>[]
+        }
+        delete: {
+          args: Prisma.ImprovementRuleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>
+        }
+        update: {
+          args: Prisma.ImprovementRuleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>
+        }
+        deleteMany: {
+          args: Prisma.ImprovementRuleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImprovementRuleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImprovementRuleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>[]
+        }
+        upsert: {
+          args: Prisma.ImprovementRuleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImprovementRulePayload>
+        }
+        aggregate: {
+          args: Prisma.ImprovementRuleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImprovementRule>
+        }
+        groupBy: {
+          args: Prisma.ImprovementRuleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImprovementRuleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImprovementRuleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImprovementRuleCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -6730,6 +6805,26 @@ export const ContentIdeaScalarFieldEnum = {
 export type ContentIdeaScalarFieldEnum = (typeof ContentIdeaScalarFieldEnum)[keyof typeof ContentIdeaScalarFieldEnum]
 
 
+export const ImprovementRuleScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  scope: 'scope',
+  source: 'source',
+  status: 'status',
+  title: 'title',
+  body: 'body',
+  weight: 'weight',
+  targetProductId: 'targetProductId',
+  targetPersonaId: 'targetPersonaId',
+  targetChannelId: 'targetChannelId',
+  evidenceDeploymentIds: 'evidenceDeploymentIds',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImprovementRuleScalarFieldEnum = (typeof ImprovementRuleScalarFieldEnum)[keyof typeof ImprovementRuleScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -7224,6 +7319,48 @@ export type EnumIdeaGeneratedByFieldRefInput<$PrismaModel> = FieldRefInputType<$
 export type ListEnumIdeaGeneratedByFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IdeaGeneratedBy[]'>
     
 
+
+/**
+ * Reference to a field of type 'RuleScope'
+ */
+export type EnumRuleScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RuleScope'>
+    
+
+
+/**
+ * Reference to a field of type 'RuleScope[]'
+ */
+export type ListEnumRuleScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RuleScope[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RuleSource'
+ */
+export type EnumRuleSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RuleSource'>
+    
+
+
+/**
+ * Reference to a field of type 'RuleSource[]'
+ */
+export type ListEnumRuleSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RuleSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RuleStatus'
+ */
+export type EnumRuleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RuleStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RuleStatus[]'
+ */
+export type ListEnumRuleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RuleStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -7388,6 +7525,7 @@ export type GlobalOmitConfig = {
   salesContentJob?: Prisma.SalesContentJobOmit
   contentAsset?: Prisma.ContentAssetOmit
   contentIdea?: Prisma.ContentIdeaOmit
+  improvementRule?: Prisma.ImprovementRuleOmit
 }
 
 /* Types for Logging */

@@ -362,3 +362,8 @@ export type ContentAsset = Prisma.ContentAssetModel
  * 
  */
 export type ContentIdea = Prisma.ContentIdeaModel
+/**
+ * Model ImprovementRule
+ * 
+ */
+export type ImprovementRule = Prisma.ImprovementRuleModel

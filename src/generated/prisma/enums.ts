@@ -257,3 +257,31 @@ export const MetricSource = {
 } as const
 
 export type MetricSource = (typeof MetricSource)[keyof typeof MetricSource]
+
+
+export const RuleSource = {
+  USER: 'USER',
+  AI: 'AI'
+} as const
+
+export type RuleSource = (typeof RuleSource)[keyof typeof RuleSource]
+
+
+export const RuleStatus = {
+  PROPOSED: 'PROPOSED',
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type RuleStatus = (typeof RuleStatus)[keyof typeof RuleStatus]
+
+
+export const RuleScope = {
+  WORKSPACE: 'WORKSPACE',
+  PRODUCT: 'PRODUCT',
+  PERSONA: 'PERSONA',
+  CHANNEL: 'CHANNEL',
+  COMBINATION: 'COMBINATION'
+} as const
+
+export type RuleScope = (typeof RuleScope)[keyof typeof RuleScope]

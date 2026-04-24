@@ -359,6 +359,7 @@ model Space {
   channelCredentials   ChannelCredential[]
   salesContentJobs     SalesContentJob[]
   deploymentMetrics    DeploymentMetric[]
+  improvementRules     ImprovementRule[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1755,4 +1756,50 @@ model ContentIdea {
   @@index([spaceId, createdAt])
   @@index([productId])
   @@index([personaId])
+}
+
+// ─── Sales Content Deck (개선 규칙 · 셀프-임프루빙) ──────────────────────────
+
+enum RuleSource {
+  USER
+  AI
+}
+
+enum RuleStatus {
+  PROPOSED
+  ACTIVE
+  ARCHIVED
+}
+
+enum RuleScope {
+  WORKSPACE
+  PRODUCT
+  PERSONA
+  CHANNEL
+  COMBINATION
+}
+
+// 아이데이션·콘텐츠 생성 프롬프트에 주입될 개선 규칙.
+// status=ACTIVE + scope 필터 매치 시 Unit 4 `loadActiveRules` 가 선택한다.
+model ImprovementRule {
+  id                    String     @id @default(cuid())
+  spaceId               String
+  scope                 RuleScope
+  source                RuleSource @default(USER)
+  status                RuleStatus @default(PROPOSED)
+  title                 String
+  body                  String
+  weight                Int        @default(5)
+  targetProductId       String?
+  targetPersonaId       String?
+  targetChannelId       String?
+  evidenceDeploymentIds Json? // AI 생성 시 근거가 된 배포 id 배열
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([spaceId, scope, status])
 }
