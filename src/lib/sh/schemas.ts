@@ -60,8 +60,14 @@ export const productSchema = z.object({
   // 공식 상품명 — 판매채널 노출명 (필수)
   name: z.string().min(1, '공식 상품명을 입력해주세요').max(200),
   // 관리 상품명 — 내부 식별용 (선택, 비어있으면 표시 시 name으로 fallback)
+  // PATCH에서 null/'' 는 명시적 clear 신호로 null 저장, undefined 는 필드 skip
   internalName: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
+    .preprocess((v) => {
+      if (v === undefined) return undefined
+      if (v === null) return null
+      if (typeof v === 'string' && v.trim() === '') return null
+      return v
+    }, z.string().max(200).nullable())
     .optional(),
   nameEn: z
     .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
