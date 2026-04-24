@@ -2,7 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, BookmarkPlus, Copy, Info, Save, Trash2, Upload, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  BookmarkPlus,
+  Copy,
+  Info,
+  Save,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -569,19 +579,34 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="flex h-[95vh] max-h-[95vh] w-[95vw] max-w-[1600px] flex-col overflow-hidden p-0 sm:max-w-[1600px]">
-          <DialogHeader className="shrink-0 border-b px-6 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <DialogTitle className="text-base font-semibold">채널 파일 업로드</DialogTitle>
+        <DialogContent
+          showCloseButton={false}
+          className="!top-0 !left-0 flex h-screen max-h-screen w-screen max-w-none !translate-x-0 !translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:max-w-none"
+        >
+          <DialogHeader className="shrink-0 border-b bg-background px-4 py-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="-ml-1 h-8 shrink-0"
+                  onClick={() => onOpenChange(false)}
+                >
+                  <ArrowLeft className="mr-1 h-4 w-4" />
+                  배송 등록
+                </Button>
+                <div className="h-5 w-px bg-border" />
+                <DialogTitle className="truncate text-base font-semibold">
+                  채널 파일 업로드
+                </DialogTitle>
                 {preview && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="truncate text-xs text-muted-foreground">
                     · 파일: {file?.name ?? '(재업로드 필요)'} · 총 {preview.totalRows}건
                   </span>
                 )}
               </div>
               {hasDraft && (
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
