@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Layers, Loader2, Plus } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AlertCircle, ArrowLeft, Check, Layers, Loader2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -56,6 +56,8 @@ export function GroupDetailView({ productId, channelId }: Props) {
   const [data, setData] = useState<GroupDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [lastError, setLastError] = useState<string | null>(null)
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 편집 state
   const [keywords, setKeywords] = useState<string[]>([])
@@ -186,6 +188,8 @@ export function GroupDetailView({ productId, channelId }: Props) {
         return next
       })
     )
+    // Select(판매상태)는 즉시, 텍스트(판매가)는 800ms debounce
+    scheduleAutoSave(patch.status !== undefined ? 0 : 800)
   }
 
   function applyBulkPatch(patch: BulkPatch) {
@@ -199,7 +203,24 @@ export function GroupDetailView({ productId, channelId }: Props) {
         return next
       })
     )
-    toast.success(`${selected.size}개 listing의 값이 변경되었습니다 (저장 버튼으로 반영)`)
+    toast.success(`${selected.size}개 listing에 적용했습니다`)
+    scheduleAutoSave(0)
+  }
+
+  function handleKeywordsChange(next: string[]) {
+    setKeywords(next)
+    scheduleAutoSave(0)
+  }
+
+  function handleBaseChange(
+    field: 'searchName' | 'displayName' | 'internalCode' | 'memo',
+    value: string
+  ) {
+    if (field === 'searchName') setBaseSearchName(value)
+    else if (field === 'displayName') setBaseDisplayName(value)
+    else if (field === 'internalCode') setBaseInternalCode(value)
+    else setMemo(value)
+    scheduleAutoSave(800)
   }
 
   // ─── 옵션 CRUD 핸들러 ──────────────────────────────────────────
@@ -219,6 +240,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
 
   async function confirmDelete() {
     if (!deleteTarget) return
+    await flushPendingSave()
     setDeleting(true)
     const failures: string[] = []
     await Promise.all(
@@ -277,6 +299,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
       toast.error('다른 상품은 이 그룹에 추가할 수 없습니다')
       return
     }
+    await flushPendingSave()
     setMutating(true)
     const existingSignatures = new Set(
       data.listings.map((l) =>
@@ -341,6 +364,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
       toast.error('다른 상품으로 재구성할 수 없습니다')
       return
     }
+    await flushPendingSave()
     setMutating(true)
     const payloads = buildListingPayloadsFromGroups(ctx, groups)
 
@@ -396,15 +420,61 @@ export function GroupDetailView({ productId, channelId }: Props) {
     await load()
   }
 
-  async function handleSaveAll() {
-    if (!data || !totalDirty) return
+  const runAutoSaveRef = useRef<() => Promise<void>>(async () => {})
+  const activeSavePromiseRef = useRef<Promise<void> | null>(null)
+
+  async function runAutoSave() {
+    if (!data) return
+    if (activeSavePromiseRef.current) {
+      await activeSavePromiseRef.current
+      return
+    }
+    if (!totalDirty) return
+
+    // 필수 필드 가드: 공백이면 저장 스킵 (error chip 대신 dirty 유지)
+    if (baseDirty && (!baseSearchName.trim() || !baseDisplayName.trim())) return
+
+    const promise = doSave()
+    activeSavePromiseRef.current = promise
+    try {
+      await promise
+    } finally {
+      activeSavePromiseRef.current = null
+    }
+  }
+
+  async function doSave() {
+    if (!data) return
     setSaving(true)
+
+    // 스냅샷 — 저장 도중 state가 바뀌어도 이 배치는 일관되게 적용
+    const snapBaseDirty = baseDirty
+    const snapKeywordsDirty = keywordsDirty
+    const snapRows = rows
+    const snapKeywords = keywords
+    const snapBase = {
+      searchName: baseSearchName,
+      displayName: baseDisplayName,
+      internalCode: baseInternalCode,
+      memo,
+    }
+
     const origById = new Map(data.listings.map((l) => [l.id, l]))
     const failures: string[] = []
-    let updatedCount = 0
+    const patchedById = new Map<
+      string,
+      {
+        searchName?: string
+        displayName?: string
+        internalCode?: string | null
+        memo?: string | null
+        retailPrice?: number | null
+        status?: 'ACTIVE' | 'SUSPENDED'
+      }
+    >()
 
     for (const l of data.listings) {
-      const current = rows.find((r) => r.id === l.id)
+      const current = snapRows.find((r) => r.id === l.id)
       if (!current) continue
       const patch: {
         searchName?: string
@@ -415,7 +485,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
         status?: 'ACTIVE' | 'SUSPENDED'
       } = {}
 
-      if (baseDirty) {
+      if (snapBaseDirty) {
         const suffix = buildSuffix(
           {
             id: l.id,
@@ -430,12 +500,12 @@ export function GroupDetailView({ productId, channelId }: Props) {
           },
           data.product.optionAttributes
         )
-        patch.searchName = joinName(baseSearchName.trim(), suffix) || l.searchName
-        patch.displayName = joinName(baseDisplayName.trim(), suffix) || l.displayName
-        patch.internalCode = baseInternalCode.trim()
-          ? joinName(baseInternalCode.trim(), suffix)
+        patch.searchName = joinName(snapBase.searchName.trim(), suffix) || l.searchName
+        patch.displayName = joinName(snapBase.displayName.trim(), suffix) || l.displayName
+        patch.internalCode = snapBase.internalCode.trim()
+          ? joinName(snapBase.internalCode.trim(), suffix)
           : null
-        patch.memo = memo.trim() || null
+        patch.memo = snapBase.memo.trim() || null
       }
 
       const orig = origById.get(l.id)!
@@ -454,39 +524,112 @@ export function GroupDetailView({ productId, channelId }: Props) {
           const err = await res.json().catch(() => ({}))
           failures.push(`${l.searchName}: ${err?.message ?? '저장 실패'}`)
         } else {
-          updatedCount += 1
+          patchedById.set(l.id, patch)
         }
       } catch (err) {
         failures.push(`${l.searchName}: ${err instanceof Error ? err.message : '저장 실패'}`)
       }
     }
 
-    if (keywordsDirty) {
+    let keywordsSaved = false
+    if (snapKeywordsDirty) {
       try {
         const res = await fetch(`/api/sh/products/listings/groups/${productId}/${channelId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ keywords }),
+          body: JSON.stringify({ keywords: snapKeywords }),
         })
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           failures.push(`키워드: ${err?.message ?? '저장 실패'}`)
+        } else {
+          keywordsSaved = true
         }
       } catch (err) {
         failures.push(`키워드: ${err instanceof Error ? err.message : '저장 실패'}`)
       }
     }
 
+    // 로컬 data 업데이트 — load() 대신 저장된 값만 반영해 in-flight 편집 보호
+    if (patchedById.size > 0 || keywordsSaved) {
+      setData((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          meta: keywordsSaved ? { ...prev.meta, keywords: snapKeywords } : prev.meta,
+          listings: prev.listings.map((l) => {
+            const p = patchedById.get(l.id)
+            if (!p) return l
+            return {
+              ...l,
+              ...(p.searchName !== undefined ? { searchName: p.searchName } : {}),
+              ...(p.displayName !== undefined ? { displayName: p.displayName } : {}),
+              ...(p.internalCode !== undefined ? { internalCode: p.internalCode } : {}),
+              ...(p.memo !== undefined ? { memo: p.memo } : {}),
+              ...(p.retailPrice !== undefined ? { retailPrice: p.retailPrice } : {}),
+              ...(p.status !== undefined ? { status: p.status } : {}),
+            }
+          }),
+        }
+      })
+    }
+
     setSaving(false)
     if (failures.length > 0) {
+      setLastError(failures.slice(0, 2).join(' · '))
       toast.warning(`일부 저장 실패 (${failures.length}건). ${failures.slice(0, 2).join(' / ')}`)
     } else {
-      toast.success(
-        updatedCount > 0 || keywordsDirty ? '변경사항이 저장되었습니다' : '변경사항이 없습니다'
-      )
+      setLastError(null)
     }
-    await load()
   }
+
+  runAutoSaveRef.current = runAutoSave
+
+  function scheduleAutoSave(delay: number) {
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current)
+    }
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSaveTimerRef.current = null
+      void runAutoSaveRef.current()
+    }, delay)
+  }
+
+  async function flushPendingSave() {
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current)
+      autoSaveTimerRef.current = null
+    }
+    // 이미 진행 중인 저장이 있으면 먼저 끝날 때까지 대기
+    if (activeSavePromiseRef.current) {
+      await activeSavePromiseRef.current
+    }
+    // 아직 dirty가 남아있으면 한 번 더 flush
+    if (totalDirty) {
+      await runAutoSaveRef.current()
+    }
+  }
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current)
+      }
+    }
+  }, [])
+
+  // pending save 가 있는 상태에서 페이지 이탈 방지
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (totalDirty || saving) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [totalDirty, saving])
 
   if (loading && !data) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>
@@ -505,10 +648,16 @@ export function GroupDetailView({ productId, channelId }: Props) {
           <ArrowLeft className="h-4 w-4" />
           목록으로
         </Link>
-        <Button size="sm" onClick={handleSaveAll} disabled={!totalDirty || saving}>
-          {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-          {totalDirty ? `저장 (${dirtyCount}건 변경)` : '저장'}
-        </Button>
+        <SaveStatusChip
+          saving={saving}
+          dirty={totalDirty}
+          dirtyCount={dirtyCount}
+          error={lastError}
+          onRetry={() => {
+            setLastError(null)
+            void runAutoSave()
+          }}
+        />
       </div>
 
       <div>
@@ -528,11 +677,11 @@ export function GroupDetailView({ productId, channelId }: Props) {
         baseInternalCode={baseInternalCode}
         memo={memo}
         inconsistentBases={derivedBase?.inconsistentBases ?? []}
-        onBaseSearchNameChange={setBaseSearchName}
-        onBaseDisplayNameChange={setBaseDisplayName}
-        onBaseInternalCodeChange={setBaseInternalCode}
-        onMemoChange={setMemo}
-        disabled={saving}
+        onBaseSearchNameChange={(v) => handleBaseChange('searchName', v)}
+        onBaseDisplayNameChange={(v) => handleBaseChange('displayName', v)}
+        onBaseInternalCodeChange={(v) => handleBaseChange('internalCode', v)}
+        onMemoChange={(v) => handleBaseChange('memo', v)}
+        disabled={mutating}
       />
 
       <Card>
@@ -543,7 +692,11 @@ export function GroupDetailView({ productId, channelId }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <KeywordEditor value={keywords} onChange={setKeywords} suggestions={keywordSuggestions} />
+          <KeywordEditor
+            value={keywords}
+            onChange={handleKeywordsChange}
+            suggestions={keywordSuggestions}
+          />
         </CardContent>
       </Card>
 
@@ -552,20 +705,19 @@ export function GroupDetailView({ productId, channelId }: Props) {
           <div>
             <CardTitle className="text-lg">옵션 구성 ({rows.length}개)</CardTitle>
             <CardDescription>
-              체크박스로 여러 옵션을 선택하면 판매가·판매상태를 한 번에 바꿀 수 있습니다. 모든
-              변경은 상단의 &lsquo;저장&rsquo; 버튼을 눌러야 반영됩니다. 소비자가는 상품의 옵션
-              소비자가에서 자동 계산됩니다.
+              체크박스로 여러 옵션을 선택하면 판매가·판매상태를 한 번에 바꿀 수 있습니다. 변경은
+              자동으로 저장됩니다. 소비자가는 상품의 옵션 소비자가에서 자동 계산됩니다.
             </CardDescription>
           </div>
           <div className="flex items-center gap-1.5">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setAddBuilderOpen(true)}
-              disabled={saving || mutating || totalDirty}
-              title={
-                totalDirty ? '저장하지 않은 변경사항이 있습니다. 먼저 저장해 주세요.' : undefined
-              }
+              onClick={async () => {
+                await flushPendingSave()
+                setAddBuilderOpen(true)
+              }}
+              disabled={mutating}
             >
               <Plus className="mr-1 h-4 w-4" />
               옵션 추가
@@ -573,11 +725,11 @@ export function GroupDetailView({ productId, channelId }: Props) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setResetConfirmOpen(true)}
-              disabled={saving || mutating || totalDirty}
-              title={
-                totalDirty ? '저장하지 않은 변경사항이 있습니다. 먼저 저장해 주세요.' : undefined
-              }
+              onClick={async () => {
+                await flushPendingSave()
+                setResetConfirmOpen(true)
+              }}
+              disabled={mutating}
             >
               <Layers className="mr-1 h-4 w-4" />
               구성 다시 설정
@@ -590,7 +742,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
               selectedCount={selected.size}
               onClear={() => setSelected(new Set())}
               onApply={async (patch) => applyBulkPatch(patch)}
-              onRequestDelete={totalDirty ? undefined : requestDeleteSelected}
+              onRequestDelete={requestDeleteSelected}
               loading={mutating}
             />
           )}
@@ -600,11 +752,8 @@ export function GroupDetailView({ productId, channelId }: Props) {
             onSelectedChange={setSelected}
             onRowChange={handleRowChange}
             onDeleteRequest={requestDeleteOne}
-            deleteDisabledReason={
-              totalDirty ? '저장하지 않은 변경사항이 있습니다. 먼저 저장해 주세요.' : undefined
-            }
             dirtyIds={dirtyRowIds}
-            disabled={saving || mutating}
+            disabled={mutating}
           />
         </CardContent>
       </Card>
@@ -705,5 +854,57 @@ export function GroupDetailView({ productId, channelId }: Props) {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+function SaveStatusChip({
+  saving,
+  dirty,
+  dirtyCount,
+  error,
+  onRetry,
+}: {
+  saving: boolean
+  dirty: boolean
+  dirtyCount: number
+  error: string | null
+  onRetry: () => void
+}) {
+  if (saving) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        저장 중...
+      </span>
+    )
+  }
+  if (error) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onRetry}
+        className="h-8 gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        title={error}
+      >
+        <AlertCircle className="h-3.5 w-3.5" />
+        저장 실패 — 재시도
+      </Button>
+    )
+  }
+  if (dirty) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-amber-600">
+        <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
+        저장 대기 중... ({dirtyCount}건)
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <Check className="h-3.5 w-3.5 text-emerald-600" />
+      저장됨
+    </span>
   )
 }
