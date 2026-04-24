@@ -86,8 +86,17 @@
 
 **다음:**
 
-- [ ] Phase 2 실제 외부 통합 — Bridge ACP 라우트, Threads/네이버 blog 자동화, Insight-generator AI 규칙 생성 파이프라인
-- [x] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화) — commit `TBD`, `jest.config.ts` next/jest preset 적용, 11 suites / 93 tests 전부 green
+- [~] Phase 2 실제 외부 통합
+  - [x] **Unit 14** (commit `TBD`) — AI Insight Generator (셀프-임프루빙 루프 완성)
+    - `src/lib/sc/insights.ts`: `aggregateDeploymentPerformance` (채널×템플릿×상품 버킷), `buildInsightPrompt` (JSON schema + 활성 규칙 중복 방지), `parseInsightResponse` (zod), `runInsightGeneration` 오케스트레이터
+    - `POST /api/sc/insights/generate` — 세션/워커 양쪽 인증
+    - `src/components/sc/rules/ai-insight-button.tsx` — 규칙 페이지 수동 트리거
+    - `worker/src/sc/insight-generator.ts` — INSIGHT_SWEEP job 핸들러 (웹 API 호출 위임)
+    - 테스트: `src/lib/sc/__tests__/insights.test.ts` 8 케이스 green
+  - [ ] Bridge ACP 라우트 (`POST /sales-content/generate` + `GET /health`) — `claude-code-bridge` 프로젝트
+  - [ ] Threads API 실구현 (OAuth 토큰 + Graph API)
+  - [ ] 네이버 블로그 Playwright 실구현 (수동 로그인 세션 쿠키)
+- [x] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화) — commit `ef486c8`, `jest.config.ts` next/jest preset 적용, 12 suites / 101 tests 전부 green
 - [ ] First smoke test — 실제 Bridge + Gemini + Supabase Storage 연결 후 end-to-end 통과
 
 ## 확정된 의사결정

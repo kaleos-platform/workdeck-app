@@ -3,6 +3,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { RuleList } from '@/components/sc/rules/rule-list'
 import { RuleForm } from '@/components/sc/rules/rule-form'
+import { AiInsightButton } from '@/components/sc/rules/ai-insight-button'
 
 export default async function RulesPage() {
   const resolved = await resolveDeckContext('sales-content')
@@ -22,6 +23,8 @@ export default async function RulesPage() {
           규칙(PROPOSED)은 승인 후 활성화하세요.
         </p>
       </div>
+
+      <AiInsightButton />
 
       <RuleList rules={rules} />
 
