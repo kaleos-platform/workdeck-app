@@ -157,8 +157,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       toast.error('이미 추가된 옵션입니다')
       return
     }
-    // 옵션 재고는 저장 후 상세 페이지에서 확인 (목록 API에서는 집계하지 않음).
-    // 소비자가(retailPrice)는 picker가 함께 넘기므로 즉시 자동 계산 baseline에 반영된다.
+    // 소비자가 + 재고(totalStock)는 picker가 함께 넘기므로 추가 즉시 자동 계산 baseline·가용재고에 반영된다.
     setItems((prev) => [
       ...prev,
       {
@@ -170,7 +169,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
         brandName: picked.brandName,
         quantity: 1,
         retailPrice: picked.retailPrice,
-        optionStock: 0,
+        optionStock: picked.totalStock,
       },
     ])
     setPickerOpen(false)

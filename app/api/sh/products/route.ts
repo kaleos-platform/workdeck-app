@@ -45,7 +45,26 @@ export async function GET(req: NextRequest) {
     prisma.invProduct.count({ where }),
   ])
 
-  return NextResponse.json({ data: products, total, page, pageSize })
+  // 옵션별 totalStock 집계 — invStockLevel.quantity 합계
+  const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
+  const stockByOption = new Map<string, number>()
+  if (optionIds.length > 0) {
+    const stockRows = await prisma.invStockLevel.groupBy({
+      by: ['optionId'],
+      where: { optionId: { in: optionIds } },
+      _sum: { quantity: true },
+    })
+    for (const r of stockRows) {
+      stockByOption.set(r.optionId, r._sum.quantity ?? 0)
+    }
+  }
+
+  const data = products.map((p) => ({
+    ...p,
+    options: p.options.map((o) => ({ ...o, totalStock: stockByOption.get(o.id) ?? 0 })),
+  }))
+
+  return NextResponse.json({ data, total, page, pageSize })
 }
 
 export async function POST(req: NextRequest) {

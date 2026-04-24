@@ -29,6 +29,7 @@ type ProductRow = {
     name: string
     sku: string | null
     retailPrice?: string | number | null
+    totalStock?: number
   }[]
 }
 
@@ -40,6 +41,7 @@ export type PickedOption = {
   sku: string | null
   brandName: string | null
   retailPrice: number | null
+  totalStock: number
 }
 
 type Props = {
@@ -100,6 +102,7 @@ export function OptionPickerDialog({
               sku: o.sku,
               brandName: p.brand?.name ?? null,
               retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
+              totalStock: typeof o.totalStock === 'number' ? o.totalStock : 0,
             })
           }
         }
