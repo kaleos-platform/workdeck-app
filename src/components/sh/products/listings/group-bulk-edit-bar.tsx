@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, X } from 'lucide-react'
+import { Loader2, Trash2, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,10 +22,17 @@ type Props = {
   selectedCount: number
   onClear: () => void
   onApply: (patch: BulkPatch) => Promise<void>
+  onRequestDelete?: () => void
   loading?: boolean
 }
 
-export function GroupBulkEditBar({ selectedCount, onClear, onApply, loading }: Props) {
+export function GroupBulkEditBar({
+  selectedCount,
+  onClear,
+  onApply,
+  onRequestDelete,
+  loading,
+}: Props) {
   const [retailDraft, setRetailDraft] = useState('')
   const [statusDraft, setStatusDraft] = useState<'' | 'ACTIVE' | 'SUSPENDED'>('')
 
@@ -80,6 +87,12 @@ export function GroupBulkEditBar({ selectedCount, onClear, onApply, loading }: P
           <X className="mr-1 h-4 w-4" />
           선택 해제
         </Button>
+        {onRequestDelete && (
+          <Button variant="destructive" size="sm" onClick={onRequestDelete} disabled={loading}>
+            <Trash2 className="mr-1 h-4 w-4" />
+            선택 삭제
+          </Button>
+        )}
       </div>
     </div>
   )

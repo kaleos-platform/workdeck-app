@@ -2,11 +2,19 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Layers, Loader2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 
 import { KeywordEditor } from './keyword-editor'
@@ -19,6 +27,7 @@ import {
   deriveBaseValues,
   joinName,
 } from './group-base-info-card'
+import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 
 type GroupListingFull = GroupListingRow & {
   memo: string | null
@@ -58,6 +67,14 @@ export function GroupDetailView({ productId, channelId }: Props) {
   const [baseDisplayName, setBaseDisplayName] = useState('')
   const [baseInternalCode, setBaseInternalCode] = useState('')
   const [memo, setMemo] = useState('')
+
+  // 옵션 CRUD state
+  const [deleteTarget, setDeleteTarget] = useState<{ ids: string[]; label: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [addBuilderOpen, setAddBuilderOpen] = useState(false)
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false)
+  const [resetBuilderOpen, setResetBuilderOpen] = useState(false)
+  const [mutating, setMutating] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -185,6 +202,200 @@ export function GroupDetailView({ productId, channelId }: Props) {
     toast.success(`${selected.size}개 listing의 값이 변경되었습니다 (저장 버튼으로 반영)`)
   }
 
+  // ─── 옵션 CRUD 핸들러 ──────────────────────────────────────────
+  function requestDeleteOne(id: string) {
+    const row = rows.find((r) => r.id === id)
+    if (!row) return
+    setDeleteTarget({ ids: [id], label: row.searchName })
+  }
+
+  function requestDeleteSelected() {
+    if (selected.size === 0) return
+    const ids = Array.from(selected)
+    const first = rows.find((r) => r.id === ids[0])
+    const label = ids.length === 1 && first ? first.searchName : `${ids.length}개 listing`
+    setDeleteTarget({ ids, label })
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    const failures: string[] = []
+    await Promise.all(
+      deleteTarget.ids.map(async (id) => {
+        try {
+          const res = await fetch(`/api/sh/products/listings/${id}`, { method: 'DELETE' })
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            failures.push(`${id}: ${err?.message ?? '삭제 실패'}`)
+          }
+        } catch (err) {
+          failures.push(`${id}: ${err instanceof Error ? err.message : '삭제 실패'}`)
+        }
+      })
+    )
+    setDeleting(false)
+    setDeleteTarget(null)
+    setSelected(new Set())
+    if (failures.length > 0) {
+      toast.warning(`일부 삭제 실패 (${failures.length}건)`)
+    } else {
+      toast.success(`${deleteTarget.ids.length}개 listing이 삭제되었습니다`)
+    }
+    await load()
+  }
+
+  function buildListingPayloadsFromGroups(ctx: ProductContext, groups: BuiltGroup[]) {
+    return groups.map((g) => {
+      const suffix = g.suffixParts.join(' ')
+      const searchName = joinName(baseSearchName.trim() || ctx.displayName, suffix)
+      const displayName = joinName(baseDisplayName.trim() || ctx.displayName, suffix)
+      const internalCode = baseInternalCode.trim()
+        ? joinName(baseInternalCode.trim(), suffix)
+        : undefined
+      return {
+        searchName,
+        displayName,
+        internalCode,
+        memo: memo.trim() || undefined,
+        items: g.items.map((it, idx) => ({
+          optionId: it.optionId,
+          quantity: it.quantity,
+          sortOrder: idx,
+        })),
+        optionSignature: g.items
+          .map((it) => `${it.optionId}x${it.quantity}`)
+          .sort()
+          .join('|'),
+      }
+    })
+  }
+
+  async function handleAddCommit(ctx: ProductContext, groups: BuiltGroup[]) {
+    if (!data) return
+    if (ctx.id !== productId) {
+      toast.error('다른 상품은 이 그룹에 추가할 수 없습니다')
+      return
+    }
+    setMutating(true)
+    const existingSignatures = new Set(
+      data.listings.map((l) =>
+        l.items
+          .map((it) => `${it.optionId}x${it.quantity}`)
+          .sort()
+          .join('|')
+      )
+    )
+    const payloads = buildListingPayloadsFromGroups(ctx, groups)
+
+    let skipped = 0
+    let created = 0
+    const failures: string[] = []
+    for (const p of payloads) {
+      if (existingSignatures.has(p.optionSignature)) {
+        skipped += 1
+        continue
+      }
+      try {
+        const res = await fetch('/api/sh/products/listings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            channelId,
+            searchName: p.searchName,
+            displayName: p.displayName,
+            internalCode: p.internalCode,
+            memo: p.memo,
+            keywords: [],
+            status: 'ACTIVE',
+            items: p.items,
+          }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          failures.push(`${p.searchName}: ${err?.message ?? '추가 실패'}`)
+        } else {
+          created += 1
+        }
+      } catch (err) {
+        failures.push(`${p.searchName}: ${err instanceof Error ? err.message : '추가 실패'}`)
+      }
+    }
+    setMutating(false)
+    setAddBuilderOpen(false)
+    if (failures.length > 0) {
+      toast.warning(`${created}개 추가 · ${failures.length}개 실패 · 중복 ${skipped}개 skip`)
+    } else if (skipped > 0 && created > 0) {
+      toast.success(`${created}개 추가 (중복 ${skipped}개 skip)`)
+    } else if (created > 0) {
+      toast.success(`${created}개의 옵션이 추가되었습니다`)
+    } else {
+      toast.warning('추가된 옵션이 없습니다 — 모두 이미 존재하는 구성')
+    }
+    await load()
+  }
+
+  async function handleResetCommit(ctx: ProductContext, groups: BuiltGroup[]) {
+    if (!data) return
+    if (ctx.id !== productId) {
+      toast.error('다른 상품으로 재구성할 수 없습니다')
+      return
+    }
+    setMutating(true)
+    const payloads = buildListingPayloadsFromGroups(ctx, groups)
+
+    const deleteFailures: string[] = []
+    await Promise.all(
+      data.listings.map(async (l) => {
+        try {
+          const res = await fetch(`/api/sh/products/listings/${l.id}`, { method: 'DELETE' })
+          if (!res.ok) deleteFailures.push(l.searchName)
+        } catch {
+          deleteFailures.push(l.searchName)
+        }
+      })
+    )
+    let created = 0
+    const createFailures: string[] = []
+    for (const p of payloads) {
+      try {
+        const res = await fetch('/api/sh/products/listings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            channelId,
+            searchName: p.searchName,
+            displayName: p.displayName,
+            internalCode: p.internalCode,
+            memo: p.memo,
+            keywords: [],
+            status: 'ACTIVE',
+            items: p.items,
+          }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          createFailures.push(`${p.searchName}: ${err?.message ?? '생성 실패'}`)
+        } else {
+          created += 1
+        }
+      } catch (err) {
+        createFailures.push(`${p.searchName}: ${err instanceof Error ? err.message : '생성 실패'}`)
+      }
+    }
+    setMutating(false)
+    setResetBuilderOpen(false)
+    const totalFailures = deleteFailures.length + createFailures.length
+    if (totalFailures > 0) {
+      toast.warning(
+        `${created}개 생성 · 실패 ${totalFailures}건 (삭제 ${deleteFailures.length} / 생성 ${createFailures.length})`
+      )
+    } else {
+      toast.success(`구성을 다시 설정했습니다 (${created}개 listing)`)
+    }
+    await load()
+  }
+
   async function handleSaveAll() {
     if (!data || !totalDirty) return
     setSaving(true)
@@ -294,16 +505,10 @@ export function GroupDetailView({ productId, channelId }: Props) {
           <ArrowLeft className="h-4 w-4" />
           목록으로
         </Link>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={load} disabled={loading || saving}>
-            <RefreshCw className="mr-1 h-4 w-4" />
-            새로고침
-          </Button>
-          <Button size="sm" onClick={handleSaveAll} disabled={!totalDirty || saving}>
-            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-            {totalDirty ? `저장 (${dirtyCount}건 변경)` : '저장'}
-          </Button>
-        </div>
+        <Button size="sm" onClick={handleSaveAll} disabled={!totalDirty || saving}>
+          {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+          {totalDirty ? `저장 (${dirtyCount}건 변경)` : '저장'}
+        </Button>
       </div>
 
       <div>
@@ -343,13 +548,41 @@ export function GroupDetailView({ productId, channelId }: Props) {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">옵션 구성 ({rows.length}개)</CardTitle>
-          <CardDescription>
-            체크박스로 여러 옵션을 선택하면 판매가·판매상태를 한 번에 바꿀 수 있습니다. 모든 변경은
-            상단의 &lsquo;저장&rsquo; 버튼을 눌러야 반영됩니다. 소비자가는 상품의 옵션 소비자가에서
-            자동 계산됩니다.
-          </CardDescription>
+        <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
+          <div>
+            <CardTitle className="text-lg">옵션 구성 ({rows.length}개)</CardTitle>
+            <CardDescription>
+              체크박스로 여러 옵션을 선택하면 판매가·판매상태를 한 번에 바꿀 수 있습니다. 모든
+              변경은 상단의 &lsquo;저장&rsquo; 버튼을 눌러야 반영됩니다. 소비자가는 상품의 옵션
+              소비자가에서 자동 계산됩니다.
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAddBuilderOpen(true)}
+              disabled={saving || mutating || totalDirty}
+              title={
+                totalDirty ? '저장하지 않은 변경사항이 있습니다. 먼저 저장해 주세요.' : undefined
+              }
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              옵션 추가
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setResetConfirmOpen(true)}
+              disabled={saving || mutating || totalDirty}
+              title={
+                totalDirty ? '저장하지 않은 변경사항이 있습니다. 먼저 저장해 주세요.' : undefined
+              }
+            >
+              <Layers className="mr-1 h-4 w-4" />
+              구성 다시 설정
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {selected.size > 0 && (
@@ -357,6 +590,8 @@ export function GroupDetailView({ productId, channelId }: Props) {
               selectedCount={selected.size}
               onClear={() => setSelected(new Set())}
               onApply={async (patch) => applyBulkPatch(patch)}
+              onRequestDelete={totalDirty ? undefined : requestDeleteSelected}
+              loading={mutating}
             />
           )}
           <GroupListingsTable
@@ -364,11 +599,111 @@ export function GroupDetailView({ productId, channelId }: Props) {
             selected={selected}
             onSelectedChange={setSelected}
             onRowChange={handleRowChange}
+            onDeleteRequest={requestDeleteOne}
+            deleteDisabledReason={
+              totalDirty ? '저장하지 않은 변경사항이 있습니다. 먼저 저장해 주세요.' : undefined
+            }
             dirtyIds={dirtyRowIds}
-            disabled={saving}
+            disabled={saving || mutating}
           />
         </CardContent>
       </Card>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(v) => {
+          if (!v && !deleting) setDeleteTarget(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>판매채널 상품 삭제</DialogTitle>
+            <DialogDescription>
+              <span className="font-medium">{deleteTarget?.label}</span>을(를) 삭제하시겠습니까?
+              <br />이 listing과 매칭된 배송 별칭도 함께 삭제됩니다. 이미 매칭된 배송 주문은
+              listing=null로 유지됩니다 (이력 보존). 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={deleting}>
+              {deleting && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 옵션 추가: CompositionBuilder Dialog */}
+      <Dialog
+        open={addBuilderOpen}
+        onOpenChange={(v) => {
+          if (!mutating) setAddBuilderOpen(v)
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>옵션 추가</DialogTitle>
+            <DialogDescription>
+              현재 그룹에 새 옵션 구성을 추가합니다. 이미 존재하는 동일 구성은 건너뜁니다.
+            </DialogDescription>
+          </DialogHeader>
+          <CompositionBuilder onCommit={handleAddCommit} disabled={mutating} />
+        </DialogContent>
+      </Dialog>
+
+      {/* 구성 다시 설정: 1차 확인 */}
+      <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>구성 다시 설정</DialogTitle>
+            <DialogDescription>
+              이 그룹의 기존 판매채널 상품 <span className="font-medium">{rows.length}개</span>를
+              삭제하고 처음부터 다시 구성합니다.
+              <br />• 각 listing의 판매가·판매상태는 사라집니다.
+              <br />• 이 listing으로 매칭된 배송 별칭(alias)은 함께 삭제됩니다.
+              <br />• 이미 매칭된 배송 주문은 listing=null로 유지됩니다 (이력 보존).
+              <br />이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetConfirmOpen(false)}>
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setResetConfirmOpen(false)
+                setResetBuilderOpen(true)
+              }}
+            >
+              계속
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 구성 다시 설정: CompositionBuilder Dialog */}
+      <Dialog
+        open={resetBuilderOpen}
+        onOpenChange={(v) => {
+          if (!mutating) setResetBuilderOpen(v)
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>구성 다시 설정</DialogTitle>
+            <DialogDescription>
+              기존 listing을 모두 삭제하고 새 구성을 생성합니다. 기본 정보(상품명·관리 코드·메모)는
+              유지됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <CompositionBuilder onCommit={handleResetCommit} disabled={mutating} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

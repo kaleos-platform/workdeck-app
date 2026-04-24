@@ -1,6 +1,9 @@
 'use client'
 
+import { Trash2 } from 'lucide-react'
+
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import {
@@ -48,6 +51,8 @@ type Props = {
     id: string,
     patch: { retailPrice?: number | null; status?: 'ACTIVE' | 'SUSPENDED' }
   ) => void
+  onDeleteRequest?: (id: string) => void
+  deleteDisabledReason?: string
   dirtyIds?: Set<string>
   disabled?: boolean
 }
@@ -57,6 +62,8 @@ export function GroupListingsTable({
   selected,
   onSelectedChange,
   onRowChange,
+  onDeleteRequest,
+  deleteDisabledReason,
   dirtyIds,
   disabled,
 }: Props) {
@@ -101,6 +108,7 @@ export function GroupListingsTable({
             <TableHead className="w-36 text-right">판매가</TableHead>
             <TableHead className="text-right">할인</TableHead>
             <TableHead className="w-32">판매상태</TableHead>
+            {onDeleteRequest && <TableHead className="w-10" />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -184,6 +192,21 @@ export function GroupListingsTable({
                     {statusBadge}
                   </div>
                 </TableCell>
+                {onDeleteRequest && (
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => onDeleteRequest(r.id)}
+                      disabled={disabled || !!deleteDisabledReason}
+                      title={deleteDisabledReason ?? '삭제'}
+                      aria-label={`${r.searchName} 삭제`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             )
           })}
