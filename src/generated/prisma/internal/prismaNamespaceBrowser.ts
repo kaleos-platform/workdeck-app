@@ -951,6 +951,7 @@ export const ProductListingScalarFieldEnum = {
   displayName: 'displayName',
   keywords: 'keywords',
   retailPrice: 'retailPrice',
+  channelAllocation: 'channelAllocation',
   status: 'status',
   memo: 'memo',
   createdAt: 'createdAt',

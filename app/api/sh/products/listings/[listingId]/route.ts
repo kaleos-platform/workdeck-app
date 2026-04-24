@@ -4,6 +4,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productListingPatchSchema } from '@/lib/sh/schemas'
 import {
+  applyChannelAllocation,
   computeDiscount,
   computeEffectiveStatus,
   computeListingAvailableStock,
@@ -76,7 +77,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }))
   const baseline = computeListingRetailBaseline(priceSnapshots)
   const retailPrice = listing.retailPrice != null ? Number(listing.retailPrice) : null
-  const available = computeListingAvailableStock(stockSnapshots)
+  const autoAvailable = computeListingAvailableStock(stockSnapshots)
+  const available = applyChannelAllocation(autoAvailable, listing.channelAllocation)
   const effective = computeEffectiveStatus(listing.status, available)
   const { diff, percent } = computeDiscount(baseline, retailPrice)
 
@@ -95,6 +97,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
       status: listing.status,
       effectiveStatus: effective,
       availableStock: available,
+      autoAvailableStock: autoAvailable,
+      channelAllocation: listing.channelAllocation,
       memo: listing.memo,
       items: listing.items.map((it) => ({
         optionId: it.optionId,
@@ -175,6 +179,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         displayName: input.displayName ?? undefined,
         keywords: input.keywords ?? undefined,
         retailPrice: input.retailPrice === undefined ? undefined : input.retailPrice,
+        channelAllocation:
+          input.channelAllocation === undefined ? undefined : input.channelAllocation,
         status: input.status ?? undefined,
         memo: input.memo === undefined ? undefined : input.memo,
       },

@@ -4,6 +4,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productDisplayName } from '@/lib/sh/product-display'
 import {
+  applyChannelAllocation,
   computeDiscount,
   computeEffectiveStatus,
   computeListingAvailableStock,
@@ -104,7 +105,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }))
     const baseline = computeListingRetailBaseline(priceSnapshots)
     const retailPrice = l.retailPrice != null ? Number(l.retailPrice) : null
-    const available = computeListingAvailableStock(stockSnapshots)
+    const autoAvailable = computeListingAvailableStock(stockSnapshots)
+    const available = applyChannelAllocation(autoAvailable, l.channelAllocation)
     const effective = computeEffectiveStatus(l.status, available)
     const { diff, percent } = computeDiscount(baseline, retailPrice)
     return {
@@ -116,10 +118,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
       status: l.status,
       effectiveStatus: effective,
       retailPrice,
+      channelAllocation: l.channelAllocation,
       baselinePrice: baseline,
       discountAmount: diff,
       discountPercent: percent,
       availableStock: available,
+      autoAvailableStock: autoAvailable,
       items: l.items.map((it) => ({
         optionId: it.optionId,
         optionName: it.option.name,

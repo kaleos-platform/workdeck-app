@@ -23,6 +23,8 @@ type ListingDetail = {
   status: 'ACTIVE' | 'SUSPENDED'
   effectiveStatus: 'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'
   availableStock: number
+  autoAvailableStock: number
+  channelAllocation: number | null
   memo: string | null
   items: Array<{
     optionId: string
@@ -96,9 +98,11 @@ export default function ListingDetailPage({ params }: { params: Promise<{ listin
     displayName: listing.displayName,
     keywords: listing.keywords,
     retailPrice: listing.retailPrice,
+    channelAllocation: listing.channelAllocation,
     status: listing.status,
     memo: listing.memo,
     availableStock: listing.availableStock,
+    autoAvailableStock: listing.autoAvailableStock,
     items: listing.items.map((it) => ({
       optionId: it.optionId,
       optionName: it.optionName,

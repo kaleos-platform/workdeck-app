@@ -236,6 +236,12 @@ export const productListingSchema = z
         z.number().min(0).max(99_999_999)
       )
       .optional(),
+    channelAllocation: z
+      .preprocess(
+        (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+        z.number().int().min(0).max(999_999)
+      )
+      .optional(),
     status: z.enum(['ACTIVE', 'SUSPENDED']).default('ACTIVE'),
     memo: emptyToUndefined.pipe(z.string().trim().max(500)).optional(),
     items: z.array(productListingItemSchema).min(1, '구성 옵션을 1개 이상 추가해 주세요').max(50),
@@ -269,6 +275,12 @@ export const productListingPatchSchema = z
       .preprocess(
         (v) => (v === null || v === '' ? null : v === undefined ? undefined : Number(v)),
         z.union([z.number().min(0).max(99_999_999), z.null()])
+      )
+      .optional(),
+    channelAllocation: z
+      .preprocess(
+        (v) => (v === null || v === '' ? null : v === undefined ? undefined : Number(v)),
+        z.union([z.number().int().min(0).max(999_999), z.null()])
       )
       .optional(),
     status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),

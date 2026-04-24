@@ -33,6 +33,18 @@ export function computeListingAvailableStock(items: ListingItemStockSnapshot[]):
   return Number.isFinite(min) ? Math.max(0, min) : 0
 }
 
+/**
+ * 최종 가용재고 = min(자동계산, channelAllocation).
+ * channelAllocation이 null이면 자동계산 그대로.
+ */
+export function applyChannelAllocation(
+  autoAvailableStock: number,
+  channelAllocation: number | null | undefined
+): number {
+  if (channelAllocation == null) return autoAvailableStock
+  return Math.max(0, Math.min(autoAvailableStock, channelAllocation))
+}
+
 export function computeListingRetailBaseline(items: ListingItemPriceSnapshot[]): number | null {
   if (items.length === 0) return null
   let total = 0

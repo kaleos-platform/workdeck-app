@@ -5,6 +5,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productListingSchema } from '@/lib/sh/schemas'
 import {
+  applyChannelAllocation,
   computeDiscount,
   computeEffectiveStatus,
   computeListingAvailableStock,
@@ -114,7 +115,8 @@ export async function GET(req: NextRequest) {
     }))
     const baseline = computeListingRetailBaseline(priceSnapshots)
     const retailPrice = l.retailPrice != null ? Number(l.retailPrice) : null
-    const available = computeListingAvailableStock(stockSnapshots)
+    const autoAvailable = computeListingAvailableStock(stockSnapshots)
+    const available = applyChannelAllocation(autoAvailable, l.channelAllocation)
     const effective = computeEffectiveStatus(l.status, available)
     const { diff, percent } = computeDiscount(baseline, retailPrice)
 
@@ -131,6 +133,8 @@ export async function GET(req: NextRequest) {
       discountAmount: diff,
       discountPercent: percent,
       availableStock: available,
+      autoAvailableStock: autoAvailable,
+      channelAllocation: l.channelAllocation,
       itemCount: l.items.length,
       items: l.items.map((it) => ({
         optionId: it.optionId,
@@ -197,6 +201,7 @@ export async function POST(req: NextRequest) {
         internalCode: input.internalCode ?? null,
         keywords: input.keywords ?? [],
         retailPrice: input.retailPrice ?? null,
+        channelAllocation: input.channelAllocation ?? null,
         status: input.status,
         memo: input.memo ?? null,
       },

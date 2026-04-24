@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dialog'
 import { SELLER_HUB_LISTINGS_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
 import {
+  applyChannelAllocation,
   computeDiscount,
   computeEffectiveStatus,
   computeListingAvailableStock,
@@ -68,10 +69,12 @@ export type ListingFormInitial = {
   displayName: string
   keywords: string[]
   retailPrice: number | null
+  channelAllocation: number | null
   status: 'ACTIVE' | 'SUSPENDED'
   memo: string | null
   items: ItemDraft[]
   availableStock: number
+  autoAvailableStock?: number
 }
 
 type Props = {
@@ -90,6 +93,9 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   const [memo, setMemo] = useState(initial?.memo ?? '')
   const [retailPrice, setRetailPrice] = useState<string>(
     initial?.retailPrice != null ? String(initial.retailPrice) : ''
+  )
+  const [channelAllocation, setChannelAllocation] = useState<string>(
+    initial?.channelAllocation != null ? String(initial.channelAllocation) : ''
   )
   const [keywords, setKeywords] = useState<string[]>(initial?.keywords ?? [])
   const [status, setStatus] = useState<'ACTIVE' | 'SUSPENDED'>(initial?.status ?? 'ACTIVE')
@@ -128,12 +134,17 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       ),
     [items]
   )
-  const availableStock = useMemo(
+  const autoAvailableStock = useMemo(
     () =>
       computeListingAvailableStock(
         items.map((it) => ({ quantity: it.quantity, optionStock: it.optionStock }))
       ),
     [items]
+  )
+  const allocationNumber = channelAllocation.trim() === '' ? null : Number(channelAllocation)
+  const availableStock = useMemo(
+    () => applyChannelAllocation(autoAvailableStock, allocationNumber),
+    [autoAvailableStock, allocationNumber]
   )
   const saleNumber = retailPrice.trim().length > 0 ? Number(retailPrice) : null
   const effective: EffectiveListingStatus = computeEffectiveStatus(status, availableStock)
@@ -205,6 +216,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
         internalCode: internalCode.trim() || undefined,
         memo: memo.trim() || undefined,
         retailPrice: retailPrice.trim() === '' ? undefined : Number(retailPrice),
+        channelAllocation: channelAllocation.trim() === '' ? null : Number(channelAllocation),
         keywords,
         status,
         items: items.map((it, idx) => ({
@@ -432,9 +444,36 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               <span>
                 가용재고{' '}
                 <span className="font-medium">{availableStock.toLocaleString('ko-KR')}</span>
+                {allocationNumber != null && autoAvailableStock !== availableStock && (
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    (자동 {autoAvailableStock.toLocaleString('ko-KR')} → 할당{' '}
+                    {allocationNumber.toLocaleString('ko-KR')}로 제한)
+                  </span>
+                )}
               </span>
             </div>
           )}
+
+          {/* 재고 할당 — 자동계산을 상한으로 제한 */}
+          <div className="mt-3 space-y-1.5 border-t pt-3">
+            <Label htmlFor="channel-allocation">채널 할당 재고 (선택)</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="channel-allocation"
+                type="number"
+                min={0}
+                value={channelAllocation}
+                onChange={(e) => setChannelAllocation(e.target.value)}
+                placeholder="비우면 자동 계산 그대로"
+                className="max-w-[240px]"
+              />
+              <span className="text-xs text-muted-foreground">세트</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              값을 입력하면 가용재고 = min(할당량, 자동계산). 같은 옵션을 여러 채널에 배분할 때
+              사용.
+            </p>
+          </div>
         </CardContent>
       </Card>
 

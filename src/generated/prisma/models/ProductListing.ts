@@ -28,10 +28,12 @@ export type AggregateProductListing = {
 
 export type ProductListingAvgAggregateOutputType = {
   retailPrice: runtime.Decimal | null
+  channelAllocation: number | null
 }
 
 export type ProductListingSumAggregateOutputType = {
   retailPrice: runtime.Decimal | null
+  channelAllocation: number | null
 }
 
 export type ProductListingMinAggregateOutputType = {
@@ -42,6 +44,7 @@ export type ProductListingMinAggregateOutputType = {
   searchName: string | null
   displayName: string | null
   retailPrice: runtime.Decimal | null
+  channelAllocation: number | null
   status: $Enums.ProductListingStatus | null
   memo: string | null
   createdAt: Date | null
@@ -56,6 +59,7 @@ export type ProductListingMaxAggregateOutputType = {
   searchName: string | null
   displayName: string | null
   retailPrice: runtime.Decimal | null
+  channelAllocation: number | null
   status: $Enums.ProductListingStatus | null
   memo: string | null
   createdAt: Date | null
@@ -71,6 +75,7 @@ export type ProductListingCountAggregateOutputType = {
   displayName: number
   keywords: number
   retailPrice: number
+  channelAllocation: number
   status: number
   memo: number
   createdAt: number
@@ -81,10 +86,12 @@ export type ProductListingCountAggregateOutputType = {
 
 export type ProductListingAvgAggregateInputType = {
   retailPrice?: true
+  channelAllocation?: true
 }
 
 export type ProductListingSumAggregateInputType = {
   retailPrice?: true
+  channelAllocation?: true
 }
 
 export type ProductListingMinAggregateInputType = {
@@ -95,6 +102,7 @@ export type ProductListingMinAggregateInputType = {
   searchName?: true
   displayName?: true
   retailPrice?: true
+  channelAllocation?: true
   status?: true
   memo?: true
   createdAt?: true
@@ -109,6 +117,7 @@ export type ProductListingMaxAggregateInputType = {
   searchName?: true
   displayName?: true
   retailPrice?: true
+  channelAllocation?: true
   status?: true
   memo?: true
   createdAt?: true
@@ -124,6 +133,7 @@ export type ProductListingCountAggregateInputType = {
   displayName?: true
   keywords?: true
   retailPrice?: true
+  channelAllocation?: true
   status?: true
   memo?: true
   createdAt?: true
@@ -226,6 +236,7 @@ export type ProductListingGroupByOutputType = {
   displayName: string
   keywords: runtime.JsonValue
   retailPrice: runtime.Decimal | null
+  channelAllocation: number | null
   status: $Enums.ProductListingStatus
   memo: string | null
   createdAt: Date
@@ -264,6 +275,7 @@ export type ProductListingWhereInput = {
   displayName?: Prisma.StringFilter<"ProductListing"> | string
   keywords?: Prisma.JsonFilter<"ProductListing">
   retailPrice?: Prisma.DecimalNullableFilter<"ProductListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.IntNullableFilter<"ProductListing"> | number | null
   status?: Prisma.EnumProductListingStatusFilter<"ProductListing"> | $Enums.ProductListingStatus
   memo?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductListing"> | Date | string
@@ -284,6 +296,7 @@ export type ProductListingOrderByWithRelationInput = {
   displayName?: Prisma.SortOrder
   keywords?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  channelAllocation?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -308,6 +321,7 @@ export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
   displayName?: Prisma.StringFilter<"ProductListing"> | string
   keywords?: Prisma.JsonFilter<"ProductListing">
   retailPrice?: Prisma.DecimalNullableFilter<"ProductListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.IntNullableFilter<"ProductListing"> | number | null
   status?: Prisma.EnumProductListingStatusFilter<"ProductListing"> | $Enums.ProductListingStatus
   memo?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductListing"> | Date | string
@@ -328,6 +342,7 @@ export type ProductListingOrderByWithAggregationInput = {
   displayName?: Prisma.SortOrder
   keywords?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  channelAllocation?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -351,6 +366,7 @@ export type ProductListingScalarWhereWithAggregatesInput = {
   displayName?: Prisma.StringWithAggregatesFilter<"ProductListing"> | string
   keywords?: Prisma.JsonWithAggregatesFilter<"ProductListing">
   retailPrice?: Prisma.DecimalNullableWithAggregatesFilter<"ProductListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.IntNullableWithAggregatesFilter<"ProductListing"> | number | null
   status?: Prisma.EnumProductListingStatusWithAggregatesFilter<"ProductListing"> | $Enums.ProductListingStatus
   memo?: Prisma.StringNullableWithAggregatesFilter<"ProductListing"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProductListing"> | Date | string
@@ -364,6 +380,7 @@ export type ProductListingCreateInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -384,6 +401,7 @@ export type ProductListingUncheckedCreateInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -400,6 +418,7 @@ export type ProductListingUpdateInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -420,6 +439,7 @@ export type ProductListingUncheckedUpdateInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -438,6 +458,7 @@ export type ProductListingCreateManyInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -451,6 +472,7 @@ export type ProductListingUpdateManyMutationInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -466,6 +488,7 @@ export type ProductListingUncheckedUpdateManyInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -501,6 +524,7 @@ export type ProductListingCountOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   keywords?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
+  channelAllocation?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -509,6 +533,7 @@ export type ProductListingCountOrderByAggregateInput = {
 
 export type ProductListingAvgOrderByAggregateInput = {
   retailPrice?: Prisma.SortOrder
+  channelAllocation?: Prisma.SortOrder
 }
 
 export type ProductListingMaxOrderByAggregateInput = {
@@ -519,6 +544,7 @@ export type ProductListingMaxOrderByAggregateInput = {
   searchName?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
+  channelAllocation?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -533,6 +559,7 @@ export type ProductListingMinOrderByAggregateInput = {
   searchName?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
+  channelAllocation?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -541,6 +568,7 @@ export type ProductListingMinOrderByAggregateInput = {
 
 export type ProductListingSumOrderByAggregateInput = {
   retailPrice?: Prisma.SortOrder
+  channelAllocation?: Prisma.SortOrder
 }
 
 export type ProductListingScalarRelationFilter = {
@@ -689,6 +717,7 @@ export type ProductListingCreateWithoutSpaceInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -707,6 +736,7 @@ export type ProductListingUncheckedCreateWithoutSpaceInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -754,6 +784,7 @@ export type ProductListingScalarWhereInput = {
   displayName?: Prisma.StringFilter<"ProductListing"> | string
   keywords?: Prisma.JsonFilter<"ProductListing">
   retailPrice?: Prisma.DecimalNullableFilter<"ProductListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.IntNullableFilter<"ProductListing"> | number | null
   status?: Prisma.EnumProductListingStatusFilter<"ProductListing"> | $Enums.ProductListingStatus
   memo?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductListing"> | Date | string
@@ -767,6 +798,7 @@ export type ProductListingCreateWithoutDelItemsInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -786,6 +818,7 @@ export type ProductListingUncheckedCreateWithoutDelItemsInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -817,6 +850,7 @@ export type ProductListingUpdateWithoutDelItemsInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -836,6 +870,7 @@ export type ProductListingUncheckedUpdateWithoutDelItemsInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -851,6 +886,7 @@ export type ProductListingCreateWithoutAliasesInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -870,6 +906,7 @@ export type ProductListingUncheckedCreateWithoutAliasesInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -901,6 +938,7 @@ export type ProductListingUpdateWithoutAliasesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -920,6 +958,7 @@ export type ProductListingUncheckedUpdateWithoutAliasesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -935,6 +974,7 @@ export type ProductListingCreateWithoutChannelInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -953,6 +993,7 @@ export type ProductListingUncheckedCreateWithoutChannelInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -995,6 +1036,7 @@ export type ProductListingCreateWithoutItemsInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1014,6 +1056,7 @@ export type ProductListingUncheckedCreateWithoutItemsInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1045,6 +1088,7 @@ export type ProductListingUpdateWithoutItemsInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1064,6 +1108,7 @@ export type ProductListingUncheckedUpdateWithoutItemsInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1080,6 +1125,7 @@ export type ProductListingCreateManySpaceInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1093,6 +1139,7 @@ export type ProductListingUpdateWithoutSpaceInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1111,6 +1158,7 @@ export type ProductListingUncheckedUpdateWithoutSpaceInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1128,6 +1176,7 @@ export type ProductListingUncheckedUpdateManyWithoutSpaceInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1142,6 +1191,7 @@ export type ProductListingCreateManyChannelInput = {
   displayName: string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1155,6 +1205,7 @@ export type ProductListingUpdateWithoutChannelInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1173,6 +1224,7 @@ export type ProductListingUncheckedUpdateWithoutChannelInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1190,6 +1242,7 @@ export type ProductListingUncheckedUpdateManyWithoutChannelInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1254,6 +1307,7 @@ export type ProductListingSelect<ExtArgs extends runtime.Types.Extensions.Intern
   displayName?: boolean
   keywords?: boolean
   retailPrice?: boolean
+  channelAllocation?: boolean
   status?: boolean
   memo?: boolean
   createdAt?: boolean
@@ -1275,6 +1329,7 @@ export type ProductListingSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   displayName?: boolean
   keywords?: boolean
   retailPrice?: boolean
+  channelAllocation?: boolean
   status?: boolean
   memo?: boolean
   createdAt?: boolean
@@ -1292,6 +1347,7 @@ export type ProductListingSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   displayName?: boolean
   keywords?: boolean
   retailPrice?: boolean
+  channelAllocation?: boolean
   status?: boolean
   memo?: boolean
   createdAt?: boolean
@@ -1309,13 +1365,14 @@ export type ProductListingSelectScalar = {
   displayName?: boolean
   keywords?: boolean
   retailPrice?: boolean
+  channelAllocation?: boolean
   status?: boolean
   memo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductListingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "internalCode" | "searchName" | "displayName" | "keywords" | "retailPrice" | "status" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["productListing"]>
+export type ProductListingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "internalCode" | "searchName" | "displayName" | "keywords" | "retailPrice" | "channelAllocation" | "status" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["productListing"]>
 export type ProductListingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
@@ -1351,6 +1408,7 @@ export type $ProductListingPayload<ExtArgs extends runtime.Types.Extensions.Inte
     displayName: string
     keywords: runtime.JsonValue
     retailPrice: runtime.Decimal | null
+    channelAllocation: number | null
     status: $Enums.ProductListingStatus
     memo: string | null
     createdAt: Date
@@ -1791,6 +1849,7 @@ export interface ProductListingFieldRefs {
   readonly displayName: Prisma.FieldRef<"ProductListing", 'String'>
   readonly keywords: Prisma.FieldRef<"ProductListing", 'Json'>
   readonly retailPrice: Prisma.FieldRef<"ProductListing", 'Decimal'>
+  readonly channelAllocation: Prisma.FieldRef<"ProductListing", 'Int'>
   readonly status: Prisma.FieldRef<"ProductListing", 'ProductListingStatus'>
   readonly memo: Prisma.FieldRef<"ProductListing", 'String'>
   readonly createdAt: Prisma.FieldRef<"ProductListing", 'DateTime'>
