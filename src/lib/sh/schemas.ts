@@ -317,6 +317,8 @@ export const productionRunCostSchema = z.object({
     .optional()
     .transform((v) => (v?.length ? v : undefined)),
   sortOrder: z.number().int().min(0).optional(),
+  // 비용 분류 — 기본값 OTHER
+  category: z.enum(['MATERIAL', 'LABOR', 'PACKAGING', 'LOGISTICS', 'OTHER']).default('OTHER'),
 })
 export type ProductionRunCostInput = z.infer<typeof productionRunCostSchema>
 
@@ -337,6 +339,13 @@ export const productionRunSchema = z.object({
     .max(500)
     .optional()
     .transform((v) => (v?.length ? v : undefined)),
+  // 생산 상태 — default 없음 (PATCH 시 기존값 보존을 위해)
+  status: z.enum(['PLANNED', 'ORDERED', 'PRODUCING', 'COMPLETED']).optional(),
+  // 대표 브랜드 — null = 명시적 미지정, undefined = 변경 없음(PATCH)
+  brandId: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).nullable()).optional(),
+  // 납기일 / 완료일 — YYYY-MM-DD 문자열 또는 null
+  dueAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
+  completedAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
   items: z
     .array(productionRunItemSchema)
     .min(1)
@@ -352,7 +361,37 @@ export const productionRunSchema = z.object({
 })
 export type ProductionRunInput = z.infer<typeof productionRunSchema>
 
-export const productionRunPatchSchema = productionRunSchema.partial()
+// PATCH 전용 스키마 — .partial() 후 defaults 없는 필드로 덮어씌워 묵시적 덮어쓰기 방지
+export const productionRunPatchSchema = productionRunSchema.partial().extend({
+  // POST에서 default('TOTAL')이 있어 partial()만으로는 undefined가 아닌 TOTAL이 됨 — 명시 제거
+  costMode: z.enum(['TOTAL', 'BREAKDOWN']).optional(),
+  // costs.category에도 default('OTHER') 존재하므로 costs 배열 전체를 재정의
+  costs: z
+    .array(
+      z.object({
+        itemName: z.string().trim().min(1).max(100),
+        description: z
+          .string()
+          .trim()
+          .max(500)
+          .optional()
+          .transform((v) => (v?.length ? v : undefined)),
+        spec: z.coerce.number().positive().max(99_999_999).optional(),
+        quantity: z.coerce.number().positive().max(99_999_999).default(1),
+        unitPrice: z.coerce.number().min(0).max(99_999_999),
+        note: z
+          .string()
+          .trim()
+          .max(200)
+          .optional()
+          .transform((v) => (v?.length ? v : undefined)),
+        sortOrder: z.number().int().min(0).optional(),
+        category: z.enum(['MATERIAL', 'LABOR', 'PACKAGING', 'LOGISTICS', 'OTHER']).optional(),
+      })
+    )
+    .max(50)
+    .optional(),
+})
 export type ProductionRunPatchInput = z.infer<typeof productionRunPatchSchema>
 
 // 여러 listing 일괄 수정 — 판매가·상태만 현재 지원

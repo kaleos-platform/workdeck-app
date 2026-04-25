@@ -47,6 +47,7 @@ export type ProductionRunCostMinAggregateOutputType = {
   runId: string | null
   itemName: string | null
   description: string | null
+  category: $Enums.ProductionCostCategory | null
   spec: runtime.Decimal | null
   quantity: runtime.Decimal | null
   unitPrice: runtime.Decimal | null
@@ -60,6 +61,7 @@ export type ProductionRunCostMaxAggregateOutputType = {
   runId: string | null
   itemName: string | null
   description: string | null
+  category: $Enums.ProductionCostCategory | null
   spec: runtime.Decimal | null
   quantity: runtime.Decimal | null
   unitPrice: runtime.Decimal | null
@@ -73,6 +75,7 @@ export type ProductionRunCostCountAggregateOutputType = {
   runId: number
   itemName: number
   description: number
+  category: number
   spec: number
   quantity: number
   unitPrice: number
@@ -104,6 +107,7 @@ export type ProductionRunCostMinAggregateInputType = {
   runId?: true
   itemName?: true
   description?: true
+  category?: true
   spec?: true
   quantity?: true
   unitPrice?: true
@@ -117,6 +121,7 @@ export type ProductionRunCostMaxAggregateInputType = {
   runId?: true
   itemName?: true
   description?: true
+  category?: true
   spec?: true
   quantity?: true
   unitPrice?: true
@@ -130,6 +135,7 @@ export type ProductionRunCostCountAggregateInputType = {
   runId?: true
   itemName?: true
   description?: true
+  category?: true
   spec?: true
   quantity?: true
   unitPrice?: true
@@ -230,6 +236,7 @@ export type ProductionRunCostGroupByOutputType = {
   runId: string
   itemName: string
   description: string | null
+  category: $Enums.ProductionCostCategory
   spec: runtime.Decimal | null
   quantity: runtime.Decimal
   unitPrice: runtime.Decimal
@@ -266,6 +273,7 @@ export type ProductionRunCostWhereInput = {
   runId?: Prisma.StringFilter<"ProductionRunCost"> | string
   itemName?: Prisma.StringFilter<"ProductionRunCost"> | string
   description?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
+  category?: Prisma.EnumProductionCostCategoryFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
   spec?: Prisma.DecimalNullableFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -280,6 +288,7 @@ export type ProductionRunCostOrderByWithRelationInput = {
   runId?: Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  category?: Prisma.SortOrder
   spec?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
@@ -297,6 +306,7 @@ export type ProductionRunCostWhereUniqueInput = Prisma.AtLeast<{
   runId?: Prisma.StringFilter<"ProductionRunCost"> | string
   itemName?: Prisma.StringFilter<"ProductionRunCost"> | string
   description?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
+  category?: Prisma.EnumProductionCostCategoryFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
   spec?: Prisma.DecimalNullableFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -311,6 +321,7 @@ export type ProductionRunCostOrderByWithAggregationInput = {
   runId?: Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  category?: Prisma.SortOrder
   spec?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
@@ -332,6 +343,7 @@ export type ProductionRunCostScalarWhereWithAggregatesInput = {
   runId?: Prisma.StringWithAggregatesFilter<"ProductionRunCost"> | string
   itemName?: Prisma.StringWithAggregatesFilter<"ProductionRunCost"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"ProductionRunCost"> | string | null
+  category?: Prisma.EnumProductionCostCategoryWithAggregatesFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
   spec?: Prisma.DecimalNullableWithAggregatesFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalWithAggregatesFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalWithAggregatesFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -344,6 +356,7 @@ export type ProductionRunCostCreateInput = {
   id?: string
   itemName: string
   description?: string | null
+  category?: $Enums.ProductionCostCategory
   spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -358,6 +371,7 @@ export type ProductionRunCostUncheckedCreateInput = {
   runId: string
   itemName: string
   description?: string | null
+  category?: $Enums.ProductionCostCategory
   spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -370,6 +384,7 @@ export type ProductionRunCostUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
   spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -384,6 +399,7 @@ export type ProductionRunCostUncheckedUpdateInput = {
   runId?: Prisma.StringFieldUpdateOperationsInput | string
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
   spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -397,6 +413,7 @@ export type ProductionRunCostCreateManyInput = {
   runId: string
   itemName: string
   description?: string | null
+  category?: $Enums.ProductionCostCategory
   spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -409,6 +426,7 @@ export type ProductionRunCostUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
   spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -422,6 +440,7 @@ export type ProductionRunCostUncheckedUpdateManyInput = {
   runId?: Prisma.StringFieldUpdateOperationsInput | string
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
   spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -445,6 +464,7 @@ export type ProductionRunCostCountOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  category?: Prisma.SortOrder
   spec?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
@@ -466,6 +486,7 @@ export type ProductionRunCostMaxOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  category?: Prisma.SortOrder
   spec?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
@@ -479,6 +500,7 @@ export type ProductionRunCostMinOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  category?: Prisma.SortOrder
   spec?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
@@ -537,10 +559,15 @@ export type ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput = {
   deleteMany?: Prisma.ProductionRunCostScalarWhereInput | Prisma.ProductionRunCostScalarWhereInput[]
 }
 
+export type EnumProductionCostCategoryFieldUpdateOperationsInput = {
+  set?: $Enums.ProductionCostCategory
+}
+
 export type ProductionRunCostCreateWithoutRunInput = {
   id?: string
   itemName: string
   description?: string | null
+  category?: $Enums.ProductionCostCategory
   spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -553,6 +580,7 @@ export type ProductionRunCostUncheckedCreateWithoutRunInput = {
   id?: string
   itemName: string
   description?: string | null
+  category?: $Enums.ProductionCostCategory
   spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -595,6 +623,7 @@ export type ProductionRunCostScalarWhereInput = {
   runId?: Prisma.StringFilter<"ProductionRunCost"> | string
   itemName?: Prisma.StringFilter<"ProductionRunCost"> | string
   description?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
+  category?: Prisma.EnumProductionCostCategoryFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
   spec?: Prisma.DecimalNullableFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -607,6 +636,7 @@ export type ProductionRunCostCreateManyRunInput = {
   id?: string
   itemName: string
   description?: string | null
+  category?: $Enums.ProductionCostCategory
   spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -619,6 +649,7 @@ export type ProductionRunCostUpdateWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
   spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -631,6 +662,7 @@ export type ProductionRunCostUncheckedUpdateWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
   spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -643,6 +675,7 @@ export type ProductionRunCostUncheckedUpdateManyWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
   spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -658,6 +691,7 @@ export type ProductionRunCostSelect<ExtArgs extends runtime.Types.Extensions.Int
   runId?: boolean
   itemName?: boolean
   description?: boolean
+  category?: boolean
   spec?: boolean
   quantity?: boolean
   unitPrice?: boolean
@@ -672,6 +706,7 @@ export type ProductionRunCostSelectCreateManyAndReturn<ExtArgs extends runtime.T
   runId?: boolean
   itemName?: boolean
   description?: boolean
+  category?: boolean
   spec?: boolean
   quantity?: boolean
   unitPrice?: boolean
@@ -686,6 +721,7 @@ export type ProductionRunCostSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   runId?: boolean
   itemName?: boolean
   description?: boolean
+  category?: boolean
   spec?: boolean
   quantity?: boolean
   unitPrice?: boolean
@@ -700,6 +736,7 @@ export type ProductionRunCostSelectScalar = {
   runId?: boolean
   itemName?: boolean
   description?: boolean
+  category?: boolean
   spec?: boolean
   quantity?: boolean
   unitPrice?: boolean
@@ -708,7 +745,7 @@ export type ProductionRunCostSelectScalar = {
   sortOrder?: boolean
 }
 
-export type ProductionRunCostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "itemName" | "description" | "spec" | "quantity" | "unitPrice" | "amount" | "note" | "sortOrder", ExtArgs["result"]["productionRunCost"]>
+export type ProductionRunCostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "itemName" | "description" | "category" | "spec" | "quantity" | "unitPrice" | "amount" | "note" | "sortOrder", ExtArgs["result"]["productionRunCost"]>
 export type ProductionRunCostInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
 }
@@ -729,6 +766,7 @@ export type $ProductionRunCostPayload<ExtArgs extends runtime.Types.Extensions.I
     runId: string
     itemName: string
     description: string | null
+    category: $Enums.ProductionCostCategory
     spec: runtime.Decimal | null
     quantity: runtime.Decimal
     unitPrice: runtime.Decimal
@@ -1163,6 +1201,7 @@ export interface ProductionRunCostFieldRefs {
   readonly runId: Prisma.FieldRef<"ProductionRunCost", 'String'>
   readonly itemName: Prisma.FieldRef<"ProductionRunCost", 'String'>
   readonly description: Prisma.FieldRef<"ProductionRunCost", 'String'>
+  readonly category: Prisma.FieldRef<"ProductionRunCost", 'ProductionCostCategory'>
   readonly spec: Prisma.FieldRef<"ProductionRunCost", 'Decimal'>
   readonly quantity: Prisma.FieldRef<"ProductionRunCost", 'Decimal'>
   readonly unitPrice: Prisma.FieldRef<"ProductionRunCost", 'Decimal'>

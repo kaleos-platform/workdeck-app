@@ -15,6 +15,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const run = await prisma.productionRun.findFirst({
     where: { id: runId, spaceId: resolved.space.id },
     include: {
+      brand: { select: { id: true, name: true } },
       items: {
         include: {
           option: {
@@ -45,7 +46,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
     run: {
       id: run.id,
       runNo: run.runNo,
+      status: run.status,
+      brand: run.brand ? { id: run.brand.id, name: run.brand.name } : null,
       orderedAt: run.orderedAt.toISOString(),
+      dueAt: run.dueAt ? run.dueAt.toISOString() : null,
+      completedAt: run.completedAt ? run.completedAt.toISOString() : null,
       totalCost: run.totalCost != null ? Number(run.totalCost) : null,
       costMode: run.costMode,
       memo: run.memo,
@@ -70,6 +75,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         amount: Number(c.amount),
         note: c.note,
         sortOrder: c.sortOrder,
+        category: c.category,
       })),
       createdAt: run.createdAt.toISOString(),
       updatedAt: run.updatedAt.toISOString(),
@@ -85,7 +91,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const existing = await prisma.productionRun.findFirst({
     where: { id: runId, spaceId: resolved.space.id },
-    select: { id: true, costMode: true },
+    select: { id: true, costMode: true, status: true },
   })
   if (!existing) return errorResponse('생산 발주를 찾을 수 없습니다', 404)
 
@@ -109,6 +115,34 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
   }
 
+  // brandId 처리 — key 존재 여부로 "명시적 변경" vs "변경 없음" 구분
+  let resolvedBrandId: string | null | undefined = undefined // undefined = 변경 없음
+  if ('brandId' in body) {
+    if (input.brandId) {
+      const brand = await prisma.brand.findFirst({
+        where: { id: input.brandId, spaceId: resolved.space.id },
+        select: { id: true },
+      })
+      if (!brand) return errorResponse('브랜드를 찾을 수 없습니다', 400)
+      resolvedBrandId = input.brandId
+    } else {
+      resolvedBrandId = null // 명시적 clear
+    }
+  }
+
+  // completedAt 처리:
+  //   - key 없음 + status → COMPLETED: 자동 today
+  //   - key 있고 null: 명시적 clear
+  //   - key 있고 날짜: 그대로 사용
+  let resolvedCompletedAt: Date | null | undefined = undefined // undefined = 변경 없음
+  const statusChangingToCompleted = input.status === 'COMPLETED' && existing.status !== 'COMPLETED'
+  if ('completedAt' in body) {
+    resolvedCompletedAt = input.completedAt ? new Date(input.completedAt) : null
+  } else if (statusChangingToCompleted) {
+    // 자동 today (UTC 자정)
+    resolvedCompletedAt = new Date(new Date().toISOString().slice(0, 10))
+  }
+
   // costMode 결정 (변경 또는 기존값 유지)
   const effectiveCostMode = input.costMode ?? existing.costMode
   const modeChanged = input.costMode !== undefined && input.costMode !== existing.costMode
@@ -128,6 +162,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         amount: number
         note?: string
         sortOrder: number
+        category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'OTHER'
       }>
     | undefined = undefined
   let computedTotalCost: number | undefined | null = undefined // undefined = 변경 없음
@@ -147,6 +182,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           amount,
           note: c.note,
           sortOrder: c.sortOrder ?? 0,
+          category: c.category ?? 'OTHER',
         }
       })
       computedTotalCost = costsData.reduce((s, c) => s + c.amount, 0)
@@ -172,6 +208,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           costMode: input.costMode,
           totalCost: computedTotalCost === undefined ? undefined : computedTotalCost,
           memo: input.memo === undefined ? undefined : (input.memo ?? null),
+          status: input.status,
+          brandId: resolvedBrandId === undefined ? undefined : resolvedBrandId,
+          dueAt: 'dueAt' in body ? (input.dueAt ? new Date(input.dueAt) : null) : undefined,
+          completedAt: resolvedCompletedAt === undefined ? undefined : resolvedCompletedAt,
         },
       })
 

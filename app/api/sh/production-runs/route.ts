@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Prisma } from '@/generated/prisma/client'
+import { Prisma, ProductionRunStatus } from '@/generated/prisma/client'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
@@ -12,6 +12,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const productId = searchParams.get('productId')?.trim() || null
   const search = (searchParams.get('search') ?? '').trim()
+  const statusParam = searchParams.get('status')?.trim() || null
+  const brandIdParam = searchParams.get('brandId')?.trim() || null
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
 
@@ -20,6 +22,19 @@ export async function GET(req: NextRequest) {
   // productId 필터 — 해당 상품의 옵션이 1개라도 포함된 run만
   if (productId) {
     where.items = { some: { option: { productId } } }
+  }
+
+  // 상태 필터
+  if (
+    statusParam &&
+    Object.values(ProductionRunStatus).includes(statusParam as ProductionRunStatus)
+  ) {
+    where.status = statusParam as ProductionRunStatus
+  }
+
+  // 브랜드 필터
+  if (brandIdParam) {
+    where.brandId = brandIdParam
   }
 
   if (search) {
@@ -36,6 +51,7 @@ export async function GET(req: NextRequest) {
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
+        brand: { select: { id: true, name: true } },
         items: {
           include: {
             option: {
@@ -84,7 +100,11 @@ export async function GET(req: NextRequest) {
     return {
       id: run.id,
       runNo: run.runNo,
+      status: run.status,
+      brand: run.brand ? { id: run.brand.id, name: run.brand.name } : null,
       orderedAt: run.orderedAt.toISOString(),
+      dueAt: run.dueAt ? run.dueAt.toISOString() : null,
+      completedAt: run.completedAt ? run.completedAt.toISOString() : null,
       totalCost: totalCostNum,
       costMode: run.costMode,
       memo: run.memo,
@@ -118,14 +138,37 @@ export async function POST(req: NextRequest) {
   }
   const input = parsed.data
 
-  // 옵션 소속 검증 — 모두 같은 spaceId에 속해야 함
+  // 옵션 소속 검증 — 모두 같은 spaceId에 속해야 함, brandId 자동 추정을 위해 product.brandId 포함
   const optionIds = input.items.map((it) => it.optionId)
   const validOptions = await prisma.invProductOption.findMany({
     where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
-    select: { id: true },
+    select: { id: true, product: { select: { brandId: true } } },
   })
   if (validOptions.length !== optionIds.length) {
     return errorResponse('일부 옵션을 찾을 수 없습니다', 400)
+  }
+
+  // brandId 처리 — 명시되지 않으면 옵션들의 distinct brandId가 1개면 자동 추정
+  let resolvedBrandId: string | null | undefined = undefined
+  if ('brandId' in body) {
+    // 명시적으로 전달된 경우
+    if (input.brandId) {
+      // brandId 소속 검증 (spaceId 일치 여부)
+      const brand = await prisma.brand.findFirst({
+        where: { id: input.brandId, spaceId: resolved.space.id },
+        select: { id: true },
+      })
+      if (!brand) return errorResponse('브랜드를 찾을 수 없습니다', 400)
+      resolvedBrandId = input.brandId
+    } else {
+      resolvedBrandId = null // 명시적 null
+    }
+  } else {
+    // 자동 추정: 옵션들의 distinct brandId가 1개면 그 brandId, 아니면 null
+    const brandIds = new Set(
+      validOptions.map((o) => o.product.brandId).filter((id): id is string => id != null)
+    )
+    resolvedBrandId = brandIds.size === 1 ? Array.from(brandIds)[0] : null
   }
 
   // BREAKDOWN 모드: amount 서버 계산 + totalCost 캐시
@@ -139,6 +182,7 @@ export async function POST(req: NextRequest) {
     amount: number
     note?: string
     sortOrder: number
+    category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'OTHER'
   }> = []
   let finalTotalCost: number | undefined = undefined
 
@@ -154,6 +198,7 @@ export async function POST(req: NextRequest) {
         amount,
         note: c.note,
         sortOrder: c.sortOrder ?? 0,
+        category: c.category,
       }
     })
     finalTotalCost = costsData.reduce((s, c) => s + c.amount, 0)
@@ -172,6 +217,10 @@ export async function POST(req: NextRequest) {
           costMode: input.costMode,
           totalCost: finalTotalCost ?? null,
           memo: input.memo ?? null,
+          status: input.status ?? 'PLANNED',
+          brandId: resolvedBrandId ?? null,
+          dueAt: input.dueAt ? new Date(input.dueAt) : null,
+          completedAt: input.completedAt ? new Date(input.completedAt) : null,
         },
       })
 

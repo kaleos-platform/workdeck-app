@@ -43,6 +43,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
+        brand: { select: { id: true, name: true } },
         items: {
           include: {
             option: {
@@ -100,7 +101,11 @@ export async function GET(req: NextRequest, { params }: Params) {
     return {
       id: run.id,
       runNo: run.runNo,
+      status: run.status,
+      brand: run.brand ? { id: run.brand.id, name: run.brand.name } : null,
       orderedAt: run.orderedAt.toISOString(),
+      dueAt: run.dueAt ? run.dueAt.toISOString() : null,
+      completedAt: run.completedAt ? run.completedAt.toISOString() : null,
       totalCost: totalCostNum,
       costMode: run.costMode,
       memo: run.memo,

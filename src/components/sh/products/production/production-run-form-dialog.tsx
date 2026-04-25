@@ -90,6 +90,83 @@ function fmtKRW(n: number) {
   }).format(n)
 }
 
+// ─── TOTAL 탭 옵션별 단가 미리보기 ───────────────────────────────────────────
+
+const MAX_VISIBLE = 3
+
+function TotalCostPreview({
+  totalCostInput,
+  items,
+}: {
+  totalCostInput: string
+  items: OptionItem[]
+}) {
+  const totalCost = parseFloat(totalCostInput) || 0
+  const totalQty = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
+  const hasInput = totalCost > 0 && totalQty > 0
+
+  const lines = items
+    .filter((i) => Number(i.quantity) > 0)
+    .map((i) => ({
+      optionName: i.optionName,
+      quantity: Number(i.quantity),
+      cost: totalQty > 0 ? (totalCost / totalQty) * Number(i.quantity) : 0,
+    }))
+
+  const avgUnitCost = totalQty > 0 ? totalCost / totalQty : 0
+  const [expanded, setExpanded] = useState(false)
+
+  const visibleLines = expanded ? lines : lines.slice(0, MAX_VISIBLE)
+  const hiddenCount = lines.length - MAX_VISIBLE
+
+  return (
+    <div className="space-y-1 rounded-md bg-muted/50 p-3 text-xs">
+      <p className="font-medium text-muted-foreground">옵션별 평균 단가 (자동 계산)</p>
+
+      {!hasInput ? (
+        <p className="text-muted-foreground">
+          {totalQty === 0
+            ? '옵션 수량을 입력하면 단가가 표시됩니다'
+            : '총원가를 입력하면 단가가 표시됩니다'}
+        </p>
+      ) : (
+        <>
+          <p className="font-semibold text-foreground">
+            {fmtKRW(Math.round(avgUnitCost))} / 옵션{' '}
+            <span className="font-normal text-muted-foreground">
+              (총원가 {fmtKRW(totalCost)} ÷ 총수량 {totalQty.toLocaleString('ko-KR')}개)
+            </span>
+          </p>
+          {lines.length > 0 && (
+            <div className="mt-1.5 space-y-0.5">
+              {visibleLines.map((line, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between gap-2 text-muted-foreground"
+                >
+                  <span className="min-w-0 truncate">
+                    {line.optionName} × {line.quantity.toLocaleString('ko-KR')}개
+                  </span>
+                  <span className="shrink-0 text-foreground">{fmtKRW(Math.round(line.cost))}</span>
+                </div>
+              ))}
+              {lines.length > MAX_VISIBLE && (
+                <button
+                  type="button"
+                  className="text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                  onClick={() => setExpanded((v) => !v)}
+                >
+                  {expanded ? '접기' : `외 ${hiddenCount}개 더 보기`}
+                </button>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 function calcRowAmount(row: CostRow): number {
   const spec = parseFloat(row.spec) || 1
   const qty = parseFloat(row.quantity) || 0
@@ -597,9 +674,9 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                         className="max-w-xs"
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      옵션별 단가는 입고 시 (총원가 ÷ 총 수량)으로 계산됩니다
-                    </p>
+
+                    {/* ── 옵션별 평균 단가 미리보기 ── */}
+                    <TotalCostPreview totalCostInput={totalCostInput} items={optionItems} />
                   </TabsContent>
 
                   {/* BREAKDOWN 탭 */}

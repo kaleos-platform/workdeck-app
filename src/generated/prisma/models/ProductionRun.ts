@@ -37,8 +37,12 @@ export type ProductionRunSumAggregateOutputType = {
 export type ProductionRunMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
+  brandId: string | null
   runNo: string | null
   orderedAt: Date | null
+  dueAt: Date | null
+  completedAt: Date | null
+  status: $Enums.ProductionRunStatus | null
   totalCost: runtime.Decimal | null
   costMode: $Enums.ProductionCostMode | null
   memo: string | null
@@ -49,8 +53,12 @@ export type ProductionRunMinAggregateOutputType = {
 export type ProductionRunMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
+  brandId: string | null
   runNo: string | null
   orderedAt: Date | null
+  dueAt: Date | null
+  completedAt: Date | null
+  status: $Enums.ProductionRunStatus | null
   totalCost: runtime.Decimal | null
   costMode: $Enums.ProductionCostMode | null
   memo: string | null
@@ -61,8 +69,12 @@ export type ProductionRunMaxAggregateOutputType = {
 export type ProductionRunCountAggregateOutputType = {
   id: number
   spaceId: number
+  brandId: number
   runNo: number
   orderedAt: number
+  dueAt: number
+  completedAt: number
+  status: number
   totalCost: number
   costMode: number
   memo: number
@@ -83,8 +95,12 @@ export type ProductionRunSumAggregateInputType = {
 export type ProductionRunMinAggregateInputType = {
   id?: true
   spaceId?: true
+  brandId?: true
   runNo?: true
   orderedAt?: true
+  dueAt?: true
+  completedAt?: true
+  status?: true
   totalCost?: true
   costMode?: true
   memo?: true
@@ -95,8 +111,12 @@ export type ProductionRunMinAggregateInputType = {
 export type ProductionRunMaxAggregateInputType = {
   id?: true
   spaceId?: true
+  brandId?: true
   runNo?: true
   orderedAt?: true
+  dueAt?: true
+  completedAt?: true
+  status?: true
   totalCost?: true
   costMode?: true
   memo?: true
@@ -107,8 +127,12 @@ export type ProductionRunMaxAggregateInputType = {
 export type ProductionRunCountAggregateInputType = {
   id?: true
   spaceId?: true
+  brandId?: true
   runNo?: true
   orderedAt?: true
+  dueAt?: true
+  completedAt?: true
+  status?: true
   totalCost?: true
   costMode?: true
   memo?: true
@@ -206,8 +230,12 @@ export type ProductionRunGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 export type ProductionRunGroupByOutputType = {
   id: string
   spaceId: string
+  brandId: string | null
   runNo: string
   orderedAt: Date
+  dueAt: Date | null
+  completedAt: Date | null
+  status: $Enums.ProductionRunStatus
   totalCost: runtime.Decimal | null
   costMode: $Enums.ProductionCostMode
   memo: string | null
@@ -241,14 +269,19 @@ export type ProductionRunWhereInput = {
   NOT?: Prisma.ProductionRunWhereInput | Prisma.ProductionRunWhereInput[]
   id?: Prisma.StringFilter<"ProductionRun"> | string
   spaceId?: Prisma.StringFilter<"ProductionRun"> | string
+  brandId?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
   runNo?: Prisma.StringFilter<"ProductionRun"> | string
   orderedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
+  dueAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
+  completedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFilter<"ProductionRun"> | $Enums.ProductionRunStatus
   totalCost?: Prisma.DecimalNullableFilter<"ProductionRun"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFilter<"ProductionRun"> | $Enums.ProductionCostMode
   memo?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
   items?: Prisma.ProductionRunItemListRelationFilter
   costs?: Prisma.ProductionRunCostListRelationFilter
 }
@@ -256,14 +289,19 @@ export type ProductionRunWhereInput = {
 export type ProductionRunOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   runNo?: Prisma.SortOrder
   orderedAt?: Prisma.SortOrder
+  dueAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
   totalCost?: Prisma.SortOrderInput | Prisma.SortOrder
   costMode?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
+  brand?: Prisma.BrandOrderByWithRelationInput
   items?: Prisma.ProductionRunItemOrderByRelationAggregateInput
   costs?: Prisma.ProductionRunCostOrderByRelationAggregateInput
 }
@@ -275,14 +313,19 @@ export type ProductionRunWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ProductionRunWhereInput[]
   NOT?: Prisma.ProductionRunWhereInput | Prisma.ProductionRunWhereInput[]
   spaceId?: Prisma.StringFilter<"ProductionRun"> | string
+  brandId?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
   runNo?: Prisma.StringFilter<"ProductionRun"> | string
   orderedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
+  dueAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
+  completedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFilter<"ProductionRun"> | $Enums.ProductionRunStatus
   totalCost?: Prisma.DecimalNullableFilter<"ProductionRun"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFilter<"ProductionRun"> | $Enums.ProductionCostMode
   memo?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
   items?: Prisma.ProductionRunItemListRelationFilter
   costs?: Prisma.ProductionRunCostListRelationFilter
 }, "id" | "spaceId_runNo">
@@ -290,8 +333,12 @@ export type ProductionRunWhereUniqueInput = Prisma.AtLeast<{
 export type ProductionRunOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   runNo?: Prisma.SortOrder
   orderedAt?: Prisma.SortOrder
+  dueAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
   totalCost?: Prisma.SortOrderInput | Prisma.SortOrder
   costMode?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -310,8 +357,12 @@ export type ProductionRunScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ProductionRunScalarWhereWithAggregatesInput | Prisma.ProductionRunScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"ProductionRun"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"ProductionRun"> | string
+  brandId?: Prisma.StringNullableWithAggregatesFilter<"ProductionRun"> | string | null
   runNo?: Prisma.StringWithAggregatesFilter<"ProductionRun"> | string
   orderedAt?: Prisma.DateTimeWithAggregatesFilter<"ProductionRun"> | Date | string
+  dueAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ProductionRun"> | Date | string | null
+  completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ProductionRun"> | Date | string | null
+  status?: Prisma.EnumProductionRunStatusWithAggregatesFilter<"ProductionRun"> | $Enums.ProductionRunStatus
   totalCost?: Prisma.DecimalNullableWithAggregatesFilter<"ProductionRun"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeWithAggregatesFilter<"ProductionRun"> | $Enums.ProductionCostMode
   memo?: Prisma.StringNullableWithAggregatesFilter<"ProductionRun"> | string | null
@@ -323,12 +374,16 @@ export type ProductionRunCreateInput = {
   id?: string
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutProductionRunsInput
+  brand?: Prisma.BrandCreateNestedOneWithoutProductionRunsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
@@ -336,8 +391,12 @@ export type ProductionRunCreateInput = {
 export type ProductionRunUncheckedCreateInput = {
   id?: string
   spaceId: string
+  brandId?: string | null
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
@@ -351,12 +410,16 @@ export type ProductionRunUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutProductionRunsNestedInput
+  brand?: Prisma.BrandUpdateOneWithoutProductionRunsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
@@ -364,8 +427,12 @@ export type ProductionRunUpdateInput = {
 export type ProductionRunUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -378,8 +445,12 @@ export type ProductionRunUncheckedUpdateInput = {
 export type ProductionRunCreateManyInput = {
   id?: string
   spaceId: string
+  brandId?: string | null
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
@@ -391,6 +462,9 @@ export type ProductionRunUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -401,8 +475,12 @@ export type ProductionRunUpdateManyMutationInput = {
 export type ProductionRunUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -428,8 +506,12 @@ export type ProductionRunSpaceIdRunNoCompoundUniqueInput = {
 export type ProductionRunCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrder
   runNo?: Prisma.SortOrder
   orderedAt?: Prisma.SortOrder
+  dueAt?: Prisma.SortOrder
+  completedAt?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   totalCost?: Prisma.SortOrder
   costMode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
@@ -444,8 +526,12 @@ export type ProductionRunAvgOrderByAggregateInput = {
 export type ProductionRunMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrder
   runNo?: Prisma.SortOrder
   orderedAt?: Prisma.SortOrder
+  dueAt?: Prisma.SortOrder
+  completedAt?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   totalCost?: Prisma.SortOrder
   costMode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
@@ -456,8 +542,12 @@ export type ProductionRunMaxOrderByAggregateInput = {
 export type ProductionRunMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrder
   runNo?: Prisma.SortOrder
   orderedAt?: Prisma.SortOrder
+  dueAt?: Prisma.SortOrder
+  completedAt?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   totalCost?: Prisma.SortOrder
   costMode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
@@ -516,6 +606,52 @@ export type ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.ProductionRunScalarWhereInput | Prisma.ProductionRunScalarWhereInput[]
 }
 
+export type ProductionRunCreateNestedManyWithoutBrandInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCreateWithoutBrandInput, Prisma.ProductionRunUncheckedCreateWithoutBrandInput> | Prisma.ProductionRunCreateWithoutBrandInput[] | Prisma.ProductionRunUncheckedCreateWithoutBrandInput[]
+  connectOrCreate?: Prisma.ProductionRunCreateOrConnectWithoutBrandInput | Prisma.ProductionRunCreateOrConnectWithoutBrandInput[]
+  createMany?: Prisma.ProductionRunCreateManyBrandInputEnvelope
+  connect?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+}
+
+export type ProductionRunUncheckedCreateNestedManyWithoutBrandInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCreateWithoutBrandInput, Prisma.ProductionRunUncheckedCreateWithoutBrandInput> | Prisma.ProductionRunCreateWithoutBrandInput[] | Prisma.ProductionRunUncheckedCreateWithoutBrandInput[]
+  connectOrCreate?: Prisma.ProductionRunCreateOrConnectWithoutBrandInput | Prisma.ProductionRunCreateOrConnectWithoutBrandInput[]
+  createMany?: Prisma.ProductionRunCreateManyBrandInputEnvelope
+  connect?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+}
+
+export type ProductionRunUpdateManyWithoutBrandNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCreateWithoutBrandInput, Prisma.ProductionRunUncheckedCreateWithoutBrandInput> | Prisma.ProductionRunCreateWithoutBrandInput[] | Prisma.ProductionRunUncheckedCreateWithoutBrandInput[]
+  connectOrCreate?: Prisma.ProductionRunCreateOrConnectWithoutBrandInput | Prisma.ProductionRunCreateOrConnectWithoutBrandInput[]
+  upsert?: Prisma.ProductionRunUpsertWithWhereUniqueWithoutBrandInput | Prisma.ProductionRunUpsertWithWhereUniqueWithoutBrandInput[]
+  createMany?: Prisma.ProductionRunCreateManyBrandInputEnvelope
+  set?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+  disconnect?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+  delete?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+  connect?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+  update?: Prisma.ProductionRunUpdateWithWhereUniqueWithoutBrandInput | Prisma.ProductionRunUpdateWithWhereUniqueWithoutBrandInput[]
+  updateMany?: Prisma.ProductionRunUpdateManyWithWhereWithoutBrandInput | Prisma.ProductionRunUpdateManyWithWhereWithoutBrandInput[]
+  deleteMany?: Prisma.ProductionRunScalarWhereInput | Prisma.ProductionRunScalarWhereInput[]
+}
+
+export type ProductionRunUncheckedUpdateManyWithoutBrandNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCreateWithoutBrandInput, Prisma.ProductionRunUncheckedCreateWithoutBrandInput> | Prisma.ProductionRunCreateWithoutBrandInput[] | Prisma.ProductionRunUncheckedCreateWithoutBrandInput[]
+  connectOrCreate?: Prisma.ProductionRunCreateOrConnectWithoutBrandInput | Prisma.ProductionRunCreateOrConnectWithoutBrandInput[]
+  upsert?: Prisma.ProductionRunUpsertWithWhereUniqueWithoutBrandInput | Prisma.ProductionRunUpsertWithWhereUniqueWithoutBrandInput[]
+  createMany?: Prisma.ProductionRunCreateManyBrandInputEnvelope
+  set?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+  disconnect?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+  delete?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+  connect?: Prisma.ProductionRunWhereUniqueInput | Prisma.ProductionRunWhereUniqueInput[]
+  update?: Prisma.ProductionRunUpdateWithWhereUniqueWithoutBrandInput | Prisma.ProductionRunUpdateWithWhereUniqueWithoutBrandInput[]
+  updateMany?: Prisma.ProductionRunUpdateManyWithWhereWithoutBrandInput | Prisma.ProductionRunUpdateManyWithWhereWithoutBrandInput[]
+  deleteMany?: Prisma.ProductionRunScalarWhereInput | Prisma.ProductionRunScalarWhereInput[]
+}
+
+export type EnumProductionRunStatusFieldUpdateOperationsInput = {
+  set?: $Enums.ProductionRunStatus
+}
+
 export type EnumProductionCostModeFieldUpdateOperationsInput = {
   set?: $Enums.ProductionCostMode
 }
@@ -552,19 +688,27 @@ export type ProductionRunCreateWithoutSpaceInput = {
   id?: string
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  brand?: Prisma.BrandCreateNestedOneWithoutProductionRunsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
 
 export type ProductionRunUncheckedCreateWithoutSpaceInput = {
   id?: string
+  brandId?: string | null
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
@@ -606,8 +750,12 @@ export type ProductionRunScalarWhereInput = {
   NOT?: Prisma.ProductionRunScalarWhereInput | Prisma.ProductionRunScalarWhereInput[]
   id?: Prisma.StringFilter<"ProductionRun"> | string
   spaceId?: Prisma.StringFilter<"ProductionRun"> | string
+  brandId?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
   runNo?: Prisma.StringFilter<"ProductionRun"> | string
   orderedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
+  dueAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
+  completedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFilter<"ProductionRun"> | $Enums.ProductionRunStatus
   totalCost?: Prisma.DecimalNullableFilter<"ProductionRun"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFilter<"ProductionRun"> | $Enums.ProductionCostMode
   memo?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
@@ -615,24 +763,92 @@ export type ProductionRunScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
 }
 
-export type ProductionRunCreateWithoutItemsInput = {
+export type ProductionRunCreateWithoutBrandInput = {
   id?: string
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutProductionRunsInput
+  items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
+  costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
+}
+
+export type ProductionRunUncheckedCreateWithoutBrandInput = {
+  id?: string
+  spaceId: string
+  runNo: string
+  orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
+  totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: $Enums.ProductionCostMode
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutRunInput
+  costs?: Prisma.ProductionRunCostUncheckedCreateNestedManyWithoutRunInput
+}
+
+export type ProductionRunCreateOrConnectWithoutBrandInput = {
+  where: Prisma.ProductionRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductionRunCreateWithoutBrandInput, Prisma.ProductionRunUncheckedCreateWithoutBrandInput>
+}
+
+export type ProductionRunCreateManyBrandInputEnvelope = {
+  data: Prisma.ProductionRunCreateManyBrandInput | Prisma.ProductionRunCreateManyBrandInput[]
+  skipDuplicates?: boolean
+}
+
+export type ProductionRunUpsertWithWhereUniqueWithoutBrandInput = {
+  where: Prisma.ProductionRunWhereUniqueInput
+  update: Prisma.XOR<Prisma.ProductionRunUpdateWithoutBrandInput, Prisma.ProductionRunUncheckedUpdateWithoutBrandInput>
+  create: Prisma.XOR<Prisma.ProductionRunCreateWithoutBrandInput, Prisma.ProductionRunUncheckedCreateWithoutBrandInput>
+}
+
+export type ProductionRunUpdateWithWhereUniqueWithoutBrandInput = {
+  where: Prisma.ProductionRunWhereUniqueInput
+  data: Prisma.XOR<Prisma.ProductionRunUpdateWithoutBrandInput, Prisma.ProductionRunUncheckedUpdateWithoutBrandInput>
+}
+
+export type ProductionRunUpdateManyWithWhereWithoutBrandInput = {
+  where: Prisma.ProductionRunScalarWhereInput
+  data: Prisma.XOR<Prisma.ProductionRunUpdateManyMutationInput, Prisma.ProductionRunUncheckedUpdateManyWithoutBrandInput>
+}
+
+export type ProductionRunCreateWithoutItemsInput = {
+  id?: string
+  runNo: string
+  orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
+  totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: $Enums.ProductionCostMode
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutProductionRunsInput
+  brand?: Prisma.BrandCreateNestedOneWithoutProductionRunsInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
 
 export type ProductionRunUncheckedCreateWithoutItemsInput = {
   id?: string
   spaceId: string
+  brandId?: string | null
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
@@ -661,20 +877,28 @@ export type ProductionRunUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutProductionRunsNestedInput
+  brand?: Prisma.BrandUpdateOneWithoutProductionRunsNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
 
 export type ProductionRunUncheckedUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -687,20 +911,28 @@ export type ProductionRunCreateWithoutCostsInput = {
   id?: string
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutProductionRunsInput
+  brand?: Prisma.BrandCreateNestedOneWithoutProductionRunsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
 }
 
 export type ProductionRunUncheckedCreateWithoutCostsInput = {
   id?: string
   spaceId: string
+  brandId?: string | null
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
@@ -729,20 +961,28 @@ export type ProductionRunUpdateWithoutCostsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutProductionRunsNestedInput
+  brand?: Prisma.BrandUpdateOneWithoutProductionRunsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
 }
 
 export type ProductionRunUncheckedUpdateWithoutCostsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -753,8 +993,12 @@ export type ProductionRunUncheckedUpdateWithoutCostsInput = {
 
 export type ProductionRunCreateManySpaceInput = {
   id?: string
+  brandId?: string | null
   runNo: string
   orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
   totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: $Enums.ProductionCostMode
   memo?: string | null
@@ -766,19 +1010,27 @@ export type ProductionRunUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  brand?: Prisma.BrandUpdateOneWithoutProductionRunsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
 
 export type ProductionRunUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -790,8 +1042,76 @@ export type ProductionRunUncheckedUpdateWithoutSpaceInput = {
 
 export type ProductionRunUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
   orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
+  totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ProductionRunCreateManyBrandInput = {
+  id?: string
+  spaceId: string
+  runNo: string
+  orderedAt: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
+  totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: $Enums.ProductionCostMode
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ProductionRunUpdateWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  runNo?: Prisma.StringFieldUpdateOperationsInput | string
+  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
+  totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutProductionRunsNestedInput
+  items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
+  costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
+}
+
+export type ProductionRunUncheckedUpdateWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  runNo?: Prisma.StringFieldUpdateOperationsInput | string
+  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
+  totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput
+  costs?: Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput
+}
+
+export type ProductionRunUncheckedUpdateManyWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  runNo?: Prisma.StringFieldUpdateOperationsInput | string
+  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
   totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -842,14 +1162,19 @@ export type ProductionRunCountOutputTypeCountCostsArgs<ExtArgs extends runtime.T
 export type ProductionRunSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
+  brandId?: boolean
   runNo?: boolean
   orderedAt?: boolean
+  dueAt?: boolean
+  completedAt?: boolean
+  status?: boolean
   totalCost?: boolean
   costMode?: boolean
   memo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.ProductionRun$brandArgs<ExtArgs>
   items?: boolean | Prisma.ProductionRun$itemsArgs<ExtArgs>
   costs?: boolean | Prisma.ProductionRun$costsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductionRunCountOutputTypeDefaultArgs<ExtArgs>
@@ -858,34 +1183,48 @@ export type ProductionRunSelect<ExtArgs extends runtime.Types.Extensions.Interna
 export type ProductionRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
+  brandId?: boolean
   runNo?: boolean
   orderedAt?: boolean
+  dueAt?: boolean
+  completedAt?: boolean
+  status?: boolean
   totalCost?: boolean
   costMode?: boolean
   memo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.ProductionRun$brandArgs<ExtArgs>
 }, ExtArgs["result"]["productionRun"]>
 
 export type ProductionRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
+  brandId?: boolean
   runNo?: boolean
   orderedAt?: boolean
+  dueAt?: boolean
+  completedAt?: boolean
+  status?: boolean
   totalCost?: boolean
   costMode?: boolean
   memo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.ProductionRun$brandArgs<ExtArgs>
 }, ExtArgs["result"]["productionRun"]>
 
 export type ProductionRunSelectScalar = {
   id?: boolean
   spaceId?: boolean
+  brandId?: boolean
   runNo?: boolean
   orderedAt?: boolean
+  dueAt?: boolean
+  completedAt?: boolean
+  status?: boolean
   totalCost?: boolean
   costMode?: boolean
   memo?: boolean
@@ -893,32 +1232,40 @@ export type ProductionRunSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductionRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "runNo" | "orderedAt" | "totalCost" | "costMode" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["productionRun"]>
+export type ProductionRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "brandId" | "runNo" | "orderedAt" | "dueAt" | "completedAt" | "status" | "totalCost" | "costMode" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["productionRun"]>
 export type ProductionRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.ProductionRun$brandArgs<ExtArgs>
   items?: boolean | Prisma.ProductionRun$itemsArgs<ExtArgs>
   costs?: boolean | Prisma.ProductionRun$costsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductionRunCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProductionRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.ProductionRun$brandArgs<ExtArgs>
 }
 export type ProductionRunIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.ProductionRun$brandArgs<ExtArgs>
 }
 
 export type $ProductionRunPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ProductionRun"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
+    brand: Prisma.$BrandPayload<ExtArgs> | null
     items: Prisma.$ProductionRunItemPayload<ExtArgs>[]
     costs: Prisma.$ProductionRunCostPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     spaceId: string
+    brandId: string | null
     runNo: string
     orderedAt: Date
+    dueAt: Date | null
+    completedAt: Date | null
+    status: $Enums.ProductionRunStatus
     totalCost: runtime.Decimal | null
     costMode: $Enums.ProductionCostMode
     memo: string | null
@@ -1319,6 +1666,7 @@ readonly fields: ProductionRunFieldRefs;
 export interface Prisma__ProductionRunClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  brand<T extends Prisma.ProductionRun$brandArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRun$brandArgs<ExtArgs>>): Prisma.Prisma__BrandClient<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   items<T extends Prisma.ProductionRun$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRun$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   costs<T extends Prisma.ProductionRun$costsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRun$costsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunCostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1352,8 +1700,12 @@ export interface Prisma__ProductionRunClient<T, Null = never, ExtArgs extends ru
 export interface ProductionRunFieldRefs {
   readonly id: Prisma.FieldRef<"ProductionRun", 'String'>
   readonly spaceId: Prisma.FieldRef<"ProductionRun", 'String'>
+  readonly brandId: Prisma.FieldRef<"ProductionRun", 'String'>
   readonly runNo: Prisma.FieldRef<"ProductionRun", 'String'>
   readonly orderedAt: Prisma.FieldRef<"ProductionRun", 'DateTime'>
+  readonly dueAt: Prisma.FieldRef<"ProductionRun", 'DateTime'>
+  readonly completedAt: Prisma.FieldRef<"ProductionRun", 'DateTime'>
+  readonly status: Prisma.FieldRef<"ProductionRun", 'ProductionRunStatus'>
   readonly totalCost: Prisma.FieldRef<"ProductionRun", 'Decimal'>
   readonly costMode: Prisma.FieldRef<"ProductionRun", 'ProductionCostMode'>
   readonly memo: Prisma.FieldRef<"ProductionRun", 'String'>
@@ -1752,6 +2104,25 @@ export type ProductionRunDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many ProductionRuns to delete.
    */
   limit?: number
+}
+
+/**
+ * ProductionRun.brand
+ */
+export type ProductionRun$brandArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Brand
+   */
+  select?: Prisma.BrandSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Brand
+   */
+  omit?: Prisma.BrandOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BrandInclude<ExtArgs> | null
+  where?: Prisma.BrandWhereInput
 }
 
 /**

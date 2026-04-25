@@ -1142,8 +1142,9 @@ model Brand {
   logoUrl String?
   memo    String?
 
-  space    Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  products InvProduct[]
+  space          Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  products       InvProduct[]
+  productionRuns ProductionRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1226,16 +1227,36 @@ enum ProductionCostMode {
   BREAKDOWN
 }
 
+enum ProductionRunStatus {
+  PLANNED      // 계획중
+  ORDERED      // 발주완료
+  PRODUCING    // 생산중
+  COMPLETED    // 생산완료
+}
+
+enum ProductionCostCategory {
+  MATERIAL     // 원자재
+  LABOR        // 인건비/봉제
+  PACKAGING    // 포장
+  LOGISTICS    // 물류
+  OTHER        // 기타
+}
+
 model ProductionRun {
-  id        String             @id @default(cuid())
+  id        String              @id @default(cuid())
   spaceId   String
+  brandId   String?                                                      // 대표 브랜드 (선택). 없으면 multi-brand
   runNo     String                                                       // Space 단위 unique 차수 번호 (전체 범위)
   orderedAt DateTime                                                     // 발주일
-  totalCost Decimal?           @db.Decimal(18, 2)                        // 총 생산원가 (TOTAL 모드: 직접 입력값 / BREAKDOWN 모드: costs 합계 캐시)
-  costMode  ProductionCostMode @default(TOTAL)
+  dueAt     DateTime?                                                    // 납기일 (선택)
+  completedAt DateTime?                                                  // 완료일 (선택)
+  status    ProductionRunStatus @default(PLANNED)
+  totalCost Decimal?            @db.Decimal(18, 2)                       // 총 생산원가 (TOTAL 모드: 직접 입력값 / BREAKDOWN 모드: costs 합계 캐시)
+  costMode  ProductionCostMode  @default(TOTAL)
   memo      String?
 
   space Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  brand Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
   items ProductionRunItem[]
   costs ProductionRunCost[]
 
@@ -1244,6 +1265,8 @@ model ProductionRun {
 
   @@unique([spaceId, runNo])
   @@index([spaceId, orderedAt])
+  @@index([spaceId, status])
+  @@index([brandId])
 }
 
 model ProductionRunItem {
@@ -1260,16 +1283,17 @@ model ProductionRunItem {
 }
 
 model ProductionRunCost {
-  id          String   @id @default(cuid())
+  id          String                  @id @default(cuid())
   runId       String
-  itemName    String                                                  // 비용 항목 (필수)
-  description String?                                                 // 상세 내용
-  spec        Decimal? @db.Decimal(18, 4)                              // 규격 (선택)
-  quantity    Decimal  @default(1) @db.Decimal(18, 4)                  // 수량 (필수, 기본 1)
-  unitPrice   Decimal  @db.Decimal(18, 2)                              // 단가 (필수)
-  amount      Decimal  @db.Decimal(18, 2)                              // (spec ?? 1) × quantity × unitPrice
+  itemName    String                                                          // 비용 항목 (필수)
+  description String?                                                         // 상세 내용
+  category    ProductionCostCategory  @default(OTHER)                          // 비용 분류
+  spec        Decimal?                @db.Decimal(18, 4)                       // 규격 (선택)
+  quantity    Decimal                 @default(1) @db.Decimal(18, 4)           // 수량 (필수, 기본 1)
+  unitPrice   Decimal                 @db.Decimal(18, 2)                       // 단가 (필수)
+  amount      Decimal                 @db.Decimal(18, 2)                       // (spec ?? 1) × quantity × unitPrice
   note        String?
-  sortOrder   Int      @default(0)
+  sortOrder   Int                     @default(0)
 
   run ProductionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 

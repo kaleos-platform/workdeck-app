@@ -16,6 +16,13 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Table,
   TableBody,
   TableCell,
@@ -25,6 +32,17 @@ import {
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { ProductionRunFormDialog } from './production-run-form-dialog'
+
+// ─── 상수 ─────────────────────────────────────────────────────────────────────
+
+type ProductionRunStatus = 'PLANNED' | 'ORDERED' | 'PRODUCING' | 'COMPLETED'
+
+const STATUS_LABEL: Record<ProductionRunStatus, string> = {
+  PLANNED: '계획중',
+  ORDERED: '발주완료',
+  PRODUCING: '생산중',
+  COMPLETED: '생산완료',
+}
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
@@ -37,7 +55,11 @@ type ProductSummary = {
 type RunRow = {
   id: string
   runNo: string
+  status: ProductionRunStatus
+  brand: { id: string; name: string } | null
   orderedAt: string
+  dueAt: string | null
+  completedAt: string | null
   totalCost: number | null
   costMode: 'TOTAL' | 'BREAKDOWN'
   memo: string | null
@@ -55,6 +77,8 @@ type RunRow = {
   updatedAt: string
 }
 
+type BrandOption = { id: string; name: string }
+
 // ─── 포맷 헬퍼 ────────────────────────────────────────────────────────────────
 
 function fmtKRW(n: number) {
@@ -71,6 +95,25 @@ function fmtDate(iso: string) {
   const mm = String(d.getMonth() + 1).padStart(2, '0')
   const dd = String(d.getDate()).padStart(2, '0')
   return `${yyyy}.${mm}.${dd}`
+}
+
+// ─── 상태 배지 ────────────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: ProductionRunStatus }) {
+  if (status === 'COMPLETED') {
+    return (
+      <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+        {STATUS_LABEL[status]}
+      </Badge>
+    )
+  }
+  const variantMap: Record<ProductionRunStatus, 'outline' | 'secondary' | 'default'> = {
+    PLANNED: 'outline',
+    ORDERED: 'secondary',
+    PRODUCING: 'default',
+    COMPLETED: 'default', // fallback (위에서 처리됨)
+  }
+  return <Badge variant={variantMap[status]}>{STATUS_LABEL[status]}</Badge>
 }
 
 // ─── 상품 칩 ─────────────────────────────────────────────────────────────────
@@ -124,6 +167,9 @@ export function ProductionRunsTable() {
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('ALL')
+  const [brandFilter, setBrandFilter] = useState<string>('ALL')
+  const [brandOptions, setBrandOptions] = useState<BrandOption[]>([])
   const [loading, setLoading] = useState(false)
 
   // 다이얼로그 상태
@@ -134,6 +180,14 @@ export function ProductionRunsTable() {
   const [deleteTarget, setDeleteTarget] = useState<RunRow | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  // 브랜드 목록 로드 (최초 1회)
+  useEffect(() => {
+    fetch('/api/sh/brands')
+      .then((r) => r.json())
+      .then((d: { data?: BrandOption[] }) => setBrandOptions(d.data ?? []))
+      .catch(() => {})
+  }, [])
+
   // 검색어 debounce 300ms
   useEffect(() => {
     const t = setTimeout(() => {
@@ -142,6 +196,11 @@ export function ProductionRunsTable() {
     }, 300)
     return () => clearTimeout(t)
   }, [search])
+
+  // 필터 변경 시 페이지 초기화
+  useEffect(() => {
+    setPage(1)
+  }, [statusFilter, brandFilter])
 
   // 목록 로드
   const loadRuns = useCallback(async () => {
@@ -152,6 +211,8 @@ export function ProductionRunsTable() {
       qs.set('page', String(page))
       qs.set('pageSize', String(pageSize))
       if (debouncedSearch.trim()) qs.set('search', debouncedSearch.trim())
+      if (statusFilter !== 'ALL') qs.set('status', statusFilter)
+      if (brandFilter !== 'ALL') qs.set('brandId', brandFilter)
       const res = await fetch(`/api/sh/production-runs?${qs.toString()}`)
       if (!res.ok) throw new Error('목록 조회 실패')
       const data: { data: RunRow[]; total: number; page: number; pageSize: number } =
@@ -168,7 +229,7 @@ export function ProductionRunsTable() {
     return () => {
       cancelled = true
     }
-  }, [page, debouncedSearch])
+  }, [page, debouncedSearch, statusFilter, brandFilter])
 
   useEffect(() => {
     loadRuns()
@@ -200,14 +261,45 @@ export function ProductionRunsTable() {
     <div className="space-y-3">
       {/* 상단 툴바 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="차수번호 · 메모 · 상품명"
-            className="w-64 pl-9"
-          />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="차수번호 · 메모 · 상품명"
+              className="w-56 pl-9"
+            />
+          </div>
+          {/* 상태 필터 */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="전체 상태" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">전체 상태</SelectItem>
+              <SelectItem value="PLANNED">계획중</SelectItem>
+              <SelectItem value="ORDERED">발주완료</SelectItem>
+              <SelectItem value="PRODUCING">생산중</SelectItem>
+              <SelectItem value="COMPLETED">생산완료</SelectItem>
+            </SelectContent>
+          </Select>
+          {/* 브랜드 필터 */}
+          {brandOptions.length > 0 && (
+            <Select value={brandFilter} onValueChange={setBrandFilter}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="전체 브랜드" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">전체 브랜드</SelectItem>
+                {brandOptions.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         <Button
           size="sm"
@@ -226,25 +318,27 @@ export function ProductionRunsTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">차수 번호</TableHead>
-              <TableHead className="w-[100px]">발주일</TableHead>
+              <TableHead className="w-[110px]">차수 번호</TableHead>
+              <TableHead className="w-[80px]">상태</TableHead>
+              <TableHead className="w-[90px]">발주일</TableHead>
+              <TableHead className="w-[90px]">납기일</TableHead>
+              <TableHead className="w-[90px]">브랜드</TableHead>
               <TableHead>포함 상품</TableHead>
-              <TableHead className="w-[80px] text-right">총 수량</TableHead>
-              <TableHead className="w-[120px] text-right">총 원가</TableHead>
-              <TableHead className="w-[120px] text-right">평균 단가</TableHead>
+              <TableHead className="w-[70px] text-right">총 수량</TableHead>
+              <TableHead className="w-[110px] text-right">총 원가</TableHead>
               <TableHead className="w-[80px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && runs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={9} className="py-12 text-center text-sm text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : runs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-12 text-center">
+                <TableCell colSpan={9} className="py-12 text-center">
                   <p className="text-sm text-muted-foreground">등록된 차수가 없습니다</p>
                   <Button
                     variant="outline"
@@ -273,13 +367,22 @@ export function ProductionRunsTable() {
                   <TableCell>
                     <p className="font-medium">{run.runNo}</p>
                     {run.memo && (
-                      <p className="max-w-[110px] truncate text-xs text-muted-foreground">
+                      <p className="max-w-[100px] truncate text-xs text-muted-foreground">
                         {run.memo}
                       </p>
                     )}
                   </TableCell>
+                  <TableCell>
+                    <StatusBadge status={run.status} />
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {fmtDate(run.orderedAt)}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {run.dueAt ? fmtDate(run.dueAt) : '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {run.brand?.name ?? '-'}
                   </TableCell>
                   <TableCell>
                     <ProductChips products={run.products} />
@@ -289,9 +392,6 @@ export function ProductionRunsTable() {
                   </TableCell>
                   <TableCell className="text-right text-sm">
                     {run.totalCost != null ? fmtKRW(run.totalCost) : '-'}
-                  </TableCell>
-                  <TableCell className="text-right text-sm text-muted-foreground">
-                    {run.averageUnitCost != null ? fmtKRW(Math.round(run.averageUnitCost)) : '-'}
                   </TableCell>
                   <TableCell>
                     <div

@@ -134,3 +134,24 @@ export const ProductionCostMode = {
 } as const
 
 export type ProductionCostMode = (typeof ProductionCostMode)[keyof typeof ProductionCostMode]
+
+
+export const ProductionRunStatus = {
+  PLANNED: 'PLANNED',
+  ORDERED: 'ORDERED',
+  PRODUCING: 'PRODUCING',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type ProductionRunStatus = (typeof ProductionRunStatus)[keyof typeof ProductionRunStatus]
+
+
+export const ProductionCostCategory = {
+  MATERIAL: 'MATERIAL',
+  LABOR: 'LABOR',
+  PACKAGING: 'PACKAGING',
+  LOGISTICS: 'LOGISTICS',
+  OTHER: 'OTHER'
+} as const
+
+export type ProductionCostCategory = (typeof ProductionCostCategory)[keyof typeof ProductionCostCategory]

@@ -5719,8 +5719,12 @@ export type ChannelFeeRateScalarFieldEnum = (typeof ChannelFeeRateScalarFieldEnu
 export const ProductionRunScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
+  brandId: 'brandId',
   runNo: 'runNo',
   orderedAt: 'orderedAt',
+  dueAt: 'dueAt',
+  completedAt: 'completedAt',
+  status: 'status',
   totalCost: 'totalCost',
   costMode: 'costMode',
   memo: 'memo',
@@ -5746,6 +5750,7 @@ export const ProductionRunCostScalarFieldEnum = {
   runId: 'runId',
   itemName: 'itemName',
   description: 'description',
+  category: 'category',
   spec: 'spec',
   quantity: 'quantity',
   unitPrice: 'unitPrice',
@@ -6136,6 +6141,20 @@ export type ListEnumChannelKindFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'ProductionRunStatus'
+ */
+export type EnumProductionRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductionRunStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ProductionRunStatus[]'
+ */
+export type ListEnumProductionRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductionRunStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'ProductionCostMode'
  */
 export type EnumProductionCostModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductionCostMode'>
@@ -6146,6 +6165,20 @@ export type EnumProductionCostModeFieldRefInput<$PrismaModel> = FieldRefInputTyp
  * Reference to a field of type 'ProductionCostMode[]'
  */
 export type ListEnumProductionCostModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductionCostMode[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ProductionCostCategory'
+ */
+export type EnumProductionCostCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductionCostCategory'>
+    
+
+
+/**
+ * Reference to a field of type 'ProductionCostCategory[]'
+ */
+export type ListEnumProductionCostCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductionCostCategory[]'>
     
 
 
