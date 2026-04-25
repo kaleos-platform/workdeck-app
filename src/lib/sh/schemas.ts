@@ -394,6 +394,52 @@ export const productionRunPatchSchema = productionRunSchema.partial().extend({
 })
 export type ProductionRunPatchInput = z.infer<typeof productionRunPatchSchema>
 
+// ─── 가격 시뮬레이션 시나리오 ──────────────────────────────────────────────────
+
+export const pricingScenarioItemSchema = z.object({
+  optionId: z.string().min(1),
+  costPrice: z.coerce.number().min(0).max(99_999_999).optional().nullable(),
+  salePrice: z.coerce.number().min(0).max(99_999_999),
+  discountRate: z.coerce.number().min(0).max(1).default(0),
+  channelFeePct: z.coerce.number().min(0).max(1).default(0),
+  shippingCost: z.coerce.number().min(0).max(99_999_999).default(0),
+  packagingCost: z.coerce.number().min(0).max(99_999_999).default(0),
+  adCostPct: z.coerce.number().min(0).max(1).default(0),
+  operatingCostPct: z.coerce.number().min(0).max(1).default(0),
+  sortOrder: z.number().int().min(0).optional(),
+})
+export type PricingScenarioItemInput = z.infer<typeof pricingScenarioItemSchema>
+
+export const pricingScenarioSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  memo: z
+    .string()
+    .trim()
+    .max(500)
+    .optional()
+    .transform((v) => (v?.length ? v : undefined)),
+  channelId: z.string().min(1).optional().nullable(),
+  includeVat: z.boolean().default(true),
+  vatRate: z.coerce.number().min(0).max(1).default(0.1),
+  items: z
+    .array(pricingScenarioItemSchema)
+    .min(1)
+    .max(100)
+    .superRefine((items, ctx) => {
+      const ids = new Set<string>()
+      for (const it of items) {
+        if (ids.has(it.optionId)) {
+          ctx.addIssue({ code: 'custom', message: '같은 옵션 중복' })
+        }
+        ids.add(it.optionId)
+      }
+    }),
+})
+export type PricingScenarioInput = z.infer<typeof pricingScenarioSchema>
+
+export const pricingScenarioPatchSchema = pricingScenarioSchema.partial()
+export type PricingScenarioPatchInput = z.infer<typeof pricingScenarioPatchSchema>
+
 // 여러 listing 일괄 수정 — 판매가·상태만 현재 지원
 export const productListingBulkPatchSchema = z.object({
   ids: z.array(z.string().min(1)).min(1).max(100),
