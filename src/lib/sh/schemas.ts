@@ -443,6 +443,20 @@ export const pricingScenarioItemSchema = z
   })
 export type PricingScenarioItemInput = z.infer<typeof pricingScenarioItemSchema>
 
+// channels[] 항목 스키마 — channelId(등록 채널) 또는 channelInline(임시 인라인 채널) 중 하나
+// 서버는 channelId만 처리하며 channelInline은 수신 후 무시 (DB 컬럼 없음, PR-5에서 정교화 예정)
+export const pricingScenarioChannelEntrySchema = z
+  .object({
+    channelId: z.string().min(1).optional().nullable(),
+    // channelInline: 클라이언트가 임시 채널 정보를 함께 보낼 때 사용 (서버는 현재 무시)
+    channelInline: z.record(z.string(), z.unknown()).optional(),
+    sortOrder: z.number().int().min(0).optional(),
+  })
+  .refine((v) => v.channelId != null || v.channelInline != null, {
+    message: 'channelId 또는 channelInline 중 하나는 필수입니다',
+  })
+export type PricingScenarioChannelEntryInput = z.infer<typeof pricingScenarioChannelEntrySchema>
+
 export const pricingScenarioSchema = z.object({
   name: z.string().trim().min(1).max(100),
   memo: z
@@ -451,8 +465,12 @@ export const pricingScenarioSchema = z.object({
     .max(500)
     .optional()
     .transform((v) => (v?.length ? v : undefined)),
+  // 레거시 단일 채널 (하위 호환 유지)
   channelId: z.string().min(1).optional().nullable(),
-  channelIds: z.array(z.string().min(1)).max(20).optional(), // M-N 채널 목록
+  // 레거시 M-N 채널 ID 배열 (하위 호환 유지)
+  channelIds: z.array(z.string().min(1)).max(20).optional(),
+  // 신규 채널 배열 (channelId 또는 channelInline 객체) — channels가 있으면 channelIds 대신 사용
+  channels: z.array(pricingScenarioChannelEntrySchema).max(20).optional(),
   includeVat: z.boolean().default(true),
   vatRate: z.coerce.number().min(0).max(1).default(0.1),
   promotionType: z.enum(['NONE', 'FLAT', 'PERCENT', 'COUPON']).default('NONE'),

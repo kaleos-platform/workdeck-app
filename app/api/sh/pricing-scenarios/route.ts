@@ -36,7 +36,23 @@ export async function GET(req: NextRequest) {
       take: pageSize,
       include: {
         channel: { select: { id: true, name: true } },
-        channels: { include: { channel: { select: { id: true, name: true } } } },
+        channels: {
+          include: {
+            channel: {
+              select: {
+                id: true,
+                name: true,
+                channelType: true,
+                defaultFeePct: true,
+                shippingFee: true,
+                freeShippingThreshold: true,
+                applyAdCost: true,
+                paymentFeeIncluded: true,
+                paymentFeePct: true,
+              },
+            },
+          },
+        },
         items: { select: { netProfit: true, margin: true } },
       },
     }),
@@ -56,7 +72,18 @@ export async function GET(req: NextRequest) {
       name: s.name,
       memo: s.memo,
       channel: s.channel,
-      channels: s.channels.map((sc) => sc.channel),
+      channels: s.channels.map((sc) => ({
+        id: sc.channel.id,
+        name: sc.channel.name,
+        channelType: sc.channel.channelType,
+        defaultFeePct: sc.channel.defaultFeePct != null ? d(sc.channel.defaultFeePct) : 0,
+        shippingFee: sc.channel.shippingFee != null ? d(sc.channel.shippingFee) : 0,
+        freeShippingThreshold:
+          sc.channel.freeShippingThreshold != null ? d(sc.channel.freeShippingThreshold) : null,
+        applyAdCost: sc.channel.applyAdCost,
+        paymentFeeIncluded: sc.channel.paymentFeeIncluded,
+        paymentFeePct: sc.channel.paymentFeePct != null ? d(sc.channel.paymentFeePct) : 0,
+      })),
       includeVat: s.includeVat,
       vatRate: d(s.vatRate),
       promotionType: s.promotionType,
@@ -100,13 +127,20 @@ export async function POST(req: NextRequest) {
     if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
   }
 
+  // channels[] 또는 channelIds 정규화 — channels가 있으면 우선 사용
+  // channels[]에서 channelId가 있는 항목만 추출 (channelInline은 서버에서 무시)
+  const resolvedChannelIds: string[] =
+    input.channels && input.channels.length > 0
+      ? input.channels.flatMap((c) => (c.channelId ? [c.channelId] : []))
+      : (input.channelIds ?? [])
+
   // channelIds 소속 검증 (M-N)
-  if (input.channelIds && input.channelIds.length > 0) {
+  if (resolvedChannelIds.length > 0) {
     const validChannels = await prisma.channel.findMany({
-      where: { id: { in: input.channelIds }, spaceId: resolved.space.id },
+      where: { id: { in: resolvedChannelIds }, spaceId: resolved.space.id },
       select: { id: true },
     })
-    if (validChannels.length !== input.channelIds.length) {
+    if (validChannels.length !== resolvedChannelIds.length) {
       return errorResponse('유효하지 않은 채널이 포함되어 있습니다', 400)
     }
   }
@@ -139,10 +173,10 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // M-N 채널 연결
-    if (input.channelIds && input.channelIds.length > 0) {
+    // M-N 채널 연결 (channels[] 또는 channelIds 중 resolvedChannelIds로 정규화된 값 사용)
+    if (resolvedChannelIds.length > 0) {
       await tx.pricingScenarioChannel.createMany({
-        data: input.channelIds.map((channelId, idx) => ({
+        data: resolvedChannelIds.map((channelId, idx) => ({
           scenarioId: created.id,
           channelId,
           sortOrder: idx,

@@ -1,8 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Trash2, Save, ChevronDown, GitCompare } from 'lucide-react'
+import { ChevronDown, ChevronRight, GitCompare, Save, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -10,15 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,16 +17,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 
-import { PricingItemsTable, type PricingItemRow } from './pricing-items-table'
 import { PricingOptionPickerDialog, type PricingOption } from './pricing-option-picker-dialog'
 import { PricingComparisonDialog } from './pricing-comparison-dialog'
 import { PricingDefaultsCard } from './pricing-defaults-card'
-import { calculatePricing } from '@/lib/sh/pricing-calc'
+import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
+import { PricingChannelList, type ScenarioChannel, type DbChannel } from './pricing-channel-list'
+import { PricingMatrix } from './pricing-matrix'
+import type { MatrixGlobals, MatrixOption, MatrixChannel } from '@/lib/sh/pricing-matrix-calc'
+import type { TierThresholds } from '@/lib/sh/margin-tier'
 
-// ─── 타입 ─────────────────────────────────────────────────────────────────────
-
-type Channel = { id: string; name: string }
+// ─── 타입 ──────────────────────────────────────────────────────────────────────
 
 type ScenarioSummary = {
   id: string
@@ -50,41 +44,66 @@ type ScenarioSummary = {
   updatedAt: string
 }
 
+/** 시나리오 상세 (GET 응답) — 채널 spec 대응 */
 type ScenarioDetail = ScenarioSummary & {
+  promotionType?: string
+  promotionValue?: number | null
+  applyReturnAdjustment?: boolean
+  /** bernstein API spec: PricingScenarioChannel[] { channel, channelInline }
+   * 현재 API는 channel[] 로 반환 — 점진적 호환 */
+  channels?: (DbChannel | null)[]
   items: {
     id: string
-    optionId: string
+    optionId: string | null
+    manualName?: string | null
+    unitsPerSet?: number
     costPrice: number | null
     salePrice: number
-    discountRate: number
-    channelFeePct: number
-    shippingCost: number
     packagingCost: number
-    adCostPct: number
-    operatingCostPct: number
-    finalPrice: number
-    revenueExVat: number
-    totalCost: number
-    netProfit: number
-    margin: number
     option: {
       id: string
       name: string
       sku: string | null
+      costPrice: number | null
+      retailPrice: number | null
       product: {
         id: string
         name: string
         brand: { id: string; name: string } | null
       }
-    }
+    } | null
   }[]
 }
 
+/** 옵션 행 (시뮬레이션용 — pricing-items-table 구조에서 매트릭스용으로 전환) */
+type OptionRow = {
+  rowId: string
+  optionId: string | null
+  productId: string
+  optionName: string
+  productName: string
+  brandName: string | null
+  // 매트릭스 입력값
+  costPrice: number
+  retailPrice: number // 1세트 판매가
+  unitsPerSet: number
+  packagingCost: number
+  // UI 상태
+  matrixExpanded: Record<string, boolean> // channelKey → 펼침 여부
+}
+
 type DefaultSettings = {
-  defaultOperatingCostPct: number // 서버에서 0~100으로 저장 (pricingSettingsSchema 기준)
-  defaultAdCostPct: number
+  defaultOperatingCostPct: number // 0~100
+  defaultAdCostPct: number // 0~100
   defaultPackagingCost: number
 }
+
+type FullSettings = DefaultSettings &
+  Partial<TierThresholds> & {
+    expectedReturnRate?: number
+    returnHandlingCost?: number
+    minimumAcceptableMargin?: number
+  }
 
 // ─── 헬퍼 ─────────────────────────────────────────────────────────────────────
 
@@ -96,46 +115,7 @@ function fmt(n: number) {
   return Math.round(n).toLocaleString('ko-KR')
 }
 
-function generateScenarioName(
-  rows: PricingItemRow[],
-  channels: Channel[],
-  channelId: string
-): string {
-  if (rows.length === 0) return ''
-  const distinctProducts = Array.from(new Set(rows.map((r) => r.productName)))
-  const firstRow = rows[0]
-  const channelName = channels.find((c) => c.id === channelId)?.name
-
-  let core = distinctProducts[0]
-  if (firstRow.brandName) core = `${firstRow.brandName} ${core}`
-  if (distinctProducts.length > 1) core += ` 외 ${distinctProducts.length - 1}개`
-
-  return channelName ? `${channelName} · ${core}` : core
-}
-
-function buildRowFromOption(opt: PricingOption, defaults: DefaultSettings): PricingItemRow {
-  const costPrice = opt.costPrice ?? 0
-  const salePrice = 0
-  const discountRatePct = 0
-  const channelFeePct = 0
-  const shippingCost = 0
-  const packagingCost = defaults.defaultPackagingCost
-  const adCostPct = defaults.defaultAdCostPct // 이미 0~100
-  const operatingCostPct = defaults.defaultOperatingCostPct // 이미 0~100
-
-  const result = calculatePricing({
-    costPrice,
-    salePrice,
-    discountRate: 0,
-    channelFeePct: 0,
-    shippingCost,
-    packagingCost,
-    adCostPct: adCostPct / 100,
-    operatingCostPct: operatingCostPct / 100,
-    includeVat: true,
-    vatRate: 0.1,
-  })
-
+function buildRowFromOption(opt: PricingOption, defaults: DefaultSettings): OptionRow {
   return {
     rowId: makeRowId(),
     optionId: opt.optionId,
@@ -143,16 +123,96 @@ function buildRowFromOption(opt: PricingOption, defaults: DefaultSettings): Pric
     optionName: opt.optionName,
     productName: opt.productName,
     brandName: opt.brandName,
-    costPrice,
-    salePrice,
-    discountRatePct,
-    channelFeePct,
-    shippingCost,
-    packagingCost,
-    adCostPct,
-    operatingCostPct,
-    result,
+    costPrice: opt.costPrice ?? 0,
+    retailPrice: 0,
+    unitsPerSet: 1,
+    packagingCost: defaults.defaultPackagingCost,
+    matrixExpanded: {},
   }
+}
+
+/** ScenarioChannel → MatrixChannel 변환 */
+function toMatrixChannel(sc: ScenarioChannel): MatrixChannel {
+  if (sc.source === 'db') {
+    const ch = sc.channel
+    return {
+      id: ch.id,
+      name: ch.name,
+      channelType: ch.channelType,
+      defaultFeePct: ch.defaultFeePct ?? 0,
+      paymentFeeIncluded: ch.paymentFeeIncluded,
+      paymentFeePct: ch.paymentFeePct ?? 0,
+      applyAdCost: ch.applyAdCost,
+      shippingFee: ch.shippingFee ?? 0,
+      freeShippingThreshold: ch.freeShippingThreshold ?? null,
+    }
+  } else {
+    const il = sc.inline
+    return {
+      name: il.name,
+      channelType: il.channelType,
+      defaultFeePct: il.defaultFeePct,
+      paymentFeeIncluded: il.paymentFeeIncluded,
+      paymentFeePct: il.paymentFeePct,
+      applyAdCost: il.applyAdCost,
+      shippingFee: il.shippingFee,
+      freeShippingThreshold: il.freeShippingThreshold > 0 ? il.freeShippingThreshold : null,
+    }
+  }
+}
+
+/** ScenarioChannel 고유 키 */
+function channelKey(sc: ScenarioChannel, idx: number): string {
+  return sc.source === 'db' ? `db-${sc.channelId}` : `inline-${idx}`
+}
+
+/** PromotionValue → MatrixPromotion 변환 (PERCENT: value를 0~1로) */
+function toMatrixPromotion(p: PromotionValue) {
+  return {
+    type: p.type,
+    value: p.type === 'PERCENT' ? p.value / 100 : p.value,
+  }
+}
+
+// ─── 숫자 입력 컴포넌트 ───────────────────────────────────────────────────────
+
+function NumInput({
+  value,
+  onChange,
+  suffix,
+  step = 1,
+  min = 0,
+  className = '',
+}: {
+  value: number
+  onChange: (v: number) => void
+  suffix?: string
+  step?: number
+  min?: number
+  className?: string
+}) {
+  return (
+    <div className={`relative flex items-center ${className}`}>
+      <Input
+        type="number"
+        key={value}
+        defaultValue={value || ''}
+        step={step}
+        min={min}
+        placeholder="0"
+        className="h-8 w-24 [appearance:textfield] pr-6 text-right text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        onChange={(e) => {
+          const v = e.target.value === '' ? 0 : Number(e.target.value)
+          if (!isNaN(v)) onChange(v)
+        }}
+      />
+      {suffix && (
+        <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
+          {suffix}
+        </span>
+      )}
+    </div>
+  )
 }
 
 // ─── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
@@ -160,73 +220,128 @@ function buildRowFromOption(opt: PricingOption, defaults: DefaultSettings): Pric
 export function PricingSimMain() {
   const nameId = useId()
   const memoId = useId()
-  const router = useRouter()
 
-  // 시나리오 목록
+  // ── 시나리오 목록 ──────────────────────────────────────────────────────────
   const [scenarios, setScenarios] = useState<ScenarioSummary[]>([])
   const [scenariosLoading, setScenariosLoading] = useState(true)
-
-  // 비교 다이얼로그
   const [comparisonOpen, setComparisonOpen] = useState(false)
 
-  // 현재 선택된 시나리오 id (null = 새 시나리오)
+  // ── 현재 시나리오 메타 ────────────────────────────────────────────────────
   const [activeId, setActiveId] = useState<string | null>(null)
-
-  // 편집 중인 메타
   const [name, setName] = useState('')
-  const [nameAuto, setNameAuto] = useState(true) // true면 옵션 변경 시 자동 추천
+  const [nameAuto, setNameAuto] = useState(true)
   const [memo, setMemo] = useState('')
-  const [channelId, setChannelId] = useState<string>('')
   const [includeVat, setIncludeVat] = useState(true)
-  const [vatRatePct, setVatRatePct] = useState(10) // UI: 10 = 10%
+  const [vatRatePct, setVatRatePct] = useState(10)
+  const [applyReturnAdjustment, setApplyReturnAdjustment] = useState(false)
 
-  // 아이템 행
-  const [rows, setRows] = useState<PricingItemRow[]>([])
+  // ── 전체 DB 채널 캐시 (시나리오 복원용) ────────────────────────────────────
+  const [allDbChannels, setAllDbChannels] = useState<DbChannel[]>([])
 
-  // 채널 목록
-  const [channels, setChannels] = useState<Channel[]>([])
+  // ── 채널 배열 (신규 M-N 구조) ─────────────────────────────────────────────
+  const [scenarioChannels, setScenarioChannels] = useState<ScenarioChannel[]>([])
 
-  // 기본 설정
+  // ── 프로모션 ──────────────────────────────────────────────────────────────
+  const [promotion, setPromotion] = useState<PromotionValue>({ type: 'NONE', value: 0 })
+
+  // ── 옵션 행 ───────────────────────────────────────────────────────────────
+  const [rows, setRows] = useState<OptionRow[]>([])
+
+  // ── 설정 ──────────────────────────────────────────────────────────────────
   const [defaults, setDefaults] = useState<DefaultSettings>({
     defaultOperatingCostPct: 0,
     defaultAdCostPct: 0,
     defaultPackagingCost: 0,
   })
+  const [fullSettings, setFullSettings] = useState<FullSettings>({
+    defaultOperatingCostPct: 0,
+    defaultAdCostPct: 0,
+    defaultPackagingCost: 0,
+    selfMallTargetGood: 0.35,
+    selfMallTargetFair: 0.25,
+    platformTargetGood: 0.25,
+    platformTargetFair: 0.15,
+    expectedReturnRate: 0.05,
+    returnHandlingCost: 5000,
+    minimumAcceptableMargin: 0.1,
+  })
 
-  // UI 상태
+  // ── UI ────────────────────────────────────────────────────────────────────
   const [pickerOpen, setPickerOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // ── 초기 데이터 로드 ──────────────────────────────────────────────────────
+  // ── 초기 로드 ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [scenRes, chRes, stRes] = await Promise.all([
+        const [scenRes, stRes, chRes] = await Promise.all([
           fetch('/api/sh/pricing-scenarios?pageSize=100'),
-          fetch('/api/channels?isActive=true'),
           fetch('/api/sh/settings'),
+          fetch('/api/channels?isActive=true'),
         ])
         if (scenRes.ok) {
           const d: { data: ScenarioSummary[] } = await scenRes.json()
           setScenarios(d.data ?? [])
         }
         if (chRes.ok) {
-          // /api/channels는 { channels: [...] } 형태로 응답함
-          const d: { channels?: Channel[]; data?: Channel[] } = await chRes.json()
-          setChannels(d.channels ?? d.data ?? [])
+          // API는 Decimal 필드를 string으로 반환 — number로 변환
+          type ApiCh = {
+            id: string
+            name: string
+            channelType: string | null
+            kind: string | null
+            defaultFeePct: string | number | null
+            shippingFee: string | number | null
+            freeShippingThreshold: string | number | null
+            applyAdCost: boolean
+            paymentFeeIncluded: boolean
+            paymentFeePct: string | number | null
+          }
+          const d: { channels?: ApiCh[] } = await chRes.json()
+          setAllDbChannels(
+            (d.channels ?? []).map(
+              (c): DbChannel => ({
+                id: c.id,
+                name: c.name,
+                channelType: c.channelType,
+                kind: c.kind,
+                defaultFeePct: c.defaultFeePct != null ? Number(c.defaultFeePct) : null,
+                shippingFee: c.shippingFee != null ? Number(c.shippingFee) : null,
+                freeShippingThreshold:
+                  c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : null,
+                applyAdCost: c.applyAdCost,
+                paymentFeeIncluded: c.paymentFeeIncluded,
+                paymentFeePct: c.paymentFeePct != null ? Number(c.paymentFeePct) : null,
+              })
+            )
+          )
         }
         if (stRes.ok) {
-          const d: { settings: Partial<DefaultSettings> } = await stRes.json()
+          const d: { settings: Partial<FullSettings> } = await stRes.json()
           if (d.settings) {
-            // 방어적 Number 변환 — Decimal이 string으로 올 가능성 차단
-            setDefaults({
-              defaultOperatingCostPct: Number(d.settings.defaultOperatingCostPct ?? 0) || 0,
-              defaultAdCostPct: Number(d.settings.defaultAdCostPct ?? 0) || 0,
-              defaultPackagingCost: Number(d.settings.defaultPackagingCost ?? 0) || 0,
-            })
+            const s = d.settings
+            const base: DefaultSettings = {
+              defaultOperatingCostPct: Number(s.defaultOperatingCostPct ?? 0) || 0,
+              defaultAdCostPct: Number(s.defaultAdCostPct ?? 0) || 0,
+              defaultPackagingCost: Number(s.defaultPackagingCost ?? 0) || 0,
+            }
+            setDefaults(base)
+            setFullSettings((prev) => ({
+              ...prev,
+              ...base,
+              selfMallTargetGood: Number(s.selfMallTargetGood ?? prev.selfMallTargetGood),
+              selfMallTargetFair: Number(s.selfMallTargetFair ?? prev.selfMallTargetFair),
+              platformTargetGood: Number(s.platformTargetGood ?? prev.platformTargetGood),
+              platformTargetFair: Number(s.platformTargetFair ?? prev.platformTargetFair),
+              expectedReturnRate: Number(s.expectedReturnRate ?? prev.expectedReturnRate),
+              returnHandlingCost: Number(s.returnHandlingCost ?? prev.returnHandlingCost),
+              minimumAcceptableMargin: Number(
+                s.minimumAcceptableMargin ?? prev.minimumAcceptableMargin
+              ),
+            }))
           }
         }
       } finally {
@@ -238,116 +353,155 @@ export function PricingSimMain() {
 
   // ── 시나리오 로드 ──────────────────────────────────────────────────────────
 
-  const loadScenario = useCallback(async (id: string) => {
-    try {
-      const res = await fetch(`/api/sh/pricing-scenarios/${id}`)
-      if (!res.ok) throw new Error('시나리오 로드 실패')
-      const data: ScenarioDetail = await res.json()
+  const loadScenario = useCallback(
+    async (id: string) => {
+      try {
+        const res = await fetch(`/api/sh/pricing-scenarios/${id}`)
+        if (!res.ok) throw new Error('시나리오 로드 실패')
+        const data: ScenarioDetail = await res.json()
 
-      setActiveId(data.id)
-      setName(data.name)
-      setNameAuto(false) // 저장된 시나리오는 사용자 입력값이므로 자동 추천 끔
-      setMemo(data.memo ?? '')
-      setChannelId(data.channel?.id ?? '')
-      setIncludeVat(data.includeVat)
-      setVatRatePct(Math.round(data.vatRate * 100))
-
-      // 아이템 → 행 변환 (저장 값은 0~1, UI는 0~100)
-      const loadedRows: PricingItemRow[] = data.items.map((it) => {
-        const discountRatePct = Number((it.discountRate * 100).toFixed(4))
-        const channelFeePct = Number((it.channelFeePct * 100).toFixed(4))
-        const adCostPct = Number((it.adCostPct * 100).toFixed(4))
-        const operatingCostPct = Number((it.operatingCostPct * 100).toFixed(4))
-
-        const result = calculatePricing({
-          costPrice: it.costPrice ?? 0,
-          salePrice: it.salePrice,
-          discountRate: it.discountRate,
-          channelFeePct: it.channelFeePct,
-          shippingCost: it.shippingCost,
-          packagingCost: it.packagingCost,
-          adCostPct: it.adCostPct,
-          operatingCostPct: it.operatingCostPct,
-          includeVat: data.includeVat,
-          vatRate: data.vatRate,
+        setActiveId(data.id)
+        setName(data.name)
+        setNameAuto(false)
+        setMemo(data.memo ?? '')
+        setIncludeVat(data.includeVat)
+        setVatRatePct(Math.round(data.vatRate * 100))
+        setApplyReturnAdjustment(data.applyReturnAdjustment ?? false)
+        setPromotion({
+          type: (data.promotionType as PromotionValue['type']) ?? 'NONE',
+          // PERCENT: API는 0~1, UI는 0~100
+          value:
+            data.promotionType === 'PERCENT'
+              ? (data.promotionValue ?? 0) * 100
+              : (data.promotionValue ?? 0),
         })
 
-        return {
-          rowId: makeRowId(),
-          optionId: it.optionId,
-          productId: it.option.product.id,
-          optionName: it.option.name,
-          productName: it.option.product.name,
-          brandName: it.option.product.brand?.name ?? null,
-          costPrice: it.costPrice ?? 0,
-          salePrice: it.salePrice,
-          discountRatePct,
-          channelFeePct,
-          shippingCost: it.shippingCost,
-          packagingCost: it.packagingCost,
-          adCostPct,
-          operatingCostPct,
-          result,
-        }
-      })
-      setRows(loadedRows)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '시나리오 로드 실패')
-    }
-  }, [])
+        // 채널 복원 — API GET은 channel: { id, name }만 반환 (부분 데이터)
+        // allDbChannels 캐시에서 전체 데이터를 조회해 복원
+        const apiChannels = (data.channels ?? []).filter(Boolean) as { id: string; name: string }[]
+        const restored: ScenarioChannel[] = apiChannels.map((partial) => {
+          // 캐시에서 전체 채널 데이터 조회
+          const full = allDbChannels.find((c) => c.id === partial.id)
+          if (full) {
+            return { source: 'db' as const, channelId: full.id, channel: full }
+          }
+          // 캐시 미스 — 부분 데이터로 폴백 (수수료 0, 배송비 0으로 표시됨)
+          const fallback: DbChannel = {
+            id: partial.id,
+            name: partial.name,
+            channelType: null,
+            kind: null,
+            defaultFeePct: null,
+            shippingFee: null,
+            freeShippingThreshold: null,
+            applyAdCost: false,
+            paymentFeeIncluded: true,
+            paymentFeePct: null,
+          }
+          return { source: 'db' as const, channelId: partial.id, channel: fallback }
+        })
+        setScenarioChannels(restored)
+
+        // 옵션 행 복원
+        const loadedRows: OptionRow[] = data.items
+          .filter((it) => it.option !== null)
+          .map((it) => ({
+            rowId: makeRowId(),
+            optionId: it.optionId,
+            productId: it.option!.product.id,
+            optionName: it.option!.name,
+            productName: it.option!.product.name,
+            brandName: it.option!.product.brand?.name ?? null,
+            costPrice: it.costPrice ?? it.option!.costPrice ?? 0,
+            retailPrice: it.salePrice,
+            unitsPerSet: it.unitsPerSet ?? 1,
+            packagingCost: it.packagingCost,
+            matrixExpanded: {},
+          }))
+        setRows(loadedRows)
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '시나리오 로드 실패')
+      }
+    },
+    [allDbChannels]
+  )
 
   // ── 새 시나리오로 리셋 ─────────────────────────────────────────────────────
 
   function resetToNew() {
     setActiveId(null)
     setName('')
-    setNameAuto(true) // 새 시나리오는 자동 추천 활성화
+    setNameAuto(true)
     setMemo('')
-    setChannelId('')
     setIncludeVat(true)
     setVatRatePct(10)
+    setApplyReturnAdjustment(false)
+    setPromotion({ type: 'NONE', value: 0 })
+    setScenarioChannels([])
     setRows([])
   }
 
-  // ── 옵션 변경 시 시나리오명 자동 추천 ────────────────────────────────────
+  // ── 시나리오명 자동 추천 ───────────────────────────────────────────────────
+
   useEffect(() => {
-    if (!nameAuto) return
-    if (activeId !== null) return // 저장된 시나리오는 유지
-    const suggested = generateScenarioName(rows, channels, channelId)
+    if (!nameAuto || activeId !== null || rows.length === 0) return
+    const firstRow = rows[0]
+    let suggested = firstRow.productName
+    if (firstRow.brandName) suggested = `${firstRow.brandName} ${suggested}`
+    if (rows.length > 1) suggested += ` 외 ${rows.length - 1}개`
+    const firstCh = scenarioChannels[0]
+    if (firstCh?.source === 'db') suggested = `${firstCh.channel.name} · ${suggested}`
+    else if (firstCh?.source === 'inline') suggested = `${firstCh.inline.name} · ${suggested}`
     Promise.resolve().then(() => setName(suggested))
-  }, [rows, channels, channelId, nameAuto, activeId])
+  }, [rows, scenarioChannels, nameAuto, activeId])
 
-  // ── VAT 변경 시 모든 행 재계산 (자식이 아닌 부모에서 책임) ───────────────
-  useEffect(() => {
-    setRows((prev) =>
-      prev.map((r) => ({
-        ...r,
-        result: calculatePricing({
-          costPrice: r.costPrice,
-          salePrice: r.salePrice,
-          discountRate: r.discountRatePct / 100,
-          channelFeePct: r.channelFeePct / 100,
-          shippingCost: r.shippingCost,
-          packagingCost: r.packagingCost,
-          adCostPct: r.adCostPct / 100,
-          operatingCostPct: r.operatingCostPct / 100,
-          includeVat,
-          vatRate: vatRatePct / 100,
-        }),
-      }))
-    )
-  }, [includeVat, vatRatePct])
-
-  // ── 옵션 추가 핸들러 ───────────────────────────────────────────────────────
+  // ── 옵션 추가 ─────────────────────────────────────────────────────────────
 
   function handlePickOption(opt: PricingOption) {
     setRows((prev) => {
-      // 중복 방지 (functional update로 stale closure 방지)
-      if (prev.some((r) => r.optionId === opt.optionId)) {
-        return prev
-      }
+      if (prev.some((r) => r.optionId === opt.optionId)) return prev
       return [...prev, buildRowFromOption(opt, defaults)]
     })
+  }
+
+  function updateRow(rowId: string, patch: Partial<OptionRow>) {
+    setRows((prev) => prev.map((r) => (r.rowId === rowId ? { ...r, ...patch } : r)))
+  }
+
+  function removeRow(rowId: string) {
+    setRows((prev) => prev.filter((r) => r.rowId !== rowId))
+  }
+
+  function toggleMatrix(rowId: string, key: string) {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.rowId !== rowId) return r
+        return {
+          ...r,
+          matrixExpanded: { ...r.matrixExpanded, [key]: !r.matrixExpanded[key] },
+        }
+      })
+    )
+  }
+
+  // ── MatrixGlobals 빌드 ─────────────────────────────────────────────────────
+
+  const matrixGlobals: MatrixGlobals = {
+    includeVat,
+    vatRate: vatRatePct / 100,
+    adCostPct: (fullSettings.defaultAdCostPct ?? 0) / 100,
+    operatingCostPct: (fullSettings.defaultOperatingCostPct ?? 0) / 100,
+    applyReturnAdjustment,
+    expectedReturnRate: fullSettings.expectedReturnRate ?? 0.05,
+    returnHandlingCost: fullSettings.returnHandlingCost ?? 5000,
+    minimumAcceptableMargin: fullSettings.minimumAcceptableMargin ?? 0.1,
+  }
+
+  const tierThresholds: TierThresholds = {
+    selfMallTargetGood: fullSettings.selfMallTargetGood ?? 0.35,
+    selfMallTargetFair: fullSettings.selfMallTargetFair ?? 0.25,
+    platformTargetGood: fullSettings.platformTargetGood ?? 0.25,
+    platformTargetFair: fullSettings.platformTargetFair ?? 0.15,
   }
 
   // ── 저장 ──────────────────────────────────────────────────────────────────
@@ -364,22 +518,39 @@ export function PricingSimMain() {
 
     setSaving(true)
     try {
+      // 채널 페이로드 — spec: channels: [{ channelId } | { channelInline }]
+      // 현재 API(channelIds: string[])와 spec 양쪽 병행 전송.
+      // bernstein이 spec 페이로드를 지원하면 channelIds 제거 예정.
+      const channelIds = scenarioChannels
+        .filter((c): c is Extract<ScenarioChannel, { source: 'db' }> => c.source === 'db')
+        .map((c) => c.channelId)
+
+      const channelPayload = scenarioChannels.map((sc) =>
+        sc.source === 'db' ? { channelId: sc.channelId } : { channelInline: sc.inline }
+      )
+
       const body = {
         name: name.trim(),
         memo: memo.trim() || undefined,
-        channelId: channelId || null,
         includeVat,
         vatRate: vatRatePct / 100,
+        promotionType: promotion.type,
+        promotionValue: promotion.type === 'PERCENT' ? promotion.value / 100 : promotion.value,
+        applyReturnAdjustment,
+        channelIds, // 현재 API 호환 (DB 채널만)
+        channels: channelPayload, // spec 페이로드 (bernstein API 업데이트 후 활성화)
         items: rows.map((r, idx) => ({
           optionId: r.optionId,
           costPrice: r.costPrice,
-          salePrice: r.salePrice,
-          discountRate: r.discountRatePct / 100,
-          channelFeePct: r.channelFeePct / 100,
-          shippingCost: r.shippingCost,
+          salePrice: r.retailPrice,
+          unitsPerSet: r.unitsPerSet,
           packagingCost: r.packagingCost,
-          adCostPct: r.adCostPct / 100,
-          operatingCostPct: r.operatingCostPct / 100,
+          // 채널별 수수료는 매트릭스에서 채널 설정으로 계산하므로 항목 레벨은 0으로 전송
+          discountRate: 0,
+          channelFeePct: 0,
+          shippingCost: 0,
+          adCostPct: (fullSettings.defaultAdCostPct ?? 0) / 100,
+          operatingCostPct: (fullSettings.defaultOperatingCostPct ?? 0) / 100,
           sortOrder: idx,
         })),
       }
@@ -387,7 +558,6 @@ export function PricingSimMain() {
       let savedId = activeId
 
       if (activeId) {
-        // PATCH
         const res = await fetch(`/api/sh/pricing-scenarios/${activeId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -399,7 +569,6 @@ export function PricingSimMain() {
         }
         toast.success('시나리오가 업데이트되었습니다')
       } else {
-        // POST
         const res = await fetch('/api/sh/pricing-scenarios', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -415,14 +584,11 @@ export function PricingSimMain() {
         toast.success('시나리오가 저장되었습니다')
       }
 
-      // 시나리오 목록 갱신
       const listRes = await fetch('/api/sh/pricing-scenarios?pageSize=100')
       if (listRes.ok) {
         const d: { data: ScenarioSummary[] } = await listRes.json()
         setScenarios(d.data ?? [])
       }
-
-      // 저장 후 최신 데이터 재로드 (캐시 결과 동기화)
       if (savedId) await loadScenario(savedId)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
@@ -440,7 +606,6 @@ export function PricingSimMain() {
       deleteTimerRef.current = setTimeout(() => setDeleteConfirm(false), 3000)
       return
     }
-    // 확인 클릭
     clearTimeout(deleteTimerRef.current ?? undefined)
     setDeleteConfirm(false)
     doDelete()
@@ -459,44 +624,14 @@ export function PricingSimMain() {
     }
   }
 
-  // ── 판매채널 등록 핸들러 ───────────────────────────────────────────────────
-
-  function handleRegister(row: PricingItemRow) {
-    if (!channelId) {
-      toast.error('채널을 먼저 지정하세요')
-      return
-    }
-    // prefill 데이터를 sessionStorage에 저장 (1회용)
-    const prefillKey = `pricingPrefill:${Math.random().toString(36).slice(2, 12)}`
-    const data = {
-      optionId: row.optionId,
-      productId: row.productId,
-      retailPrice: Math.round(row.result.finalPrice),
-    }
-    sessionStorage.setItem(prefillKey, JSON.stringify(data))
-    router.push(
-      `/d/seller-hub/products/listings/new?channelId=${channelId}&fromPricing=1&prefillKey=${encodeURIComponent(prefillKey)}`
-    )
-  }
-
-  // ── 합계 계산 ──────────────────────────────────────────────────────────────
-
-  const totalRevenue = rows.reduce((acc, r) => acc + r.result.revenueExVat, 0)
-  const totalCost = rows.reduce((acc, r) => acc + r.result.totalCost, 0)
-  const totalNetProfit = rows.reduce((acc, r) => acc + r.result.netProfit, 0)
-  const avgMargin = totalRevenue === 0 ? 0 : totalNetProfit / totalRevenue
-
-  // ── 현재 옵션 id 목록 ─────────────────────────────────────────────────────
-
-  const existingOptionIds = rows.map((r) => r.optionId)
+  const existingOptionIds = rows.map((r) => r.optionId).filter((id): id is string => id != null)
 
   // ── 렌더 ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-4">
-      {/* ── 상단: 시나리오 선택 + 저장 ── */}
+      {/* ── 상단 툴바 ── */}
       <div className="flex items-center gap-2">
-        {/* 시나리오 드롭다운 */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -537,7 +672,6 @@ export function PricingSimMain() {
 
         <div className="flex-1" />
 
-        {/* 비교 버튼 */}
         {scenarios.length >= 2 && (
           <Button variant="outline" size="sm" onClick={() => setComparisonOpen(true)}>
             <GitCompare className="mr-1.5 h-4 w-4" />
@@ -545,7 +679,6 @@ export function PricingSimMain() {
           </Button>
         )}
 
-        {/* 삭제 버튼 (기존 시나리오일 때만) */}
         {activeId && (
           <Button
             variant={deleteConfirm ? 'destructive' : 'ghost'}
@@ -557,14 +690,13 @@ export function PricingSimMain() {
           </Button>
         )}
 
-        {/* 저장 버튼 */}
         <Button size="sm" onClick={handleSave} disabled={saving}>
           <Save className="mr-1.5 h-4 w-4" />
           {saving ? '저장 중...' : activeId ? '업데이트' : '저장'}
         </Button>
       </div>
 
-      {/* ── 시나리오 메타 카드 ── */}
+      {/* ── 시나리오 정보 카드 ── */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">시나리오 정보</CardTitle>
@@ -573,11 +705,9 @@ export function PricingSimMain() {
           {/* 시나리오명 */}
           <div className="space-y-1.5">
             <Label htmlFor={nameId}>
-              시나리오명 *{' '}
+              시나리오명 *
               {nameAuto && rows.length > 0 && (
-                <span className="ml-1 text-[10px] font-normal text-muted-foreground">
-                  (자동 추천)
-                </span>
+                <span className="ml-1 text-[10px] font-normal text-muted-foreground">(자동)</span>
               )}
             </Label>
             <Input
@@ -585,35 +715,14 @@ export function PricingSimMain() {
               value={name}
               onChange={(e) => {
                 setName(e.target.value)
-                setNameAuto(false) // 사용자가 직접 입력하면 자동 추천 끔
+                setNameAuto(false)
               }}
               placeholder="예: 쿠팡 여름 프로모션"
               maxLength={100}
             />
           </div>
 
-          {/* 채널 */}
-          <div className="space-y-1.5">
-            <Label>채널</Label>
-            <Select
-              value={channelId || '__none__'}
-              onValueChange={(v) => setChannelId(v === '__none__' ? '' : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="채널 선택 (선택사항)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">선택 안 함</SelectItem>
-                {channels.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* VAT 토글 + 비율 */}
+          {/* VAT */}
           <div className="space-y-1.5">
             <Label>부가세(VAT)</Label>
             <div className="flex items-center gap-3">
@@ -643,6 +752,23 @@ export function PricingSimMain() {
             </div>
           </div>
 
+          {/* 반품률 반영 토글 */}
+          <div className="space-y-1.5">
+            <Label>예상 반품률 반영</Label>
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={applyReturnAdjustment}
+                onCheckedChange={setApplyReturnAdjustment}
+                aria-label="반품률 반영 여부"
+              />
+              <span className="text-sm text-muted-foreground">
+                {applyReturnAdjustment
+                  ? `반영 (${((fullSettings.expectedReturnRate ?? 0.05) * 100).toFixed(0)}%)`
+                  : '미반영 (명목 매출)'}
+              </span>
+            </div>
+          </div>
+
           {/* 메모 */}
           <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
             <Label htmlFor={memoId}>메모</Label>
@@ -659,75 +785,183 @@ export function PricingSimMain() {
         </CardContent>
       </Card>
 
-      {/* ── 기본값 설정 (인라인 편집) ── */}
+      {/* ── 기본값 설정 ── */}
       <PricingDefaultsCard initialDefaults={defaults} onSaved={setDefaults} />
 
-      {/* ── 옵션 입력 테이블 ── */}
-      <div className="space-y-2">
-        <h2 className="text-sm font-semibold text-muted-foreground">옵션 목록</h2>
-        <PricingItemsTable
-          rows={rows}
-          includeVat={includeVat}
-          vatRate={vatRatePct / 100}
-          onChange={setRows}
-          onAddClick={() => setPickerOpen(true)}
-          onRegister={handleRegister}
-          scenarioChannelId={channelId || null}
-        />
-      </div>
+      {/* ── 프로모션 카드 ── */}
+      <PricingPromotionCard value={promotion} onChange={setPromotion} />
 
-      {/* ── 합계 카드 ── */}
-      {rows.length > 0 && (
-        <>
-          <Separator />
-          <Card>
+      {/* ── 채널 목록 ── */}
+      <PricingChannelList channels={scenarioChannels} onChange={setScenarioChannels} />
+
+      {/* ── 옵션 카드 목록 ── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-muted-foreground">옵션 ({rows.length}개)</h2>
+          <Button size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
+            + 옵션 추가
+          </Button>
+        </div>
+
+        {rows.length === 0 && (
+          <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-12 text-center">
+            <p className="text-sm text-muted-foreground">추가된 옵션이 없습니다</p>
+            <Button size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
+              옵션 추가
+            </Button>
+          </div>
+        )}
+
+        {rows.map((row) => (
+          <Card key={row.rowId}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">합계 요약</CardTitle>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{row.productName}</p>
+                  <p className="truncate text-xs text-muted-foreground">{row.optionName}</p>
+                  {row.brandName && (
+                    <Badge variant="secondary" className="mt-1 text-[10px]">
+                      {row.brandName}
+                    </Badge>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => removeRow(row.rowId)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+            <CardContent className="space-y-4">
+              {/* 옵션 입력 필드 */}
+              <div className="flex flex-wrap gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">총 매출 (VAT 제외)</p>
-                  <p className="text-xl font-bold">{fmt(totalRevenue)}원</p>
+                  <Label className="text-xs">공급가 (원)</Label>
+                  <NumInput
+                    value={row.costPrice}
+                    onChange={(v) => updateRow(row.rowId, { costPrice: v })}
+                    suffix="원"
+                  />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">총 비용</p>
-                  <p className="text-xl font-bold">{fmt(totalCost)}원</p>
+                  <Label className="text-xs">소매가 / 1세트 (원)</Label>
+                  <NumInput
+                    value={row.retailPrice}
+                    onChange={(v) => updateRow(row.rowId, { retailPrice: v })}
+                    suffix="원"
+                  />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">총 순수익</p>
-                  <p
-                    className={`text-xl font-bold ${
-                      totalNetProfit >= 0 ? 'text-green-600' : 'text-destructive'
-                    }`}
-                  >
-                    {fmt(totalNetProfit)}원
-                  </p>
+                  <Label className="text-xs">1세트 = N개</Label>
+                  <NumInput
+                    value={row.unitsPerSet}
+                    onChange={(v) =>
+                      updateRow(row.rowId, { unitsPerSet: Math.max(1, Math.round(v)) })
+                    }
+                    step={1}
+                    min={1}
+                  />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">평균 마진율</p>
-                  <p
-                    className={`text-xl font-bold ${
-                      avgMargin >= 0 ? 'text-foreground' : 'text-destructive'
-                    }`}
-                  >
-                    {(avgMargin * 100).toFixed(1)}%
-                  </p>
+                  <Label className="text-xs">포장비 (원)</Label>
+                  <NumInput
+                    value={row.packagingCost}
+                    onChange={(v) => updateRow(row.rowId, { packagingCost: v })}
+                    suffix="원"
+                  />
                 </div>
               </div>
+
+              {/* 채널별 매트릭스 */}
+              {scenarioChannels.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  채널을 추가하면 할인율 매트릭스가 표시됩니다.
+                </p>
+              )}
+
+              {scenarioChannels.map((sc, chIdx) => {
+                const key = channelKey(sc, chIdx)
+                const isExpanded = row.matrixExpanded[key] !== false // 기본 펼침
+                const chName = sc.source === 'db' ? sc.channel.name : sc.inline.name
+                const chType = sc.source === 'db' ? sc.channel.channelType : sc.inline.channelType
+                const matrixChannel = toMatrixChannel(sc)
+                const matrixOption: MatrixOption = {
+                  optionId: row.optionId,
+                  name: row.optionName,
+                  retailPrice: row.retailPrice,
+                  costPrice: row.costPrice,
+                  unitsPerSet: row.unitsPerSet,
+                  packagingCost: row.packagingCost,
+                }
+
+                return (
+                  <div key={key} className="rounded-md border">
+                    {/* 채널 헤더 */}
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/40"
+                      onClick={() => toggleMatrix(row.rowId, key)}
+                      aria-expanded={isExpanded}
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                      <span className="text-sm font-medium">{chName}</span>
+                      {chType && (
+                        <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                          {chType}
+                        </Badge>
+                      )}
+                      {sc.source === 'inline' && (
+                        <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+                          임시
+                        </Badge>
+                      )}
+                    </button>
+
+                    {/* 매트릭스 테이블 */}
+                    {isExpanded && (
+                      <div className="border-t px-1 py-2">
+                        <PricingMatrix
+                          option={matrixOption}
+                          channel={matrixChannel}
+                          promotion={toMatrixPromotion(promotion)}
+                          globals={matrixGlobals}
+                          thresholds={tierThresholds}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </CardContent>
           </Card>
+        ))}
+      </div>
+
+      {/* ── 비교 다이얼로그 ── */}
+      {rows.length > 0 && scenarioChannels.length > 0 && (
+        <>
+          <Separator />
+          <p className="text-center text-xs text-muted-foreground">
+            옵션 {rows.length}개 × 채널 {scenarioChannels.length}개 — 매트릭스{' '}
+            {rows.length * scenarioChannels.length}개
+          </p>
         </>
       )}
 
-      {/* ── 시나리오 비교 다이얼로그 ── */}
       <PricingComparisonDialog
         open={comparisonOpen}
         onOpenChange={setComparisonOpen}
         scenarios={scenarios}
       />
 
-      {/* ── 옵션 피커 다이얼로그 ── */}
       <PricingOptionPickerDialog
         open={pickerOpen}
         onOpenChange={setPickerOpen}
