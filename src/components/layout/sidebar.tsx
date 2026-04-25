@@ -37,6 +37,7 @@ import {
   SELLER_HUB_BRANDS_PATH,
   SELLER_HUB_PRICING_SIM_PATH,
   SELLER_HUB_LISTINGS_PATH,
+  SELLER_HUB_PRODUCTION_PATH,
   SELLER_HUB_STOCK_STATUS_PATH,
   SELLER_HUB_MOVEMENTS_PATH,
   SELLER_HUB_LOCATIONS_PATH,
@@ -79,6 +80,7 @@ const SELLER_HUB_PRODUCTS_ITEMS: SidebarItem[] = [
   { label: '브랜드', href: SELLER_HUB_BRANDS_PATH },
   { label: '가격 시뮬레이션', href: SELLER_HUB_PRICING_SIM_PATH, disabled: true, badge: 'Phase 2' },
   { label: '판매채널 상품', href: SELLER_HUB_LISTINGS_PATH },
+  { label: '생산 관리', href: SELLER_HUB_PRODUCTION_PATH },
 ]
 
 const SELLER_HUB_INVENTORY_ITEMS: SidebarItem[] = [
