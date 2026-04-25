@@ -118,9 +118,41 @@
     - `worker/src/sc/publishers/_naver-doc-text.ts` — TipTap Doc → 문단 구분 plain text + CTA 삽입 (6 테스트)
     - `worker/src/sc/collectors/naver-blog-browser.ts` — 공개 포스트 DOM 파싱 (views/likes/comments, 셀렉터 폴백 체인)
     - `src/components/sc/channels/naver-credential-form.tsx` + 채널 상세 페이지 통합 — storageState.json 업로드 + blogId 입력 UI (BLOG_NAVER 플랫폼에서만 노출)
-    - **검증 완료**: 실 계정(meaning-lab) 로그인 → 제목/본문 에디터 주입 → 5문단 정확히 반영 확인 (발행 단계는 공개 포스트 생성을 피해 draft 단계까지만 테스트)
-- [x] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화) — commit `ef486c8`, `jest.config.ts` next/jest preset 적용, 14 suites / 116 tests 전부 green
-- [ ] First smoke test — 실제 Bridge + Gemini + Supabase Storage 연결 후 end-to-end 통과
+- [x] Repo-wide jest 설정 (신규 + Unit 3/4/5/6/8 테스트 활성화) — commit `ef486c8`, `jest.config.ts` next/jest preset 적용
+
+### Phase 3 — 운영 준비 (2026-04-25)
+
+- [x] **Naver Publisher 실 발행 검증** (commit `e7f7a92`) — meaning-lab/224264354857 발행 성공.
+      3건의 루트 원인 확정·해소: ① `addInitScript` 누락(navigator.webdriver), ② Playwright
+      `force:true` click 이 iframe se-help-layer 에 가로채임 → DOM click via evaluate 로 통일,
+      ③ `dismissHelpOverlay` ESC fallback 이 publish 모달까지 닫는 버그 → 호출 제거. 재시도
+      워커라운드 제거(-24 lines).
+- [x] **Worker API ↔ Runner contract 정렬** (commit `365a346`) — Phase 3 First Smoke 에서
+      발견한 critical bug. 워커 API 가 `payload` 가 아닌 top-level 로 deployment/credential 만
+      내려서 runner 의 `buildPublishContext` 가 PublishContext 를 만들지 못하던 문제. assets +
+      deploymentUrl 평탄화하여 PUBLISH·COLLECT 양쪽 정렬. 단위 테스트 갱신 + assets 전달 검증.
+- [x] **non-retryable errorCode 즉시 FAILED** (commit `092db9c`) — AUTH_FAILED·RATE_LIMITED·
+      VALIDATION·NOT_IMPLEMENTED 가 무한 retry 되던 문제. `failJob` 에 `nonRetryable` 옵션 추가,
+      `isRetryableErrorCode` allowlist 헬퍼(NETWORK / PLATFORM_ERROR 만 retry), worker
+      `completeJob` → API → `failJob` 으로 errorCode 전달. unknown 코드는 보수적으로 non-retryable.
+- [x] **ops 도구** (commit `2fc4ead`) — `scripts/sc/ops/smoke-e2e.ts` (시드 → enqueue →
+      poll), `scripts/sc/ops/db-stats.ts` (Space/Channel/Credential/Content/Deployment/Job
+      row 카운트). 신규 환경 bring-up · contract 회귀 검증용.
+- [x] **First End-to-End Smoke Test** — worker boot → claim → Publisher → complete API →
+      DB 동기화 풀패스 검증. AUTH_FAILED case 까지 완전 정상 동작. 실 발행은 Phase 2 시점
+      이미 입증.
+- [x] **COLLECT_METRIC 자동 upsert** (commit `8df0caa`) — Collector 결과를 stdout 로그
+      로만 남기던 TODO 제거. 신규 worker 엔드포인트 `/api/sc/metrics/[deploymentId]/worker`
+  - `reportMetrics` 헬퍼. metrics 보고 실패는 collect job 자체를 FAILED 처리하지 않음
+    (다음 sweep 에서 재시도). 단위 테스트 2건 추가.
+
+### Phase 3 이후 운영 후속 (외부 의존 / 별도)
+
+- [ ] Bridge ACP 라우트 (`POST /sales-content/generate` + `GET /health`) — `claude-code-bridge` 프로젝트
+- [ ] Threads API 실구현 (Meta OAuth 앱 승인 대기)
+- [ ] `docs/sales-content-operations.md` — 맥미니 워커 운영 가이드 (세션 만료 재발급 절차, ENCRYPTION_KEY/WORKER_API_KEY 셋업, smoke·db-stats 사용법, AUTH_FAILED 알림)
+- [ ] Gemini 이미지 AI 검증 — `GOOGLE_AI_API_KEY` 셋업 후 실 호출 테스트
+- [ ] AUTH_FAILED 발생 시 운영 알림(Slack 등) 훅
 
 ## 확정된 의사결정
 
