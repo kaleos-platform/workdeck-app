@@ -93,6 +93,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       retailPrice,
       baselinePrice: baseline,
       availableStock: available,
+      channelAllocation: l.channelAllocation,
       status: l.status,
       effectiveStatus: effective,
       itemCount: l.items.length,

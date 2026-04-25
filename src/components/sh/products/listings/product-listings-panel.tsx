@@ -25,6 +25,7 @@ type ListingForProduct = {
   retailPrice: number | null
   baselinePrice: number | null
   availableStock: number
+  channelAllocation: number | null
   status: 'ACTIVE' | 'SUSPENDED'
   effectiveStatus: 'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'
   itemCount: number
@@ -90,7 +91,7 @@ export function ProductListingsPanel({ productId }: Props) {
             <TableHead>이 상품의 구성</TableHead>
             <TableHead className="text-right">소비자가</TableHead>
             <TableHead className="text-right">판매가</TableHead>
-            <TableHead className="text-right">재고</TableHead>
+            <TableHead className="text-right">채널 재고</TableHead>
             <TableHead>상태</TableHead>
             <TableHead className="w-10" />
           </TableRow>
@@ -127,9 +128,14 @@ export function ProductListingsPanel({ productId }: Props) {
                   {r.retailPrice != null ? `${r.retailPrice.toLocaleString('ko-KR')}원` : '-'}
                 </TableCell>
                 <TableCell
-                  className={`text-right ${r.availableStock === 0 ? 'text-destructive' : ''}`}
+                  className={`text-right ${r.channelAllocation === 0 ? 'text-destructive' : ''}`}
+                  title={`자동 가용재고: ${r.availableStock.toLocaleString('ko-KR')}`}
                 >
-                  {r.availableStock.toLocaleString('ko-KR')}
+                  {r.channelAllocation != null ? (
+                    r.channelAllocation.toLocaleString('ko-KR')
+                  ) : (
+                    <span className="text-xs text-muted-foreground">미설정</span>
+                  )}
                 </TableCell>
                 <TableCell>{statusBadge}</TableCell>
                 <TableCell>
