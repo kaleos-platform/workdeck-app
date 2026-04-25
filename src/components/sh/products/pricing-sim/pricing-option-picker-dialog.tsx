@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search } from 'lucide-react'
+import { Check, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
 // /api/sh/pricing-options 응답 형태
 export type PricingOption = {
@@ -89,7 +90,6 @@ export function PricingOptionPickerDialog({
   }, [open, debounced])
 
   const excluded = new Set(excludeOptionIds)
-  const visible = results.filter((r) => !excluded.has(r.optionId))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -118,43 +118,103 @@ export function PricingOptionPickerDialog({
           <div className="max-h-[50vh] overflow-y-auto rounded-md border">
             {loading ? (
               <div className="p-8 text-center text-sm text-muted-foreground">검색 중...</div>
-            ) : visible.length === 0 ? (
+            ) : results.length === 0 ? (
               <div className="p-8 text-center text-sm text-muted-foreground">
-                {debounced ? '검색 결과가 없습니다' : '검색어를 입력하세요'}
+                {debounced ? '검색 결과가 없습니다' : '검색어를 입력하거나 잠시 기다려주세요'}
               </div>
             ) : (
               <ul className="divide-y">
-                {visible.map((r) => (
-                  <li key={r.optionId}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onPick(r)
-                        // dialog를 닫지 않아 연속 추가 가능
-                      }}
-                      className="w-full px-4 py-3 text-left transition hover:bg-muted/60"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">{r.productName}</p>
-                          <p className="truncate text-sm text-muted-foreground">{r.optionName}</p>
-                          {r.brandName && (
-                            <span className="mt-0.5 inline-block rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                              {r.brandName}
-                            </span>
-                          )}
+                {results.map((r) => {
+                  const isAdded = excluded.has(r.optionId)
+                  return (
+                    <li key={r.optionId}>
+                      <button
+                        type="button"
+                        disabled={isAdded}
+                        onClick={() => {
+                          onPick(r)
+                          toast.success(`${r.optionName} 추가됨`, { duration: 1500 })
+                          // dialog를 닫지 않아 연속 추가 가능
+                        }}
+                        className={cn(
+                          'w-full px-4 py-3 text-left transition',
+                          isAdded
+                            ? 'cursor-not-allowed bg-muted/30 opacity-60'
+                            : 'hover:bg-muted/60'
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <p className="truncate font-medium">{r.productName}</p>
+                              {isAdded && (
+                                <span className="inline-flex items-center gap-0.5 rounded bg-emerald-100 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700">
+                                  <Check className="h-3 w-3" />
+                                  추가됨
+                                </span>
+                              )}
+                            </div>
+                            <p className="truncate text-sm text-muted-foreground">{r.optionName}</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                              {r.brandName && (
+                                <span className="inline-block rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                                  {r.brandName}
+                                </span>
+                              )}
+                              {r.sku && (
+                                <span className="text-[11px] text-muted-foreground">
+                                  SKU {r.sku}
+                                </span>
+                              )}
+                              <span className="text-[11px] text-muted-foreground">
+                                재고 {r.totalStock.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                          {/* 가격 정보 — 의사결정의 핵심 */}
+                          <div className="shrink-0 space-y-0.5 rounded-md border bg-muted/30 px-2.5 py-1.5 text-right text-xs">
+                            <div className="flex items-baseline justify-end gap-1.5">
+                              <span className="text-[10px] text-muted-foreground">소매가</span>
+                              <span
+                                className={cn(
+                                  'font-semibold tabular-nums',
+                                  r.retailPrice != null
+                                    ? 'text-foreground'
+                                    : 'text-muted-foreground/60'
+                                )}
+                              >
+                                {r.retailPrice != null
+                                  ? `${r.retailPrice.toLocaleString()}원`
+                                  : '—'}
+                              </span>
+                            </div>
+                            <div className="flex items-baseline justify-end gap-1.5">
+                              <span className="text-[10px] text-muted-foreground">원가</span>
+                              <span
+                                className={cn(
+                                  'tabular-nums',
+                                  r.costPrice != null ? 'text-foreground' : 'text-amber-600'
+                                )}
+                              >
+                                {r.costPrice != null
+                                  ? `${r.costPrice.toLocaleString()}원`
+                                  : '직접 입력'}
+                              </span>
+                            </div>
+                            {r.msrp != null && (
+                              <div className="flex items-baseline justify-end gap-1.5">
+                                <span className="text-[10px] text-muted-foreground">권장가</span>
+                                <span className="text-muted-foreground tabular-nums">
+                                  {r.msrp.toLocaleString()}원
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="shrink-0 text-right text-xs text-muted-foreground">
-                          {r.sku && <p>SKU {r.sku}</p>}
-                          {r.costPrice != null && (
-                            <p className="text-foreground">원가 {r.costPrice.toLocaleString()}원</p>
-                          )}
-                          <p>재고 {r.totalStock.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    </button>
-                  </li>
-                ))}
+                      </button>
+                    </li>
+                  )
+                })}
               </ul>
             )}
           </div>

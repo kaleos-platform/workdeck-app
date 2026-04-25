@@ -19,7 +19,15 @@ export async function GET() {
     },
   })
 
-  return NextResponse.json({ settings })
+  // Decimal → number 변환 (JSON에서 string으로 직렬화되는 것을 방지)
+  return NextResponse.json({
+    settings: {
+      ...settings,
+      defaultOperatingCostPct: Number(settings.defaultOperatingCostPct.toString()),
+      defaultAdCostPct: Number(settings.defaultAdCostPct.toString()),
+      defaultPackagingCost: Number(settings.defaultPackagingCost.toString()),
+    },
+  })
 }
 
 export async function PUT(req: NextRequest) {
@@ -55,5 +63,12 @@ export async function PUT(req: NextRequest) {
     },
   })
 
-  return NextResponse.json({ settings })
+  return NextResponse.json({
+    settings: {
+      ...settings,
+      defaultOperatingCostPct: Number(settings.defaultOperatingCostPct.toString()),
+      defaultAdCostPct: Number(settings.defaultAdCostPct.toString()),
+      defaultPackagingCost: Number(settings.defaultPackagingCost.toString()),
+    },
+  })
 }

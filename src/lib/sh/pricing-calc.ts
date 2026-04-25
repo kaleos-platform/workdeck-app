@@ -24,19 +24,24 @@ export type PricingResult = {
   margin: number // netProfit / revenueExVat (revenueExVat 0이면 0)
 }
 
+// 안전한 숫자 변환 — string/null/undefined를 모두 0으로 처리하여 산술 연산 보호
+function n(v: unknown): number {
+  const x = Number(v)
+  return Number.isFinite(x) ? x : 0
+}
+
 export function calculatePricing(inputs: PricingInputs): PricingResult {
-  const {
-    costPrice,
-    salePrice,
-    discountRate,
-    channelFeePct,
-    shippingCost,
-    packagingCost,
-    adCostPct,
-    operatingCostPct,
-    includeVat,
-    vatRate,
-  } = inputs
+  // 모든 숫자 입력을 방어적으로 Number()로 변환
+  const costPrice = n(inputs.costPrice)
+  const salePrice = n(inputs.salePrice)
+  const discountRate = n(inputs.discountRate)
+  const channelFeePct = n(inputs.channelFeePct)
+  const shippingCost = n(inputs.shippingCost)
+  const packagingCost = n(inputs.packagingCost)
+  const adCostPct = n(inputs.adCostPct)
+  const operatingCostPct = n(inputs.operatingCostPct)
+  const { includeVat } = inputs
+  const vatRate = n(inputs.vatRate)
 
   // 할인 후 최종 판매가
   const finalPrice = Number((salePrice * (1 - discountRate)).toFixed(2))

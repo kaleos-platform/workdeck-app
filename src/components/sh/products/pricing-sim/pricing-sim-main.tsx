@@ -95,6 +95,23 @@ function fmt(n: number) {
   return Math.round(n).toLocaleString('ko-KR')
 }
 
+function generateScenarioName(
+  rows: PricingItemRow[],
+  channels: Channel[],
+  channelId: string
+): string {
+  if (rows.length === 0) return ''
+  const distinctProducts = Array.from(new Set(rows.map((r) => r.productName)))
+  const firstRow = rows[0]
+  const channelName = channels.find((c) => c.id === channelId)?.name
+
+  let core = distinctProducts[0]
+  if (firstRow.brandName) core = `${firstRow.brandName} ${core}`
+  if (distinctProducts.length > 1) core += ` 외 ${distinctProducts.length - 1}개`
+
+  return channelName ? `${channelName} · ${core}` : core
+}
+
 function buildRowFromOption(opt: PricingOption, defaults: DefaultSettings): PricingItemRow {
   const costPrice = opt.costPrice ?? 0
   const salePrice = 0
@@ -156,6 +173,7 @@ export function PricingSimMain() {
 
   // 편집 중인 메타
   const [name, setName] = useState('')
+  const [nameAuto, setNameAuto] = useState(true) // true면 옵션 변경 시 자동 추천
   const [memo, setMemo] = useState('')
   const [channelId, setChannelId] = useState<string>('')
   const [includeVat, setIncludeVat] = useState(true)
@@ -199,8 +217,15 @@ export function PricingSimMain() {
           setChannels(d.data ?? [])
         }
         if (stRes.ok) {
-          const d: { settings: DefaultSettings } = await stRes.json()
-          if (d.settings) setDefaults(d.settings)
+          const d: { settings: Partial<DefaultSettings> } = await stRes.json()
+          if (d.settings) {
+            // 방어적 Number 변환 — Decimal이 string으로 올 가능성 차단
+            setDefaults({
+              defaultOperatingCostPct: Number(d.settings.defaultOperatingCostPct ?? 0) || 0,
+              defaultAdCostPct: Number(d.settings.defaultAdCostPct ?? 0) || 0,
+              defaultPackagingCost: Number(d.settings.defaultPackagingCost ?? 0) || 0,
+            })
+          }
         }
       } finally {
         setScenariosLoading(false)
@@ -219,6 +244,7 @@ export function PricingSimMain() {
 
       setActiveId(data.id)
       setName(data.name)
+      setNameAuto(false) // 저장된 시나리오는 사용자 입력값이므로 자동 추천 끔
       setMemo(data.memo ?? '')
       setChannelId(data.channel?.id ?? '')
       setIncludeVat(data.includeVat)
@@ -273,6 +299,7 @@ export function PricingSimMain() {
   function resetToNew() {
     setActiveId(null)
     setName('')
+    setNameAuto(true) // 새 시나리오는 자동 추천 활성화
     setMemo('')
     setChannelId('')
     setIncludeVat(true)
@@ -280,16 +307,45 @@ export function PricingSimMain() {
     setRows([])
   }
 
+  // ── 옵션 변경 시 시나리오명 자동 추천 ────────────────────────────────────
+  useEffect(() => {
+    if (!nameAuto) return
+    if (activeId !== null) return // 저장된 시나리오는 유지
+    const suggested = generateScenarioName(rows, channels, channelId)
+    Promise.resolve().then(() => setName(suggested))
+  }, [rows, channels, channelId, nameAuto, activeId])
+
+  // ── VAT 변경 시 모든 행 재계산 (자식이 아닌 부모에서 책임) ───────────────
+  useEffect(() => {
+    setRows((prev) =>
+      prev.map((r) => ({
+        ...r,
+        result: calculatePricing({
+          costPrice: r.costPrice,
+          salePrice: r.salePrice,
+          discountRate: r.discountRatePct / 100,
+          channelFeePct: r.channelFeePct / 100,
+          shippingCost: r.shippingCost,
+          packagingCost: r.packagingCost,
+          adCostPct: r.adCostPct / 100,
+          operatingCostPct: r.operatingCostPct / 100,
+          includeVat,
+          vatRate: vatRatePct / 100,
+        }),
+      }))
+    )
+  }, [includeVat, vatRatePct])
+
   // ── 옵션 추가 핸들러 ───────────────────────────────────────────────────────
 
   function handlePickOption(opt: PricingOption) {
-    // 중복 방지
-    if (rows.some((r) => r.optionId === opt.optionId)) {
-      toast.error('이미 추가된 옵션입니다')
-      return
-    }
-    const newRow = buildRowFromOption(opt, defaults)
-    setRows((prev) => [...prev, newRow])
+    setRows((prev) => {
+      // 중복 방지 (functional update로 stale closure 방지)
+      if (prev.some((r) => r.optionId === opt.optionId)) {
+        return prev
+      }
+      return [...prev, buildRowFromOption(opt, defaults)]
+    })
   }
 
   // ── 저장 ──────────────────────────────────────────────────────────────────
@@ -514,11 +570,21 @@ export function PricingSimMain() {
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* 시나리오명 */}
           <div className="space-y-1.5">
-            <Label htmlFor={nameId}>시나리오명 *</Label>
+            <Label htmlFor={nameId}>
+              시나리오명 *{' '}
+              {nameAuto && rows.length > 0 && (
+                <span className="ml-1 text-[10px] font-normal text-muted-foreground">
+                  (자동 추천)
+                </span>
+              )}
+            </Label>
             <Input
               id={nameId}
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value)
+                setNameAuto(false) // 사용자가 직접 입력하면 자동 추천 끔
+              }}
               placeholder="예: 쿠팡 여름 프로모션"
               maxLength={100}
             />

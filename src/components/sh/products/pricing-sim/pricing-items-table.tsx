@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { X, Plus, PackageOpen, PackagePlus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -118,11 +118,7 @@ export function PricingItemsTable({
   onRegister,
   scenarioChannelId,
 }: Props) {
-  // includeVat / vatRate 변경 시 전체 행 재계산
-  useEffect(() => {
-    onChange(rows.map((r) => recalc(r, includeVat, vatRate)))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [includeVat, vatRate])
+  // 재계산은 부모(pricing-sim-main.tsx)에서 처리. 여기서는 단순 행 업데이트만.
 
   function updateRow(rowId: string, patch: Partial<PricingItemRow>) {
     onChange(
