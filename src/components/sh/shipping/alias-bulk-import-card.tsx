@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload } from 'lucide-react'
+import { Download, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -96,10 +96,18 @@ export function AliasBulkImportCard() {
             기존 채널의 raw name ↔ 매칭 대상 데이터를 CSV로 일괄 등록합니다
           </CardDescription>
         </div>
-        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          <Upload className="mr-1 h-4 w-4" />
-          CSV 업로드
-        </Button>
+        <div className="flex gap-2">
+          <a href="/api/sh/shipping/aliases/export" download>
+            <Button size="sm" variant="outline">
+              <Download className="mr-1 h-4 w-4" />
+              CSV 다운로드
+            </Button>
+          </a>
+          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+            <Upload className="mr-1 h-4 w-4" />
+            CSV 업로드
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <p className="text-xs text-muted-foreground">
