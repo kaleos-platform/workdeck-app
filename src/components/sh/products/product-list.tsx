@@ -38,7 +38,7 @@ type ProductRow = {
   brand?: { id: string; name: string } | null
   brandName?: string | null
   // API GET은 include: { options: true } 로 배열을 반환
-  options?: { id: string }[]
+  options?: { id: string; totalStock?: number }[]
   optionsCount?: number
 }
 
@@ -201,18 +201,19 @@ export function ShProductList() {
               <TableHead>브랜드</TableHead>
               <TableHead>제품코드</TableHead>
               <TableHead className="text-right">옵션수</TableHead>
+              <TableHead className="text-right">재고</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                   등록된 상품이 없습니다
                 </TableCell>
               </TableRow>
@@ -221,6 +222,10 @@ export function ShProductList() {
                 const groupLabel = row.group?.name ?? row.groupName ?? '(기본)'
                 const brandLabel = row.brand?.name ?? row.brandName ?? null
                 const optionCount = row.optionsCount ?? row.options?.length ?? 0
+                const totalStock = (row.options ?? []).reduce(
+                  (sum, o) => sum + (o.totalStock ?? 0),
+                  0
+                )
                 const displayName = productDisplayName(row)
                 const goDetail = () => router.push(`/d/seller-hub/products/${row.id}`)
                 return (
@@ -253,6 +258,11 @@ export function ShProductList() {
                       {row.code ?? '-'}
                     </TableCell>
                     <TableCell className="text-right">{optionCount}</TableCell>
+                    <TableCell
+                      className={`text-right ${totalStock === 0 ? 'text-destructive' : ''}`}
+                    >
+                      {totalStock.toLocaleString('ko-KR')}
+                    </TableCell>
                   </TableRow>
                 )
               })
