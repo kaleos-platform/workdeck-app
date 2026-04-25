@@ -94,15 +94,16 @@ function makeDeps(overrides: Partial<RouteDeps> = {}): RouteDeps {
 // ────────────────────────────────────────────────
 
 describe('routeJob — PUBLISH', () => {
-  it('deployment/channel/content 가 없으면 ok:false 를 반환한다', async () => {
+  it('deployment/channel/content 가 없으면 ok:false + errorCode=VALIDATION', async () => {
     const deps = makeDeps()
     const result = await routeJob(makeJob('PUBLISH'), deps)
     expect(result.ok).toBe(false)
+    expect(result.errorCode).toBe('VALIDATION')
     expect(result.errorMessage).toMatch(/PublishContext/)
     expect(deps.getPublisher).not.toHaveBeenCalled()
   })
 
-  it('getPublisher 가 던지면 ok:false 를 반환한다', async () => {
+  it('getPublisher 가 던지면 ok:false + errorCode=NOT_IMPLEMENTED (영구 오류)', async () => {
     const deps = makeDeps({
       getPublisher: jest.fn().mockImplementation(() => {
         throw new Error('Publisher 미구현')
@@ -115,7 +116,25 @@ describe('routeJob — PUBLISH', () => {
     })
     const result = await routeJob(job, deps)
     expect(result.ok).toBe(false)
+    expect(result.errorCode).toBe('NOT_IMPLEMENTED')
     expect(result.errorMessage).toContain('Publisher 미구현')
+  })
+
+  it('publisher.publish 가 throw 하면 ok:false + errorCode=PLATFORM_ERROR (일시 오류, retry 허용)', async () => {
+    const mockPublisher = {
+      name: 'mock',
+      publish: jest.fn().mockRejectedValue(new Error('chromium crashed')),
+    }
+    const deps = makeDeps({ getPublisher: jest.fn().mockReturnValue(mockPublisher) })
+    const job = makeJob('PUBLISH', {
+      deployment: publishDeployment(),
+      assets: [],
+      deploymentUrl: 'http://example.com/c/s1',
+    })
+    const result = await routeJob(job, deps)
+    expect(result.ok).toBe(false)
+    expect(result.errorCode).toBe('PLATFORM_ERROR')
+    expect(result.errorMessage).toContain('chromium crashed')
   })
 
   it('publisher.publish 성공 시 ok:true + platformUrl 을 전달한다', async () => {
@@ -178,12 +197,28 @@ describe('routeJob — PUBLISH', () => {
 // ────────────────────────────────────────────────
 
 describe('routeJob — COLLECT_METRIC', () => {
-  it('deployment 없으면 ok:false 를 반환한다', async () => {
+  it('deployment 없으면 ok:false + errorCode=VALIDATION', async () => {
     const deps = makeDeps()
     const result = await routeJob(makeJob('COLLECT_METRIC'), deps)
     expect(result.ok).toBe(false)
+    expect(result.errorCode).toBe('VALIDATION')
     expect(result.errorMessage).toMatch(/CollectContext/)
     expect(deps.getCollector).not.toHaveBeenCalled()
+  })
+
+  it('collector.collect 가 throw 하면 ok:false + errorCode=PLATFORM_ERROR', async () => {
+    const mockCollector = {
+      name: 'mock',
+      collect: jest.fn().mockRejectedValue(new Error('selector timeout')),
+    }
+    const deps = makeDeps({ getCollector: jest.fn().mockReturnValue(mockCollector) })
+    const result = await routeJob(
+      makeJob('COLLECT_METRIC', { deployment: collectDeployment() }),
+      deps
+    )
+    expect(result.ok).toBe(false)
+    expect(result.errorCode).toBe('PLATFORM_ERROR')
+    expect(result.errorMessage).toContain('selector timeout')
   })
 
   it('getCollector 가 null 을 반환하면 ok:true 로 완료 처리', async () => {
@@ -288,11 +323,21 @@ describe('routeJob — INSIGHT_SWEEP', () => {
     )
   })
 
-  it('handleInsightSweep 가 실패하면 ok:false + errorMessage 전달', async () => {
+  it('handleInsightSweep 가 실패하면 ok:false + errorCode=PLATFORM_ERROR (기본)', async () => {
     const mockHandle = jest.fn().mockResolvedValue({ ok: false, errorMessage: 'spaceId 없음' })
     const deps = makeDeps({ handleInsightSweep: mockHandle })
     const result = await routeJob(makeJob('INSIGHT_SWEEP'), deps)
     expect(result.ok).toBe(false)
+    expect(result.errorCode).toBe('PLATFORM_ERROR')
     expect(result.errorMessage).toBe('spaceId 없음')
+  })
+
+  it('handleInsightSweep 가 throw 하면 ok:false + errorCode=PLATFORM_ERROR', async () => {
+    const mockHandle = jest.fn().mockRejectedValue(new Error('LLM endpoint down'))
+    const deps = makeDeps({ handleInsightSweep: mockHandle })
+    const result = await routeJob(makeJob('INSIGHT_SWEEP'), deps)
+    expect(result.ok).toBe(false)
+    expect(result.errorCode).toBe('PLATFORM_ERROR')
+    expect(result.errorMessage).toContain('LLM endpoint down')
   })
 })

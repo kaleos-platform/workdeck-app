@@ -36,11 +36,15 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   if (parsed.data.ok) {
-    await completeJob(id)
-    // PUBLISH 성공 시 ContentDeployment 상태 업데이트
+    const { updated } = await completeJob(id)
+    if (!updated) {
+      // 이미 종료된 job 의 중복 보고 — deployment 상태를 덮어쓰지 않는다 (P0 fix).
+      return NextResponse.json({ ok: true, noop: true })
+    }
     if (job.kind === 'PUBLISH' && job.targetId) {
-      await prisma.contentDeployment.update({
-        where: { id: job.targetId },
+      // updateMany 로 status filter 적용 — 이미 PUBLISHED/FAILED 인 deployment 는 덮어쓰지 않음.
+      await prisma.contentDeployment.updateMany({
+        where: { id: job.targetId, status: 'PUBLISHING' },
         data: {
           status: 'PUBLISHED',
           publishedAt: new Date(),
@@ -54,18 +58,32 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const nonRetryable = !isRetryableErrorCode(parsed.data.errorCode)
   const errorMessage = parsed.data.errorMessage ?? '알 수 없는 오류'
-  await failJob(id, errorMessage, { nonRetryable })
-  if (job.kind === 'PUBLISH' && job.targetId) {
-    await prisma.contentDeployment.update({
-      where: { id: job.targetId },
-      data: {
-        status: 'FAILED',
-        errorMessage: errorMessage.slice(0, 1000),
-      },
-    })
+  const { updated, finalized } = await failJob(id, errorMessage, { nonRetryable })
+
+  if (!updated) {
+    // 이미 종료된 job — deployment/notify 전부 스킵 (중복 보고 무시).
+    return NextResponse.json({ ok: true, noop: true })
+  }
+
+  // PUBLISH 의 deployment 는 finalized(즉 status=FAILED 로 떨어졌을 때)에만 동기화.
+  // retryable 실패는 다음 재시도 동안 PUBLISHING 유지 — UI 가 일시 FAILED 로 깜빡이지 않게.
+  if (finalized && job.kind === 'PUBLISH' && job.targetId) {
+    try {
+      await prisma.contentDeployment.updateMany({
+        where: { id: job.targetId, status: 'PUBLISHING' },
+        data: {
+          status: 'FAILED',
+          errorMessage: errorMessage.slice(0, 1000),
+        },
+      })
+    } catch (err) {
+      // deployment update 실패가 알림을 막지 않도록 swallow + 로그.
+      console.error('[complete] ContentDeployment 업데이트 실패:', err)
+    }
   }
 
   // non-retryable 실패만 알림 — retryable 실패는 백오프로 자동 회복하므로 알림 노이즈 회피.
+  // notify 는 deployment update 와 독립적으로 실행 (P1 fix: update 실패가 알림 차단 안 하게).
   if (nonRetryable) {
     void notifyJobFailure({
       jobId: id,

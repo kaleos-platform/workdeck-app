@@ -6,6 +6,21 @@ const WEB_APP_URL = process.env.WEB_APP_URL ?? 'http://127.0.0.1:3000'
 const WORKER_API_KEY = process.env.WORKER_API_KEY
 const WORKER_ID = process.env.SC_WORKER_ID ?? `sc-worker-${process.pid}`
 
+// 워커 → 웹앱 모든 fetch 의 기본 타임아웃. 웹앱 응답이 hang 하면 polling 루프 전체가 멈추므로 필수.
+// SC_WORKER_FETCH_TIMEOUT_MS 로 override 가능 (default 15s).
+const FETCH_TIMEOUT_MS = Number(process.env.SC_WORKER_FETCH_TIMEOUT_MS ?? '15000')
+
+/** AbortController + timeout 으로 감싼 fetch. 타임아웃 시 AbortError throw. */
+async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  try {
+    return await fetch(input, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 type ClaimedJob = {
   job: {
     id: string
@@ -32,7 +47,7 @@ export async function claimJobs(params: {
   if (params.limit) qs.set('limit', String(params.limit))
   if (params.kinds?.length) qs.set('kinds', params.kinds.join(','))
 
-  const res = await fetch(`${WEB_APP_URL}/api/sc/jobs/worker?${qs.toString()}`, {
+  const res = await fetchWithTimeout(`${WEB_APP_URL}/api/sc/jobs/worker?${qs.toString()}`, {
     headers: { 'x-worker-api-key': WORKER_API_KEY },
   })
   if (!res.ok) {
@@ -61,7 +76,7 @@ export async function reportMetrics(
   if (!WORKER_API_KEY) throw new Error('WORKER_API_KEY 환경변수가 필요합니다')
   if (metrics.length === 0) return { ok: true, count: 0 }
   try {
-    const res = await fetch(`${WEB_APP_URL}/api/sc/metrics/${deploymentId}/worker`, {
+    const res = await fetchWithTimeout(`${WEB_APP_URL}/api/sc/metrics/${deploymentId}/worker`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -87,6 +102,8 @@ export async function reportMetrics(
   }
 }
 
+/** 웹앱에 job 종료 보고. 실패 시 예외 throw 대신 false 반환 — pollOnce 가 처리하지 않도록.
+ * 보고 실패 시 job 은 CLAIMED 상태로 남아 stale-claim reaper 가 회복한다. */
 export async function completeJob(
   jobId: string,
   ok: boolean,
@@ -95,16 +112,30 @@ export async function completeJob(
     errorCode?: string
     platformUrl?: string
   }
-): Promise<void> {
+): Promise<{ reported: boolean }> {
   if (!WORKER_API_KEY) throw new Error('WORKER_API_KEY 환경변수가 필요합니다')
-  await fetch(`${WEB_APP_URL}/api/sc/jobs/${jobId}/complete`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-worker-api-key': WORKER_API_KEY,
-    },
-    body: JSON.stringify({ ok, ...meta }),
-  })
+  try {
+    const res = await fetchWithTimeout(`${WEB_APP_URL}/api/sc/jobs/${jobId}/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-worker-api-key': WORKER_API_KEY,
+      },
+      body: JSON.stringify({ ok, ...meta }),
+    })
+    if (!res.ok) {
+      console.warn(
+        `[sc-poller] completeJob ${jobId} 보고 실패: ${res.status} ${await res.text().catch(() => '')}`
+      )
+      return { reported: false }
+    }
+    return { reported: true }
+  } catch (err) {
+    console.warn(
+      `[sc-poller] completeJob ${jobId} 보고 예외: ${err instanceof Error ? err.message : String(err)}`
+    )
+    return { reported: false }
+  }
 }
 
 // 1회 polling 사이클 — Unit 10+ 에서 Publisher/Collector factory 주입 예정.
@@ -131,11 +162,12 @@ export async function pollOnce(
       if (result.ok) processed += 1
       else failed += 1
     } catch (err) {
+      // routeJob 자체 예외 — runner 의 분기별 try/catch 를 빠져나간 경우. 일시 오류로 분류해 retry 허용.
+      // (영구 오류는 routeJob 내부에서 적절한 errorCode 로 명시 반환됨.)
+      // completeJob 은 throw 하지 않음 — 보고 실패는 stale-claim reaper 가 회복.
       await completeJob(c.job.id, false, {
         errorMessage: err instanceof Error ? err.message : String(err),
-      }).catch(() => {
-        // 리포트 실패는 무시 — 다음 polling 에서 stale claim 이 다시 PENDING 으로 회복되지 않으므로
-        // 이 경우 운영이 관찰해 수동 복구해야 한다.
+        errorCode: 'PLATFORM_ERROR',
       })
       failed += 1
     }

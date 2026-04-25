@@ -81,3 +81,6 @@ prisma/scripts/
 .omc/
 .claude/scheduled_tasks.lock
 scripts/sc/_debug/
+
+# code review run artifacts (compound-engineering)
+.context/

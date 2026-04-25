@@ -60,12 +60,21 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
       if (!ctx) {
         return {
           ok: false,
+          errorCode: 'VALIDATION',
           errorMessage:
             'PUBLISH job payload 에서 PublishContext 를 구성할 수 없음 (deployment/channel 누락)',
         }
       }
+      let publisher
       try {
-        const publisher = deps.getPublisher(ctx)
+        publisher = deps.getPublisher(ctx)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error(`[sc-runner] Publisher factory 예외: ${msg}`)
+        // factory 단계 실패는 (platform, mode) 매칭 불가 등 — 영구 오류.
+        return { ok: false, errorCode: 'NOT_IMPLEMENTED', errorMessage: msg }
+      }
+      try {
         const result = await publisher.publish(ctx)
         if (!result.ok && result.errorCode) {
           console.warn(
@@ -80,9 +89,10 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
           platformUrl: result.platformUrl,
         }
       } catch (err) {
+        // publisher.publish() 자체에서 throw — 일시적 오류로 간주, retry 허용.
         const msg = err instanceof Error ? err.message : String(err)
-        console.error(`[sc-runner] Publisher 미구현 또는 예외: ${msg}`)
-        return { ok: false, errorMessage: msg }
+        console.error(`[sc-runner] Publisher.publish 예외: ${msg}`)
+        return { ok: false, errorCode: 'PLATFORM_ERROR', errorMessage: msg }
       }
     }
 
@@ -91,6 +101,7 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
       if (!ctx) {
         return {
           ok: false,
+          errorCode: 'VALIDATION',
           errorMessage:
             'COLLECT_METRIC job payload 에서 CollectContext 를 구성할 수 없음 (deployment/channel 누락)',
         }
@@ -101,7 +112,14 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
         console.log(`[sc-runner] COLLECT_METRIC: collector 없음 (NONE/MANUAL 모드) — 완료 처리`)
         return { ok: true }
       }
-      const result = await collector.collect(ctx)
+      let result
+      try {
+        result = await collector.collect(ctx)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error(`[sc-runner] Collector.collect 예외: ${msg}`)
+        return { ok: false, errorCode: 'PLATFORM_ERROR', errorMessage: msg }
+      }
       if (!result.ok && result.errorCode) {
         console.warn(
           `[sc-runner] COLLECT_METRIC 실패 [${result.errorCode}] ${collector.name}: ${result.errorMessage}`
@@ -141,21 +159,36 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
     }
 
     case 'INSIGHT_SWEEP': {
-      const result = await deps.handleInsightSweep(c as Parameters<typeof handleInsightSweep>[0])
-      return { ok: result.ok, errorMessage: result.errorMessage }
+      try {
+        const result = await deps.handleInsightSweep(c as Parameters<typeof handleInsightSweep>[0])
+        // handler 가 ok:false + errorCode 미반환 시 PLATFORM_ERROR 로 기본 분류 (retry 허용).
+        return {
+          ok: result.ok,
+          errorMessage: result.errorMessage,
+          errorCode: result.ok ? undefined : 'PLATFORM_ERROR',
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error(`[sc-runner] INSIGHT_SWEEP 예외: ${msg}`)
+        return { ok: false, errorCode: 'PLATFORM_ERROR', errorMessage: msg }
+      }
     }
 
     default: {
       const _exhaustive: never = kind
-      return { ok: false, errorMessage: `알 수 없는 job kind: ${_exhaustive}` }
+      return {
+        ok: false,
+        errorCode: 'NOT_IMPLEMENTED',
+        errorMessage: `알 수 없는 job kind: ${_exhaustive}`,
+      }
     }
   }
 }
 
-/** errorCode 기반 재시도 가능 여부 힌트 로깅 */
+/** errorCode 기반 재시도 가능 여부 힌트 로깅. 정책은 webapp 의 isRetryableErrorCode 와 항상 일치해야 함. */
 function logRetryHint(errorCode: string): void {
-  const retryable =
-    errorCode === 'NETWORK' || errorCode === 'PLATFORM_ERROR' || errorCode === 'RATE_LIMITED'
+  // src/lib/sc/jobs.ts 의 RETRYABLE_ERROR_CODES 와 단일 진실 (NETWORK / PLATFORM_ERROR 만 retryable).
+  const retryable = errorCode === 'NETWORK' || errorCode === 'PLATFORM_ERROR'
   if (retryable) {
     console.log(`[sc-runner] errorCode=${errorCode} — 재시도 가능 (네트워크/플랫폼 일시 오류)`)
   } else {

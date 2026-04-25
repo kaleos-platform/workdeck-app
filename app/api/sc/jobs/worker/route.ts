@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { errorResponse, resolveWorkerAuth } from '@/lib/api-helpers'
-import { claimJobs, enqueueJob } from '@/lib/sc/jobs'
+import { claimJobs, enqueueJob, reapStaleClaims } from '@/lib/sc/jobs'
 import { prisma } from '@/lib/prisma'
 import { readChannelCredential } from '@/lib/sc/credentials'
 import { getAppOrigin } from '@/lib/domain'
@@ -25,6 +25,16 @@ export async function GET(req: NextRequest) {
         .split(',')
         .filter((k) => (KINDS as readonly string[]).includes(k)) as (typeof KINDS)[number][])
     : undefined
+
+  // Stale CLAIMED 회복 — 워커가 보고 없이 죽은 job 이 영영 잡히지 않는 것을 방지.
+  // 매 polling 사이클마다 실행되지만 updateMany 는 indexed where 로 빠르고 대부분 0 row.
+  const reaped = await reapStaleClaims().catch((err) => {
+    console.warn('[sc-jobs-worker] reapStaleClaims 실패:', err)
+    return 0
+  })
+  if (reaped > 0) {
+    console.log(`[sc-jobs-worker] stale CLAIMED ${reaped}건 회복`)
+  }
 
   const jobs = await claimJobs({ workerId, kinds, limit })
 

@@ -1,7 +1,6 @@
-// jobs.ts — Prisma/DB 의존성 없는 순수 함수에 대한 단위 테스트.
-// failJob/claimJobs 같은 Prisma 호출 함수는 별도 통합 테스트 영역에서 다룬다.
+// jobs.ts — 순수 함수 단위 테스트 + Prisma mock 기반 핵심 회귀 테스트.
 
-import { isRetryableErrorCode, MAX_ATTEMPTS, nextRetryAt } from '../jobs'
+import { isRetryableErrorCode, MAX_ATTEMPTS, nextRetryAt, STALE_CLAIM_MS } from '../jobs'
 
 describe('isRetryableErrorCode', () => {
   it('NETWORK / PLATFORM_ERROR 는 retryable', () => {
