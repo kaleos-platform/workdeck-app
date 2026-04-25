@@ -154,11 +154,23 @@ export async function failJob(
   return { updated: result.count > 0, finalized: shouldFinalize }
 }
 
+// 워커가 보고할 수 있는 에러코드 — Publisher/Collector 어댑터의 PublishErrorCode/CollectErrorCode 와 일치.
+// 새 코드를 추가할 때 isRetryableErrorCode 의 RETRYABLE_ERROR_CODES 도 함께 업데이트해야 한다.
+export const WORKER_ERROR_CODES = [
+  'AUTH_FAILED',
+  'RATE_LIMITED',
+  'VALIDATION',
+  'PLATFORM_ERROR',
+  'NOT_IMPLEMENTED',
+  'NETWORK',
+] as const
+export type WorkerErrorCode = (typeof WORKER_ERROR_CODES)[number]
+
 // 워커 에러코드 → retry 가능 여부.
 // NETWORK / PLATFORM_ERROR 는 일시적 — 재시도 가능.
 // 그 외(AUTH_FAILED, RATE_LIMITED, VALIDATION, NOT_IMPLEMENTED) 는 자격증명·구현 문제 — 즉시 FAILED.
-const RETRYABLE_ERROR_CODES = new Set(['NETWORK', 'PLATFORM_ERROR'])
+const RETRYABLE_ERROR_CODES = new Set<WorkerErrorCode>(['NETWORK', 'PLATFORM_ERROR'])
 export function isRetryableErrorCode(errorCode: string | null | undefined): boolean {
   if (!errorCode) return true
-  return RETRYABLE_ERROR_CODES.has(errorCode)
+  return RETRYABLE_ERROR_CODES.has(errorCode as WorkerErrorCode)
 }
