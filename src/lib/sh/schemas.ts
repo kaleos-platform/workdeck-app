@@ -122,17 +122,6 @@ export const productSchema = z.object({
 })
 export type ProductInput = z.infer<typeof productSchema>
 
-// ─── 생산 차수 ──────────────────────────────────────────────────────────────
-
-export const productionBatchSchema = z.object({
-  batchNo: z.string().min(1).max(50),
-  producedAt: z.string().datetime(),
-  unitCost: z.number().nonnegative(),
-  quantity: z.number().int().positive().optional(),
-  memo: z.string().max(500).optional(),
-})
-export type ProductionBatchInput = z.infer<typeof productionBatchSchema>
-
 // ─── 채널 ──────────────────────────────────────────────────────────────────
 
 // null / '' 를 undefined 로 정규화 — 프론트가 null로 보내도 optional 필드가 안전하게 처리됨
@@ -307,6 +296,64 @@ export const productChannelGroupMetaSchema = z.object({
     .default([]),
 })
 export type ProductChannelGroupMetaInput = z.infer<typeof productChannelGroupMetaSchema>
+
+// ─── 생산 발주 (ProductionRun) ───────────────────────────────────────────────
+
+export const productionRunCostSchema = z.object({
+  itemName: z.string().trim().min(1).max(100),
+  description: z
+    .string()
+    .trim()
+    .max(500)
+    .optional()
+    .transform((v) => (v?.length ? v : undefined)),
+  spec: z.coerce.number().positive().max(99_999_999).optional(),
+  quantity: z.coerce.number().positive().max(99_999_999).default(1),
+  unitPrice: z.coerce.number().min(0).max(99_999_999),
+  note: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((v) => (v?.length ? v : undefined)),
+  sortOrder: z.number().int().min(0).optional(),
+})
+export type ProductionRunCostInput = z.infer<typeof productionRunCostSchema>
+
+export const productionRunItemSchema = z.object({
+  optionId: z.string().min(1),
+  quantity: z.number().int().positive().max(9_999_999),
+})
+export type ProductionRunItemInput = z.infer<typeof productionRunItemSchema>
+
+export const productionRunSchema = z.object({
+  runNo: z.string().trim().min(1).max(100),
+  orderedAt: z.string().min(1), // YYYY-MM-DD
+  costMode: z.enum(['TOTAL', 'BREAKDOWN']).default('TOTAL'),
+  totalCost: z.coerce.number().min(0).max(99_999_999_999).optional(),
+  memo: z
+    .string()
+    .trim()
+    .max(500)
+    .optional()
+    .transform((v) => (v?.length ? v : undefined)),
+  items: z
+    .array(productionRunItemSchema)
+    .min(1)
+    .max(200)
+    .superRefine((items, ctx) => {
+      const ids = new Set<string>()
+      for (const it of items) {
+        if (ids.has(it.optionId)) ctx.addIssue({ code: 'custom', message: '같은 옵션 중복' })
+        ids.add(it.optionId)
+      }
+    }),
+  costs: z.array(productionRunCostSchema).max(50).default([]),
+})
+export type ProductionRunInput = z.infer<typeof productionRunSchema>
+
+export const productionRunPatchSchema = productionRunSchema.partial()
+export type ProductionRunPatchInput = z.infer<typeof productionRunPatchSchema>
 
 // 여러 listing 일괄 수정 — 판매가·상태만 현재 지원
 export const productListingBulkPatchSchema = z.object({
