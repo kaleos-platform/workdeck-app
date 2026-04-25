@@ -1,7 +1,7 @@
 // Sales Content 워커 러너 — kind 별 라우팅 + 무한 polling 루프.
 // routeJob 은 순수 의존성 주입 함수로 분리되어 있어 테스트에서 mock 주입이 가능하다.
 
-import { pollOnce } from './job-poller.js'
+import { pollOnce, reportMetrics } from './job-poller.js'
 import { getPublisher, type PublishContext } from './publishers/index.js'
 import { getCollector, type CollectContext } from './collectors/index.js'
 import { handleInsightSweep } from './insight-generator.js'
@@ -40,9 +40,10 @@ export type RouteDeps = {
   getPublisher: typeof getPublisher
   getCollector: typeof getCollector
   handleInsightSweep: typeof handleInsightSweep
+  reportMetrics: typeof reportMetrics
 }
 
-const realDeps: RouteDeps = { getPublisher, getCollector, handleInsightSweep }
+const realDeps: RouteDeps = { getPublisher, getCollector, handleInsightSweep, reportMetrics }
 
 /**
  * 단일 job 을 kind 에 따라 적절한 핸들러로 라우팅한다.
@@ -108,10 +109,33 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
         logRetryHint(result.errorCode)
       }
       if (result.ok && result.metrics?.length) {
-        // TODO(Unit 18+): metrics 를 웹앱 API 로 upsert. 현재는 stdout 로깅.
-        console.log(
-          `[sc-runner] COLLECT_METRIC metrics (${result.metrics.length}건) — 저장 미구현, 로그만`
-        )
+        const deploymentId = (c.deployment as { id?: string } | undefined)?.id
+        if (!deploymentId) {
+          console.warn('[sc-runner] COLLECT_METRIC: deployment.id 없음 — metrics upsert 스킵')
+        } else {
+          const upsert = await deps.reportMetrics(
+            deploymentId,
+            result.metrics.map((m) => ({
+              date: m.date.toISOString(),
+              source: 'BROWSER',
+              impressions: m.impressions ?? null,
+              views: m.views ?? null,
+              likes: m.likes ?? null,
+              comments: m.comments ?? null,
+              shares: m.shares ?? null,
+              externalClicks: m.externalClicks ?? null,
+            }))
+          )
+          if (!upsert.ok) {
+            // metrics 보고 실패는 collect job 자체를 실패 처리하지 않는다 — 다음 sweep 에서 재시도.
+            // 단, 에러는 로그로 남겨 운영 측이 인지할 수 있게 한다.
+            console.warn(
+              `[sc-runner] COLLECT_METRIC 결과 upsert 실패: ${upsert.errorMessage ?? 'unknown'}`
+            )
+          } else {
+            console.log(`[sc-runner] COLLECT_METRIC metrics ${upsert.count}건 upsert 완료`)
+          }
+        }
       }
       return { ok: result.ok, errorMessage: result.errorMessage, errorCode: result.errorCode }
     }

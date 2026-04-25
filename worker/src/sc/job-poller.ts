@@ -42,6 +42,51 @@ export async function claimJobs(params: {
   return data.jobs
 }
 
+export type WorkerMetricInput = {
+  date: string // ISO 또는 YYYY-MM-DD
+  source?: 'MANUAL' | 'API' | 'BROWSER' | 'INTERNAL'
+  impressions?: number | null
+  views?: number | null
+  likes?: number | null
+  comments?: number | null
+  shares?: number | null
+  externalClicks?: number | null
+}
+
+/** Collector 결과를 웹앱 metrics worker 엔드포인트에 upsert. 실패해도 throw 없이 false 반환. */
+export async function reportMetrics(
+  deploymentId: string,
+  metrics: WorkerMetricInput[]
+): Promise<{ ok: boolean; count: number; errorMessage?: string }> {
+  if (!WORKER_API_KEY) throw new Error('WORKER_API_KEY 환경변수가 필요합니다')
+  if (metrics.length === 0) return { ok: true, count: 0 }
+  try {
+    const res = await fetch(`${WEB_APP_URL}/api/sc/metrics/${deploymentId}/worker`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-worker-api-key': WORKER_API_KEY,
+      },
+      body: JSON.stringify({ metrics }),
+    })
+    if (!res.ok) {
+      return {
+        ok: false,
+        count: 0,
+        errorMessage: `metrics upsert 실패: ${res.status} ${await res.text().catch(() => '')}`,
+      }
+    }
+    const data = (await res.json()) as { upserted: number }
+    return { ok: true, count: data.upserted ?? metrics.length }
+  } catch (err) {
+    return {
+      ok: false,
+      count: 0,
+      errorMessage: err instanceof Error ? err.message : String(err),
+    }
+  }
+}
+
 export async function completeJob(
   jobId: string,
   ok: boolean,

@@ -84,6 +84,7 @@ function makeDeps(overrides: Partial<RouteDeps> = {}): RouteDeps {
     getPublisher: jest.fn().mockReturnValue(mockPublisher),
     getCollector: jest.fn().mockReturnValue(mockCollector),
     handleInsightSweep: jest.fn().mockResolvedValue({ ok: true }),
+    reportMetrics: jest.fn().mockResolvedValue({ ok: true, count: 0 }),
     ...overrides,
   }
 }
@@ -204,6 +205,54 @@ describe('routeJob — COLLECT_METRIC', () => {
     const result = await routeJob(job, deps)
     expect(result.ok).toBe(true)
     expect(mockCollector.collect).toHaveBeenCalledTimes(1)
+  })
+
+  it('collect 결과에 metrics 가 있으면 reportMetrics 가 호출된다', async () => {
+    const mockCollector = {
+      name: 'mock',
+      collect: jest.fn().mockResolvedValue({
+        ok: true,
+        metrics: [
+          { date: new Date('2026-04-25T00:00:00Z'), views: 12, likes: 3, comments: 1 },
+          { date: new Date('2026-04-26T00:00:00Z'), views: 30, likes: 5, comments: 2 },
+        ],
+      }),
+    }
+    const mockReport = jest.fn().mockResolvedValue({ ok: true, count: 2 })
+    const deps = makeDeps({
+      getCollector: jest.fn().mockReturnValue(mockCollector),
+      reportMetrics: mockReport,
+    })
+    const job = makeJob('COLLECT_METRIC', { deployment: collectDeployment() })
+    const result = await routeJob(job, deps)
+    expect(result.ok).toBe(true)
+    expect(mockReport).toHaveBeenCalledTimes(1)
+    const [deploymentId, metrics] = mockReport.mock.calls[0]
+    expect(deploymentId).toBe('d1')
+    expect(metrics).toHaveLength(2)
+    expect(metrics[0]).toMatchObject({ source: 'BROWSER', views: 12, likes: 3, comments: 1 })
+    expect(metrics[0].date).toBe('2026-04-25T00:00:00.000Z')
+  })
+
+  it('reportMetrics 가 실패해도 collect 자체는 ok:true 로 보고된다', async () => {
+    const mockCollector = {
+      name: 'mock',
+      collect: jest.fn().mockResolvedValue({
+        ok: true,
+        metrics: [{ date: new Date('2026-04-25T00:00:00Z'), views: 1 }],
+      }),
+    }
+    const mockReport = jest.fn().mockResolvedValue({ ok: false, count: 0, errorMessage: '500' })
+    const deps = makeDeps({
+      getCollector: jest.fn().mockReturnValue(mockCollector),
+      reportMetrics: mockReport,
+    })
+    const result = await routeJob(
+      makeJob('COLLECT_METRIC', { deployment: collectDeployment() }),
+      deps
+    )
+    expect(result.ok).toBe(true)
+    expect(mockReport).toHaveBeenCalledTimes(1)
   })
 
   it('collector.collect 가 AUTH_FAILED 를 반환하면 ok:false + errorMessage 전달', async () => {
