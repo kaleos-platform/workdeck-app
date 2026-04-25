@@ -57,38 +57,49 @@ export type WorkerMetricInput = {
   externalClicks?: number | null
 }
 
-/** Collector 결과를 웹앱 metrics worker 엔드포인트에 upsert. 실패해도 throw 없이 false 반환. */
+// 웹앱 /api/sc/metrics/.../worker 의 max(60) 검증과 일치 — 안전 마진을 둬 50건씩 분할.
+// 한 chunk 가 실패하면 즉시 중단(부분 진행 카운트만 보고). 다음 sweep 에서 재시도된다.
+const METRICS_CHUNK_SIZE = 50
+
+/** Collector 결과를 웹앱 metrics worker 엔드포인트에 upsert. 실패해도 throw 없이 false 반환.
+ * 60건 이상의 metrics 는 자동으로 chunk(50) 단위로 분할 POST. */
 export async function reportMetrics(
   deploymentId: string,
   metrics: WorkerMetricInput[]
 ): Promise<{ ok: boolean; count: number; errorMessage?: string }> {
   if (!WORKER_API_KEY) throw new Error('WORKER_API_KEY 환경변수가 필요합니다')
   if (metrics.length === 0) return { ok: true, count: 0 }
-  try {
-    const res = await fetchWithTimeout(`${WEB_APP_URL}/api/sc/metrics/${deploymentId}/worker`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-worker-api-key': WORKER_API_KEY,
-      },
-      body: JSON.stringify({ metrics }),
-    })
-    if (!res.ok) {
+
+  let totalUpserted = 0
+  for (let i = 0; i < metrics.length; i += METRICS_CHUNK_SIZE) {
+    const chunk = metrics.slice(i, i + METRICS_CHUNK_SIZE)
+    try {
+      const res = await fetchWithTimeout(`${WEB_APP_URL}/api/sc/metrics/${deploymentId}/worker`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-worker-api-key': WORKER_API_KEY,
+        },
+        body: JSON.stringify({ metrics: chunk }),
+      })
+      if (!res.ok) {
+        return {
+          ok: false,
+          count: totalUpserted,
+          errorMessage: `metrics upsert 실패 (chunk ${i / METRICS_CHUNK_SIZE + 1}): ${res.status} ${await res.text().catch(() => '')}`,
+        }
+      }
+      const data = (await res.json()) as { upserted: number }
+      totalUpserted += data.upserted ?? chunk.length
+    } catch (err) {
       return {
         ok: false,
-        count: 0,
-        errorMessage: `metrics upsert 실패: ${res.status} ${await res.text().catch(() => '')}`,
+        count: totalUpserted,
+        errorMessage: err instanceof Error ? err.message : String(err),
       }
     }
-    const data = (await res.json()) as { upserted: number }
-    return { ok: true, count: data.upserted ?? metrics.length }
-  } catch (err) {
-    return {
-      ok: false,
-      count: 0,
-      errorMessage: err instanceof Error ? err.message : String(err),
-    }
   }
+  return { ok: true, count: totalUpserted }
 }
 
 /** 웹앱에 job 종료 보고. 실패 시 예외 throw 대신 false 반환 — pollOnce 가 처리하지 않도록.

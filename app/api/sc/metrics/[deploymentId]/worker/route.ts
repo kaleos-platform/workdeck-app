@@ -1,6 +1,9 @@
 // 워커 전용 metrics upsert. x-worker-api-key 인증.
 // 단일 deploymentId 에 대해 여러 일자의 CollectedMetric 을 한 번에 upsert.
 // CollectorScheduler 와 sc-runner 가 호출.
+//
+// 한 요청당 max(60). 그 이상은 워커가 chunk 분할해서 호출 (job-poller.ts: METRICS_CHUNK_SIZE=50).
+// 60 한도를 변경할 때는 워커 측 chunk size 도 함께 줄여야 한다.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
