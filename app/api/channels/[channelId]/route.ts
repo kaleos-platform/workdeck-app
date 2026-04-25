@@ -70,12 +70,18 @@ export async function PATCH(
   const {
     name,
     kind,
+    channelType,
     isActive,
     adminUrl,
     freeShipping,
+    freeShippingThreshold,
+    defaultFeePct,
     usesMarketingBudget,
+    applyAdCost,
     shippingFee,
     vatIncludedInFee,
+    paymentFeeIncluded,
+    paymentFeePct,
     requireOrderNumber,
     requirePayment,
     requireProducts,
@@ -87,13 +93,21 @@ export async function PATCH(
       data: {
         ...(name !== undefined && { name }),
         ...(kind !== undefined && { kind }),
+        ...(channelType !== undefined && { channelType }),
         ...(groupId !== undefined && { groupId: groupId ?? null }),
         ...(isActive !== undefined && { isActive }),
         ...(adminUrl !== undefined && { adminUrl: adminUrl ?? null }),
         ...(freeShipping !== undefined && { freeShipping }),
+        ...(freeShippingThreshold !== undefined && {
+          freeShippingThreshold: freeShippingThreshold ?? null,
+        }),
+        ...(defaultFeePct !== undefined && { defaultFeePct: defaultFeePct ?? null }),
         ...(usesMarketingBudget !== undefined && { usesMarketingBudget }),
+        ...(applyAdCost !== undefined && { applyAdCost }),
         ...(shippingFee !== undefined && { shippingFee: shippingFee ?? null }),
         ...(vatIncludedInFee !== undefined && { vatIncludedInFee }),
+        ...(paymentFeeIncluded !== undefined && { paymentFeeIncluded }),
+        ...(paymentFeePct !== undefined && { paymentFeePct: paymentFeePct ?? null }),
         ...(requireOrderNumber !== undefined && { requireOrderNumber }),
         ...(requirePayment !== undefined && { requirePayment }),
         ...(requireProducts !== undefined && { requireProducts }),
@@ -132,7 +146,7 @@ export async function DELETE(
   })
   if (!existing) return errorResponse('채널을 찾을 수 없습니다', 404)
 
-  // ChannelFeeRate는 onDelete: Cascade로 자동 삭제됨
+  // ChannelFeeRate, PricingScenarioChannel은 onDelete: Cascade로 자동 삭제됨
   await prisma.channel.delete({ where: { id: channelId } })
 
   return new NextResponse(null, { status: 204 })

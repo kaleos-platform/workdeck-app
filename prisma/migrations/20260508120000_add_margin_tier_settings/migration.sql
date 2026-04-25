@@ -1,0 +1,6 @@
+ALTER TABLE "ProductPricingSettings"
+  ADD COLUMN "selfMallTargetGood" DECIMAL(5,4) NOT NULL DEFAULT 0.35,
+  ADD COLUMN "selfMallTargetFair" DECIMAL(5,4) NOT NULL DEFAULT 0.25,
+  ADD COLUMN "platformTargetGood" DECIMAL(5,4) NOT NULL DEFAULT 0.25,
+  ADD COLUMN "platformTargetFair" DECIMAL(5,4) NOT NULL DEFAULT 0.15,
+  ADD COLUMN "minimumAcceptableMargin" DECIMAL(5,4) NOT NULL DEFAULT 0.10;

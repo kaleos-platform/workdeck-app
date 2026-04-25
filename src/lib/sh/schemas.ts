@@ -127,26 +127,35 @@ export type ProductInput = z.infer<typeof productSchema>
 // null / '' 를 undefined 로 정규화 — 프론트가 null로 보내도 optional 필드가 안전하게 처리됨
 const toUndef = (v: unknown) => (v === null || v === '' ? undefined : v)
 
+// null|''|undefined → undefined 변환 후 number 강제 변환 (optional 필드용)
+const toOptionalNumber = (v: unknown) =>
+  v === null || v === '' || v === undefined ? undefined : Number(v)
+
 export const channelSchema = z.object({
   name: z.string().min(1).max(100),
   kind: z
     .enum(['ONLINE_MARKETPLACE', 'ONLINE_MALL', 'OFFLINE', 'INTERNAL_TRANSFER', 'OTHER'])
     .default('ONLINE_MARKETPLACE'),
+  channelType: z
+    .enum(['OPEN_MARKET', 'DEPT_STORE', 'SELF_MALL', 'SOCIAL', 'WHOLESALE', 'OTHER'])
+    .default('OTHER'),
   // groupId: null|'' → undefined → id 검증 skip (UUID/CUID 모두 허용)
   groupId: z.preprocess(toUndef, idLike).optional(),
   isActive: z.boolean().default(true),
   // adminUrl: null|'' → undefined → url 검증 skip
   adminUrl: z.preprocess(toUndef, z.string().url()).optional(),
   freeShipping: z.boolean().default(false),
+  // freeShippingThreshold: 무료배송 최소 주문금액 (원)
+  freeShippingThreshold: z.preprocess(toOptionalNumber, z.number().nonnegative()).optional(),
+  // defaultFeePct: 채널 기본 수수료율 0~1
+  defaultFeePct: z.preprocess(toOptionalNumber, z.number().min(0).max(1)).optional(),
   usesMarketingBudget: z.boolean().default(false),
+  applyAdCost: z.boolean().default(false),
   // shippingFee: null|'' → undefined → number 검증 skip
-  shippingFee: z
-    .preprocess(
-      (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
-      z.number().nonnegative()
-    )
-    .optional(),
+  shippingFee: z.preprocess(toOptionalNumber, z.number().nonnegative()).optional(),
   vatIncludedInFee: z.boolean().default(true),
+  paymentFeeIncluded: z.boolean().default(true),
+  paymentFeePct: z.preprocess(toOptionalNumber, z.number().min(0).max(1)).optional(),
   requireOrderNumber: z.boolean().default(true),
   requirePayment: z.boolean().default(true),
   requireProducts: z.boolean().default(true),
@@ -180,9 +189,24 @@ export type ChannelFeeRateInput = z.infer<typeof channelFeeRateSchema>
 // ─── 가격 설정 ──────────────────────────────────────────────────────────────
 
 export const pricingSettingsSchema = z.object({
+  // 기존 필드 — 0~100 % 단위 (레거시 호환 유지)
   defaultOperatingCostPct: z.number().min(0).max(100),
   defaultAdCostPct: z.number().min(0).max(100),
   defaultPackagingCost: z.number().nonnegative(),
+  // 신규 필드 — 0~1 비율 단위
+  defaultChannelFeePct: z.number().min(0).max(1).default(0),
+  defaultShippingCost: z.number().nonnegative().default(0),
+  defaultReturnRate: z.number().min(0).max(1).default(0),
+  defaultReturnShipping: z.number().nonnegative().default(0),
+  autoApplyChannelFee: z.boolean().default(false),
+  autoApplyAdCost: z.boolean().default(false),
+  autoApplyShipping: z.boolean().default(false),
+  // 마진 등급 임계값 — 0~1 비율 단위
+  selfMallTargetGood: z.number().min(0).max(1).default(0.35),
+  selfMallTargetFair: z.number().min(0).max(1).default(0.25),
+  platformTargetGood: z.number().min(0).max(1).default(0.25),
+  platformTargetFair: z.number().min(0).max(1).default(0.15),
+  minimumAcceptableMargin: z.number().min(0).max(1).default(0.1),
 })
 export type PricingSettingsInput = z.infer<typeof pricingSettingsSchema>
 
@@ -396,18 +420,27 @@ export type ProductionRunPatchInput = z.infer<typeof productionRunPatchSchema>
 
 // ─── 가격 시뮬레이션 시나리오 ──────────────────────────────────────────────────
 
-export const pricingScenarioItemSchema = z.object({
-  optionId: z.string().min(1),
-  costPrice: z.coerce.number().min(0).max(99_999_999).optional().nullable(),
-  salePrice: z.coerce.number().min(0).max(99_999_999),
-  discountRate: z.coerce.number().min(0).max(1).default(0),
-  channelFeePct: z.coerce.number().min(0).max(1).default(0),
-  shippingCost: z.coerce.number().min(0).max(99_999_999).default(0),
-  packagingCost: z.coerce.number().min(0).max(99_999_999).default(0),
-  adCostPct: z.coerce.number().min(0).max(1).default(0),
-  operatingCostPct: z.coerce.number().min(0).max(1).default(0),
-  sortOrder: z.number().int().min(0).optional(),
-})
+export const pricingScenarioItemSchema = z
+  .object({
+    // optionId: null|undefined 허용 — 수동 입력 행은 optionId 없이 manualName으로 입력
+    optionId: z.string().min(1).optional().nullable(),
+    manualName: z.string().trim().max(200).optional().nullable(),
+    manualBrandName: z.string().trim().max(100).optional().nullable(),
+    unitsPerSet: z.number().int().min(1).max(999).default(1),
+    costPrice: z.coerce.number().min(0).max(99_999_999).optional().nullable(),
+    salePrice: z.coerce.number().min(0).max(99_999_999),
+    discountRate: z.coerce.number().min(0).max(1).default(0),
+    channelFeePct: z.coerce.number().min(0).max(1).default(0),
+    shippingCost: z.coerce.number().min(0).max(99_999_999).default(0),
+    packagingCost: z.coerce.number().min(0).max(99_999_999).default(0),
+    adCostPct: z.coerce.number().min(0).max(1).default(0),
+    operatingCostPct: z.coerce.number().min(0).max(1).default(0),
+    sortOrder: z.number().int().min(0).optional(),
+  })
+  .refine((v) => v.optionId != null || (v.manualName != null && v.manualName.trim().length > 0), {
+    message: 'optionId 또는 manualName 중 하나는 필수입니다',
+    path: ['optionId'],
+  })
 export type PricingScenarioItemInput = z.infer<typeof pricingScenarioItemSchema>
 
 export const pricingScenarioSchema = z.object({
@@ -419,21 +452,13 @@ export const pricingScenarioSchema = z.object({
     .optional()
     .transform((v) => (v?.length ? v : undefined)),
   channelId: z.string().min(1).optional().nullable(),
+  channelIds: z.array(z.string().min(1)).max(20).optional(), // M-N 채널 목록
   includeVat: z.boolean().default(true),
   vatRate: z.coerce.number().min(0).max(1).default(0.1),
-  items: z
-    .array(pricingScenarioItemSchema)
-    .min(1)
-    .max(100)
-    .superRefine((items, ctx) => {
-      const ids = new Set<string>()
-      for (const it of items) {
-        if (ids.has(it.optionId)) {
-          ctx.addIssue({ code: 'custom', message: '같은 옵션 중복' })
-        }
-        ids.add(it.optionId)
-      }
-    }),
+  promotionType: z.enum(['NONE', 'FLAT', 'PERCENT', 'COUPON']).default('NONE'),
+  promotionValue: z.coerce.number().min(0).max(99_999_999).optional().nullable(),
+  applyReturnAdjustment: z.boolean().default(false),
+  items: z.array(pricingScenarioItemSchema).min(1).max(100),
 })
 export type PricingScenarioInput = z.infer<typeof pricingScenarioSchema>
 

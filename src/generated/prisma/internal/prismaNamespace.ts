@@ -439,6 +439,7 @@ export const ModelName = {
   ProductionRunItem: 'ProductionRunItem',
   ProductionRunCost: 'ProductionRunCost',
   PricingScenario: 'PricingScenario',
+  PricingScenarioChannel: 'PricingScenarioChannel',
   PricingScenarioItem: 'PricingScenarioItem',
   ProductPricingSettings: 'ProductPricingSettings',
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
@@ -461,7 +462,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "productChannelGroupMeta"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelGroup" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "productChannelGroupMeta"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4535,6 +4536,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PricingScenarioChannel: {
+      payload: Prisma.$PricingScenarioChannelPayload<ExtArgs>
+      fields: Prisma.PricingScenarioChannelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PricingScenarioChannelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PricingScenarioChannelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>
+        }
+        findFirst: {
+          args: Prisma.PricingScenarioChannelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PricingScenarioChannelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>
+        }
+        findMany: {
+          args: Prisma.PricingScenarioChannelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>[]
+        }
+        create: {
+          args: Prisma.PricingScenarioChannelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>
+        }
+        createMany: {
+          args: Prisma.PricingScenarioChannelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PricingScenarioChannelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>[]
+        }
+        delete: {
+          args: Prisma.PricingScenarioChannelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>
+        }
+        update: {
+          args: Prisma.PricingScenarioChannelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>
+        }
+        deleteMany: {
+          args: Prisma.PricingScenarioChannelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PricingScenarioChannelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PricingScenarioChannelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>[]
+        }
+        upsert: {
+          args: Prisma.PricingScenarioChannelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PricingScenarioChannelPayload>
+        }
+        aggregate: {
+          args: Prisma.PricingScenarioChannelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePricingScenarioChannel>
+        }
+        groupBy: {
+          args: Prisma.PricingScenarioChannelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PricingScenarioChannelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PricingScenarioChannelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PricingScenarioChannelCountAggregateOutputType> | number
+        }
+      }
+    }
     PricingScenarioItem: {
       payload: Prisma.$PricingScenarioItemPayload<ExtArgs>
       fields: Prisma.PricingScenarioItemFieldRefs
@@ -5837,12 +5912,18 @@ export const ChannelScalarFieldEnum = {
   groupId: 'groupId',
   name: 'name',
   kind: 'kind',
+  channelType: 'channelType',
   isActive: 'isActive',
   adminUrl: 'adminUrl',
   freeShipping: 'freeShipping',
+  freeShippingThreshold: 'freeShippingThreshold',
+  defaultFeePct: 'defaultFeePct',
   usesMarketingBudget: 'usesMarketingBudget',
+  applyAdCost: 'applyAdCost',
   shippingFee: 'shippingFee',
   vatIncludedInFee: 'vatIncludedInFee',
+  paymentFeeIncluded: 'paymentFeeIncluded',
+  paymentFeePct: 'paymentFeePct',
   requireOrderNumber: 'requireOrderNumber',
   requirePayment: 'requirePayment',
   requireProducts: 'requireProducts',
@@ -5920,6 +6001,9 @@ export const PricingScenarioScalarFieldEnum = {
   memo: 'memo',
   includeVat: 'includeVat',
   vatRate: 'vatRate',
+  promotionType: 'promotionType',
+  promotionValue: 'promotionValue',
+  applyReturnAdjustment: 'applyReturnAdjustment',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -5927,10 +6011,23 @@ export const PricingScenarioScalarFieldEnum = {
 export type PricingScenarioScalarFieldEnum = (typeof PricingScenarioScalarFieldEnum)[keyof typeof PricingScenarioScalarFieldEnum]
 
 
+export const PricingScenarioChannelScalarFieldEnum = {
+  id: 'id',
+  scenarioId: 'scenarioId',
+  channelId: 'channelId',
+  sortOrder: 'sortOrder'
+} as const
+
+export type PricingScenarioChannelScalarFieldEnum = (typeof PricingScenarioChannelScalarFieldEnum)[keyof typeof PricingScenarioChannelScalarFieldEnum]
+
+
 export const PricingScenarioItemScalarFieldEnum = {
   id: 'id',
   scenarioId: 'scenarioId',
   optionId: 'optionId',
+  manualName: 'manualName',
+  manualBrandName: 'manualBrandName',
+  unitsPerSet: 'unitsPerSet',
   costPrice: 'costPrice',
   salePrice: 'salePrice',
   discountRate: 'discountRate',
@@ -5956,6 +6053,18 @@ export const ProductPricingSettingsScalarFieldEnum = {
   defaultOperatingCostPct: 'defaultOperatingCostPct',
   defaultAdCostPct: 'defaultAdCostPct',
   defaultPackagingCost: 'defaultPackagingCost',
+  defaultChannelFeePct: 'defaultChannelFeePct',
+  defaultShippingCost: 'defaultShippingCost',
+  defaultReturnRate: 'defaultReturnRate',
+  defaultReturnShipping: 'defaultReturnShipping',
+  autoApplyChannelFee: 'autoApplyChannelFee',
+  autoApplyAdCost: 'autoApplyAdCost',
+  autoApplyShipping: 'autoApplyShipping',
+  selfMallTargetGood: 'selfMallTargetGood',
+  selfMallTargetFair: 'selfMallTargetFair',
+  platformTargetGood: 'platformTargetGood',
+  platformTargetFair: 'platformTargetFair',
+  minimumAcceptableMargin: 'minimumAcceptableMargin',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -6329,6 +6438,20 @@ export type ListEnumChannelKindFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'ChannelType'
+ */
+export type EnumChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChannelType'>
+    
+
+
+/**
+ * Reference to a field of type 'ChannelType[]'
+ */
+export type ListEnumChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChannelType[]'>
+    
+
+
+/**
  * Reference to a field of type 'ProductionRunStatus'
  */
 export type EnumProductionRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductionRunStatus'>
@@ -6367,6 +6490,20 @@ export type EnumProductionCostCategoryFieldRefInput<$PrismaModel> = FieldRefInpu
  * Reference to a field of type 'ProductionCostCategory[]'
  */
 export type ListEnumProductionCostCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductionCostCategory[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PromotionType'
+ */
+export type EnumPromotionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PromotionType'>
+    
+
+
+/**
+ * Reference to a field of type 'PromotionType[]'
+ */
+export type ListEnumPromotionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PromotionType[]'>
     
 
 
@@ -6533,6 +6670,7 @@ export type GlobalOmitConfig = {
   productionRunItem?: Prisma.ProductionRunItemOmit
   productionRunCost?: Prisma.ProductionRunCostOmit
   pricingScenario?: Prisma.PricingScenarioOmit
+  pricingScenarioChannel?: Prisma.PricingScenarioChannelOmit
   pricingScenarioItem?: Prisma.PricingScenarioItemOmit
   productPricingSettings?: Prisma.ProductPricingSettingsOmit
   spaceOptionCodeAlias?: Prisma.SpaceOptionCodeAliasOmit

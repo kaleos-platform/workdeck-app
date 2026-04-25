@@ -744,10 +744,12 @@ export type InvProductOptionCreateNestedOneWithoutPricingScenarioItemsInput = {
   connect?: Prisma.InvProductOptionWhereUniqueInput
 }
 
-export type InvProductOptionUpdateOneRequiredWithoutPricingScenarioItemsNestedInput = {
+export type InvProductOptionUpdateOneWithoutPricingScenarioItemsNestedInput = {
   create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput>
   connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutPricingScenarioItemsInput
   upsert?: Prisma.InvProductOptionUpsertWithoutPricingScenarioItemsInput
+  disconnect?: Prisma.InvProductOptionWhereInput | boolean
+  delete?: Prisma.InvProductOptionWhereInput | boolean
   connect?: Prisma.InvProductOptionWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUpdateWithoutPricingScenarioItemsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput>
 }

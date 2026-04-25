@@ -27,6 +27,7 @@ export type AggregatePricingScenarioItem = {
 }
 
 export type PricingScenarioItemAvgAggregateOutputType = {
+  unitsPerSet: number | null
   costPrice: runtime.Decimal | null
   salePrice: runtime.Decimal | null
   discountRate: runtime.Decimal | null
@@ -44,6 +45,7 @@ export type PricingScenarioItemAvgAggregateOutputType = {
 }
 
 export type PricingScenarioItemSumAggregateOutputType = {
+  unitsPerSet: number | null
   costPrice: runtime.Decimal | null
   salePrice: runtime.Decimal | null
   discountRate: runtime.Decimal | null
@@ -64,6 +66,9 @@ export type PricingScenarioItemMinAggregateOutputType = {
   id: string | null
   scenarioId: string | null
   optionId: string | null
+  manualName: string | null
+  manualBrandName: string | null
+  unitsPerSet: number | null
   costPrice: runtime.Decimal | null
   salePrice: runtime.Decimal | null
   discountRate: runtime.Decimal | null
@@ -84,6 +89,9 @@ export type PricingScenarioItemMaxAggregateOutputType = {
   id: string | null
   scenarioId: string | null
   optionId: string | null
+  manualName: string | null
+  manualBrandName: string | null
+  unitsPerSet: number | null
   costPrice: runtime.Decimal | null
   salePrice: runtime.Decimal | null
   discountRate: runtime.Decimal | null
@@ -104,6 +112,9 @@ export type PricingScenarioItemCountAggregateOutputType = {
   id: number
   scenarioId: number
   optionId: number
+  manualName: number
+  manualBrandName: number
+  unitsPerSet: number
   costPrice: number
   salePrice: number
   discountRate: number
@@ -123,6 +134,7 @@ export type PricingScenarioItemCountAggregateOutputType = {
 
 
 export type PricingScenarioItemAvgAggregateInputType = {
+  unitsPerSet?: true
   costPrice?: true
   salePrice?: true
   discountRate?: true
@@ -140,6 +152,7 @@ export type PricingScenarioItemAvgAggregateInputType = {
 }
 
 export type PricingScenarioItemSumAggregateInputType = {
+  unitsPerSet?: true
   costPrice?: true
   salePrice?: true
   discountRate?: true
@@ -160,6 +173,9 @@ export type PricingScenarioItemMinAggregateInputType = {
   id?: true
   scenarioId?: true
   optionId?: true
+  manualName?: true
+  manualBrandName?: true
+  unitsPerSet?: true
   costPrice?: true
   salePrice?: true
   discountRate?: true
@@ -180,6 +196,9 @@ export type PricingScenarioItemMaxAggregateInputType = {
   id?: true
   scenarioId?: true
   optionId?: true
+  manualName?: true
+  manualBrandName?: true
+  unitsPerSet?: true
   costPrice?: true
   salePrice?: true
   discountRate?: true
@@ -200,6 +219,9 @@ export type PricingScenarioItemCountAggregateInputType = {
   id?: true
   scenarioId?: true
   optionId?: true
+  manualName?: true
+  manualBrandName?: true
+  unitsPerSet?: true
   costPrice?: true
   salePrice?: true
   discountRate?: true
@@ -306,7 +328,10 @@ export type PricingScenarioItemGroupByArgs<ExtArgs extends runtime.Types.Extensi
 export type PricingScenarioItemGroupByOutputType = {
   id: string
   scenarioId: string
-  optionId: string
+  optionId: string | null
+  manualName: string | null
+  manualBrandName: string | null
+  unitsPerSet: number
   costPrice: runtime.Decimal | null
   salePrice: runtime.Decimal
   discountRate: runtime.Decimal
@@ -349,7 +374,10 @@ export type PricingScenarioItemWhereInput = {
   NOT?: Prisma.PricingScenarioItemWhereInput | Prisma.PricingScenarioItemWhereInput[]
   id?: Prisma.StringFilter<"PricingScenarioItem"> | string
   scenarioId?: Prisma.StringFilter<"PricingScenarioItem"> | string
-  optionId?: Prisma.StringFilter<"PricingScenarioItem"> | string
+  optionId?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  manualName?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  manualBrandName?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  unitsPerSet?: Prisma.IntFilter<"PricingScenarioItem"> | number
   costPrice?: Prisma.DecimalNullableFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -365,13 +393,16 @@ export type PricingScenarioItemWhereInput = {
   margin?: Prisma.DecimalFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   sortOrder?: Prisma.IntFilter<"PricingScenarioItem"> | number
   scenario?: Prisma.XOR<Prisma.PricingScenarioScalarRelationFilter, Prisma.PricingScenarioWhereInput>
-  option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
+  option?: Prisma.XOR<Prisma.InvProductOptionNullableScalarRelationFilter, Prisma.InvProductOptionWhereInput> | null
 }
 
 export type PricingScenarioItemOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   scenarioId?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
+  optionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualName?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualBrandName?: Prisma.SortOrderInput | Prisma.SortOrder
+  unitsPerSet?: Prisma.SortOrder
   costPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   salePrice?: Prisma.SortOrder
   discountRate?: Prisma.SortOrder
@@ -392,12 +423,14 @@ export type PricingScenarioItemOrderByWithRelationInput = {
 
 export type PricingScenarioItemWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  scenarioId_optionId?: Prisma.PricingScenarioItemScenarioIdOptionIdCompoundUniqueInput
   AND?: Prisma.PricingScenarioItemWhereInput | Prisma.PricingScenarioItemWhereInput[]
   OR?: Prisma.PricingScenarioItemWhereInput[]
   NOT?: Prisma.PricingScenarioItemWhereInput | Prisma.PricingScenarioItemWhereInput[]
   scenarioId?: Prisma.StringFilter<"PricingScenarioItem"> | string
-  optionId?: Prisma.StringFilter<"PricingScenarioItem"> | string
+  optionId?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  manualName?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  manualBrandName?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  unitsPerSet?: Prisma.IntFilter<"PricingScenarioItem"> | number
   costPrice?: Prisma.DecimalNullableFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -413,13 +446,16 @@ export type PricingScenarioItemWhereUniqueInput = Prisma.AtLeast<{
   margin?: Prisma.DecimalFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   sortOrder?: Prisma.IntFilter<"PricingScenarioItem"> | number
   scenario?: Prisma.XOR<Prisma.PricingScenarioScalarRelationFilter, Prisma.PricingScenarioWhereInput>
-  option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
-}, "id" | "scenarioId_optionId">
+  option?: Prisma.XOR<Prisma.InvProductOptionNullableScalarRelationFilter, Prisma.InvProductOptionWhereInput> | null
+}, "id">
 
 export type PricingScenarioItemOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   scenarioId?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
+  optionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualName?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualBrandName?: Prisma.SortOrderInput | Prisma.SortOrder
+  unitsPerSet?: Prisma.SortOrder
   costPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   salePrice?: Prisma.SortOrder
   discountRate?: Prisma.SortOrder
@@ -447,7 +483,10 @@ export type PricingScenarioItemScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PricingScenarioItemScalarWhereWithAggregatesInput | Prisma.PricingScenarioItemScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"PricingScenarioItem"> | string
   scenarioId?: Prisma.StringWithAggregatesFilter<"PricingScenarioItem"> | string
-  optionId?: Prisma.StringWithAggregatesFilter<"PricingScenarioItem"> | string
+  optionId?: Prisma.StringNullableWithAggregatesFilter<"PricingScenarioItem"> | string | null
+  manualName?: Prisma.StringNullableWithAggregatesFilter<"PricingScenarioItem"> | string | null
+  manualBrandName?: Prisma.StringNullableWithAggregatesFilter<"PricingScenarioItem"> | string | null
+  unitsPerSet?: Prisma.IntWithAggregatesFilter<"PricingScenarioItem"> | number
   costPrice?: Prisma.DecimalNullableWithAggregatesFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalWithAggregatesFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalWithAggregatesFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -466,6 +505,9 @@ export type PricingScenarioItemScalarWhereWithAggregatesInput = {
 
 export type PricingScenarioItemCreateInput = {
   id?: string
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -481,13 +523,16 @@ export type PricingScenarioItemCreateInput = {
   margin?: runtime.Decimal | runtime.DecimalJsLike | number | string
   sortOrder?: number
   scenario: Prisma.PricingScenarioCreateNestedOneWithoutItemsInput
-  option: Prisma.InvProductOptionCreateNestedOneWithoutPricingScenarioItemsInput
+  option?: Prisma.InvProductOptionCreateNestedOneWithoutPricingScenarioItemsInput
 }
 
 export type PricingScenarioItemUncheckedCreateInput = {
   id?: string
   scenarioId: string
-  optionId: string
+  optionId?: string | null
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -506,6 +551,9 @@ export type PricingScenarioItemUncheckedCreateInput = {
 
 export type PricingScenarioItemUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -521,13 +569,16 @@ export type PricingScenarioItemUpdateInput = {
   margin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   scenario?: Prisma.PricingScenarioUpdateOneRequiredWithoutItemsNestedInput
-  option?: Prisma.InvProductOptionUpdateOneRequiredWithoutPricingScenarioItemsNestedInput
+  option?: Prisma.InvProductOptionUpdateOneWithoutPricingScenarioItemsNestedInput
 }
 
 export type PricingScenarioItemUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scenarioId?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -547,7 +598,10 @@ export type PricingScenarioItemUncheckedUpdateInput = {
 export type PricingScenarioItemCreateManyInput = {
   id?: string
   scenarioId: string
-  optionId: string
+  optionId?: string | null
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -566,6 +620,9 @@ export type PricingScenarioItemCreateManyInput = {
 
 export type PricingScenarioItemUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -585,7 +642,10 @@ export type PricingScenarioItemUpdateManyMutationInput = {
 export type PricingScenarioItemUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scenarioId?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -612,15 +672,13 @@ export type PricingScenarioItemOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type PricingScenarioItemScenarioIdOptionIdCompoundUniqueInput = {
-  scenarioId: string
-  optionId: string
-}
-
 export type PricingScenarioItemCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   scenarioId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
+  manualName?: Prisma.SortOrder
+  manualBrandName?: Prisma.SortOrder
+  unitsPerSet?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
   salePrice?: Prisma.SortOrder
   discountRate?: Prisma.SortOrder
@@ -638,6 +696,7 @@ export type PricingScenarioItemCountOrderByAggregateInput = {
 }
 
 export type PricingScenarioItemAvgOrderByAggregateInput = {
+  unitsPerSet?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
   salePrice?: Prisma.SortOrder
   discountRate?: Prisma.SortOrder
@@ -658,6 +717,9 @@ export type PricingScenarioItemMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   scenarioId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
+  manualName?: Prisma.SortOrder
+  manualBrandName?: Prisma.SortOrder
+  unitsPerSet?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
   salePrice?: Prisma.SortOrder
   discountRate?: Prisma.SortOrder
@@ -678,6 +740,9 @@ export type PricingScenarioItemMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   scenarioId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
+  manualName?: Prisma.SortOrder
+  manualBrandName?: Prisma.SortOrder
+  unitsPerSet?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
   salePrice?: Prisma.SortOrder
   discountRate?: Prisma.SortOrder
@@ -695,6 +760,7 @@ export type PricingScenarioItemMinOrderByAggregateInput = {
 }
 
 export type PricingScenarioItemSumOrderByAggregateInput = {
+  unitsPerSet?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
   salePrice?: Prisma.SortOrder
   discountRate?: Prisma.SortOrder
@@ -797,6 +863,9 @@ export type PricingScenarioItemUncheckedUpdateManyWithoutScenarioNestedInput = {
 
 export type PricingScenarioItemCreateWithoutOptionInput = {
   id?: string
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -817,6 +886,9 @@ export type PricingScenarioItemCreateWithoutOptionInput = {
 export type PricingScenarioItemUncheckedCreateWithoutOptionInput = {
   id?: string
   scenarioId: string
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -865,7 +937,10 @@ export type PricingScenarioItemScalarWhereInput = {
   NOT?: Prisma.PricingScenarioItemScalarWhereInput | Prisma.PricingScenarioItemScalarWhereInput[]
   id?: Prisma.StringFilter<"PricingScenarioItem"> | string
   scenarioId?: Prisma.StringFilter<"PricingScenarioItem"> | string
-  optionId?: Prisma.StringFilter<"PricingScenarioItem"> | string
+  optionId?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  manualName?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  manualBrandName?: Prisma.StringNullableFilter<"PricingScenarioItem"> | string | null
+  unitsPerSet?: Prisma.IntFilter<"PricingScenarioItem"> | number
   costPrice?: Prisma.DecimalNullableFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFilter<"PricingScenarioItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -884,6 +959,9 @@ export type PricingScenarioItemScalarWhereInput = {
 
 export type PricingScenarioItemCreateWithoutScenarioInput = {
   id?: string
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -898,12 +976,15 @@ export type PricingScenarioItemCreateWithoutScenarioInput = {
   netProfit?: runtime.Decimal | runtime.DecimalJsLike | number | string
   margin?: runtime.Decimal | runtime.DecimalJsLike | number | string
   sortOrder?: number
-  option: Prisma.InvProductOptionCreateNestedOneWithoutPricingScenarioItemsInput
+  option?: Prisma.InvProductOptionCreateNestedOneWithoutPricingScenarioItemsInput
 }
 
 export type PricingScenarioItemUncheckedCreateWithoutScenarioInput = {
   id?: string
-  optionId: string
+  optionId?: string | null
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -949,6 +1030,9 @@ export type PricingScenarioItemUpdateManyWithWhereWithoutScenarioInput = {
 export type PricingScenarioItemCreateManyOptionInput = {
   id?: string
   scenarioId: string
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -967,6 +1051,9 @@ export type PricingScenarioItemCreateManyOptionInput = {
 
 export type PricingScenarioItemUpdateWithoutOptionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -987,6 +1074,9 @@ export type PricingScenarioItemUpdateWithoutOptionInput = {
 export type PricingScenarioItemUncheckedUpdateWithoutOptionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scenarioId?: Prisma.StringFieldUpdateOperationsInput | string
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1006,6 +1096,9 @@ export type PricingScenarioItemUncheckedUpdateWithoutOptionInput = {
 export type PricingScenarioItemUncheckedUpdateManyWithoutOptionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scenarioId?: Prisma.StringFieldUpdateOperationsInput | string
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1024,7 +1117,10 @@ export type PricingScenarioItemUncheckedUpdateManyWithoutOptionInput = {
 
 export type PricingScenarioItemCreateManyScenarioInput = {
   id?: string
-  optionId: string
+  optionId?: string | null
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1043,6 +1139,9 @@ export type PricingScenarioItemCreateManyScenarioInput = {
 
 export type PricingScenarioItemUpdateWithoutScenarioInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1057,12 +1156,15 @@ export type PricingScenarioItemUpdateWithoutScenarioInput = {
   netProfit?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   margin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  option?: Prisma.InvProductOptionUpdateOneRequiredWithoutPricingScenarioItemsNestedInput
+  option?: Prisma.InvProductOptionUpdateOneWithoutPricingScenarioItemsNestedInput
 }
 
 export type PricingScenarioItemUncheckedUpdateWithoutScenarioInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1081,7 +1183,10 @@ export type PricingScenarioItemUncheckedUpdateWithoutScenarioInput = {
 
 export type PricingScenarioItemUncheckedUpdateManyWithoutScenarioInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualBrandName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitsPerSet?: Prisma.IntFieldUpdateOperationsInput | number
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1104,6 +1209,9 @@ export type PricingScenarioItemSelect<ExtArgs extends runtime.Types.Extensions.I
   id?: boolean
   scenarioId?: boolean
   optionId?: boolean
+  manualName?: boolean
+  manualBrandName?: boolean
+  unitsPerSet?: boolean
   costPrice?: boolean
   salePrice?: boolean
   discountRate?: boolean
@@ -1119,13 +1227,16 @@ export type PricingScenarioItemSelect<ExtArgs extends runtime.Types.Extensions.I
   margin?: boolean
   sortOrder?: boolean
   scenario?: boolean | Prisma.PricingScenarioDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  option?: boolean | Prisma.PricingScenarioItem$optionArgs<ExtArgs>
 }, ExtArgs["result"]["pricingScenarioItem"]>
 
 export type PricingScenarioItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   scenarioId?: boolean
   optionId?: boolean
+  manualName?: boolean
+  manualBrandName?: boolean
+  unitsPerSet?: boolean
   costPrice?: boolean
   salePrice?: boolean
   discountRate?: boolean
@@ -1141,13 +1252,16 @@ export type PricingScenarioItemSelectCreateManyAndReturn<ExtArgs extends runtime
   margin?: boolean
   sortOrder?: boolean
   scenario?: boolean | Prisma.PricingScenarioDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  option?: boolean | Prisma.PricingScenarioItem$optionArgs<ExtArgs>
 }, ExtArgs["result"]["pricingScenarioItem"]>
 
 export type PricingScenarioItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   scenarioId?: boolean
   optionId?: boolean
+  manualName?: boolean
+  manualBrandName?: boolean
+  unitsPerSet?: boolean
   costPrice?: boolean
   salePrice?: boolean
   discountRate?: boolean
@@ -1163,13 +1277,16 @@ export type PricingScenarioItemSelectUpdateManyAndReturn<ExtArgs extends runtime
   margin?: boolean
   sortOrder?: boolean
   scenario?: boolean | Prisma.PricingScenarioDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  option?: boolean | Prisma.PricingScenarioItem$optionArgs<ExtArgs>
 }, ExtArgs["result"]["pricingScenarioItem"]>
 
 export type PricingScenarioItemSelectScalar = {
   id?: boolean
   scenarioId?: boolean
   optionId?: boolean
+  manualName?: boolean
+  manualBrandName?: boolean
+  unitsPerSet?: boolean
   costPrice?: boolean
   salePrice?: boolean
   discountRate?: boolean
@@ -1186,30 +1303,33 @@ export type PricingScenarioItemSelectScalar = {
   sortOrder?: boolean
 }
 
-export type PricingScenarioItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "scenarioId" | "optionId" | "costPrice" | "salePrice" | "discountRate" | "channelFeePct" | "shippingCost" | "packagingCost" | "adCostPct" | "operatingCostPct" | "finalPrice" | "revenueExVat" | "totalCost" | "netProfit" | "margin" | "sortOrder", ExtArgs["result"]["pricingScenarioItem"]>
+export type PricingScenarioItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "scenarioId" | "optionId" | "manualName" | "manualBrandName" | "unitsPerSet" | "costPrice" | "salePrice" | "discountRate" | "channelFeePct" | "shippingCost" | "packagingCost" | "adCostPct" | "operatingCostPct" | "finalPrice" | "revenueExVat" | "totalCost" | "netProfit" | "margin" | "sortOrder", ExtArgs["result"]["pricingScenarioItem"]>
 export type PricingScenarioItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   scenario?: boolean | Prisma.PricingScenarioDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  option?: boolean | Prisma.PricingScenarioItem$optionArgs<ExtArgs>
 }
 export type PricingScenarioItemIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   scenario?: boolean | Prisma.PricingScenarioDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  option?: boolean | Prisma.PricingScenarioItem$optionArgs<ExtArgs>
 }
 export type PricingScenarioItemIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   scenario?: boolean | Prisma.PricingScenarioDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  option?: boolean | Prisma.PricingScenarioItem$optionArgs<ExtArgs>
 }
 
 export type $PricingScenarioItemPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "PricingScenarioItem"
   objects: {
     scenario: Prisma.$PricingScenarioPayload<ExtArgs>
-    option: Prisma.$InvProductOptionPayload<ExtArgs>
+    option: Prisma.$InvProductOptionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     scenarioId: string
-    optionId: string
+    optionId: string | null
+    manualName: string | null
+    manualBrandName: string | null
+    unitsPerSet: number
     costPrice: runtime.Decimal | null
     salePrice: runtime.Decimal
     discountRate: runtime.Decimal
@@ -1619,7 +1739,7 @@ readonly fields: PricingScenarioItemFieldRefs;
 export interface Prisma__PricingScenarioItemClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   scenario<T extends Prisma.PricingScenarioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PricingScenarioDefaultArgs<ExtArgs>>): Prisma.Prisma__PricingScenarioClient<runtime.Types.Result.GetResult<Prisma.$PricingScenarioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  option<T extends Prisma.InvProductOptionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOptionDefaultArgs<ExtArgs>>): Prisma.Prisma__InvProductOptionClient<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  option<T extends Prisma.PricingScenarioItem$optionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PricingScenarioItem$optionArgs<ExtArgs>>): Prisma.Prisma__InvProductOptionClient<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1652,6 +1772,9 @@ export interface PricingScenarioItemFieldRefs {
   readonly id: Prisma.FieldRef<"PricingScenarioItem", 'String'>
   readonly scenarioId: Prisma.FieldRef<"PricingScenarioItem", 'String'>
   readonly optionId: Prisma.FieldRef<"PricingScenarioItem", 'String'>
+  readonly manualName: Prisma.FieldRef<"PricingScenarioItem", 'String'>
+  readonly manualBrandName: Prisma.FieldRef<"PricingScenarioItem", 'String'>
+  readonly unitsPerSet: Prisma.FieldRef<"PricingScenarioItem", 'Int'>
   readonly costPrice: Prisma.FieldRef<"PricingScenarioItem", 'Decimal'>
   readonly salePrice: Prisma.FieldRef<"PricingScenarioItem", 'Decimal'>
   readonly discountRate: Prisma.FieldRef<"PricingScenarioItem", 'Decimal'>
@@ -2059,6 +2182,25 @@ export type PricingScenarioItemDeleteManyArgs<ExtArgs extends runtime.Types.Exte
    * Limit how many PricingScenarioItems to delete.
    */
   limit?: number
+}
+
+/**
+ * PricingScenarioItem.option
+ */
+export type PricingScenarioItem$optionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvProductOption
+   */
+  select?: Prisma.InvProductOptionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvProductOption
+   */
+  omit?: Prisma.InvProductOptionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvProductOptionInclude<ExtArgs> | null
+  where?: Prisma.InvProductOptionWhereInput
 }
 
 /**

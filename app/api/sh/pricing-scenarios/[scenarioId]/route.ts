@@ -23,6 +23,10 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
     where: { id: scenarioId, spaceId: resolved.space.id },
     include: {
       channel: { select: { id: true, name: true } },
+      channels: {
+        orderBy: { sortOrder: 'asc' },
+        include: { channel: { select: { id: true, name: true } } },
+      },
       items: {
         orderBy: { sortOrder: 'asc' },
         include: {
@@ -53,6 +57,8 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   const data = {
     ...scenario,
     vatRate: d(scenario.vatRate),
+    promotionValue: scenario.promotionValue != null ? d(scenario.promotionValue) : null,
+    channels: scenario.channels.map((sc) => sc.channel),
     items: scenario.items.map((it) => ({
       ...it,
       costPrice: it.costPrice != null ? d(it.costPrice) : null,
@@ -68,11 +74,14 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
       totalCost: d(it.totalCost),
       netProfit: d(it.netProfit),
       margin: d(it.margin),
-      option: {
-        ...it.option,
-        costPrice: it.option.costPrice != null ? d(it.option.costPrice) : null,
-        retailPrice: it.option.retailPrice != null ? d(it.option.retailPrice) : null,
-      },
+      // option은 optionId が null인 경우 null
+      option: it.option
+        ? {
+            ...it.option,
+            costPrice: it.option.costPrice != null ? d(it.option.costPrice) : null,
+            retailPrice: it.option.retailPrice != null ? d(it.option.retailPrice) : null,
+          }
+        : null,
     })),
   }
 
@@ -107,7 +116,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   }
   const input = parsed.data
 
-  // channelId 소속 검증
+  // channelId 소속 검증 (레거시)
   if (input.channelId) {
     const channel = await prisma.channel.findFirst({
       where: { id: input.channelId, spaceId: resolved.space.id },
@@ -116,15 +125,28 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
   }
 
-  // items가 있으면 optionId 소속 검증
-  if (input.items && input.items.length > 0) {
-    const optionIds = input.items.map((it) => it.optionId)
-    const validOptions = await prisma.invProductOption.findMany({
-      where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
+  // channelIds 소속 검증 (M-N)
+  if (input.channelIds && input.channelIds.length > 0) {
+    const validChannels = await prisma.channel.findMany({
+      where: { id: { in: input.channelIds }, spaceId: resolved.space.id },
       select: { id: true },
     })
-    if (validOptions.length !== optionIds.length) {
-      return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
+    if (validChannels.length !== input.channelIds.length) {
+      return errorResponse('유효하지 않은 채널이 포함되어 있습니다', 400)
+    }
+  }
+
+  // items가 있으면 optionId 소속 검증 — null 항목(수동 입력 행)은 skip
+  if (input.items && input.items.length > 0) {
+    const optionIds = input.items.map((it) => it.optionId).filter((id): id is string => id != null)
+    if (optionIds.length > 0) {
+      const validOptions = await prisma.invProductOption.findMany({
+        where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
+        select: { id: true },
+      })
+      if (validOptions.length !== optionIds.length) {
+        return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
+      }
     }
   }
 
@@ -142,8 +164,27 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         ...('channelId' in input && { channelId: input.channelId ?? null }),
         ...(input.includeVat !== undefined && { includeVat: input.includeVat }),
         ...(input.vatRate !== undefined && { vatRate: input.vatRate }),
+        ...(input.promotionType !== undefined && { promotionType: input.promotionType }),
+        ...(input.promotionValue !== undefined && { promotionValue: input.promotionValue ?? null }),
+        ...(input.applyReturnAdjustment !== undefined && {
+          applyReturnAdjustment: input.applyReturnAdjustment,
+        }),
       },
     })
+
+    // channelIds가 있으면 M-N 채널 목록 전체 교체
+    if (input.channelIds !== undefined) {
+      await tx.pricingScenarioChannel.deleteMany({ where: { scenarioId } })
+      if (input.channelIds.length > 0) {
+        await tx.pricingScenarioChannel.createMany({
+          data: input.channelIds.map((channelId, idx) => ({
+            scenarioId,
+            channelId,
+            sortOrder: idx,
+          })),
+        })
+      }
+    }
 
     // items가 있으면 전체 교체 (deleteMany → createMany)
     if (input.items && input.items.length > 0) {
@@ -164,7 +205,10 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
           })
           return {
             scenarioId,
-            optionId: it.optionId,
+            optionId: it.optionId ?? null,
+            manualName: it.manualName ?? null,
+            manualBrandName: it.manualBrandName ?? null,
+            unitsPerSet: it.unitsPerSet,
             costPrice: it.costPrice ?? null,
             salePrice: it.salePrice,
             discountRate: it.discountRate,
@@ -200,7 +244,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   })
   if (!existing) return errorResponse('시나리오를 찾을 수 없습니다', 404)
 
-  // cascade로 items도 함께 삭제됨
+  // cascade로 items, channels도 함께 삭제됨
   await prisma.pricingScenario.delete({ where: { id: scenarioId } })
 
   return NextResponse.json({ ok: true })

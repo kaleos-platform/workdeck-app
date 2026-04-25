@@ -37,12 +37,22 @@ import { ChannelFeeRatesInline } from './channel-fee-rates-inline'
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
 type ChannelKind = 'ONLINE_MARKETPLACE' | 'ONLINE_MALL' | 'OFFLINE' | 'INTERNAL_TRANSFER' | 'OTHER'
+type ChannelType = 'OPEN_MARKET' | 'DEPT_STORE' | 'SELF_MALL' | 'SOCIAL' | 'WHOLESALE' | 'OTHER'
 
 const KIND_LABELS: Record<ChannelKind, string> = {
   ONLINE_MARKETPLACE: '온라인 마켓플레이스',
   ONLINE_MALL: '온라인 쇼핑몰',
   OFFLINE: '오프라인',
   INTERNAL_TRANSFER: '내부 이관',
+  OTHER: '기타',
+}
+
+const CHANNEL_TYPE_LABELS: Record<ChannelType, string> = {
+  OPEN_MARKET: '오픈마켓',
+  DEPT_STORE: '백화점 온라인',
+  SELF_MALL: '자사몰',
+  SOCIAL: 'SNS 채널',
+  WHOLESALE: '도매',
   OTHER: '기타',
 }
 
@@ -55,13 +65,19 @@ type Channel = {
   id: string
   name: string
   kind: ChannelKind
+  channelType: ChannelType
   groupId: string | null
   group: ChannelGroup | null
   adminUrl: string | null
   freeShipping: boolean
+  freeShippingThreshold: number | null
+  defaultFeePct: number | null
   usesMarketingBudget: boolean
+  applyAdCost: boolean
   shippingFee: number | null
   vatIncludedInFee: boolean
+  paymentFeeIncluded: boolean
+  paymentFeePct: number | null
   isActive: boolean
 }
 
@@ -91,7 +107,7 @@ export function ShChannelManager() {
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
   const [savingChannel, setSavingChannel] = useState(false)
 
-  // 채널 폼 필드
+  // 채널 폼 필드 — 기존
   const [fName, setFName] = useState('')
   const [fKind, setFKind] = useState<ChannelKind>('ONLINE_MARKETPLACE')
   const [fGroupId, setFGroupId] = useState(NO_GROUP)
@@ -101,6 +117,14 @@ export function ShChannelManager() {
   const [fShippingFee, setFShippingFee] = useState('')
   const [fVatIncluded, setFVatIncluded] = useState(false)
   const [fIsActive, setFIsActive] = useState(true)
+
+  // 채널 폼 필드 — 신규
+  const [fChannelType, setFChannelType] = useState<ChannelType>('OTHER')
+  const [fFreeShippingThreshold, setFFreeShippingThreshold] = useState('')
+  const [fDefaultFeePct, setFDefaultFeePct] = useState('')
+  const [fApplyAdCost, setFApplyAdCost] = useState(false)
+  const [fPaymentFeeIncluded, setFPaymentFeeIncluded] = useState(true)
+  const [fPaymentFeePct, setFPaymentFeePct] = useState('')
 
   // ── 그룹 다이얼로그 상태 ──
   const [groupDialogOpen, setGroupDialogOpen] = useState(false)
@@ -156,12 +180,18 @@ export function ShChannelManager() {
     setEditingChannel(null)
     setFName('')
     setFKind('ONLINE_MARKETPLACE')
+    setFChannelType('OTHER')
     setFGroupId(NO_GROUP)
     setFAdminUrl('')
     setFFreeShipping(false)
+    setFFreeShippingThreshold('')
+    setFDefaultFeePct('')
     setFUsesMarketing(false)
+    setFApplyAdCost(false)
     setFShippingFee('')
     setFVatIncluded(false)
+    setFPaymentFeeIncluded(true)
+    setFPaymentFeePct('')
     setFIsActive(true)
     setChannelDialogOpen(true)
   }
@@ -170,12 +200,20 @@ export function ShChannelManager() {
     setEditingChannel(ch)
     setFName(ch.name)
     setFKind(ch.kind)
+    setFChannelType(ch.channelType)
     setFGroupId(ch.groupId ?? NO_GROUP)
     setFAdminUrl(ch.adminUrl ?? '')
     setFFreeShipping(ch.freeShipping)
+    setFFreeShippingThreshold(
+      ch.freeShippingThreshold != null ? String(ch.freeShippingThreshold) : ''
+    )
+    setFDefaultFeePct(ch.defaultFeePct != null ? String(ch.defaultFeePct * 100) : '')
     setFUsesMarketing(ch.usesMarketingBudget)
+    setFApplyAdCost(ch.applyAdCost)
     setFShippingFee(ch.shippingFee != null ? String(ch.shippingFee) : '')
     setFVatIncluded(ch.vatIncludedInFee)
+    setFPaymentFeeIncluded(ch.paymentFeeIncluded)
+    setFPaymentFeePct(ch.paymentFeePct != null ? String(ch.paymentFeePct * 100) : '')
     setFIsActive(ch.isActive)
     setChannelDialogOpen(true)
   }
@@ -190,18 +228,24 @@ export function ShChannelManager() {
       const url = editingChannel ? `/api/channels/${editingChannel.id}` : '/api/channels'
       const method = editingChannel ? 'PATCH' : 'POST'
 
-      // null 키를 생략하여 전송 — Zod preprocess가 undefined로 처리하므로 optional 검증 통과
       const body: Record<string, unknown> = {
         name: fName.trim(),
         kind: fKind,
+        channelType: fChannelType,
         freeShipping: fFreeShipping,
         usesMarketingBudget: fUsesMarketing,
+        applyAdCost: fApplyAdCost,
         vatIncludedInFee: fVatIncluded,
+        paymentFeeIncluded: fPaymentFeeIncluded,
         isActive: fIsActive,
       }
       if (fGroupId !== NO_GROUP) body.groupId = fGroupId
       if (fAdminUrl.trim()) body.adminUrl = fAdminUrl.trim()
       if (fShippingFee) body.shippingFee = parseFloat(fShippingFee)
+      if (fFreeShippingThreshold) body.freeShippingThreshold = parseFloat(fFreeShippingThreshold)
+      // UI에서 % 단위로 입력 → 0~1로 변환
+      if (fDefaultFeePct) body.defaultFeePct = parseFloat(fDefaultFeePct) / 100
+      if (fPaymentFeePct) body.paymentFeePct = parseFloat(fPaymentFeePct) / 100
 
       const res = await fetch(url, {
         method,
@@ -321,7 +365,6 @@ export function ShChannelManager() {
           ) : (
             <div className="flex flex-wrap gap-2">
               {groups.map((group) => {
-                // 클라이언트에서 그룹별 채널 수 계산
                 const count = channels.filter((ch) => ch.groupId === group.id).length
                 return (
                   <div
@@ -419,7 +462,6 @@ export function ShChannelManager() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {/* 확장 토글 열 */}
                     <TableHead className="w-9" />
                     <TableHead>채널명</TableHead>
                     <TableHead>종류</TableHead>
@@ -434,7 +476,6 @@ export function ShChannelManager() {
                     const isExpanded = expandedChannelId === ch.id
                     return (
                       <Fragment key={ch.id}>
-                        {/* 채널 기본 행 */}
                         <TableRow
                           className="cursor-pointer"
                           onClick={() =>
@@ -478,7 +519,6 @@ export function ShChannelManager() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            {/* stopPropagation으로 행 확장 토글과 충돌 방지 */}
                             <div
                               className="flex items-center justify-end gap-1"
                               onClick={(e) => e.stopPropagation()}
@@ -502,7 +542,6 @@ export function ShChannelManager() {
                           </TableCell>
                         </TableRow>
 
-                        {/* 수수료 확장 행 — 채널 클릭 시 표시 */}
                         {isExpanded && (
                           <TableRow className="hover:bg-transparent">
                             <TableCell colSpan={7} className="p-0">
@@ -528,6 +567,7 @@ export function ShChannelManager() {
             <DialogDescription>판매 채널 정보를 입력해 주세요</DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2 pr-1">
+            {/* 채널명 */}
             <div className="space-y-2">
               <Label htmlFor="ch-name">채널명 *</Label>
               <Input
@@ -538,6 +578,7 @@ export function ShChannelManager() {
               />
             </div>
 
+            {/* 종류 / 유형 */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>채널 종류</Label>
@@ -555,16 +596,24 @@ export function ShChannelManager() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>그룹 (선택)</Label>
-                <Select value={fGroupId} onValueChange={setFGroupId}>
+                <Label>채널 유형 (시뮬레이션)</Label>
+                <Select
+                  value={fChannelType}
+                  onValueChange={(v) => {
+                    const ct = v as ChannelType
+                    setFChannelType(ct)
+                    // 자사몰은 결제 수수료 포함 기본 false
+                    if (ct === 'SELF_MALL') setFPaymentFeeIncluded(false)
+                    else setFPaymentFeeIncluded(true)
+                  }}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="그룹 없음" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={NO_GROUP}>그룹 없음</SelectItem>
-                    {groups.map((g) => (
-                      <SelectItem key={g.id} value={g.id}>
-                        {g.name}
+                    {Object.entries(CHANNEL_TYPE_LABELS).map(([k, label]) => (
+                      <SelectItem key={k} value={k}>
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -572,6 +621,25 @@ export function ShChannelManager() {
               </div>
             </div>
 
+            {/* 그룹 */}
+            <div className="space-y-2">
+              <Label>그룹 (선택)</Label>
+              <Select value={fGroupId} onValueChange={setFGroupId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="그룹 없음" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_GROUP}>그룹 없음</SelectItem>
+                  {groups.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      {g.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 어드민 URL */}
             <div className="space-y-2">
               <Label htmlFor="ch-admin-url">어드민 URL (선택)</Label>
               <Input
@@ -582,8 +650,56 @@ export function ShChannelManager() {
               />
             </div>
 
+            {/* 가격 시뮬레이션 기본값 */}
+            <div className="space-y-3 rounded-md border p-3">
+              <p className="text-xs font-medium text-muted-foreground">가격 시뮬레이션 기본값</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="ch-default-fee">기본 수수료율 (%)</Label>
+                  <Input
+                    id="ch-default-fee"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={fDefaultFeePct}
+                    onChange={(e) => setFDefaultFeePct(e.target.value)}
+                    placeholder="예: 10.8"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ch-payment-fee">결제 수수료율 (%)</Label>
+                  <Input
+                    id="ch-payment-fee"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={fPaymentFeePct}
+                    onChange={(e) => setFPaymentFeePct(e.target.value)}
+                    placeholder="예: 3.5"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ch-free-threshold">무료배송 기준금액 (원)</Label>
+                <Input
+                  id="ch-free-threshold"
+                  type="number"
+                  min="0"
+                  step="1000"
+                  value={fFreeShippingThreshold}
+                  onChange={(e) => setFFreeShippingThreshold(e.target.value)}
+                  placeholder="예: 50000"
+                />
+              </div>
+            </div>
+
+            {/* 배송비 */}
             <div className="space-y-2">
-              <Label htmlFor="ch-shipping-fee">배송비 (원)</Label>
+              <Label htmlFor="ch-shipping-fee">기본 배송비 (원)</Label>
               <Input
                 id="ch-shipping-fee"
                 type="number"
@@ -620,10 +736,28 @@ export function ShChannelManager() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
+                  <Label htmlFor="ch-apply-ad">광고비 자동 적용</Label>
+                  <p className="text-xs text-muted-foreground">시뮬레이션 시 광고비 자동 포함</p>
+                </div>
+                <Switch id="ch-apply-ad" checked={fApplyAdCost} onCheckedChange={setFApplyAdCost} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
                   <Label htmlFor="ch-vat">수수료에 VAT 포함</Label>
                   <p className="text-xs text-muted-foreground">부가세 포함 수수료율 기준</p>
                 </div>
                 <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="ch-payment-included">결제 수수료 포함</Label>
+                  <p className="text-xs text-muted-foreground">수수료율에 결제 수수료 포함 여부</p>
+                </div>
+                <Switch
+                  id="ch-payment-included"
+                  checked={fPaymentFeeIncluded}
+                  onCheckedChange={setFPaymentFeeIncluded}
+                />
               </div>
               {editingChannel && (
                 <div className="flex items-center justify-between">

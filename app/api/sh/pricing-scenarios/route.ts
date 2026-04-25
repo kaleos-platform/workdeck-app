@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
       take: pageSize,
       include: {
         channel: { select: { id: true, name: true } },
+        channels: { include: { channel: { select: { id: true, name: true } } } },
         items: { select: { netProfit: true, margin: true } },
       },
     }),
@@ -55,8 +56,12 @@ export async function GET(req: NextRequest) {
       name: s.name,
       memo: s.memo,
       channel: s.channel,
+      channels: s.channels.map((sc) => sc.channel),
       includeVat: s.includeVat,
       vatRate: d(s.vatRate),
+      promotionType: s.promotionType,
+      promotionValue: s.promotionValue != null ? d(s.promotionValue) : null,
+      applyReturnAdjustment: s.applyReturnAdjustment,
       itemCount,
       totalNetProfit,
       averageMargin,
@@ -86,7 +91,7 @@ export async function POST(req: NextRequest) {
   }
   const input = parsed.data
 
-  // channelId 소속 검증
+  // channelId 소속 검증 (레거시)
   if (input.channelId) {
     const channel = await prisma.channel.findFirst({
       where: { id: input.channelId, spaceId: resolved.space.id },
@@ -95,14 +100,27 @@ export async function POST(req: NextRequest) {
     if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
   }
 
-  // optionId 소속 검증 (product.spaceId 경유)
-  const optionIds = input.items.map((it) => it.optionId)
-  const validOptions = await prisma.invProductOption.findMany({
-    where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
-    select: { id: true },
-  })
-  if (validOptions.length !== optionIds.length) {
-    return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
+  // channelIds 소속 검증 (M-N)
+  if (input.channelIds && input.channelIds.length > 0) {
+    const validChannels = await prisma.channel.findMany({
+      where: { id: { in: input.channelIds }, spaceId: resolved.space.id },
+      select: { id: true },
+    })
+    if (validChannels.length !== input.channelIds.length) {
+      return errorResponse('유효하지 않은 채널이 포함되어 있습니다', 400)
+    }
+  }
+
+  // optionId 소속 검증 — null 항목은 수동 입력 행이므로 skip
+  const optionIds = input.items.map((it) => it.optionId).filter((id): id is string => id != null)
+  if (optionIds.length > 0) {
+    const validOptions = await prisma.invProductOption.findMany({
+      where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
+      select: { id: true },
+    })
+    if (validOptions.length !== optionIds.length) {
+      return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
+    }
   }
 
   // 각 item 계산 후 트랜잭션 저장
@@ -115,8 +133,22 @@ export async function POST(req: NextRequest) {
         memo: input.memo ?? null,
         includeVat: input.includeVat,
         vatRate: input.vatRate,
+        promotionType: input.promotionType,
+        promotionValue: input.promotionValue ?? null,
+        applyReturnAdjustment: input.applyReturnAdjustment,
       },
     })
+
+    // M-N 채널 연결
+    if (input.channelIds && input.channelIds.length > 0) {
+      await tx.pricingScenarioChannel.createMany({
+        data: input.channelIds.map((channelId, idx) => ({
+          scenarioId: created.id,
+          channelId,
+          sortOrder: idx,
+        })),
+      })
+    }
 
     await tx.pricingScenarioItem.createMany({
       data: input.items.map((it, idx) => {
@@ -134,7 +166,10 @@ export async function POST(req: NextRequest) {
         })
         return {
           scenarioId: created.id,
-          optionId: it.optionId,
+          optionId: it.optionId ?? null,
+          manualName: it.manualName ?? null,
+          manualBrandName: it.manualBrandName ?? null,
+          unitsPerSet: it.unitsPerSet,
           costPrice: it.costPrice ?? null,
           salePrice: it.salePrice,
           discountRate: it.discountRate,

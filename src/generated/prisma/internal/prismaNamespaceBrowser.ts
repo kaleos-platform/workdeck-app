@@ -106,6 +106,7 @@ export const ModelName = {
   ProductionRunItem: 'ProductionRunItem',
   ProductionRunCost: 'ProductionRunCost',
   PricingScenario: 'PricingScenario',
+  PricingScenarioChannel: 'PricingScenarioChannel',
   PricingScenarioItem: 'PricingScenarioItem',
   ProductPricingSettings: 'ProductPricingSettings',
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
@@ -876,12 +877,18 @@ export const ChannelScalarFieldEnum = {
   groupId: 'groupId',
   name: 'name',
   kind: 'kind',
+  channelType: 'channelType',
   isActive: 'isActive',
   adminUrl: 'adminUrl',
   freeShipping: 'freeShipping',
+  freeShippingThreshold: 'freeShippingThreshold',
+  defaultFeePct: 'defaultFeePct',
   usesMarketingBudget: 'usesMarketingBudget',
+  applyAdCost: 'applyAdCost',
   shippingFee: 'shippingFee',
   vatIncludedInFee: 'vatIncludedInFee',
+  paymentFeeIncluded: 'paymentFeeIncluded',
+  paymentFeePct: 'paymentFeePct',
   requireOrderNumber: 'requireOrderNumber',
   requirePayment: 'requirePayment',
   requireProducts: 'requireProducts',
@@ -959,6 +966,9 @@ export const PricingScenarioScalarFieldEnum = {
   memo: 'memo',
   includeVat: 'includeVat',
   vatRate: 'vatRate',
+  promotionType: 'promotionType',
+  promotionValue: 'promotionValue',
+  applyReturnAdjustment: 'applyReturnAdjustment',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -966,10 +976,23 @@ export const PricingScenarioScalarFieldEnum = {
 export type PricingScenarioScalarFieldEnum = (typeof PricingScenarioScalarFieldEnum)[keyof typeof PricingScenarioScalarFieldEnum]
 
 
+export const PricingScenarioChannelScalarFieldEnum = {
+  id: 'id',
+  scenarioId: 'scenarioId',
+  channelId: 'channelId',
+  sortOrder: 'sortOrder'
+} as const
+
+export type PricingScenarioChannelScalarFieldEnum = (typeof PricingScenarioChannelScalarFieldEnum)[keyof typeof PricingScenarioChannelScalarFieldEnum]
+
+
 export const PricingScenarioItemScalarFieldEnum = {
   id: 'id',
   scenarioId: 'scenarioId',
   optionId: 'optionId',
+  manualName: 'manualName',
+  manualBrandName: 'manualBrandName',
+  unitsPerSet: 'unitsPerSet',
   costPrice: 'costPrice',
   salePrice: 'salePrice',
   discountRate: 'discountRate',
@@ -995,6 +1018,18 @@ export const ProductPricingSettingsScalarFieldEnum = {
   defaultOperatingCostPct: 'defaultOperatingCostPct',
   defaultAdCostPct: 'defaultAdCostPct',
   defaultPackagingCost: 'defaultPackagingCost',
+  defaultChannelFeePct: 'defaultChannelFeePct',
+  defaultShippingCost: 'defaultShippingCost',
+  defaultReturnRate: 'defaultReturnRate',
+  defaultReturnShipping: 'defaultReturnShipping',
+  autoApplyChannelFee: 'autoApplyChannelFee',
+  autoApplyAdCost: 'autoApplyAdCost',
+  autoApplyShipping: 'autoApplyShipping',
+  selfMallTargetGood: 'selfMallTargetGood',
+  selfMallTargetFair: 'selfMallTargetFair',
+  platformTargetGood: 'platformTargetGood',
+  platformTargetFair: 'platformTargetFair',
+  minimumAcceptableMargin: 'minimumAcceptableMargin',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

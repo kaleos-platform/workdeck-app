@@ -27,11 +27,17 @@ export type AggregateChannel = {
 }
 
 export type ChannelAvgAggregateOutputType = {
+  freeShippingThreshold: runtime.Decimal | null
+  defaultFeePct: runtime.Decimal | null
   shippingFee: runtime.Decimal | null
+  paymentFeePct: runtime.Decimal | null
 }
 
 export type ChannelSumAggregateOutputType = {
+  freeShippingThreshold: runtime.Decimal | null
+  defaultFeePct: runtime.Decimal | null
   shippingFee: runtime.Decimal | null
+  paymentFeePct: runtime.Decimal | null
 }
 
 export type ChannelMinAggregateOutputType = {
@@ -40,12 +46,18 @@ export type ChannelMinAggregateOutputType = {
   groupId: string | null
   name: string | null
   kind: $Enums.ChannelKind | null
+  channelType: $Enums.ChannelType | null
   isActive: boolean | null
   adminUrl: string | null
   freeShipping: boolean | null
+  freeShippingThreshold: runtime.Decimal | null
+  defaultFeePct: runtime.Decimal | null
   usesMarketingBudget: boolean | null
+  applyAdCost: boolean | null
   shippingFee: runtime.Decimal | null
   vatIncludedInFee: boolean | null
+  paymentFeeIncluded: boolean | null
+  paymentFeePct: runtime.Decimal | null
   requireOrderNumber: boolean | null
   requirePayment: boolean | null
   requireProducts: boolean | null
@@ -59,12 +71,18 @@ export type ChannelMaxAggregateOutputType = {
   groupId: string | null
   name: string | null
   kind: $Enums.ChannelKind | null
+  channelType: $Enums.ChannelType | null
   isActive: boolean | null
   adminUrl: string | null
   freeShipping: boolean | null
+  freeShippingThreshold: runtime.Decimal | null
+  defaultFeePct: runtime.Decimal | null
   usesMarketingBudget: boolean | null
+  applyAdCost: boolean | null
   shippingFee: runtime.Decimal | null
   vatIncludedInFee: boolean | null
+  paymentFeeIncluded: boolean | null
+  paymentFeePct: runtime.Decimal | null
   requireOrderNumber: boolean | null
   requirePayment: boolean | null
   requireProducts: boolean | null
@@ -78,12 +96,18 @@ export type ChannelCountAggregateOutputType = {
   groupId: number
   name: number
   kind: number
+  channelType: number
   isActive: number
   adminUrl: number
   freeShipping: number
+  freeShippingThreshold: number
+  defaultFeePct: number
   usesMarketingBudget: number
+  applyAdCost: number
   shippingFee: number
   vatIncludedInFee: number
+  paymentFeeIncluded: number
+  paymentFeePct: number
   requireOrderNumber: number
   requirePayment: number
   requireProducts: number
@@ -94,11 +118,17 @@ export type ChannelCountAggregateOutputType = {
 
 
 export type ChannelAvgAggregateInputType = {
+  freeShippingThreshold?: true
+  defaultFeePct?: true
   shippingFee?: true
+  paymentFeePct?: true
 }
 
 export type ChannelSumAggregateInputType = {
+  freeShippingThreshold?: true
+  defaultFeePct?: true
   shippingFee?: true
+  paymentFeePct?: true
 }
 
 export type ChannelMinAggregateInputType = {
@@ -107,12 +137,18 @@ export type ChannelMinAggregateInputType = {
   groupId?: true
   name?: true
   kind?: true
+  channelType?: true
   isActive?: true
   adminUrl?: true
   freeShipping?: true
+  freeShippingThreshold?: true
+  defaultFeePct?: true
   usesMarketingBudget?: true
+  applyAdCost?: true
   shippingFee?: true
   vatIncludedInFee?: true
+  paymentFeeIncluded?: true
+  paymentFeePct?: true
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
@@ -126,12 +162,18 @@ export type ChannelMaxAggregateInputType = {
   groupId?: true
   name?: true
   kind?: true
+  channelType?: true
   isActive?: true
   adminUrl?: true
   freeShipping?: true
+  freeShippingThreshold?: true
+  defaultFeePct?: true
   usesMarketingBudget?: true
+  applyAdCost?: true
   shippingFee?: true
   vatIncludedInFee?: true
+  paymentFeeIncluded?: true
+  paymentFeePct?: true
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
@@ -145,12 +187,18 @@ export type ChannelCountAggregateInputType = {
   groupId?: true
   name?: true
   kind?: true
+  channelType?: true
   isActive?: true
   adminUrl?: true
   freeShipping?: true
+  freeShippingThreshold?: true
+  defaultFeePct?: true
   usesMarketingBudget?: true
+  applyAdCost?: true
   shippingFee?: true
   vatIncludedInFee?: true
+  paymentFeeIncluded?: true
+  paymentFeePct?: true
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
@@ -251,12 +299,18 @@ export type ChannelGroupByOutputType = {
   groupId: string | null
   name: string
   kind: $Enums.ChannelKind
+  channelType: $Enums.ChannelType
   isActive: boolean
   adminUrl: string | null
   freeShipping: boolean
+  freeShippingThreshold: runtime.Decimal | null
+  defaultFeePct: runtime.Decimal | null
   usesMarketingBudget: boolean
+  applyAdCost: boolean
   shippingFee: runtime.Decimal | null
   vatIncludedInFee: boolean
+  paymentFeeIncluded: boolean
+  paymentFeePct: runtime.Decimal | null
   requireOrderNumber: boolean
   requirePayment: boolean
   requireProducts: boolean
@@ -293,12 +347,18 @@ export type ChannelWhereInput = {
   groupId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
   kind?: Prisma.EnumChannelKindFilter<"Channel"> | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFilter<"Channel"> | $Enums.ChannelType
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
   freeShipping?: Prisma.BoolFilter<"Channel"> | boolean
+  freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
+  applyAdCost?: Prisma.BoolFilter<"Channel"> | boolean
   shippingFee?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFilter<"Channel"> | boolean
+  paymentFeeIncluded?: Prisma.BoolFilter<"Channel"> | boolean
+  paymentFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
@@ -314,6 +374,7 @@ export type ChannelWhereInput = {
   productListings?: Prisma.ProductListingListRelationFilter
   productGroupMeta?: Prisma.ProductChannelGroupMetaListRelationFilter
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelListRelationFilter
 }
 
 export type ChannelOrderByWithRelationInput = {
@@ -322,12 +383,18 @@ export type ChannelOrderByWithRelationInput = {
   groupId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   kind?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
+  freeShippingThreshold?: Prisma.SortOrderInput | Prisma.SortOrder
+  defaultFeePct?: Prisma.SortOrderInput | Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
+  applyAdCost?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrderInput | Prisma.SortOrder
   vatIncludedInFee?: Prisma.SortOrder
+  paymentFeeIncluded?: Prisma.SortOrder
+  paymentFeePct?: Prisma.SortOrderInput | Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -343,6 +410,7 @@ export type ChannelOrderByWithRelationInput = {
   productListings?: Prisma.ProductListingOrderByRelationAggregateInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaOrderByRelationAggregateInput
   pricingScenarios?: Prisma.PricingScenarioOrderByRelationAggregateInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelOrderByRelationAggregateInput
 }
 
 export type ChannelWhereUniqueInput = Prisma.AtLeast<{
@@ -355,12 +423,18 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   groupId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
   kind?: Prisma.EnumChannelKindFilter<"Channel"> | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFilter<"Channel"> | $Enums.ChannelType
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
   freeShipping?: Prisma.BoolFilter<"Channel"> | boolean
+  freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
+  applyAdCost?: Prisma.BoolFilter<"Channel"> | boolean
   shippingFee?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFilter<"Channel"> | boolean
+  paymentFeeIncluded?: Prisma.BoolFilter<"Channel"> | boolean
+  paymentFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
@@ -376,6 +450,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   productListings?: Prisma.ProductListingListRelationFilter
   productGroupMeta?: Prisma.ProductChannelGroupMetaListRelationFilter
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelListRelationFilter
 }, "id" | "spaceId_name">
 
 export type ChannelOrderByWithAggregationInput = {
@@ -384,12 +459,18 @@ export type ChannelOrderByWithAggregationInput = {
   groupId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   kind?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
+  freeShippingThreshold?: Prisma.SortOrderInput | Prisma.SortOrder
+  defaultFeePct?: Prisma.SortOrderInput | Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
+  applyAdCost?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrderInput | Prisma.SortOrder
   vatIncludedInFee?: Prisma.SortOrder
+  paymentFeeIncluded?: Prisma.SortOrder
+  paymentFeePct?: Prisma.SortOrderInput | Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -411,12 +492,18 @@ export type ChannelScalarWhereWithAggregatesInput = {
   groupId?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"Channel"> | string
   kind?: Prisma.EnumChannelKindWithAggregatesFilter<"Channel"> | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeWithAggregatesFilter<"Channel"> | $Enums.ChannelType
   isActive?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
   freeShipping?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
+  freeShippingThreshold?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
+  applyAdCost?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   shippingFee?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
+  paymentFeeIncluded?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
+  paymentFeePct?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
@@ -428,12 +515,18 @@ export type ChannelCreateInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -449,6 +542,7 @@ export type ChannelCreateInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateInput = {
@@ -457,12 +551,18 @@ export type ChannelUncheckedCreateInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -476,18 +576,25 @@ export type ChannelUncheckedCreateInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -503,6 +610,7 @@ export type ChannelUpdateInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateInput = {
@@ -511,12 +619,18 @@ export type ChannelUncheckedUpdateInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -530,6 +644,7 @@ export type ChannelUncheckedUpdateInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateManyInput = {
@@ -538,12 +653,18 @@ export type ChannelCreateManyInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -555,12 +676,18 @@ export type ChannelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -574,12 +701,18 @@ export type ChannelUncheckedUpdateManyInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -618,12 +751,18 @@ export type ChannelCountOrderByAggregateInput = {
   groupId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   kind?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
+  freeShippingThreshold?: Prisma.SortOrder
+  defaultFeePct?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
+  applyAdCost?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   vatIncludedInFee?: Prisma.SortOrder
+  paymentFeeIncluded?: Prisma.SortOrder
+  paymentFeePct?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -632,7 +771,10 @@ export type ChannelCountOrderByAggregateInput = {
 }
 
 export type ChannelAvgOrderByAggregateInput = {
+  freeShippingThreshold?: Prisma.SortOrder
+  defaultFeePct?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
+  paymentFeePct?: Prisma.SortOrder
 }
 
 export type ChannelMaxOrderByAggregateInput = {
@@ -641,12 +783,18 @@ export type ChannelMaxOrderByAggregateInput = {
   groupId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   kind?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
+  freeShippingThreshold?: Prisma.SortOrder
+  defaultFeePct?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
+  applyAdCost?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   vatIncludedInFee?: Prisma.SortOrder
+  paymentFeeIncluded?: Prisma.SortOrder
+  paymentFeePct?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -660,12 +808,18 @@ export type ChannelMinOrderByAggregateInput = {
   groupId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   kind?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
+  freeShippingThreshold?: Prisma.SortOrder
+  defaultFeePct?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
+  applyAdCost?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   vatIncludedInFee?: Prisma.SortOrder
+  paymentFeeIncluded?: Prisma.SortOrder
+  paymentFeePct?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -674,7 +828,10 @@ export type ChannelMinOrderByAggregateInput = {
 }
 
 export type ChannelSumOrderByAggregateInput = {
+  freeShippingThreshold?: Prisma.SortOrder
+  defaultFeePct?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
+  paymentFeePct?: Prisma.SortOrder
 }
 
 export type ChannelCreateNestedManyWithoutSpaceInput = {
@@ -827,6 +984,10 @@ export type EnumChannelKindFieldUpdateOperationsInput = {
   set?: $Enums.ChannelKind
 }
 
+export type EnumChannelTypeFieldUpdateOperationsInput = {
+  set?: $Enums.ChannelType
+}
+
 export type ChannelCreateNestedOneWithoutFeeRatesInput = {
   create?: Prisma.XOR<Prisma.ChannelCreateWithoutFeeRatesInput, Prisma.ChannelUncheckedCreateWithoutFeeRatesInput>
   connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutFeeRatesInput
@@ -855,6 +1016,20 @@ export type ChannelUpdateOneWithoutPricingScenariosNestedInput = {
   delete?: Prisma.ChannelWhereInput | boolean
   connect?: Prisma.ChannelWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutPricingScenariosInput, Prisma.ChannelUpdateWithoutPricingScenariosInput>, Prisma.ChannelUncheckedUpdateWithoutPricingScenariosInput>
+}
+
+export type ChannelCreateNestedOneWithoutPricingScenarioChannelsInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutPricingScenarioChannelsInput, Prisma.ChannelUncheckedCreateWithoutPricingScenarioChannelsInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutPricingScenarioChannelsInput
+  connect?: Prisma.ChannelWhereUniqueInput
+}
+
+export type ChannelUpdateOneRequiredWithoutPricingScenarioChannelsNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutPricingScenarioChannelsInput, Prisma.ChannelUncheckedCreateWithoutPricingScenarioChannelsInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutPricingScenarioChannelsInput
+  upsert?: Prisma.ChannelUpsertWithoutPricingScenarioChannelsInput
+  connect?: Prisma.ChannelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutPricingScenarioChannelsInput, Prisma.ChannelUpdateWithoutPricingScenarioChannelsInput>, Prisma.ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput>
 }
 
 export type ChannelCreateNestedOneWithoutProductListingsInput = {
@@ -889,12 +1064,18 @@ export type ChannelCreateWithoutSpaceInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -909,6 +1090,7 @@ export type ChannelCreateWithoutSpaceInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutSpaceInput = {
@@ -916,12 +1098,18 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -935,6 +1123,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutSpaceInput = {
@@ -972,12 +1161,18 @@ export type ChannelScalarWhereInput = {
   groupId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
   kind?: Prisma.EnumChannelKindFilter<"Channel"> | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFilter<"Channel"> | $Enums.ChannelType
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
   freeShipping?: Prisma.BoolFilter<"Channel"> | boolean
+  freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
+  applyAdCost?: Prisma.BoolFilter<"Channel"> | boolean
   shippingFee?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFilter<"Channel"> | boolean
+  paymentFeeIncluded?: Prisma.BoolFilter<"Channel"> | boolean
+  paymentFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
@@ -989,12 +1184,18 @@ export type ChannelCreateWithoutInvMovementsInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1009,6 +1210,7 @@ export type ChannelCreateWithoutInvMovementsInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutInvMovementsInput = {
@@ -1017,12 +1219,18 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1035,6 +1243,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutInvMovementsInput = {
@@ -1057,12 +1266,18 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1077,6 +1292,7 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
@@ -1085,12 +1301,18 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1103,18 +1325,25 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutDelOrdersInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1129,6 +1358,7 @@ export type ChannelCreateWithoutDelOrdersInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutDelOrdersInput = {
@@ -1137,12 +1367,18 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1155,6 +1391,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutDelOrdersInput = {
@@ -1177,12 +1414,18 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1197,6 +1440,7 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
@@ -1205,12 +1449,18 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1223,18 +1473,25 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutProductAliasesInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1249,6 +1506,7 @@ export type ChannelCreateWithoutProductAliasesInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutProductAliasesInput = {
@@ -1257,12 +1515,18 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1275,6 +1539,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutProductAliasesInput = {
@@ -1297,12 +1562,18 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1317,6 +1588,7 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
@@ -1325,12 +1597,18 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1343,18 +1621,25 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutColumnMappingPresetsInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1369,6 +1654,7 @@ export type ChannelCreateWithoutColumnMappingPresetsInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
@@ -1377,12 +1663,18 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1395,6 +1687,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutColumnMappingPresetsInput = {
@@ -1417,12 +1710,18 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1437,6 +1736,7 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
@@ -1445,12 +1745,18 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1463,18 +1769,25 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutGroupInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1489,6 +1802,7 @@ export type ChannelCreateWithoutGroupInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutGroupInput = {
@@ -1496,12 +1810,18 @@ export type ChannelUncheckedCreateWithoutGroupInput = {
   spaceId: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1515,6 +1835,7 @@ export type ChannelUncheckedCreateWithoutGroupInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutGroupInput = {
@@ -1547,12 +1868,18 @@ export type ChannelCreateWithoutFeeRatesInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1567,6 +1894,7 @@ export type ChannelCreateWithoutFeeRatesInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutFeeRatesInput = {
@@ -1575,12 +1903,18 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1593,6 +1927,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutFeeRatesInput = {
@@ -1615,12 +1950,18 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1635,6 +1976,7 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
@@ -1643,12 +1985,18 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1661,18 +2009,25 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutPricingScenariosInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1687,6 +2042,7 @@ export type ChannelCreateWithoutPricingScenariosInput = {
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
@@ -1695,12 +2051,18 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1713,6 +2075,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutPricingScenariosInput = {
@@ -1735,12 +2098,18 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1755,6 +2124,7 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
@@ -1763,12 +2133,18 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1781,18 +2157,173 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelCreateWithoutPricingScenarioChannelsInput = {
+  id?: string
+  name: string
+  kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
+  isActive?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
+  group?: Prisma.ChannelGroupCreateNestedOneWithoutChannelsInput
+  feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
+  productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
+  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
+  id?: string
+  spaceId: string
+  groupId?: string | null
+  name: string
+  kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
+  isActive?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
+  productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
+  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelCreateOrConnectWithoutPricingScenarioChannelsInput = {
+  where: Prisma.ChannelWhereUniqueInput
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutPricingScenarioChannelsInput, Prisma.ChannelUncheckedCreateWithoutPricingScenarioChannelsInput>
+}
+
+export type ChannelUpsertWithoutPricingScenarioChannelsInput = {
+  update: Prisma.XOR<Prisma.ChannelUpdateWithoutPricingScenarioChannelsInput, Prisma.ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput>
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutPricingScenarioChannelsInput, Prisma.ChannelUncheckedCreateWithoutPricingScenarioChannelsInput>
+  where?: Prisma.ChannelWhereInput
+}
+
+export type ChannelUpdateToOneWithWhereWithoutPricingScenarioChannelsInput = {
+  where?: Prisma.ChannelWhereInput
+  data: Prisma.XOR<Prisma.ChannelUpdateWithoutPricingScenarioChannelsInput, Prisma.ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput>
+}
+
+export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
+  group?: Prisma.ChannelGroupUpdateOneWithoutChannelsNestedInput
+  feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
+  productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
+  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
+  productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
+  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutProductListingsInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1807,6 +2338,7 @@ export type ChannelCreateWithoutProductListingsInput = {
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutProductListingsInput = {
@@ -1815,12 +2347,18 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1833,6 +2371,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutProductListingsInput = {
@@ -1855,12 +2394,18 @@ export type ChannelUpdateWithoutProductListingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1875,6 +2420,7 @@ export type ChannelUpdateWithoutProductListingsInput = {
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutProductListingsInput = {
@@ -1883,12 +2429,18 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1901,18 +2453,25 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutProductGroupMetaInput = {
   id?: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1927,6 +2486,7 @@ export type ChannelCreateWithoutProductGroupMetaInput = {
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutProductGroupMetaInput = {
@@ -1935,12 +2495,18 @@ export type ChannelUncheckedCreateWithoutProductGroupMetaInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1953,6 +2519,7 @@ export type ChannelUncheckedCreateWithoutProductGroupMetaInput = {
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutProductGroupMetaInput = {
@@ -1975,12 +2542,18 @@ export type ChannelUpdateWithoutProductGroupMetaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1995,6 +2568,7 @@ export type ChannelUpdateWithoutProductGroupMetaInput = {
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutProductGroupMetaInput = {
@@ -2003,12 +2577,18 @@ export type ChannelUncheckedUpdateWithoutProductGroupMetaInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2021,6 +2601,7 @@ export type ChannelUncheckedUpdateWithoutProductGroupMetaInput = {
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateManySpaceInput = {
@@ -2028,12 +2609,18 @@ export type ChannelCreateManySpaceInput = {
   groupId?: string | null
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2045,12 +2632,18 @@ export type ChannelUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2065,6 +2658,7 @@ export type ChannelUpdateWithoutSpaceInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutSpaceInput = {
@@ -2072,12 +2666,18 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2091,6 +2691,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
@@ -2098,12 +2699,18 @@ export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
   groupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2116,12 +2723,18 @@ export type ChannelCreateManyGroupInput = {
   spaceId: string
   name: string
   kind?: $Enums.ChannelKind
+  channelType?: $Enums.ChannelType
   isActive?: boolean
   adminUrl?: string | null
   freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2133,12 +2746,18 @@ export type ChannelUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2153,6 +2772,7 @@ export type ChannelUpdateWithoutGroupInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutGroupInput = {
@@ -2160,12 +2780,18 @@ export type ChannelUncheckedUpdateWithoutGroupInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2179,6 +2805,7 @@ export type ChannelUncheckedUpdateWithoutGroupInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateManyWithoutGroupInput = {
@@ -2186,12 +2813,18 @@ export type ChannelUncheckedUpdateManyWithoutGroupInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumChannelKindFieldUpdateOperationsInput | $Enums.ChannelKind
+  channelType?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  defaultFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2213,6 +2846,7 @@ export type ChannelCountOutputType = {
   productListings: number
   productGroupMeta: number
   pricingScenarios: number
+  pricingScenarioChannels: number
 }
 
 export type ChannelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2224,6 +2858,7 @@ export type ChannelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   productListings?: boolean | ChannelCountOutputTypeCountProductListingsArgs
   productGroupMeta?: boolean | ChannelCountOutputTypeCountProductGroupMetaArgs
   pricingScenarios?: boolean | ChannelCountOutputTypeCountPricingScenariosArgs
+  pricingScenarioChannels?: boolean | ChannelCountOutputTypeCountPricingScenarioChannelsArgs
 }
 
 /**
@@ -2292,6 +2927,13 @@ export type ChannelCountOutputTypeCountPricingScenariosArgs<ExtArgs extends runt
   where?: Prisma.PricingScenarioWhereInput
 }
 
+/**
+ * ChannelCountOutputType without action
+ */
+export type ChannelCountOutputTypeCountPricingScenarioChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PricingScenarioChannelWhereInput
+}
+
 
 export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2299,12 +2941,18 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   groupId?: boolean
   name?: boolean
   kind?: boolean
+  channelType?: boolean
   isActive?: boolean
   adminUrl?: boolean
   freeShipping?: boolean
+  freeShippingThreshold?: boolean
+  defaultFeePct?: boolean
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: boolean
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2320,6 +2968,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   productListings?: boolean | Prisma.Channel$productListingsArgs<ExtArgs>
   productGroupMeta?: boolean | Prisma.Channel$productGroupMetaArgs<ExtArgs>
   pricingScenarios?: boolean | Prisma.Channel$pricingScenariosArgs<ExtArgs>
+  pricingScenarioChannels?: boolean | Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channel"]>
 
@@ -2329,12 +2978,18 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   groupId?: boolean
   name?: boolean
   kind?: boolean
+  channelType?: boolean
   isActive?: boolean
   adminUrl?: boolean
   freeShipping?: boolean
+  freeShippingThreshold?: boolean
+  defaultFeePct?: boolean
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: boolean
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2350,12 +3005,18 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   groupId?: boolean
   name?: boolean
   kind?: boolean
+  channelType?: boolean
   isActive?: boolean
   adminUrl?: boolean
   freeShipping?: boolean
+  freeShippingThreshold?: boolean
+  defaultFeePct?: boolean
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: boolean
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2371,12 +3032,18 @@ export type ChannelSelectScalar = {
   groupId?: boolean
   name?: boolean
   kind?: boolean
+  channelType?: boolean
   isActive?: boolean
   adminUrl?: boolean
   freeShipping?: boolean
+  freeShippingThreshold?: boolean
+  defaultFeePct?: boolean
   usesMarketingBudget?: boolean
+  applyAdCost?: boolean
   shippingFee?: boolean
   vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2384,7 +3051,7 @@ export type ChannelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "groupId" | "name" | "kind" | "isActive" | "adminUrl" | "freeShipping" | "usesMarketingBudget" | "shippingFee" | "vatIncludedInFee" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "groupId" | "name" | "kind" | "channelType" | "isActive" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "defaultFeePct" | "usesMarketingBudget" | "applyAdCost" | "shippingFee" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   group?: boolean | Prisma.Channel$groupArgs<ExtArgs>
@@ -2396,6 +3063,7 @@ export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   productListings?: boolean | Prisma.Channel$productListingsArgs<ExtArgs>
   productGroupMeta?: boolean | Prisma.Channel$productGroupMetaArgs<ExtArgs>
   pricingScenarios?: boolean | Prisma.Channel$pricingScenariosArgs<ExtArgs>
+  pricingScenarioChannels?: boolean | Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ChannelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2420,6 +3088,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     productListings: Prisma.$ProductListingPayload<ExtArgs>[]
     productGroupMeta: Prisma.$ProductChannelGroupMetaPayload<ExtArgs>[]
     pricingScenarios: Prisma.$PricingScenarioPayload<ExtArgs>[]
+    pricingScenarioChannels: Prisma.$PricingScenarioChannelPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2427,12 +3096,18 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     groupId: string | null
     name: string
     kind: $Enums.ChannelKind
+    channelType: $Enums.ChannelType
     isActive: boolean
     adminUrl: string | null
     freeShipping: boolean
+    freeShippingThreshold: runtime.Decimal | null
+    defaultFeePct: runtime.Decimal | null
     usesMarketingBudget: boolean
+    applyAdCost: boolean
     shippingFee: runtime.Decimal | null
     vatIncludedInFee: boolean
+    paymentFeeIncluded: boolean
+    paymentFeePct: runtime.Decimal | null
     requireOrderNumber: boolean
     requirePayment: boolean
     requireProducts: boolean
@@ -2842,6 +3517,7 @@ export interface Prisma__ChannelClient<T, Null = never, ExtArgs extends runtime.
   productListings<T extends Prisma.Channel$productListingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$productListingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductListingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productGroupMeta<T extends Prisma.Channel$productGroupMetaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$productGroupMetaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductChannelGroupMetaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pricingScenarios<T extends Prisma.Channel$pricingScenariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$pricingScenariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pricingScenarioChannels<T extends Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2876,12 +3552,18 @@ export interface ChannelFieldRefs {
   readonly groupId: Prisma.FieldRef<"Channel", 'String'>
   readonly name: Prisma.FieldRef<"Channel", 'String'>
   readonly kind: Prisma.FieldRef<"Channel", 'ChannelKind'>
+  readonly channelType: Prisma.FieldRef<"Channel", 'ChannelType'>
   readonly isActive: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly adminUrl: Prisma.FieldRef<"Channel", 'String'>
   readonly freeShipping: Prisma.FieldRef<"Channel", 'Boolean'>
+  readonly freeShippingThreshold: Prisma.FieldRef<"Channel", 'Decimal'>
+  readonly defaultFeePct: Prisma.FieldRef<"Channel", 'Decimal'>
   readonly usesMarketingBudget: Prisma.FieldRef<"Channel", 'Boolean'>
+  readonly applyAdCost: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly shippingFee: Prisma.FieldRef<"Channel", 'Decimal'>
   readonly vatIncludedInFee: Prisma.FieldRef<"Channel", 'Boolean'>
+  readonly paymentFeeIncluded: Prisma.FieldRef<"Channel", 'Boolean'>
+  readonly paymentFeePct: Prisma.FieldRef<"Channel", 'Decimal'>
   readonly requireOrderNumber: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly requirePayment: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly requireProducts: Prisma.FieldRef<"Channel", 'Boolean'>
@@ -3491,6 +4173,30 @@ export type Channel$pricingScenariosArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.PricingScenarioScalarFieldEnum | Prisma.PricingScenarioScalarFieldEnum[]
+}
+
+/**
+ * Channel.pricingScenarioChannels
+ */
+export type Channel$pricingScenarioChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PricingScenarioChannel
+   */
+  select?: Prisma.PricingScenarioChannelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PricingScenarioChannel
+   */
+  omit?: Prisma.PricingScenarioChannelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PricingScenarioChannelInclude<ExtArgs> | null
+  where?: Prisma.PricingScenarioChannelWhereInput
+  orderBy?: Prisma.PricingScenarioChannelOrderByWithRelationInput | Prisma.PricingScenarioChannelOrderByWithRelationInput[]
+  cursor?: Prisma.PricingScenarioChannelWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PricingScenarioChannelScalarFieldEnum | Prisma.PricingScenarioChannelScalarFieldEnum[]
 }
 
 /**

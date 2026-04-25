@@ -92,6 +92,28 @@ export const ChannelKind = {
 export type ChannelKind = (typeof ChannelKind)[keyof typeof ChannelKind]
 
 
+export const ChannelType = {
+  OPEN_MARKET: 'OPEN_MARKET',
+  DEPT_STORE: 'DEPT_STORE',
+  SELF_MALL: 'SELF_MALL',
+  SOCIAL: 'SOCIAL',
+  WHOLESALE: 'WHOLESALE',
+  OTHER: 'OTHER'
+} as const
+
+export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
+
+
+export const PromotionType = {
+  NONE: 'NONE',
+  FLAT: 'FLAT',
+  PERCENT: 'PERCENT',
+  COUPON: 'COUPON'
+} as const
+
+export type PromotionType = (typeof PromotionType)[keyof typeof PromotionType]
+
+
 export const ProductListingStatus = {
   ACTIVE: 'ACTIVE',
   SUSPENDED: 'SUSPENDED'
