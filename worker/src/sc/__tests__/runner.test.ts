@@ -2,42 +2,46 @@
 // Prisma/HTTP mock 없음 — deps 주입으로 순수 라우팅 로직만 검증.
 
 import { routeJob, type RouteDeps } from '../runner'
+import type { DeploymentEnvelope, WorkerJobKind, WorkerJobResponse } from '../contracts'
+
+type Channel = DeploymentEnvelope['channel']
 
 // ────────────────────────────────────────────────
 // 공통 헬퍼
 // ────────────────────────────────────────────────
 
-function makeJob(
-  kind: 'PUBLISH' | 'COLLECT_METRIC' | 'INSIGHT_SWEEP',
-  overrides?: Partial<{
-    targetId: string | null
-    payload: unknown
-    deployment: unknown
-    credential: unknown
-    assets: unknown
-    deploymentUrl: unknown
-  }>
-) {
+type JobOverrides = Partial<{
+  targetId: string | null
+  payload: unknown
+  deployment: WorkerJobResponse['deployment']
+  credential: WorkerJobResponse['credential']
+  assets: WorkerJobResponse['assets']
+  deploymentUrl: string
+}>
+
+function makeJob(kind: WorkerJobKind, overrides: JobOverrides = {}): WorkerJobResponse {
   return {
     job: {
       id: 'job-1',
       kind,
-      targetId: overrides?.targetId ?? null,
-      payload: overrides?.payload ?? {},
+      targetId: overrides.targetId ?? null,
+      payload: overrides.payload ?? {},
       attempts: 0,
     },
-    deployment: overrides?.deployment ?? undefined,
-    credential: overrides?.credential ?? undefined,
-    assets: overrides?.assets ?? undefined,
-    deploymentUrl: overrides?.deploymentUrl ?? undefined,
+    deployment: overrides.deployment,
+    credential: overrides.credential,
+    assets: overrides.assets,
+    deploymentUrl: overrides.deploymentUrl,
   }
 }
 
 // 신 contract: channel/content 는 deployment 에 임베디드, assets/deploymentUrl 은 top-level.
-function publishDeployment(channelOverrides: Record<string, unknown> = {}) {
+// Prisma include 전체 row 를 흉내 — DeploymentEnvelope 는 PublishContext + CollectContext 모두를 만족한다.
+function publishDeployment(channelOverrides: Partial<Channel> = {}): DeploymentEnvelope {
   return {
     id: 'd1',
     targetUrl: 'https://example.com',
+    platformUrl: null,
     shortSlug: 's1',
     utmSource: null,
     utmMedium: null,
@@ -47,6 +51,7 @@ function publishDeployment(channelOverrides: Record<string, unknown> = {}) {
       name: 'ch',
       platform: 'THREADS',
       publisherMode: 'API',
+      collectorMode: 'NONE',
       config: {},
       ...channelOverrides,
     },
@@ -54,18 +59,25 @@ function publishDeployment(channelOverrides: Record<string, unknown> = {}) {
   }
 }
 
-function collectDeployment(channelOverrides: Record<string, unknown> = {}) {
+function collectDeployment(channelOverrides: Partial<Channel> = {}): DeploymentEnvelope {
   return {
     id: 'd1',
+    targetUrl: 'https://blog.naver.com/post/1',
     platformUrl: 'https://blog.naver.com/post/1',
     shortSlug: 's1',
+    utmSource: null,
+    utmMedium: null,
+    utmCampaign: null,
     channel: {
       id: 'c1',
+      name: 'ch',
       platform: 'BLOG_NAVER',
+      publisherMode: 'BROWSER',
       collectorMode: 'BROWSER',
       config: {},
       ...channelOverrides,
     },
+    content: { id: 'ct1', title: 'T', doc: {} },
   }
 }
 

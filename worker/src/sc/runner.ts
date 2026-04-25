@@ -5,29 +5,13 @@ import { pollOnce, reportMetrics } from './job-poller.js'
 import { getPublisher, type PublishContext } from './publishers/index.js'
 import { getCollector, type CollectContext } from './collectors/index.js'
 import { handleInsightSweep } from './insight-generator.js'
+import type { WorkerJobResponse } from './contracts.js'
 
-// job-poller 의 ClaimedJob 은 deployment/credential/assets/deploymentUrl 을 unknown 으로 유지한다.
-// 웹앱 /api/sc/jobs/worker 응답 형식이 아직 강 타입화되지 않았으므로
-// 각 브랜치에서 as-cast 로 컨텍스트를 구성한다.
-//
-// 워커 API 응답 contract (2026-04-25 ~):
-//   - deployment: ContentDeployment + content(+assets) + channel (Prisma include 결과)
-//   - credential: readChannelCredential 의 복호화 결과 (또는 null)
-//   - assets: [{ slotKey, url, alt }] — content.assets 평탄화
-//   - deploymentUrl: `${getAppOrigin()}/c/${shortSlug}` 형태로 미리 계산된 CTA 링크
-type ClaimedJob = {
-  job: {
-    id: string
-    kind: 'PUBLISH' | 'COLLECT_METRIC' | 'INSIGHT_SWEEP'
-    targetId: string | null
-    payload: unknown
-    attempts: number
-  }
-  deployment?: unknown
-  credential?: unknown
-  assets?: unknown
-  deploymentUrl?: unknown
-}
+// 웹앱 /api/sc/jobs/worker 응답 contract — contracts.ts 에서 단일 진실 관리.
+// deployment 는 ContentDeployment + content(+assets) + channel (Prisma include 결과),
+// credential 은 readChannelCredential 의 복호화 결과 (또는 null),
+// deploymentUrl 은 `${getAppOrigin()}/c/${shortSlug}` 형태의 CTA 링크.
+type ClaimedJob = WorkerJobResponse
 
 type RouteResult = {
   ok: boolean
@@ -199,39 +183,32 @@ function logRetryHint(errorCode: string): void {
 }
 
 /** ClaimedJob → PublishContext 변환.
- * 웹앱 워커 API 가 deployment/content+channel 을 expand 해서 내려주므로 그대로 cast.
+ * 웹앱 워커 API 가 deployment 에 content+channel 을 expand 해서 내려주므로 평탄화.
  * channel/content 가 없으면 null 반환 (deployment 미존재 = enqueue 후 삭제됐다는 의미).
  */
 function buildPublishContext(c: ClaimedJob): PublishContext | null {
-  const d = c.deployment as
-    | (Record<string, unknown> & {
-        channel?: PublishContext['channel']
-        content?: PublishContext['content']
-      })
-    | undefined
-  if (!d || !d.channel || !d.content) return null
+  const d = c.deployment
+  if (!d?.channel || !d?.content) return null
 
   return {
-    deployment: d as unknown as PublishContext['deployment'],
+    deployment: d,
     channel: d.channel,
     content: d.content,
-    assets: (c.assets ?? []) as PublishContext['assets'],
-    credential: c.credential as PublishContext['credential'],
+    assets: c.assets ?? [],
+    credential: c.credential ?? null,
     deploymentUrl: typeof c.deploymentUrl === 'string' ? c.deploymentUrl : '',
   }
 }
 
 /** ClaimedJob → CollectContext 변환. */
 function buildCollectContext(c: ClaimedJob): CollectContext | null {
-  const d = c.deployment as
-    | (Record<string, unknown> & { channel?: CollectContext['channel'] })
-    | undefined
-  if (!d || !d.channel) return null
+  const d = c.deployment
+  if (!d?.channel) return null
 
   return {
-    deployment: d as unknown as CollectContext['deployment'],
+    deployment: d,
     channel: d.channel,
-    credential: c.credential as CollectContext['credential'],
+    credential: c.credential ?? null,
   }
 }
 

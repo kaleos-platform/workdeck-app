@@ -2,6 +2,10 @@
 // 현재 스켈레톤: claim 된 job 을 각 Publisher/Collector 로 위임하는 라우터만 포함.
 // 실제 Publisher/Collector 어댑터는 Unit 10/12 에서 채운다.
 
+// 웹앱 /api/sc/jobs/worker 응답 contract — contracts.ts 에서 단일 진실 관리.
+import type { WorkerJobKind, WorkerJobResponse } from './contracts.js'
+type ClaimedJob = WorkerJobResponse
+
 const WEB_APP_URL = process.env.WEB_APP_URL ?? 'http://127.0.0.1:3000'
 const WORKER_API_KEY = process.env.WORKER_API_KEY
 const WORKER_ID = process.env.SC_WORKER_ID ?? `sc-worker-${process.pid}`
@@ -21,23 +25,8 @@ async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<
   }
 }
 
-type ClaimedJob = {
-  job: {
-    id: string
-    kind: 'PUBLISH' | 'COLLECT_METRIC' | 'INSIGHT_SWEEP'
-    targetId: string | null
-    payload: unknown
-    attempts: number
-  }
-  deployment?: unknown
-  credential?: unknown
-  // 웹앱 /api/sc/jobs/worker 응답에 PublishContext 평탄화 필드를 함께 내려준다.
-  assets?: unknown
-  deploymentUrl?: unknown
-}
-
 export async function claimJobs(params: {
-  kinds?: ('PUBLISH' | 'COLLECT_METRIC' | 'INSIGHT_SWEEP')[]
+  kinds?: WorkerJobKind[]
   limit?: number
 }): Promise<ClaimedJob[]> {
   if (!WORKER_API_KEY) throw new Error('WORKER_API_KEY 환경변수가 필요합니다')
