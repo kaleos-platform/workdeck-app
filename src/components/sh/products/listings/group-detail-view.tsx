@@ -57,6 +57,8 @@ export function GroupDetailView({ productId, channelId }: Props) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [lastError, setLastError] = useState<string | null>(null)
+  // chip 표시용 재시도 횟수 (ref는 로직용, state는 UI 반응용)
+  const [retryCount, setRetryCount] = useState(0)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // 자동 재시도 (실패 후 backoff): 10s → 30s → 60s 후 수동 전환
   const autoRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -586,6 +588,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
       if (nth < AUTO_RETRY_DELAYS.length) {
         const delay = AUTO_RETRY_DELAYS[nth]
         autoRetryCountRef.current = nth + 1
+        setRetryCount(nth + 1)
         if (nth === 0) {
           toast.warning(`저장 실패. ${Math.round(delay / 1000)}초 후 자동 재시도합니다.`)
         }
@@ -595,6 +598,9 @@ export function GroupDetailView({ productId, channelId }: Props) {
           void runAutoSaveRef.current()
         }, delay)
       } else {
+        // 3회 모두 실패: chip을 "저장 실패 — 재시도"로 전환하고 카운터 초기화
+        autoRetryCountRef.current = 0
+        setRetryCount(0)
         toast.error(
           `자동 재시도 ${AUTO_RETRY_DELAYS.length}회 모두 실패. "재시도" 버튼을 눌러주세요.`
         )
@@ -602,6 +608,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
     } else {
       setLastError(null)
       autoRetryCountRef.current = 0
+      setRetryCount(0)
       if (autoRetryTimerRef.current) {
         clearTimeout(autoRetryTimerRef.current)
         autoRetryTimerRef.current = null
@@ -622,6 +629,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
       autoRetryTimerRef.current = null
     }
     autoRetryCountRef.current = 0
+    setRetryCount(0)
     autoSaveTimerRef.current = setTimeout(() => {
       autoSaveTimerRef.current = null
       void runAutoSaveRef.current()
@@ -689,10 +697,12 @@ export function GroupDetailView({ productId, channelId }: Props) {
           dirty={totalDirty}
           dirtyCount={dirtyCount}
           error={lastError}
+          retryCount={retryCount}
           onRetry={() => {
             setLastError(null)
             // 수동 재시도: 자동 backoff 카운터 리셋하고 즉시 저장 시도
             autoRetryCountRef.current = 0
+            setRetryCount(0)
             if (autoRetryTimerRef.current) {
               clearTimeout(autoRetryTimerRef.current)
               autoRetryTimerRef.current = null
@@ -904,12 +914,14 @@ function SaveStatusChip({
   dirty,
   dirtyCount,
   error,
+  retryCount,
   onRetry,
 }: {
   saving: boolean
   dirty: boolean
   dirtyCount: number
   error: string | null
+  retryCount: number
   onRetry: () => void
 }) {
   if (saving) {
@@ -933,6 +945,15 @@ function SaveStatusChip({
         <AlertCircle className="h-3.5 w-3.5" />
         저장 실패 — 재시도
       </Button>
+    )
+  }
+  // 자동 재시도 대기 중: backoff 타이머가 돌고 있는 동안 retryCount > 0
+  if (retryCount > 0) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-amber-600">
+        <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
+        저장 시도 중... ({retryCount}/3)
+      </span>
     )
   }
   if (dirty) {
