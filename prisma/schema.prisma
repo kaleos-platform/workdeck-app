@@ -349,6 +349,7 @@ model Space {
   optionCodeAliases      SpaceOptionCodeAlias[]
   productListings        ProductListing[]
   productChannelGroupMeta ProductChannelGroupMeta[]
+  productionRuns         ProductionRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -755,7 +756,7 @@ model InvProductOption {
   movements         InvMovement[]
   stockLevels       InvStockLevel[]
   locationMappings  InvLocationProductMap[]
-  productionBatches ProductionBatch[]
+  productionRunItems ProductionRunItem[]
   delOrderItems     DelOrderItem[]
   channelAliases    ChannelProductAlias[]
   aliasFulfillments ChannelProductAliasFulfillment[]
@@ -1219,23 +1220,60 @@ model ChannelFeeRate {
   @@index([channelId])
 }
 
-// 옵션별 생산 차수
-model ProductionBatch {
-  id         String   @id @default(cuid())
-  optionId   String
-  batchNo    String
-  producedAt DateTime
-  unitCost   Decimal  @db.Decimal(18, 2)
-  quantity   Int?
-  memo       String?
+// 생산 차수 (Production Run) — 발주 단위. 여러 상품/옵션을 묶을 수 있음.
+enum ProductionCostMode {
+  TOTAL
+  BREAKDOWN
+}
 
-  option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+model ProductionRun {
+  id        String             @id @default(cuid())
+  spaceId   String
+  runNo     String                                                       // Space 단위 unique 차수 번호 (전체 범위)
+  orderedAt DateTime                                                     // 발주일
+  totalCost Decimal?           @db.Decimal(18, 2)                        // 총 생산원가 (TOTAL 모드: 직접 입력값 / BREAKDOWN 모드: costs 합계 캐시)
+  costMode  ProductionCostMode @default(TOTAL)
+  memo      String?
+
+  space Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  items ProductionRunItem[]
+  costs ProductionRunCost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([optionId, batchNo])
+  @@unique([spaceId, runNo])
+  @@index([spaceId, orderedAt])
+}
+
+model ProductionRunItem {
+  id       String @id @default(cuid())
+  runId    String
+  optionId String
+  quantity Int
+
+  run    ProductionRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@unique([runId, optionId])
   @@index([optionId])
+}
+
+model ProductionRunCost {
+  id          String   @id @default(cuid())
+  runId       String
+  itemName    String                                                  // 비용 항목 (필수)
+  description String?                                                 // 상세 내용
+  spec        Decimal? @db.Decimal(18, 4)                              // 규격 (선택)
+  quantity    Decimal  @default(1) @db.Decimal(18, 4)                  // 수량 (필수, 기본 1)
+  unitPrice   Decimal  @db.Decimal(18, 2)                              // 단가 (필수)
+  amount      Decimal  @db.Decimal(18, 2)                              // (spec ?? 1) × quantity × unitPrice
+  note        String?
+  sortOrder   Int      @default(0)
+
+  run ProductionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
 }
 
 // Space 단위 가격 시뮬레이션 기본값 (Phase 2 대비)

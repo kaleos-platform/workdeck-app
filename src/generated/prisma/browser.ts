@@ -273,10 +273,20 @@ export type Channel = Prisma.ChannelModel
  */
 export type ChannelFeeRate = Prisma.ChannelFeeRateModel
 /**
- * Model ProductionBatch
+ * Model ProductionRun
  * 
  */
-export type ProductionBatch = Prisma.ProductionBatchModel
+export type ProductionRun = Prisma.ProductionRunModel
+/**
+ * Model ProductionRunItem
+ * 
+ */
+export type ProductionRunItem = Prisma.ProductionRunItemModel
+/**
+ * Model ProductionRunCost
+ * 
+ */
+export type ProductionRunCost = Prisma.ProductionRunCostModel
 /**
  * Model ProductPricingSettings
  * 

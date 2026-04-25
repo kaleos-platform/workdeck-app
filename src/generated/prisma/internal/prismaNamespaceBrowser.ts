@@ -102,7 +102,9 @@ export const ModelName = {
   ChannelGroup: 'ChannelGroup',
   Channel: 'Channel',
   ChannelFeeRate: 'ChannelFeeRate',
-  ProductionBatch: 'ProductionBatch',
+  ProductionRun: 'ProductionRun',
+  ProductionRunItem: 'ProductionRunItem',
+  ProductionRunCost: 'ProductionRunCost',
   ProductPricingSettings: 'ProductPricingSettings',
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
   ProductListing: 'ProductListing',
@@ -901,19 +903,45 @@ export const ChannelFeeRateScalarFieldEnum = {
 export type ChannelFeeRateScalarFieldEnum = (typeof ChannelFeeRateScalarFieldEnum)[keyof typeof ChannelFeeRateScalarFieldEnum]
 
 
-export const ProductionBatchScalarFieldEnum = {
+export const ProductionRunScalarFieldEnum = {
   id: 'id',
-  optionId: 'optionId',
-  batchNo: 'batchNo',
-  producedAt: 'producedAt',
-  unitCost: 'unitCost',
-  quantity: 'quantity',
+  spaceId: 'spaceId',
+  runNo: 'runNo',
+  orderedAt: 'orderedAt',
+  totalCost: 'totalCost',
+  costMode: 'costMode',
   memo: 'memo',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type ProductionBatchScalarFieldEnum = (typeof ProductionBatchScalarFieldEnum)[keyof typeof ProductionBatchScalarFieldEnum]
+export type ProductionRunScalarFieldEnum = (typeof ProductionRunScalarFieldEnum)[keyof typeof ProductionRunScalarFieldEnum]
+
+
+export const ProductionRunItemScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  optionId: 'optionId',
+  quantity: 'quantity'
+} as const
+
+export type ProductionRunItemScalarFieldEnum = (typeof ProductionRunItemScalarFieldEnum)[keyof typeof ProductionRunItemScalarFieldEnum]
+
+
+export const ProductionRunCostScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  itemName: 'itemName',
+  description: 'description',
+  spec: 'spec',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  amount: 'amount',
+  note: 'note',
+  sortOrder: 'sortOrder'
+} as const
+
+export type ProductionRunCostScalarFieldEnum = (typeof ProductionRunCostScalarFieldEnum)[keyof typeof ProductionRunCostScalarFieldEnum]
 
 
 export const ProductPricingSettingsScalarFieldEnum = {

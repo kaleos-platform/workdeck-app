@@ -126,3 +126,11 @@ export const DelBatchStatus = {
 } as const
 
 export type DelBatchStatus = (typeof DelBatchStatus)[keyof typeof DelBatchStatus]
+
+
+export const ProductionCostMode = {
+  TOTAL: 'TOTAL',
+  BREAKDOWN: 'BREAKDOWN'
+} as const
+
+export type ProductionCostMode = (typeof ProductionCostMode)[keyof typeof ProductionCostMode]
