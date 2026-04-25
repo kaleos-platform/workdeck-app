@@ -174,7 +174,87 @@ curl -X POST http://127.0.0.1:3000/api/sc/insights/schedule \
 
 ---
 
-## 8. 알려진 한계 / 후속 작업
+## 8. 운영 검증 체크리스트
+
+신규 환경 bring-up 또는 코드 변경 후 production-ready 여부 확인용. 모두 ☑ 면 합격.
+
+### 8-1. 사전 점검 (코드 측)
+
+- [ ] `npm test` — 20 suites / 166 tests green
+- [ ] `npx tsc --noEmit` — webapp 0 errors
+- [ ] `cd worker && npx tsc --noEmit` — worker 0 errors
+- [ ] `npx tsx scripts/sc/ops/smoke-e2e.ts --help` 정상 출력 (env 미설정에서도 동작)
+
+### 8-2. End-to-End 발행 검증
+
+```bash
+# Terminal 1: webapp
+npm run dev
+
+# Terminal 2: worker
+cd worker && WORKER_API_KEY=$WORKER_API_KEY npm run sc
+
+# Terminal 3: smoke
+npx tsx scripts/sc/ops/smoke-e2e.ts --blogId <id> --json | tee /tmp/smoke.json
+```
+
+- [ ] 종료 코드 `0` (`status=PUBLISHED`)
+- [ ] `/tmp/smoke.json` 의 `platformUrl` 이 실제 네이버 포스트로 열림
+- [ ] `db-stats` 출력에 ContentDeployment(PUBLISHED=+1) 반영
+- [ ] worker 로그에 `[sc-runner] poll 완료 — processed=1, failed=0` 라인
+
+### 8-3. webhook 알림 검증
+
+```bash
+# .env.local 에 SC_FAILURE_WEBHOOK_URL 추가 후 dev 재시작
+# 의도적 실패 — 잘못된 storageState 로 시도
+echo '{"x":1}' > /tmp/bad-session.json
+npx tsx scripts/sc/ops/smoke-e2e.ts --blogId test --sessionFile /tmp/bad-session.json
+```
+
+- [ ] Slack(또는 webhook 수신처) 에 `🚨 sales-content job 실패` 메시지 도착
+- [ ] 메시지에 자격증명 토큰/Bearer 등이 노출되지 않음 (redaction 확인)
+- [ ] retryable 실패(network 일시 오류) 시에는 webhook 가 호출되지 않음 — 의도된 동작
+
+### 8-4. reaper 동작 검증
+
+수동으로 stale CLAIMED 1건을 만들어 회복 확인:
+
+```sql
+-- 가장 최근 PUBLISHED job 1건을 CLAIMED + 11분 이전 claimedAt 으로 강제 변환
+UPDATE "SalesContentJob"
+SET status='CLAIMED', "claimedBy"='manual-test', "claimedAt"=NOW() - INTERVAL '11 minutes'
+WHERE id = (SELECT id FROM "SalesContentJob" WHERE status='COMPLETED' ORDER BY "completedAt" DESC LIMIT 1);
+```
+
+다음 polling 사이클 (≤5초) 후 worker 로그에 `[sc-jobs-worker] stale CLAIMED 1건 회복` 확인:
+
+- [ ] 위 row 의 status 가 `PENDING` 으로 돌아감
+- [ ] `claimedBy`, `claimedAt` 이 `NULL`
+- [ ] `attempts` 는 그대로 보존 (정책)
+
+### 8-5. metrics chunking 검증 (선택)
+
+대량 백필 시뮬레이션 — Collector 가 70+ metrics 반환하는 시나리오:
+
+- [ ] webapp 로그에 metrics worker 라우트 200 응답이 **2회** 기록 (50 + 20 chunk)
+- [ ] DB `DeploymentMetric` row 수가 입력 metrics 수와 일치
+
+### 8-6. 헬스 체크 자동화
+
+CI/cron 에서 실행 가능한 한 줄 헬스 체크:
+
+```bash
+npx tsx scripts/sc/ops/healthcheck.ts --blogId <id>
+# exit 0=PUBLISHED, 1=FAILED, 2=폴링 timeout 또는 인프라 오류
+```
+
+내부적으로 `smoke-e2e --json` 을 실행하고 결과를 파싱해 단일 라인 상태 + exit code 만 반환.
+배포 직후 회귀 알람용으로 cron 에 등록 가능 (예: `*/30 * * * *`).
+
+---
+
+## 9. 알려진 한계 / 후속 작업
 
 - **Bridge ACP 라우트 미구현**: `POST /sales-content/generate` 가 외부 `claude-code-bridge` 에 추가 필요. 미구현 시 Ollama fallback 또는 503.
 - **Threads API**: Meta OAuth 앱 승인 대기 중. 현재 Publisher/Collector 모두 `NOT_IMPLEMENTED` 반환.
