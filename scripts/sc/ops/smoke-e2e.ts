@@ -33,23 +33,51 @@ type Args = {
   blogId: string
   spaceId?: string
   sessionFile: string
+  json: boolean
 }
+
+const HELP = `Sales Content E2E smoke — Worker API ↔ Runner ↔ Naver Publisher 회귀 검증.
+
+Usage:
+  npx tsx scripts/sc/ops/smoke-e2e.ts --blogId <id> [options]
+
+Options:
+  --blogId <id>          (필수) Naver 블로그 ID. ChannelCredential.payload.blogId 로 저장.
+  --spaceId <id>         (선택) 사용할 Space. 미지정 시 sales-content 가 활성된 첫 Space.
+  --sessionFile <path>   (선택, default /tmp/naver-session.json) storageState JSON 파일 경로.
+                         scripts/sc/acquire-naver-session.ts 로 미리 생성 필요.
+  --json                 진행 표시 줄임표(....) 출력 생략하고 결과만 JSON 한 줄로 stdout.
+                         CI/orchestrator 에서 결과 파싱할 때 사용.
+  -h, --help             이 도움말.
+
+Env (자동 로드: .env.local):
+  DATABASE_URL           Prisma 연결 — 필수.
+  ENCRYPTION_KEY         ChannelCredential 암호화 — 필수.
+
+전제: 별도 터미널에서 webapp(npm run dev)과 worker(WORKER_API_KEY=… npm run sc) 실행 중.
+exit code: PUBLISHED=0, FAILED=1, 예외=1.
+`
 
 function parseArgs(): Args {
   const argv = process.argv.slice(2)
+  if (argv.includes('-h') || argv.includes('--help')) {
+    console.log(HELP)
+    process.exit(0)
+  }
   const get = (flag: string) => {
     const i = argv.indexOf(flag)
     return i >= 0 ? argv[i + 1] : undefined
   }
   const blogId = get('--blogId')
   if (!blogId) {
-    console.error('Usage: --blogId <id> [--spaceId <id>] [--sessionFile <path>]')
-    process.exit(1)
+    console.error(HELP)
+    process.exit(2)
   }
   return {
     blogId,
     spaceId: get('--spaceId'),
     sessionFile: get('--sessionFile') ?? '/tmp/naver-session.json',
+    json: argv.includes('--json'),
   }
 }
 
@@ -177,9 +205,10 @@ async function enqueuePublish(spaceId: string, deploymentId: string) {
 
 async function pollDeployment(
   deploymentId: string,
-  timeoutMs = 180_000
+  options: { timeoutMs?: number; quiet?: boolean } = {}
 ): Promise<{ status: string; platformUrl: string | null; errorMessage: string | null }> {
   const { prisma } = mods()
+  const timeoutMs = options.timeoutMs ?? 180_000
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     const d = await prisma.contentDeployment.findUnique({
@@ -190,7 +219,7 @@ async function pollDeployment(
     if (d.status === 'PUBLISHED' || d.status === 'FAILED') {
       return d
     }
-    process.stdout.write('.')
+    if (!options.quiet) process.stdout.write('.')
     await new Promise((r) => setTimeout(r, 5000))
   }
   throw new Error('polling 타임아웃 (3분)')
@@ -210,6 +239,13 @@ function mods() {
 }
 
 async function main() {
+  const args = parseArgs()
+  // --json 모드: 진행 로그는 stderr 로 — stdout 은 마지막 결과 JSON 한 줄 전용.
+  const log = (...parts: unknown[]) => {
+    if (args.json) console.error(...parts)
+    else console.log(...parts)
+  }
+
   _modules = {
     prisma: (await import('../../../src/lib/prisma')).prisma,
     upsertChannelCredential: (await import('../../../src/lib/sc/credentials'))
@@ -217,33 +253,45 @@ async function main() {
     generateShortSlug: (await import('../../../src/lib/sc/utm')).generateShortSlug,
   }
 
-  const args = parseArgs()
-  console.log(`[smoke-e2e] blogId=${args.blogId} sessionFile=${args.sessionFile}`)
+  log(`[smoke-e2e] blogId=${args.blogId} sessionFile=${args.sessionFile}`)
 
   const space = await findSpace(args.spaceId)
-  console.log(`[smoke-e2e] space=${space.id} (${space.name})`)
+  log(`[smoke-e2e] space=${space.id} (${space.name})`)
 
   const channel = await upsertChannel(space.id)
-  console.log(`[smoke-e2e] channel=${channel.id} (${channel.name})`)
+  log(`[smoke-e2e] channel=${channel.id} (${channel.name})`)
 
   await upsertCredential(space.id, channel.id, args.blogId, args.sessionFile)
-  console.log('[smoke-e2e] credential upserted')
+  log('[smoke-e2e] credential upserted')
 
   const content = await createContent(space.id)
-  console.log(`[smoke-e2e] content=${content.id} title=${content.title}`)
+  log(`[smoke-e2e] content=${content.id} title=${content.title}`)
 
   const deployment = await createDeployment(space.id, content.id, channel.id)
-  console.log(
+  log(
     `[smoke-e2e] deployment=${deployment.id} shortSlug=${deployment.shortSlug} targetUrl=${deployment.targetUrl}`
   )
 
   const job = await enqueuePublish(space.id, deployment.id)
-  console.log(`[smoke-e2e] PUBLISH job enqueued: ${job.id}`)
-  console.log('[smoke-e2e] 워커 처리 대기 중 (3분 timeout)...')
+  log(`[smoke-e2e] PUBLISH job enqueued: ${job.id}`)
+  log('[smoke-e2e] 워커 처리 대기 중 (3분 timeout)...')
 
-  const result = await pollDeployment(deployment.id)
-  console.log()
-  console.log('[smoke-e2e] 결과:', JSON.stringify(result, null, 2))
+  const result = await pollDeployment(deployment.id, { quiet: args.json })
+
+  if (args.json) {
+    // CI/orchestrator 친화 — 단일 JSON 라인.
+    process.stdout.write(
+      JSON.stringify({
+        ok: result.status === 'PUBLISHED',
+        deploymentId: deployment.id,
+        jobId: job.id,
+        ...result,
+      }) + '\n'
+    )
+  } else {
+    console.log()
+    console.log('[smoke-e2e] 결과:', JSON.stringify(result, null, 2))
+  }
 
   process.exit(result.status === 'PUBLISHED' ? 0 : 1)
 }

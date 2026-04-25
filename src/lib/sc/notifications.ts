@@ -3,6 +3,32 @@
 
 const TIMEOUT_MS = 3000
 
+// errorMessage 가 외부 webhook(Slack 등) 으로 나가기 전에 자격증명/토큰을 가린다.
+// Publisher/Collector 가 SDK 에러 메시지를 그대로 전달할 때 키·세션쿠키가 섞이는 케이스 방지.
+const REDACTORS: Array<{ pattern: RegExp; replace: string }> = [
+  // Authorization: Bearer xxxxx, Bearer xxx, Token xxx
+  { pattern: /\b(Bearer|Token)\s+[A-Za-z0-9._\-+/=]{8,}/gi, replace: '$1 [REDACTED]' },
+  // ?key=, &token=, "secret":"..." 등 흔한 자격증명 키
+  {
+    pattern:
+      /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|cookie|session)\s*[=:]\s*"?[A-Za-z0-9._\-+/=]{4,}"?/gi,
+    replace: '$1=[REDACTED]',
+  },
+  // JWT (3 segments base64 separated by dots) — 16자 이상 짧은 비밀번호 hash 와 구별.
+  {
+    pattern: /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g,
+    replace: '[REDACTED_JWT]',
+  },
+]
+
+export function redactErrorMessage(input: string): string {
+  let out = input
+  for (const { pattern, replace } of REDACTORS) {
+    out = out.replace(pattern, replace)
+  }
+  return out
+}
+
 export type JobFailureNotice = {
   jobId: string
   jobKind: string
@@ -40,10 +66,12 @@ export function formatNoticeText(notice: JobFailureNotice): string {
   const code = notice.errorCode ?? 'UNKNOWN'
   const target = notice.targetId ? ` target=${notice.targetId}` : ''
   // Slack 은 일부 마크다운만 지원 — 단순 텍스트 + 백틱 사용.
+  // errorMessage 는 외부 webhook 노출 전에 자격증명 패턴 redaction.
+  const safe = redactErrorMessage(notice.errorMessage).slice(0, 400)
   return [
     `🚨 sales-content job 실패`,
     `\`kind=${notice.jobKind}\` \`code=${code}\` jobId=${notice.jobId}${target}`,
     `space=${notice.spaceId}`,
-    `> ${notice.errorMessage.slice(0, 400)}`,
+    `> ${safe}`,
   ].join('\n')
 }

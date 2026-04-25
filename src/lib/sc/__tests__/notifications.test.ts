@@ -1,7 +1,7 @@
 // notifications.ts — formatNoticeText 순수 함수 + notifyJobFailure 의 webhook 미설정 noop 검증.
 // 실제 webhook fetch 는 프로세스 env + 외부 호출이라 여기서는 모킹으로 호출 여부만 확인.
 
-import { formatNoticeText, notifyJobFailure } from '../notifications'
+import { formatNoticeText, notifyJobFailure, redactErrorMessage } from '../notifications'
 
 const baseNotice = {
   jobId: 'job-1',
@@ -39,6 +39,38 @@ describe('formatNoticeText', () => {
   it('targetId 가 없으면 target= 부분 생략', () => {
     const t = formatNoticeText({ ...baseNotice, targetId: null })
     expect(t).not.toMatch(/target=/)
+  })
+
+  it('errorMessage 의 자격증명 패턴은 redaction 적용', () => {
+    const t = formatNoticeText({
+      ...baseNotice,
+      errorMessage: 'fetch failed: Bearer abcd1234efgh5678 expired',
+    })
+    expect(t).not.toContain('abcd1234efgh5678')
+    expect(t).toContain('[REDACTED]')
+  })
+})
+
+describe('redactErrorMessage', () => {
+  it('Bearer 토큰을 가린다', () => {
+    expect(redactErrorMessage('Authorization: Bearer abcd1234efgh5678ijklm')).toBe(
+      'Authorization: Bearer [REDACTED]'
+    )
+  })
+
+  it('api_key=... 같은 자격증명 키를 가린다', () => {
+    expect(redactErrorMessage('?api_key=secret123abc&foo=bar')).toContain('api_key=[REDACTED]')
+  })
+
+  it('JWT 형태의 토큰을 가린다', () => {
+    const jwt =
+      'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+    expect(redactErrorMessage(`token=${jwt} expired`)).toContain('[REDACTED_JWT]')
+    expect(redactErrorMessage(`token=${jwt} expired`)).not.toContain(jwt)
+  })
+
+  it('일반 텍스트는 그대로 둔다', () => {
+    expect(redactErrorMessage('네이버 세션이 만료됐습니다.')).toBe('네이버 세션이 만료됐습니다.')
   })
 })
 
