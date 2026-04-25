@@ -14,6 +14,8 @@ function makeJob(
     payload: unknown
     deployment: unknown
     credential: unknown
+    assets: unknown
+    deploymentUrl: unknown
   }>
 ) {
   return {
@@ -26,6 +28,44 @@ function makeJob(
     },
     deployment: overrides?.deployment ?? undefined,
     credential: overrides?.credential ?? undefined,
+    assets: overrides?.assets ?? undefined,
+    deploymentUrl: overrides?.deploymentUrl ?? undefined,
+  }
+}
+
+// 신 contract: channel/content 는 deployment 에 임베디드, assets/deploymentUrl 은 top-level.
+function publishDeployment(channelOverrides: Record<string, unknown> = {}) {
+  return {
+    id: 'd1',
+    targetUrl: 'https://example.com',
+    shortSlug: 's1',
+    utmSource: null,
+    utmMedium: null,
+    utmCampaign: null,
+    channel: {
+      id: 'c1',
+      name: 'ch',
+      platform: 'THREADS',
+      publisherMode: 'API',
+      config: {},
+      ...channelOverrides,
+    },
+    content: { id: 'ct1', title: 'T', doc: {} },
+  }
+}
+
+function collectDeployment(channelOverrides: Record<string, unknown> = {}) {
+  return {
+    id: 'd1',
+    platformUrl: 'https://blog.naver.com/post/1',
+    shortSlug: 's1',
+    channel: {
+      id: 'c1',
+      platform: 'BLOG_NAVER',
+      collectorMode: 'BROWSER',
+      config: {},
+      ...channelOverrides,
+    },
   }
 }
 
@@ -68,20 +108,9 @@ describe('routeJob — PUBLISH', () => {
       }),
     })
     const job = makeJob('PUBLISH', {
-      deployment: {
-        id: 'd1',
-        targetUrl: '',
-        shortSlug: '',
-        utmSource: null,
-        utmMedium: null,
-        utmCampaign: null,
-      },
-      payload: {
-        channel: { id: 'c1', name: 'ch', platform: 'THREADS', publisherMode: 'API', config: {} },
-        content: { id: 'ct1', title: 'T', doc: {} },
-        assets: [],
-        deploymentUrl: 'http://example.com',
-      },
+      deployment: publishDeployment(),
+      assets: [],
+      deploymentUrl: 'http://example.com/c/s1',
     })
     const result = await routeJob(job, deps)
     expect(result.ok).toBe(false)
@@ -95,20 +124,9 @@ describe('routeJob — PUBLISH', () => {
     }
     const deps = makeDeps({ getPublisher: jest.fn().mockReturnValue(mockPublisher) })
     const job = makeJob('PUBLISH', {
-      deployment: {
-        id: 'd1',
-        targetUrl: '',
-        shortSlug: '',
-        utmSource: null,
-        utmMedium: null,
-        utmCampaign: null,
-      },
-      payload: {
-        channel: { id: 'c1', name: 'ch', platform: 'THREADS', publisherMode: 'API', config: {} },
-        content: { id: 'ct1', title: 'T', doc: {} },
-        assets: [],
-        deploymentUrl: 'http://example.com',
-      },
+      deployment: publishDeployment(),
+      assets: [],
+      deploymentUrl: 'http://example.com/c/s1',
     })
     const result = await routeJob(job, deps)
     expect(result.ok).toBe(true)
@@ -124,24 +142,33 @@ describe('routeJob — PUBLISH', () => {
     }
     const deps = makeDeps({ getPublisher: jest.fn().mockReturnValue(mockPublisher) })
     const job = makeJob('PUBLISH', {
-      deployment: {
-        id: 'd1',
-        targetUrl: '',
-        shortSlug: '',
-        utmSource: null,
-        utmMedium: null,
-        utmCampaign: null,
-      },
-      payload: {
-        channel: { id: 'c1', name: 'ch', platform: 'THREADS', publisherMode: 'API', config: {} },
-        content: { id: 'ct1', title: 'T', doc: {} },
-        assets: [],
-        deploymentUrl: 'http://example.com',
-      },
+      deployment: publishDeployment(),
+      assets: [],
+      deploymentUrl: 'http://example.com/c/s1',
     })
     const result = await routeJob(job, deps)
     expect(result.ok).toBe(false)
     expect(result.errorMessage).toBe('토큰 없음')
+  })
+
+  it('assets/deploymentUrl 이 PublishContext 로 전달된다', async () => {
+    const mockPublisher = {
+      name: 'mock',
+      publish: jest.fn().mockResolvedValue({ ok: true }),
+    }
+    const deps = makeDeps({ getPublisher: jest.fn().mockReturnValue(mockPublisher) })
+    const job = makeJob('PUBLISH', {
+      deployment: publishDeployment(),
+      assets: [{ slotKey: 'thumb', url: 'https://x/y.png', alt: null }],
+      deploymentUrl: 'http://example.com/c/s1',
+    })
+    await routeJob(job, deps)
+    expect(mockPublisher.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assets: [{ slotKey: 'thumb', url: 'https://x/y.png', alt: null }],
+        deploymentUrl: 'http://example.com/c/s1',
+      })
+    )
   })
 })
 
@@ -161,10 +188,7 @@ describe('routeJob — COLLECT_METRIC', () => {
   it('getCollector 가 null 을 반환하면 ok:true 로 완료 처리', async () => {
     const deps = makeDeps({ getCollector: jest.fn().mockReturnValue(null) })
     const job = makeJob('COLLECT_METRIC', {
-      deployment: { id: 'd1', platformUrl: null, shortSlug: 's1' },
-      payload: {
-        channel: { id: 'c1', platform: 'THREADS', collectorMode: 'NONE', config: {} },
-      },
+      deployment: collectDeployment({ collectorMode: 'NONE', platform: 'THREADS' }),
     })
     const result = await routeJob(job, deps)
     expect(result.ok).toBe(true)
@@ -176,12 +200,7 @@ describe('routeJob — COLLECT_METRIC', () => {
       collect: jest.fn().mockResolvedValue({ ok: true, metrics: [] }),
     }
     const deps = makeDeps({ getCollector: jest.fn().mockReturnValue(mockCollector) })
-    const job = makeJob('COLLECT_METRIC', {
-      deployment: { id: 'd1', platformUrl: 'https://blog.naver.com/post/1', shortSlug: 's1' },
-      payload: {
-        channel: { id: 'c1', platform: 'BLOG_NAVER', collectorMode: 'BROWSER', config: {} },
-      },
-    })
+    const job = makeJob('COLLECT_METRIC', { deployment: collectDeployment() })
     const result = await routeJob(job, deps)
     expect(result.ok).toBe(true)
     expect(mockCollector.collect).toHaveBeenCalledTimes(1)
@@ -190,21 +209,14 @@ describe('routeJob — COLLECT_METRIC', () => {
   it('collector.collect 가 AUTH_FAILED 를 반환하면 ok:false + errorMessage 전달', async () => {
     const mockCollector = {
       name: 'naver-blog-browser',
-      collect: jest
-        .fn()
-        .mockResolvedValue({
-          ok: false,
-          errorCode: 'AUTH_FAILED',
-          errorMessage: 'storageState 없음',
-        }),
+      collect: jest.fn().mockResolvedValue({
+        ok: false,
+        errorCode: 'AUTH_FAILED',
+        errorMessage: 'storageState 없음',
+      }),
     }
     const deps = makeDeps({ getCollector: jest.fn().mockReturnValue(mockCollector) })
-    const job = makeJob('COLLECT_METRIC', {
-      deployment: { id: 'd1', platformUrl: 'https://blog.naver.com/post/1', shortSlug: 's1' },
-      payload: {
-        channel: { id: 'c1', platform: 'BLOG_NAVER', collectorMode: 'BROWSER', config: {} },
-      },
-    })
+    const job = makeJob('COLLECT_METRIC', { deployment: collectDeployment() })
     const result = await routeJob(job, deps)
     expect(result.ok).toBe(false)
     expect(result.errorMessage).toBe('storageState 없음')

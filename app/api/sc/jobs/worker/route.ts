@@ -8,6 +8,7 @@ import { errorResponse, resolveWorkerAuth } from '@/lib/api-helpers'
 import { claimJobs, enqueueJob } from '@/lib/sc/jobs'
 import { prisma } from '@/lib/prisma'
 import { readChannelCredential } from '@/lib/sc/credentials'
+import { getAppOrigin } from '@/lib/domain'
 
 const KINDS = ['PUBLISH', 'COLLECT_METRIC', 'INSIGHT_SWEEP'] as const
 
@@ -29,22 +30,34 @@ export async function GET(req: NextRequest) {
 
   // 각 job 에 대해 필요한 배포·채널·자격증명 컨텍스트를 함께 돌려준다.
   // 워커가 개별 콜 없이 바로 시작할 수 있도록.
+  // PublishContext / CollectContext 의 평탄화 — runner 가 c.deployment / c.assets / c.deploymentUrl 로 직접 사용.
+  const origin = getAppOrigin()
   const expanded = await Promise.all(
     jobs.map(async (job) => {
-      if (job.kind === 'PUBLISH' && typeof job.targetId === 'string') {
-        const deployment = await prisma.contentDeployment.findUnique({
-          where: { id: job.targetId },
-          include: {
-            content: true,
-            channel: true,
-          },
-        })
-        const credential = deployment
-          ? await readChannelCredential(deployment.channelId, 'COOKIE').catch(() => null)
-          : null
-        return { job, deployment, credential }
+      const usesDeploymentContext = job.kind === 'PUBLISH' || job.kind === 'COLLECT_METRIC'
+      if (!usesDeploymentContext || typeof job.targetId !== 'string') {
+        return { job }
       }
-      return { job }
+      const deployment = await prisma.contentDeployment.findUnique({
+        where: { id: job.targetId },
+        include: {
+          content: { include: { assets: true } },
+          channel: true,
+        },
+      })
+      if (!deployment) return { job }
+
+      const credential = await readChannelCredential(deployment.channelId, 'COOKIE').catch(
+        () => null
+      )
+      const assets = deployment.content.assets.map((a) => ({
+        slotKey: a.slotKey,
+        url: a.url,
+        alt: a.alt,
+      }))
+      const deploymentUrl = `${origin}/c/${deployment.shortSlug}`
+
+      return { job, deployment, credential, assets, deploymentUrl }
     })
   )
 

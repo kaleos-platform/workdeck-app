@@ -16,6 +16,9 @@ type ClaimedJob = {
   }
   deployment?: unknown
   credential?: unknown
+  // 웹앱 /api/sc/jobs/worker 응답에 PublishContext 평탄화 필드를 함께 내려준다.
+  assets?: unknown
+  deploymentUrl?: unknown
 }
 
 export async function claimJobs(params: {
