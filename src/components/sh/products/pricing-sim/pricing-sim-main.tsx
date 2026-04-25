@@ -30,6 +30,7 @@ import {
 import { PricingItemsTable, type PricingItemRow } from './pricing-items-table'
 import { PricingOptionPickerDialog, type PricingOption } from './pricing-option-picker-dialog'
 import { PricingComparisonDialog } from './pricing-comparison-dialog'
+import { PricingDefaultsCard } from './pricing-defaults-card'
 import { calculatePricing } from '@/lib/sh/pricing-calc'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
@@ -205,7 +206,7 @@ export function PricingSimMain() {
       try {
         const [scenRes, chRes, stRes] = await Promise.all([
           fetch('/api/sh/pricing-scenarios?pageSize=100'),
-          fetch('/api/sh/channels?isActive=true'),
+          fetch('/api/channels?isActive=true'),
           fetch('/api/sh/settings'),
         ])
         if (scenRes.ok) {
@@ -213,8 +214,9 @@ export function PricingSimMain() {
           setScenarios(d.data ?? [])
         }
         if (chRes.ok) {
-          const d: { data: Channel[] } = await chRes.json()
-          setChannels(d.data ?? [])
+          // /api/channels는 { channels: [...] } 형태로 응답함
+          const d: { channels?: Channel[]; data?: Channel[] } = await chRes.json()
+          setChannels(d.channels ?? d.data ?? [])
         }
         if (stRes.ok) {
           const d: { settings: Partial<DefaultSettings> } = await stRes.json()
@@ -656,6 +658,9 @@ export function PricingSimMain() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ── 기본값 설정 (인라인 편집) ── */}
+      <PricingDefaultsCard initialDefaults={defaults} onSaved={setDefaults} />
 
       {/* ── 옵션 입력 테이블 ── */}
       <div className="space-y-2">
