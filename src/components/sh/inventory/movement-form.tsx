@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -31,6 +32,15 @@ type ChannelItem = { id: string; name: string; isActive: boolean }
 type ProductItem = { id: string; name: string; code: string | null; optionsCount: number }
 type OptionItem = { id: string; name: string; sku: string | null; totalStock: number }
 
+type OptionEntry = {
+  optionId: string
+  optionName: string
+  sku: string | null
+  totalStock: number
+  selected: boolean
+  quantity: string
+}
+
 type Props = {
   onCreated?: () => void
 }
@@ -42,6 +52,14 @@ const TYPE_OPTIONS: { value: MovementType; label: string }[] = [
   { value: 'TRANSFER', label: '이동' },
   { value: 'ADJUSTMENT', label: '조정' },
 ]
+
+const DATE_LABEL: Record<MovementType, string> = {
+  INBOUND: '입고 날짜',
+  OUTBOUND: '출고 날짜',
+  RETURN: '반품 날짜',
+  TRANSFER: '이동 날짜',
+  ADJUSTMENT: '조정 날짜',
+}
 
 function todayStr() {
   return new Date().toISOString().split('T')[0]
@@ -55,28 +73,19 @@ export function MovementForm({ onCreated }: Props) {
 
   // Common fields
   const [productId, setProductId] = useState<string>('')
-  const [optionId, setOptionId] = useState<string>('')
+  const [optionEntries, setOptionEntries] = useState<OptionEntry[]>([])
   const [locationId, setLocationId] = useState<string>('')
   const [toLocationId, setToLocationId] = useState<string>('')
-  const [quantity, setQuantity] = useState<string>('')
   const [movementDate, setMovementDate] = useState<string>(todayStr())
   const [orderDate, setOrderDate] = useState<string>(todayStr())
   const [channelId, setChannelId] = useState<string>('')
   const [reason, setReason] = useState<string>('')
   const [referenceId, setReferenceId] = useState<string>('')
 
-  // INBOUND new-product fields
-  const [inboundMode, setInboundMode] = useState<'existing' | 'new'>('existing')
-  const [newProductName, setNewProductName] = useState('')
-  const [newProductCode, setNewProductCode] = useState('')
-  const [newOptionName, setNewOptionName] = useState('')
-  const [newOptionSku, setNewOptionSku] = useState('')
-
   // Lookups
   const [locations, setLocations] = useState<LocationItem[]>([])
   const [channels, setChannels] = useState<ChannelItem[]>([])
   const [products, setProducts] = useState<ProductItem[]>([])
-  const [options, setOptions] = useState<OptionItem[]>([])
   const [loadingOptions, setLoadingOptions] = useState(false)
 
   // New channel inline create
@@ -86,23 +95,28 @@ export function MovementForm({ onCreated }: Props) {
   const resetForm = useCallback(() => {
     setMovementType('INBOUND')
     setProductId('')
-    setOptionId('')
+    setOptionEntries([])
     setLocationId('')
     setToLocationId('')
-    setQuantity('')
     setMovementDate(todayStr())
     setOrderDate(todayStr())
     setChannelId('')
     setReason('')
     setReferenceId('')
-    setInboundMode('existing')
-    setNewProductName('')
-    setNewProductCode('')
-    setNewOptionName('')
-    setNewOptionSku('')
-    setOptions([])
     setCreatingChannel(false)
     setNewChannelName('')
+  }, [])
+
+  const loadProducts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/sh/inventory/products?pageSize=500')
+      if (res.ok) {
+        const j = await res.json()
+        setProducts(j.data ?? [])
+      }
+    } catch {
+      // ignore
+    }
   }, [])
 
   // Fetch lookups when dialog opens
@@ -110,34 +124,39 @@ export function MovementForm({ onCreated }: Props) {
     if (!open) return
     ;(async () => {
       try {
-        const [locRes, prodRes, chRes] = await Promise.all([
+        const [locRes, chRes] = await Promise.all([
           fetch('/api/sh/inventory/locations?isActive=true'),
-          fetch('/api/sh/inventory/products?pageSize=500'),
           fetch('/api/inv/channels?isActive=true'),
         ])
         if (locRes.ok) {
           const j = await locRes.json()
           setLocations(j.locations ?? [])
         }
-        if (prodRes.ok) {
-          const j = await prodRes.json()
-          setProducts(j.data ?? [])
-        }
         if (chRes.ok) {
           const j = await chRes.json()
           setChannels(j.channels ?? [])
         }
+        await loadProducts()
       } catch {
         toast.error('초기 데이터를 불러오지 못했습니다')
       }
     })()
-  }, [open])
+  }, [open, loadProducts])
+
+  // 새 탭에서 상품 등록 후 돌아오면 products 자동 새로고침
+  useEffect(() => {
+    if (!open) return
+    const onFocus = () => {
+      void loadProducts()
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [open, loadProducts])
 
   // When product changes, fetch its options
   useEffect(() => {
     if (!productId) {
-      setOptions([])
-      setOptionId('')
+      setOptionEntries([])
       return
     }
     let cancelled = false
@@ -148,11 +167,20 @@ export function MovementForm({ onCreated }: Props) {
         if (!res.ok) throw new Error()
         const data = await res.json()
         if (cancelled) return
-        setOptions(data.options ?? [])
-        setOptionId('')
+        const opts: OptionItem[] = data.options ?? []
+        setOptionEntries(
+          opts.map((o) => ({
+            optionId: o.id,
+            optionName: o.name,
+            sku: o.sku,
+            totalStock: o.totalStock,
+            selected: false,
+            quantity: '',
+          }))
+        )
       } catch {
         if (!cancelled) {
-          setOptions([])
+          setOptionEntries([])
           toast.error('옵션 정보를 불러오지 못했습니다')
         }
       } finally {
@@ -163,6 +191,14 @@ export function MovementForm({ onCreated }: Props) {
       cancelled = true
     }
   }, [productId])
+
+  function updateEntry(optionId: string, patch: Partial<OptionEntry>) {
+    setOptionEntries((prev) => prev.map((e) => (e.optionId === optionId ? { ...e, ...patch } : e)))
+  }
+
+  function toggleAll(selected: boolean) {
+    setOptionEntries((prev) => prev.map((e) => ({ ...e, selected })))
+  }
 
   async function handleCreateChannel() {
     const name = newChannelName.trim()
@@ -186,24 +222,27 @@ export function MovementForm({ onCreated }: Props) {
     }
   }
 
-  function needsExistingOption(): boolean {
-    if (movementType === 'INBOUND' && inboundMode === 'new') return false
-    return true
+  function selectedTargets(): Array<{ optionId: string; quantity: number }> {
+    return optionEntries
+      .filter((e) => e.selected)
+      .map((e) => ({ optionId: e.optionId, quantity: Number(e.quantity) }))
   }
 
   function validate(): string | null {
-    const qty = Number(quantity)
     if (!movementDate) return '날짜를 입력하세요'
-    if (!Number.isFinite(qty)) return '수량을 입력하세요'
-    if (movementType !== 'ADJUSTMENT' && qty <= 0) return '수량은 1 이상이어야 합니다'
     if (!locationId) return '위치를 선택하세요'
+    if (!productId) return '상품을 선택하세요'
 
-    if (needsExistingOption()) {
-      if (!optionId) return '상품/옵션을 선택하세요'
-    } else {
-      // INBOUND + new
-      if (!newProductName.trim()) return '새 상품명을 입력하세요'
-      if (!newOptionName.trim()) return '새 옵션명을 입력하세요'
+    const targets = optionEntries.filter((e) => e.selected)
+    if (targets.length === 0) return '옵션을 1개 이상 선택하세요'
+
+    for (const t of targets) {
+      const qty = Number(t.quantity)
+      if (!Number.isFinite(qty)) return `"${t.optionName}" 수량을 입력하세요`
+      if (movementType !== 'ADJUSTMENT' && qty <= 0)
+        return `"${t.optionName}" 수량은 1 이상이어야 합니다`
+      if (movementType === 'ADJUSTMENT' && qty < 0)
+        return `"${t.optionName}" 실물 수량은 0 이상이어야 합니다`
     }
 
     if (movementType === 'TRANSFER') {
@@ -227,56 +266,68 @@ export function MovementForm({ onCreated }: Props) {
     }
     setSubmitting(true)
     try {
-      const body: Record<string, unknown> = {
-        type: movementType,
-        locationId,
-        quantity: Number(quantity),
-        movementDate,
-      }
+      const targets = selectedTargets()
+      const results = await Promise.allSettled(
+        targets.map(async (t) => {
+          const body: Record<string, unknown> = {
+            type: movementType,
+            optionId: t.optionId,
+            locationId,
+            quantity: t.quantity,
+            movementDate,
+          }
+          if (movementType === 'TRANSFER') body.toLocationId = toLocationId
+          if (movementType === 'OUTBOUND') {
+            body.channelId = channelId
+            if (orderDate) body.orderDate = orderDate
+          }
+          if (movementType === 'RETURN' && referenceId.trim()) {
+            body.referenceId = referenceId.trim()
+          }
+          if (movementType === 'ADJUSTMENT') body.reason = reason.trim()
 
-      if (needsExistingOption()) {
-        body.optionId = optionId
+          const res = await fetch('/api/sh/inventory/movements', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}))
+            throw new Error(data?.error ?? '실패')
+          }
+        })
+      )
+
+      const ok = results.filter((r) => r.status === 'fulfilled').length
+      const failures = results
+        .map((r, i) => ({
+          result: r,
+          name: optionEntries.find((e) => e.optionId === targets[i].optionId)?.optionName ?? '',
+        }))
+        .filter((x) => x.result.status === 'rejected')
+      const ng = failures.length
+
+      if (ng === 0) {
+        toast.success(`${ok}건 등록 완료`)
+        setOpen(false)
+        resetForm()
+        onCreated?.()
+      } else if (ok === 0) {
+        toast.error(`전체 실패 (${ng}건): ${failures.map((f) => f.name).join(', ')}`)
       } else {
-        body.productName = newProductName.trim()
-        body.optionName = newOptionName.trim()
-        if (newProductCode.trim()) body.productCode = newProductCode.trim()
-        if (newOptionSku.trim()) body.optionSku = newOptionSku.trim()
+        toast.warning(`${ok}건 성공 / ${ng}건 실패: ${failures.map((f) => f.name).join(', ')}`)
+        onCreated?.()
       }
-
-      if (movementType === 'TRANSFER') body.toLocationId = toLocationId
-      if (movementType === 'OUTBOUND') {
-        body.channelId = channelId
-        if (orderDate) body.orderDate = orderDate
-      }
-      if (movementType === 'RETURN' && referenceId.trim()) {
-        body.referenceId = referenceId.trim()
-      }
-      if (movementType === 'ADJUSTMENT') body.reason = reason.trim()
-
-      const res = await fetch('/api/sh/inventory/movements', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data?.error ?? '이동 기록 생성 실패')
-      }
-      const warnings: string[] = Array.isArray(data?.warnings) ? data.warnings : []
-      if (warnings.length > 0) {
-        toast.warning(`등록되었으나 경고: ${warnings.join(' / ')}`)
-      } else {
-        toast.success('이동 기록이 등록되었습니다')
-      }
-      setOpen(false)
-      resetForm()
-      onCreated?.()
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : '이동 기록 생성 실패')
     } finally {
       setSubmitting(false)
     }
   }
+
+  const selectedCount = optionEntries.filter((e) => e.selected).length
+  const totalQty = optionEntries
+    .filter((e) => e.selected)
+    .reduce((s, e) => s + (Number(e.quantity) || 0), 0)
+  const allSelected = optionEntries.length > 0 && selectedCount === optionEntries.length
 
   return (
     <Dialog
@@ -292,11 +343,11 @@ export function MovementForm({ onCreated }: Props) {
           신규 등록
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>재고 이동 기록 등록</DialogTitle>
           <DialogDescription>
-            입고 / 출고 / 반품 / 이동 / 조정 기록을 직접 등록합니다.
+            입고 / 출고 / 반품 / 이동 / 조정 기록을 옵션별로 일괄 등록합니다.
           </DialogDescription>
         </DialogHeader>
 
@@ -319,134 +370,114 @@ export function MovementForm({ onCreated }: Props) {
             </div>
           </div>
 
-          {/* INBOUND mode toggle */}
-          {movementType === 'INBOUND' && (
+          {/* Product selector */}
+          <div className="space-y-2">
+            <Label>상품</Label>
+            <Select value={productId} onValueChange={setProductId}>
+              <SelectTrigger>
+                <SelectValue placeholder="상품 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {products.length === 0 ? (
+                  <SelectItem value="__none__" disabled>
+                    등록된 상품이 없습니다
+                  </SelectItem>
+                ) : (
+                  products.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                      {p.code ? ` (${p.code})` : ''}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              찾는 상품이 없나요?{' '}
+              <a
+                href="/d/seller-hub/products/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                상품을 먼저 등록
+              </a>
+              하세요. 등록 후 이 화면으로 돌아오면 자동으로 목록이 갱신됩니다.
+            </p>
+          </div>
+
+          {/* Options multi-select */}
+          {productId && (
             <div className="space-y-2">
-              <Label>상품 선택 방식</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={inboundMode === 'existing' ? 'default' : 'outline'}
-                  onClick={() => setInboundMode('existing')}
-                >
-                  기존 상품 선택
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={inboundMode === 'new' ? 'default' : 'outline'}
-                  onClick={() => setInboundMode('new')}
-                >
-                  새 상품 등록
-                </Button>
+              <div className="flex items-center justify-between">
+                <Label>옵션 선택 (체크 후 수량 입력)</Label>
+                {optionEntries.length > 0 && (
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => toggleAll(!allSelected)}
+                  >
+                    {allSelected ? '전체 해제' : '전체 선택'}
+                  </button>
+                )}
               </div>
+              <div className="rounded-md border">
+                {loadingOptions ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    옵션 불러오는 중...
+                  </div>
+                ) : optionEntries.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    옵션이 없습니다
+                  </div>
+                ) : (
+                  <div className="max-h-64 overflow-y-auto">
+                    {optionEntries.map((e) => (
+                      <div
+                        key={e.optionId}
+                        className={`flex items-center gap-3 border-b px-3 py-2 last:border-b-0 ${
+                          e.selected ? 'bg-primary/5' : ''
+                        }`}
+                      >
+                        <Checkbox
+                          checked={e.selected}
+                          onCheckedChange={(v) => updateEntry(e.optionId, { selected: v === true })}
+                          aria-label={`${e.optionName} 선택`}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{e.optionName}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {e.sku ? `${e.sku} · ` : ''}재고 {e.totalStock.toLocaleString('ko-KR')}
+                          </p>
+                        </div>
+                        <Input
+                          type="number"
+                          className="h-8 w-24"
+                          value={e.quantity}
+                          onChange={(ev) =>
+                            updateEntry(e.optionId, {
+                              quantity: ev.target.value,
+                              selected: ev.target.value !== '' ? true : e.selected,
+                            })
+                          }
+                          placeholder={movementType === 'ADJUSTMENT' ? '실물' : '수량'}
+                          disabled={!e.selected}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {selectedCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  선택 {selectedCount}개 · 총 {totalQty.toLocaleString('ko-KR')}개
+                </p>
+              )}
             </div>
           )}
 
-          {/* Existing product/option picker */}
-          {needsExistingOption() && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>상품</Label>
-                <Select value={productId} onValueChange={setProductId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="상품 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.length === 0 ? (
-                      <SelectItem value="__none__" disabled>
-                        등록된 상품이 없습니다
-                      </SelectItem>
-                    ) : (
-                      products.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                          {p.code ? ` (${p.code})` : ''}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>옵션</Label>
-                <Select
-                  value={optionId}
-                  onValueChange={setOptionId}
-                  disabled={!productId || loadingOptions}
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={
-                        !productId
-                          ? '상품 먼저 선택'
-                          : loadingOptions
-                            ? '불러오는 중...'
-                            : '옵션 선택'
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.length === 0 ? (
-                      <SelectItem value="__none__" disabled>
-                        옵션 없음
-                      </SelectItem>
-                    ) : (
-                      options.map((o) => (
-                        <SelectItem key={o.id} value={o.id}>
-                          {o.name}
-                          {o.sku ? ` · ${o.sku}` : ''} (재고 {o.totalStock})
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
-          {/* New product fields (INBOUND + new) */}
-          {movementType === 'INBOUND' && inboundMode === 'new' && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>새 상품명 *</Label>
-                <Input
-                  value={newProductName}
-                  onChange={(e) => setNewProductName(e.target.value)}
-                  placeholder="예: 콜라 500ml"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>제품코드 (선택)</Label>
-                <Input value={newProductCode} onChange={(e) => setNewProductCode(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>옵션명 *</Label>
-                <Input
-                  value={newOptionName}
-                  onChange={(e) => setNewOptionName(e.target.value)}
-                  placeholder="예: 기본"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>SKU (선택)</Label>
-                <Input value={newOptionSku} onChange={(e) => setNewOptionSku(e.target.value)} />
-              </div>
-            </div>
-          )}
-
-          {/* Quantity + location(s) */}
+          {/* Location(s) */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{movementType === 'ADJUSTMENT' ? '실물 수량 (절대값)' : '수량'}</Label>
-              <Input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="0"
-              />
-            </div>
             <div className="space-y-2">
               <Label>{movementType === 'TRANSFER' ? '출발 위치' : '위치'}</Label>
               <Select value={locationId} onValueChange={setLocationId}>
@@ -464,7 +495,7 @@ export function MovementForm({ onCreated }: Props) {
             </div>
 
             {movementType === 'TRANSFER' && (
-              <div className="space-y-2 sm:col-span-2">
+              <div className="space-y-2">
                 <Label>도착 위치</Label>
                 <Select value={toLocationId} onValueChange={setToLocationId}>
                   <SelectTrigger>
@@ -574,7 +605,7 @@ export function MovementForm({ onCreated }: Props) {
 
           {/* Date */}
           <div className="space-y-2">
-            <Label>이동 날짜</Label>
+            <Label>{DATE_LABEL[movementType]}</Label>
             <Input
               type="date"
               value={movementDate}
@@ -594,7 +625,7 @@ export function MovementForm({ onCreated }: Props) {
                 처리 중...
               </>
             ) : (
-              '등록'
+              `등록${selectedCount > 0 ? ` (${selectedCount}건)` : ''}`
             )}
           </Button>
         </DialogFooter>
