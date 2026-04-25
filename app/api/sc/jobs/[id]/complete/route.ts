@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { errorResponse, resolveWorkerAuth } from '@/lib/api-helpers'
 import { completeJob, failJob, isRetryableErrorCode } from '@/lib/sc/jobs'
 import { prisma } from '@/lib/prisma'
+import { notifyJobFailure } from '@/lib/sc/notifications'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -52,15 +53,29 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   const nonRetryable = !isRetryableErrorCode(parsed.data.errorCode)
-  await failJob(id, parsed.data.errorMessage ?? '알 수 없는 오류', { nonRetryable })
+  const errorMessage = parsed.data.errorMessage ?? '알 수 없는 오류'
+  await failJob(id, errorMessage, { nonRetryable })
   if (job.kind === 'PUBLISH' && job.targetId) {
     await prisma.contentDeployment.update({
       where: { id: job.targetId },
       data: {
         status: 'FAILED',
-        errorMessage: parsed.data.errorMessage?.slice(0, 1000) ?? null,
+        errorMessage: errorMessage.slice(0, 1000),
       },
     })
   }
+
+  // non-retryable 실패만 알림 — retryable 실패는 백오프로 자동 회복하므로 알림 노이즈 회피.
+  if (nonRetryable) {
+    void notifyJobFailure({
+      jobId: id,
+      jobKind: job.kind,
+      errorCode: parsed.data.errorCode,
+      errorMessage,
+      targetId: job.targetId,
+      spaceId: job.spaceId,
+    })
+  }
+
   return NextResponse.json({ ok: true })
 }

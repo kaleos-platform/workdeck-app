@@ -6,20 +6,21 @@
 
 ## 1. 환경 변수 체크리스트
 
-| 변수                                       | 필수     | 위치                    | 설명                                                                          |
-| ------------------------------------------ | -------- | ----------------------- | ----------------------------------------------------------------------------- |
-| `DATABASE_URL`                             | ✅       | `.env.local`            | Supabase Postgres 접속 URL                                                    |
-| `NEXT_PUBLIC_SUPABASE_URL`                 | ✅       | `.env.local`            | Supabase 프로젝트 URL                                                         |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`            | ✅       | `.env.local`            | Supabase anon key                                                             |
-| `WORKER_API_KEY`                           | ✅       | `.env.local` + 워커 env | 웹앱 ↔ 워커 인증 키 (32+ random hex 권장)                                     |
-| `ENCRYPTION_KEY`                           | ✅       | `.env.local`            | AES-256-CBC 키 (64-char hex). ChannelCredential 암복호화에 사용               |
-| `NEXT_PUBLIC_APP_URL`                      | (운영)   | `.env.local`            | `/c/{slug}` CTA 링크 origin. 미설정 시 dev=localhost, prod=DEFAULT_APP_ORIGIN |
-| `OPENROUTER_API_KEY`                       | (선택)   | `.env.local`            | 기존 쿠팡 광고 분석 (sales-content 와 무관)                                   |
-| `CLAUDE_CODE_ACP_ENDPOINT`                 | (Unit 3) | `.env.local`            | Bridge ACP 엔드포인트(미구현 시 Ollama fallback)                              |
-| `OLLAMA_ENDPOINT` / `OLLAMA_MODEL`         | (Unit 3) | `.env.local`            | 로컬 Ollama (ACP fallback)                                                    |
-| `GOOGLE_AI_API_KEY` / `GEMINI_IMAGE_MODEL` | (Unit 7) | `.env.local`            | Gemini 이미지 생성                                                            |
-| `SALES_CONTENT_IMAGE_MONTHLY_QUOTA`        | (Unit 3) | `.env.local`            | 월 이미지 quota 기본값 (default 50)                                           |
-| `SC_NAVER_HEADLESS`                        | (옵션)   | 워커 env                | `false` 면 Playwright headed 모드 (디버깅용). 기본 headless                   |
+| 변수                                       | 필수     | 위치                    | 설명                                                                           |
+| ------------------------------------------ | -------- | ----------------------- | ------------------------------------------------------------------------------ |
+| `DATABASE_URL`                             | ✅       | `.env.local`            | Supabase Postgres 접속 URL                                                     |
+| `NEXT_PUBLIC_SUPABASE_URL`                 | ✅       | `.env.local`            | Supabase 프로젝트 URL                                                          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`            | ✅       | `.env.local`            | Supabase anon key                                                              |
+| `WORKER_API_KEY`                           | ✅       | `.env.local` + 워커 env | 웹앱 ↔ 워커 인증 키 (32+ random hex 권장)                                      |
+| `ENCRYPTION_KEY`                           | ✅       | `.env.local`            | AES-256-CBC 키 (64-char hex). ChannelCredential 암복호화에 사용                |
+| `NEXT_PUBLIC_APP_URL`                      | (운영)   | `.env.local`            | `/c/{slug}` CTA 링크 origin. 미설정 시 dev=localhost, prod=DEFAULT_APP_ORIGIN  |
+| `OPENROUTER_API_KEY`                       | (선택)   | `.env.local`            | 기존 쿠팡 광고 분석 (sales-content 와 무관)                                    |
+| `CLAUDE_CODE_ACP_ENDPOINT`                 | (Unit 3) | `.env.local`            | Bridge ACP 엔드포인트(미구현 시 Ollama fallback)                               |
+| `OLLAMA_ENDPOINT` / `OLLAMA_MODEL`         | (Unit 3) | `.env.local`            | 로컬 Ollama (ACP fallback)                                                     |
+| `GOOGLE_AI_API_KEY` / `GEMINI_IMAGE_MODEL` | (Unit 7) | `.env.local`            | Gemini 이미지 생성                                                             |
+| `SALES_CONTENT_IMAGE_MONTHLY_QUOTA`        | (Unit 3) | `.env.local`            | 월 이미지 quota 기본값 (default 50)                                            |
+| `SC_FAILURE_WEBHOOK_URL`                   | (선택)   | `.env.local`            | non-retryable job 실패 시 Slack-compat webhook (`{text}` POST). 미설정 시 noop |
+| `SC_NAVER_HEADLESS`                        | (옵션)   | 워커 env                | `false` 면 Playwright headed 모드 (디버깅용). 기본 headless                    |
 
 신규 환경 셋업 시 `cp .env.local.example .env.local` 후 채워넣고, `ENCRYPTION_KEY` 는 다음 명령으로 생성:
 
@@ -177,5 +178,5 @@ curl -X POST http://127.0.0.1:3000/api/sc/insights/schedule \
 
 - **Bridge ACP 라우트 미구현**: `POST /sales-content/generate` 가 외부 `claude-code-bridge` 에 추가 필요. 미구현 시 Ollama fallback 또는 503.
 - **Threads API**: Meta OAuth 앱 승인 대기 중. 현재 Publisher/Collector 모두 `NOT_IMPLEMENTED` 반환.
-- **AUTH_FAILED 알림 훅**: Slack/이메일 알림 미연결. `db-stats` 또는 SQL 쿼리로 운영자가 직접 확인해야 함.
+- **실패 알림**: `SC_FAILURE_WEBHOOK_URL` 설정 시 non-retryable job 실패 즉시 Slack 호환 webhook 으로 전송. 미설정 환경에서는 `db-stats` / SQL 로 fallback 모니터링.
 - **세션 자동 갱신**: `--auto` 모드는 ID/PW env 가 있어야 동작. 2FA 필요 시 `--manual` 사용.
