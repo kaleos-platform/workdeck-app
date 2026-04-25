@@ -83,14 +83,22 @@ export async function completeJob(jobId: string): Promise<void> {
 }
 
 // 실패: attempts 한도 이하면 PENDING 재스케줄, 초과면 FAILED 고정.
-export async function failJob(jobId: string, errorMessage: string): Promise<void> {
+// nonRetryable=true 이면 attempts 와 무관하게 즉시 FAILED 로 고정한다.
+// 호출 측은 Publisher/Collector 의 errorCode 가 AUTH_FAILED · VALIDATION · NOT_IMPLEMENTED ·
+// RATE_LIMITED 처럼 자격증명·구현·외부 quota 문제일 때 nonRetryable=true 로 넘긴다.
+export async function failJob(
+  jobId: string,
+  errorMessage: string,
+  options: { nonRetryable?: boolean } = {}
+): Promise<void> {
   const job = await prisma.salesContentJob.findUnique({
     where: { id: jobId },
     select: { attempts: true },
   })
   if (!job) return
 
-  if (job.attempts >= MAX_ATTEMPTS) {
+  const shouldFinalize = options.nonRetryable || job.attempts >= MAX_ATTEMPTS
+  if (shouldFinalize) {
     await prisma.salesContentJob.update({
       where: { id: jobId },
       data: {
@@ -111,4 +119,13 @@ export async function failJob(jobId: string, errorMessage: string): Promise<void
       },
     })
   }
+}
+
+// 워커 에러코드 → retry 가능 여부.
+// NETWORK / PLATFORM_ERROR 는 일시적 — 재시도 가능.
+// 그 외(AUTH_FAILED, RATE_LIMITED, VALIDATION, NOT_IMPLEMENTED) 는 자격증명·구현 문제 — 즉시 FAILED.
+const RETRYABLE_ERROR_CODES = new Set(['NETWORK', 'PLATFORM_ERROR'])
+export function isRetryableErrorCode(errorCode: string | null | undefined): boolean {
+  if (!errorCode) return true
+  return RETRYABLE_ERROR_CODES.has(errorCode)
 }

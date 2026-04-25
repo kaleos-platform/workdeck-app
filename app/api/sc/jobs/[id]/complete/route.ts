@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { errorResponse, resolveWorkerAuth } from '@/lib/api-helpers'
-import { completeJob, failJob } from '@/lib/sc/jobs'
+import { completeJob, failJob, isRetryableErrorCode } from '@/lib/sc/jobs'
 import { prisma } from '@/lib/prisma'
 
 type Params = { params: Promise<{ id: string }> }
@@ -9,6 +9,8 @@ type Params = { params: Promise<{ id: string }> }
 const bodySchema = z.object({
   ok: z.boolean(),
   errorMessage: z.string().max(1000).optional(),
+  // Publisher/Collector 의 errorCode (AUTH_FAILED 등). non-retryable 판정에 사용.
+  errorCode: z.string().max(50).optional(),
   // publish 성공 시 platformUrl 을 같이 보내면 ContentDeployment 에 채운다.
   platformUrl: z.string().url().max(2000).optional(),
 })
@@ -49,7 +51,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ ok: true })
   }
 
-  await failJob(id, parsed.data.errorMessage ?? '알 수 없는 오류')
+  const nonRetryable = !isRetryableErrorCode(parsed.data.errorCode)
+  await failJob(id, parsed.data.errorMessage ?? '알 수 없는 오류', { nonRetryable })
   if (job.kind === 'PUBLISH' && job.targetId) {
     await prisma.contentDeployment.update({
       where: { id: job.targetId },

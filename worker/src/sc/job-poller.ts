@@ -47,6 +47,7 @@ export async function completeJob(
   ok: boolean,
   meta?: {
     errorMessage?: string
+    errorCode?: string
     platformUrl?: string
   }
 ): Promise<void> {
@@ -63,9 +64,12 @@ export async function completeJob(
 
 // 1회 polling 사이클 — Unit 10+ 에서 Publisher/Collector factory 주입 예정.
 export async function pollOnce(
-  handleJob: (
-    c: ClaimedJob
-  ) => Promise<{ ok: boolean; errorMessage?: string; platformUrl?: string }>
+  handleJob: (c: ClaimedJob) => Promise<{
+    ok: boolean
+    errorMessage?: string
+    errorCode?: string
+    platformUrl?: string
+  }>
 ): Promise<{ processed: number; failed: number }> {
   const claimed = await claimJobs({ limit: 5 })
   let processed = 0
@@ -76,6 +80,7 @@ export async function pollOnce(
       const result = await handleJob(c)
       await completeJob(c.job.id, result.ok, {
         errorMessage: result.errorMessage,
+        errorCode: result.errorCode,
         platformUrl: result.platformUrl,
       })
       if (result.ok) processed += 1

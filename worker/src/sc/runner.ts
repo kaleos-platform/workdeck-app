@@ -32,6 +32,7 @@ type ClaimedJob = {
 type RouteResult = {
   ok: boolean
   errorMessage?: string
+  errorCode?: string
   platformUrl?: string
 }
 
@@ -65,14 +66,18 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
       try {
         const publisher = deps.getPublisher(ctx)
         const result = await publisher.publish(ctx)
-        // errorCode 는 로컬 로깅 + 재시도 판단용. 웹앱 API 에는 전달하지 않음.
         if (!result.ok && result.errorCode) {
           console.warn(
             `[sc-runner] PUBLISH 실패 [${result.errorCode}] ${publisher.name}: ${result.errorMessage}`
           )
           logRetryHint(result.errorCode)
         }
-        return { ok: result.ok, errorMessage: result.errorMessage, platformUrl: result.platformUrl }
+        return {
+          ok: result.ok,
+          errorMessage: result.errorMessage,
+          errorCode: result.errorCode,
+          platformUrl: result.platformUrl,
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error(`[sc-runner] Publisher 미구현 또는 예외: ${msg}`)
@@ -108,7 +113,7 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
           `[sc-runner] COLLECT_METRIC metrics (${result.metrics.length}건) — 저장 미구현, 로그만`
         )
       }
-      return { ok: result.ok, errorMessage: result.errorMessage }
+      return { ok: result.ok, errorMessage: result.errorMessage, errorCode: result.errorCode }
     }
 
     case 'INSIGHT_SWEEP': {
