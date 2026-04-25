@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Layers, Loader2, Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -46,6 +46,10 @@ type Props = {
 
 export function ListingCreateForm({ defaultChannelId }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const prefillKey = searchParams.get('prefillKey')
+  const prefillApplied = useRef(false)
+
   const [channels, setChannels] = useState<Channel[]>([])
   const [channelId, setChannelId] = useState<string>(defaultChannelId ?? '')
   const [baseSearchName, setBaseSearchName] = useState('')
@@ -77,6 +81,79 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       cancelled = true
     }
   }, [])
+
+  // ── pricing prefill 처리 ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (!prefillKey || prefillApplied.current) return
+
+    const raw = sessionStorage.getItem(prefillKey)
+    if (!raw) return
+
+    // 1회용 — 읽은 즉시 삭제
+    sessionStorage.removeItem(prefillKey)
+    prefillApplied.current = true
+
+    let prefill: { optionId: string; productId: string; retailPrice: number }
+    try {
+      prefill = JSON.parse(raw)
+    } catch {
+      toast.error('prefill 데이터 파싱 실패')
+      return
+    }
+
+    const apply = async () => {
+      try {
+        // 상품 + 옵션 직접 fetch — productId 기반으로 정확하게 조회
+        const [productRes, optionRes] = await Promise.all([
+          fetch(`/api/sh/products/${prefill.productId}`),
+          fetch(`/api/sh/products/${prefill.productId}/options/${prefill.optionId}`),
+        ])
+        if (!productRes.ok) throw new Error('상품 조회 실패')
+        if (!optionRes.ok) throw new Error('옵션 조회 실패')
+
+        const { product } = await productRes.json()
+        const { option } = await optionRes.json()
+
+        // ProductContext 구성
+        const ctx: ProductContext = {
+          id: product.id,
+          displayName: product.internalName ?? product.name,
+          officialName: product.name,
+          brandName: product.brand?.name ?? null,
+        }
+        setProductCtx(ctx)
+        if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
+        if (!baseDisplayName.trim()) setBaseDisplayName(ctx.displayName)
+
+        // CompositionRow 1개 직접 생성 (suffix 없이 — 단일 옵션)
+        const row: CompositionRow = {
+          key: `prefill-${option.id}`,
+          suffixParts: [],
+          items: [
+            {
+              optionId: option.id,
+              optionName: option.name,
+              sku: option.sku ?? null,
+              quantity: 1,
+              retailPrice: option.retailPrice ?? null,
+              attributeValues: option.attributeValues ?? {},
+            },
+          ],
+          retailPrice: String(prefill.retailPrice),
+          status: 'ACTIVE',
+        }
+        setRows([row])
+        setSelected(new Set())
+
+        toast.success('옵션 자동 선택 + 가격 미리 채움 완료')
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'prefill 처리 실패')
+      }
+    }
+
+    apply()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillKey])
 
   const currentChannel = channels.find((c) => c.id === channelId) ?? null
   const nameLimit = getChannelNameLimit(currentChannel?.name ?? null)
