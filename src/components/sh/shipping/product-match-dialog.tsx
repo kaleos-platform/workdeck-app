@@ -123,12 +123,12 @@ export function ProductMatchDialog({
 
   useEffect(() => {
     if (open) {
-      setSearch(rawName)
-      setDebouncedSearch(rawName)
+      setSearch('')
+      setDebouncedSearch('')
       setTab(channelSet ? 'listing' : 'option')
       setManualItems([])
     }
-  }, [open, rawName, channelSet])
+  }, [open, channelSet])
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300)
