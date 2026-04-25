@@ -138,63 +138,71 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
     }
 
-    const orderQty = item.quantity
-    await prisma.$transaction(async (tx) => {
-      await tx.delOrderItem.update({
-        where: { id: itemId },
-        data: { optionId: null, listingId: null },
-      })
-      await tx.delOrderItemFulfillment.deleteMany({ where: { orderItemId: itemId } })
-      await tx.delOrderItemFulfillment.createMany({
-        data: list.map((f) => ({
-          orderItemId: itemId,
-          optionId: f.optionId,
-          quantity: f.perSetQuantity * orderQty,
-        })),
-      })
-    })
-
-    // alias 저장 (saveAlias=true + channelId 있을 때만)
-    // 저장된 perSet 값 기준으로 alias fulfillments upsert → 다음 업로드 시 자동 매칭
-    let savedAlias = false
-    if (saveAlias && item.order.channelId) {
-      const aliasName = normalizeAlias(item.name)
-      if (aliasName) {
-        await prisma.$transaction(async (tx) => {
-          const alias = await tx.channelProductAlias.upsert({
-            where: {
-              channelId_aliasName: { channelId: item.order.channelId!, aliasName },
-            },
-            update: { listingId: null, optionId: null },
-            create: {
-              spaceId: resolved.space.id,
-              channelId: item.order.channelId!,
-              aliasName,
-              listingId: null,
-              optionId: null,
-            },
-          })
-          await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
-          await tx.channelProductAliasFulfillment.createMany({
-            data: list.map((f) => ({
-              aliasId: alias.id,
-              optionId: f.optionId,
-              quantity: f.perSetQuantity,
-            })),
-          })
+    try {
+      const orderQty = item.quantity
+      await prisma.$transaction(async (tx) => {
+        await tx.delOrderItem.update({
+          where: { id: itemId },
+          data: { optionId: null, listingId: null },
         })
-        savedAlias = true
-      }
-    }
+        await tx.delOrderItemFulfillment.deleteMany({ where: { orderItemId: itemId } })
+        await tx.delOrderItemFulfillment.createMany({
+          data: list.map((f) => ({
+            orderItemId: itemId,
+            optionId: f.optionId,
+            quantity: f.perSetQuantity * orderQty,
+          })),
+        })
+      })
 
-    const totalQuantity = list.reduce((s, f) => s + f.perSetQuantity * orderQty, 0)
-    return NextResponse.json({
-      ok: true,
-      mode: 'manual',
-      fulfillmentCount: list.length,
-      totalQuantity,
-      savedAlias,
-    })
+      // alias 저장 (saveAlias=true + channelId 있을 때만)
+      // 저장된 perSet 값 기준으로 alias fulfillments upsert → 다음 업로드 시 자동 매칭
+      let savedAlias = false
+      if (saveAlias && item.order.channelId) {
+        const aliasName = normalizeAlias(item.name)
+        if (aliasName) {
+          await prisma.$transaction(async (tx) => {
+            const alias = await tx.channelProductAlias.upsert({
+              where: {
+                channelId_aliasName: { channelId: item.order.channelId!, aliasName },
+              },
+              update: { listingId: null, optionId: null },
+              create: {
+                spaceId: resolved.space.id,
+                channelId: item.order.channelId!,
+                aliasName,
+                listingId: null,
+                optionId: null,
+              },
+            })
+            await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
+            await tx.channelProductAliasFulfillment.createMany({
+              data: list.map((f) => ({
+                aliasId: alias.id,
+                optionId: f.optionId,
+                quantity: f.perSetQuantity,
+              })),
+            })
+          })
+          savedAlias = true
+        }
+      }
+
+      const totalQuantity = list.reduce((s, f) => s + f.perSetQuantity * orderQty, 0)
+      return NextResponse.json({
+        ok: true,
+        mode: 'manual',
+        fulfillmentCount: list.length,
+        totalQuantity,
+        savedAlias,
+      })
+    } catch (err) {
+      console.error('[manual match] DB 에러', err)
+      return errorResponse(
+        err instanceof Error ? err.message : '수동 매칭 저장에 실패했습니다',
+        500
+      )
+    }
   }
 
   if (mode === 'option') {
