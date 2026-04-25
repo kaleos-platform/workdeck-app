@@ -26,6 +26,9 @@ import { PricingDefaultsCard } from './pricing-defaults-card'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
 import { PricingChannelList, type ScenarioChannel, type DbChannel } from './pricing-channel-list'
 import { PricingMatrix } from './pricing-matrix'
+import { PricingMarginAdvisor, type AdvisorChannelEntry } from './pricing-margin-advisor'
+import { PricingSensitivityChart } from './pricing-sensitivity-chart'
+import { calculateMatrix } from '@/lib/sh/pricing-matrix-calc'
 import type { MatrixGlobals, MatrixOption, MatrixChannel } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 
@@ -837,59 +840,9 @@ export function PricingSimMain() {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* 옵션 입력 필드 */}
-              <div className="flex flex-wrap gap-4">
-                <div className="space-y-1">
-                  <Label className="text-xs">공급가 (원)</Label>
-                  <NumInput
-                    value={row.costPrice}
-                    onChange={(v) => updateRow(row.rowId, { costPrice: v })}
-                    suffix="원"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">소매가 / 1세트 (원)</Label>
-                  <NumInput
-                    value={row.retailPrice}
-                    onChange={(v) => updateRow(row.rowId, { retailPrice: v })}
-                    suffix="원"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">1세트 = N개</Label>
-                  <NumInput
-                    value={row.unitsPerSet}
-                    onChange={(v) =>
-                      updateRow(row.rowId, { unitsPerSet: Math.max(1, Math.round(v)) })
-                    }
-                    step={1}
-                    min={1}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">포장비 (원)</Label>
-                  <NumInput
-                    value={row.packagingCost}
-                    onChange={(v) => updateRow(row.rowId, { packagingCost: v })}
-                    suffix="원"
-                  />
-                </div>
-              </div>
-
-              {/* 채널별 매트릭스 */}
-              {scenarioChannels.length === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  채널을 추가하면 할인율 매트릭스가 표시됩니다.
-                </p>
-              )}
-
-              {scenarioChannels.map((sc, chIdx) => {
-                const key = channelKey(sc, chIdx)
-                const isExpanded = row.matrixExpanded[key] !== false // 기본 펼침
-                const chName = sc.source === 'db' ? sc.channel.name : sc.inline.name
-                const chType = sc.source === 'db' ? sc.channel.channelType : sc.inline.channelType
-                const matrixChannel = toMatrixChannel(sc)
-                const matrixOption: MatrixOption = {
+              {/* 이 옵션 행의 공통 matrixOption — 아래 어드바이저·매트릭스·차트에서 공유 */}
+              {(() => {
+                const rowMatrixOption: MatrixOption = {
                   optionId: row.optionId,
                   name: row.optionName,
                   retailPrice: row.retailPrice,
@@ -897,49 +850,150 @@ export function PricingSimMain() {
                   unitsPerSet: row.unitsPerSet,
                   packagingCost: row.packagingCost,
                 }
+                const advisorChannels: AdvisorChannelEntry[] = scenarioChannels.map(
+                  (sc, chIdx) => ({
+                    key: channelKey(sc, chIdx),
+                    name: sc.source === 'db' ? sc.channel.name : sc.inline.name,
+                    channel: toMatrixChannel(sc),
+                  })
+                )
+                const matrixPromotion = toMatrixPromotion(promotion)
 
                 return (
-                  <div key={key} className="rounded-md border">
-                    {/* 채널 헤더 */}
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/40"
-                      onClick={() => toggleMatrix(row.rowId, key)}
-                      aria-expanded={isExpanded}
-                    >
-                      {isExpanded ? (
-                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                      ) : (
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                      )}
-                      <span className="text-sm font-medium">{chName}</span>
-                      {chType && (
-                        <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
-                          {chType}
-                        </Badge>
-                      )}
-                      {sc.source === 'inline' && (
-                        <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
-                          임시
-                        </Badge>
-                      )}
-                    </button>
-
-                    {/* 매트릭스 테이블 */}
-                    {isExpanded && (
-                      <div className="border-t px-1 py-2">
-                        <PricingMatrix
-                          option={matrixOption}
-                          channel={matrixChannel}
-                          promotion={toMatrixPromotion(promotion)}
-                          globals={matrixGlobals}
-                          thresholds={tierThresholds}
+                  <>
+                    {/* 옵션 입력 필드 */}
+                    <div className="flex flex-wrap gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-xs">공급가 (원)</Label>
+                        <NumInput
+                          value={row.costPrice}
+                          onChange={(v) => updateRow(row.rowId, { costPrice: v })}
+                          suffix="원"
                         />
                       </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">소매가 / 1세트 (원)</Label>
+                        <NumInput
+                          value={row.retailPrice}
+                          onChange={(v) => updateRow(row.rowId, { retailPrice: v })}
+                          suffix="원"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">
+                          1세트 = N개
+                          {row.unitsPerSet > 1 && (
+                            <span className="ml-1 text-[10px] font-normal text-muted-foreground">
+                              (1개당{' '}
+                              {row.retailPrice > 0 ? fmt(row.retailPrice / row.unitsPerSet) : '—'}
+                              원)
+                            </span>
+                          )}
+                        </Label>
+                        <NumInput
+                          value={row.unitsPerSet}
+                          onChange={(v) =>
+                            updateRow(row.rowId, { unitsPerSet: Math.max(1, Math.round(v)) })
+                          }
+                          step={1}
+                          min={1}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">포장비 (원)</Label>
+                        <NumInput
+                          value={row.packagingCost}
+                          onChange={(v) => updateRow(row.rowId, { packagingCost: v })}
+                          suffix="원"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 마진 어드바이저 */}
+                    <PricingMarginAdvisor
+                      option={rowMatrixOption}
+                      channels={advisorChannels}
+                      promotion={matrixPromotion}
+                      globals={matrixGlobals}
+                      thresholds={tierThresholds}
+                    />
+
+                    {/* 채널별 매트릭스 */}
+                    {scenarioChannels.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        채널을 추가하면 할인율 매트릭스가 표시됩니다.
+                      </p>
                     )}
-                  </div>
+
+                    {scenarioChannels.map((sc, chIdx) => {
+                      const key = channelKey(sc, chIdx)
+                      const isExpanded = row.matrixExpanded[key] !== false // 기본 펼침
+                      const chName = sc.source === 'db' ? sc.channel.name : sc.inline.name
+                      const chType =
+                        sc.source === 'db' ? sc.channel.channelType : sc.inline.channelType
+                      const matrixChannel = toMatrixChannel(sc)
+
+                      // 민감도 차트용 매트릭스 사전 계산
+                      const sensitivityMatrix = calculateMatrix({
+                        option: rowMatrixOption,
+                        channel: matrixChannel,
+                        promotion: matrixPromotion,
+                        globals: matrixGlobals,
+                        thresholds: tierThresholds,
+                      })
+
+                      return (
+                        <div key={key} className="rounded-md border">
+                          {/* 채널 헤더 */}
+                          <button
+                            type="button"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/40"
+                            onClick={() => toggleMatrix(row.rowId, key)}
+                            aria-expanded={isExpanded}
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
+                            <span className="text-sm font-medium">{chName}</span>
+                            {chType && (
+                              <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                                {chType}
+                              </Badge>
+                            )}
+                            {sc.source === 'inline' && (
+                              <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+                                임시
+                              </Badge>
+                            )}
+                          </button>
+
+                          {/* 매트릭스 테이블 + 민감도 차트 */}
+                          {isExpanded && (
+                            <div className="space-y-3 border-t px-1 py-2">
+                              <PricingMatrix
+                                option={rowMatrixOption}
+                                channel={matrixChannel}
+                                promotion={matrixPromotion}
+                                globals={matrixGlobals}
+                                thresholds={tierThresholds}
+                              />
+                              {/* 민감도 차트 — 소매가가 입력된 경우에만 표시 */}
+                              {row.retailPrice > 0 && (
+                                <PricingSensitivityChart
+                                  matrix={sensitivityMatrix}
+                                  channelName={chName}
+                                />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </>
                 )
-              })}
+              })()}
             </CardContent>
           </Card>
         ))}
