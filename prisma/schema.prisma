@@ -350,6 +350,7 @@ model Space {
   productListings        ProductListing[]
   productChannelGroupMeta ProductChannelGroupMeta[]
   productionRuns         ProductionRun[]
+  pricingScenarios       PricingScenario[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -757,6 +758,7 @@ model InvProductOption {
   stockLevels       InvStockLevel[]
   locationMappings  InvLocationProductMap[]
   productionRunItems ProductionRunItem[]
+  pricingScenarioItems PricingScenarioItem[]
   delOrderItems     DelOrderItem[]
   channelAliases    ChannelProductAlias[]
   aliasFulfillments ChannelProductAliasFulfillment[]
@@ -1195,6 +1197,7 @@ model Channel {
   productAliases       ChannelProductAlias[]
   productListings      ProductListing[]
   productGroupMeta     ProductChannelGroupMeta[]
+  pricingScenarios     PricingScenario[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1298,6 +1301,63 @@ model ProductionRunCost {
   run ProductionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 
   @@index([runId])
+}
+
+// 가격 시뮬레이션 시나리오
+// 옵션 N개를 선택하고 채널/할인/비용 변수를 조합해 순수익을 계산하는 단위.
+// 결과(netProfit, margin)는 캐시이므로 inputs 변경 시 재계산 후 갱신.
+model PricingScenario {
+  id          String   @id @default(cuid())
+  spaceId     String
+  channelId   String?  // 시뮬레이션 기본 채널 (선택)
+  name        String   // 시나리오 이름
+  memo        String?
+  // 시뮬레이션 전역 옵션
+  includeVat  Boolean  @default(true)   // 판매가에 VAT 포함 여부 (true면 매출에서 VAT 제외하여 순수익 계산)
+  vatRate     Decimal  @default(0.1) @db.Decimal(6, 4)  // 부가세율 (한국 기본 10%)
+
+  space   Space                  @relation(fields: [spaceId],   references: [id], onDelete: Cascade)
+  channel Channel?               @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  items   PricingScenarioItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, updatedAt])
+  @@index([channelId])
+}
+
+// 시나리오 안의 옵션별 entry — 옵션마다 독립적인 가격/원가/비용 변수와 결과 캐시
+model PricingScenarioItem {
+  id              String  @id @default(cuid())
+  scenarioId      String
+  optionId        String
+
+  // 입력 변수 — 모두 nullable이면 시뮬레이션 시점에 옵션·채널·설정에서 자동 채움
+  costPrice       Decimal? @db.Decimal(18, 2)  // 원가 (없으면 InvProductOption.costPrice → 사용자 직접)
+  salePrice       Decimal  @db.Decimal(18, 2)  // 사용자 입력 판매가
+  discountRate    Decimal  @default(0) @db.Decimal(6, 4)  // 0~1 (예: 0.1 = 10% 할인)
+  channelFeePct   Decimal  @default(0) @db.Decimal(6, 4)  // 채널 수수료율 (0~1)
+  shippingCost    Decimal  @default(0) @db.Decimal(18, 2) // 옵션당 배송비
+  packagingCost   Decimal  @default(0) @db.Decimal(18, 2)
+  adCostPct       Decimal  @default(0) @db.Decimal(6, 4)
+  operatingCostPct Decimal @default(0) @db.Decimal(6, 4)
+
+  // 결과 캐시 (서버에서 계산해 저장)
+  finalPrice      Decimal  @default(0) @db.Decimal(18, 2)  // salePrice × (1 - discountRate)
+  revenueExVat    Decimal  @default(0) @db.Decimal(18, 2)
+  totalCost       Decimal  @default(0) @db.Decimal(18, 2)  // costPrice + 모든 비용
+  netProfit       Decimal  @default(0) @db.Decimal(18, 2)
+  margin          Decimal  @default(0) @db.Decimal(6, 4)   // netProfit / revenueExVat
+
+  sortOrder       Int      @default(0)
+
+  scenario PricingScenario  @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  option   InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@unique([scenarioId, optionId])
+  @@index([scenarioId])
+  @@index([optionId])
 }
 
 // Space 단위 가격 시뮬레이션 기본값 (Phase 2 대비)

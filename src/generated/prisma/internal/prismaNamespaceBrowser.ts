@@ -105,6 +105,8 @@ export const ModelName = {
   ProductionRun: 'ProductionRun',
   ProductionRunItem: 'ProductionRunItem',
   ProductionRunCost: 'ProductionRunCost',
+  PricingScenario: 'PricingScenario',
+  PricingScenarioItem: 'PricingScenarioItem',
   ProductPricingSettings: 'ProductPricingSettings',
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
   ProductListing: 'ProductListing',
@@ -947,6 +949,44 @@ export const ProductionRunCostScalarFieldEnum = {
 } as const
 
 export type ProductionRunCostScalarFieldEnum = (typeof ProductionRunCostScalarFieldEnum)[keyof typeof ProductionRunCostScalarFieldEnum]
+
+
+export const PricingScenarioScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  name: 'name',
+  memo: 'memo',
+  includeVat: 'includeVat',
+  vatRate: 'vatRate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PricingScenarioScalarFieldEnum = (typeof PricingScenarioScalarFieldEnum)[keyof typeof PricingScenarioScalarFieldEnum]
+
+
+export const PricingScenarioItemScalarFieldEnum = {
+  id: 'id',
+  scenarioId: 'scenarioId',
+  optionId: 'optionId',
+  costPrice: 'costPrice',
+  salePrice: 'salePrice',
+  discountRate: 'discountRate',
+  channelFeePct: 'channelFeePct',
+  shippingCost: 'shippingCost',
+  packagingCost: 'packagingCost',
+  adCostPct: 'adCostPct',
+  operatingCostPct: 'operatingCostPct',
+  finalPrice: 'finalPrice',
+  revenueExVat: 'revenueExVat',
+  totalCost: 'totalCost',
+  netProfit: 'netProfit',
+  margin: 'margin',
+  sortOrder: 'sortOrder'
+} as const
+
+export type PricingScenarioItemScalarFieldEnum = (typeof PricingScenarioItemScalarFieldEnum)[keyof typeof PricingScenarioItemScalarFieldEnum]
 
 
 export const ProductPricingSettingsScalarFieldEnum = {

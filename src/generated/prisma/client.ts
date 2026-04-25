@@ -310,6 +310,16 @@ export type ProductionRunItem = Prisma.ProductionRunItemModel
  */
 export type ProductionRunCost = Prisma.ProductionRunCostModel
 /**
+ * Model PricingScenario
+ * 
+ */
+export type PricingScenario = Prisma.PricingScenarioModel
+/**
+ * Model PricingScenarioItem
+ * 
+ */
+export type PricingScenarioItem = Prisma.PricingScenarioItemModel
+/**
  * Model ProductPricingSettings
  * 
  */
