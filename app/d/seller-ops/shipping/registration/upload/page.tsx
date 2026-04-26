@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 export default function Page() {
   const router = useRouter()
   useEffect(() => {
-    router.replace('/d/seller-hub/shipping/registration')
+    router.replace('/d/seller-ops/shipping/registration')
   }, [router])
   return null
 }

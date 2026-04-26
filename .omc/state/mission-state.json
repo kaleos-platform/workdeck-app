@@ -1,0 +1,105 @@
+{
+  "updatedAt": "2026-04-26T04:56:06.186Z",
+  "missions": [
+    {
+      "id": "session:eebeb3c6-d917-443e-9d21-cd16bb541cdd:none",
+      "source": "session",
+      "name": "none",
+      "objective": "Session mission",
+      "createdAt": "2026-04-26T02:25:05.804Z",
+      "updatedAt": "2026-04-26T04:56:06.186Z",
+      "status": "done",
+      "workerCount": 3,
+      "taskCounts": {
+        "total": 3,
+        "pending": 0,
+        "blocked": 0,
+        "inProgress": 0,
+        "completed": 3,
+        "failed": 0
+      },
+      "agents": [
+        {
+          "name": "cyrano-frontend:afd1096",
+          "role": "cyrano-frontend",
+          "ownership": "afd1096895ac7d800",
+          "status": "done",
+          "currentStep": null,
+          "latestUpdate": "completed",
+          "completedSummary": null,
+          "updatedAt": "2026-04-26T04:55:53.998Z"
+        },
+        {
+          "name": "bernstein-backend:a6daba7",
+          "role": "bernstein-backend",
+          "ownership": "a6daba7f62544343f",
+          "status": "done",
+          "currentStep": null,
+          "latestUpdate": "completed",
+          "completedSummary": null,
+          "updatedAt": "2026-04-26T03:15:44.143Z"
+        },
+        {
+          "name": "cyrano-frontend:a8d945b",
+          "role": "cyrano-frontend",
+          "ownership": "a8d945b3e06ad4d59",
+          "status": "done",
+          "currentStep": null,
+          "latestUpdate": "completed",
+          "completedSummary": null,
+          "updatedAt": "2026-04-26T04:56:06.186Z"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "session-stop:afd1096895ac7d800:2026-04-26T02:32:42.659Z",
+          "at": "2026-04-26T02:32:42.659Z",
+          "kind": "completion",
+          "agent": "cyrano-frontend:afd1096",
+          "detail": "completed",
+          "sourceKey": "session-stop:afd1096895ac7d800"
+        },
+        {
+          "id": "session-start:a6daba7f62544343f:2026-04-26T03:07:44.431Z",
+          "at": "2026-04-26T03:07:44.431Z",
+          "kind": "update",
+          "agent": "bernstein-backend:a6daba7",
+          "detail": "started bernstein-backend:a6daba7",
+          "sourceKey": "session-start:a6daba7f62544343f"
+        },
+        {
+          "id": "session-start:a8d945b3e06ad4d59:2026-04-26T03:08:07.204Z",
+          "at": "2026-04-26T03:08:07.204Z",
+          "kind": "update",
+          "agent": "cyrano-frontend:a8d945b",
+          "detail": "started cyrano-frontend:a8d945b",
+          "sourceKey": "session-start:a8d945b3e06ad4d59"
+        },
+        {
+          "id": "session-stop:a6daba7f62544343f:2026-04-26T03:15:44.143Z",
+          "at": "2026-04-26T03:15:44.143Z",
+          "kind": "completion",
+          "agent": "bernstein-backend:a6daba7",
+          "detail": "completed",
+          "sourceKey": "session-stop:a6daba7f62544343f"
+        },
+        {
+          "id": "session-stop:a0f2da16311c2e569:2026-04-26T04:55:53.998Z",
+          "at": "2026-04-26T04:55:53.998Z",
+          "kind": "completion",
+          "agent": "cyrano-frontend:afd1096",
+          "detail": "completed",
+          "sourceKey": "session-stop:a0f2da16311c2e569"
+        },
+        {
+          "id": "session-stop:a8d945b3e06ad4d59:2026-04-26T04:56:06.186Z",
+          "at": "2026-04-26T04:56:06.186Z",
+          "kind": "completion",
+          "agent": "cyrano-frontend:a8d945b",
+          "detail": "completed",
+          "sourceKey": "session-stop:a8d945b3e06ad4d59"
+        }
+      ]
+    }
+  ]
+}

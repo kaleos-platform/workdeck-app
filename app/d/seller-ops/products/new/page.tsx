@@ -145,7 +145,7 @@ export default function ProductNewPage() {
       }
       toast.success('상품이 생성되었습니다')
       // 생성된 상품 상세 페이지로 이동 — 응답 shape { product: { id, ... } }
-      router.push(`/d/seller-hub/products/${data.product.id}`)
+      router.push(`/d/seller-ops/products/${data.product.id}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '생성 실패')
     } finally {
@@ -158,7 +158,7 @@ export default function ProductNewPage() {
       {/* 헤더 */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/d/seller-hub/products/list" aria-label="목록으로">
+          <Link href="/d/seller-ops/products/list" aria-label="목록으로">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -483,7 +483,7 @@ export default function ProductNewPage() {
                 {saving ? '저장 중...' : '상품 등록'}
               </Button>
               <Button variant="outline" className="w-full" asChild>
-                <Link href="/d/seller-hub/products/list">취소</Link>
+                <Link href="/d/seller-ops/products/list">취소</Link>
               </Button>
             </CardContent>
           </Card>

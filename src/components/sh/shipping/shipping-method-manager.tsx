@@ -161,7 +161,7 @@ export function ShippingMethodManager() {
                   <div className="flex items-center gap-2">
                     <Badge>활성</Badge>
                     <Button asChild variant="ghost" size="sm" title="배송 라벨 관리">
-                      <Link href={`/d/seller-hub/shipping/methods/${method.id}`}>
+                      <Link href={`/d/seller-ops/shipping/methods/${method.id}`}>
                         <Tag className="mr-1 h-4 w-4" />
                         배송 라벨
                       </Link>

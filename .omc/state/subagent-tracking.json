@@ -1,0 +1,35 @@
+{
+  "agents": [
+    {
+      "agent_id": "afd1096895ac7d800",
+      "agent_type": "cyrano-frontend",
+      "started_at": "2026-04-26T02:25:05.804Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-26T02:32:42.659Z",
+      "duration_ms": 456855
+    },
+    {
+      "agent_id": "a6daba7f62544343f",
+      "agent_type": "bernstein-backend",
+      "started_at": "2026-04-26T03:07:44.431Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-26T03:15:44.143Z",
+      "duration_ms": 479712
+    },
+    {
+      "agent_id": "a8d945b3e06ad4d59",
+      "agent_type": "cyrano-frontend",
+      "started_at": "2026-04-26T03:08:07.204Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-26T04:56:06.186Z",
+      "duration_ms": 6478982
+    }
+  ],
+  "total_spawned": 3,
+  "total_completed": 3,
+  "total_failed": 0,
+  "last_updated": "2026-04-26T04:56:06.287Z"
+}

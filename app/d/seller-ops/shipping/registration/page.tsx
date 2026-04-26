@@ -83,7 +83,7 @@ export default function ShippingRegistrationPage() {
       const n = Number(raw)
       if (Number.isFinite(n) && n > 0) setImportedCount(n)
       setRefreshKey((k) => k + 1)
-      router.replace('/d/seller-hub/shipping/registration')
+      router.replace('/d/seller-ops/shipping/registration')
     }
   }, [searchParams, router])
 
@@ -593,7 +593,7 @@ export default function ShippingRegistrationPage() {
             <div className="mt-2 flex flex-wrap gap-2">
               {needsShippingMethodSetup && (
                 <Button asChild size="sm" variant="outline">
-                  <Link href="/d/seller-hub/shipping/methods">
+                  <Link href="/d/seller-ops/shipping/methods">
                     배송 방식 관리
                     <ArrowRight className="ml-1 h-3 w-3" />
                   </Link>
@@ -601,7 +601,7 @@ export default function ShippingRegistrationPage() {
               )}
               {needsChannelSetup && (
                 <Button asChild size="sm" variant="outline">
-                  <Link href="/d/seller-hub/channels">
+                  <Link href="/d/seller-ops/channels">
                     판매 채널 관리
                     <ArrowRight className="ml-1 h-3 w-3" />
                   </Link>

@@ -395,7 +395,7 @@ export function MovementForm({ onCreated }: Props) {
             <p className="text-xs text-muted-foreground">
               찾는 상품이 없나요?{' '}
               <a
-                href="/d/seller-hub/products/new"
+                href="/d/seller-ops/products/new"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"

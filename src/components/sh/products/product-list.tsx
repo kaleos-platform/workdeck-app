@@ -183,7 +183,7 @@ export function ShProductList() {
         </Button>
         <div className="ml-auto">
           <Button size="sm" asChild>
-            <Link href="/d/seller-hub/products/new">
+            <Link href="/d/seller-ops/products/new">
               <Plus className="mr-1 h-4 w-4" />
               상품 생성
             </Link>
@@ -227,7 +227,7 @@ export function ShProductList() {
                   0
                 )
                 const displayName = productDisplayName(row)
-                const goDetail = () => router.push(`/d/seller-hub/products/${row.id}`)
+                const goDetail = () => router.push(`/d/seller-ops/products/${row.id}`)
                 return (
                   <TableRow
                     key={row.id}
