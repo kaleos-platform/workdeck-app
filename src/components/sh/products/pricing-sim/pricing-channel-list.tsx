@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, Edit2, ExternalLink } from 'lucide-react'
+import { Plus, X, Edit2, ExternalLink, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,6 +36,8 @@ type Props = {
   channels: ScenarioChannel[]
   /** 이미 추가된 DB 채널 id 목록 (중복 방지용) */
   onChange: (channels: ScenarioChannel[]) => void
+  /** 임시 채널이 DB 채널로 등록될 때 — 부모 allDbChannels 캐시 갱신용 */
+  onChannelRegistered?: (ch: DbChannel) => void
 }
 
 // ─── 채널 타입 레이블 / 배지 ──────────────────────────────────────────────────
@@ -148,11 +151,90 @@ function InlineChannelCard({
   data,
   onEdit,
   onRemove,
+  onPromote,
 }: {
   data: ChannelInlineData
   onEdit: () => void
   onRemove: () => void
+  /** DB 채널로 등록 완료 시 호출 — 새로 생성된 DbChannel 전달 */
+  onPromote: (ch: DbChannel) => void
 }) {
+  const [promoting, setPromoting] = useState(false)
+
+  async function handlePromote() {
+    setPromoting(true)
+    try {
+      // channelSchema가 요구하는 필드 매핑
+      const payload = {
+        name: data.name,
+        kind:
+          data.channelType === 'SELF_MALL'
+            ? ('ONLINE_MALL' as const)
+            : ('ONLINE_MARKETPLACE' as const),
+        channelType: data.channelType === 'SELF_MALL' ? 'SELF_MALL' : 'OTHER',
+        isActive: true,
+        freeShipping: data.freeShippingThreshold > 0,
+        freeShippingThreshold:
+          data.freeShippingThreshold > 0 ? data.freeShippingThreshold : undefined,
+        // defaultFeePct: 이미 0~1
+        defaultFeePct: data.defaultFeePct,
+        applyAdCost: data.applyAdCost,
+        shippingFee: data.shippingFee,
+        paymentFeeIncluded: data.paymentFeeIncluded,
+        // paymentFeePct: 이미 0~1
+        paymentFeePct: data.paymentFeePct,
+      }
+
+      const res = await fetch('/api/channels', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error ?? '채널 등록 실패')
+      }
+
+      const { channel: created } = (await res.json()) as {
+        channel: {
+          id: string
+          name: string
+          channelType: string | null
+          kind: string | null
+          defaultFeePct: string | number | null
+          shippingFee: string | number | null
+          freeShippingThreshold: string | number | null
+          applyAdCost: boolean
+          paymentFeeIncluded: boolean
+          paymentFeePct: string | number | null
+        }
+      }
+
+      // Decimal 필드를 number로 변환
+      const dbChannel: DbChannel = {
+        id: created.id,
+        name: created.name,
+        channelType: created.channelType,
+        kind: created.kind,
+        defaultFeePct: created.defaultFeePct != null ? Number(created.defaultFeePct) : null,
+        shippingFee: created.shippingFee != null ? Number(created.shippingFee) : null,
+        freeShippingThreshold:
+          created.freeShippingThreshold != null ? Number(created.freeShippingThreshold) : null,
+        applyAdCost: created.applyAdCost,
+        paymentFeeIncluded: created.paymentFeeIncluded,
+        paymentFeePct: created.paymentFeePct != null ? Number(created.paymentFeePct) : null,
+      }
+
+      toast.success(`채널 "${created.name}" 이(가) 등록되었습니다`)
+      onPromote(dbChannel)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '채널 등록 실패')
+    } finally {
+      setPromoting(false)
+    }
+  }
+
   return (
     <div className="flex items-start gap-2 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2.5">
       <div className="min-w-0 flex-1 space-y-1">
@@ -194,14 +276,19 @@ function InlineChannelCard({
           )}
           <span>광고 {data.applyAdCost ? 'ON' : 'OFF'}</span>
         </div>
-        {/* PR-5 placeholder */}
+        {/* 채널 등록 버튼 */}
         <button
           type="button"
-          disabled
-          className="mt-1 flex cursor-not-allowed items-center gap-1 text-[10px] text-muted-foreground/60"
-          title="PR-5에서 구현 예정"
+          disabled={promoting}
+          onClick={handlePromote}
+          className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <ExternalLink className="h-3 w-3" />이 설정으로 채널 등록 (준비 중)
+          {promoting ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <ExternalLink className="h-3 w-3" />
+          )}
+          이 설정으로 채널 등록
         </button>
       </div>
       <div className="flex shrink-0 gap-0.5">
@@ -230,7 +317,7 @@ function InlineChannelCard({
 
 // ─── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
 
-export function PricingChannelList({ channels, onChange }: Props) {
+export function PricingChannelList({ channels, onChange, onChannelRegistered }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [inlineFormOpen, setInlineFormOpen] = useState(false)
   const [editingInlineIdx, setEditingInlineIdx] = useState<number | null>(null)
@@ -265,6 +352,16 @@ export function PricingChannelList({ channels, onChange }: Props) {
   function handleEditInline(idx: number) {
     setEditingInlineIdx(idx)
     setInlineFormOpen(true)
+  }
+
+  /** 임시 채널 → DB 채널로 승격: 해당 인덱스의 inline 항목을 db 항목으로 교체 */
+  function handlePromoteInline(idx: number, dbChannel: DbChannel) {
+    const updated = channels.map((c, i) => {
+      if (i !== idx || c.source !== 'inline') return c
+      return { source: 'db' as const, channelId: dbChannel.id, channel: dbChannel }
+    })
+    onChange(updated)
+    onChannelRegistered?.(dbChannel)
   }
 
   const editingInlineData =
@@ -324,6 +421,7 @@ export function PricingChannelList({ channels, onChange }: Props) {
                 data={ch.inline}
                 onEdit={() => handleEditInline(idx)}
                 onRemove={() => handleRemove(idx)}
+                onPromote={(dbCh) => handlePromoteInline(idx, dbCh)}
               />
             )
           )}

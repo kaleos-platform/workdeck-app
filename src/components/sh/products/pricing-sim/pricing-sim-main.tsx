@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
 import { PricingOptionPickerDialog, type PricingOption } from './pricing-option-picker-dialog'
+import { PricingManualEntryDialog, type ManualEntryData } from './pricing-manual-entry-dialog'
 import { PricingComparisonDialog } from './pricing-comparison-dialog'
 import { PricingDefaultsCard } from './pricing-defaults-card'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
@@ -59,6 +60,7 @@ type ScenarioDetail = ScenarioSummary & {
     id: string
     optionId: string | null
     manualName?: string | null
+    manualBrandName?: string | null
     unitsPerSet?: number
     costPrice: number | null
     salePrice: number
@@ -81,11 +83,15 @@ type ScenarioDetail = ScenarioSummary & {
 /** 옵션 행 (시뮬레이션용 — pricing-items-table 구조에서 매트릭스용으로 전환) */
 type OptionRow = {
   rowId: string
+  // DB 연결 옵션 (optionId null이면 수동 입력 행)
   optionId: string | null
-  productId: string
+  productId: string | null
   optionName: string
   productName: string
   brandName: string | null
+  // 수동 입력 전용 필드 (optionId가 null일 때 사용)
+  manualName?: string | null
+  manualBrandName?: string | null
   // 매트릭스 입력값
   costPrice: number
   retailPrice: number // 1세트 판매가
@@ -129,6 +135,24 @@ function buildRowFromOption(opt: PricingOption, defaults: DefaultSettings): Opti
     costPrice: opt.costPrice ?? 0,
     retailPrice: 0,
     unitsPerSet: 1,
+    packagingCost: defaults.defaultPackagingCost,
+    matrixExpanded: {},
+  }
+}
+
+function buildRowFromManualEntry(entry: ManualEntryData, defaults: DefaultSettings): OptionRow {
+  return {
+    rowId: makeRowId(),
+    optionId: null,
+    productId: null,
+    optionName: '',
+    productName: entry.manualName,
+    brandName: entry.manualBrandName || null,
+    manualName: entry.manualName,
+    manualBrandName: entry.manualBrandName || null,
+    costPrice: entry.costPrice,
+    retailPrice: entry.retailPrice,
+    unitsPerSet: entry.unitsPerSet,
     packagingCost: defaults.defaultPackagingCost,
     matrixExpanded: {},
   }
@@ -271,6 +295,7 @@ export function PricingSimMain() {
 
   // ── UI ────────────────────────────────────────────────────────────────────
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [manualEntryOpen, setManualEntryOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -405,22 +430,45 @@ export function PricingSimMain() {
         })
         setScenarioChannels(restored)
 
-        // 옵션 행 복원
+        // 옵션 행 복원 — DB 옵션 행과 수동 입력 행(option=null, manualName!=null) 모두 포함
         const loadedRows: OptionRow[] = data.items
-          .filter((it) => it.option !== null)
-          .map((it) => ({
-            rowId: makeRowId(),
-            optionId: it.optionId,
-            productId: it.option!.product.id,
-            optionName: it.option!.name,
-            productName: it.option!.product.name,
-            brandName: it.option!.product.brand?.name ?? null,
-            costPrice: it.costPrice ?? it.option!.costPrice ?? 0,
-            retailPrice: it.salePrice,
-            unitsPerSet: it.unitsPerSet ?? 1,
-            packagingCost: it.packagingCost,
-            matrixExpanded: {},
-          }))
+          .filter((it) => it.option !== null || (it.manualName ?? null) !== null)
+          .map((it) => {
+            if (it.option !== null) {
+              // DB 옵션 행
+              return {
+                rowId: makeRowId(),
+                optionId: it.optionId,
+                productId: it.option!.product.id,
+                optionName: it.option!.name,
+                productName: it.option!.product.name,
+                brandName: it.option!.product.brand?.name ?? null,
+                costPrice: it.costPrice ?? it.option!.costPrice ?? 0,
+                retailPrice: it.salePrice,
+                unitsPerSet: it.unitsPerSet ?? 1,
+                packagingCost: it.packagingCost,
+                matrixExpanded: {},
+              }
+            } else {
+              // 수동 입력 행
+              const mn = it.manualName ?? ''
+              return {
+                rowId: makeRowId(),
+                optionId: null,
+                productId: null,
+                optionName: '',
+                productName: mn,
+                brandName: it.manualBrandName ?? null,
+                manualName: mn,
+                manualBrandName: it.manualBrandName ?? null,
+                costPrice: it.costPrice ?? 0,
+                retailPrice: it.salePrice,
+                unitsPerSet: it.unitsPerSet ?? 1,
+                packagingCost: it.packagingCost,
+                matrixExpanded: {},
+              }
+            }
+          })
         setRows(loadedRows)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '시나리오 로드 실패')
@@ -449,7 +497,9 @@ export function PricingSimMain() {
   useEffect(() => {
     if (!nameAuto || activeId !== null || rows.length === 0) return
     const firstRow = rows[0]
-    let suggested = firstRow.productName
+    // 수동 입력 행은 manualName, DB 행은 productName 사용
+    const displayName = firstRow.manualName ?? firstRow.productName
+    let suggested = displayName
     if (firstRow.brandName) suggested = `${firstRow.brandName} ${suggested}`
     if (rows.length > 1) suggested += ` 외 ${rows.length - 1}개`
     const firstCh = scenarioChannels[0]
@@ -465,6 +515,10 @@ export function PricingSimMain() {
       if (prev.some((r) => r.optionId === opt.optionId)) return prev
       return [...prev, buildRowFromOption(opt, defaults)]
     })
+  }
+
+  function handleAddManual(entry: ManualEntryData) {
+    setRows((prev) => [...prev, buildRowFromManualEntry(entry, defaults)])
   }
 
   function updateRow(rowId: string, patch: Partial<OptionRow>) {
@@ -544,6 +598,9 @@ export function PricingSimMain() {
         channels: channelPayload, // spec 페이로드 (bernstein API 업데이트 후 활성화)
         items: rows.map((r, idx) => ({
           optionId: r.optionId,
+          // 수동 입력 행: manualName/manualBrandName 포함 (schema refine 통과 조건)
+          manualName: r.optionId == null ? (r.manualName ?? null) : undefined,
+          manualBrandName: r.optionId == null ? (r.manualBrandName ?? null) : undefined,
           costPrice: r.costPrice,
           salePrice: r.retailPrice,
           unitsPerSet: r.unitsPerSet,
@@ -795,23 +852,39 @@ export function PricingSimMain() {
       <PricingPromotionCard value={promotion} onChange={setPromotion} />
 
       {/* ── 채널 목록 ── */}
-      <PricingChannelList channels={scenarioChannels} onChange={setScenarioChannels} />
+      <PricingChannelList
+        channels={scenarioChannels}
+        onChange={setScenarioChannels}
+        onChannelRegistered={(ch) =>
+          setAllDbChannels((prev) => (prev.some((c) => c.id === ch.id) ? prev : [...prev, ch]))
+        }
+      />
 
       {/* ── 옵션 카드 목록 ── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-muted-foreground">옵션 ({rows.length}개)</h2>
-          <Button size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
-            + 옵션 추가
-          </Button>
+          <div className="flex gap-1.5">
+            <Button size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
+              + 옵션 추가
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setManualEntryOpen(true)}>
+              + 수동 입력
+            </Button>
+          </div>
         </div>
 
         {rows.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-12 text-center">
             <p className="text-sm text-muted-foreground">추가된 옵션이 없습니다</p>
-            <Button size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
-              옵션 추가
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
+                옵션 추가
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setManualEntryOpen(true)}>
+                수동 입력
+              </Button>
+            </div>
           </div>
         )}
 
@@ -820,12 +893,33 @@ export function PricingSimMain() {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{row.productName}</p>
-                  <p className="truncate text-xs text-muted-foreground">{row.optionName}</p>
-                  {row.brandName && (
-                    <Badge variant="secondary" className="mt-1 text-[10px]">
-                      {row.brandName}
-                    </Badge>
+                  {row.optionId == null ? (
+                    // 수동 입력 행
+                    <>
+                      <p className="truncate font-medium">{row.manualName}</p>
+                      {row.manualBrandName && (
+                        <Badge variant="secondary" className="mt-1 text-[10px]">
+                          {row.manualBrandName}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="outline"
+                        className="mt-1 px-1.5 py-0 text-[10px] text-muted-foreground"
+                      >
+                        수동 입력
+                      </Badge>
+                    </>
+                  ) : (
+                    // DB 옵션 행
+                    <>
+                      <p className="truncate font-medium">{row.productName}</p>
+                      <p className="truncate text-xs text-muted-foreground">{row.optionName}</p>
+                      {row.brandName && (
+                        <Badge variant="secondary" className="mt-1 text-[10px]">
+                          {row.brandName}
+                        </Badge>
+                      )}
+                    </>
                   )}
                 </div>
                 <Button
@@ -1021,6 +1115,12 @@ export function PricingSimMain() {
         onOpenChange={setPickerOpen}
         onPick={handlePickOption}
         excludeOptionIds={existingOptionIds}
+      />
+
+      <PricingManualEntryDialog
+        open={manualEntryOpen}
+        onOpenChange={setManualEntryOpen}
+        onAdd={handleAddManual}
       />
     </div>
   )

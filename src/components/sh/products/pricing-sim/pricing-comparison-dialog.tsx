@@ -23,7 +23,11 @@ type ScenarioSummary = {
 
 type ScenarioItem = {
   id: string
-  optionId: string
+  optionId: string | null
+  manualName?: string | null
+  manualBrandName?: string | null
+  unitsPerSet?: number
+  costPrice: number | null
   finalPrice: number
   salePrice: number
   discountRate: number
@@ -33,13 +37,15 @@ type ScenarioItem = {
     id: string
     name: string
     product: { id: string; name: string }
-  }
+  } | null
 }
 
 type ScenarioDetail = {
   id: string
   name: string
   channel: { id: string; name: string } | null
+  /** 신규 M-N 채널 배열 */
+  channels?: { id: string; name: string }[]
   totalNetProfit: number
   averageMargin: number
   items: ScenarioItem[]
@@ -78,28 +84,39 @@ function ScenarioCard({
   detail: ScenarioDetail
   otherDetail: ScenarioDetail | null
 }) {
-  // 양쪽 optionId 합집합으로 행 생성
-  const allOptionIds = Array.from(
-    new Set([
-      ...detail.items.map((it) => it.optionId),
-      ...(otherDetail?.items.map((it) => it.optionId) ?? []),
-    ])
-  )
-
-  const itemMap = new Map(detail.items.map((it) => [it.optionId, it]))
-  const otherMap = new Map(otherDetail?.items.map((it) => [it.optionId, it]) ?? [])
-
-  // 옵션 이름은 양쪽 중 있는 쪽에서 가져옴
-  function getOptionName(optionId: string) {
-    return itemMap.get(optionId)?.option.name ?? otherMap.get(optionId)?.option.name ?? optionId
+  // 각 item의 고유 키: optionId 또는 manualName 기반 rowKey
+  function itemRowKey(it: ScenarioItem) {
+    return it.optionId ?? `manual:${it.manualName ?? it.id}`
   }
 
-  function getProductName(optionId: string) {
-    return (
-      itemMap.get(optionId)?.option.product.name ??
-      otherMap.get(optionId)?.option.product.name ??
-      ''
-    )
+  // 양쪽 rowKey 합집합으로 행 생성
+  const allRowKeys = Array.from(
+    new Set([...detail.items.map(itemRowKey), ...(otherDetail?.items.map(itemRowKey) ?? [])])
+  )
+
+  const itemMap = new Map(detail.items.map((it) => [itemRowKey(it), it]))
+  const otherMap = new Map(otherDetail?.items.map((it) => [itemRowKey(it), it]) ?? [])
+
+  // 옵션/상품 이름: 수동 입력 행은 manualName, DB 행은 option.name
+  function getOptionName(key: string): string {
+    const mine = itemMap.get(key)
+    const other = otherMap.get(key)
+    return mine?.manualName ?? mine?.option?.name ?? other?.manualName ?? other?.option?.name ?? key
+  }
+
+  function getProductName(key: string): string {
+    const mine = itemMap.get(key)
+    const other = otherMap.get(key)
+    return mine?.option?.product.name ?? other?.option?.product.name ?? ''
+  }
+
+  // 채널 표시: channels[] 우선, 없으면 단일 channel 폴백
+  function channelLabel(d: ScenarioDetail): string {
+    if (d.channels && d.channels.length > 0) {
+      if (d.channels.length === 1) return d.channels[0].name
+      return `${d.channels[0].name} 외 ${d.channels.length - 1}개`
+    }
+    return d.channel?.name ?? '채널 미지정'
   }
 
   return (
@@ -107,9 +124,7 @@ function ScenarioCard({
       {/* 카드 헤더 */}
       <div className="border-b px-4 py-3">
         <p className="truncate text-base font-semibold">{detail.name}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {detail.channel?.name ?? '채널 미지정'}
-        </p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{channelLabel(detail)}</p>
         <div className="mt-2 flex gap-4 text-sm">
           <span>
             순수익{' '}
@@ -130,9 +145,9 @@ function ScenarioCard({
 
       {/* 옵션 행 */}
       <div className="divide-y">
-        {allOptionIds.map((optionId) => {
-          const mine = itemMap.get(optionId)
-          const other = otherMap.get(optionId)
+        {allRowKeys.map((key) => {
+          const mine = itemMap.get(key)
+          const other = otherMap.get(key)
 
           // 비교: 우측이 기준 (right가 더 좋으면 emerald, 더 나쁘면 rose)
           let rowBg = ''
@@ -142,11 +157,11 @@ function ScenarioCard({
           }
 
           return (
-            <div key={optionId} className={cn('px-4 py-2.5 text-xs', rowBg)}>
+            <div key={key} className={cn('px-4 py-2.5 text-xs', rowBg)}>
               {mine ? (
                 <>
-                  <p className="truncate text-sm font-medium">{getOptionName(optionId)}</p>
-                  <p className="truncate text-muted-foreground">{getProductName(optionId)}</p>
+                  <p className="truncate text-sm font-medium">{getOptionName(key)}</p>
+                  <p className="truncate text-muted-foreground">{getProductName(key)}</p>
                   <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                     <span>판매가 {fmt(mine.finalPrice)}</span>
                     <span>할인 {pct(mine.discountRate)}</span>
@@ -164,7 +179,7 @@ function ScenarioCard({
               ) : (
                 <div className="flex items-center gap-2 text-muted-foreground/50">
                   <Minus className="h-3 w-3" />
-                  <span className="truncate">{getOptionName(optionId)}</span>
+                  <span className="truncate">{getOptionName(key)}</span>
                 </div>
               )}
             </div>
