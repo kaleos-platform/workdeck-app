@@ -201,14 +201,20 @@ export function PricingOptionPickerDialog({
                                   : '직접 입력'}
                               </span>
                             </div>
-                            {r.msrp != null && (
-                              <div className="flex items-baseline justify-end gap-1.5">
-                                <span className="text-[10px] text-muted-foreground">권장가</span>
-                                <span className="text-muted-foreground tabular-nums">
-                                  {r.msrp.toLocaleString()}원
-                                </span>
-                              </div>
-                            )}
+                            {/* 소비자가(MSRP) — 항상 표시, 없으면 "—" */}
+                            <div className="flex items-baseline justify-end gap-1.5">
+                              <span className="text-[10px] text-muted-foreground">소비자가</span>
+                              <span
+                                className={cn(
+                                  'tabular-nums',
+                                  r.msrp != null
+                                    ? 'text-muted-foreground'
+                                    : 'text-muted-foreground/50'
+                                )}
+                              >
+                                {r.msrp != null ? `${r.msrp.toLocaleString()}원` : '—'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </button>

@@ -21,6 +21,8 @@ export type ManualEntryData = {
   costPrice: number
   retailPrice: number
   unitsPerSet: number
+  /** 소비자가(MSRP) — 선택. 비워두면 판매가 할인율 비교 미표시 */
+  consumerPrice?: number
 }
 
 type Props = {
@@ -90,6 +92,7 @@ export function PricingManualEntryDialog({ open, onOpenChange, onAdd }: Props) {
   const costId = useId()
   const retailId = useId()
   const unitsId = useId()
+  const consumerPriceId = useId()
 
   // 폼 상태 — 다이얼로그 열릴 때마다 초기화
   const [manualName, setManualName] = useState('')
@@ -97,6 +100,7 @@ export function PricingManualEntryDialog({ open, onOpenChange, onAdd }: Props) {
   const [costPrice, setCostPrice] = useState(0)
   const [retailPrice, setRetailPrice] = useState(0)
   const [unitsPerSet, setUnitsPerSet] = useState(1)
+  const [consumerPrice, setConsumerPrice] = useState(0)
 
   const isValid = manualName.trim().length > 0
 
@@ -108,6 +112,7 @@ export function PricingManualEntryDialog({ open, onOpenChange, onAdd }: Props) {
       costPrice,
       retailPrice,
       unitsPerSet,
+      consumerPrice: consumerPrice > 0 ? consumerPrice : undefined,
     })
     // 폼 리셋
     setManualName('')
@@ -115,6 +120,7 @@ export function PricingManualEntryDialog({ open, onOpenChange, onAdd }: Props) {
     setCostPrice(0)
     setRetailPrice(0)
     setUnitsPerSet(1)
+    setConsumerPrice(0)
     onOpenChange(false)
   }
 
@@ -126,6 +132,7 @@ export function PricingManualEntryDialog({ open, onOpenChange, onAdd }: Props) {
       setCostPrice(0)
       setRetailPrice(0)
       setUnitsPerSet(1)
+      setConsumerPrice(0)
     }
     onOpenChange(v)
   }
@@ -179,7 +186,7 @@ export function PricingManualEntryDialog({ open, onOpenChange, onAdd }: Props) {
             />
             <NumField
               id={retailId}
-              label="소매가 / 1세트 (원)"
+              label="판매가 / 1세트 (원)"
               value={retailPrice}
               onChange={setRetailPrice}
               suffix="원"
@@ -205,6 +212,18 @@ export function PricingManualEntryDialog({ open, onOpenChange, onAdd }: Props) {
                 : '미입력'}
             </p>
           )}
+
+          {/* 소비자가 (선택) — 판매가 할인율 비교 표시용 */}
+          <NumField
+            id={consumerPriceId}
+            label="소비자가 (원, 선택)"
+            value={consumerPrice}
+            onChange={setConsumerPrice}
+            suffix="원"
+          />
+          <p className="text-[11px] text-muted-foreground">
+            입력 시 옵션 카드에서 &quot;소비자가 대비 N% 할인&quot; 표시
+          </p>
         </div>
 
         <DialogFooter>

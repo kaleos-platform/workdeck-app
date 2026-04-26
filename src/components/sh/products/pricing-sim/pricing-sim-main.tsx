@@ -1,11 +1,19 @@
 'use client'
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { ChevronDown, ChevronRight, GitCompare, Save, Trash2 } from 'lucide-react'
+import {
+  BarChart2,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  GitCompare,
+  Save,
+  Trash2,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -29,6 +37,7 @@ import { PricingChannelList, type ScenarioChannel, type DbChannel } from './pric
 import { PricingMatrix } from './pricing-matrix'
 import { PricingMarginAdvisor, type AdvisorChannelEntry } from './pricing-margin-advisor'
 import { PricingSensitivityChart } from './pricing-sensitivity-chart'
+import { DebouncedNumInput } from './debounced-num-input'
 import { calculateMatrix } from '@/lib/sh/pricing-matrix-calc'
 import type { MatrixGlobals, MatrixOption, MatrixChannel } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
@@ -97,8 +106,11 @@ type OptionRow = {
   retailPrice: number // 1세트 판매가
   unitsPerSet: number
   packagingCost: number
+  /** 소비자가(MSRP) — DB 옵션은 option.msrp, 수동 입력은 직접 입력값. 세션 전용 (DB 미저장) */
+  consumerPrice: number | null
   // UI 상태
   matrixExpanded: Record<string, boolean> // channelKey → 펼침 여부
+  chartExpanded: Record<string, boolean> // channelKey → 민감도 차트 펼침 여부
 }
 
 type DefaultSettings = {
@@ -136,7 +148,9 @@ function buildRowFromOption(opt: PricingOption, defaults: DefaultSettings): Opti
     retailPrice: 0,
     unitsPerSet: 1,
     packagingCost: defaults.defaultPackagingCost,
+    consumerPrice: opt.msrp ?? null,
     matrixExpanded: {},
+    chartExpanded: {},
   }
 }
 
@@ -154,7 +168,9 @@ function buildRowFromManualEntry(entry: ManualEntryData, defaults: DefaultSettin
     retailPrice: entry.retailPrice,
     unitsPerSet: entry.unitsPerSet,
     packagingCost: defaults.defaultPackagingCost,
+    consumerPrice: entry.consumerPrice ?? null,
     matrixExpanded: {},
+    chartExpanded: {},
   }
 }
 
@@ -199,47 +215,6 @@ function toMatrixPromotion(p: PromotionValue) {
     type: p.type,
     value: p.type === 'PERCENT' ? p.value / 100 : p.value,
   }
-}
-
-// ─── 숫자 입력 컴포넌트 ───────────────────────────────────────────────────────
-
-function NumInput({
-  value,
-  onChange,
-  suffix,
-  step = 1,
-  min = 0,
-  className = '',
-}: {
-  value: number
-  onChange: (v: number) => void
-  suffix?: string
-  step?: number
-  min?: number
-  className?: string
-}) {
-  return (
-    <div className={`relative flex items-center ${className}`}>
-      <Input
-        type="number"
-        key={value}
-        defaultValue={value || ''}
-        step={step}
-        min={min}
-        placeholder="0"
-        className="h-8 w-24 [appearance:textfield] pr-6 text-right text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-        onChange={(e) => {
-          const v = e.target.value === '' ? 0 : Number(e.target.value)
-          if (!isNaN(v)) onChange(v)
-        }}
-      />
-      {suffix && (
-        <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
-          {suffix}
-        </span>
-      )}
-    </div>
-  )
 }
 
 // ─── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
@@ -299,6 +274,8 @@ export function PricingSimMain() {
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** 마진 어드바이저 펼침 상태 — rowId → boolean (기본 접힘) */
+  const [advisorExpanded, setAdvisorExpanded] = useState<Record<string, boolean>>({})
 
   // ── 초기 로드 ──────────────────────────────────────────────────────────────
 
@@ -435,7 +412,8 @@ export function PricingSimMain() {
           .filter((it) => it.option !== null || (it.manualName ?? null) !== null)
           .map((it) => {
             if (it.option !== null) {
-              // DB 옵션 행
+              // DB 옵션 행 — msrp는 API GET에서 option.msrp로 제공됨
+              const opt = it.option as typeof it.option & { msrp?: number | null }
               return {
                 rowId: makeRowId(),
                 optionId: it.optionId,
@@ -447,10 +425,12 @@ export function PricingSimMain() {
                 retailPrice: it.salePrice,
                 unitsPerSet: it.unitsPerSet ?? 1,
                 packagingCost: it.packagingCost,
+                consumerPrice: opt.msrp ?? null,
                 matrixExpanded: {},
+                chartExpanded: {},
               }
             } else {
-              // 수동 입력 행
+              // 수동 입력 행 — consumerPrice는 DB에 없으므로 null로 복원
               const mn = it.manualName ?? ''
               return {
                 rowId: makeRowId(),
@@ -465,7 +445,9 @@ export function PricingSimMain() {
                 retailPrice: it.salePrice,
                 unitsPerSet: it.unitsPerSet ?? 1,
                 packagingCost: it.packagingCost,
+                consumerPrice: null,
                 matrixExpanded: {},
+                chartExpanded: {},
               }
             }
           })
@@ -536,6 +518,18 @@ export function PricingSimMain() {
         return {
           ...r,
           matrixExpanded: { ...r.matrixExpanded, [key]: !r.matrixExpanded[key] },
+        }
+      })
+    )
+  }
+
+  function toggleChart(rowId: string, key: string) {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.rowId !== rowId) return r
+        return {
+          ...r,
+          chartExpanded: { ...r.chartExpanded, [key]: !r.chartExpanded[key] },
         }
       })
     )
@@ -756,109 +750,118 @@ export function PricingSimMain() {
         </Button>
       </div>
 
-      {/* ── 시나리오 정보 카드 ── */}
+      {/* ── 시나리오 정보 — 1행 압축 레이아웃 ── */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">시나리오 정보</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* 시나리오명 */}
-          <div className="space-y-1.5">
-            <Label htmlFor={nameId}>
-              시나리오명 *
-              {nameAuto && rows.length > 0 && (
-                <span className="ml-1 text-[10px] font-normal text-muted-foreground">(자동)</span>
-              )}
-            </Label>
-            <Input
-              id={nameId}
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                setNameAuto(false)
-              }}
-              placeholder="예: 쿠팡 여름 프로모션"
-              maxLength={100}
-            />
-          </div>
-
-          {/* VAT */}
-          <div className="space-y-1.5">
-            <Label>부가세(VAT)</Label>
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={includeVat}
-                onCheckedChange={setIncludeVat}
-                aria-label="VAT 포함 여부"
+        <CardContent className="pt-4 pb-3">
+          <div className="flex flex-wrap items-start gap-3">
+            {/* 시나리오명 */}
+            <div className="min-w-[200px] flex-1 space-y-1">
+              <Label htmlFor={nameId} className="text-xs">
+                시나리오명 *
+                {nameAuto && rows.length > 0 && (
+                  <span className="ml-1 text-[10px] font-normal text-muted-foreground">(자동)</span>
+                )}
+              </Label>
+              <Input
+                id={nameId}
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  setNameAuto(false)
+                }}
+                placeholder="예: 쿠팡 여름 프로모션"
+                maxLength={100}
+                className="h-8 text-sm"
               />
-              <span className="text-sm text-muted-foreground">
-                {includeVat ? '포함' : '미포함'}
-              </span>
-              {includeVat && (
-                <div className="relative flex items-center">
-                  <Input
-                    type="number"
-                    value={vatRatePct}
-                    onChange={(e) => setVatRatePct(Number(e.target.value))}
-                    min={0}
-                    max={100}
-                    className="h-8 w-16 [appearance:textfield] pr-6 text-right text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  />
-                  <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
-                    %
-                  </span>
-                </div>
-              )}
             </div>
-          </div>
 
-          {/* 반품률 반영 토글 */}
-          <div className="space-y-1.5">
-            <Label>예상 반품률 반영</Label>
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={applyReturnAdjustment}
-                onCheckedChange={setApplyReturnAdjustment}
-                aria-label="반품률 반영 여부"
+            {/* VAT */}
+            <div className="space-y-1">
+              <Label className="text-xs">부가세(VAT)</Label>
+              <div className="flex h-8 items-center gap-2">
+                <Switch
+                  checked={includeVat}
+                  onCheckedChange={setIncludeVat}
+                  aria-label="VAT 포함 여부"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {includeVat ? '포함' : '미포함'}
+                </span>
+                {includeVat && (
+                  <div className="relative flex items-center">
+                    <Input
+                      type="number"
+                      value={vatRatePct}
+                      onChange={(e) => setVatRatePct(Number(e.target.value))}
+                      min={0}
+                      max={100}
+                      className="h-8 w-16 [appearance:textfield] pr-6 text-right text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
+                      %
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 반품률 반영 토글 */}
+            <div className="space-y-1">
+              <Label className="text-xs">반품률 반영</Label>
+              <div className="flex h-8 items-center gap-2">
+                <Switch
+                  checked={applyReturnAdjustment}
+                  onCheckedChange={setApplyReturnAdjustment}
+                  aria-label="반품률 반영 여부"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {applyReturnAdjustment
+                    ? `반영 (${((fullSettings.expectedReturnRate ?? 0.05) * 100).toFixed(0)}%)`
+                    : '미반영'}
+                </span>
+              </div>
+            </div>
+
+            {/* 메모 */}
+            <div className="min-w-[160px] flex-1 space-y-1">
+              <Label htmlFor={memoId} className="text-xs">
+                메모 (선택)
+              </Label>
+              <Textarea
+                id={memoId}
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                placeholder="참고 사항"
+                maxLength={500}
+                rows={1}
+                className="resize-none text-xs"
               />
-              <span className="text-sm text-muted-foreground">
-                {applyReturnAdjustment
-                  ? `반영 (${((fullSettings.expectedReturnRate ?? 0.05) * 100).toFixed(0)}%)`
-                  : '미반영 (명목 매출)'}
-              </span>
             </div>
-          </div>
-
-          {/* 메모 */}
-          <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
-            <Label htmlFor={memoId}>메모</Label>
-            <Textarea
-              id={memoId}
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              placeholder="참고 사항 (선택)"
-              maxLength={500}
-              rows={2}
-              className="resize-none text-sm"
-            />
           </div>
         </CardContent>
       </Card>
 
-      {/* ── 기본값 설정 ── */}
-      <PricingDefaultsCard initialDefaults={defaults} onSaved={setDefaults} />
-
-      {/* ── 프로모션 카드 ── */}
-      <PricingPromotionCard value={promotion} onChange={setPromotion} />
-
-      {/* ── 채널 목록 ── */}
-      <PricingChannelList
-        channels={scenarioChannels}
-        onChange={setScenarioChannels}
-        onChannelRegistered={(ch) =>
-          setAllDbChannels((prev) => (prev.some((c) => c.id === ch.id) ? prev : [...prev, ch]))
-        }
-      />
+      {/* ── 기본값 · 프로모션 · 채널 — 가로 배치 (sticky 제거: 채널·프로모션 compact 모드 미구현) ── */}
+      <div className="flex flex-wrap items-start gap-2">
+        {/* 기본값 — 펼침/접힘 카드를 인라인 토글로 */}
+        <div className="min-w-[260px] flex-1">
+          <PricingDefaultsCard initialDefaults={defaults} onSaved={setDefaults} />
+        </div>
+        {/* 프로모션 */}
+        <div className="min-w-[200px] flex-1">
+          <PricingPromotionCard value={promotion} onChange={setPromotion} />
+        </div>
+        {/* 채널 목록 */}
+        <div className="min-w-[280px] flex-1">
+          <PricingChannelList
+            channels={scenarioChannels}
+            onChange={setScenarioChannels}
+            onChannelRegistered={(ch) =>
+              setAllDbChannels((prev) => (prev.some((c) => c.id === ch.id) ? prev : [...prev, ch]))
+            }
+          />
+        </div>
+      </div>
 
       {/* ── 옵션 카드 목록 ── */}
       <div className="space-y-3">
@@ -953,25 +956,44 @@ export function PricingSimMain() {
                 )
                 const matrixPromotion = toMatrixPromotion(promotion)
 
+                // 소비자가 대비 할인율 계산
+                const discountVsConsumer =
+                  row.consumerPrice != null &&
+                  row.consumerPrice > 0 &&
+                  row.retailPrice > 0 &&
+                  row.retailPrice < row.consumerPrice
+                    ? Math.round(((row.consumerPrice - row.retailPrice) / row.consumerPrice) * 100)
+                    : null
+
                 return (
                   <>
                     {/* 옵션 입력 필드 */}
                     <div className="flex flex-wrap gap-4">
                       <div className="space-y-1">
                         <Label className="text-xs">공급가 (원)</Label>
-                        <NumInput
+                        <DebouncedNumInput
                           value={row.costPrice}
-                          onChange={(v) => updateRow(row.rowId, { costPrice: v })}
+                          onCommit={(v) => updateRow(row.rowId, { costPrice: v })}
                           suffix="원"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">소매가 / 1세트 (원)</Label>
-                        <NumInput
+                        <Label className="text-xs">판매가 / 1세트 (원)</Label>
+                        <DebouncedNumInput
                           value={row.retailPrice}
-                          onChange={(v) => updateRow(row.rowId, { retailPrice: v })}
+                          onCommit={(v) => updateRow(row.rowId, { retailPrice: v })}
                           suffix="원"
                         />
+                        {/* 소비자가 대비 할인율 헬퍼 텍스트 */}
+                        {discountVsConsumer !== null ? (
+                          <p className="text-[11px] text-blue-600">
+                            소비자가 {fmt(row.consumerPrice!)}원 대비 {discountVsConsumer}% 할인
+                          </p>
+                        ) : row.consumerPrice != null && row.consumerPrice > 0 ? (
+                          <p className="text-[11px] text-muted-foreground">
+                            소비자가 {fmt(row.consumerPrice)}원
+                          </p>
+                        ) : null}
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">
@@ -984,9 +1006,9 @@ export function PricingSimMain() {
                             </span>
                           )}
                         </Label>
-                        <NumInput
+                        <DebouncedNumInput
                           value={row.unitsPerSet}
-                          onChange={(v) =>
+                          onCommit={(v) =>
                             updateRow(row.rowId, { unitsPerSet: Math.max(1, Math.round(v)) })
                           }
                           step={1}
@@ -995,22 +1017,45 @@ export function PricingSimMain() {
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">포장비 (원)</Label>
-                        <NumInput
+                        <DebouncedNumInput
                           value={row.packagingCost}
-                          onChange={(v) => updateRow(row.rowId, { packagingCost: v })}
+                          onCommit={(v) => updateRow(row.rowId, { packagingCost: v })}
                           suffix="원"
                         />
                       </div>
                     </div>
 
-                    {/* 마진 어드바이저 */}
-                    <PricingMarginAdvisor
-                      option={rowMatrixOption}
-                      channels={advisorChannels}
-                      promotion={matrixPromotion}
-                      globals={matrixGlobals}
-                      thresholds={tierThresholds}
-                    />
+                    {/* 마진 어드바이저 — 기본 접힘, 버튼으로 토글 */}
+                    <div>
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+                        onClick={() =>
+                          setAdvisorExpanded((prev) => ({
+                            ...prev,
+                            [row.rowId]: !prev[row.rowId],
+                          }))
+                        }
+                      >
+                        {advisorExpanded[row.rowId] ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronRight className="h-3 w-3" />
+                        )}
+                        마진 조언 {advisorExpanded[row.rowId] ? '숨기기' : '보기'}
+                      </button>
+                      {advisorExpanded[row.rowId] && (
+                        <div className="mt-2">
+                          <PricingMarginAdvisor
+                            option={rowMatrixOption}
+                            channels={advisorChannels}
+                            promotion={matrixPromotion}
+                            globals={matrixGlobals}
+                            thresholds={tierThresholds}
+                          />
+                        </div>
+                      )}
+                    </div>
 
                     {/* 채널별 매트릭스 */}
                     {scenarioChannels.length === 0 && (
@@ -1022,19 +1067,23 @@ export function PricingSimMain() {
                     {scenarioChannels.map((sc, chIdx) => {
                       const key = channelKey(sc, chIdx)
                       const isExpanded = row.matrixExpanded[key] !== false // 기본 펼침
+                      const isChartExpanded = row.chartExpanded[key] === true // 기본 접힘
                       const chName = sc.source === 'db' ? sc.channel.name : sc.inline.name
                       const chType =
                         sc.source === 'db' ? sc.channel.channelType : sc.inline.channelType
                       const matrixChannel = toMatrixChannel(sc)
 
-                      // 민감도 차트용 매트릭스 사전 계산
-                      const sensitivityMatrix = calculateMatrix({
-                        option: rowMatrixOption,
-                        channel: matrixChannel,
-                        promotion: matrixPromotion,
-                        globals: matrixGlobals,
-                        thresholds: tierThresholds,
-                      })
+                      // 민감도 차트용 매트릭스 — 차트가 열려있을 때만 계산
+                      const sensitivityMatrix =
+                        isChartExpanded && row.retailPrice > 0
+                          ? calculateMatrix({
+                              option: rowMatrixOption,
+                              channel: matrixChannel,
+                              promotion: matrixPromotion,
+                              globals: matrixGlobals,
+                              thresholds: tierThresholds,
+                            })
+                          : null
 
                       return (
                         <div key={key} className="rounded-md border">
@@ -1063,9 +1112,9 @@ export function PricingSimMain() {
                             )}
                           </button>
 
-                          {/* 매트릭스 테이블 + 민감도 차트 */}
+                          {/* 매트릭스 테이블 */}
                           {isExpanded && (
-                            <div className="space-y-3 border-t px-1 py-2">
+                            <div className="space-y-2 border-t px-1 py-2">
                               <PricingMatrix
                                 option={rowMatrixOption}
                                 channel={matrixChannel}
@@ -1073,8 +1122,25 @@ export function PricingSimMain() {
                                 globals={matrixGlobals}
                                 thresholds={tierThresholds}
                               />
-                              {/* 민감도 차트 — 소매가가 입력된 경우에만 표시 */}
+
+                              {/* 민감도 차트 토글 버튼 */}
                               {row.retailPrice > 0 && (
+                                <div className="flex justify-end">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 gap-1 text-xs text-muted-foreground"
+                                    onClick={() => toggleChart(row.rowId, key)}
+                                  >
+                                    <BarChart2 className="h-3.5 w-3.5" />
+                                    {isChartExpanded ? '차트 숨기기' : '민감도 차트'}
+                                  </Button>
+                                </div>
+                              )}
+
+                              {/* 민감도 차트 — isChartExpanded일 때만 렌더 */}
+                              {isChartExpanded && sensitivityMatrix && (
                                 <PricingSensitivityChart
                                   matrix={sensitivityMatrix}
                                   channelName={chName}

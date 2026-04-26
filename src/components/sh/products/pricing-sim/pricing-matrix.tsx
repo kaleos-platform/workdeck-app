@@ -133,6 +133,43 @@ export function PricingMatrix({ option, channel, promotion, globals, thresholds 
           </thead>
 
           <tbody>
+            {/* 행 0: 판매가 (할인+프로모션 적용 후, VAT 포함 최종가) */}
+            <tr>
+              <td className="border-r border-b px-2 py-1.5 text-[10px] font-medium whitespace-nowrap text-muted-foreground">
+                판매가
+              </td>
+              {cells.map((cell, idx) => (
+                <td
+                  key={idx}
+                  className={cn(
+                    'border-b bg-slate-50/50 px-1.5 py-1.5 text-center',
+                    idx === maxDiscountIdx && 'border-l-2 border-l-emerald-500'
+                  )}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="cursor-default">
+                        <p className="text-[11px] font-medium text-slate-700">
+                          {fmt(cell.finalPrice)}
+                        </p>
+                        {showSet && (
+                          <p className="text-[9px] text-muted-foreground">
+                            1개 {fmt(cell.finalPrice / option.unitsPerSet)}
+                          </p>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      <p>판매가: {fmt(cell.finalPrice)}원</p>
+                      <p className="text-muted-foreground">
+                        컬럼 할인 + 프로모션 적용 후 (VAT 포함)
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </td>
+              ))}
+            </tr>
+
             {/* 행 1: 매출이익 */}
             <tr>
               <td className="border-r border-b px-2 py-1.5 text-[10px] font-medium whitespace-nowrap text-muted-foreground">

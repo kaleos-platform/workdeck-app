@@ -51,6 +51,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
               sku: true,
               costPrice: true,
               retailPrice: true,
+              msrp: true,
               product: {
                 select: {
                   id: true,
@@ -105,6 +106,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
             ...it.option,
             costPrice: it.option.costPrice != null ? d(it.option.costPrice) : null,
             retailPrice: it.option.retailPrice != null ? d(it.option.retailPrice) : null,
+            msrp: it.option.msrp != null ? d(it.option.msrp as Decimal) : null,
           }
         : null,
     })),
