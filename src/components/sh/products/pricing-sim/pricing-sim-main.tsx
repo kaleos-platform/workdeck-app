@@ -729,9 +729,17 @@ export function PricingSimMain() {
 
         <div className="flex-1" />
 
-        <Button variant="outline" size="sm" onClick={() => setDefaultsOpen(true)}>
-          <Settings2 className="mr-1.5 h-4 w-4" />
-          기본값
+        <Button
+          onClick={() => setDefaultsOpen(true)}
+          variant="outline"
+          className="max-w-[420px] gap-2"
+        >
+          <Settings2 className="h-4 w-4 shrink-0" />
+          <span className="shrink-0 text-sm">기본값</span>
+          <span className="truncate text-xs text-muted-foreground">
+            광고 {fullSettings.defaultAdCostPct}% · 운영 {fullSettings.defaultOperatingCostPct}% ·
+            포장 {fmt(fullSettings.defaultPackagingCost)}원
+          </span>
         </Button>
 
         {scenarios.length >= 2 && (
@@ -758,9 +766,10 @@ export function PricingSimMain() {
         </Button>
       </div>
 
-      {/* ── 시나리오 정보 — 1행 압축 레이아웃 ── */}
+      {/* ── 시나리오 정보 (통합 카드) ── */}
       <Card>
-        <CardContent className="pt-4 pb-3">
+        <CardContent className="space-y-4 pt-4 pb-4">
+          {/* Row 1: 시나리오명 · VAT · 반품 */}
           <div className="flex flex-wrap items-start gap-3">
             {/* 시나리오명 */}
             <div className="min-w-[200px] flex-1 space-y-1">
@@ -829,43 +838,40 @@ export function PricingSimMain() {
                 </span>
               </div>
             </div>
+          </div>
 
-            {/* 메모 */}
-            <div className="min-w-[160px] flex-1 space-y-1">
-              <Label htmlFor={memoId} className="text-xs">
-                메모 (선택)
-              </Label>
-              <Textarea
-                id={memoId}
-                value={memo}
-                onChange={(e) => setMemo(e.target.value)}
-                placeholder="참고 사항"
-                maxLength={500}
-                rows={1}
-                className="resize-none text-xs"
-              />
-            </div>
+          {/* Row 2: 프로모션 · 채널 (2-col 그리드, 작은 화면에서 스택) */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <PricingPromotionCard value={promotion} onChange={setPromotion} embedded />
+            <PricingChannelList
+              channels={scenarioChannels}
+              onChange={setScenarioChannels}
+              onChannelRegistered={(ch) =>
+                setAllDbChannels((prev) =>
+                  prev.some((c) => c.id === ch.id) ? prev : [...prev, ch]
+                )
+              }
+              embedded
+            />
+          </div>
+
+          {/* Row 3: 메모 */}
+          <div className="space-y-1">
+            <Label htmlFor={memoId} className="text-xs">
+              메모 (선택)
+            </Label>
+            <Textarea
+              id={memoId}
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              placeholder="참고 사항"
+              maxLength={500}
+              rows={1}
+              className="resize-none text-xs"
+            />
           </div>
         </CardContent>
       </Card>
-
-      {/* ── 프로모션 · 채널 — 가로 배치 ── */}
-      <div className="flex flex-wrap items-start gap-2">
-        {/* 프로모션 */}
-        <div className="min-w-[200px] flex-1">
-          <PricingPromotionCard value={promotion} onChange={setPromotion} />
-        </div>
-        {/* 채널 목록 */}
-        <div className="min-w-[280px] flex-1">
-          <PricingChannelList
-            channels={scenarioChannels}
-            onChange={setScenarioChannels}
-            onChannelRegistered={(ch) =>
-              setAllDbChannels((prev) => (prev.some((c) => c.id === ch.id) ? prev : [...prev, ch]))
-            }
-          />
-        </div>
-      </div>
 
       {/* ── 옵션 카드 목록 ── */}
       <div className="space-y-3">
@@ -900,15 +906,13 @@ export function PricingSimMain() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">
                 {/* 한 줄: 상품명 · 옵션명 · 브랜드 배지 */}
-                <div className="flex min-w-0 flex-1 items-center gap-2">
+                <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
                   {row.optionId == null ? (
-                    // 수동 입력 행
+                    // 수동 입력 행 — manualName이 상품명 역할
                     <>
-                      <p className="min-w-0 flex-1 truncate text-sm font-medium">
-                        {row.manualName}
-                      </p>
+                      <h3 className="truncate text-sm font-semibold">{row.manualName}</h3>
                       {row.manualBrandName && (
-                        <Badge variant="secondary" className="shrink-0 text-[10px]">
+                        <Badge variant="secondary" className="ml-1 shrink-0 text-[10px]">
                           {row.manualBrandName}
                         </Badge>
                       )}
@@ -920,16 +924,16 @@ export function PricingSimMain() {
                       </Badge>
                     </>
                   ) : (
-                    // DB 옵션 행
+                    // DB 옵션 행 — 상품명 · 옵션명 inline
                     <>
-                      <p className="min-w-0 flex-1 truncate text-sm font-medium">
-                        {row.productName}
-                      </p>
+                      <h3 className="truncate text-sm font-semibold">{row.productName}</h3>
                       {row.optionName && (
-                        <p className="shrink-0 text-xs text-muted-foreground">{row.optionName}</p>
+                        <span className="truncate text-sm text-muted-foreground">
+                          · {row.optionName}
+                        </span>
                       )}
                       {row.brandName && (
-                        <Badge variant="secondary" className="shrink-0 text-[10px]">
+                        <Badge variant="secondary" className="ml-1 shrink-0 text-[10px]">
                           {row.brandName}
                         </Badge>
                       )}

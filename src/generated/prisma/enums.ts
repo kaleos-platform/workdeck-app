@@ -108,7 +108,8 @@ export const PromotionType = {
   NONE: 'NONE',
   FLAT: 'FLAT',
   PERCENT: 'PERCENT',
-  COUPON: 'COUPON'
+  COUPON: 'COUPON',
+  MIN_PRICE: 'MIN_PRICE'
 } as const
 
 export type PromotionType = (typeof PromotionType)[keyof typeof PromotionType]

@@ -38,6 +38,8 @@ type Props = {
   onChange: (channels: ScenarioChannel[]) => void
   /** 임시 채널이 DB 채널로 등록될 때 — 부모 allDbChannels 캐시 갱신용 */
   onChannelRegistered?: (ch: DbChannel) => void
+  /** true이면 Card wrap 없이 fragment로 렌더 (시나리오 카드 내부에 임베드할 때 사용) */
+  embedded?: boolean
 }
 
 // ─── 채널 타입 레이블 / 배지 ──────────────────────────────────────────────────
@@ -317,7 +319,12 @@ function InlineChannelCard({
 
 // ─── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
 
-export function PricingChannelList({ channels, onChange, onChannelRegistered }: Props) {
+export function PricingChannelList({
+  channels,
+  onChange,
+  onChannelRegistered,
+  embedded = false,
+}: Props) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [inlineFormOpen, setInlineFormOpen] = useState(false)
   const [editingInlineIdx, setEditingInlineIdx] = useState<number | null>(null)
@@ -369,35 +376,106 @@ export function PricingChannelList({ channels, onChange, onChannelRegistered }: 
       ? (channels[editingInlineIdx] as Extract<ScenarioChannel, { source: 'inline' }>).inline
       : undefined
 
+  // ── 액션 버튼 (공용) ──
+  const actionButtons = (
+    <div className="flex gap-1.5">
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 text-xs"
+        onClick={() => setPickerOpen(true)}
+      >
+        <Plus className="mr-1 h-3 w-3" />
+        채널 선택
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 text-xs"
+        onClick={() => {
+          setEditingInlineIdx(null)
+          setInlineFormOpen(true)
+        }}
+      >
+        <Plus className="mr-1 h-3 w-3" />
+        임시 채널
+      </Button>
+    </div>
+  )
+
+  // ── 채널 목록 (공용) ──
+  const channelList = (
+    <div className="space-y-2">
+      {channels.length === 0 && (
+        <p className="py-4 text-center text-sm text-muted-foreground">
+          채널을 추가하면 옵션별로 매트릭스가 생성됩니다.
+        </p>
+      )}
+      {channels.map((ch, idx) =>
+        ch.source === 'db' ? (
+          <DbChannelCard
+            key={`db-${ch.channelId}`}
+            ch={ch.channel}
+            onRemove={() => handleRemove(idx)}
+          />
+        ) : (
+          <InlineChannelCard
+            key={`inline-${idx}`}
+            data={ch.inline}
+            onEdit={() => handleEditInline(idx)}
+            onRemove={() => handleRemove(idx)}
+            onPromote={(dbCh) => handlePromoteInline(idx, dbCh)}
+          />
+        )
+      )}
+    </div>
+  )
+
+  // ── 다이얼로그 (공용) ──
+  const dialogs = (
+    <>
+      <PricingChannelPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        excludeIds={existingDbIds}
+        onPick={handleDbPick}
+      />
+      <PricingChannelInlineForm
+        open={inlineFormOpen}
+        onOpenChange={(v) => {
+          setInlineFormOpen(v)
+          if (!v) setEditingInlineIdx(null)
+        }}
+        initialData={editingInlineData}
+        onConfirm={handleInlineConfirm}
+      />
+    </>
+  )
+
+  // ── embedded 모드: Card wrap 없이 헤딩 + 콘텐츠만 ──
+  if (embedded) {
+    return (
+      <TooltipProvider>
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-medium">채널 ({channels.length}개)</h3>
+            {actionButtons}
+          </div>
+          {channelList}
+          {dialogs}
+        </div>
+      </TooltipProvider>
+    )
+  }
+
+  // ── 기본 모드: Card wrap 유지 ──
   return (
     <TooltipProvider>
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-medium">채널 ({channels.length}개)</CardTitle>
-            <div className="flex gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setPickerOpen(true)}
-              >
-                <Plus className="mr-1 h-3 w-3" />
-                채널 선택
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => {
-                  setEditingInlineIdx(null)
-                  setInlineFormOpen(true)
-                }}
-              >
-                <Plus className="mr-1 h-3 w-3" />
-                임시 채널
-              </Button>
-            </div>
+            {actionButtons}
           </div>
         </CardHeader>
 
@@ -428,24 +506,7 @@ export function PricingChannelList({ channels, onChange, onChannelRegistered }: 
         </CardContent>
       </Card>
 
-      {/* DB 채널 선택 다이얼로그 */}
-      <PricingChannelPickerDialog
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        excludeIds={existingDbIds}
-        onPick={handleDbPick}
-      />
-
-      {/* 임시 채널 입력 다이얼로그 */}
-      <PricingChannelInlineForm
-        open={inlineFormOpen}
-        onOpenChange={(v) => {
-          setInlineFormOpen(v)
-          if (!v) setEditingInlineIdx(null)
-        }}
-        initialData={editingInlineData}
-        onConfirm={handleInlineConfirm}
-      />
+      {dialogs}
     </TooltipProvider>
   )
 }

@@ -473,7 +473,7 @@ export const pricingScenarioSchema = z.object({
   channels: z.array(pricingScenarioChannelEntrySchema).max(20).optional(),
   includeVat: z.boolean().default(true),
   vatRate: z.coerce.number().min(0).max(1).default(0.1),
-  promotionType: z.enum(['NONE', 'FLAT', 'PERCENT', 'COUPON']).default('NONE'),
+  promotionType: z.enum(['NONE', 'FLAT', 'PERCENT', 'COUPON', 'MIN_PRICE']).default('NONE'),
   promotionValue: z.coerce.number().min(0).max(99_999_999).optional().nullable(),
   applyReturnAdjustment: z.boolean().default(false),
   items: z.array(pricingScenarioItemSchema).min(1).max(100),

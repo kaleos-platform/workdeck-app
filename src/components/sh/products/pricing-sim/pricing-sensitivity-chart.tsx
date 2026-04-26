@@ -114,6 +114,7 @@ export function PricingSensitivityChart({ matrix, channelName }: Props) {
               tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.45)' }}
               tickLine={false}
               axisLine={false}
+              tickFormatter={(value: string, idx: number) => (idx % 2 === 0 ? value : '')}
             />
             <YAxis
               tickFormatter={fmtWon}

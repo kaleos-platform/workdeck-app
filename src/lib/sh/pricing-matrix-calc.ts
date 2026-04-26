@@ -6,7 +6,8 @@ import { classifyTier, type Tier, type TierThresholds } from './margin-tier'
 // ─── 상수 ──────────────────────────────────────────────────────────────────────
 
 export const DISCOUNT_COLUMNS = [
-  0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8,
+  0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85,
+  0.9, 0.95,
 ] as const
 export type DiscountRate = (typeof DISCOUNT_COLUMNS)[number]
 
@@ -37,8 +38,8 @@ export type MatrixOption = {
 
 /** 프로모션 입력 */
 export type MatrixPromotion = {
-  type: 'NONE' | 'FLAT' | 'PERCENT' | 'COUPON'
-  value: number // PERCENT: 0~1, FLAT/COUPON: 원
+  type: 'NONE' | 'FLAT' | 'PERCENT' | 'COUPON' | 'MIN_PRICE'
+  value: number // PERCENT: 0~1, FLAT/COUPON: 원, MIN_PRICE: 최소 판매가 ceiling (원)
 }
 
 /** 글로벌 시나리오 설정 */
@@ -82,9 +83,9 @@ export type MatrixCell = {
   tier: Tier // 마진 등급
 }
 
-/** 옵션×채널 매트릭스 (17컬럼, 0%~80%) */
+/** 옵션×채널 매트릭스 (20컬럼, 0%~95%) */
 export type Matrix = {
-  cells: MatrixCell[] // DISCOUNT_COLUMNS 순서, 길이 17
+  cells: MatrixCell[] // DISCOUNT_COLUMNS 순서, 길이 20
   /** 최소 허용 마진 유지 가능한 최대 할인율 (없으면 null) */
   maxDiscountForMinMargin: number | null
   /** 'good' 등급 달성을 위한 추천 소매가 역산 (역산 불가시 null) */
@@ -123,6 +124,9 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
     p = p * (1 - n(promotion.value))
   } else if (promotion.type === 'FLAT' || promotion.type === 'COUPON') {
     p = p - n(promotion.value)
+  } else if (promotion.type === 'MIN_PRICE') {
+    // 최소 판매가 ceiling — column 할인 결과가 promotion.value보다 높으면 강제 인하
+    p = Math.min(p, n(promotion.value))
   }
   const finalPrice = Math.max(0, r2(p))
 
@@ -250,7 +254,7 @@ function calcRecommendedRetail(inputs: MatrixInputs): number | null {
 // ─── 공개 API ──────────────────────────────────────────────────────────────────
 
 /**
- * 옵션 × 채널 조합에 대해 11개 할인율 컬럼의 매트릭스를 계산한다.
+ * 옵션 × 채널 조합에 대해 20개 할인율 컬럼의 매트릭스를 계산한다.
  *
  * - 순수 함수: 부작용 없음, DB 접근 없음
  */

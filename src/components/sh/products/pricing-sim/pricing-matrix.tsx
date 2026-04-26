@@ -117,7 +117,7 @@ export function PricingMatrix({ option, channel, promotion, globals, thresholds 
                   <th
                     key={d}
                     className={cn(
-                      'min-w-[68px] border-b px-1.5 py-1.5 text-center text-[10px] font-medium text-muted-foreground',
+                      'min-w-[56px] border-b px-1.5 py-1.5 text-center text-[10px] font-medium text-muted-foreground',
                       isMaxDiscount &&
                         'border-l-2 border-l-emerald-500 font-semibold text-emerald-700'
                     )}

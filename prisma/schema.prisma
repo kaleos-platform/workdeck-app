@@ -94,6 +94,7 @@ enum PromotionType {
   FLAT           // 고정 할인 금액
   PERCENT        // 비율 할인
   COUPON         // 쿠폰 할인
+  MIN_PRICE      // 최소 판매가 ceiling — column 할인 결과가 이 값보다 높으면 강제 인하
 }
 
 // 판매채널 상품 상태 — 시스템 재고 0일 때는 effective status가 SOLD_OUT으로 표시됨 (DB에는 저장 X).
