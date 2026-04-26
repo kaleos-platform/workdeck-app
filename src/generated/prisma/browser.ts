@@ -173,16 +173,6 @@ export type InvProductOption = Prisma.InvProductOptionModel
  */
 export type InvStorageLocation = Prisma.InvStorageLocationModel
 /**
- * Model InvChannelGroup
- * 
- */
-export type InvChannelGroup = Prisma.InvChannelGroupModel
-/**
- * Model InvSalesChannel
- * 
- */
-export type InvSalesChannel = Prisma.InvSalesChannelModel
-/**
  * Model InvMovement
  * 
  */
@@ -223,15 +213,10 @@ export type InvSettings = Prisma.InvSettingsModel
  */
 export type DelShippingMethod = Prisma.DelShippingMethodModel
 /**
- * Model DelChannelGroup
+ * Model DelShippingMethodLabel
  * 
  */
-export type DelChannelGroup = Prisma.DelChannelGroupModel
-/**
- * Model DelSalesChannel
- * 
- */
-export type DelSalesChannel = Prisma.DelSalesChannelModel
+export type DelShippingMethodLabel = Prisma.DelShippingMethodLabelModel
 /**
  * Model DelBatch
  * 
@@ -248,6 +233,16 @@ export type DelOrder = Prisma.DelOrderModel
  */
 export type DelOrderItem = Prisma.DelOrderItemModel
 /**
+ * Model ChannelProductAlias
+ * 
+ */
+export type ChannelProductAlias = Prisma.ChannelProductAliasModel
+/**
+ * Model ChannelProductAliasFulfillment
+ * 
+ */
+export type ChannelProductAliasFulfillment = Prisma.ChannelProductAliasFulfillmentModel
+/**
  * Model DelColumnMappingPreset
  * 
  */
@@ -257,3 +252,83 @@ export type DelColumnMappingPreset = Prisma.DelColumnMappingPresetModel
  * 
  */
 export type DelIntegrationHistory = Prisma.DelIntegrationHistoryModel
+/**
+ * Model Brand
+ * 
+ */
+export type Brand = Prisma.BrandModel
+/**
+ * Model ChannelGroup
+ * 
+ */
+export type ChannelGroup = Prisma.ChannelGroupModel
+/**
+ * Model Channel
+ * 
+ */
+export type Channel = Prisma.ChannelModel
+/**
+ * Model ChannelFeeRate
+ * 
+ */
+export type ChannelFeeRate = Prisma.ChannelFeeRateModel
+/**
+ * Model ProductionRun
+ * 
+ */
+export type ProductionRun = Prisma.ProductionRunModel
+/**
+ * Model ProductionRunItem
+ * 
+ */
+export type ProductionRunItem = Prisma.ProductionRunItemModel
+/**
+ * Model ProductionRunCost
+ * 
+ */
+export type ProductionRunCost = Prisma.ProductionRunCostModel
+/**
+ * Model PricingScenario
+ * 
+ */
+export type PricingScenario = Prisma.PricingScenarioModel
+/**
+ * Model PricingScenarioChannel
+ * 
+ */
+export type PricingScenarioChannel = Prisma.PricingScenarioChannelModel
+/**
+ * Model PricingScenarioItem
+ * 
+ */
+export type PricingScenarioItem = Prisma.PricingScenarioItemModel
+/**
+ * Model ProductPricingSettings
+ * 
+ */
+export type ProductPricingSettings = Prisma.ProductPricingSettingsModel
+/**
+ * Model SpaceOptionCodeAlias
+ * 
+ */
+export type SpaceOptionCodeAlias = Prisma.SpaceOptionCodeAliasModel
+/**
+ * Model ProductListing
+ * 
+ */
+export type ProductListing = Prisma.ProductListingModel
+/**
+ * Model ProductListingItem
+ * 
+ */
+export type ProductListingItem = Prisma.ProductListingItemModel
+/**
+ * Model DelOrderItemFulfillment
+ * 
+ */
+export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel
+/**
+ * Model ProductChannelGroupMeta
+ * 
+ */
+export type ProductChannelGroupMeta = Prisma.ProductChannelGroupMetaModel

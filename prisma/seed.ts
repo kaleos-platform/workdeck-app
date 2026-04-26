@@ -16,8 +16,9 @@ async function main() {
 
   const deckApps = [
     { id: 'coupang-ads', name: '쿠팡 광고 자동화', isActive: true },
-    { id: 'delivery-mgmt', name: '통합 배송 관리', isActive: true },
-    { id: 'inventory-mgmt', name: '통합 재고 관리', isActive: true },
+    { id: 'seller-hub', name: '브랜드 운영', isActive: true },
+    { id: 'delivery-mgmt', name: '통합 배송 관리', isActive: false },
+    { id: 'inventory-mgmt', name: '통합 재고 관리', isActive: false },
     { id: 'osmu', name: 'OSMU 광고 제작', isActive: false },
     { id: 'commerce-ops', name: '이커머스 운영 자동화', isActive: false },
   ]
@@ -26,7 +27,7 @@ async function main() {
     await prisma.deckApp.upsert({
       where: { id: app.id },
       create: app,
-      update: {},
+      update: { name: app.name, isActive: app.isActive },
     })
     console.log(`  ✔ DeckApp [${app.id}] upsert 완료`)
   }

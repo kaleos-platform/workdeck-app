@@ -330,9 +330,9 @@ export type InvProductGroupMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type InvProductGroupNullableScalarRelationFilter = {
-  is?: Prisma.InvProductGroupWhereInput | null
-  isNot?: Prisma.InvProductGroupWhereInput | null
+export type InvProductGroupScalarRelationFilter = {
+  is?: Prisma.InvProductGroupWhereInput
+  isNot?: Prisma.InvProductGroupWhereInput
 }
 
 export type InvProductGroupCreateNestedManyWithoutSpaceInput = {
@@ -383,12 +383,10 @@ export type InvProductGroupCreateNestedOneWithoutProductsInput = {
   connect?: Prisma.InvProductGroupWhereUniqueInput
 }
 
-export type InvProductGroupUpdateOneWithoutProductsNestedInput = {
+export type InvProductGroupUpdateOneRequiredWithoutProductsNestedInput = {
   create?: Prisma.XOR<Prisma.InvProductGroupCreateWithoutProductsInput, Prisma.InvProductGroupUncheckedCreateWithoutProductsInput>
   connectOrCreate?: Prisma.InvProductGroupCreateOrConnectWithoutProductsInput
   upsert?: Prisma.InvProductGroupUpsertWithoutProductsInput
-  disconnect?: Prisma.InvProductGroupWhereInput | boolean
-  delete?: Prisma.InvProductGroupWhereInput | boolean
   connect?: Prisma.InvProductGroupWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductGroupUpdateToOneWithWhereWithoutProductsInput, Prisma.InvProductGroupUpdateWithoutProductsInput>, Prisma.InvProductGroupUncheckedUpdateWithoutProductsInput>
 }

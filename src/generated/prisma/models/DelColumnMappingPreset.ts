@@ -28,6 +28,7 @@ export type DelColumnMappingPresetMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
+  channelId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -36,6 +37,7 @@ export type DelColumnMappingPresetMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
+  channelId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -45,6 +47,7 @@ export type DelColumnMappingPresetCountAggregateOutputType = {
   spaceId: number
   name: number
   mapping: number
+  channelId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -55,6 +58,7 @@ export type DelColumnMappingPresetMinAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  channelId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -63,6 +67,7 @@ export type DelColumnMappingPresetMaxAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  channelId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -72,6 +77,7 @@ export type DelColumnMappingPresetCountAggregateInputType = {
   spaceId?: true
   name?: true
   mapping?: true
+  channelId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -154,6 +160,7 @@ export type DelColumnMappingPresetGroupByOutputType = {
   spaceId: string
   name: string
   mapping: runtime.JsonValue
+  channelId: string | null
   createdAt: Date
   updatedAt: Date
   _count: DelColumnMappingPresetCountAggregateOutputType | null
@@ -184,9 +191,11 @@ export type DelColumnMappingPresetWhereInput = {
   spaceId?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   name?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   mapping?: Prisma.JsonFilter<"DelColumnMappingPreset">
+  channelId?: Prisma.StringNullableFilter<"DelColumnMappingPreset"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  channel?: Prisma.XOR<Prisma.ChannelNullableScalarRelationFilter, Prisma.ChannelWhereInput> | null
 }
 
 export type DelColumnMappingPresetOrderByWithRelationInput = {
@@ -194,9 +203,11 @@ export type DelColumnMappingPresetOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   mapping?: Prisma.SortOrder
+  channelId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
+  channel?: Prisma.ChannelOrderByWithRelationInput
 }
 
 export type DelColumnMappingPresetWhereUniqueInput = Prisma.AtLeast<{
@@ -208,9 +219,11 @@ export type DelColumnMappingPresetWhereUniqueInput = Prisma.AtLeast<{
   spaceId?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   name?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   mapping?: Prisma.JsonFilter<"DelColumnMappingPreset">
+  channelId?: Prisma.StringNullableFilter<"DelColumnMappingPreset"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  channel?: Prisma.XOR<Prisma.ChannelNullableScalarRelationFilter, Prisma.ChannelWhereInput> | null
 }, "id" | "spaceId_name">
 
 export type DelColumnMappingPresetOrderByWithAggregationInput = {
@@ -218,6 +231,7 @@ export type DelColumnMappingPresetOrderByWithAggregationInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   mapping?: Prisma.SortOrder
+  channelId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DelColumnMappingPresetCountOrderByAggregateInput
@@ -233,6 +247,7 @@ export type DelColumnMappingPresetScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"DelColumnMappingPreset"> | string
   name?: Prisma.StringWithAggregatesFilter<"DelColumnMappingPreset"> | string
   mapping?: Prisma.JsonWithAggregatesFilter<"DelColumnMappingPreset">
+  channelId?: Prisma.StringNullableWithAggregatesFilter<"DelColumnMappingPreset"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DelColumnMappingPreset"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DelColumnMappingPreset"> | Date | string
 }
@@ -244,6 +259,7 @@ export type DelColumnMappingPresetCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelColumnMappingPresetsInput
+  channel?: Prisma.ChannelCreateNestedOneWithoutColumnMappingPresetsInput
 }
 
 export type DelColumnMappingPresetUncheckedCreateInput = {
@@ -251,6 +267,7 @@ export type DelColumnMappingPresetUncheckedCreateInput = {
   spaceId: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  channelId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -262,6 +279,7 @@ export type DelColumnMappingPresetUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelColumnMappingPresetsNestedInput
+  channel?: Prisma.ChannelUpdateOneWithoutColumnMappingPresetsNestedInput
 }
 
 export type DelColumnMappingPresetUncheckedUpdateInput = {
@@ -269,6 +287,7 @@ export type DelColumnMappingPresetUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -278,6 +297,7 @@ export type DelColumnMappingPresetCreateManyInput = {
   spaceId: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  channelId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -295,6 +315,7 @@ export type DelColumnMappingPresetUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -319,6 +340,7 @@ export type DelColumnMappingPresetCountOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   mapping?: Prisma.SortOrder
+  channelId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -327,6 +349,7 @@ export type DelColumnMappingPresetMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  channelId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -335,6 +358,7 @@ export type DelColumnMappingPresetMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  channelId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -381,18 +405,62 @@ export type DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.DelColumnMappingPresetScalarWhereInput | Prisma.DelColumnMappingPresetScalarWhereInput[]
 }
 
+export type DelColumnMappingPresetCreateNestedManyWithoutChannelInput = {
+  create?: Prisma.XOR<Prisma.DelColumnMappingPresetCreateWithoutChannelInput, Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput> | Prisma.DelColumnMappingPresetCreateWithoutChannelInput[] | Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput[]
+  connectOrCreate?: Prisma.DelColumnMappingPresetCreateOrConnectWithoutChannelInput | Prisma.DelColumnMappingPresetCreateOrConnectWithoutChannelInput[]
+  createMany?: Prisma.DelColumnMappingPresetCreateManyChannelInputEnvelope
+  connect?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+}
+
+export type DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput = {
+  create?: Prisma.XOR<Prisma.DelColumnMappingPresetCreateWithoutChannelInput, Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput> | Prisma.DelColumnMappingPresetCreateWithoutChannelInput[] | Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput[]
+  connectOrCreate?: Prisma.DelColumnMappingPresetCreateOrConnectWithoutChannelInput | Prisma.DelColumnMappingPresetCreateOrConnectWithoutChannelInput[]
+  createMany?: Prisma.DelColumnMappingPresetCreateManyChannelInputEnvelope
+  connect?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+}
+
+export type DelColumnMappingPresetUpdateManyWithoutChannelNestedInput = {
+  create?: Prisma.XOR<Prisma.DelColumnMappingPresetCreateWithoutChannelInput, Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput> | Prisma.DelColumnMappingPresetCreateWithoutChannelInput[] | Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput[]
+  connectOrCreate?: Prisma.DelColumnMappingPresetCreateOrConnectWithoutChannelInput | Prisma.DelColumnMappingPresetCreateOrConnectWithoutChannelInput[]
+  upsert?: Prisma.DelColumnMappingPresetUpsertWithWhereUniqueWithoutChannelInput | Prisma.DelColumnMappingPresetUpsertWithWhereUniqueWithoutChannelInput[]
+  createMany?: Prisma.DelColumnMappingPresetCreateManyChannelInputEnvelope
+  set?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+  disconnect?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+  delete?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+  connect?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+  update?: Prisma.DelColumnMappingPresetUpdateWithWhereUniqueWithoutChannelInput | Prisma.DelColumnMappingPresetUpdateWithWhereUniqueWithoutChannelInput[]
+  updateMany?: Prisma.DelColumnMappingPresetUpdateManyWithWhereWithoutChannelInput | Prisma.DelColumnMappingPresetUpdateManyWithWhereWithoutChannelInput[]
+  deleteMany?: Prisma.DelColumnMappingPresetScalarWhereInput | Prisma.DelColumnMappingPresetScalarWhereInput[]
+}
+
+export type DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput = {
+  create?: Prisma.XOR<Prisma.DelColumnMappingPresetCreateWithoutChannelInput, Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput> | Prisma.DelColumnMappingPresetCreateWithoutChannelInput[] | Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput[]
+  connectOrCreate?: Prisma.DelColumnMappingPresetCreateOrConnectWithoutChannelInput | Prisma.DelColumnMappingPresetCreateOrConnectWithoutChannelInput[]
+  upsert?: Prisma.DelColumnMappingPresetUpsertWithWhereUniqueWithoutChannelInput | Prisma.DelColumnMappingPresetUpsertWithWhereUniqueWithoutChannelInput[]
+  createMany?: Prisma.DelColumnMappingPresetCreateManyChannelInputEnvelope
+  set?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+  disconnect?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+  delete?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+  connect?: Prisma.DelColumnMappingPresetWhereUniqueInput | Prisma.DelColumnMappingPresetWhereUniqueInput[]
+  update?: Prisma.DelColumnMappingPresetUpdateWithWhereUniqueWithoutChannelInput | Prisma.DelColumnMappingPresetUpdateWithWhereUniqueWithoutChannelInput[]
+  updateMany?: Prisma.DelColumnMappingPresetUpdateManyWithWhereWithoutChannelInput | Prisma.DelColumnMappingPresetUpdateManyWithWhereWithoutChannelInput[]
+  deleteMany?: Prisma.DelColumnMappingPresetScalarWhereInput | Prisma.DelColumnMappingPresetScalarWhereInput[]
+}
+
 export type DelColumnMappingPresetCreateWithoutSpaceInput = {
   id?: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  channel?: Prisma.ChannelCreateNestedOneWithoutColumnMappingPresetsInput
 }
 
 export type DelColumnMappingPresetUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  channelId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -431,14 +499,60 @@ export type DelColumnMappingPresetScalarWhereInput = {
   spaceId?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   name?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   mapping?: Prisma.JsonFilter<"DelColumnMappingPreset">
+  channelId?: Prisma.StringNullableFilter<"DelColumnMappingPreset"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
+}
+
+export type DelColumnMappingPresetCreateWithoutChannelInput = {
+  id?: string
+  name: string
+  mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutDelColumnMappingPresetsInput
+}
+
+export type DelColumnMappingPresetUncheckedCreateWithoutChannelInput = {
+  id?: string
+  spaceId: string
+  name: string
+  mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type DelColumnMappingPresetCreateOrConnectWithoutChannelInput = {
+  where: Prisma.DelColumnMappingPresetWhereUniqueInput
+  create: Prisma.XOR<Prisma.DelColumnMappingPresetCreateWithoutChannelInput, Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput>
+}
+
+export type DelColumnMappingPresetCreateManyChannelInputEnvelope = {
+  data: Prisma.DelColumnMappingPresetCreateManyChannelInput | Prisma.DelColumnMappingPresetCreateManyChannelInput[]
+  skipDuplicates?: boolean
+}
+
+export type DelColumnMappingPresetUpsertWithWhereUniqueWithoutChannelInput = {
+  where: Prisma.DelColumnMappingPresetWhereUniqueInput
+  update: Prisma.XOR<Prisma.DelColumnMappingPresetUpdateWithoutChannelInput, Prisma.DelColumnMappingPresetUncheckedUpdateWithoutChannelInput>
+  create: Prisma.XOR<Prisma.DelColumnMappingPresetCreateWithoutChannelInput, Prisma.DelColumnMappingPresetUncheckedCreateWithoutChannelInput>
+}
+
+export type DelColumnMappingPresetUpdateWithWhereUniqueWithoutChannelInput = {
+  where: Prisma.DelColumnMappingPresetWhereUniqueInput
+  data: Prisma.XOR<Prisma.DelColumnMappingPresetUpdateWithoutChannelInput, Prisma.DelColumnMappingPresetUncheckedUpdateWithoutChannelInput>
+}
+
+export type DelColumnMappingPresetUpdateManyWithWhereWithoutChannelInput = {
+  where: Prisma.DelColumnMappingPresetScalarWhereInput
+  data: Prisma.XOR<Prisma.DelColumnMappingPresetUpdateManyMutationInput, Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelInput>
 }
 
 export type DelColumnMappingPresetCreateManySpaceInput = {
   id?: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  channelId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -449,18 +563,57 @@ export type DelColumnMappingPresetUpdateWithoutSpaceInput = {
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  channel?: Prisma.ChannelUpdateOneWithoutColumnMappingPresetsNestedInput
 }
 
 export type DelColumnMappingPresetUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type DelColumnMappingPresetCreateManyChannelInput = {
+  id?: string
+  spaceId: string
+  name: string
+  mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type DelColumnMappingPresetUpdateWithoutChannelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutDelColumnMappingPresetsNestedInput
+}
+
+export type DelColumnMappingPresetUncheckedUpdateWithoutChannelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type DelColumnMappingPresetUncheckedUpdateManyWithoutChannelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -474,9 +627,11 @@ export type DelColumnMappingPresetSelect<ExtArgs extends runtime.Types.Extension
   spaceId?: boolean
   name?: boolean
   mapping?: boolean
+  channelId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  channel?: boolean | Prisma.DelColumnMappingPreset$channelArgs<ExtArgs>
 }, ExtArgs["result"]["delColumnMappingPreset"]>
 
 export type DelColumnMappingPresetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -484,9 +639,11 @@ export type DelColumnMappingPresetSelectCreateManyAndReturn<ExtArgs extends runt
   spaceId?: boolean
   name?: boolean
   mapping?: boolean
+  channelId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  channel?: boolean | Prisma.DelColumnMappingPreset$channelArgs<ExtArgs>
 }, ExtArgs["result"]["delColumnMappingPreset"]>
 
 export type DelColumnMappingPresetSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -494,9 +651,11 @@ export type DelColumnMappingPresetSelectUpdateManyAndReturn<ExtArgs extends runt
   spaceId?: boolean
   name?: boolean
   mapping?: boolean
+  channelId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  channel?: boolean | Prisma.DelColumnMappingPreset$channelArgs<ExtArgs>
 }, ExtArgs["result"]["delColumnMappingPreset"]>
 
 export type DelColumnMappingPresetSelectScalar = {
@@ -504,31 +663,37 @@ export type DelColumnMappingPresetSelectScalar = {
   spaceId?: boolean
   name?: boolean
   mapping?: boolean
+  channelId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DelColumnMappingPresetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "mapping" | "createdAt" | "updatedAt", ExtArgs["result"]["delColumnMappingPreset"]>
+export type DelColumnMappingPresetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "mapping" | "channelId" | "createdAt" | "updatedAt", ExtArgs["result"]["delColumnMappingPreset"]>
 export type DelColumnMappingPresetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  channel?: boolean | Prisma.DelColumnMappingPreset$channelArgs<ExtArgs>
 }
 export type DelColumnMappingPresetIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  channel?: boolean | Prisma.DelColumnMappingPreset$channelArgs<ExtArgs>
 }
 export type DelColumnMappingPresetIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  channel?: boolean | Prisma.DelColumnMappingPreset$channelArgs<ExtArgs>
 }
 
 export type $DelColumnMappingPresetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DelColumnMappingPreset"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
+    channel: Prisma.$ChannelPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     spaceId: string
     name: string
     mapping: runtime.JsonValue
+    channelId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["delColumnMappingPreset"]>
@@ -926,6 +1091,7 @@ readonly fields: DelColumnMappingPresetFieldRefs;
 export interface Prisma__DelColumnMappingPresetClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  channel<T extends Prisma.DelColumnMappingPreset$channelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelColumnMappingPreset$channelArgs<ExtArgs>>): Prisma.Prisma__ChannelClient<runtime.Types.Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -959,6 +1125,7 @@ export interface DelColumnMappingPresetFieldRefs {
   readonly spaceId: Prisma.FieldRef<"DelColumnMappingPreset", 'String'>
   readonly name: Prisma.FieldRef<"DelColumnMappingPreset", 'String'>
   readonly mapping: Prisma.FieldRef<"DelColumnMappingPreset", 'Json'>
+  readonly channelId: Prisma.FieldRef<"DelColumnMappingPreset", 'String'>
   readonly createdAt: Prisma.FieldRef<"DelColumnMappingPreset", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DelColumnMappingPreset", 'DateTime'>
 }
@@ -1354,6 +1521,25 @@ export type DelColumnMappingPresetDeleteManyArgs<ExtArgs extends runtime.Types.E
    * Limit how many DelColumnMappingPresets to delete.
    */
   limit?: number
+}
+
+/**
+ * DelColumnMappingPreset.channel
+ */
+export type DelColumnMappingPreset$channelArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Channel
+   */
+  select?: Prisma.ChannelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Channel
+   */
+  omit?: Prisma.ChannelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelInclude<ExtArgs> | null
+  where?: Prisma.ChannelWhereInput
 }
 
 /**

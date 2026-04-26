@@ -1,3 +1,4 @@
+// @deprecated Phase 3에서 제거. 내부적으로 공용 Channel 테이블 사용.
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +12,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   const { channelId } = await context.params
   const body = await req.json().catch(() => ({}))
 
-  const existing = await prisma.invSalesChannel.findUnique({
+  const existing = await prisma.channel.findUnique({
     where: { id: channelId },
     select: { id: true, spaceId: true },
   })
@@ -30,7 +31,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
       return errorResponse('채널 이름이 필요합니다', 400)
     }
     const name = body.name.trim()
-    const duplicate = await prisma.invSalesChannel.findFirst({
+    const duplicate = await prisma.channel.findFirst({
       where: { spaceId: resolved.space.id, name, NOT: { id: channelId } },
       select: { id: true },
     })
@@ -44,7 +45,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     if (body.groupId === null || body.groupId === '') {
       data.groupId = null
     } else if (typeof body.groupId === 'string') {
-      const group = await prisma.invChannelGroup.findUnique({
+      const group = await prisma.channelGroup.findUnique({
         where: { id: body.groupId },
         select: { spaceId: true },
       })
@@ -64,7 +65,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     data.isActive = body.isActive
   }
 
-  const channel = await prisma.invSalesChannel.update({
+  const channel = await prisma.channel.update({
     where: { id: channelId },
     data,
     include: { group: { select: { id: true, name: true } } },

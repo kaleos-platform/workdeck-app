@@ -1,10 +1,26 @@
 /**
  * 배송 파일 생성기
  * 주문 데이터를 배송 방식의 포맷에 맞춰 Excel 파일로 변환한다.
+ *
+ * 옵션별 필드 오버라이드: 아이템에 매칭된 옵션이 있고, 해당 옵션·배송방식에
+ * `DelShippingMethodLabel` 이 존재하면 `overrides[field]` 값이 카탈로그 기본보다 우선한다.
  */
 import * as XLSX from 'xlsx'
 import { decryptPii } from '@/lib/del/encryption'
-import type { DelFormatColumn } from '@/lib/del/format-templates'
+import type { DelFieldMapping, DelFormatColumn } from '@/lib/del/format-templates'
+
+type ItemLine = {
+  name: string // 원본 텍스트 (fallback)
+  quantity: number
+  option?: {
+    name: string
+    product: {
+      name: string // 공식 상품명
+      internalName?: string | null // 관리 상품명 (선택)
+    }
+  } | null
+  overrides?: Partial<Record<DelFieldMapping, string>> | null
+}
 
 type OrderWithItems = {
   recipientNameEnc: string
@@ -17,86 +33,70 @@ type OrderWithItems = {
   deliveryMessage: string | null
   orderDate: Date
   orderNumber: string | null
-  items: { name: string; quantity: number }[]
+  items: ItemLine[]
   channel: { name: string } | null
 }
 
 /**
+ * 한 아이템에 대해 지정 field 의 표시 값을 결정한다.
+ * 우선순위: overrides[field] > 카탈로그 기본 > 원본 name/빈값
+ *
+ * productName 기본값 계산은 **관리 상품명(internalName) 우선**, 없으면 공식명(name).
+ * 3PL 실무자 대상 파일이므로 내부 식별용 관리명이 적합하다.
+ */
+function resolveItemField(item: ItemLine, field: DelFieldMapping): string | null {
+  const ov = item.overrides?.[field]
+  if (ov && ov.trim() !== '') return ov
+  if (field === 'productName') {
+    if (item.option) {
+      const internal = item.option.product.internalName?.trim()
+      const official = item.option.product.name.trim()
+      const productLabel = internal && internal.length > 0 ? internal : official
+      const opt = item.option.name.trim()
+      return productLabel && opt ? `${productLabel} ${opt}` : productLabel || opt || item.name
+    }
+    return item.name
+  }
+  // barcode 등은 override 없으면 null (빈 값 fallback은 호출부에서)
+  return null
+}
+
+/**
+ * 주문 데이터로부터 배송 파일의 { headers, rows } 를 계산한다.
+ * Excel 생성 전 단계로 미리보기·Excel 생성 양쪽에서 공유.
+ */
+export function buildDeliveryRows(
+  orders: OrderWithItems[],
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' } = {}
+): { headers: string[]; rows: Record<string, string | number>[] } {
+  const rows = buildRowsInternal(orders, formatConfig, opts)
+  const headers = formatConfig.map((col) => col.label || '')
+  return { headers, rows }
+}
+
+/**
  * 주문 데이터로부터 배송 파일 Excel 버퍼를 생성한다.
+ *
+ * splitMode:
+ *  - 'order' (기본): 1 주문 = 1 행. 상품명 컬럼에 모든 옵션을 concat. 일반 택배사·쇼핑몰 포맷.
+ *  - 'option': 옵션 fulfillment 1개 = 1 행. 수취인 정보가 반복됨. 3PL·물류센터 포맷.
  */
 export function generateDeliveryFile(
   orders: OrderWithItems[],
-  formatConfig: DelFormatColumn[]
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' } = {}
 ): Buffer {
+  const rows = buildRowsInternal(orders, formatConfig, opts)
+
   const wb = XLSX.utils.book_new()
-
-  // 헤더 행 생성
-  const headers: Record<string, string> = {}
-  for (const col of formatConfig) {
-    if (col.label) {
-      headers[col.column] = col.label
-    }
-  }
-
-  // 데이터 행 생성
-  const rows: Record<string, string | number>[] = []
-
-  for (const order of orders) {
-    // PII 복호화
-    const recipientName = decryptPii(order.recipientNameEnc, order.recipientNameIv)
-    const phone = decryptPii(order.phoneEnc, order.phoneIv)
-    const address = decryptPii(order.addressEnc, order.addressIv)
-
-    // 상품명/수량 합치기
-    const productNames = order.items.map((i) => `${i.name}(${i.quantity})`).join(', ')
-    const totalQuantity = order.items.reduce((sum, i) => sum + i.quantity, 0)
-
-    // 필드 값 매핑
-    const fieldValues: Record<string, string | number> = {
-      recipientName,
-      phone,
-      postalCode: order.postalCode ?? '',
-      fullAddress: address,
-      deliveryMessage: order.deliveryMessage ?? '',
-      productName: productNames,
-      productQuantity: totalQuantity,
-      orderNumber: order.orderNumber ?? '',
-      orderDate: formatDate(order.orderDate),
-      channelName: order.channel?.name ?? '',
-      trackingNumber: '',
-      barcode: '',
-    }
-
-    const row: Record<string, string | number> = {}
-    for (const col of formatConfig) {
-      if (col.field) {
-        row[col.column] = fieldValues[col.field] ?? ''
-      } else if (col.defaultValue) {
-        row[col.column] = col.defaultValue
-      } else {
-        row[col.column] = ''
-      }
-    }
-    rows.push(row)
-  }
-
-  // 워크시트 생성
   const wsData: (string | number)[][] = []
 
-  // 헤더 행
-  const headerRow: (string | number)[] = []
-  for (const col of formatConfig) {
-    headerRow.push(col.label || '')
-  }
-  wsData.push(headerRow)
-
+  // 헤더
+  wsData.push(formatConfig.map((col) => col.label || ''))
   // 데이터 행
   for (const row of rows) {
-    const dataRow: (string | number)[] = []
-    for (const col of formatConfig) {
-      dataRow.push(row[col.column] ?? '')
-    }
-    wsData.push(dataRow)
+    wsData.push(formatConfig.map((col) => row[col.column] ?? ''))
   }
 
   const ws = XLSX.utils.aoa_to_sheet(wsData)
@@ -110,4 +110,87 @@ function formatDate(date: Date): string {
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
+}
+
+/**
+ * splitMode에 따라 주문을 행 단위로 펼친 최종 rows를 반환한다.
+ * PII는 복호화되어 포함됨 (호출부에서 권한 확인 선행 필요).
+ */
+function buildRowsInternal(
+  orders: OrderWithItems[],
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' }
+): Record<string, string | number>[] {
+  const splitMode = opts.splitMode ?? 'order'
+  const rows: Record<string, string | number>[] = []
+
+  function renderRow(fieldValues: Record<string, string | number>) {
+    const row: Record<string, string | number> = {}
+    for (const col of formatConfig) {
+      if (col.field) {
+        row[col.column] = fieldValues[col.field] ?? ''
+      } else if (col.defaultValue) {
+        row[col.column] = col.defaultValue
+      } else {
+        row[col.column] = ''
+      }
+    }
+    rows.push(row)
+  }
+
+  for (const order of orders) {
+    const recipientName = decryptPii(order.recipientNameEnc, order.recipientNameIv)
+    const phone = decryptPii(order.phoneEnc, order.phoneIv)
+    const address = decryptPii(order.addressEnc, order.addressIv)
+
+    const baseFields: Record<string, string | number> = {
+      recipientName,
+      phone,
+      postalCode: order.postalCode ?? '',
+      fullAddress: address,
+      deliveryMessage: order.deliveryMessage ?? '',
+      orderNumber: order.orderNumber ?? '',
+      orderDate: formatDate(order.orderDate),
+      channelName: order.channel?.name ?? '',
+      trackingNumber: '',
+    }
+
+    if (splitMode === 'option') {
+      if (order.items.length === 0) {
+        renderRow({ ...baseFields, productName: '', productQuantity: 0, barcode: '' })
+        continue
+      }
+      for (const item of order.items) {
+        const productName = resolveItemField(item, 'productName') ?? item.name
+        const barcode = resolveItemField(item, 'barcode') ?? ''
+        renderRow({
+          ...baseFields,
+          productName,
+          productQuantity: item.quantity,
+          barcode,
+        })
+      }
+    } else {
+      const productNames = order.items
+        .map((i) => {
+          const n = resolveItemField(i, 'productName') ?? i.name
+          return `${n}(${i.quantity})`
+        })
+        .join(', ')
+      const totalQuantity = order.items.reduce((sum, i) => sum + i.quantity, 0)
+      const barcodes = order.items
+        .map((i) => resolveItemField(i, 'barcode'))
+        .filter((v): v is string => !!v)
+        .join(', ')
+
+      renderRow({
+        ...baseFields,
+        productName: productNames,
+        productQuantity: totalQuantity,
+        barcode: barcodes,
+      })
+    }
+  }
+
+  return rows
 }

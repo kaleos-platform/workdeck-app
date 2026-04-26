@@ -6,7 +6,8 @@ export async function GET() {
   const resolved = await resolveDeckContext('inventory-mgmt')
   if ('error' in resolved) return resolved.error
 
-  const groups = await prisma.invChannelGroup.findMany({
+  // Phase 3: 공용 ChannelGroup 사용 (InvChannelGroup 제거)
+  const groups = await prisma.channelGroup.findMany({
     where: { spaceId: resolved.space.id },
     orderBy: { createdAt: 'asc' },
     include: {
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
     return errorResponse('그룹 이름이 필요합니다', 400)
   }
 
-  const duplicate = await prisma.invChannelGroup.findFirst({
+  const duplicate = await prisma.channelGroup.findFirst({
     where: { spaceId: resolved.space.id, name },
     select: { id: true },
   })
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     return errorResponse('이미 존재하는 그룹 이름입니다', 409)
   }
 
-  const group = await prisma.invChannelGroup.create({
+  const group = await prisma.channelGroup.create({
     data: { spaceId: resolved.space.id, name },
   })
 

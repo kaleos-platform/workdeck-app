@@ -12,7 +12,7 @@ export async function pushToInventoryDeck(
   spaceId: string,
   dateFrom: Date,
   dateTo: Date,
-  locationId: string,
+  locationId: string
 ): Promise<IntegrationResult> {
   // 1. Verify inventory deck is active
   const invDeck = await prisma.deckInstance.findUnique({
@@ -29,7 +29,7 @@ export async function pushToInventoryDeck(
     },
     include: {
       items: true,
-      channel: { select: { id: true, name: true, type: true } },
+      channel: { select: { id: true, name: true, kind: true } },
       shippingMethod: { select: { name: true } },
       batch: { select: { completedAt: true, status: true } },
     },
@@ -49,18 +49,11 @@ export async function pushToInventoryDeck(
       continue
     }
 
-    // Determine movement type from channel type
-    const movementType = order.channel?.type === 'TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
+    // Phase 3: kind 기준으로 이동 유형 결정 (DelSalesChannel.type 제거)
+    const movementType = order.channel?.kind === 'INTERNAL_TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
 
-    // Find matching InvSalesChannel by name
-    let invChannelId: string | undefined
-    if (order.channel) {
-      const invChannel = await prisma.invSalesChannel.findFirst({
-        where: { spaceId, name: order.channel.name },
-        select: { id: true },
-      })
-      invChannelId = invChannel?.id
-    }
+    // 공용 Channel을 그대로 사용 (Phase 3: InvSalesChannel 제거)
+    const invChannelId: string | undefined = order.channel?.id
 
     for (const item of order.items) {
       // Find matching product option by name
@@ -84,7 +77,7 @@ export async function pushToInventoryDeck(
           new Date().toISOString().split('T')[0],
         orderDate: order.orderDate.toISOString().split('T')[0],
         channelId: invChannelId,
-        reason: `배송관리 연동 (${order.shippingMethod.name})`,
+        reason: `배송관리 연동 (${order.shippingMethod?.name ?? '미지정'})`,
       }
 
       try {

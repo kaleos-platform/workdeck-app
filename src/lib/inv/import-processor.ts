@@ -63,7 +63,8 @@ async function buildLocationMap(spaceId: string): Promise<Map<string, string>> {
 }
 
 async function buildChannelMap(spaceId: string): Promise<Map<string, string>> {
-  const channels = await prisma.invSalesChannel.findMany({
+  // Phase 3: 공용 Channel 테이블 사용 (InvSalesChannel 제거)
+  const channels = await prisma.channel.findMany({
     where: { spaceId, isActive: true },
     select: { id: true, name: true },
   })
@@ -99,7 +100,7 @@ function resolveExistingOptionId(row: ParsedImportRow, ctx: ResolverContext): st
   }
   if (id === '__AMBIGUOUS__') {
     throw new Error(
-      `동일 상품/옵션명을 가진 항목이 여러 개 존재합니다: "${row.productName} / ${row.optionName}"`,
+      `동일 상품/옵션명을 가진 항목이 여러 개 존재합니다: "${row.productName} / ${row.optionName}"`
     )
   }
   return id
@@ -171,7 +172,7 @@ export async function processImport(
   spaceId: string,
   fileName: string,
   rows: ParsedImportRow[],
-  parseErrors: ImportParseError[],
+  parseErrors: ImportParseError[]
 ): Promise<ProcessImportResult> {
   const fileType = /\.csv$/i.test(fileName) ? 'CSV' : 'EXCEL'
 
