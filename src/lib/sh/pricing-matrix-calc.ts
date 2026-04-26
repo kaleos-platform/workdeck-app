@@ -5,7 +5,9 @@ import { classifyTier, type Tier, type TierThresholds } from './margin-tier'
 
 // ─── 상수 ──────────────────────────────────────────────────────────────────────
 
-export const DISCOUNT_COLUMNS = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5] as const
+export const DISCOUNT_COLUMNS = [
+  0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8,
+] as const
 export type DiscountRate = (typeof DISCOUNT_COLUMNS)[number]
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
@@ -80,9 +82,9 @@ export type MatrixCell = {
   tier: Tier // 마진 등급
 }
 
-/** 옵션×채널 매트릭스 (11컬럼) */
+/** 옵션×채널 매트릭스 (17컬럼, 0%~80%) */
 export type Matrix = {
-  cells: MatrixCell[] // DISCOUNT_COLUMNS 순서, 길이 11
+  cells: MatrixCell[] // DISCOUNT_COLUMNS 순서, 길이 17
   /** 최소 허용 마진 유지 가능한 최대 할인율 (없으면 null) */
   maxDiscountForMinMargin: number | null
   /** 'good' 등급 달성을 위한 추천 소매가 역산 (역산 불가시 null) */

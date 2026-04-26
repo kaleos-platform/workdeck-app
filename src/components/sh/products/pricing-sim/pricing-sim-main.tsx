@@ -8,6 +8,7 @@ import {
   ChevronUp,
   GitCompare,
   Save,
+  Settings2,
   Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -31,7 +32,7 @@ import { Separator } from '@/components/ui/separator'
 import { PricingOptionPickerDialog, type PricingOption } from './pricing-option-picker-dialog'
 import { PricingManualEntryDialog, type ManualEntryData } from './pricing-manual-entry-dialog'
 import { PricingComparisonDialog } from './pricing-comparison-dialog'
-import { PricingDefaultsCard } from './pricing-defaults-card'
+import { PricingDefaultsDialog } from './pricing-defaults-dialog'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
 import { PricingChannelList, type ScenarioChannel, type DbChannel } from './pricing-channel-list'
 import { PricingMatrix } from './pricing-matrix'
@@ -271,6 +272,7 @@ export function PricingSimMain() {
   // ── UI ────────────────────────────────────────────────────────────────────
   const [pickerOpen, setPickerOpen] = useState(false)
   const [manualEntryOpen, setManualEntryOpen] = useState(false)
+  const [defaultsOpen, setDefaultsOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -598,7 +600,8 @@ export function PricingSimMain() {
           costPrice: r.costPrice,
           salePrice: r.retailPrice,
           unitsPerSet: r.unitsPerSet,
-          packagingCost: r.packagingCost,
+          // 포장비는 글로벌 기본값 사용 (옵션별 편집 UI 제거됨)
+          packagingCost: defaults.defaultPackagingCost,
           // 채널별 수수료는 매트릭스에서 채널 설정으로 계산하므로 항목 레벨은 0으로 전송
           discountRate: 0,
           channelFeePct: 0,
@@ -726,6 +729,11 @@ export function PricingSimMain() {
 
         <div className="flex-1" />
 
+        <Button variant="outline" size="sm" onClick={() => setDefaultsOpen(true)}>
+          <Settings2 className="mr-1.5 h-4 w-4" />
+          기본값
+        </Button>
+
         {scenarios.length >= 2 && (
           <Button variant="outline" size="sm" onClick={() => setComparisonOpen(true)}>
             <GitCompare className="mr-1.5 h-4 w-4" />
@@ -841,12 +849,8 @@ export function PricingSimMain() {
         </CardContent>
       </Card>
 
-      {/* ── 기본값 · 프로모션 · 채널 — 가로 배치 (sticky 제거: 채널·프로모션 compact 모드 미구현) ── */}
+      {/* ── 프로모션 · 채널 — 가로 배치 ── */}
       <div className="flex flex-wrap items-start gap-2">
-        {/* 기본값 — 펼침/접힘 카드를 인라인 토글로 */}
-        <div className="min-w-[260px] flex-1">
-          <PricingDefaultsCard initialDefaults={defaults} onSaved={setDefaults} />
-        </div>
         {/* 프로모션 */}
         <div className="min-w-[200px] flex-1">
           <PricingPromotionCard value={promotion} onChange={setPromotion} />
@@ -893,21 +897,24 @@ export function PricingSimMain() {
 
         {rows.map((row) => (
           <Card key={row.rowId}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-2">
+                {/* 한 줄: 상품명 · 옵션명 · 브랜드 배지 */}
+                <div className="flex min-w-0 flex-1 items-center gap-2">
                   {row.optionId == null ? (
                     // 수동 입력 행
                     <>
-                      <p className="truncate font-medium">{row.manualName}</p>
+                      <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                        {row.manualName}
+                      </p>
                       {row.manualBrandName && (
-                        <Badge variant="secondary" className="mt-1 text-[10px]">
+                        <Badge variant="secondary" className="shrink-0 text-[10px]">
                           {row.manualBrandName}
                         </Badge>
                       )}
                       <Badge
                         variant="outline"
-                        className="mt-1 px-1.5 py-0 text-[10px] text-muted-foreground"
+                        className="shrink-0 px-1.5 py-0 text-[10px] text-muted-foreground"
                       >
                         수동 입력
                       </Badge>
@@ -915,10 +922,14 @@ export function PricingSimMain() {
                   ) : (
                     // DB 옵션 행
                     <>
-                      <p className="truncate font-medium">{row.productName}</p>
-                      <p className="truncate text-xs text-muted-foreground">{row.optionName}</p>
+                      <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                        {row.productName}
+                      </p>
+                      {row.optionName && (
+                        <p className="shrink-0 text-xs text-muted-foreground">{row.optionName}</p>
+                      )}
                       {row.brandName && (
-                        <Badge variant="secondary" className="mt-1 text-[10px]">
+                        <Badge variant="secondary" className="shrink-0 text-[10px]">
                           {row.brandName}
                         </Badge>
                       )}
@@ -936,7 +947,7 @@ export function PricingSimMain() {
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-2">
               {/* 이 옵션 행의 공통 matrixOption — 아래 어드바이저·매트릭스·차트에서 공유 */}
               {(() => {
                 const rowMatrixOption: MatrixOption = {
@@ -945,7 +956,8 @@ export function PricingSimMain() {
                   retailPrice: row.retailPrice,
                   costPrice: row.costPrice,
                   unitsPerSet: row.unitsPerSet,
-                  packagingCost: row.packagingCost,
+                  // 포장비는 글로벌 기본값에서 읽음 (옵션별 편집 UI 없음)
+                  packagingCost: defaults.defaultPackagingCost,
                 }
                 const advisorChannels: AdvisorChannelEntry[] = scenarioChannels.map(
                   (sc, chIdx) => ({
@@ -967,8 +979,8 @@ export function PricingSimMain() {
 
                 return (
                   <>
-                    {/* 옵션 입력 필드 */}
-                    <div className="flex flex-wrap gap-4">
+                    {/* 옵션 입력 필드 — 3컬럼 (포장비는 기본값에서 글로벌 적용) */}
+                    <div className="flex flex-wrap gap-3">
                       <div className="space-y-1">
                         <Label className="text-xs">공급가 (원)</Label>
                         <DebouncedNumInput
@@ -1013,14 +1025,6 @@ export function PricingSimMain() {
                           }
                           step={1}
                           min={1}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">포장비 (원)</Label>
-                        <DebouncedNumInput
-                          value={row.packagingCost}
-                          onCommit={(v) => updateRow(row.rowId, { packagingCost: v })}
-                          suffix="원"
                         />
                       </div>
                     </div>
@@ -1187,6 +1191,17 @@ export function PricingSimMain() {
         open={manualEntryOpen}
         onOpenChange={setManualEntryOpen}
         onAdd={handleAddManual}
+      />
+
+      {/* ── 기본값 설정 다이얼로그 ── */}
+      <PricingDefaultsDialog
+        open={defaultsOpen}
+        onOpenChange={setDefaultsOpen}
+        initialDefaults={defaults}
+        onSaved={(saved) => {
+          setDefaults(saved)
+          setFullSettings((prev) => ({ ...prev, ...saved }))
+        }}
       />
     </div>
   )
