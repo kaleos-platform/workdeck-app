@@ -2307,7 +2307,6 @@ export type InvProductOptionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   sku?: boolean
   costPrice?: boolean
   retailPrice?: boolean
-  msrp?: boolean
   sizeLabel?: boolean
   setSizeLabel?: boolean
   attributeValues?: boolean
@@ -2335,7 +2334,6 @@ export type InvProductOptionSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   sku?: boolean
   costPrice?: boolean
   retailPrice?: boolean
-  msrp?: boolean
   sizeLabel?: boolean
   setSizeLabel?: boolean
   attributeValues?: boolean
@@ -2351,7 +2349,6 @@ export type InvProductOptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   sku?: boolean
   costPrice?: boolean
   retailPrice?: boolean
-  msrp?: boolean
   sizeLabel?: boolean
   setSizeLabel?: boolean
   attributeValues?: boolean
@@ -2367,7 +2364,6 @@ export type InvProductOptionSelectScalar = {
   sku?: boolean
   costPrice?: boolean
   retailPrice?: boolean
-  msrp?: boolean
   sizeLabel?: boolean
   setSizeLabel?: boolean
   attributeValues?: boolean
@@ -2375,7 +2371,7 @@ export type InvProductOptionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InvProductOptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "name" | "sku" | "costPrice" | "retailPrice" | "msrp" | "sizeLabel" | "setSizeLabel" | "attributeValues" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductOption"]>
+export type InvProductOptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "name" | "sku" | "costPrice" | "retailPrice" | "sizeLabel" | "setSizeLabel" | "attributeValues" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductOption"]>
 export type InvProductOptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
   movements?: boolean | Prisma.InvProductOption$movementsArgs<ExtArgs>

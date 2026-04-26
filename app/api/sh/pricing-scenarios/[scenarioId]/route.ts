@@ -51,11 +51,11 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
               sku: true,
               costPrice: true,
               retailPrice: true,
-              msrp: true,
               product: {
                 select: {
                   id: true,
                   name: true,
+                  msrp: true,
                   brand: { select: { id: true, name: true } },
                 },
               },
@@ -101,12 +101,13 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
       netProfit: d(it.netProfit),
       margin: d(it.margin),
       // option은 optionId が null인 경우 null
+      // msrp는 InvProduct에 있음 — 클라이언트 편의를 위해 option 레벨에 끌어올림
       option: it.option
         ? {
             ...it.option,
             costPrice: it.option.costPrice != null ? d(it.option.costPrice) : null,
             retailPrice: it.option.retailPrice != null ? d(it.option.retailPrice) : null,
-            msrp: it.option.msrp != null ? d(it.option.msrp as Decimal) : null,
+            msrp: it.option.product.msrp != null ? d(it.option.product.msrp) : null,
           }
         : null,
     })),
