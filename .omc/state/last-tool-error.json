@@ -1,7 +1,7 @@
 {
-  "tool_name": "Read",
-  "tool_input_preview": "{\"file_path\":\"/Users/kaleos/projects/workdeck-app/middleware.ts\"}",
-  "error": "File does not exist. Note: your current working directory is /Users/kaleos/projects/workdeck-app.",
-  "timestamp": "2026-04-26T05:06:59.827Z",
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"npm run lint 2>&1\",\"timeout\":60000,\"description\":\"Run ESLint to check for errors\"}",
+  "error": "Exit code 1\n\n> coupang-ad-manager@0.1.0 lint\n> eslint .\n\n\n/Users/kaleos/projects/workdeck-app/agent/src/slack-handler.ts\n  12:3  warning  'formatText' is defined but never used  @typescript-eslint/no-unused-vars\n\n/Users/kaleos/projects/workdeck-app/app/api/analysis/reports/pending/route.ts\n  5:29  warning  'errorResponse' is defined but never used  @typescript-eslint/no-unused-vars\n\n/Users/kaleos/projects/workdeck-app/app/api/analysis/schedule/active/route.ts\n  5:29  warning  'errorResponse' is ...",
+  "timestamp": "2026-04-26T09:17:32.362Z",
   "retry_count": 1
 }

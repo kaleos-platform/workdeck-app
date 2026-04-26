@@ -26,10 +26,19 @@
       "status": "completed",
       "completed_at": "2026-04-26T04:56:06.186Z",
       "duration_ms": 6478982
+    },
+    {
+      "agent_id": "ae4cd486f838ce19e",
+      "agent_type": "cyrano-frontend",
+      "started_at": "2026-04-26T09:13:53.547Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-26T09:17:50.059Z",
+      "duration_ms": 236512
     }
   ],
-  "total_spawned": 3,
-  "total_completed": 3,
+  "total_spawned": 4,
+  "total_completed": 4,
   "total_failed": 0,
-  "last_updated": "2026-04-26T04:56:06.287Z"
+  "last_updated": "2026-04-26T09:17:50.161Z"
 }

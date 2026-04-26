@@ -48,7 +48,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "grep -rn \"deckKey\\s*=\\s*'seller-hub'\\|deckKey:.*'seller-hub'\\|isSellerHubDeck\\|variant.*seller-hub\" /Users/kaleos/projects/workdeck-app/src /Users/kaleos/projects/workdeck-app/app 2>/dev/null | grep -v node_modules | grep -v generated | head -10; echo \"---\"; npm run build 2>&1 | grep -E \"✓ Compiled|error|Failed\" | head -5",
+    "buildCommand": "npm run build 2>&1 | grep -E \"✓ Compiled|error|Failed|Type error\" | head -5",
     "testCommand": "npm test",
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -265,15 +265,15 @@
       "type": "file"
     },
     {
-      "path": "app/api/sh/settings/route.ts",
-      "accessCount": 14,
-      "lastAccessed": 1777131758905,
+      "path": "src/components/sh/settings/pricing-settings-form.tsx",
+      "accessCount": 15,
+      "lastAccessed": 1777194837608,
       "type": "file"
     },
     {
-      "path": "src/components/sh/settings/pricing-settings-form.tsx",
-      "accessCount": 13,
-      "lastAccessed": 1777132211961,
+      "path": "app/api/sh/settings/route.ts",
+      "accessCount": 14,
+      "lastAccessed": 1777131758905,
       "type": "file"
     },
     {

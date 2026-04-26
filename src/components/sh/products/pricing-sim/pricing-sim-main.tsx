@@ -32,7 +32,7 @@ import { Separator } from '@/components/ui/separator'
 import { PricingOptionPickerDialog, type PricingOption } from './pricing-option-picker-dialog'
 import { PricingManualEntryDialog, type ManualEntryData } from './pricing-manual-entry-dialog'
 import { PricingComparisonDialog } from './pricing-comparison-dialog'
-import { PricingDefaultsDialog } from './pricing-defaults-dialog'
+import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
 import { PricingChannelList, type ScenarioChannel, type DbChannel } from './pricing-channel-list'
 import { PricingMatrix } from './pricing-matrix'
@@ -1201,10 +1201,22 @@ export function PricingSimMain() {
       <PricingDefaultsDialog
         open={defaultsOpen}
         onOpenChange={setDefaultsOpen}
-        initialDefaults={defaults}
+        initialSettings={fullSettings as PricingFullSettings}
         onSaved={(saved) => {
-          setDefaults(saved)
-          setFullSettings((prev) => ({ ...prev, ...saved }))
+          // 3-field defaults (used for buildRowFromOption)
+          setDefaults({
+            defaultOperatingCostPct: saved.defaultOperatingCostPct,
+            defaultAdCostPct: saved.defaultAdCostPct,
+            defaultPackagingCost: saved.defaultPackagingCost,
+          })
+          // 전체 설정 (매트릭스 임계값 등)
+          setFullSettings((prev) => ({
+            ...prev,
+            ...saved,
+            // FullSettings의 반품 필드명과 PricingFullSettings 필드명 매핑
+            expectedReturnRate: saved.defaultReturnRate,
+            returnHandlingCost: saved.defaultReturnShipping,
+          }))
         }}
       />
     </div>
