@@ -36,7 +36,11 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
     : isSellerHubDeck
       ? SELLER_HUB_BASE_PATH
       : '/my-deck'
-  const brandName = isCoupangDeck ? '쿠팡 광고 관리자' : isSellerHubDeck ? '셀러 허브' : 'Workdeck'
+  const brandName = isCoupangDeck
+    ? '쿠팡 광고 관리자'
+    : isSellerHubDeck
+      ? '브랜드 운영'
+      : 'Workdeck'
   const BrandIcon = isCoupangDeck ? BarChart2 : isSellerHubDeck ? ShoppingBag : LayoutGrid
 
   return (
