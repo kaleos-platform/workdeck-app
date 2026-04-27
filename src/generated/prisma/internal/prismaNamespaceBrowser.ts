@@ -277,6 +277,7 @@ export const SpaceScalarFieldEnum = {
   id: 'id',
   name: 'name',
   type: 'type',
+  onboardingDismissedAt: 'onboardingDismissedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
