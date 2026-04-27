@@ -178,3 +178,170 @@ export const ProductionCostCategory = {
 } as const
 
 export type ProductionCostCategory = (typeof ProductionCostCategory)[keyof typeof ProductionCostCategory]
+
+
+export const AiGenerationStatus = {
+  PENDING: 'PENDING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type AiGenerationStatus = (typeof AiGenerationStatus)[keyof typeof AiGenerationStatus]
+
+
+export const TemplateKind = {
+  BLOG: 'BLOG',
+  SOCIAL: 'SOCIAL',
+  CARDNEWS: 'CARDNEWS'
+} as const
+
+export type TemplateKind = (typeof TemplateKind)[keyof typeof TemplateKind]
+
+
+export const SalesContentPlatform = {
+  BLOG_NAVER: 'BLOG_NAVER',
+  BLOG_TISTORY: 'BLOG_TISTORY',
+  BLOG_WORDPRESS: 'BLOG_WORDPRESS',
+  THREADS: 'THREADS',
+  X: 'X',
+  LINKEDIN: 'LINKEDIN',
+  FACEBOOK: 'FACEBOOK',
+  INSTAGRAM: 'INSTAGRAM',
+  YOUTUBE_SHORTS: 'YOUTUBE_SHORTS',
+  OTHER: 'OTHER'
+} as const
+
+export type SalesContentPlatform = (typeof SalesContentPlatform)[keyof typeof SalesContentPlatform]
+
+
+export const SalesContentChannelKind = {
+  BLOG: 'BLOG',
+  SOCIAL: 'SOCIAL'
+} as const
+
+export type SalesContentChannelKind = (typeof SalesContentChannelKind)[keyof typeof SalesContentChannelKind]
+
+
+export const PublisherMode = {
+  API: 'API',
+  BROWSER: 'BROWSER',
+  MANUAL: 'MANUAL'
+} as const
+
+export type PublisherMode = (typeof PublisherMode)[keyof typeof PublisherMode]
+
+
+export const CollectorMode = {
+  API: 'API',
+  BROWSER: 'BROWSER',
+  MANUAL: 'MANUAL',
+  NONE: 'NONE'
+} as const
+
+export type CollectorMode = (typeof CollectorMode)[keyof typeof CollectorMode]
+
+
+export const IdeaGeneratedBy = {
+  USER: 'USER',
+  AI: 'AI'
+} as const
+
+export type IdeaGeneratedBy = (typeof IdeaGeneratedBy)[keyof typeof IdeaGeneratedBy]
+
+
+export const ContentStatus = {
+  DRAFT: 'DRAFT',
+  IN_REVIEW: 'IN_REVIEW',
+  APPROVED: 'APPROVED',
+  SCHEDULED: 'SCHEDULED',
+  PUBLISHED: 'PUBLISHED',
+  ANALYZED: 'ANALYZED'
+} as const
+
+export type ContentStatus = (typeof ContentStatus)[keyof typeof ContentStatus]
+
+
+export const ContentAssetKind = {
+  IMAGE: 'IMAGE',
+  LINK: 'LINK'
+} as const
+
+export type ContentAssetKind = (typeof ContentAssetKind)[keyof typeof ContentAssetKind]
+
+
+export const DeploymentStatus = {
+  SCHEDULED: 'SCHEDULED',
+  PUBLISHING: 'PUBLISHING',
+  PUBLISHED: 'PUBLISHED',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED'
+} as const
+
+export type DeploymentStatus = (typeof DeploymentStatus)[keyof typeof DeploymentStatus]
+
+
+export const ChannelCredentialKind = {
+  COOKIE: 'COOKIE',
+  OAUTH: 'OAUTH',
+  API_KEY: 'API_KEY'
+} as const
+
+export type ChannelCredentialKind = (typeof ChannelCredentialKind)[keyof typeof ChannelCredentialKind]
+
+
+export const SalesContentJobKind = {
+  PUBLISH: 'PUBLISH',
+  COLLECT_METRIC: 'COLLECT_METRIC',
+  INSIGHT_SWEEP: 'INSIGHT_SWEEP'
+} as const
+
+export type SalesContentJobKind = (typeof SalesContentJobKind)[keyof typeof SalesContentJobKind]
+
+
+export const SalesContentJobStatus = {
+  PENDING: 'PENDING',
+  CLAIMED: 'CLAIMED',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type SalesContentJobStatus = (typeof SalesContentJobStatus)[keyof typeof SalesContentJobStatus]
+
+
+export const MetricSource = {
+  MANUAL: 'MANUAL',
+  API: 'API',
+  BROWSER: 'BROWSER',
+  INTERNAL: 'INTERNAL'
+} as const
+
+export type MetricSource = (typeof MetricSource)[keyof typeof MetricSource]
+
+
+export const RuleSource = {
+  USER: 'USER',
+  AI: 'AI'
+} as const
+
+export type RuleSource = (typeof RuleSource)[keyof typeof RuleSource]
+
+
+export const RuleStatus = {
+  PROPOSED: 'PROPOSED',
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type RuleStatus = (typeof RuleStatus)[keyof typeof RuleStatus]
+
+
+export const RuleScope = {
+  WORKSPACE: 'WORKSPACE',
+  PRODUCT: 'PRODUCT',
+  PERSONA: 'PERSONA',
+  CHANNEL: 'CHANNEL',
+  COMBINATION: 'COMBINATION'
+} as const
+
+export type RuleScope = (typeof RuleScope)[keyof typeof RuleScope]

@@ -10,12 +10,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Moon, Sun, LogOut, LayoutGrid, BarChart2, ShoppingBag } from 'lucide-react'
+import { Moon, Sun, LogOut, LayoutGrid, BarChart2, ShoppingBag, Sparkles } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useAuth } from '@/hooks/use-auth'
-import { COUPANG_ADS_BASE_PATH, SELLER_HUB_BASE_PATH } from '@/lib/deck-routes'
+import {
+  COUPANG_ADS_BASE_PATH,
+  SELLER_HUB_BASE_PATH,
+  SALES_CONTENT_BASE_PATH,
+} from '@/lib/deck-routes'
 
-type HeaderVariant = 'workdeck' | 'coupang-ads' | 'seller-hub'
+type HeaderVariant = 'workdeck' | 'coupang-ads' | 'seller-hub' | 'sales-content'
 
 type HeaderProps = {
   variant?: HeaderVariant
@@ -30,18 +34,29 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
   const initials = user.email?.charAt(0).toUpperCase() || '?'
   const isCoupangDeck = variant === 'coupang-ads'
   const isSellerHubDeck = variant === 'seller-hub'
-  const isDeckVariant = isCoupangDeck || isSellerHubDeck
+  const isSalesContentDeck = variant === 'sales-content'
+  const isDeckVariant = isCoupangDeck || isSellerHubDeck || isSalesContentDeck
   const brandHref = isCoupangDeck
     ? COUPANG_ADS_BASE_PATH
     : isSellerHubDeck
       ? SELLER_HUB_BASE_PATH
-      : '/my-deck'
+      : isSalesContentDeck
+        ? SALES_CONTENT_BASE_PATH
+        : '/my-deck'
   const brandName = isCoupangDeck
     ? '쿠팡 광고 관리자'
     : isSellerHubDeck
       ? '브랜드 운영'
-      : 'Workdeck'
-  const BrandIcon = isCoupangDeck ? BarChart2 : isSellerHubDeck ? ShoppingBag : LayoutGrid
+      : isSalesContentDeck
+        ? '세일즈 콘텐츠'
+        : 'Workdeck'
+  const BrandIcon = isCoupangDeck
+    ? BarChart2
+    : isSellerHubDeck
+      ? ShoppingBag
+      : isSalesContentDeck
+        ? Sparkles
+        : LayoutGrid
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -57,7 +72,9 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
                 ? 'bg-gradient-to-br from-orange-500 to-red-600'
                 : isSellerHubDeck
                   ? 'bg-gradient-to-br from-violet-500 to-purple-700'
-                  : 'bg-gradient-to-br from-blue-600 to-cyan-500'
+                  : isSalesContentDeck
+                    ? 'bg-gradient-to-br from-fuchsia-500 to-indigo-600'
+                    : 'bg-gradient-to-br from-blue-600 to-cyan-500'
             }`}
           >
             <BrandIcon className="h-5 w-5 text-white" />

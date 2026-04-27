@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { LoginForm } from '@/components/auth/login-form'
@@ -8,6 +9,14 @@ const DECK_COPY: Record<string, { title: string; description: string }> = {
   'coupang-ads': {
     title: 'Workdeck 로그인',
     description: '로그인 후 쿠팡 광고 관리자 Deck로 바로 이동합니다',
+  },
+  'seller-hub': {
+    title: 'Workdeck 로그인',
+    description: '로그인 후 셀러 허브 Deck로 바로 이동합니다',
+  },
+  'sales-content': {
+    title: 'Workdeck 로그인',
+    description: '로그인 후 세일즈 콘텐츠 Deck로 바로 이동합니다',
   },
 }
 
@@ -19,7 +28,19 @@ export default async function DeckLoginPage({
   searchParams: Promise<{ verified?: string; redirectTo?: string }>
 }) {
   const { deckKey } = await params
-  const copy = DECK_COPY[deckKey]
+  const copy =
+    DECK_COPY[deckKey] ??
+    (await (async () => {
+      const deck = await prisma.deckApp.findUnique({
+        where: { id: deckKey },
+        select: { name: true, isActive: true },
+      })
+      if (!deck || !deck.isActive) return null
+      return {
+        title: 'Workdeck 로그인',
+        description: `로그인 후 ${deck.name} Deck로 바로 이동합니다`,
+      }
+    })())
   if (!copy) notFound()
 
   const { verified, redirectTo } = await searchParams

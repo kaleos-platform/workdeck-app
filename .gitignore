@@ -36,6 +36,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.local.example
 
 # vercel
 .vercel
@@ -76,3 +77,10 @@ docs/source_ref/
 prisma/dev.db
 # Prisma 로컬 스크립트 (QA/디버그용, 커밋 안 함)
 prisma/scripts/
+
+.omc/
+.claude/scheduled_tasks.lock
+scripts/sc/_debug/
+
+# code review run artifacts (compound-engineering)
+.context/

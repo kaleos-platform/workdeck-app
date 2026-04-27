@@ -17,6 +17,10 @@ import {
   Package,
   Truck,
   Boxes,
+  FileText,
+  Lightbulb,
+  Send,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
@@ -48,6 +52,18 @@ import {
   SELLER_HUB_SHIPPING_METHODS_PATH,
   SELLER_HUB_SHIPPING_INTEGRATION_PATH,
   SELLER_HUB_CHANNELS_PATH,
+  SALES_CONTENT_BASE_PATH,
+  SALES_CONTENT_HOME_PATH,
+  SALES_CONTENT_PRODUCTS_PATH,
+  SALES_CONTENT_PERSONAS_PATH,
+  SALES_CONTENT_BRAND_PROFILE_PATH,
+  SALES_CONTENT_IDEATION_PATH,
+  SALES_CONTENT_CONTENTS_PATH,
+  SALES_CONTENT_TEMPLATES_PATH,
+  SALES_CONTENT_CHANNELS_PATH,
+  SALES_CONTENT_DEPLOYMENTS_PATH,
+  SALES_CONTENT_ANALYTICS_PATH,
+  SALES_CONTENT_RULES_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 
@@ -59,7 +75,7 @@ type Campaign = {
   adTypes: string[]
 }
 
-type SidebarVariant = 'workdeck' | 'coupang-ads' | 'seller-hub'
+type SidebarVariant = 'workdeck' | 'coupang-ads' | 'seller-hub' | 'sales-content'
 
 type SidebarProps = {
   workspaceName: string
@@ -72,6 +88,7 @@ const NVB_AD_TYPE = '신규 구매 고객 확보'
 const DECK_ENTRY: Record<string, string> = {
   'coupang-ads': COUPANG_ADS_BASE_PATH,
   'seller-hub': SELLER_HUB_BASE_PATH,
+  'sales-content': SALES_CONTENT_BASE_PATH,
 }
 
 // ─── Seller Hub 메뉴 데이터 ───────────────────────────────────────────────────
@@ -102,6 +119,29 @@ const SELLER_HUB_SHIPPING_ITEMS: SidebarItem[] = [
 const SELLER_HUB_SETTINGS_ITEMS: SidebarItem[] = [
   { label: '채널 관리', href: SELLER_HUB_CHANNELS_PATH },
   { label: '일반 설정', href: SELLER_HUB_SETTINGS_PATH },
+]
+
+// ─── Sales Content 메뉴 데이터 ────────────────────────────────────────────────
+const SALES_CONTENT_SETTINGS_ITEMS: SidebarItem[] = [
+  { label: '판매 상품', href: SALES_CONTENT_PRODUCTS_PATH },
+  { label: '타겟 페르소나', href: SALES_CONTENT_PERSONAS_PATH },
+  { label: '브랜드 프로필', href: SALES_CONTENT_BRAND_PROFILE_PATH },
+]
+
+const SALES_CONTENT_CREATE_ITEMS: SidebarItem[] = [
+  { label: '아이데이션', href: SALES_CONTENT_IDEATION_PATH },
+  { label: '콘텐츠', href: SALES_CONTENT_CONTENTS_PATH },
+  { label: '템플릿', href: SALES_CONTENT_TEMPLATES_PATH },
+]
+
+const SALES_CONTENT_DISTRIBUTE_ITEMS: SidebarItem[] = [
+  { label: '채널', href: SALES_CONTENT_CHANNELS_PATH },
+  { label: '배포 내역', href: SALES_CONTENT_DEPLOYMENTS_PATH },
+]
+
+const SALES_CONTENT_INSIGHTS_ITEMS: SidebarItem[] = [
+  { label: '성과', href: SALES_CONTENT_ANALYTICS_PATH },
+  { label: '개선 규칙', href: SALES_CONTENT_RULES_PATH },
 ]
 
 const COUPANG_MAIN_ROUTES = [
@@ -154,6 +194,7 @@ export function Sidebar({
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
   const isSellerHubSidebar = variant === 'seller-hub'
+  const isSalesContentSidebar = variant === 'sales-content'
   const isMyDeckMode = mode === 'my-deck'
 
   useEffect(() => {
@@ -290,6 +331,35 @@ export function Sidebar({
             <SidebarSection label="배송" icon={Truck} items={SELLER_HUB_SHIPPING_ITEMS} />
             {/* 설정 섹션 — 채널 관리 + 일반 설정 통합 */}
             <SidebarSection label="설정" icon={Settings} items={SELLER_HUB_SETTINGS_ITEMS} />
+          </div>
+        )}
+
+        {isSalesContentSidebar && (
+          <div className="space-y-2">
+            {/* 홈 */}
+            <Link
+              href={SALES_CONTENT_HOME_PATH}
+              className={cn(
+                'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                pathname === SALES_CONTENT_HOME_PATH ? 'bg-white/10 text-white' : 'text-zinc-400'
+              )}
+            >
+              <Home className="mr-3 h-5 w-5 flex-shrink-0" />
+              <span className="truncate">홈</span>
+            </Link>
+            {/* 섹션 그룹 */}
+            <SidebarSection
+              label="정보 세팅"
+              icon={FileText}
+              items={SALES_CONTENT_SETTINGS_ITEMS}
+            />
+            <SidebarSection label="제작" icon={Lightbulb} items={SALES_CONTENT_CREATE_ITEMS} />
+            <SidebarSection label="배포" icon={Send} items={SALES_CONTENT_DISTRIBUTE_ITEMS} />
+            <SidebarSection
+              label="성과·개선"
+              icon={Sparkles}
+              items={SALES_CONTENT_INSIGHTS_ITEMS}
+            />
           </div>
         )}
 
