@@ -18,6 +18,7 @@ export const SELLER_HUB_SETTINGS_PATH = `${SELLER_HUB_BASE_PATH}/settings`
 
 // 상품 섹션
 export const SELLER_HUB_PRODUCTS_LIST_PATH = `${SELLER_HUB_BASE_PATH}/products/list`
+export const SELLER_HUB_PRODUCT_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/new`
 export const SELLER_HUB_BRANDS_PATH = `${SELLER_HUB_BASE_PATH}/products/brands`
 export const SELLER_HUB_PRICING_SIM_PATH = `${SELLER_HUB_BASE_PATH}/products/pricing-sim`
 export const SELLER_HUB_LISTINGS_PATH = `${SELLER_HUB_BASE_PATH}/products/listings`

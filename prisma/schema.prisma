@@ -371,8 +371,12 @@ model Space {
   productionRuns          ProductionRun[]
   pricingScenarios        PricingScenario[]
 
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
+  // 온보딩 카드 닫힘 시각 (사용자가 명시적으로 X 클릭 시 기록)
+  onboardingDismissedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // ─── Sales Content Deck ───
   b2bProducts          B2BProduct[]
   personas             Persona[]

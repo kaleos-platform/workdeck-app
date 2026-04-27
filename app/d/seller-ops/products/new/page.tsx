@@ -50,6 +50,10 @@ export default function ProductNewPage() {
   const [brands, setBrands] = useState<Brand[]>([])
   const [categories, setCategories] = useState<Category[]>([])
 
+  // 브랜드 인라인 추가 토글 (movement-form.tsx 의 채널 인라인 추가 패턴과 동일)
+  const [creatingBrand, setCreatingBrand] = useState(false)
+  const [newBrandName, setNewBrandName] = useState('')
+
   // 옵션 속성 + 조합
   const [attributes, setAttributes] = useState<OptionAttribute[]>([])
   const [combinations, setCombinations] = useState<CombinationRow[]>([])
@@ -69,6 +73,32 @@ export default function ProductNewPage() {
       if (cats.length > 0) setGroupId(cats[0].id)
     })
   }, [])
+
+  async function handleCreateBrand() {
+    const trimmed = newBrandName.trim()
+    if (!trimmed) return
+    try {
+      const res = await fetch('/api/sh/brands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message ?? '브랜드 생성 실패')
+      const created = data.brand as Brand
+      setBrands((prev) =>
+        [...prev, { id: created.id, name: created.name }].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )
+      )
+      setBrandId(created.id)
+      setCreatingBrand(false)
+      setNewBrandName('')
+      toast.success(`브랜드 "${created.name}" 생성됨`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '브랜드 생성 실패')
+    }
+  }
 
   async function handleSave() {
     if (!name.trim()) {
@@ -247,22 +277,72 @@ export default function ProductNewPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>브랜드</Label>
-                  <Select
-                    value={brandId || '__none__'}
-                    onValueChange={(v) => setBrandId(v === '__none__' ? '' : v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="(없음)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">(없음)</SelectItem>
-                      {brands.map((b) => (
-                        <SelectItem key={b.id} value={b.id}>
-                          {b.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {!creatingBrand ? (
+                    <Select
+                      value={brandId || '__none__'}
+                      onValueChange={(v) => {
+                        if (v === '__new__') {
+                          setCreatingBrand(true)
+                          setNewBrandName('')
+                          return
+                        }
+                        setBrandId(v === '__none__' ? '' : v)
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="(없음)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">(없음)</SelectItem>
+                        {brands.map((b) => (
+                          <SelectItem key={b.id} value={b.id}>
+                            {b.name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="__new__">+ 새 브랜드 만들기</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        autoFocus
+                        value={newBrandName}
+                        onChange={(e) => setNewBrandName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            void handleCreateBrand()
+                          }
+                          if (e.key === 'Escape') {
+                            setCreatingBrand(false)
+                            setNewBrandName('')
+                          }
+                        }}
+                        placeholder="새 브랜드명"
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        onClick={handleCreateBrand}
+                        disabled={!newBrandName.trim()}
+                        aria-label="브랜드 저장"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          setCreatingBrand(false)
+                          setNewBrandName('')
+                        }}
+                        aria-label="취소"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
