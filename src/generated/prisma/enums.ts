@@ -92,6 +92,37 @@ export const ChannelKind = {
 export type ChannelKind = (typeof ChannelKind)[keyof typeof ChannelKind]
 
 
+export const ChannelType = {
+  OPEN_MARKET: 'OPEN_MARKET',
+  DEPT_STORE: 'DEPT_STORE',
+  SELF_MALL: 'SELF_MALL',
+  SOCIAL: 'SOCIAL',
+  WHOLESALE: 'WHOLESALE',
+  OTHER: 'OTHER'
+} as const
+
+export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
+
+
+export const PromotionType = {
+  NONE: 'NONE',
+  FLAT: 'FLAT',
+  PERCENT: 'PERCENT',
+  COUPON: 'COUPON',
+  MIN_PRICE: 'MIN_PRICE'
+} as const
+
+export type PromotionType = (typeof PromotionType)[keyof typeof PromotionType]
+
+
+export const ProductListingStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type ProductListingStatus = (typeof ProductListingStatus)[keyof typeof ProductListingStatus]
+
+
 export const InvMovementType = {
   INBOUND: 'INBOUND',
   OUTBOUND: 'OUTBOUND',
@@ -118,6 +149,35 @@ export const DelBatchStatus = {
 } as const
 
 export type DelBatchStatus = (typeof DelBatchStatus)[keyof typeof DelBatchStatus]
+
+
+export const ProductionCostMode = {
+  TOTAL: 'TOTAL',
+  BREAKDOWN: 'BREAKDOWN'
+} as const
+
+export type ProductionCostMode = (typeof ProductionCostMode)[keyof typeof ProductionCostMode]
+
+
+export const ProductionRunStatus = {
+  PLANNED: 'PLANNED',
+  ORDERED: 'ORDERED',
+  PRODUCING: 'PRODUCING',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type ProductionRunStatus = (typeof ProductionRunStatus)[keyof typeof ProductionRunStatus]
+
+
+export const ProductionCostCategory = {
+  MATERIAL: 'MATERIAL',
+  LABOR: 'LABOR',
+  PACKAGING: 'PACKAGING',
+  LOGISTICS: 'LOGISTICS',
+  OTHER: 'OTHER'
+} as const
+
+export type ProductionCostCategory = (typeof ProductionCostCategory)[keyof typeof ProductionCostCategory]
 
 
 export const AiGenerationStatus = {

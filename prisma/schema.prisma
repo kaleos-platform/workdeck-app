@@ -78,6 +78,31 @@ enum ChannelKind {
   OTHER
 }
 
+// 채널 유형 — 가격 시뮬레이션 수수료 자동 적용 분류
+enum ChannelType {
+  OPEN_MARKET // 오픈마켓 (쿠팡, 11번가 등)
+  DEPT_STORE // 백화점 온라인
+  SELF_MALL // 자사몰 (Shopify, 카페24 등)
+  SOCIAL // SNS 채널 (인스타그램, 틱톡 등)
+  WHOLESALE // 도매
+  OTHER // 기타
+}
+
+// 프로모션 유형
+enum PromotionType {
+  NONE // 프로모션 없음
+  FLAT // 고정 할인 금액
+  PERCENT // 비율 할인
+  COUPON // 쿠폰 할인
+  MIN_PRICE // 최소 판매가 ceiling — column 할인 결과가 이 값보다 높으면 강제 인하
+}
+
+// 판매채널 상품 상태 — 시스템 재고 0일 때는 effective status가 SOLD_OUT으로 표시됨 (DB에는 저장 X).
+enum ProductListingStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 // ─── 사용자 모델 (Supabase Auth와 연동) ──────────────────────────────────────
 
 model User {
@@ -98,42 +123,42 @@ model User {
 
 // 워크스페이스 (쿠팡 사업자 단위)
 model Workspace {
-  id      String @id @default(cuid())
-  name    String // 쿠팡 사업자명
+  id   String @id @default(cuid())
+  name String // 쿠팡 사업자명
 
   // 소유 사용자
   ownerId String @unique
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   // 연관 데이터
-  reportUploads    ReportUpload[]
-  adRecords        AdRecord[]
-  dailyMemos       DailyMemo[]
-  campaignMetas    CampaignMeta[]
-  keywordStatuses  KeywordStatus[]
-  campaignTargets  CampaignTarget[]
-  productStatuses  ProductStatus[]
+  reportUploads   ReportUpload[]
+  adRecords       AdRecord[]
+  dailyMemos      DailyMemo[]
+  campaignMetas   CampaignMeta[]
+  keywordStatuses KeywordStatus[]
+  campaignTargets CampaignTarget[]
+  productStatuses ProductStatus[]
 
   // AI 분석 리포트
-  analysisReports  AnalysisReport[]
+  analysisReports AnalysisReport[]
 
   // 실행 태스크
-  executionTasks   ExecutionTask[]
-  safetyLimits     SafetyLimits?
+  executionTasks ExecutionTask[]
+  safetyLimits   SafetyLimits?
 
   // 비즈니스 에이전트
-  businessAgent    BusinessAgent?
+  businessAgent BusinessAgent?
 
   // 학습형 분석 규칙
-  analysisRules    AnalysisRule[]
+  analysisRules AnalysisRule[]
 
   // 분석 자동 스케줄
   analysisSchedule AnalysisSchedule?
 
   // 데이터 수집 관련
-  coupangCredential   CoupangCredential?
-  collectionSchedule  CollectionSchedule?
-  collectionRuns      CollectionRun[]
+  coupangCredential  CoupangCredential?
+  collectionSchedule CollectionSchedule?
+  collectionRuns     CollectionRun[]
 
   // 재고 관리
   inventoryUploads          InventoryUpload[]
@@ -172,39 +197,39 @@ model ReportUpload {
 model AdRecord {
   id           String   @id @default(cuid())
   date         DateTime
-  adType       String   // 광고유형 (예: 키워드 광고, 상품 광고)
+  adType       String // 광고유형 (예: 키워드 광고, 상품 광고)
   campaignId   String
   campaignName String
-  adGroup      String?  // 광고그룹
-  placement    String?  // 광고 노출 지면
-  productName  String?  // 광고집행 상품명
-  optionId     String?  // 광고집행 옵션ID
-  keyword      String?  // 키워드 (없을 수 있음)
+  adGroup      String? // 광고그룹
+  placement    String? // 광고 노출 지면
+  productName  String? // 광고집행 상품명
+  optionId     String? // 광고집행 옵션ID
+  keyword      String? // 키워드 (없을 수 있음)
 
   // 노출·클릭
   impressions Int
   clicks      Int
-  adCost      Decimal  @db.Decimal(18, 2) // 광고비
-  ctr         Decimal  @db.Decimal(10, 4) // 클릭률
+  adCost      Decimal @db.Decimal(18, 2) // 광고비
+  ctr         Decimal @db.Decimal(10, 4) // 클릭률
 
   // 1일 전환 지표
-  orders1d    Int
-  revenue1d   Decimal  @db.Decimal(18, 2) // 직접 전환매출액 (1일)
-  roas1d      Decimal  @db.Decimal(10, 4) // 직접 광고수익률 (1일)
+  orders1d  Int
+  revenue1d Decimal @db.Decimal(18, 2) // 직접 전환매출액 (1일)
+  roas1d    Decimal @db.Decimal(10, 4) // 직접 광고수익률 (1일)
 
   // NCA 공통 필드
-  material       String?  // 소재 (NCA: 소재 컬럼)
+  material String? // 소재 (NCA: 소재 컬럼)
 
   // NCA 동영상 지표 (없으면 null)
-  videoViews3s   Int?     // 동영상 3초 조회
-  avgPlayTime    Decimal? @db.Decimal(10, 2)  // 평균 재생 시간
-  videoViews25p  Int?     // 25% 재생수
-  videoViews50p  Int?     // 50% 재생수
-  videoViews75p  Int?     // 75% 재생수
-  videoViews100p Int?     // 100% 재생수
-  costPerView3s  Decimal? @db.Decimal(18, 2)  // 동영상 3초 조회당 비용
-  engagements    Int?     // 참여수
-  engagementRate Decimal? @db.Decimal(10, 4)  // 참여율
+  videoViews3s   Int? // 동영상 3초 조회
+  avgPlayTime    Decimal? @db.Decimal(10, 2) // 평균 재생 시간
+  videoViews25p  Int? // 25% 재생수
+  videoViews50p  Int? // 50% 재생수
+  videoViews75p  Int? // 75% 재생수
+  videoViews100p Int? // 100% 재생수
+  costPerView3s  Decimal? @db.Decimal(18, 2) // 동영상 3초 조회당 비용
+  engagements    Int? // 참여수
+  engagementRate Decimal? @db.Decimal(10, 4) // 참여율
 
   // 소속 워크스페이스
   workspaceId String
@@ -327,21 +352,27 @@ model Space {
   invProductGroups    InvProductGroup[]
 
   // 통합 배송 관리 (Del)
-  delShippingMethods       DelShippingMethod[]
-  delBatches               DelBatch[]
-  delOrders                DelOrder[]
-  delIntegrationHistories  DelIntegrationHistory[]
-  delColumnMappingPresets  DelColumnMappingPreset[]
-  channelProductAliases    ChannelProductAlias[]
-  delShippingMethodLabels  DelShippingMethodLabel[]
+  delShippingMethods      DelShippingMethod[]
+  delBatches              DelBatch[]
+  delOrders               DelOrder[]
+  delIntegrationHistories DelIntegrationHistory[]
+  delColumnMappingPresets DelColumnMappingPreset[]
+  channelProductAliases   ChannelProductAlias[]
+  delShippingMethodLabels DelShippingMethodLabel[]
 
   // 셀러 허브 공용 (Seller Hub)
-  channels               Channel[]
-  channelGroups          ChannelGroup[]
-  brands                 Brand[]
-  productPricingSettings ProductPricingSettings?
-  optionCodeAliases      SpaceOptionCodeAlias[]
+  channels                Channel[]
+  channelGroups           ChannelGroup[]
+  brands                  Brand[]
+  productPricingSettings  ProductPricingSettings?
+  optionCodeAliases       SpaceOptionCodeAlias[]
+  productListings         ProductListing[]
+  productChannelGroupMeta ProductChannelGroupMeta[]
+  productionRuns          ProductionRun[]
+  pricingScenarios        PricingScenario[]
 
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
   // ─── Sales Content Deck ───
   b2bProducts          B2BProduct[]
   personas             Persona[]
@@ -361,9 +392,6 @@ model Space {
   salesContentJobs     SalesContentJob[]
   deploymentMetrics    DeploymentMetric[]
   improvementRules     ImprovementRule[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 // 공간 멤버십 + 역할
@@ -439,16 +467,16 @@ model CollectionSchedule {
 
 // 수집 실행 이력
 model CollectionRun {
-  id             String           @id @default(cuid())
-  workspaceId    String
-  status         CollectionStatus @default(PENDING)
-  triggeredBy    String
-  startedAt      DateTime?
-  completedAt    DateTime?
-  error          String?
-  uploadId       String?
-  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt      DateTime         @default(now())
+  id          String           @id @default(cuid())
+  workspaceId String
+  status      CollectionStatus @default(PENDING)
+  triggeredBy String
+  startedAt   DateTime?
+  completedAt DateTime?
+  error       String?
+  uploadId    String?
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
 
   @@index([workspaceId, status])
   @@index([workspaceId, createdAt])
@@ -514,7 +542,7 @@ model AnalysisRule {
   id           String    @id @default(cuid())
   workspaceId  String
   rule         String    @db.Text
-  source       String    // "user" | "model" | "system"
+  source       String // "user" | "model" | "system"
   isActive     Boolean   @default(true)
   appliedCount Int       @default(0)
   workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -554,14 +582,14 @@ model BusinessAgent {
 }
 
 model AgentLog {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   agentId   String
-  type      String   // command, notification, error
-  command   String?  // 사용자 입력 명령 (예: "상태", "분석")
-  response  String?  // 에이전트 응답 요약
-  channel   String?  // Slack 채널 ID
+  type      String // command, notification, error
+  command   String? // 사용자 입력 명령 (예: "상태", "분석")
+  response  String? // 에이전트 응답 요약
+  channel   String? // Slack 채널 ID
   agent     BusinessAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  createdAt DateTime      @default(now())
 
   @@index([agentId, createdAt(sort: Desc)])
 }
@@ -572,7 +600,7 @@ model AgentLog {
 model InventoryUpload {
   id           String   @id @default(cuid())
   fileName     String
-  fileType     String   // INVENTORY_HEALTH | VENDOR_ITEM_METRICS
+  fileType     String // INVENTORY_HEALTH | VENDOR_ITEM_METRICS
   uploadedAt   DateTime @default(now())
   snapshotDate DateTime // 데이터 기준일
   totalRows    Int?
@@ -591,26 +619,26 @@ model InventoryRecord {
   id           String   @id @default(cuid())
   workspaceId  String
   snapshotDate DateTime
-  fileType     String   // INVENTORY_HEALTH | VENDOR_ITEM_METRICS
+  fileType     String // INVENTORY_HEALTH | VENDOR_ITEM_METRICS
 
   // 상품 식별
-  productId   String  // 등록상품ID
-  optionId    String  // 옵션ID
+  productId   String // 등록상품ID
+  optionId    String // 옵션ID
   skuId       String? // SKU ID
   productName String
   optionName  String?
   category    String?
 
   // 재고 (inventory_health)
-  availableStock     Int?    // 판매가능재고
-  inboundStock       Int?    // 입고예정재고
+  availableStock     Int? // 판매가능재고
+  inboundStock       Int? // 입고예정재고
   productGrade       String? // 상품등급 (NEW 등)
-  restockQty         Int?    // 추가입고 추천수량
+  restockQty         Int? // 추가입고 추천수량
   restockDate        String? // 추가입고날짜
   estimatedDepletion String? // 재고예상 소진일
-  storageFee         Int?    // 이번달 누적보관료
+  storageFee         Int? // 이번달 누적보관료
   isItemWinner       Boolean? // 아이템위너 여부
-  returns30d         Int?    // 고객반품 30일
+  returns30d         Int? // 고객반품 30일
 
   // 매출/판매
   revenue7d   Decimal? @db.Decimal(18, 2)
@@ -635,7 +663,7 @@ model InventoryRecord {
   stock46to60d   Int?
   stock61to120d  Int?
   stock121to180d Int?
-  stock181plusD   Int?
+  stock181plusD  Int?
 
   workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   uploadId  String
@@ -670,10 +698,10 @@ model InventoryAnalysis {
   triggeredBy  String   @default("manual")
 
   results          Json
-  shortageCount    Int @default(0)
-  returnRateCount  Int @default(0)
-  storageFeeCount  Int @default(0)
-  winnerIssueCount Int @default(0)
+  shortageCount    Int  @default(0)
+  returnRateCount  Int  @default(0)
+  storageFeeCount  Int  @default(0)
+  winnerIssueCount Int  @default(0)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
@@ -716,13 +744,13 @@ model InvProductGroup {
 model InvProduct {
   id      String  @id @default(cuid())
   spaceId String
-  name    String  // 공식 상품명 — 판매채널 노출명 (필수)
+  name    String // 공식 상품명 — 판매채널 노출명 (필수)
   code    String? // 상품 코드 (space 내 unique, null 허용)
-  groupId String  // 카테고리 필수 (non-null)
+  groupId String // 카테고리 필수 (non-null)
 
   // 셀러 허브 확장 필드 (모두 nullable)
   brandId            String?
-  internalName       String?   // 관리 상품명 — 내부 식별용. 비어있으면 표시 시 name으로 fallback
+  internalName       String? // 관리 상품명 — 내부 식별용. 비어있으면 표시 시 name으로 fallback
   nameEn             String?
   manufacturer       String?
   manufactureCountry String?
@@ -731,13 +759,14 @@ model InvProduct {
   certifications     Json?
   msrp               Decimal?  @db.Decimal(18, 2)
   description        String?
-  optionAttributes   Json?     // 예: [{name:"사이즈",values:["S","M","L"]}]
+  optionAttributes   Json? // 예: [{name:"사이즈",values:["S","M","L"]}]
 
-  space         Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  group         InvProductGroup    @relation(fields: [groupId], references: [id], onDelete: Restrict)
-  brand         Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  options       InvProductOption[]
-  reorderConfig InvReorderConfig?
+  space            Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group            InvProductGroup           @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  brand            Brand?                    @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  options          InvProductOption[]
+  reorderConfig    InvReorderConfig?
+  channelGroupMeta ProductChannelGroupMeta[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -750,7 +779,7 @@ model InvProduct {
 
 // 상품 옵션
 model InvProductOption {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   productId String
   name      String
   sku       String?
@@ -760,16 +789,20 @@ model InvProductOption {
   retailPrice     Decimal? @db.Decimal(18, 2)
   sizeLabel       String?
   setSizeLabel    String?
-  attributeValues Json?    // 예: {"사이즈":"S","색상":"파랑"}
+  attributeValues Json? // 예: {"사이즈":"S","색상":"파랑"}
 
-  product           InvProduct              @relation(fields: [productId], references: [id], onDelete: Cascade)
-  movements         InvMovement[]
-  stockLevels       InvStockLevel[]
-  locationMappings  InvLocationProductMap[]
-  productionBatches ProductionBatch[]
-  delOrderItems     DelOrderItem[]
-  channelAliases    ChannelProductAlias[]
-  shippingLabels    DelShippingMethodLabel[]
+  product              InvProduct                       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  movements            InvMovement[]
+  stockLevels          InvStockLevel[]
+  locationMappings     InvLocationProductMap[]
+  productionRunItems   ProductionRunItem[]
+  pricingScenarioItems PricingScenarioItem[]
+  delOrderItems        DelOrderItem[]
+  channelAliases       ChannelProductAlias[]
+  aliasFulfillments    ChannelProductAliasFulfillment[]
+  shippingLabels       DelShippingMethodLabel[]
+  listingItems         ProductListingItem[]
+  fulfillments         DelOrderItemFulfillment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -784,13 +817,13 @@ model InvStorageLocation {
   name     String
   isActive Boolean @default(true)
 
-  space           Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  stockLevels     InvStockLevel[]
-  movements       InvMovement[]          @relation("MovementLocation")
-  incomingTransfers InvMovement[]         @relation("MovementToLocation")
-  locationMappings InvLocationProductMap[]
-  reconciliations InvReconciliation[]
-  settingsDefault InvSettings[]          @relation("DefaultLocation")
+  space             Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  stockLevels       InvStockLevel[]
+  movements         InvMovement[]           @relation("MovementLocation")
+  incomingTransfers InvMovement[]           @relation("MovementToLocation")
+  locationMappings  InvLocationProductMap[]
+  reconciliations   InvReconciliation[]
+  settingsDefault   InvSettings[]           @relation("DefaultLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -811,8 +844,8 @@ model InvMovement {
   quantity        Int
   movementDate    DateTime
   orderDate       DateTime? // OUTBOUND 전용
-  reason          String?   // ADJUSTMENT 시 필수 (앱 레벨 검증)
-  referenceId     String?   // 연관 이동 또는 조정 ID
+  reason          String? // ADJUSTMENT 시 필수 (앱 레벨 검증)
+  referenceId     String? // 연관 이동 또는 조정 ID
   importHistoryId String?
 
   space         Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -870,7 +903,7 @@ model InvImportHistory {
   totalRows   Int
   successRows Int
   errorRows   Int
-  errors      Json?  // 행 단위 에러 상세
+  errors      Json? // 행 단위 에러 상세
 
   space     Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   movements InvMovement[]
@@ -882,15 +915,15 @@ model InvImportHistory {
 
 // 파일 기반 재고 대사 이력
 model InvReconciliation {
-  id           String                   @id @default(cuid())
-  spaceId      String
-  locationId   String
-  fileName     String
-  snapshotDate DateTime
-  status       InvReconciliationStatus  @default(PENDING)
-  matchResults Json                     // 매칭/차이 상세
-  totalItems   Int
-  matchedItems Int
+  id            String                  @id @default(cuid())
+  spaceId       String
+  locationId    String
+  fileName      String
+  snapshotDate  DateTime
+  status        InvReconciliationStatus @default(PENDING)
+  matchResults  Json // 매칭/차이 상세
+  totalItems    Int
+  matchedItems  Int
   adjustedItems Int                     @default(0)
 
   space    Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -909,7 +942,7 @@ model InvLocationProductMap {
   locationId String
   optionId   String
 
-  externalCode       String  // 보관 장소의 상품 코드/ID
+  externalCode       String // 보관 장소의 상품 코드/ID
   externalName       String? // 보관 장소의 상품명 (참조용)
   externalOptionName String? // 보관 장소의 옵션명 (참조용)
 
@@ -932,7 +965,7 @@ model InvSettings {
   slackWebhookUrl   String?
   preferences       Json    @default("{}")
 
-  space           Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space           Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   defaultLocation InvStorageLocation? @relation("DefaultLocation", fields: [defaultLocationId], references: [id], onDelete: SetNull)
 
   @@index([spaceId])
@@ -947,15 +980,16 @@ enum DelBatchStatus {
 
 // 배송 방식 (택배사 + 파일 포맷)
 model DelShippingMethod {
-  id           String  @id @default(cuid())
-  spaceId      String
-  name         String
-  isActive     Boolean @default(true)
-  formatConfig Json    // DelFormatColumn[] — 배송 파일 컬럼 매핑
-  labelColumns Json    @default("[]")  // string[] — 활성화된 DelFieldMapping 키 (max 3). 배송 파일 생성 시 이 컬럼만 옵션별 값으로 덮어씀.
+  id               String  @id @default(cuid())
+  spaceId          String
+  name             String
+  isActive         Boolean @default(true)
+  formatConfig     Json // DelFormatColumn[] — 배송 파일 컬럼 매핑
+  labelColumns     Json    @default("[]") // string[] — 활성화된 DelFieldMapping 키 (max 3). 배송 파일 생성 시 이 컬럼만 옵션별 값으로 덮어씀.
+  defaultSplitMode String  @default("order") // 'order' | 'option' — 배송 파일 생성 시 기본 분할 모드
 
-  space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  orders DelOrder[]
+  space         Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  orders        DelOrder[]
   productLabels DelShippingMethodLabel[]
 
   createdAt DateTime @default(now())
@@ -971,7 +1005,7 @@ model DelShippingMethodLabel {
   spaceId          String
   shippingMethodId String
   optionId         String
-  overrides        Json   // { [field: DelFieldMapping]: string }
+  overrides        Json // { [field: DelFieldMapping]: string }
 
   space          Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   shippingMethod DelShippingMethod @relation(fields: [shippingMethodId], references: [id], onDelete: Cascade)
@@ -987,10 +1021,10 @@ model DelShippingMethodLabel {
 
 // 배송 배치 (한 번의 배송 등록 작업 단위)
 model DelBatch {
-  id          String         @id @default(cuid())
-  spaceId     String
-  status      DelBatchStatus @default(DRAFT)
-  label       String?
+  id      String         @id @default(cuid())
+  spaceId String
+  status  DelBatchStatus @default(DRAFT)
+  label   String?
 
   space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   orders DelOrder[]
@@ -1004,7 +1038,7 @@ model DelBatch {
 
 // 개별 주문 (배송 등록 행 1개)
 model DelOrder {
-  id               String @id @default(cuid())
+  id               String  @id @default(cuid())
   spaceId          String
   batchId          String
   shippingMethodId String?
@@ -1017,9 +1051,9 @@ model DelOrder {
   phoneIv          String
   addressEnc       String
   addressIv        String
-  postalCode       String?  // 우편번호 (비PII)
+  postalCode       String? // 우편번호 (비PII)
   deliveryMessage  String?
-  memo             String?  // 사용자 메모
+  memo             String? // 사용자 메모
 
   // 주문 메타
   orderDate     DateTime
@@ -1041,36 +1075,64 @@ model DelOrder {
 
 // 주문 상품 (max 10, 앱 레벨 검증)
 model DelOrderItem {
-  id       String  @id @default(cuid())
-  orderId  String
-  name     String  // 원본 텍스트 — 미매칭 fallback 및 감사용
-  quantity Int
-  optionId String? // 카탈로그 매칭 — 성공 시 InvProductOption.id
+  id        String  @id @default(cuid())
+  orderId   String
+  name      String // 원본 텍스트 — 미매칭 fallback 및 감사용
+  quantity  Int
+  optionId  String? // 단일 옵션 매칭 — InvProductOption.id (listingId와 상호 배타)
+  listingId String? // 판매채널 상품(ProductListing) 매칭 — fulfillments로 실제 출고 옵션·수량 팬아웃
 
-  order  DelOrder          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  option InvProductOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
+  order        DelOrder                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  option       InvProductOption?         @relation(fields: [optionId], references: [id], onDelete: SetNull)
+  listing      ProductListing?           @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  fulfillments DelOrderItemFulfillment[]
 
   @@index([orderId])
   @@index([optionId])
+  @@index([listingId])
 }
 
-// 채널별 상품 별칭 사전 — 채널에서 들어온 원본 상품명을 카탈로그 옵션에 매핑
+// 채널별 상품 별칭 사전 — 원본 상품명을 판매채널 상품(listing) 또는 단일 옵션에 매핑.
+// optionId 또는 listingId 중 하나가 필수 (CHECK 제약으로 보장).
+// 매칭 우선순위: listingId 있으면 listing, 아니면 optionId.
 model ChannelProductAlias {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   spaceId   String
   channelId String
   aliasName String // 정규화된 원본 상품명 (normalizeAlias 출력)
-  optionId  String
+  optionId  String?
+  listingId String?
+  // multi-target 수동 매칭: fulfillments가 있으면 listingId·optionId 대신 사용
+  // (우선순위: fulfillments[] > listingId > optionId)
 
-  space   Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  channel Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  option  InvProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  space        Space                            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel      Channel                          @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  option       InvProductOption?                @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  listing      ProductListing?                  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  fulfillments ChannelProductAliasFulfillment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([channelId, aliasName])
   @@index([spaceId])
+  @@index([optionId])
+  @@index([listingId])
+}
+
+// 수동 매칭 alias의 다중 fulfillment 자식 테이블.
+// 한 raw name이 여러 (옵션, 수량)으로 팬아웃되는 경우(예: "블랙 2 + 화이트 1") 사용.
+// quantity 의미: "1 주문당 perSet 수량" — import 시점에 orderItem.quantity 곱해져 실제 출고 수량 산출.
+model ChannelProductAliasFulfillment {
+  id       String @id @default(cuid())
+  aliasId  String
+  optionId String
+  quantity Int
+
+  alias  ChannelProductAlias @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+  option InvProductOption    @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@index([aliasId])
   @@index([optionId])
 }
 
@@ -1079,7 +1141,7 @@ model DelColumnMappingPreset {
   id        String  @id @default(cuid())
   spaceId   String
   name      String
-  mapping   Json    // Array<{ headerName: string; field: string }>
+  mapping   Json // Array<{ headerName: string; field: string }>
   channelId String? // 프리셋 적용 시 배송 등록의 판매채널로 자동 입력될 채널
 
   space   Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -1097,7 +1159,7 @@ model DelColumnMappingPreset {
 model DelIntegrationHistory {
   id          String   @id @default(cuid())
   spaceId     String
-  type        String   // "SALES" | "INVENTORY"
+  type        String // "SALES" | "INVENTORY"
   dateFrom    DateTime
   dateTo      DateTime
   totalOrders Int
@@ -1120,8 +1182,9 @@ model Brand {
   logoUrl String?
   memo    String?
 
-  space    Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  products InvProduct[]
+  space          Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  products       InvProduct[]
+  productionRuns ProductionRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1148,28 +1211,38 @@ model ChannelGroup {
 
 // 공용 판매 채널
 model Channel {
-  id                  String      @id @default(cuid())
-  spaceId             String
-  groupId             String?
-  name                String
-  kind                ChannelKind @default(ONLINE_MARKETPLACE)
-  isActive            Boolean     @default(true)
-  adminUrl            String?
-  freeShipping        Boolean     @default(false)
-  usesMarketingBudget Boolean     @default(false)
-  shippingFee         Decimal?    @db.Decimal(18, 2)
-  vatIncludedInFee    Boolean     @default(true)
-  requireOrderNumber  Boolean     @default(true)
-  requirePayment      Boolean     @default(true)
-  requireProducts     Boolean     @default(true)
+  id                    String      @id @default(cuid())
+  spaceId               String
+  groupId               String?
+  name                  String
+  kind                  ChannelKind @default(ONLINE_MARKETPLACE)
+  channelType           ChannelType @default(OTHER) // 가격 시뮬 분류
+  isActive              Boolean     @default(true)
+  adminUrl              String?
+  freeShipping          Boolean     @default(false)
+  freeShippingThreshold Decimal?    @db.Decimal(18, 2) // 무료배송 최소 주문금액
+  defaultFeePct         Decimal?    @db.Decimal(6, 4) // 채널 기본 수수료율 (0~1)
+  usesMarketingBudget   Boolean     @default(false)
+  applyAdCost           Boolean     @default(false) // 시뮬레이션 시 광고비 자동 적용
+  shippingFee           Decimal?    @db.Decimal(18, 2)
+  vatIncludedInFee      Boolean     @default(true)
+  paymentFeeIncluded    Boolean     @default(true) // 결제 수수료 포함 여부
+  paymentFeePct         Decimal?    @db.Decimal(6, 4) // 결제 수수료율 (0~1)
+  requireOrderNumber    Boolean     @default(true)
+  requirePayment        Boolean     @default(true)
+  requireProducts       Boolean     @default(true)
 
-  space        Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  group        ChannelGroup?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  feeRates     ChannelFeeRate[]
-  invMovements InvMovement[]
-  delOrders    DelOrder[]
-  columnMappingPresets DelColumnMappingPreset[] @relation("PresetChannel")
-  productAliases       ChannelProductAlias[]
+  space                   Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group                   ChannelGroup?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  feeRates                ChannelFeeRate[]
+  invMovements            InvMovement[]
+  delOrders               DelOrder[]
+  columnMappingPresets    DelColumnMappingPreset[]  @relation("PresetChannel")
+  productAliases          ChannelProductAlias[]
+  productListings         ProductListing[]
+  productGroupMeta        ProductChannelGroupMeta[]
+  pricingScenarios        PricingScenario[]
+  pricingScenarioChannels PricingScenarioChannel[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1196,32 +1269,189 @@ model ChannelFeeRate {
   @@index([channelId])
 }
 
-// 옵션별 생산 차수
-model ProductionBatch {
-  id         String   @id @default(cuid())
-  optionId   String
-  batchNo    String
-  producedAt DateTime
-  unitCost   Decimal  @db.Decimal(18, 2)
-  quantity   Int?
-  memo       String?
+// 생산 차수 (Production Run) — 발주 단위. 여러 상품/옵션을 묶을 수 있음.
+enum ProductionCostMode {
+  TOTAL
+  BREAKDOWN
+}
 
-  option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+enum ProductionRunStatus {
+  PLANNED // 계획중
+  ORDERED // 발주완료
+  PRODUCING // 생산중
+  COMPLETED // 생산완료
+}
+
+enum ProductionCostCategory {
+  MATERIAL // 원자재
+  LABOR // 인건비/봉제
+  PACKAGING // 포장
+  LOGISTICS // 물류
+  OTHER // 기타
+}
+
+model ProductionRun {
+  id          String              @id @default(cuid())
+  spaceId     String
+  brandId     String? // 대표 브랜드 (선택). 없으면 multi-brand
+  runNo       String // Space 단위 unique 차수 번호 (전체 범위)
+  orderedAt   DateTime // 발주일
+  dueAt       DateTime? // 납기일 (선택)
+  completedAt DateTime? // 완료일 (선택)
+  status      ProductionRunStatus @default(PLANNED)
+  totalCost   Decimal?            @db.Decimal(18, 2) // 총 생산원가 (TOTAL 모드: 직접 입력값 / BREAKDOWN 모드: costs 합계 캐시)
+  costMode    ProductionCostMode  @default(TOTAL)
+  memo        String?
+
+  space Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  brand Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  items ProductionRunItem[]
+  costs ProductionRunCost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([optionId, batchNo])
+  @@unique([spaceId, runNo])
+  @@index([spaceId, orderedAt])
+  @@index([spaceId, status])
+  @@index([brandId])
+}
+
+model ProductionRunItem {
+  id       String @id @default(cuid())
+  runId    String
+  optionId String
+  quantity Int
+
+  run    ProductionRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@unique([runId, optionId])
   @@index([optionId])
 }
 
-// Space 단위 가격 시뮬레이션 기본값 (Phase 2 대비)
+model ProductionRunCost {
+  id          String                 @id @default(cuid())
+  runId       String
+  itemName    String // 비용 항목 (필수)
+  description String? // 상세 내용
+  category    ProductionCostCategory @default(OTHER) // 비용 분류
+  spec        Decimal?               @db.Decimal(18, 4) // 규격 (선택)
+  quantity    Decimal                @default(1) @db.Decimal(18, 4) // 수량 (필수, 기본 1)
+  unitPrice   Decimal                @db.Decimal(18, 2) // 단가 (필수)
+  amount      Decimal                @db.Decimal(18, 2) // (spec ?? 1) × quantity × unitPrice
+  note        String?
+  sortOrder   Int                    @default(0)
+
+  run ProductionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+// 가격 시뮬레이션 시나리오
+// 옵션 N개를 선택하고 채널/할인/비용 변수를 조합해 순수익을 계산하는 단위.
+// 결과(netProfit, margin)는 캐시이므로 inputs 변경 시 재계산 후 갱신.
+model PricingScenario {
+  id                    String        @id @default(cuid())
+  spaceId               String
+  channelId             String? // 레거시 단일 채널 연결 (하위 호환 유지, 추후 제거)
+  name                  String // 시나리오 이름
+  memo                  String?
+  // 시뮬레이션 전역 옵션
+  includeVat            Boolean       @default(true) // 판매가에 VAT 포함 여부
+  vatRate               Decimal       @default(0.1) @db.Decimal(6, 4) // 부가세율
+  // 프로모션 설정
+  promotionType         PromotionType @default(NONE)
+  promotionValue        Decimal?      @db.Decimal(18, 4) // FLAT: 금액, PERCENT: 0~1 비율
+  // 반품/교환 비용 반영
+  applyReturnAdjustment Boolean       @default(false)
+
+  space    Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel  Channel?                 @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  items    PricingScenarioItem[]
+  channels PricingScenarioChannel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, updatedAt])
+  @@index([channelId])
+}
+
+// 시나리오 ↔ 채널 M-N 조인 테이블
+model PricingScenarioChannel {
+  id         String @id @default(cuid())
+  scenarioId String
+  channelId  String
+  sortOrder  Int    @default(0)
+
+  scenario PricingScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  channel  Channel         @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([scenarioId, channelId])
+  @@index([scenarioId])
+  @@index([channelId])
+}
+
+// 시나리오 안의 옵션별 entry — 옵션마다 독립적인 가격/원가/비용 변수와 결과 캐시
+model PricingScenarioItem {
+  id         String  @id @default(cuid())
+  scenarioId String
+  optionId   String? // nullable — 수동 입력 행(manualName 사용)은 null 허용
+
+  // 수동 입력 행 (optionId가 null일 때 사용)
+  manualName      String? // 상품명 직접 입력
+  manualBrandName String? // 브랜드명 직접 입력
+  unitsPerSet     Int     @default(1) // 세트당 단위 수량 (기본 1)
+
+  // 입력 변수 — 모두 nullable이면 시뮬레이션 시점에 옵션·채널·설정에서 자동 채움
+  costPrice        Decimal? @db.Decimal(18, 2) // 원가 (없으면 InvProductOption.costPrice → 사용자 직접)
+  salePrice        Decimal  @db.Decimal(18, 2) // 사용자 입력 판매가
+  discountRate     Decimal  @default(0) @db.Decimal(6, 4) // 0~1 (예: 0.1 = 10% 할인)
+  channelFeePct    Decimal  @default(0) @db.Decimal(6, 4) // 채널 수수료율 (0~1)
+  shippingCost     Decimal  @default(0) @db.Decimal(18, 2) // 옵션당 배송비
+  packagingCost    Decimal  @default(0) @db.Decimal(18, 2)
+  adCostPct        Decimal  @default(0) @db.Decimal(6, 4)
+  operatingCostPct Decimal  @default(0) @db.Decimal(6, 4)
+
+  // 결과 캐시 (서버에서 계산해 저장)
+  finalPrice   Decimal @default(0) @db.Decimal(18, 2) // salePrice × (1 - discountRate)
+  revenueExVat Decimal @default(0) @db.Decimal(18, 2)
+  totalCost    Decimal @default(0) @db.Decimal(18, 2) // costPrice + 모든 비용
+  netProfit    Decimal @default(0) @db.Decimal(18, 2)
+  margin       Decimal @default(0) @db.Decimal(6, 4) // netProfit / revenueExVat
+
+  sortOrder Int @default(0)
+
+  scenario PricingScenario   @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  option   InvProductOption? @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@index([scenarioId])
+  @@index([optionId])
+}
+
+// Space 단위 가격 시뮬레이션 기본값
 model ProductPricingSettings {
   id                      String  @id @default(cuid())
   spaceId                 String  @unique
-  defaultOperatingCostPct Decimal @db.Decimal(6, 3) @default(0)
-  defaultAdCostPct        Decimal @db.Decimal(6, 3) @default(0)
-  defaultPackagingCost    Decimal @db.Decimal(18, 2) @default(0)
+  // 기존 필드 (0~100 % 단위 유지)
+  defaultOperatingCostPct Decimal @default(0) @db.Decimal(6, 3)
+  defaultAdCostPct        Decimal @default(0) @db.Decimal(6, 3)
+  defaultPackagingCost    Decimal @default(0) @db.Decimal(18, 2)
+  // 신규 필드 (0~1 비율 단위)
+  defaultChannelFeePct    Decimal @default(0) @db.Decimal(6, 4) // 기본 채널 수수료율
+  defaultShippingCost     Decimal @default(0) @db.Decimal(18, 2) // 기본 배송비
+  defaultReturnRate       Decimal @default(0) @db.Decimal(6, 4) // 기본 반품율 (0~1)
+  defaultReturnShipping   Decimal @default(0) @db.Decimal(18, 2) // 반품 건당 배송비
+  autoApplyChannelFee     Boolean @default(false) // 채널 수수료 자동 적용
+  autoApplyAdCost         Boolean @default(false) // 광고비 자동 적용
+  autoApplyShipping       Boolean @default(false) // 배송비 자동 적용
+  // 마진 등급 임계값 — 자사몰(SELF_MALL) / 플랫폼몰(그 외) 구분
+  selfMallTargetGood      Decimal @default(0.35) @db.Decimal(5, 4) // 자사몰 마진 '높음' 임계
+  selfMallTargetFair      Decimal @default(0.25) @db.Decimal(5, 4) // 자사몰 '적합' 하한
+  platformTargetGood      Decimal @default(0.25) @db.Decimal(5, 4) // 플랫폼몰 '높음' 임계
+  platformTargetFair      Decimal @default(0.15) @db.Decimal(5, 4) // 플랫폼몰 '적합' 하한
+  minimumAcceptableMargin Decimal @default(0.10) @db.Decimal(5, 4) // 최소 허용 마진 (할인 한계 계산용)
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
@@ -1246,6 +1476,89 @@ model SpaceOptionCodeAlias {
 
   @@unique([spaceId, attributeName, value])
   @@index([spaceId])
+}
+
+// ─── 판매채널 상품 (ProductListing) ─────────────────────────────────────────────
+// 채널별로 상품을 묶음 단위(N개 옵션 × 수량)로 구성해 전용 상품명·키워드·판매가로 노출.
+// 배송 업로드 매칭의 기본 단위 — 한 listing은 여러 fulfillment(실제 출고 옵션·수량)로 펼쳐진다.
+
+model ProductListing {
+  id                String               @id @default(cuid())
+  spaceId           String
+  channelId         String
+  internalCode      String? // 사용자 관리용 식별자 (선택)
+  searchName        String // 상품명(검색용) — 채널 리스팅 상단 노출
+  displayName       String // 상품명(노출용) — 상세 페이지 타이틀
+  keywords          Json                 @default("[]") // string[] — 사용자 확정 키워드
+  retailPrice       Decimal?             @db.Decimal(18, 2) // 판매가격 (소비자가는 구성품에서 자동 계산)
+  // 채널별 수동 재고 할당 상한 (세트 단위).
+  // null이면 자동계산(min(floor(stock/qty))) 그대로 사용.
+  // 값이 있으면 min(channelAllocation, 자동계산)으로 가용재고 제한.
+  channelAllocation Int?
+  status            ProductListingStatus @default(ACTIVE)
+  memo              String?
+
+  space    Space                 @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel  Channel               @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  items    ProductListingItem[]
+  aliases  ChannelProductAlias[]
+  delItems DelOrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([channelId, searchName])
+  @@index([spaceId, channelId])
+  @@index([status])
+}
+
+// 판매채널 상품의 구성 옵션 (InvProductOption × 수량)
+model ProductListingItem {
+  id        String @id @default(cuid())
+  listingId String
+  optionId  String
+  quantity  Int // 묶음 내 수량 (세트면 2, 3 등)
+  sortOrder Int    @default(0)
+
+  listing ProductListing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  option  InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@unique([listingId, optionId])
+  @@index([optionId])
+}
+
+// 배송 주문 아이템의 실제 출고 단위 — listing 매칭이면 1:N, 단일 옵션이면 비어있음
+model DelOrderItemFulfillment {
+  id          String @id @default(cuid())
+  orderItemId String
+  optionId    String
+  quantity    Int // listingItem.quantity × orderItem.quantity
+
+  orderItem DelOrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  option    InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@index([orderItemId])
+  @@index([optionId])
+}
+
+// 상품 × 채널 그룹 단위 메타 — 같은 상품의 옵션 listing들을 한 상세 화면에서 묶어 관리할 때 공유되는 값
+// 현재는 키워드만, 추후 대표 이미지/설명 등 확장 예정
+model ProductChannelGroupMeta {
+  id        String @id @default(cuid())
+  spaceId   String
+  productId String
+  channelId String
+  keywords  Json   @default("[]") // string[]
+
+  space   Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product InvProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  channel Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, channelId])
+  @@index([spaceId, channelId])
 }
 
 // ─── Sales Content Deck (정보 세팅) ───────────────────────────────────────────
@@ -1280,7 +1593,7 @@ model B2BProduct {
 }
 
 model Persona {
-  id                String   @id @default(cuid())
+  id                String  @id @default(cuid())
   spaceId           String
   name              String
   slug              String
@@ -1294,7 +1607,7 @@ model Persona {
   objections        Json?
   preferredChannels Json?
   toneHints         String?
-  isActive          Boolean  @default(true)
+  isActive          Boolean @default(true)
 
   space        Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   contentIdeas ContentIdea[]
@@ -1307,8 +1620,8 @@ model Persona {
 }
 
 model BrandProfile {
-  id               String   @id @default(cuid())
-  spaceId          String   @unique
+  id               String  @id @default(cuid())
+  spaceId          String  @unique
   companyName      String
   shortDescription String?
   missionStatement String?
@@ -1710,15 +2023,15 @@ model SalesContentJob {
 
 // Content 수정 직전 상태를 스냅샷으로 보존. versionNumber 는 contentId 범위 내 1부터 증가.
 model ContentVersion {
-  id              String   @id @default(cuid())
+  id              String  @id @default(cuid())
   contentId       String
   spaceId         String
-  versionNumber   Int      // content 별 1부터 증가
+  versionNumber   Int // content 별 1부터 증가
   title           String
-  doc             Json     // 스냅샷 시점의 TipTap Doc
-  snapshotHash    String?  // 변경 감지용
-  createdByUserId String?  // 이 버전을 만든 사용자 (nullable — 시스템 생성 가능)
-  note            String?  // "자동 스냅샷 (PATCH)", "수동 저장", "롤백 from v3" 같은 메타
+  doc             Json // 스냅샷 시점의 TipTap Doc
+  snapshotHash    String? // 변경 감지용
+  createdByUserId String? // 이 버전을 만든 사용자 (nullable — 시스템 생성 가능)
+  note            String? // "자동 스냅샷 (PATCH)", "수동 저장", "롤백 from v3" 같은 메타
 
   content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   space   Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -1732,17 +2045,17 @@ model ContentVersion {
 
 // 콘텐츠 첨부 에셋 (이미지 · 링크). 이미지 URL 은 Unit 7 Supabase Storage 결과.
 model ContentAsset {
-  id         String           @id @default(cuid())
-  spaceId    String
-  contentId  String
-  kind       ContentAssetKind
-  slotKey    String? // TipTap 노드 key
-  url        String
-  title      String?
-  alt        String?
-  width      Int?
-  height     Int?
-  mimeType   String?
+  id          String           @id @default(cuid())
+  spaceId     String
+  contentId   String
+  kind        ContentAssetKind
+  slotKey     String? // TipTap 노드 key
+  url         String
+  title       String?
+  alt         String?
+  width       Int?
+  height      Int?
+  mimeType    String?
   storagePath String? // supabase path (이미지인 경우)
 
   space   Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)

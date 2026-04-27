@@ -313,6 +313,7 @@ export type InvProductWhereInput = {
   brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
   options?: Prisma.InvProductOptionListRelationFilter
   reorderConfig?: Prisma.XOR<Prisma.InvReorderConfigNullableScalarRelationFilter, Prisma.InvReorderConfigWhereInput> | null
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaListRelationFilter
 }
 
 export type InvProductOrderByWithRelationInput = {
@@ -339,6 +340,7 @@ export type InvProductOrderByWithRelationInput = {
   brand?: Prisma.BrandOrderByWithRelationInput
   options?: Prisma.InvProductOptionOrderByRelationAggregateInput
   reorderConfig?: Prisma.InvReorderConfigOrderByWithRelationInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaOrderByRelationAggregateInput
 }
 
 export type InvProductWhereUniqueInput = Prisma.AtLeast<{
@@ -369,6 +371,7 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
   options?: Prisma.InvProductOptionListRelationFilter
   reorderConfig?: Prisma.XOR<Prisma.InvReorderConfigNullableScalarRelationFilter, Prisma.InvReorderConfigWhereInput> | null
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaListRelationFilter
 }, "id" | "spaceId_code">
 
 export type InvProductOrderByWithAggregationInput = {
@@ -442,6 +445,7 @@ export type InvProductCreateInput = {
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateInput = {
@@ -465,6 +469,7 @@ export type InvProductUncheckedCreateInput = {
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUpdateInput = {
@@ -488,6 +493,7 @@ export type InvProductUpdateInput = {
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateInput = {
@@ -511,6 +517,7 @@ export type InvProductUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateManyInput = {
@@ -812,6 +819,20 @@ export type InvProductUncheckedUpdateManyWithoutBrandNestedInput = {
   deleteMany?: Prisma.InvProductScalarWhereInput | Prisma.InvProductScalarWhereInput[]
 }
 
+export type InvProductCreateNestedOneWithoutChannelGroupMetaInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutChannelGroupMetaInput, Prisma.InvProductUncheckedCreateWithoutChannelGroupMetaInput>
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutChannelGroupMetaInput
+  connect?: Prisma.InvProductWhereUniqueInput
+}
+
+export type InvProductUpdateOneRequiredWithoutChannelGroupMetaNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutChannelGroupMetaInput, Prisma.InvProductUncheckedCreateWithoutChannelGroupMetaInput>
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutChannelGroupMetaInput
+  upsert?: Prisma.InvProductUpsertWithoutChannelGroupMetaInput
+  connect?: Prisma.InvProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductUpdateToOneWithWhereWithoutChannelGroupMetaInput, Prisma.InvProductUpdateWithoutChannelGroupMetaInput>, Prisma.InvProductUncheckedUpdateWithoutChannelGroupMetaInput>
+}
+
 export type InvProductCreateWithoutSpaceInput = {
   id?: string
   name: string
@@ -832,6 +853,7 @@ export type InvProductCreateWithoutSpaceInput = {
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutSpaceInput = {
@@ -854,6 +876,7 @@ export type InvProductUncheckedCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutSpaceInput = {
@@ -926,6 +949,7 @@ export type InvProductCreateWithoutGroupInput = {
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutGroupInput = {
@@ -948,6 +972,7 @@ export type InvProductUncheckedCreateWithoutGroupInput = {
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutGroupInput = {
@@ -996,6 +1021,7 @@ export type InvProductCreateWithoutOptionsInput = {
   group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutOptionsInput = {
@@ -1018,6 +1044,7 @@ export type InvProductUncheckedCreateWithoutOptionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutOptionsInput = {
@@ -1056,6 +1083,7 @@ export type InvProductUpdateWithoutOptionsInput = {
   group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutOptionsInput = {
@@ -1078,6 +1106,7 @@ export type InvProductUncheckedUpdateWithoutOptionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutReorderConfigInput = {
@@ -1100,6 +1129,7 @@ export type InvProductCreateWithoutReorderConfigInput = {
   group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutReorderConfigInput = {
@@ -1122,6 +1152,7 @@ export type InvProductUncheckedCreateWithoutReorderConfigInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutReorderConfigInput = {
@@ -1160,6 +1191,7 @@ export type InvProductUpdateWithoutReorderConfigInput = {
   group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutReorderConfigInput = {
@@ -1182,6 +1214,7 @@ export type InvProductUncheckedUpdateWithoutReorderConfigInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutBrandInput = {
@@ -1204,6 +1237,7 @@ export type InvProductCreateWithoutBrandInput = {
   group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutBrandInput = {
@@ -1226,6 +1260,7 @@ export type InvProductUncheckedCreateWithoutBrandInput = {
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutBrandInput = {
@@ -1252,6 +1287,114 @@ export type InvProductUpdateWithWhereUniqueWithoutBrandInput = {
 export type InvProductUpdateManyWithWhereWithoutBrandInput = {
   where: Prisma.InvProductScalarWhereInput
   data: Prisma.XOR<Prisma.InvProductUpdateManyMutationInput, Prisma.InvProductUncheckedUpdateManyWithoutBrandInput>
+}
+
+export type InvProductCreateWithoutChannelGroupMetaInput = {
+  id?: string
+  name: string
+  code?: string | null
+  internalName?: string | null
+  nameEn?: string | null
+  manufacturer?: string | null
+  manufactureCountry?: string | null
+  manufactureDate?: Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
+  group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
+  brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
+  options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
+  reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+}
+
+export type InvProductUncheckedCreateWithoutChannelGroupMetaInput = {
+  id?: string
+  spaceId: string
+  name: string
+  code?: string | null
+  groupId: string
+  brandId?: string | null
+  internalName?: string | null
+  nameEn?: string | null
+  manufacturer?: string | null
+  manufactureCountry?: string | null
+  manufactureDate?: Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
+  reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+}
+
+export type InvProductCreateOrConnectWithoutChannelGroupMetaInput = {
+  where: Prisma.InvProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvProductCreateWithoutChannelGroupMetaInput, Prisma.InvProductUncheckedCreateWithoutChannelGroupMetaInput>
+}
+
+export type InvProductUpsertWithoutChannelGroupMetaInput = {
+  update: Prisma.XOR<Prisma.InvProductUpdateWithoutChannelGroupMetaInput, Prisma.InvProductUncheckedUpdateWithoutChannelGroupMetaInput>
+  create: Prisma.XOR<Prisma.InvProductCreateWithoutChannelGroupMetaInput, Prisma.InvProductUncheckedCreateWithoutChannelGroupMetaInput>
+  where?: Prisma.InvProductWhereInput
+}
+
+export type InvProductUpdateToOneWithWhereWithoutChannelGroupMetaInput = {
+  where?: Prisma.InvProductWhereInput
+  data: Prisma.XOR<Prisma.InvProductUpdateWithoutChannelGroupMetaInput, Prisma.InvProductUncheckedUpdateWithoutChannelGroupMetaInput>
+}
+
+export type InvProductUpdateWithoutChannelGroupMetaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
+  brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
+  options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
+  reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+}
+
+export type InvProductUncheckedUpdateWithoutChannelGroupMetaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
+  reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
 }
 
 export type InvProductCreateManySpaceInput = {
@@ -1294,6 +1437,7 @@ export type InvProductUpdateWithoutSpaceInput = {
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutSpaceInput = {
@@ -1316,6 +1460,7 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
@@ -1378,6 +1523,7 @@ export type InvProductUpdateWithoutGroupInput = {
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutGroupInput = {
@@ -1400,6 +1546,7 @@ export type InvProductUncheckedUpdateWithoutGroupInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutGroupInput = {
@@ -1462,6 +1609,7 @@ export type InvProductUpdateWithoutBrandInput = {
   group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutBrandInput = {
@@ -1484,6 +1632,7 @@ export type InvProductUncheckedUpdateWithoutBrandInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  channelGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutBrandInput = {
@@ -1513,10 +1662,12 @@ export type InvProductUncheckedUpdateManyWithoutBrandInput = {
 
 export type InvProductCountOutputType = {
   options: number
+  channelGroupMeta: number
 }
 
 export type InvProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   options?: boolean | InvProductCountOutputTypeCountOptionsArgs
+  channelGroupMeta?: boolean | InvProductCountOutputTypeCountChannelGroupMetaArgs
 }
 
 /**
@@ -1534,6 +1685,13 @@ export type InvProductCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
  */
 export type InvProductCountOutputTypeCountOptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.InvProductOptionWhereInput
+}
+
+/**
+ * InvProductCountOutputType without action
+ */
+export type InvProductCountOutputTypeCountChannelGroupMetaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductChannelGroupMetaWhereInput
 }
 
 
@@ -1561,6 +1719,7 @@ export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
   options?: boolean | Prisma.InvProduct$optionsArgs<ExtArgs>
   reorderConfig?: boolean | Prisma.InvProduct$reorderConfigArgs<ExtArgs>
+  channelGroupMeta?: boolean | Prisma.InvProduct$channelGroupMetaArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invProduct"]>
 
@@ -1640,6 +1799,7 @@ export type InvProductInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
   options?: boolean | Prisma.InvProduct$optionsArgs<ExtArgs>
   reorderConfig?: boolean | Prisma.InvProduct$reorderConfigArgs<ExtArgs>
+  channelGroupMeta?: boolean | Prisma.InvProduct$channelGroupMetaArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InvProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1661,6 +1821,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     brand: Prisma.$BrandPayload<ExtArgs> | null
     options: Prisma.$InvProductOptionPayload<ExtArgs>[]
     reorderConfig: Prisma.$InvReorderConfigPayload<ExtArgs> | null
+    channelGroupMeta: Prisma.$ProductChannelGroupMetaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2080,6 +2241,7 @@ export interface Prisma__InvProductClient<T, Null = never, ExtArgs extends runti
   brand<T extends Prisma.InvProduct$brandArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$brandArgs<ExtArgs>>): Prisma.Prisma__BrandClient<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   options<T extends Prisma.InvProduct$optionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$optionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reorderConfig<T extends Prisma.InvProduct$reorderConfigArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$reorderConfigArgs<ExtArgs>>): Prisma.Prisma__InvReorderConfigClient<runtime.Types.Result.GetResult<Prisma.$InvReorderConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  channelGroupMeta<T extends Prisma.InvProduct$channelGroupMetaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$channelGroupMetaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductChannelGroupMetaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2582,6 +2744,30 @@ export type InvProduct$reorderConfigArgs<ExtArgs extends runtime.Types.Extension
    */
   include?: Prisma.InvReorderConfigInclude<ExtArgs> | null
   where?: Prisma.InvReorderConfigWhereInput
+}
+
+/**
+ * InvProduct.channelGroupMeta
+ */
+export type InvProduct$channelGroupMetaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductChannelGroupMeta
+   */
+  select?: Prisma.ProductChannelGroupMetaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProductChannelGroupMeta
+   */
+  omit?: Prisma.ProductChannelGroupMetaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductChannelGroupMetaInclude<ExtArgs> | null
+  where?: Prisma.ProductChannelGroupMetaWhereInput
+  orderBy?: Prisma.ProductChannelGroupMetaOrderByWithRelationInput | Prisma.ProductChannelGroupMetaOrderByWithRelationInput[]
+  cursor?: Prisma.ProductChannelGroupMetaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductChannelGroupMetaScalarFieldEnum | Prisma.ProductChannelGroupMetaScalarFieldEnum[]
 }
 
 /**

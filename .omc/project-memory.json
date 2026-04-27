@@ -1,0 +1,545 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1777097425735,
+  "projectRoot": "/Users/kaleos/projects/workdeck-app",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": ["package.json"]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": ["tsconfig.json"]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "16.1.6",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "19.2.4",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.4",
+        "category": "frontend"
+      },
+      {
+        "name": "@playwright/test",
+        "version": "1.58.2",
+        "category": "testing"
+      },
+      {
+        "name": "jest",
+        "version": "30.2.0",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build 2>&1 | grep -E \"✓ Compiled|error|Failed|Type error\" | head -5",
+    "testCommand": "npm test",
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev",
+      "postinstall": "prisma generate",
+      "build": "next build",
+      "start": "next start",
+      "lint": "eslint .",
+      "lint:fix": "eslint . --fix",
+      "format": "prettier --write .",
+      "format:check": "prettier --check .",
+      "typecheck": "tsc --noEmit",
+      "test": "jest",
+      "test:watch": "jest --watch",
+      "test:e2e": "playwright test",
+      "prepare": "husky"
+    }
+  },
+  "conventions": {
+    "namingStyle": "camelCase",
+    "importStyle": "ES modules",
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": ["app", "components", "docs", "lib", "scripts", "src"],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "agent": {
+      "path": "agent",
+      "purpose": null,
+      "fileCount": 6,
+      "lastAccessed": 1777097425712,
+      "keyFiles": ["Dockerfile", "docker-compose.yml", "package-lock.json", "package.json"]
+    },
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 3,
+      "lastAccessed": 1777097425713,
+      "keyFiles": ["favicon.ico", "globals.css", "layout.tsx"]
+    },
+    "components": {
+      "path": "components",
+      "purpose": "UI components",
+      "fileCount": 0,
+      "lastAccessed": 1777097425717,
+      "keyFiles": []
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1777097425718,
+      "keyFiles": ["emily-llm-design.md"]
+    },
+    "e2e": {
+      "path": "e2e",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1777097425718,
+      "keyFiles": ["auth-redirect.spec.ts"]
+    },
+    "lib": {
+      "path": "lib",
+      "purpose": "Library code",
+      "fileCount": 1,
+      "lastAccessed": 1777097425719,
+      "keyFiles": ["utils.ts"]
+    },
+    "prisma": {
+      "path": "prisma",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1777097425719,
+      "keyFiles": ["dev.db", "schema.prisma", "seed.ts"]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 5,
+      "lastAccessed": 1777097425719,
+      "keyFiles": [
+        "confirm-qa-user.mjs",
+        "preflight-channel-backfill.ts",
+        "test-inventory-analysis.ts",
+        "verify-channel-backfill.ts",
+        "verify-phase3-channels.ts"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 2,
+      "lastAccessed": 1777097425719,
+      "keyFiles": ["instrumentation-client.ts", "instrumentation.ts"]
+    },
+    "tasks": {
+      "path": "tasks",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1777097425720,
+      "keyFiles": ["000-sample.md"]
+    },
+    "test-results": {
+      "path": "test-results",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1777097425720,
+      "keyFiles": []
+    },
+    "worker": {
+      "path": "worker",
+      "purpose": null,
+      "fileCount": 7,
+      "lastAccessed": 1777097425720,
+      "keyFiles": ["ecosystem.config.cjs", "package-lock.json", "package.json", "tsconfig.json"]
+    },
+    "agent/node_modules": {
+      "path": "agent/node_modules",
+      "purpose": "Dependencies",
+      "fileCount": 1,
+      "lastAccessed": 1777097425721,
+      "keyFiles": []
+    },
+    "agent/src": {
+      "path": "agent/src",
+      "purpose": "Source code",
+      "fileCount": 6,
+      "lastAccessed": 1777097425721,
+      "keyFiles": ["heartbeat.ts", "index.ts", "logger.ts"]
+    },
+    "app/api": {
+      "path": "app/api",
+      "purpose": "API routes",
+      "fileCount": 0,
+      "lastAccessed": 1777097425722,
+      "keyFiles": []
+    },
+    "prisma/migrations": {
+      "path": "prisma/migrations",
+      "purpose": "Database migrations",
+      "fileCount": 1,
+      "lastAccessed": 1777097425722,
+      "keyFiles": ["migration_lock.toml"]
+    },
+    "prisma/scripts": {
+      "path": "prisma/scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 4,
+      "lastAccessed": 1777097425723,
+      "keyFiles": ["backfill-spaces.ts", "check-user.ts", "dump-inv-schema.ts"]
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 0,
+      "lastAccessed": 1777097425723,
+      "keyFiles": []
+    },
+    "src/lib": {
+      "path": "src/lib",
+      "purpose": "Library code",
+      "fileCount": 15,
+      "lastAccessed": 1777097425723,
+      "keyFiles": ["api-helpers.ts", "auth-redirect.ts", "date-range.ts"]
+    },
+    "src/types": {
+      "path": "src/types",
+      "purpose": "Type definitions",
+      "fileCount": 4,
+      "lastAccessed": 1777097425723,
+      "keyFiles": ["analysis.ts", "api.ts", "execution.ts"]
+    },
+    "worker/dist": {
+      "path": "worker/dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 39,
+      "lastAccessed": 1777097425724,
+      "keyFiles": ["analysis-poller.d.ts", "analysis-poller.js", "analysis-poller.js.map"]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "prisma/schema.prisma",
+      "accessCount": 35,
+      "lastAccessed": 1777172933097,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/sh/schemas.ts",
+      "accessCount": 26,
+      "lastAccessed": 1777172986415,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/pricing-scenarios/[scenarioId]/route.ts",
+      "accessCount": 23,
+      "lastAccessed": 1777166894990,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/pricing-scenarios/route.ts",
+      "accessCount": 16,
+      "lastAccessed": 1777158879355,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/settings/pricing-settings-form.tsx",
+      "accessCount": 15,
+      "lastAccessed": 1777194837608,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/settings/route.ts",
+      "accessCount": 14,
+      "lastAccessed": 1777131758905,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/product-detail-tabs.tsx",
+      "accessCount": 11,
+      "lastAccessed": 1777108221148,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/listings/group-detail-view.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1777113871249,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/production-runs/[runId]/route.ts",
+      "accessCount": 9,
+      "lastAccessed": 1777114251265,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/production-runs/route.ts",
+      "accessCount": 9,
+      "lastAccessed": 1777114416826,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/production/production-runs-table.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1777114096443,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/shipping/product-match-dialog.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1777120548881,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/sidebar.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1777121895535,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/sh/pricing-calc.ts",
+      "accessCount": 6,
+      "lastAccessed": 1777158352977,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/production/production-run-form-dialog.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1777113788350,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/deck-routes.ts",
+      "accessCount": 5,
+      "lastAccessed": 1777180003698,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/product-list.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1777097767379,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/products/[productId]/production-runs/route.ts",
+      "accessCount": 4,
+      "lastAccessed": 1777114042821,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/shipping/orders/[orderId]/items/[itemId]/match/route.ts",
+      "accessCount": 4,
+      "lastAccessed": 1777120194204,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/api-helpers.ts",
+      "accessCount": 4,
+      "lastAccessed": 1777121548118,
+      "type": "file"
+    },
+    {
+      "path": "app/d/seller-hub/products/pricing-sim/page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1777122090007,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/listings/product-listings-panel.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1777097794762,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/products/[productId]/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1777099941840,
+      "type": "file"
+    },
+    {
+      "path": "docs/rules/00-meta.md",
+      "accessCount": 3,
+      "lastAccessed": 1777113793010,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/shipping/alias-bulk-import-card.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1777113819938,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/pricing-options/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1777121781744,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/production-batch-table.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1777099404314,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/production/product-production-runs-panel.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1777113759762,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/listings/option-picker-dialog.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1777121953440,
+      "type": "file"
+    },
+    {
+      "path": "prisma/migrations/20260507000000_add_pricing_scenarios/migration.sql",
+      "accessCount": 2,
+      "lastAccessed": 1777128949413,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/products/[productId]/options/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777097727113,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/inventory/products/[productId]/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777097727306,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/products/[productId]/listings/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777097787864,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/inventory/movement-form.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777097879100,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/products/[productId]/options/[optionId]/batches/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777099139759,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/products/[productId]/options/[optionId]/batches/[batchId]/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777099140019,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/inv/movement-processor.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777099142862,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/inventory/movements/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777099152899,
+      "type": "file"
+    },
+    {
+      "path": "prisma/migrations/20260504000000_replace_production_batch_with_runs/migration.sql",
+      "accessCount": 1,
+      "lastAccessed": 1777099828443,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/products/listings/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777099951872,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/products/listings/[listingId]/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777099956603,
+      "type": "file"
+    },
+    {
+      "path": "docs/rules/01-core.md",
+      "accessCount": 1,
+      "lastAccessed": 1777107866945,
+      "type": "file"
+    },
+    {
+      "path": "src/components/sh/products/listings/groups-table.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777107871096,
+      "type": "file"
+    },
+    {
+      "path": "app/d/seller-hub/products/list/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777107927907,
+      "type": "file"
+    },
+    {
+      "path": "app/d/seller-hub/products/production/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777107941282,
+      "type": "file"
+    },
+    {
+      "path": "prisma/migrations/20260505000000_add_production_run_status_category_brand/migration.sql",
+      "accessCount": 1,
+      "lastAccessed": 1777113691479,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/shipping/aliases/bulk-import/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777113776273,
+      "type": "file"
+    },
+    {
+      "path": "app/api/sh/shipping/aliases/export/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777113805751,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/sh/product-matching.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777119537610,
+      "type": "file"
+    },
+    {
+      "path": "prisma/migrations/20260506000000_relax_alias_target_check/migration.sql",
+      "accessCount": 1,
+      "lastAccessed": 1777120161764,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

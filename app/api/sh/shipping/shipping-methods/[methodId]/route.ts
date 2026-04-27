@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { FIELD_LABELS, type DelFieldMapping } from '@/lib/del/format-templates'
+
+const MAX_LABEL_COLUMNS = 3
+const VALID_FIELDS = new Set(Object.keys(FIELD_LABELS) as DelFieldMapping[])
 
 type Params = { params: Promise<{ methodId: string }> }
 
@@ -48,6 +52,23 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data.formatConfig = body.formatConfig
   }
   if (typeof body?.isActive === 'boolean') data.isActive = body.isActive
+  if (body?.defaultSplitMode === 'option' || body?.defaultSplitMode === 'order') {
+    data.defaultSplitMode = body.defaultSplitMode
+  }
+  if (Array.isArray(body?.labelColumns)) {
+    // 유효한 DelFieldMapping 값만 남기고 최대 MAX_LABEL_COLUMNS개로 잘라냄.
+    const seen = new Set<string>()
+    const filtered: string[] = []
+    for (const c of body.labelColumns) {
+      if (typeof c !== 'string') continue
+      if (!VALID_FIELDS.has(c as DelFieldMapping)) continue
+      if (seen.has(c)) continue
+      seen.add(c)
+      filtered.push(c)
+      if (filtered.length >= MAX_LABEL_COLUMNS) break
+    }
+    data.labelColumns = filtered
+  }
 
   const updated = await prisma.delShippingMethod.update({
     where: { id: methodId },

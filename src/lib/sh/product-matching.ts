@@ -1,35 +1,60 @@
 /**
- * 배송 주문의 원본 상품 문자열 ↔ 카탈로그 옵션 매칭 유틸.
+ * 배송 주문의 원본 상품 문자열 ↔ 카탈로그 매칭 유틸.
  *
- * - 매칭은 "정규화된 원본명"을 key로 하는 정확 일치만 수행한다
- *   (퍼지 매칭은 필요 시 후속 과제).
- * - 정규화된 alias 는 ChannelProductAlias 테이블에 저장되어 다음 번
- *   같은 채널의 임포트에서 자동 매칭에 사용된다.
+ * 매칭 대상은 "판매채널 상품(ProductListing)" 또는 "단일 옵션(InvProductOption)"이다.
+ * ChannelProductAlias가 두 개 중 하나를 가리키고, 우선순위는 listingId > optionId.
+ * 단순 정규화 정확 일치만 지원 (퍼지 매칭은 후속).
  */
+
+export type AliasManualFulfillment = { optionId: string; quantity: number }
+
+export type MatchTarget = {
+  listingId?: string | null
+  optionId?: string | null
+  // 다중 수동 매칭: fulfillments가 있으면 우선 사용 (listingId/optionId 무시)
+  fulfillments?: AliasManualFulfillment[] | null
+}
 
 /**
  * 원본 상품 문자열을 별칭 key로 정규화한다.
- *
- * 적용 규칙:
- *  - trim
- *  - 연속 공백 → 단일 공백
- *  - 소문자화 (ko/en 혼용 파일 대응)
- *
- * 같은 채널 내에서 동일하다고 볼 수 있는 표기는 같은 key를 갖도록 한다.
- * 카탈로그 옵션명 자체를 비교할 때도 같은 정규화를 적용하면 일관.
+ * - trim
+ * - 연속 공백 → 단일 공백
+ * - 소문자화
  */
 export function normalizeAlias(raw: string): string {
   return raw.trim().replace(/\s+/g, ' ').toLocaleLowerCase()
 }
 
-type AliasRow = { aliasName: string; optionId: string }
+type AliasRow = {
+  aliasName: string
+  optionId?: string | null
+  listingId?: string | null
+  fulfillments?: AliasManualFulfillment[] | null
+}
 
 /**
- * 채널별 별칭 사전을 조회해 "정규화 alias → optionId" 맵을 반환한다.
- * 호출부에서 원본 상품명을 `normalizeAlias` 로 먼저 정규화한 뒤 맵을 조회하면 된다.
+ * 채널별 별칭 사전을 "정규화 alias → MatchTarget" 맵으로 변환한다.
+ * 우선순위: fulfillments(다중 수동) > listingId > optionId
  */
-export function buildAliasLookup(rows: AliasRow[]): Map<string, string> {
-  const map = new Map<string, string>()
-  for (const r of rows) map.set(r.aliasName, r.optionId)
+export function buildAliasLookup(rows: AliasRow[]): Map<string, MatchTarget> {
+  const map = new Map<string, MatchTarget>()
+  for (const r of rows) {
+    const current = map.get(r.aliasName)
+    const incoming: MatchTarget = {
+      listingId: r.listingId ?? null,
+      optionId: r.optionId ?? null,
+      fulfillments: r.fulfillments && r.fulfillments.length > 0 ? r.fulfillments : null,
+    }
+    if (!current) {
+      map.set(r.aliasName, incoming)
+      continue
+    }
+    // 우선순위: fulfillments > listing > option
+    const incomingPriority = incoming.fulfillments ? 3 : incoming.listingId ? 2 : 1
+    const currentPriority = current.fulfillments ? 3 : current.listingId ? 2 : 1
+    if (incomingPriority > currentPriority) {
+      map.set(r.aliasName, incoming)
+    }
+  }
   return map
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { CheckCircle2, Plus, Sparkles, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Plus, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -12,37 +13,216 @@ export type MatchedOption = {
   optionName: string
 }
 
+export type OrderFulfillment = {
+  optionId: string
+  productName: string
+  optionName: string
+  quantity: number
+}
+
 export type OrderProduct = {
   name: string
   quantity: number
   // 매칭된 카탈로그 옵션 — 배송 파일 생성 시 상품명 소스로 사용
   optionId?: string | null
+  listingId?: string | null
   matched?: MatchedOption | null
   // 저장된 DB 아이템 id — tempId 접두사가 없는 주문일 때만 존재 (매칭 API 호출용)
   itemId?: string | null
-}
-
-type OrderProductFieldsProps = {
-  value: OrderProduct[]
-  onChange: (products: OrderProduct[]) => void
-  maxItems?: number
-  invalid?: boolean
-  // 클릭 시 매칭 다이얼로그 오픈 — 상위에서 처리. 저장된 아이템에서만 활성.
-  onOpenMatch?: (index: number) => void
-  // 매칭 가능한 상태인지 (저장된 order + channelId 보유 시 true)
-  matchEnabled?: boolean
+  // 실제 출고 옵션·수량 (listing 매칭 팬아웃 또는 수동 입력)
+  fulfillments?: OrderFulfillment[] | null
 }
 
 const trimStart = (v: string) => v.replace(/^\s+/, '')
 
-export function OrderProductFields({
+/**
+ * 수량 입력 — 로컬 문자열 상태로 자유 편집 허용.
+ * Blur 또는 Enter 시 검증(>= 1 정수)하고 부모로 최종값 전달.
+ */
+function QtyInput({
+  value,
+  onCommit,
+  className,
+}: {
+  value: number
+  onCommit: (n: number) => void
+  className?: string
+}) {
+  const [local, setLocal] = useState(String(value))
+
+  useEffect(() => {
+    setLocal(String(value))
+  }, [value])
+
+  function commit() {
+    const digits = local.replace(/[^0-9]/g, '')
+    const n = digits === '' ? NaN : Number(digits)
+    const valid = Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1
+    setLocal(String(valid))
+    if (valid !== value) onCommit(valid)
+  }
+
+  return (
+    <Input
+      type="text"
+      inputMode="numeric"
+      value={local}
+      onChange={(e) => setLocal(e.target.value.replace(/[^0-9]/g, ''))}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          ;(e.target as HTMLInputElement).blur()
+        }
+      }}
+      className={cn('h-7 w-14 shrink-0 text-center text-xs', className)}
+    />
+  )
+}
+
+/**
+ * 트리 형식 fulfillment 표시:
+ *   ㄴ productName optionName / N개 (perSet장 × orderQty개)
+ *
+ * - 단일 옵션 매칭(fulfillments 없음, optionId만): matched 기반 가상 엔트리 1개
+ * - listing/manual 매칭: 저장된 fulfillments
+ * - 없음: 미매칭 amber 버튼 또는 null
+ */
+function MatchSummary({
+  product,
+  canMatch,
+  onOpen,
+  onClear,
+}: {
+  product: OrderProduct
+  canMatch: boolean
+  onOpen?: () => void
+  onClear?: () => void
+}) {
+  const matched = product.matched ?? null
+  const fulfillmentsForTree: OrderFulfillment[] =
+    product.fulfillments && product.fulfillments.length > 0
+      ? product.fulfillments
+      : matched && product.optionId
+        ? [
+            {
+              optionId: product.optionId,
+              productName: matched.productName,
+              optionName: matched.optionName,
+              quantity: product.quantity,
+            },
+          ]
+        : []
+
+  if (fulfillmentsForTree.length > 0) {
+    return (
+      <div
+        className={cn(
+          'flex w-full items-start gap-1 rounded-sm border border-emerald-200 bg-emerald-50/60 p-1',
+          canMatch && 'hover:bg-emerald-50'
+        )}
+      >
+        <button
+          type="button"
+          disabled={!canMatch}
+          onClick={canMatch ? onOpen : undefined}
+          className={cn(
+            'flex min-w-0 flex-1 flex-col gap-0.5 text-left',
+            canMatch && 'cursor-pointer'
+          )}
+          title={canMatch ? '매칭 수정' : '판매채널을 먼저 지정해 주세요'}
+        >
+          {fulfillmentsForTree.map((f, fi) => {
+            const perSet = product.quantity > 0 ? f.quantity / product.quantity : 0
+            const showBreakdown = Number.isInteger(perSet) && perSet >= 1 && product.quantity > 1
+            return (
+              <div
+                key={`${f.optionId}-${fi}`}
+                className="flex items-baseline gap-1 text-[10px] leading-tight text-emerald-800"
+              >
+                <span className="shrink-0 text-emerald-600/70">ㄴ</span>
+                <span className="truncate font-medium">
+                  {f.productName}{' '}
+                  {f.optionName && (
+                    <span className="font-normal text-emerald-700/90">{f.optionName}</span>
+                  )}
+                </span>
+                <span className="shrink-0">/ {f.quantity}개</span>
+                {showBreakdown && (
+                  <span className="shrink-0 text-emerald-700/70">
+                    ({perSet}장 × {product.quantity}개)
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </button>
+        {canMatch && onClear && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onClear()
+            }}
+            className="shrink-0 rounded-sm p-0.5 text-emerald-700/60 transition-colors hover:bg-emerald-100 hover:text-emerald-900"
+            title="매칭 해제"
+            aria-label="매칭 해제"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  if (product.name) {
+    return (
+      <button
+        type="button"
+        disabled={!canMatch}
+        onClick={canMatch ? onOpen : undefined}
+        className={cn(
+          'inline-flex w-full items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-left text-[10px] leading-tight text-amber-700',
+          canMatch && 'cursor-pointer hover:bg-amber-100'
+        )}
+        title={canMatch ? '상품 옵션 매칭' : '판매채널을 먼저 지정해 주세요'}
+      >
+        <Sparkles className="h-3 w-3 shrink-0" />
+        <span>{canMatch ? '상품 옵션 매칭' : '미매칭 (채널 필요)'}</span>
+      </button>
+    )
+  }
+
+  return null
+}
+
+/**
+ * 상품 이름 셀 — Textarea(name) + 삭제 버튼 + 매칭 트리.
+ * 수량은 별도 컬럼에서 관리 (OrderProductQtyCell).
+ */
+export function OrderProductNamesCell({
   value,
   onChange,
   maxItems = 10,
   invalid = false,
   onOpenMatch,
+  onClearMatch,
   matchEnabled = false,
-}: OrderProductFieldsProps) {
+  allowAdd = true,
+  allowRemove = true,
+  allowNameEdit = true,
+}: {
+  value: OrderProduct[]
+  onChange: (products: OrderProduct[]) => void
+  maxItems?: number
+  invalid?: boolean
+  onOpenMatch?: (index: number) => void
+  onClearMatch?: (index: number) => void
+  matchEnabled?: boolean
+  allowAdd?: boolean
+  allowRemove?: boolean
+  allowNameEdit?: boolean
+}) {
   function addProduct() {
     if (value.length >= maxItems) return
     onChange([...value, { name: '', quantity: 1 }])
@@ -52,91 +232,66 @@ export function OrderProductFields({
     onChange(value.filter((_, i) => i !== index))
   }
 
-  function updateProduct(index: number, field: 'name' | 'quantity', val: string | number) {
-    const next: OrderProduct[] = value.map((p, i) => {
-      if (i !== index) return p
-      // 상품명 직접 수정 시 기존 매칭 해제 (사용자 의도)
-      if (field === 'name') return { ...p, name: val as string, optionId: null, matched: null }
-      return { ...p, quantity: val as number }
-    })
-    onChange(next)
+  function updateName(index: number, name: string) {
+    onChange(
+      value.map((p, i) =>
+        i === index
+          ? {
+              ...p,
+              name,
+              optionId: null,
+              listingId: null,
+              matched: null,
+              fulfillments: null,
+            }
+          : p
+      )
+    )
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       {value.map((product, i) => {
-        const matched = product.matched ?? null
-        const canMatch = matchEnabled && !!product.itemId
+        // 채널이 있으면 매칭 가능 — itemId가 없어도(미저장 행) 부모가 저장 후 다이얼로그 오픈
+        const canMatch = matchEnabled
         return (
           <div key={i} className="space-y-1">
             <div className="flex items-start gap-1">
               <Textarea
                 rows={1}
                 title={product.name}
+                readOnly={!allowNameEdit}
                 className={cn(
                   'field-sizing-content max-h-12 min-h-7 resize-none px-2 py-1 text-xs leading-tight font-medium shadow-none md:text-xs',
-                  invalid && !product.name && 'border-destructive/50 ring-2 ring-destructive/50'
+                  invalid && !product.name && 'border-destructive/50 ring-2 ring-destructive/50',
+                  !allowNameEdit && 'cursor-default bg-muted/30'
                 )}
                 value={product.name}
-                onChange={(e) => updateProduct(i, 'name', trimStart(e.target.value))}
+                onChange={(e) => updateName(i, trimStart(e.target.value))}
                 placeholder={invalid ? '상품명 *' : '상품명'}
               />
-              <Input
-                className="h-7 w-14 shrink-0 [appearance:textfield] text-center text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                type="number"
-                min={1}
-                value={product.quantity}
-                onChange={(e) => {
-                  const n = Number(e.target.value)
-                  updateProduct(i, 'quantity', n >= 1 ? n : 1)
-                }}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 flex-shrink-0"
-                onClick={() => removeProduct(i)}
-                title="삭제"
-              >
-                <X className="h-3 w-3" />
-              </Button>
+              {allowRemove && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 flex-shrink-0"
+                  onClick={() => removeProduct(i)}
+                  title="삭제"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
             </div>
-            {matched ? (
-              <button
-                type="button"
-                disabled={!canMatch}
-                onClick={canMatch ? () => onOpenMatch?.(i) : undefined}
-                className={cn(
-                  'inline-flex w-full items-center gap-1 rounded-sm border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-left text-[10px] leading-tight text-emerald-700',
-                  canMatch && 'cursor-pointer hover:bg-emerald-100'
-                )}
-                title="매칭된 카탈로그 옵션"
-              >
-                <CheckCircle2 className="h-3 w-3 shrink-0" />
-                <span className="truncate">
-                  {matched.productName}
-                  {matched.optionName ? ` — ${matched.optionName}` : ''}
-                </span>
-              </button>
-            ) : product.name ? (
-              <button
-                type="button"
-                disabled={!canMatch}
-                onClick={canMatch ? () => onOpenMatch?.(i) : undefined}
-                className={cn(
-                  'inline-flex w-full items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-left text-[10px] leading-tight text-amber-700',
-                  canMatch && 'cursor-pointer hover:bg-amber-100'
-                )}
-                title={canMatch ? '카탈로그 옵션에 매칭' : '저장된 주문만 매칭 가능합니다'}
-              >
-                <Sparkles className="h-3 w-3 shrink-0" />
-                <span>{canMatch ? '카탈로그 매칭' : '미매칭'}</span>
-              </button>
-            ) : null}
+            <MatchSummary
+              product={product}
+              canMatch={canMatch}
+              onOpen={() => onOpenMatch?.(i)}
+              onClear={onClearMatch ? () => onClearMatch(i) : undefined}
+            />
           </div>
         )
       })}
-      {value.length < maxItems && (
+      {allowAdd && value.length < maxItems && (
         <Button
           variant="ghost"
           size="sm"
@@ -147,6 +302,46 @@ export function OrderProductFields({
           {invalid && value.length === 0 ? '상품 추가 *' : '상품 추가'}
         </Button>
       )}
+    </div>
+  )
+}
+
+/**
+ * 수량 셀 — 각 아이템마다 QtyInput 하나씩.
+ * 아이템별 세로 정렬을 맞추기 위해 상품 셀의 트리/매칭 영역 높이와 같은
+ * '보이지 않는 placeholder'를 함께 렌더한다.
+ */
+export function OrderProductQtyCell({
+  value,
+  onChange,
+  onItemPatch,
+}: {
+  value: OrderProduct[]
+  onChange: (products: OrderProduct[]) => void
+  // 저장된 DB 아이템의 수량이 바뀌었을 때 서버에 즉시 PATCH.
+  // 응답의 최신 fulfillments로 로컬 상태를 업데이트할 수 있도록 상위가 처리.
+  onItemPatch?: (itemId: string, patch: { quantity: number }) => void | Promise<void>
+}) {
+  function commitQty(index: number, qty: number) {
+    const cur = value[index]
+    if (!cur || cur.quantity === qty) return
+    onChange(value.map((p, i) => (i === index ? { ...p, quantity: qty } : p)))
+    if (cur.itemId && onItemPatch) {
+      void onItemPatch(cur.itemId, { quantity: qty })
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      {value.map((product, i) => (
+        <div key={i} className="space-y-1">
+          <QtyInput value={product.quantity} onCommit={(n) => commitQty(i, n)} />
+          {/* 상품 셀의 매칭 트리/버튼 높이와 맞추기 위한 invisible placeholder */}
+          <div aria-hidden className="invisible">
+            <MatchSummary product={product} canMatch={false} />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const name = typeof body?.name === 'string' ? body.name.trim() : ''
   const formatConfig = body?.formatConfig
+  const defaultSplitMode = body?.defaultSplitMode === 'option' ? 'option' : 'order'
 
   if (!name) return errorResponse('배송 방식 이름이 필요합니다', 400)
   if (!Array.isArray(formatConfig) || formatConfig.length === 0) {
@@ -44,6 +45,7 @@ export async function POST(req: NextRequest) {
       spaceId: resolved.space.id,
       name,
       formatConfig,
+      defaultSplitMode,
     },
   })
 

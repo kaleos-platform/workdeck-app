@@ -268,10 +268,14 @@ export type InvProductOptionWhereInput = {
   movements?: Prisma.InvMovementListRelationFilter
   stockLevels?: Prisma.InvStockLevelListRelationFilter
   locationMappings?: Prisma.InvLocationProductMapListRelationFilter
-  productionBatches?: Prisma.ProductionBatchListRelationFilter
+  productionRunItems?: Prisma.ProductionRunItemListRelationFilter
+  pricingScenarioItems?: Prisma.PricingScenarioItemListRelationFilter
   delOrderItems?: Prisma.DelOrderItemListRelationFilter
   channelAliases?: Prisma.ChannelProductAliasListRelationFilter
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentListRelationFilter
   shippingLabels?: Prisma.DelShippingMethodLabelListRelationFilter
+  listingItems?: Prisma.ProductListingItemListRelationFilter
+  fulfillments?: Prisma.DelOrderItemFulfillmentListRelationFilter
 }
 
 export type InvProductOptionOrderByWithRelationInput = {
@@ -290,10 +294,14 @@ export type InvProductOptionOrderByWithRelationInput = {
   movements?: Prisma.InvMovementOrderByRelationAggregateInput
   stockLevels?: Prisma.InvStockLevelOrderByRelationAggregateInput
   locationMappings?: Prisma.InvLocationProductMapOrderByRelationAggregateInput
-  productionBatches?: Prisma.ProductionBatchOrderByRelationAggregateInput
+  productionRunItems?: Prisma.ProductionRunItemOrderByRelationAggregateInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemOrderByRelationAggregateInput
   delOrderItems?: Prisma.DelOrderItemOrderByRelationAggregateInput
   channelAliases?: Prisma.ChannelProductAliasOrderByRelationAggregateInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentOrderByRelationAggregateInput
   shippingLabels?: Prisma.DelShippingMethodLabelOrderByRelationAggregateInput
+  listingItems?: Prisma.ProductListingItemOrderByRelationAggregateInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentOrderByRelationAggregateInput
 }
 
 export type InvProductOptionWhereUniqueInput = Prisma.AtLeast<{
@@ -315,10 +323,14 @@ export type InvProductOptionWhereUniqueInput = Prisma.AtLeast<{
   movements?: Prisma.InvMovementListRelationFilter
   stockLevels?: Prisma.InvStockLevelListRelationFilter
   locationMappings?: Prisma.InvLocationProductMapListRelationFilter
-  productionBatches?: Prisma.ProductionBatchListRelationFilter
+  productionRunItems?: Prisma.ProductionRunItemListRelationFilter
+  pricingScenarioItems?: Prisma.PricingScenarioItemListRelationFilter
   delOrderItems?: Prisma.DelOrderItemListRelationFilter
   channelAliases?: Prisma.ChannelProductAliasListRelationFilter
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentListRelationFilter
   shippingLabels?: Prisma.DelShippingMethodLabelListRelationFilter
+  listingItems?: Prisma.ProductListingItemListRelationFilter
+  fulfillments?: Prisma.DelOrderItemFulfillmentListRelationFilter
 }, "id">
 
 export type InvProductOptionOrderByWithAggregationInput = {
@@ -372,10 +384,14 @@ export type InvProductOptionCreateInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUncheckedCreateInput = {
@@ -393,10 +409,14 @@ export type InvProductOptionUncheckedCreateInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUpdateInput = {
@@ -414,10 +434,14 @@ export type InvProductOptionUpdateInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateInput = {
@@ -435,10 +459,14 @@ export type InvProductOptionUncheckedUpdateInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionCreateManyInput = {
@@ -672,26 +700,86 @@ export type InvProductOptionCreateNestedOneWithoutChannelAliasesInput = {
   connect?: Prisma.InvProductOptionWhereUniqueInput
 }
 
-export type InvProductOptionUpdateOneRequiredWithoutChannelAliasesNestedInput = {
+export type InvProductOptionUpdateOneWithoutChannelAliasesNestedInput = {
   create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutChannelAliasesInput, Prisma.InvProductOptionUncheckedCreateWithoutChannelAliasesInput>
   connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutChannelAliasesInput
   upsert?: Prisma.InvProductOptionUpsertWithoutChannelAliasesInput
+  disconnect?: Prisma.InvProductOptionWhereInput | boolean
+  delete?: Prisma.InvProductOptionWhereInput | boolean
   connect?: Prisma.InvProductOptionWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutChannelAliasesInput, Prisma.InvProductOptionUpdateWithoutChannelAliasesInput>, Prisma.InvProductOptionUncheckedUpdateWithoutChannelAliasesInput>
 }
 
-export type InvProductOptionCreateNestedOneWithoutProductionBatchesInput = {
-  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutProductionBatchesInput, Prisma.InvProductOptionUncheckedCreateWithoutProductionBatchesInput>
-  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutProductionBatchesInput
+export type InvProductOptionCreateNestedOneWithoutAliasFulfillmentsInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutAliasFulfillmentsInput, Prisma.InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutAliasFulfillmentsInput
   connect?: Prisma.InvProductOptionWhereUniqueInput
 }
 
-export type InvProductOptionUpdateOneRequiredWithoutProductionBatchesNestedInput = {
-  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutProductionBatchesInput, Prisma.InvProductOptionUncheckedCreateWithoutProductionBatchesInput>
-  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutProductionBatchesInput
-  upsert?: Prisma.InvProductOptionUpsertWithoutProductionBatchesInput
+export type InvProductOptionUpdateOneRequiredWithoutAliasFulfillmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutAliasFulfillmentsInput, Prisma.InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutAliasFulfillmentsInput
+  upsert?: Prisma.InvProductOptionUpsertWithoutAliasFulfillmentsInput
   connect?: Prisma.InvProductOptionWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutProductionBatchesInput, Prisma.InvProductOptionUpdateWithoutProductionBatchesInput>, Prisma.InvProductOptionUncheckedUpdateWithoutProductionBatchesInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutAliasFulfillmentsInput, Prisma.InvProductOptionUpdateWithoutAliasFulfillmentsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutAliasFulfillmentsInput>
+}
+
+export type InvProductOptionCreateNestedOneWithoutProductionRunItemsInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutProductionRunItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutProductionRunItemsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutProductionRunItemsInput
+  connect?: Prisma.InvProductOptionWhereUniqueInput
+}
+
+export type InvProductOptionUpdateOneRequiredWithoutProductionRunItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutProductionRunItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutProductionRunItemsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutProductionRunItemsInput
+  upsert?: Prisma.InvProductOptionUpsertWithoutProductionRunItemsInput
+  connect?: Prisma.InvProductOptionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutProductionRunItemsInput, Prisma.InvProductOptionUpdateWithoutProductionRunItemsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutProductionRunItemsInput>
+}
+
+export type InvProductOptionCreateNestedOneWithoutPricingScenarioItemsInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutPricingScenarioItemsInput
+  connect?: Prisma.InvProductOptionWhereUniqueInput
+}
+
+export type InvProductOptionUpdateOneWithoutPricingScenarioItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutPricingScenarioItemsInput
+  upsert?: Prisma.InvProductOptionUpsertWithoutPricingScenarioItemsInput
+  disconnect?: Prisma.InvProductOptionWhereInput | boolean
+  delete?: Prisma.InvProductOptionWhereInput | boolean
+  connect?: Prisma.InvProductOptionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUpdateWithoutPricingScenarioItemsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput>
+}
+
+export type InvProductOptionCreateNestedOneWithoutListingItemsInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutListingItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutListingItemsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutListingItemsInput
+  connect?: Prisma.InvProductOptionWhereUniqueInput
+}
+
+export type InvProductOptionUpdateOneRequiredWithoutListingItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutListingItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutListingItemsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutListingItemsInput
+  upsert?: Prisma.InvProductOptionUpsertWithoutListingItemsInput
+  connect?: Prisma.InvProductOptionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutListingItemsInput, Prisma.InvProductOptionUpdateWithoutListingItemsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutListingItemsInput>
+}
+
+export type InvProductOptionCreateNestedOneWithoutFulfillmentsInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutFulfillmentsInput, Prisma.InvProductOptionUncheckedCreateWithoutFulfillmentsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutFulfillmentsInput
+  connect?: Prisma.InvProductOptionWhereUniqueInput
+}
+
+export type InvProductOptionUpdateOneRequiredWithoutFulfillmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutFulfillmentsInput, Prisma.InvProductOptionUncheckedCreateWithoutFulfillmentsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutFulfillmentsInput
+  upsert?: Prisma.InvProductOptionUpsertWithoutFulfillmentsInput
+  connect?: Prisma.InvProductOptionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutFulfillmentsInput, Prisma.InvProductOptionUpdateWithoutFulfillmentsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutFulfillmentsInput>
 }
 
 export type InvProductOptionCreateWithoutProductInput = {
@@ -708,10 +796,14 @@ export type InvProductOptionCreateWithoutProductInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUncheckedCreateWithoutProductInput = {
@@ -728,10 +820,14 @@ export type InvProductOptionUncheckedCreateWithoutProductInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionCreateOrConnectWithoutProductInput = {
@@ -791,10 +887,14 @@ export type InvProductOptionCreateWithoutMovementsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUncheckedCreateWithoutMovementsInput = {
@@ -811,10 +911,14 @@ export type InvProductOptionUncheckedCreateWithoutMovementsInput = {
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionCreateOrConnectWithoutMovementsInput = {
@@ -847,10 +951,14 @@ export type InvProductOptionUpdateWithoutMovementsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateWithoutMovementsInput = {
@@ -867,10 +975,14 @@ export type InvProductOptionUncheckedUpdateWithoutMovementsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionCreateWithoutStockLevelsInput = {
@@ -887,10 +999,14 @@ export type InvProductOptionCreateWithoutStockLevelsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUncheckedCreateWithoutStockLevelsInput = {
@@ -907,10 +1023,14 @@ export type InvProductOptionUncheckedCreateWithoutStockLevelsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionCreateOrConnectWithoutStockLevelsInput = {
@@ -943,10 +1063,14 @@ export type InvProductOptionUpdateWithoutStockLevelsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateWithoutStockLevelsInput = {
@@ -963,10 +1087,14 @@ export type InvProductOptionUncheckedUpdateWithoutStockLevelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionCreateWithoutLocationMappingsInput = {
@@ -983,10 +1111,14 @@ export type InvProductOptionCreateWithoutLocationMappingsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUncheckedCreateWithoutLocationMappingsInput = {
@@ -1003,10 +1135,14 @@ export type InvProductOptionUncheckedCreateWithoutLocationMappingsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionCreateOrConnectWithoutLocationMappingsInput = {
@@ -1039,10 +1175,14 @@ export type InvProductOptionUpdateWithoutLocationMappingsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateWithoutLocationMappingsInput = {
@@ -1059,10 +1199,14 @@ export type InvProductOptionUncheckedUpdateWithoutLocationMappingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionCreateWithoutShippingLabelsInput = {
@@ -1080,9 +1224,13 @@ export type InvProductOptionCreateWithoutShippingLabelsInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUncheckedCreateWithoutShippingLabelsInput = {
@@ -1100,9 +1248,13 @@ export type InvProductOptionUncheckedCreateWithoutShippingLabelsInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionCreateOrConnectWithoutShippingLabelsInput = {
@@ -1136,9 +1288,13 @@ export type InvProductOptionUpdateWithoutShippingLabelsInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateWithoutShippingLabelsInput = {
@@ -1156,9 +1312,13 @@ export type InvProductOptionUncheckedUpdateWithoutShippingLabelsInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionCreateWithoutDelOrderItemsInput = {
@@ -1176,9 +1336,13 @@ export type InvProductOptionCreateWithoutDelOrderItemsInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUncheckedCreateWithoutDelOrderItemsInput = {
@@ -1196,9 +1360,13 @@ export type InvProductOptionUncheckedCreateWithoutDelOrderItemsInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionCreateOrConnectWithoutDelOrderItemsInput = {
@@ -1232,9 +1400,13 @@ export type InvProductOptionUpdateWithoutDelOrderItemsInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateWithoutDelOrderItemsInput = {
@@ -1252,9 +1424,13 @@ export type InvProductOptionUncheckedUpdateWithoutDelOrderItemsInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionCreateWithoutChannelAliasesInput = {
@@ -1272,9 +1448,13 @@ export type InvProductOptionCreateWithoutChannelAliasesInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionUncheckedCreateWithoutChannelAliasesInput = {
@@ -1292,9 +1472,13 @@ export type InvProductOptionUncheckedCreateWithoutChannelAliasesInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
-  productionBatches?: Prisma.ProductionBatchUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
 export type InvProductOptionCreateOrConnectWithoutChannelAliasesInput = {
@@ -1328,9 +1512,13 @@ export type InvProductOptionUpdateWithoutChannelAliasesInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateWithoutChannelAliasesInput = {
@@ -1348,12 +1536,16 @@ export type InvProductOptionUncheckedUpdateWithoutChannelAliasesInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
-export type InvProductOptionCreateWithoutProductionBatchesInput = {
+export type InvProductOptionCreateWithoutAliasFulfillmentsInput = {
   id?: string
   name: string
   sku?: string | null
@@ -1368,12 +1560,16 @@ export type InvProductOptionCreateWithoutProductionBatchesInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
-export type InvProductOptionUncheckedCreateWithoutProductionBatchesInput = {
+export type InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput = {
   id?: string
   productId: string
   name: string
@@ -1388,28 +1584,32 @@ export type InvProductOptionUncheckedCreateWithoutProductionBatchesInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
-export type InvProductOptionCreateOrConnectWithoutProductionBatchesInput = {
+export type InvProductOptionCreateOrConnectWithoutAliasFulfillmentsInput = {
   where: Prisma.InvProductOptionWhereUniqueInput
-  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutProductionBatchesInput, Prisma.InvProductOptionUncheckedCreateWithoutProductionBatchesInput>
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutAliasFulfillmentsInput, Prisma.InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput>
 }
 
-export type InvProductOptionUpsertWithoutProductionBatchesInput = {
-  update: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutProductionBatchesInput, Prisma.InvProductOptionUncheckedUpdateWithoutProductionBatchesInput>
-  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutProductionBatchesInput, Prisma.InvProductOptionUncheckedCreateWithoutProductionBatchesInput>
+export type InvProductOptionUpsertWithoutAliasFulfillmentsInput = {
+  update: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutAliasFulfillmentsInput, Prisma.InvProductOptionUncheckedUpdateWithoutAliasFulfillmentsInput>
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutAliasFulfillmentsInput, Prisma.InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput>
   where?: Prisma.InvProductOptionWhereInput
 }
 
-export type InvProductOptionUpdateToOneWithWhereWithoutProductionBatchesInput = {
+export type InvProductOptionUpdateToOneWithWhereWithoutAliasFulfillmentsInput = {
   where?: Prisma.InvProductOptionWhereInput
-  data: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutProductionBatchesInput, Prisma.InvProductOptionUncheckedUpdateWithoutProductionBatchesInput>
+  data: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutAliasFulfillmentsInput, Prisma.InvProductOptionUncheckedUpdateWithoutAliasFulfillmentsInput>
 }
 
-export type InvProductOptionUpdateWithoutProductionBatchesInput = {
+export type InvProductOptionUpdateWithoutAliasFulfillmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1424,12 +1624,16 @@ export type InvProductOptionUpdateWithoutProductionBatchesInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
-export type InvProductOptionUncheckedUpdateWithoutProductionBatchesInput = {
+export type InvProductOptionUncheckedUpdateWithoutAliasFulfillmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1444,9 +1648,461 @@ export type InvProductOptionUncheckedUpdateWithoutProductionBatchesInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+}
+
+export type InvProductOptionCreateWithoutProductionRunItemsInput = {
+  id?: string
+  name: string
+  sku?: string | null
+  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: string | null
+  setSizeLabel?: string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
+  stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
+  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
+  delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
+  channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
+  shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
+}
+
+export type InvProductOptionUncheckedCreateWithoutProductionRunItemsInput = {
+  id?: string
+  productId: string
+  name: string
+  sku?: string | null
+  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: string | null
+  setSizeLabel?: string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
+  stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
+  delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
+  channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
+}
+
+export type InvProductOptionCreateOrConnectWithoutProductionRunItemsInput = {
+  where: Prisma.InvProductOptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutProductionRunItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutProductionRunItemsInput>
+}
+
+export type InvProductOptionUpsertWithoutProductionRunItemsInput = {
+  update: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutProductionRunItemsInput, Prisma.InvProductOptionUncheckedUpdateWithoutProductionRunItemsInput>
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutProductionRunItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutProductionRunItemsInput>
+  where?: Prisma.InvProductOptionWhereInput
+}
+
+export type InvProductOptionUpdateToOneWithWhereWithoutProductionRunItemsInput = {
+  where?: Prisma.InvProductOptionWhereInput
+  data: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutProductionRunItemsInput, Prisma.InvProductOptionUncheckedUpdateWithoutProductionRunItemsInput>
+}
+
+export type InvProductOptionUpdateWithoutProductionRunItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
+  stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
+  delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
+  channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
+}
+
+export type InvProductOptionUncheckedUpdateWithoutProductionRunItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
+  stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
+  delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
+  channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+}
+
+export type InvProductOptionCreateWithoutPricingScenarioItemsInput = {
+  id?: string
+  name: string
+  sku?: string | null
+  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: string | null
+  setSizeLabel?: string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
+  stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
+  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
+  channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
+  shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
+}
+
+export type InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput = {
+  id?: string
+  productId: string
+  name: string
+  sku?: string | null
+  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: string | null
+  setSizeLabel?: string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
+  stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
+  channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
+}
+
+export type InvProductOptionCreateOrConnectWithoutPricingScenarioItemsInput = {
+  where: Prisma.InvProductOptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput>
+}
+
+export type InvProductOptionUpsertWithoutPricingScenarioItemsInput = {
+  update: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput>
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput>
+  where?: Prisma.InvProductOptionWhereInput
+}
+
+export type InvProductOptionUpdateToOneWithWhereWithoutPricingScenarioItemsInput = {
+  where?: Prisma.InvProductOptionWhereInput
+  data: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutPricingScenarioItemsInput, Prisma.InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput>
+}
+
+export type InvProductOptionUpdateWithoutPricingScenarioItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
+  stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
+  channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
+}
+
+export type InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
+  stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
+  channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+}
+
+export type InvProductOptionCreateWithoutListingItemsInput = {
+  id?: string
+  name: string
+  sku?: string | null
+  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: string | null
+  setSizeLabel?: string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
+  stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
+  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
+  delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
+  channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
+  shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
+}
+
+export type InvProductOptionUncheckedCreateWithoutListingItemsInput = {
+  id?: string
+  productId: string
+  name: string
+  sku?: string | null
+  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: string | null
+  setSizeLabel?: string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
+  stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
+  delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
+  channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
+}
+
+export type InvProductOptionCreateOrConnectWithoutListingItemsInput = {
+  where: Prisma.InvProductOptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutListingItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutListingItemsInput>
+}
+
+export type InvProductOptionUpsertWithoutListingItemsInput = {
+  update: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutListingItemsInput, Prisma.InvProductOptionUncheckedUpdateWithoutListingItemsInput>
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutListingItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutListingItemsInput>
+  where?: Prisma.InvProductOptionWhereInput
+}
+
+export type InvProductOptionUpdateToOneWithWhereWithoutListingItemsInput = {
+  where?: Prisma.InvProductOptionWhereInput
+  data: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutListingItemsInput, Prisma.InvProductOptionUncheckedUpdateWithoutListingItemsInput>
+}
+
+export type InvProductOptionUpdateWithoutListingItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
+  stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
+  delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
+  channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
+}
+
+export type InvProductOptionUncheckedUpdateWithoutListingItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
+  stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
+  delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
+  channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+}
+
+export type InvProductOptionCreateWithoutFulfillmentsInput = {
+  id?: string
+  name: string
+  sku?: string | null
+  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: string | null
+  setSizeLabel?: string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
+  stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
+  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
+  delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
+  channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentCreateNestedManyWithoutOptionInput
+  shippingLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemCreateNestedManyWithoutOptionInput
+}
+
+export type InvProductOptionUncheckedCreateWithoutFulfillmentsInput = {
+  id?: string
+  productId: string
+  name: string
+  sku?: string | null
+  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: string | null
+  setSizeLabel?: string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
+  stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
+  delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
+  channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedCreateNestedManyWithoutOptionInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutOptionInput
+  listingItems?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutOptionInput
+}
+
+export type InvProductOptionCreateOrConnectWithoutFulfillmentsInput = {
+  where: Prisma.InvProductOptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutFulfillmentsInput, Prisma.InvProductOptionUncheckedCreateWithoutFulfillmentsInput>
+}
+
+export type InvProductOptionUpsertWithoutFulfillmentsInput = {
+  update: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutFulfillmentsInput, Prisma.InvProductOptionUncheckedUpdateWithoutFulfillmentsInput>
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutFulfillmentsInput, Prisma.InvProductOptionUncheckedCreateWithoutFulfillmentsInput>
+  where?: Prisma.InvProductOptionWhereInput
+}
+
+export type InvProductOptionUpdateToOneWithWhereWithoutFulfillmentsInput = {
+  where?: Prisma.InvProductOptionWhereInput
+  data: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutFulfillmentsInput, Prisma.InvProductOptionUncheckedUpdateWithoutFulfillmentsInput>
+}
+
+export type InvProductOptionUpdateWithoutFulfillmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
+  stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
+  delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
+  channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+}
+
+export type InvProductOptionUncheckedUpdateWithoutFulfillmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
+  stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
+  delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
+  channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
+  shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionCreateManyProductInput = {
@@ -1476,10 +2132,14 @@ export type InvProductOptionUpdateWithoutProductInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateWithoutProductInput = {
@@ -1496,10 +2156,14 @@ export type InvProductOptionUncheckedUpdateWithoutProductInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
-  productionBatches?: Prisma.ProductionBatchUncheckedUpdateManyWithoutOptionNestedInput
+  productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
+  pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
+  aliasFulfillments?: Prisma.ChannelProductAliasFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
   shippingLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutOptionNestedInput
+  listingItems?: Prisma.ProductListingItemUncheckedUpdateManyWithoutOptionNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
 export type InvProductOptionUncheckedUpdateManyWithoutProductInput = {
@@ -1524,20 +2188,28 @@ export type InvProductOptionCountOutputType = {
   movements: number
   stockLevels: number
   locationMappings: number
-  productionBatches: number
+  productionRunItems: number
+  pricingScenarioItems: number
   delOrderItems: number
   channelAliases: number
+  aliasFulfillments: number
   shippingLabels: number
+  listingItems: number
+  fulfillments: number
 }
 
 export type InvProductOptionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   movements?: boolean | InvProductOptionCountOutputTypeCountMovementsArgs
   stockLevels?: boolean | InvProductOptionCountOutputTypeCountStockLevelsArgs
   locationMappings?: boolean | InvProductOptionCountOutputTypeCountLocationMappingsArgs
-  productionBatches?: boolean | InvProductOptionCountOutputTypeCountProductionBatchesArgs
+  productionRunItems?: boolean | InvProductOptionCountOutputTypeCountProductionRunItemsArgs
+  pricingScenarioItems?: boolean | InvProductOptionCountOutputTypeCountPricingScenarioItemsArgs
   delOrderItems?: boolean | InvProductOptionCountOutputTypeCountDelOrderItemsArgs
   channelAliases?: boolean | InvProductOptionCountOutputTypeCountChannelAliasesArgs
+  aliasFulfillments?: boolean | InvProductOptionCountOutputTypeCountAliasFulfillmentsArgs
   shippingLabels?: boolean | InvProductOptionCountOutputTypeCountShippingLabelsArgs
+  listingItems?: boolean | InvProductOptionCountOutputTypeCountListingItemsArgs
+  fulfillments?: boolean | InvProductOptionCountOutputTypeCountFulfillmentsArgs
 }
 
 /**
@@ -1574,8 +2246,15 @@ export type InvProductOptionCountOutputTypeCountLocationMappingsArgs<ExtArgs ext
 /**
  * InvProductOptionCountOutputType without action
  */
-export type InvProductOptionCountOutputTypeCountProductionBatchesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ProductionBatchWhereInput
+export type InvProductOptionCountOutputTypeCountProductionRunItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductionRunItemWhereInput
+}
+
+/**
+ * InvProductOptionCountOutputType without action
+ */
+export type InvProductOptionCountOutputTypeCountPricingScenarioItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PricingScenarioItemWhereInput
 }
 
 /**
@@ -1595,8 +2274,29 @@ export type InvProductOptionCountOutputTypeCountChannelAliasesArgs<ExtArgs exten
 /**
  * InvProductOptionCountOutputType without action
  */
+export type InvProductOptionCountOutputTypeCountAliasFulfillmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChannelProductAliasFulfillmentWhereInput
+}
+
+/**
+ * InvProductOptionCountOutputType without action
+ */
 export type InvProductOptionCountOutputTypeCountShippingLabelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.DelShippingMethodLabelWhereInput
+}
+
+/**
+ * InvProductOptionCountOutputType without action
+ */
+export type InvProductOptionCountOutputTypeCountListingItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductListingItemWhereInput
+}
+
+/**
+ * InvProductOptionCountOutputType without action
+ */
+export type InvProductOptionCountOutputTypeCountFulfillmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DelOrderItemFulfillmentWhereInput
 }
 
 
@@ -1616,10 +2316,14 @@ export type InvProductOptionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   movements?: boolean | Prisma.InvProductOption$movementsArgs<ExtArgs>
   stockLevels?: boolean | Prisma.InvProductOption$stockLevelsArgs<ExtArgs>
   locationMappings?: boolean | Prisma.InvProductOption$locationMappingsArgs<ExtArgs>
-  productionBatches?: boolean | Prisma.InvProductOption$productionBatchesArgs<ExtArgs>
+  productionRunItems?: boolean | Prisma.InvProductOption$productionRunItemsArgs<ExtArgs>
+  pricingScenarioItems?: boolean | Prisma.InvProductOption$pricingScenarioItemsArgs<ExtArgs>
   delOrderItems?: boolean | Prisma.InvProductOption$delOrderItemsArgs<ExtArgs>
   channelAliases?: boolean | Prisma.InvProductOption$channelAliasesArgs<ExtArgs>
+  aliasFulfillments?: boolean | Prisma.InvProductOption$aliasFulfillmentsArgs<ExtArgs>
   shippingLabels?: boolean | Prisma.InvProductOption$shippingLabelsArgs<ExtArgs>
+  listingItems?: boolean | Prisma.InvProductOption$listingItemsArgs<ExtArgs>
+  fulfillments?: boolean | Prisma.InvProductOption$fulfillmentsArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductOptionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invProductOption"]>
 
@@ -1673,10 +2377,14 @@ export type InvProductOptionInclude<ExtArgs extends runtime.Types.Extensions.Int
   movements?: boolean | Prisma.InvProductOption$movementsArgs<ExtArgs>
   stockLevels?: boolean | Prisma.InvProductOption$stockLevelsArgs<ExtArgs>
   locationMappings?: boolean | Prisma.InvProductOption$locationMappingsArgs<ExtArgs>
-  productionBatches?: boolean | Prisma.InvProductOption$productionBatchesArgs<ExtArgs>
+  productionRunItems?: boolean | Prisma.InvProductOption$productionRunItemsArgs<ExtArgs>
+  pricingScenarioItems?: boolean | Prisma.InvProductOption$pricingScenarioItemsArgs<ExtArgs>
   delOrderItems?: boolean | Prisma.InvProductOption$delOrderItemsArgs<ExtArgs>
   channelAliases?: boolean | Prisma.InvProductOption$channelAliasesArgs<ExtArgs>
+  aliasFulfillments?: boolean | Prisma.InvProductOption$aliasFulfillmentsArgs<ExtArgs>
   shippingLabels?: boolean | Prisma.InvProductOption$shippingLabelsArgs<ExtArgs>
+  listingItems?: boolean | Prisma.InvProductOption$listingItemsArgs<ExtArgs>
+  fulfillments?: boolean | Prisma.InvProductOption$fulfillmentsArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductOptionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InvProductOptionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1693,10 +2401,14 @@ export type $InvProductOptionPayload<ExtArgs extends runtime.Types.Extensions.In
     movements: Prisma.$InvMovementPayload<ExtArgs>[]
     stockLevels: Prisma.$InvStockLevelPayload<ExtArgs>[]
     locationMappings: Prisma.$InvLocationProductMapPayload<ExtArgs>[]
-    productionBatches: Prisma.$ProductionBatchPayload<ExtArgs>[]
+    productionRunItems: Prisma.$ProductionRunItemPayload<ExtArgs>[]
+    pricingScenarioItems: Prisma.$PricingScenarioItemPayload<ExtArgs>[]
     delOrderItems: Prisma.$DelOrderItemPayload<ExtArgs>[]
     channelAliases: Prisma.$ChannelProductAliasPayload<ExtArgs>[]
+    aliasFulfillments: Prisma.$ChannelProductAliasFulfillmentPayload<ExtArgs>[]
     shippingLabels: Prisma.$DelShippingMethodLabelPayload<ExtArgs>[]
+    listingItems: Prisma.$ProductListingItemPayload<ExtArgs>[]
+    fulfillments: Prisma.$DelOrderItemFulfillmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2108,10 +2820,14 @@ export interface Prisma__InvProductOptionClient<T, Null = never, ExtArgs extends
   movements<T extends Prisma.InvProductOption$movementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   stockLevels<T extends Prisma.InvProductOption$stockLevelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$stockLevelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvStockLevelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   locationMappings<T extends Prisma.InvProductOption$locationMappingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$locationMappingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvLocationProductMapPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  productionBatches<T extends Prisma.InvProductOption$productionBatchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$productionBatchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  productionRunItems<T extends Prisma.InvProductOption$productionRunItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$productionRunItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pricingScenarioItems<T extends Prisma.InvProductOption$pricingScenarioItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$pricingScenarioItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   delOrderItems<T extends Prisma.InvProductOption$delOrderItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$delOrderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelOrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channelAliases<T extends Prisma.InvProductOption$channelAliasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$channelAliasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelProductAliasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  aliasFulfillments<T extends Prisma.InvProductOption$aliasFulfillmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$aliasFulfillmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelProductAliasFulfillmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   shippingLabels<T extends Prisma.InvProductOption$shippingLabelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$shippingLabelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelShippingMethodLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  listingItems<T extends Prisma.InvProductOption$listingItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$listingItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductListingItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  fulfillments<T extends Prisma.InvProductOption$fulfillmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$fulfillmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelOrderItemFulfillmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2620,27 +3336,51 @@ export type InvProductOption$locationMappingsArgs<ExtArgs extends runtime.Types.
 }
 
 /**
- * InvProductOption.productionBatches
+ * InvProductOption.productionRunItems
  */
-export type InvProductOption$productionBatchesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type InvProductOption$productionRunItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the ProductionBatch
+   * Select specific fields to fetch from the ProductionRunItem
    */
-  select?: Prisma.ProductionBatchSelect<ExtArgs> | null
+  select?: Prisma.ProductionRunItemSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the ProductionBatch
+   * Omit specific fields from the ProductionRunItem
    */
-  omit?: Prisma.ProductionBatchOmit<ExtArgs> | null
+  omit?: Prisma.ProductionRunItemOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ProductionBatchInclude<ExtArgs> | null
-  where?: Prisma.ProductionBatchWhereInput
-  orderBy?: Prisma.ProductionBatchOrderByWithRelationInput | Prisma.ProductionBatchOrderByWithRelationInput[]
-  cursor?: Prisma.ProductionBatchWhereUniqueInput
+  include?: Prisma.ProductionRunItemInclude<ExtArgs> | null
+  where?: Prisma.ProductionRunItemWhereInput
+  orderBy?: Prisma.ProductionRunItemOrderByWithRelationInput | Prisma.ProductionRunItemOrderByWithRelationInput[]
+  cursor?: Prisma.ProductionRunItemWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ProductionBatchScalarFieldEnum | Prisma.ProductionBatchScalarFieldEnum[]
+  distinct?: Prisma.ProductionRunItemScalarFieldEnum | Prisma.ProductionRunItemScalarFieldEnum[]
+}
+
+/**
+ * InvProductOption.pricingScenarioItems
+ */
+export type InvProductOption$pricingScenarioItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PricingScenarioItem
+   */
+  select?: Prisma.PricingScenarioItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PricingScenarioItem
+   */
+  omit?: Prisma.PricingScenarioItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PricingScenarioItemInclude<ExtArgs> | null
+  where?: Prisma.PricingScenarioItemWhereInput
+  orderBy?: Prisma.PricingScenarioItemOrderByWithRelationInput | Prisma.PricingScenarioItemOrderByWithRelationInput[]
+  cursor?: Prisma.PricingScenarioItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PricingScenarioItemScalarFieldEnum | Prisma.PricingScenarioItemScalarFieldEnum[]
 }
 
 /**
@@ -2692,6 +3432,30 @@ export type InvProductOption$channelAliasesArgs<ExtArgs extends runtime.Types.Ex
 }
 
 /**
+ * InvProductOption.aliasFulfillments
+ */
+export type InvProductOption$aliasFulfillmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChannelProductAliasFulfillment
+   */
+  select?: Prisma.ChannelProductAliasFulfillmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChannelProductAliasFulfillment
+   */
+  omit?: Prisma.ChannelProductAliasFulfillmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelProductAliasFulfillmentInclude<ExtArgs> | null
+  where?: Prisma.ChannelProductAliasFulfillmentWhereInput
+  orderBy?: Prisma.ChannelProductAliasFulfillmentOrderByWithRelationInput | Prisma.ChannelProductAliasFulfillmentOrderByWithRelationInput[]
+  cursor?: Prisma.ChannelProductAliasFulfillmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChannelProductAliasFulfillmentScalarFieldEnum | Prisma.ChannelProductAliasFulfillmentScalarFieldEnum[]
+}
+
+/**
  * InvProductOption.shippingLabels
  */
 export type InvProductOption$shippingLabelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2713,6 +3477,54 @@ export type InvProductOption$shippingLabelsArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.DelShippingMethodLabelScalarFieldEnum | Prisma.DelShippingMethodLabelScalarFieldEnum[]
+}
+
+/**
+ * InvProductOption.listingItems
+ */
+export type InvProductOption$listingItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductListingItem
+   */
+  select?: Prisma.ProductListingItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProductListingItem
+   */
+  omit?: Prisma.ProductListingItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductListingItemInclude<ExtArgs> | null
+  where?: Prisma.ProductListingItemWhereInput
+  orderBy?: Prisma.ProductListingItemOrderByWithRelationInput | Prisma.ProductListingItemOrderByWithRelationInput[]
+  cursor?: Prisma.ProductListingItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductListingItemScalarFieldEnum | Prisma.ProductListingItemScalarFieldEnum[]
+}
+
+/**
+ * InvProductOption.fulfillments
+ */
+export type InvProductOption$fulfillmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DelOrderItemFulfillment
+   */
+  select?: Prisma.DelOrderItemFulfillmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DelOrderItemFulfillment
+   */
+  omit?: Prisma.DelOrderItemFulfillmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DelOrderItemFulfillmentInclude<ExtArgs> | null
+  where?: Prisma.DelOrderItemFulfillmentWhereInput
+  orderBy?: Prisma.DelOrderItemFulfillmentOrderByWithRelationInput | Prisma.DelOrderItemFulfillmentOrderByWithRelationInput[]
+  cursor?: Prisma.DelOrderItemFulfillmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DelOrderItemFulfillmentScalarFieldEnum | Prisma.DelOrderItemFulfillmentScalarFieldEnum[]
 }
 
 /**

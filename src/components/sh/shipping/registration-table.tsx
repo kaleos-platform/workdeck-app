@@ -21,7 +21,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  OrderProductFields,
+  OrderProductNamesCell,
+  OrderProductQtyCell,
   type OrderProduct,
 } from '@/components/sh/shipping/order-product-fields'
 import { cn } from '@/lib/utils'
@@ -60,6 +61,13 @@ type RegistrationTableProps = {
   selectedIds?: Set<string>
   onSelectionChange?: (ids: Set<string>) => void
   onOpenMatch?: (row: OrderRow, itemIndex: number) => void
+  onClearMatch?: (row: OrderRow, itemIndex: number) => void | Promise<void>
+  // 저장된 DB 아이템 수량 변경 시 서버 PATCH 콜백
+  onItemPatch?: (
+    orderId: string,
+    itemId: string,
+    patch: { quantity: number }
+  ) => void | Promise<void>
 }
 
 let tempCounter = 0
@@ -99,6 +107,8 @@ export function RegistrationTable({
   selectedIds,
   onSelectionChange,
   onOpenMatch,
+  onClearMatch,
+  onItemPatch,
 }: RegistrationTableProps) {
   const selectionEnabled = !!selectedIds && !!onSelectionChange
 
@@ -161,6 +171,7 @@ export function RegistrationTable({
               <TableHead className="min-w-[220px]">주소</TableHead>
               <TableHead className="min-w-[130px]">배송메시지</TableHead>
               <TableHead className="min-w-[220px]">상품</TableHead>
+              <TableHead className="min-w-[72px]">수량</TableHead>
               <TableHead className="min-w-[120px]">주문일자</TableHead>
               <TableHead className="min-w-[100px]">주문번호</TableHead>
               <TableHead className="min-w-[100px]">결제금액</TableHead>
@@ -172,7 +183,7 @@ export function RegistrationTable({
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={selectionEnabled ? 13 : 12}
+                  colSpan={selectionEnabled ? 14 : 13}
                   className="py-8 text-center text-muted-foreground"
                 >
                   주문을 추가해 주세요
@@ -297,12 +308,25 @@ export function RegistrationTable({
                       />
                     </TableCell>
                     <TableCell>
-                      <OrderProductFields
+                      <OrderProductNamesCell
                         value={row.items}
                         onChange={(items) => updateRow(row.tempId, 'items', items)}
                         invalid={missingProducts}
-                        matchEnabled={!row.tempId.startsWith('temp-') && !!row.channelId}
+                        matchEnabled={!!row.channelId}
                         onOpenMatch={(idx) => onOpenMatch?.(row, idx)}
+                        onClearMatch={onClearMatch ? (idx) => onClearMatch(row, idx) : undefined}
+                        allowAdd={row.tempId.startsWith('temp-')}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <OrderProductQtyCell
+                        value={row.items}
+                        onChange={(items) => updateRow(row.tempId, 'items', items)}
+                        onItemPatch={
+                          onItemPatch
+                            ? (itemId, patch) => onItemPatch(row.tempId, itemId, patch)
+                            : undefined
+                        }
                       />
                     </TableCell>
                     <TableCell>

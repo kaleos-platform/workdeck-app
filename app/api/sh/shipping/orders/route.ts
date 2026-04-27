@@ -43,8 +43,12 @@ export async function POST(req: NextRequest) {
     return errorResponse('완료된 배송 묶음에는 주문을 추가할 수 없습니다', 400)
   }
 
-  // 주문 일괄 생성
-  const createdOrders = []
+  // 주문 일괄 생성 — 각 input index에 대해 성공이면 order, 실패면 null
+  const resultByIndex: Array<{
+    index: number
+    id: string
+    items: Array<{ id: string; name: string; quantity: number }>
+  } | null> = new Array(ordersInput.length).fill(null)
   const errors: { index: number; message: string }[] = []
 
   for (let i = 0; i < ordersInput.length; i++) {
@@ -88,14 +92,34 @@ export async function POST(req: NextRequest) {
         },
         include: { items: true },
       })
-      createdOrders.push(order.id)
+      resultByIndex[i] = {
+        index: i,
+        id: order.id,
+        items: order.items.map((it) => ({ id: it.id, name: it.name, quantity: it.quantity })),
+      }
     } catch (err) {
       errors.push({ index: i, message: err instanceof Error ? err.message : '생성 실패' })
     }
   }
 
+  const createdOrders = resultByIndex.filter(
+    (
+      v
+    ): v is {
+      index: number
+      id: string
+      items: Array<{ id: string; name: string; quantity: number }>
+    } => v !== null
+  )
+
   return NextResponse.json(
-    { created: createdOrders.length, errors, orderIds: createdOrders },
+    {
+      created: createdOrders.length,
+      errors,
+      orderIds: createdOrders.map((o) => o.id),
+      // 각 성공 주문의 원본 input index + id + items — 클라이언트가 tempId → 실제 id 매핑 시 사용
+      orders: createdOrders,
+    },
     { status: 201 }
   )
 }

@@ -40,6 +40,7 @@ export type DelOrderItemMinAggregateOutputType = {
   name: string | null
   quantity: number | null
   optionId: string | null
+  listingId: string | null
 }
 
 export type DelOrderItemMaxAggregateOutputType = {
@@ -48,6 +49,7 @@ export type DelOrderItemMaxAggregateOutputType = {
   name: string | null
   quantity: number | null
   optionId: string | null
+  listingId: string | null
 }
 
 export type DelOrderItemCountAggregateOutputType = {
@@ -56,6 +58,7 @@ export type DelOrderItemCountAggregateOutputType = {
   name: number
   quantity: number
   optionId: number
+  listingId: number
   _all: number
 }
 
@@ -74,6 +77,7 @@ export type DelOrderItemMinAggregateInputType = {
   name?: true
   quantity?: true
   optionId?: true
+  listingId?: true
 }
 
 export type DelOrderItemMaxAggregateInputType = {
@@ -82,6 +86,7 @@ export type DelOrderItemMaxAggregateInputType = {
   name?: true
   quantity?: true
   optionId?: true
+  listingId?: true
 }
 
 export type DelOrderItemCountAggregateInputType = {
@@ -90,6 +95,7 @@ export type DelOrderItemCountAggregateInputType = {
   name?: true
   quantity?: true
   optionId?: true
+  listingId?: true
   _all?: true
 }
 
@@ -185,6 +191,7 @@ export type DelOrderItemGroupByOutputType = {
   name: string
   quantity: number
   optionId: string | null
+  listingId: string | null
   _count: DelOrderItemCountAggregateOutputType | null
   _avg: DelOrderItemAvgAggregateOutputType | null
   _sum: DelOrderItemSumAggregateOutputType | null
@@ -216,8 +223,11 @@ export type DelOrderItemWhereInput = {
   name?: Prisma.StringFilter<"DelOrderItem"> | string
   quantity?: Prisma.IntFilter<"DelOrderItem"> | number
   optionId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
+  listingId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
   order?: Prisma.XOR<Prisma.DelOrderScalarRelationFilter, Prisma.DelOrderWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionNullableScalarRelationFilter, Prisma.InvProductOptionWhereInput> | null
+  listing?: Prisma.XOR<Prisma.ProductListingNullableScalarRelationFilter, Prisma.ProductListingWhereInput> | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentListRelationFilter
 }
 
 export type DelOrderItemOrderByWithRelationInput = {
@@ -226,8 +236,11 @@ export type DelOrderItemOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   optionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  listingId?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.DelOrderOrderByWithRelationInput
   option?: Prisma.InvProductOptionOrderByWithRelationInput
+  listing?: Prisma.ProductListingOrderByWithRelationInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentOrderByRelationAggregateInput
 }
 
 export type DelOrderItemWhereUniqueInput = Prisma.AtLeast<{
@@ -239,8 +252,11 @@ export type DelOrderItemWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"DelOrderItem"> | string
   quantity?: Prisma.IntFilter<"DelOrderItem"> | number
   optionId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
+  listingId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
   order?: Prisma.XOR<Prisma.DelOrderScalarRelationFilter, Prisma.DelOrderWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionNullableScalarRelationFilter, Prisma.InvProductOptionWhereInput> | null
+  listing?: Prisma.XOR<Prisma.ProductListingNullableScalarRelationFilter, Prisma.ProductListingWhereInput> | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentListRelationFilter
 }, "id">
 
 export type DelOrderItemOrderByWithAggregationInput = {
@@ -249,6 +265,7 @@ export type DelOrderItemOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   optionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  listingId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DelOrderItemCountOrderByAggregateInput
   _avg?: Prisma.DelOrderItemAvgOrderByAggregateInput
   _max?: Prisma.DelOrderItemMaxOrderByAggregateInput
@@ -265,6 +282,7 @@ export type DelOrderItemScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"DelOrderItem"> | string
   quantity?: Prisma.IntWithAggregatesFilter<"DelOrderItem"> | number
   optionId?: Prisma.StringNullableWithAggregatesFilter<"DelOrderItem"> | string | null
+  listingId?: Prisma.StringNullableWithAggregatesFilter<"DelOrderItem"> | string | null
 }
 
 export type DelOrderItemCreateInput = {
@@ -273,6 +291,8 @@ export type DelOrderItemCreateInput = {
   quantity: number
   order: Prisma.DelOrderCreateNestedOneWithoutItemsInput
   option?: Prisma.InvProductOptionCreateNestedOneWithoutDelOrderItemsInput
+  listing?: Prisma.ProductListingCreateNestedOneWithoutDelItemsInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOrderItemInput
 }
 
 export type DelOrderItemUncheckedCreateInput = {
@@ -281,6 +301,8 @@ export type DelOrderItemUncheckedCreateInput = {
   name: string
   quantity: number
   optionId?: string | null
+  listingId?: string | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOrderItemInput
 }
 
 export type DelOrderItemUpdateInput = {
@@ -289,6 +311,8 @@ export type DelOrderItemUpdateInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   order?: Prisma.DelOrderUpdateOneRequiredWithoutItemsNestedInput
   option?: Prisma.InvProductOptionUpdateOneWithoutDelOrderItemsNestedInput
+  listing?: Prisma.ProductListingUpdateOneWithoutDelItemsNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOrderItemNestedInput
 }
 
 export type DelOrderItemUncheckedUpdateInput = {
@@ -297,6 +321,8 @@ export type DelOrderItemUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOrderItemNestedInput
 }
 
 export type DelOrderItemCreateManyInput = {
@@ -305,6 +331,7 @@ export type DelOrderItemCreateManyInput = {
   name: string
   quantity: number
   optionId?: string | null
+  listingId?: string | null
 }
 
 export type DelOrderItemUpdateManyMutationInput = {
@@ -319,6 +346,7 @@ export type DelOrderItemUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DelOrderItemListRelationFilter = {
@@ -337,6 +365,7 @@ export type DelOrderItemCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
+  listingId?: Prisma.SortOrder
 }
 
 export type DelOrderItemAvgOrderByAggregateInput = {
@@ -349,6 +378,7 @@ export type DelOrderItemMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
+  listingId?: Prisma.SortOrder
 }
 
 export type DelOrderItemMinOrderByAggregateInput = {
@@ -357,10 +387,16 @@ export type DelOrderItemMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
+  listingId?: Prisma.SortOrder
 }
 
 export type DelOrderItemSumOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
+}
+
+export type DelOrderItemScalarRelationFilter = {
+  is?: Prisma.DelOrderItemWhereInput
+  isNot?: Prisma.DelOrderItemWhereInput
 }
 
 export type DelOrderItemCreateNestedManyWithoutOptionInput = {
@@ -447,11 +483,69 @@ export type DelOrderItemUncheckedUpdateManyWithoutOrderNestedInput = {
   deleteMany?: Prisma.DelOrderItemScalarWhereInput | Prisma.DelOrderItemScalarWhereInput[]
 }
 
+export type DelOrderItemCreateNestedManyWithoutListingInput = {
+  create?: Prisma.XOR<Prisma.DelOrderItemCreateWithoutListingInput, Prisma.DelOrderItemUncheckedCreateWithoutListingInput> | Prisma.DelOrderItemCreateWithoutListingInput[] | Prisma.DelOrderItemUncheckedCreateWithoutListingInput[]
+  connectOrCreate?: Prisma.DelOrderItemCreateOrConnectWithoutListingInput | Prisma.DelOrderItemCreateOrConnectWithoutListingInput[]
+  createMany?: Prisma.DelOrderItemCreateManyListingInputEnvelope
+  connect?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+}
+
+export type DelOrderItemUncheckedCreateNestedManyWithoutListingInput = {
+  create?: Prisma.XOR<Prisma.DelOrderItemCreateWithoutListingInput, Prisma.DelOrderItemUncheckedCreateWithoutListingInput> | Prisma.DelOrderItemCreateWithoutListingInput[] | Prisma.DelOrderItemUncheckedCreateWithoutListingInput[]
+  connectOrCreate?: Prisma.DelOrderItemCreateOrConnectWithoutListingInput | Prisma.DelOrderItemCreateOrConnectWithoutListingInput[]
+  createMany?: Prisma.DelOrderItemCreateManyListingInputEnvelope
+  connect?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+}
+
+export type DelOrderItemUpdateManyWithoutListingNestedInput = {
+  create?: Prisma.XOR<Prisma.DelOrderItemCreateWithoutListingInput, Prisma.DelOrderItemUncheckedCreateWithoutListingInput> | Prisma.DelOrderItemCreateWithoutListingInput[] | Prisma.DelOrderItemUncheckedCreateWithoutListingInput[]
+  connectOrCreate?: Prisma.DelOrderItemCreateOrConnectWithoutListingInput | Prisma.DelOrderItemCreateOrConnectWithoutListingInput[]
+  upsert?: Prisma.DelOrderItemUpsertWithWhereUniqueWithoutListingInput | Prisma.DelOrderItemUpsertWithWhereUniqueWithoutListingInput[]
+  createMany?: Prisma.DelOrderItemCreateManyListingInputEnvelope
+  set?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+  disconnect?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+  delete?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+  connect?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+  update?: Prisma.DelOrderItemUpdateWithWhereUniqueWithoutListingInput | Prisma.DelOrderItemUpdateWithWhereUniqueWithoutListingInput[]
+  updateMany?: Prisma.DelOrderItemUpdateManyWithWhereWithoutListingInput | Prisma.DelOrderItemUpdateManyWithWhereWithoutListingInput[]
+  deleteMany?: Prisma.DelOrderItemScalarWhereInput | Prisma.DelOrderItemScalarWhereInput[]
+}
+
+export type DelOrderItemUncheckedUpdateManyWithoutListingNestedInput = {
+  create?: Prisma.XOR<Prisma.DelOrderItemCreateWithoutListingInput, Prisma.DelOrderItemUncheckedCreateWithoutListingInput> | Prisma.DelOrderItemCreateWithoutListingInput[] | Prisma.DelOrderItemUncheckedCreateWithoutListingInput[]
+  connectOrCreate?: Prisma.DelOrderItemCreateOrConnectWithoutListingInput | Prisma.DelOrderItemCreateOrConnectWithoutListingInput[]
+  upsert?: Prisma.DelOrderItemUpsertWithWhereUniqueWithoutListingInput | Prisma.DelOrderItemUpsertWithWhereUniqueWithoutListingInput[]
+  createMany?: Prisma.DelOrderItemCreateManyListingInputEnvelope
+  set?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+  disconnect?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+  delete?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+  connect?: Prisma.DelOrderItemWhereUniqueInput | Prisma.DelOrderItemWhereUniqueInput[]
+  update?: Prisma.DelOrderItemUpdateWithWhereUniqueWithoutListingInput | Prisma.DelOrderItemUpdateWithWhereUniqueWithoutListingInput[]
+  updateMany?: Prisma.DelOrderItemUpdateManyWithWhereWithoutListingInput | Prisma.DelOrderItemUpdateManyWithWhereWithoutListingInput[]
+  deleteMany?: Prisma.DelOrderItemScalarWhereInput | Prisma.DelOrderItemScalarWhereInput[]
+}
+
+export type DelOrderItemCreateNestedOneWithoutFulfillmentsInput = {
+  create?: Prisma.XOR<Prisma.DelOrderItemCreateWithoutFulfillmentsInput, Prisma.DelOrderItemUncheckedCreateWithoutFulfillmentsInput>
+  connectOrCreate?: Prisma.DelOrderItemCreateOrConnectWithoutFulfillmentsInput
+  connect?: Prisma.DelOrderItemWhereUniqueInput
+}
+
+export type DelOrderItemUpdateOneRequiredWithoutFulfillmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.DelOrderItemCreateWithoutFulfillmentsInput, Prisma.DelOrderItemUncheckedCreateWithoutFulfillmentsInput>
+  connectOrCreate?: Prisma.DelOrderItemCreateOrConnectWithoutFulfillmentsInput
+  upsert?: Prisma.DelOrderItemUpsertWithoutFulfillmentsInput
+  connect?: Prisma.DelOrderItemWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DelOrderItemUpdateToOneWithWhereWithoutFulfillmentsInput, Prisma.DelOrderItemUpdateWithoutFulfillmentsInput>, Prisma.DelOrderItemUncheckedUpdateWithoutFulfillmentsInput>
+}
+
 export type DelOrderItemCreateWithoutOptionInput = {
   id?: string
   name: string
   quantity: number
   order: Prisma.DelOrderCreateNestedOneWithoutItemsInput
+  listing?: Prisma.ProductListingCreateNestedOneWithoutDelItemsInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOrderItemInput
 }
 
 export type DelOrderItemUncheckedCreateWithoutOptionInput = {
@@ -459,6 +553,8 @@ export type DelOrderItemUncheckedCreateWithoutOptionInput = {
   orderId: string
   name: string
   quantity: number
+  listingId?: string | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOrderItemInput
 }
 
 export type DelOrderItemCreateOrConnectWithoutOptionInput = {
@@ -496,6 +592,7 @@ export type DelOrderItemScalarWhereInput = {
   name?: Prisma.StringFilter<"DelOrderItem"> | string
   quantity?: Prisma.IntFilter<"DelOrderItem"> | number
   optionId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
+  listingId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
 }
 
 export type DelOrderItemCreateWithoutOrderInput = {
@@ -503,6 +600,8 @@ export type DelOrderItemCreateWithoutOrderInput = {
   name: string
   quantity: number
   option?: Prisma.InvProductOptionCreateNestedOneWithoutDelOrderItemsInput
+  listing?: Prisma.ProductListingCreateNestedOneWithoutDelItemsInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOrderItemInput
 }
 
 export type DelOrderItemUncheckedCreateWithoutOrderInput = {
@@ -510,6 +609,8 @@ export type DelOrderItemUncheckedCreateWithoutOrderInput = {
   name: string
   quantity: number
   optionId?: string | null
+  listingId?: string | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOrderItemInput
 }
 
 export type DelOrderItemCreateOrConnectWithoutOrderInput = {
@@ -538,11 +639,108 @@ export type DelOrderItemUpdateManyWithWhereWithoutOrderInput = {
   data: Prisma.XOR<Prisma.DelOrderItemUpdateManyMutationInput, Prisma.DelOrderItemUncheckedUpdateManyWithoutOrderInput>
 }
 
+export type DelOrderItemCreateWithoutListingInput = {
+  id?: string
+  name: string
+  quantity: number
+  order: Prisma.DelOrderCreateNestedOneWithoutItemsInput
+  option?: Prisma.InvProductOptionCreateNestedOneWithoutDelOrderItemsInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOrderItemInput
+}
+
+export type DelOrderItemUncheckedCreateWithoutListingInput = {
+  id?: string
+  orderId: string
+  name: string
+  quantity: number
+  optionId?: string | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOrderItemInput
+}
+
+export type DelOrderItemCreateOrConnectWithoutListingInput = {
+  where: Prisma.DelOrderItemWhereUniqueInput
+  create: Prisma.XOR<Prisma.DelOrderItemCreateWithoutListingInput, Prisma.DelOrderItemUncheckedCreateWithoutListingInput>
+}
+
+export type DelOrderItemCreateManyListingInputEnvelope = {
+  data: Prisma.DelOrderItemCreateManyListingInput | Prisma.DelOrderItemCreateManyListingInput[]
+  skipDuplicates?: boolean
+}
+
+export type DelOrderItemUpsertWithWhereUniqueWithoutListingInput = {
+  where: Prisma.DelOrderItemWhereUniqueInput
+  update: Prisma.XOR<Prisma.DelOrderItemUpdateWithoutListingInput, Prisma.DelOrderItemUncheckedUpdateWithoutListingInput>
+  create: Prisma.XOR<Prisma.DelOrderItemCreateWithoutListingInput, Prisma.DelOrderItemUncheckedCreateWithoutListingInput>
+}
+
+export type DelOrderItemUpdateWithWhereUniqueWithoutListingInput = {
+  where: Prisma.DelOrderItemWhereUniqueInput
+  data: Prisma.XOR<Prisma.DelOrderItemUpdateWithoutListingInput, Prisma.DelOrderItemUncheckedUpdateWithoutListingInput>
+}
+
+export type DelOrderItemUpdateManyWithWhereWithoutListingInput = {
+  where: Prisma.DelOrderItemScalarWhereInput
+  data: Prisma.XOR<Prisma.DelOrderItemUpdateManyMutationInput, Prisma.DelOrderItemUncheckedUpdateManyWithoutListingInput>
+}
+
+export type DelOrderItemCreateWithoutFulfillmentsInput = {
+  id?: string
+  name: string
+  quantity: number
+  order: Prisma.DelOrderCreateNestedOneWithoutItemsInput
+  option?: Prisma.InvProductOptionCreateNestedOneWithoutDelOrderItemsInput
+  listing?: Prisma.ProductListingCreateNestedOneWithoutDelItemsInput
+}
+
+export type DelOrderItemUncheckedCreateWithoutFulfillmentsInput = {
+  id?: string
+  orderId: string
+  name: string
+  quantity: number
+  optionId?: string | null
+  listingId?: string | null
+}
+
+export type DelOrderItemCreateOrConnectWithoutFulfillmentsInput = {
+  where: Prisma.DelOrderItemWhereUniqueInput
+  create: Prisma.XOR<Prisma.DelOrderItemCreateWithoutFulfillmentsInput, Prisma.DelOrderItemUncheckedCreateWithoutFulfillmentsInput>
+}
+
+export type DelOrderItemUpsertWithoutFulfillmentsInput = {
+  update: Prisma.XOR<Prisma.DelOrderItemUpdateWithoutFulfillmentsInput, Prisma.DelOrderItemUncheckedUpdateWithoutFulfillmentsInput>
+  create: Prisma.XOR<Prisma.DelOrderItemCreateWithoutFulfillmentsInput, Prisma.DelOrderItemUncheckedCreateWithoutFulfillmentsInput>
+  where?: Prisma.DelOrderItemWhereInput
+}
+
+export type DelOrderItemUpdateToOneWithWhereWithoutFulfillmentsInput = {
+  where?: Prisma.DelOrderItemWhereInput
+  data: Prisma.XOR<Prisma.DelOrderItemUpdateWithoutFulfillmentsInput, Prisma.DelOrderItemUncheckedUpdateWithoutFulfillmentsInput>
+}
+
+export type DelOrderItemUpdateWithoutFulfillmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  order?: Prisma.DelOrderUpdateOneRequiredWithoutItemsNestedInput
+  option?: Prisma.InvProductOptionUpdateOneWithoutDelOrderItemsNestedInput
+  listing?: Prisma.ProductListingUpdateOneWithoutDelItemsNestedInput
+}
+
+export type DelOrderItemUncheckedUpdateWithoutFulfillmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
 export type DelOrderItemCreateManyOptionInput = {
   id?: string
   orderId: string
   name: string
   quantity: number
+  listingId?: string | null
 }
 
 export type DelOrderItemUpdateWithoutOptionInput = {
@@ -550,6 +748,8 @@ export type DelOrderItemUpdateWithoutOptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   order?: Prisma.DelOrderUpdateOneRequiredWithoutItemsNestedInput
+  listing?: Prisma.ProductListingUpdateOneWithoutDelItemsNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOrderItemNestedInput
 }
 
 export type DelOrderItemUncheckedUpdateWithoutOptionInput = {
@@ -557,6 +757,8 @@ export type DelOrderItemUncheckedUpdateWithoutOptionInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOrderItemNestedInput
 }
 
 export type DelOrderItemUncheckedUpdateManyWithoutOptionInput = {
@@ -564,6 +766,7 @@ export type DelOrderItemUncheckedUpdateManyWithoutOptionInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DelOrderItemCreateManyOrderInput = {
@@ -571,6 +774,7 @@ export type DelOrderItemCreateManyOrderInput = {
   name: string
   quantity: number
   optionId?: string | null
+  listingId?: string | null
 }
 
 export type DelOrderItemUpdateWithoutOrderInput = {
@@ -578,6 +782,8 @@ export type DelOrderItemUpdateWithoutOrderInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   option?: Prisma.InvProductOptionUpdateOneWithoutDelOrderItemsNestedInput
+  listing?: Prisma.ProductListingUpdateOneWithoutDelItemsNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOrderItemNestedInput
 }
 
 export type DelOrderItemUncheckedUpdateWithoutOrderInput = {
@@ -585,6 +791,8 @@ export type DelOrderItemUncheckedUpdateWithoutOrderInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOrderItemNestedInput
 }
 
 export type DelOrderItemUncheckedUpdateManyWithoutOrderInput = {
@@ -592,8 +800,72 @@ export type DelOrderItemUncheckedUpdateManyWithoutOrderInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
+export type DelOrderItemCreateManyListingInput = {
+  id?: string
+  orderId: string
+  name: string
+  quantity: number
+  optionId?: string | null
+}
+
+export type DelOrderItemUpdateWithoutListingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  order?: Prisma.DelOrderUpdateOneRequiredWithoutItemsNestedInput
+  option?: Prisma.InvProductOptionUpdateOneWithoutDelOrderItemsNestedInput
+  fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOrderItemNestedInput
+}
+
+export type DelOrderItemUncheckedUpdateWithoutListingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOrderItemNestedInput
+}
+
+export type DelOrderItemUncheckedUpdateManyWithoutListingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+
+/**
+ * Count Type DelOrderItemCountOutputType
+ */
+
+export type DelOrderItemCountOutputType = {
+  fulfillments: number
+}
+
+export type DelOrderItemCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  fulfillments?: boolean | DelOrderItemCountOutputTypeCountFulfillmentsArgs
+}
+
+/**
+ * DelOrderItemCountOutputType without action
+ */
+export type DelOrderItemCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DelOrderItemCountOutputType
+   */
+  select?: Prisma.DelOrderItemCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * DelOrderItemCountOutputType without action
+ */
+export type DelOrderItemCountOutputTypeCountFulfillmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DelOrderItemFulfillmentWhereInput
+}
 
 
 export type DelOrderItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -602,8 +874,12 @@ export type DelOrderItemSelect<ExtArgs extends runtime.Types.Extensions.Internal
   name?: boolean
   quantity?: boolean
   optionId?: boolean
+  listingId?: boolean
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
+  listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
+  fulfillments?: boolean | Prisma.DelOrderItem$fulfillmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.DelOrderItemCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["delOrderItem"]>
 
 export type DelOrderItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -612,8 +888,10 @@ export type DelOrderItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   name?: boolean
   quantity?: boolean
   optionId?: boolean
+  listingId?: boolean
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
+  listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
 }, ExtArgs["result"]["delOrderItem"]>
 
 export type DelOrderItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -622,8 +900,10 @@ export type DelOrderItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   name?: boolean
   quantity?: boolean
   optionId?: boolean
+  listingId?: boolean
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
+  listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
 }, ExtArgs["result"]["delOrderItem"]>
 
 export type DelOrderItemSelectScalar = {
@@ -632,20 +912,26 @@ export type DelOrderItemSelectScalar = {
   name?: boolean
   quantity?: boolean
   optionId?: boolean
+  listingId?: boolean
 }
 
-export type DelOrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "name" | "quantity" | "optionId", ExtArgs["result"]["delOrderItem"]>
+export type DelOrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "name" | "quantity" | "optionId" | "listingId", ExtArgs["result"]["delOrderItem"]>
 export type DelOrderItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
+  listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
+  fulfillments?: boolean | Prisma.DelOrderItem$fulfillmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.DelOrderItemCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DelOrderItemIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
+  listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
 }
 export type DelOrderItemIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
+  listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
 }
 
 export type $DelOrderItemPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -653,6 +939,8 @@ export type $DelOrderItemPayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     order: Prisma.$DelOrderPayload<ExtArgs>
     option: Prisma.$InvProductOptionPayload<ExtArgs> | null
+    listing: Prisma.$ProductListingPayload<ExtArgs> | null
+    fulfillments: Prisma.$DelOrderItemFulfillmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -660,6 +948,7 @@ export type $DelOrderItemPayload<ExtArgs extends runtime.Types.Extensions.Intern
     name: string
     quantity: number
     optionId: string | null
+    listingId: string | null
   }, ExtArgs["result"]["delOrderItem"]>
   composites: {}
 }
@@ -1056,6 +1345,8 @@ export interface Prisma__DelOrderItemClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   order<T extends Prisma.DelOrderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelOrderDefaultArgs<ExtArgs>>): Prisma.Prisma__DelOrderClient<runtime.Types.Result.GetResult<Prisma.$DelOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   option<T extends Prisma.DelOrderItem$optionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelOrderItem$optionArgs<ExtArgs>>): Prisma.Prisma__InvProductOptionClient<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  listing<T extends Prisma.DelOrderItem$listingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelOrderItem$listingArgs<ExtArgs>>): Prisma.Prisma__ProductListingClient<runtime.Types.Result.GetResult<Prisma.$ProductListingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  fulfillments<T extends Prisma.DelOrderItem$fulfillmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelOrderItem$fulfillmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelOrderItemFulfillmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1090,6 +1381,7 @@ export interface DelOrderItemFieldRefs {
   readonly name: Prisma.FieldRef<"DelOrderItem", 'String'>
   readonly quantity: Prisma.FieldRef<"DelOrderItem", 'Int'>
   readonly optionId: Prisma.FieldRef<"DelOrderItem", 'String'>
+  readonly listingId: Prisma.FieldRef<"DelOrderItem", 'String'>
 }
     
 
@@ -1502,6 +1794,49 @@ export type DelOrderItem$optionArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.InvProductOptionInclude<ExtArgs> | null
   where?: Prisma.InvProductOptionWhereInput
+}
+
+/**
+ * DelOrderItem.listing
+ */
+export type DelOrderItem$listingArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductListing
+   */
+  select?: Prisma.ProductListingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProductListing
+   */
+  omit?: Prisma.ProductListingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductListingInclude<ExtArgs> | null
+  where?: Prisma.ProductListingWhereInput
+}
+
+/**
+ * DelOrderItem.fulfillments
+ */
+export type DelOrderItem$fulfillmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DelOrderItemFulfillment
+   */
+  select?: Prisma.DelOrderItemFulfillmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DelOrderItemFulfillment
+   */
+  omit?: Prisma.DelOrderItemFulfillmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DelOrderItemFulfillmentInclude<ExtArgs> | null
+  where?: Prisma.DelOrderItemFulfillmentWhereInput
+  orderBy?: Prisma.DelOrderItemFulfillmentOrderByWithRelationInput | Prisma.DelOrderItemFulfillmentOrderByWithRelationInput[]
+  cursor?: Prisma.DelOrderItemFulfillmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DelOrderItemFulfillmentScalarFieldEnum | Prisma.DelOrderItemFulfillmentScalarFieldEnum[]
 }
 
 /**

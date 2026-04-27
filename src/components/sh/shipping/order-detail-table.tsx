@@ -31,11 +31,74 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { DeliveryFileDialog } from '@/components/sh/shipping/delivery-file-dialog'
+import {
+  OrderProductNamesCell,
+  OrderProductQtyCell,
+  type OrderProduct,
+} from '@/components/sh/shipping/order-product-fields'
+import { ProductMatchDialog } from '@/components/sh/shipping/product-match-dialog'
+
+interface OrderItemOption {
+  id: string
+  name: string
+  product?: {
+    id: string
+    name: string
+    internalName?: string | null
+    displayName?: string | null
+  } | null
+}
+
+interface OrderItemListing {
+  id: string
+  searchName: string
+  displayName: string
+}
+
+interface OrderItemFulfillment {
+  id: string
+  optionId: string
+  quantity: number
+  optionName: string
+  productName: string
+}
 
 interface OrderItem {
   id: string
   name: string
   quantity: number
+  optionId?: string | null
+  listingId?: string | null
+  option?: OrderItemOption | null
+  listing?: OrderItemListing | null
+  fulfillments?: OrderItemFulfillment[]
+}
+
+function toOrderProducts(items: OrderItem[]): OrderProduct[] {
+  return items.map((i) => ({
+    name: i.name,
+    quantity: i.quantity,
+    itemId: i.id,
+    optionId: i.option?.id ?? null,
+    listingId: i.listing?.id ?? null,
+    matched: i.option
+      ? {
+          optionId: i.option.id,
+          productName:
+            i.option.product?.displayName ??
+            i.option.product?.internalName ??
+            i.option.product?.name ??
+            '',
+          optionName: i.option.name,
+        }
+      : null,
+    fulfillments: (i.fulfillments ?? []).map((f) => ({
+      optionId: f.optionId,
+      productName: f.productName,
+      optionName: f.optionName,
+      quantity: f.quantity,
+    })),
+  }))
 }
 
 interface Channel {
@@ -46,6 +109,7 @@ interface Channel {
 interface ShippingMethod {
   id: string
   name: string
+  defaultSplitMode?: 'order' | 'option'
 }
 
 interface Order {
@@ -123,6 +187,16 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     channelId: '',
     items: [{ name: '', quantity: 1 }] as { name: string; quantity: number }[],
   })
+
+  // 매칭 다이얼로그 상태
+  const [matchTarget, setMatchTarget] = useState<{
+    orderId: string
+    itemId: string
+    itemIndex: number
+    rawName: string
+    orderQty: number
+    channelId: string | null
+  } | null>(null)
 
   // batchId 변경 시 필터/페이지 초기화
   const prevBatchId = useRef(batchId)
@@ -307,6 +381,46 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     }
   }
 
+  // 수량 즉시 반영
+  const handleItemPatch = useCallback(
+    async (orderId: string, itemId: string, patch: { quantity: number }) => {
+      try {
+        const res = await fetch(`/api/sh/shipping/orders/${orderId}/items/${itemId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data?.message ?? '수량 변경 실패')
+        }
+        const data = await res.json()
+        if (data.noChange) return
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id !== orderId
+              ? o
+              : {
+                  ...o,
+                  items: o.items.map((it) =>
+                    it.id !== itemId
+                      ? it
+                      : {
+                          ...it,
+                          quantity: data.item.quantity,
+                          fulfillments: data.item.fulfillments,
+                        }
+                  ),
+                }
+          )
+        )
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '수량 변경 실패')
+      }
+    },
+    []
+  )
+
   // 삭제
   const handleDelete = async () => {
     if (!editDialog.order) return
@@ -414,6 +528,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
               <TableHead className="text-xs">주문번호</TableHead>
               <TableHead className="text-right text-xs">결제금액</TableHead>
               <TableHead className="text-xs">상품</TableHead>
+              <TableHead className="text-xs">수량</TableHead>
               <TableHead className="text-xs">주문일자</TableHead>
               <TableHead className="text-xs">메모</TableHead>
               <TableHead className="w-[60px] text-xs" />
@@ -422,13 +537,13 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-8 text-center text-xs text-muted-foreground">
+                <TableCell colSpan={12} className="py-8 text-center text-xs text-muted-foreground">
                   로딩 중...
                 </TableCell>
               </TableRow>
             ) : filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-8 text-center text-xs text-muted-foreground">
+                <TableCell colSpan={12} className="py-8 text-center text-xs text-muted-foreground">
                   주문이 없습니다
                 </TableCell>
               </TableRow>
@@ -486,16 +601,62 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                   <TableCell className="text-right text-xs whitespace-nowrap">
                     {formatAmount(order.paymentAmount)}
                   </TableCell>
-                  <TableCell className="max-w-[220px] min-w-[150px]">
+                  <TableCell className="max-w-[280px] min-w-[200px] align-top">
                     {order.items.length === 0 ? (
                       <span className="text-xs">-</span>
                     ) : (
-                      <span
-                        className="line-clamp-2 text-xs break-keep"
-                        title={order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
-                      >
-                        {order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
-                      </span>
+                      <OrderProductNamesCell
+                        value={toOrderProducts(order.items)}
+                        onChange={() => {}}
+                        allowAdd={false}
+                        allowRemove={false}
+                        allowNameEdit={false}
+                        matchEnabled={!!order.channel}
+                        onOpenMatch={(idx) => {
+                          const item = order.items[idx]
+                          if (!item) return
+                          setMatchTarget({
+                            orderId: order.id,
+                            itemId: item.id,
+                            itemIndex: idx,
+                            rawName: item.name,
+                            orderQty: item.quantity,
+                            channelId: order.channel?.id ?? null,
+                          })
+                        }}
+                        onClearMatch={async (idx) => {
+                          const item = order.items[idx]
+                          if (!item) return
+                          try {
+                            const res = await fetch(
+                              `/api/sh/shipping/orders/${order.id}/items/${item.id}/match`,
+                              {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ mode: 'clear' }),
+                              }
+                            )
+                            if (!res.ok) {
+                              const data = await res.json().catch(() => ({}))
+                              throw new Error(data?.message ?? '매칭 해제 실패')
+                            }
+                            fetchOrders()
+                          } catch (err) {
+                            toast.error(err instanceof Error ? err.message : '매칭 해제 실패')
+                          }
+                        }}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell className="w-[80px] align-top">
+                    {order.items.length === 0 ? (
+                      <span className="text-xs">-</span>
+                    ) : (
+                      <OrderProductQtyCell
+                        value={toOrderProducts(order.items)}
+                        onChange={() => {}}
+                        onItemPatch={(itemId, patch) => handleItemPatch(order.id, itemId, patch)}
+                      />
                     )}
                   </TableCell>
                   <TableCell className="text-xs whitespace-nowrap">
@@ -762,6 +923,28 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 상품 옵션 매칭 다이얼로그 */}
+      {matchTarget && (
+        <ProductMatchDialog
+          open={!!matchTarget}
+          onOpenChange={(v) => {
+            if (!v) setMatchTarget(null)
+          }}
+          orderId={matchTarget.orderId}
+          itemId={matchTarget.itemId}
+          rawName={matchTarget.rawName}
+          orderQty={matchTarget.orderQty}
+          channelId={matchTarget.channelId}
+          channelName={orders.find((o) => o.id === matchTarget.orderId)?.channel?.name ?? null}
+          channelSet={!!matchTarget.channelId}
+          onMatched={() => {
+            setMatchTarget(null)
+            // 매칭 결과로 fulfillments가 완전히 교체되므로 전체 재조회가 가장 안전
+            fetchOrders()
+          }}
+        />
+      )}
     </div>
   )
 }

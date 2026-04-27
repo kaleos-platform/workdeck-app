@@ -62,83 +62,41 @@ function resolveItemField(item: ItemLine, field: DelFieldMapping): string | null
 }
 
 /**
+ * 주문 데이터로부터 배송 파일의 { headers, rows } 를 계산한다.
+ * Excel 생성 전 단계로 미리보기·Excel 생성 양쪽에서 공유.
+ */
+export function buildDeliveryRows(
+  orders: OrderWithItems[],
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' } = {}
+): { headers: string[]; rows: Record<string, string | number>[] } {
+  const rows = buildRowsInternal(orders, formatConfig, opts)
+  const headers = formatConfig.map((col) => col.label || '')
+  return { headers, rows }
+}
+
+/**
  * 주문 데이터로부터 배송 파일 Excel 버퍼를 생성한다.
+ *
+ * splitMode:
+ *  - 'order' (기본): 1 주문 = 1 행. 상품명 컬럼에 모든 옵션을 concat. 일반 택배사·쇼핑몰 포맷.
+ *  - 'option': 옵션 fulfillment 1개 = 1 행. 수취인 정보가 반복됨. 3PL·물류센터 포맷.
  */
 export function generateDeliveryFile(
   orders: OrderWithItems[],
-  formatConfig: DelFormatColumn[]
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' } = {}
 ): Buffer {
+  const rows = buildRowsInternal(orders, formatConfig, opts)
+
   const wb = XLSX.utils.book_new()
-
-  // 데이터 행 생성
-  const rows: Record<string, string | number>[] = []
-
-  for (const order of orders) {
-    // PII 복호화
-    const recipientName = decryptPii(order.recipientNameEnc, order.recipientNameIv)
-    const phone = decryptPii(order.phoneEnc, order.phoneIv)
-    const address = decryptPii(order.addressEnc, order.addressIv)
-
-    // 상품명: 아이템별로 오버라이드/매칭 적용 후 concat
-    const productNames = order.items
-      .map((i) => {
-        const n = resolveItemField(i, 'productName') ?? i.name
-        return `${n}(${i.quantity})`
-      })
-      .join(', ')
-    const totalQuantity = order.items.reduce((sum, i) => sum + i.quantity, 0)
-    // 바코드: override 있는 아이템만 모아 concat (없으면 빈 문자열)
-    const barcodes = order.items
-      .map((i) => resolveItemField(i, 'barcode'))
-      .filter((v): v is string => !!v)
-      .join(', ')
-
-    // 필드 값 매핑
-    const fieldValues: Record<string, string | number> = {
-      recipientName,
-      phone,
-      postalCode: order.postalCode ?? '',
-      fullAddress: address,
-      deliveryMessage: order.deliveryMessage ?? '',
-      productName: productNames,
-      productQuantity: totalQuantity,
-      orderNumber: order.orderNumber ?? '',
-      orderDate: formatDate(order.orderDate),
-      channelName: order.channel?.name ?? '',
-      trackingNumber: '',
-      barcode: barcodes,
-    }
-
-    const row: Record<string, string | number> = {}
-    for (const col of formatConfig) {
-      if (col.field) {
-        row[col.column] = fieldValues[col.field] ?? ''
-      } else if (col.defaultValue) {
-        row[col.column] = col.defaultValue
-      } else {
-        row[col.column] = ''
-      }
-    }
-    rows.push(row)
-  }
-
-  // 워크시트 생성
   const wsData: (string | number)[][] = []
 
-  // 헤더 행
-  const headerRow: (string | number)[] = []
-  for (const col of formatConfig) {
-    headerRow.push(col.label || '')
-  }
-  wsData.push(headerRow)
-
+  // 헤더
+  wsData.push(formatConfig.map((col) => col.label || ''))
   // 데이터 행
   for (const row of rows) {
-    const dataRow: (string | number)[] = []
-    for (const col of formatConfig) {
-      dataRow.push(row[col.column] ?? '')
-    }
-    wsData.push(dataRow)
+    wsData.push(formatConfig.map((col) => row[col.column] ?? ''))
   }
 
   const ws = XLSX.utils.aoa_to_sheet(wsData)
@@ -152,4 +110,87 @@ function formatDate(date: Date): string {
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
+}
+
+/**
+ * splitMode에 따라 주문을 행 단위로 펼친 최종 rows를 반환한다.
+ * PII는 복호화되어 포함됨 (호출부에서 권한 확인 선행 필요).
+ */
+function buildRowsInternal(
+  orders: OrderWithItems[],
+  formatConfig: DelFormatColumn[],
+  opts: { splitMode?: 'order' | 'option' }
+): Record<string, string | number>[] {
+  const splitMode = opts.splitMode ?? 'order'
+  const rows: Record<string, string | number>[] = []
+
+  function renderRow(fieldValues: Record<string, string | number>) {
+    const row: Record<string, string | number> = {}
+    for (const col of formatConfig) {
+      if (col.field) {
+        row[col.column] = fieldValues[col.field] ?? ''
+      } else if (col.defaultValue) {
+        row[col.column] = col.defaultValue
+      } else {
+        row[col.column] = ''
+      }
+    }
+    rows.push(row)
+  }
+
+  for (const order of orders) {
+    const recipientName = decryptPii(order.recipientNameEnc, order.recipientNameIv)
+    const phone = decryptPii(order.phoneEnc, order.phoneIv)
+    const address = decryptPii(order.addressEnc, order.addressIv)
+
+    const baseFields: Record<string, string | number> = {
+      recipientName,
+      phone,
+      postalCode: order.postalCode ?? '',
+      fullAddress: address,
+      deliveryMessage: order.deliveryMessage ?? '',
+      orderNumber: order.orderNumber ?? '',
+      orderDate: formatDate(order.orderDate),
+      channelName: order.channel?.name ?? '',
+      trackingNumber: '',
+    }
+
+    if (splitMode === 'option') {
+      if (order.items.length === 0) {
+        renderRow({ ...baseFields, productName: '', productQuantity: 0, barcode: '' })
+        continue
+      }
+      for (const item of order.items) {
+        const productName = resolveItemField(item, 'productName') ?? item.name
+        const barcode = resolveItemField(item, 'barcode') ?? ''
+        renderRow({
+          ...baseFields,
+          productName,
+          productQuantity: item.quantity,
+          barcode,
+        })
+      }
+    } else {
+      const productNames = order.items
+        .map((i) => {
+          const n = resolveItemField(i, 'productName') ?? i.name
+          return `${n}(${i.quantity})`
+        })
+        .join(', ')
+      const totalQuantity = order.items.reduce((sum, i) => sum + i.quantity, 0)
+      const barcodes = order.items
+        .map((i) => resolveItemField(i, 'barcode'))
+        .filter((v): v is string => !!v)
+        .join(', ')
+
+      renderRow({
+        ...baseFields,
+        productName: productNames,
+        productQuantity: totalQuantity,
+        barcode: barcodes,
+      })
+    }
+  }
+
+  return rows
 }

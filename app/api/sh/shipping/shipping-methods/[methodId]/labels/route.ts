@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const method = await prisma.delShippingMethod.findFirst({
     where: { id: methodId, spaceId: resolved.space.id },
-    select: { id: true, name: true, formatConfig: true },
+    select: { id: true, name: true, formatConfig: true, labelColumns: true },
   })
   if (!method) return errorResponse('배송 방식을 찾을 수 없습니다', 404)
 
@@ -101,7 +101,12 @@ export async function GET(req: NextRequest, { params }: Params) {
   })
 
   return NextResponse.json({
-    method: { id: method.id, name: method.name, formatConfig: method.formatConfig },
+    method: {
+      id: method.id,
+      name: method.name,
+      formatConfig: method.formatConfig,
+      labelColumns: Array.isArray(method.labelColumns) ? method.labelColumns : [],
+    },
     data: rows,
     total,
     page,

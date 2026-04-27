@@ -238,6 +238,11 @@ export type DelOrderItem = Prisma.DelOrderItemModel
  */
 export type ChannelProductAlias = Prisma.ChannelProductAliasModel
 /**
+ * Model ChannelProductAliasFulfillment
+ * 
+ */
+export type ChannelProductAliasFulfillment = Prisma.ChannelProductAliasFulfillmentModel
+/**
  * Model DelColumnMappingPreset
  * 
  */
@@ -268,10 +273,35 @@ export type Channel = Prisma.ChannelModel
  */
 export type ChannelFeeRate = Prisma.ChannelFeeRateModel
 /**
- * Model ProductionBatch
+ * Model ProductionRun
  * 
  */
-export type ProductionBatch = Prisma.ProductionBatchModel
+export type ProductionRun = Prisma.ProductionRunModel
+/**
+ * Model ProductionRunItem
+ * 
+ */
+export type ProductionRunItem = Prisma.ProductionRunItemModel
+/**
+ * Model ProductionRunCost
+ * 
+ */
+export type ProductionRunCost = Prisma.ProductionRunCostModel
+/**
+ * Model PricingScenario
+ * 
+ */
+export type PricingScenario = Prisma.PricingScenarioModel
+/**
+ * Model PricingScenarioChannel
+ * 
+ */
+export type PricingScenarioChannel = Prisma.PricingScenarioChannelModel
+/**
+ * Model PricingScenarioItem
+ * 
+ */
+export type PricingScenarioItem = Prisma.PricingScenarioItemModel
 /**
  * Model ProductPricingSettings
  * 
@@ -282,6 +312,26 @@ export type ProductPricingSettings = Prisma.ProductPricingSettingsModel
  * 
  */
 export type SpaceOptionCodeAlias = Prisma.SpaceOptionCodeAliasModel
+/**
+ * Model ProductListing
+ * 
+ */
+export type ProductListing = Prisma.ProductListingModel
+/**
+ * Model ProductListingItem
+ * 
+ */
+export type ProductListingItem = Prisma.ProductListingItemModel
+/**
+ * Model DelOrderItemFulfillment
+ * 
+ */
+export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel
+/**
+ * Model ProductChannelGroupMeta
+ * 
+ */
+export type ProductChannelGroupMeta = Prisma.ProductChannelGroupMetaModel
 /**
  * Model B2BProduct
  * 

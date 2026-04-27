@@ -46,7 +46,7 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
   const brandName = isCoupangDeck
     ? '쿠팡 광고 관리자'
     : isSellerHubDeck
-      ? '셀러 허브'
+      ? '브랜드 운영'
       : isSalesContentDeck
         ? '세일즈 콘텐츠'
         : 'Workdeck'

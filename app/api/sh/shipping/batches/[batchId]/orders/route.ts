@@ -41,8 +41,24 @@ export async function GET(req: NextRequest, { params }: Params) {
               select: {
                 id: true,
                 name: true,
-                product: {
-                  select: { id: true, name: true, internalName: true },
+                product: { select: { id: true, name: true, internalName: true } },
+              },
+            },
+            listing: {
+              select: {
+                id: true,
+                searchName: true,
+                displayName: true,
+              },
+            },
+            fulfillments: {
+              include: {
+                option: {
+                  select: {
+                    id: true,
+                    name: true,
+                    product: { select: { id: true, name: true, internalName: true } },
+                  },
                 },
               },
             },
@@ -99,7 +115,6 @@ export async function GET(req: NextRequest, { params }: Params) {
       items: order.items.map((item) => {
         const opt = item.option
         const prod = opt?.product
-        // 매칭된 상품 표시명 — 관리명이 있으면 관리명, 없으면 공식명
         const productDisplay = prod
           ? prod.internalName && prod.internalName.trim().length > 0
             ? prod.internalName
@@ -110,6 +125,7 @@ export async function GET(req: NextRequest, { params }: Params) {
           name: item.name,
           quantity: item.quantity,
           optionId: item.optionId,
+          listingId: item.listingId,
           option: opt
             ? {
                 id: opt.id,
@@ -117,13 +133,35 @@ export async function GET(req: NextRequest, { params }: Params) {
                 product: prod
                   ? {
                       id: prod.id,
-                      name: prod.name, // 공식명 유지
-                      internalName: prod.internalName, // 관리명
-                      displayName: productDisplay, // 내부 표시용 계산 결과
+                      name: prod.name,
+                      internalName: prod.internalName,
+                      displayName: productDisplay,
                     }
                   : null,
               }
             : null,
+          listing: item.listing
+            ? {
+                id: item.listing.id,
+                searchName: item.listing.searchName,
+                displayName: item.listing.displayName,
+              }
+            : null,
+          fulfillments: item.fulfillments.map((f) => {
+            const fprod = f.option.product
+            const fdisplay =
+              fprod.internalName && fprod.internalName.trim().length > 0
+                ? fprod.internalName
+                : fprod.name
+            return {
+              id: f.id,
+              optionId: f.optionId,
+              quantity: f.quantity,
+              optionName: f.option.name,
+              productId: fprod.id,
+              productName: fdisplay,
+            }
+          }),
         }
       }),
       createdAt: order.createdAt,

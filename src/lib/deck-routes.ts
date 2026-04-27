@@ -12,7 +12,7 @@ export function getCoupangAdsCampaignPath(campaignId: string): string {
 
 // ─── Seller Hub ───────────────────────────────────────────────────────────────
 export const SELLER_HUB_DECK_ID = 'seller-hub'
-export const SELLER_HUB_BASE_PATH = '/d/seller-hub'
+export const SELLER_HUB_BASE_PATH = '/d/seller-ops'
 export const SELLER_HUB_HOME_PATH = `${SELLER_HUB_BASE_PATH}/home`
 export const SELLER_HUB_SETTINGS_PATH = `${SELLER_HUB_BASE_PATH}/settings`
 
@@ -21,8 +21,19 @@ export const SELLER_HUB_PRODUCTS_LIST_PATH = `${SELLER_HUB_BASE_PATH}/products/l
 export const SELLER_HUB_BRANDS_PATH = `${SELLER_HUB_BASE_PATH}/products/brands`
 export const SELLER_HUB_PRICING_SIM_PATH = `${SELLER_HUB_BASE_PATH}/products/pricing-sim`
 export const SELLER_HUB_LISTINGS_PATH = `${SELLER_HUB_BASE_PATH}/products/listings`
+export const SELLER_HUB_LISTING_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/new`
+export const SELLER_HUB_PRODUCTION_PATH = `${SELLER_HUB_BASE_PATH}/products/production`
+export function getSellerHubProductionRunPath(runId: string) {
+  return `${SELLER_HUB_PRODUCTION_PATH}/${runId}`
+}
 export function getSellerHubProductPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/${id}`
+}
+export function getSellerHubListingPath(id: string) {
+  return `${SELLER_HUB_BASE_PATH}/products/listings/${id}`
+}
+export function getSellerHubListingGroupPath(productId: string, channelId: string) {
+  return `${SELLER_HUB_BASE_PATH}/products/listings/groups/${productId}/${channelId}`
 }
 
 // 재고 섹션

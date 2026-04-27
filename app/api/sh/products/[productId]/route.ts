@@ -17,11 +17,6 @@ export async function GET(
     include: {
       brand: { select: { id: true, name: true } },
       options: {
-        include: {
-          productionBatches: {
-            orderBy: { producedAt: 'desc' },
-          },
-        },
         orderBy: { name: 'asc' },
       },
     },
