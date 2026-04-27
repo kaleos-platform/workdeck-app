@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npx prisma migrate deploy && npx prisma generate && next build",
+  "buildCommand": "(npx prisma migrate resolve --rolled-back 20260422000000_backfill_channels --schema prisma/schema.prisma || true) && npx prisma migrate deploy && npx prisma generate && next build",
   "installCommand": "npm install",
   "regions": ["icn1"],
   "functions": {
