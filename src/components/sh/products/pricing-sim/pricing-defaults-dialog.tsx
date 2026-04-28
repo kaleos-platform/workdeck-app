@@ -20,7 +20,6 @@ import { cn } from '@/lib/utils'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
-/** 전체 17개 필드 — pricing-sim-main의 FullSettings와 호환 */
 export type PricingFullSettings = {
   // 기본 비용 (0~100 % 단위 그대로 DB 저장)
   defaultOperatingCostPct: number
@@ -35,9 +34,7 @@ export type PricingFullSettings = {
   // 반품 / 교환
   defaultReturnRate: number
   defaultReturnShipping: number
-  // 마진 등급 임계값 (0~1 단위 DB 저장, UI에서 % 표시)
-  selfMallTargetGood: number
-  selfMallTargetFair: number
+  // 마진 등급 임계값 (0~1 단위 DB 저장, UI에서 % 표시) — 단일 기준
   platformTargetGood: number
   platformTargetFair: number
   minimumAcceptableMargin: number
@@ -108,8 +105,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const retShipId = useId()
 
   // 마진 등급
-  const smGoodId = useId()
-  const smFairId = useId()
   const plGoodId = useId()
   const plFairId = useId()
   const minMgnId = useId()
@@ -140,8 +135,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   )
 
   // 마진 등급 (0~1 → % 표시)
-  const [selfMallGood, setSelfMallGood] = useState(String(initialSettings.selfMallTargetGood * 100))
-  const [selfMallFair, setSelfMallFair] = useState(String(initialSettings.selfMallTargetFair * 100))
   const [platformGood, setPlatformGood] = useState(String(initialSettings.platformTargetGood * 100))
   const [platformFair, setPlatformFair] = useState(String(initialSettings.platformTargetFair * 100))
   const [minMargin, setMinMargin] = useState(String(initialSettings.minimumAcceptableMargin * 100))
@@ -162,8 +155,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     setAutoShipping(s.autoApplyShipping)
     setReturnRate(String(s.defaultReturnRate * 100))
     setReturnShipping(String(s.defaultReturnShipping))
-    setSelfMallGood(String(s.selfMallTargetGood * 100))
-    setSelfMallFair(String(s.selfMallTargetFair * 100))
     setPlatformGood(String(s.platformTargetGood * 100))
     setPlatformFair(String(s.platformTargetFair * 100))
     setMinMargin(String(s.minimumAcceptableMargin * 100))
@@ -180,8 +171,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     initialSettings.autoApplyShipping,
     initialSettings.defaultReturnRate,
     initialSettings.defaultReturnShipping,
-    initialSettings.selfMallTargetGood,
-    initialSettings.selfMallTargetFair,
     initialSettings.platformTargetGood,
     initialSettings.platformTargetFair,
     initialSettings.minimumAcceptableMargin,
@@ -201,8 +190,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     setAutoShipping(s.autoApplyShipping)
     setReturnRate(String(s.defaultReturnRate * 100))
     setReturnShipping(String(s.defaultReturnShipping))
-    setSelfMallGood(String(s.selfMallTargetGood * 100))
-    setSelfMallFair(String(s.selfMallTargetFair * 100))
     setPlatformGood(String(s.platformTargetGood * 100))
     setPlatformFair(String(s.platformTargetFair * 100))
     setMinMargin(String(s.minimumAcceptableMargin * 100))
@@ -224,8 +211,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const shipVal = parseFloat(shippingCost)
   const retRateVal = parseFloat(returnRate)
   const retShipVal = parseFloat(returnShipping)
-  const smGoodVal = parseFloat(selfMallGood)
-  const smFairVal = parseFloat(selfMallFair)
   const plGoodVal = parseFloat(platformGood)
   const plFairVal = parseFloat(platformFair)
   const minMgnVal = parseFloat(minMargin)
@@ -238,8 +223,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     !isNaN(shipVal) &&
     !isNaN(retRateVal) &&
     !isNaN(retShipVal) &&
-    !isNaN(smGoodVal) &&
-    !isNaN(smFairVal) &&
     !isNaN(plGoodVal) &&
     !isNaN(plFairVal) &&
     !isNaN(minMgnVal)
@@ -257,8 +240,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
       autoShipping !== ref.autoApplyShipping ||
       retRateVal / 100 !== ref.defaultReturnRate ||
       retShipVal !== ref.defaultReturnShipping ||
-      smGoodVal / 100 !== ref.selfMallTargetGood ||
-      smFairVal / 100 !== ref.selfMallTargetFair ||
       plGoodVal / 100 !== ref.platformTargetGood ||
       plFairVal / 100 !== ref.platformTargetFair ||
       minMgnVal / 100 !== ref.minimumAcceptableMargin)
@@ -268,6 +249,10 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   async function handleSave() {
     if (!allValid) {
       toast.error('모든 항목에 유효한 숫자를 입력해 주세요')
+      return
+    }
+    if (plFairVal > plGoodVal) {
+      toast.error('적합 하한은 높음 임계보다 작아야 합니다')
       return
     }
 
@@ -280,7 +265,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
           defaultAdCostPct: adVal,
           defaultOperatingCostPct: opVal,
           defaultPackagingCost: packVal,
-          // % → 0~1 변환
           defaultChannelFeePct: chFeeVal / 100,
           defaultShippingCost: shipVal,
           defaultReturnRate: retRateVal / 100,
@@ -288,9 +272,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
           autoApplyChannelFee: autoChannelFee,
           autoApplyAdCost: autoAdCost,
           autoApplyShipping: autoShipping,
-          // % → 0~1 변환
-          selfMallTargetGood: smGoodVal / 100,
-          selfMallTargetFair: smFairVal / 100,
           platformTargetGood: plGoodVal / 100,
           platformTargetFair: plFairVal / 100,
           minimumAcceptableMargin: minMgnVal / 100,
@@ -302,7 +283,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
       const s = data.settings ?? data
 
-      // 서버 응답값으로 기준점 갱신 (Decimal → number 방어 변환)
       const saved: PricingFullSettings = {
         defaultAdCostPct: Number(s.defaultAdCostPct ?? adVal),
         defaultOperatingCostPct: Number(s.defaultOperatingCostPct ?? opVal),
@@ -314,15 +294,12 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         autoApplyShipping: Boolean(s.autoApplyShipping ?? autoShipping),
         defaultReturnRate: Number(s.defaultReturnRate ?? retRateVal / 100),
         defaultReturnShipping: Number(s.defaultReturnShipping ?? retShipVal),
-        selfMallTargetGood: Number(s.selfMallTargetGood ?? smGoodVal / 100),
-        selfMallTargetFair: Number(s.selfMallTargetFair ?? smFairVal / 100),
         platformTargetGood: Number(s.platformTargetGood ?? plGoodVal / 100),
         platformTargetFair: Number(s.platformTargetFair ?? plFairVal / 100),
         minimumAcceptableMargin: Number(s.minimumAcceptableMargin ?? minMgnVal / 100),
       }
 
       savedRef.current = saved
-      // 서버 정규화 값으로 input도 업데이트
       Promise.resolve().then(() => {
         setAdCost(String(saved.defaultAdCostPct))
         setOpCost(String(saved.defaultOperatingCostPct))
@@ -334,8 +311,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         setAutoShipping(saved.autoApplyShipping)
         setReturnRate(String(saved.defaultReturnRate * 100))
         setReturnShipping(String(saved.defaultReturnShipping))
-        setSelfMallGood(String(saved.selfMallTargetGood * 100))
-        setSelfMallFair(String(saved.selfMallTargetFair * 100))
         setPlatformGood(String(saved.platformTargetGood * 100))
         setPlatformFair(String(saved.platformTargetFair * 100))
         setMinMargin(String(saved.minimumAcceptableMargin * 100))
@@ -555,82 +530,47 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
           {/* ── 탭 4: 마진 등급 ── */}
           <TabsContent value="margin" className="mt-4 space-y-4">
             <p className="text-xs text-muted-foreground">
-              자사몰(SELF_MALL)과 플랫폼몰(오픈마켓·백화점·SNS 등) 기준으로 마진 등급을 분류합니다.
+              마진율을 등급으로 분류하는 임계값입니다. 모든 채널에 동일하게 적용됩니다.
             </p>
 
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">자사몰</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor={smGoodId} className="text-xs">
-                    높음 임계 (%)
-                  </Label>
-                  <SuffixInput
-                    id={smGoodId}
-                    value={selfMallGood}
-                    onChange={setSelfMallGood}
-                    suffix="%"
-                    min={0}
-                    max={100}
-                    step={0.1}
-                    placeholder="35"
-                    dirty={!isNaN(smGoodVal) && smGoodVal / 100 !== ref.selfMallTargetGood}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor={smFairId} className="text-xs">
-                    적합 하한 (%)
-                  </Label>
-                  <SuffixInput
-                    id={smFairId}
-                    value={selfMallFair}
-                    onChange={setSelfMallFair}
-                    suffix="%"
-                    min={0}
-                    max={100}
-                    step={0.1}
-                    placeholder="25"
-                    dirty={!isNaN(smFairVal) && smFairVal / 100 !== ref.selfMallTargetFair}
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor={plGoodId} className="text-xs">
+                  높음 임계 (%)
+                </Label>
+                <SuffixInput
+                  id={plGoodId}
+                  value={platformGood}
+                  onChange={setPlatformGood}
+                  suffix="%"
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  placeholder="25"
+                  dirty={!isNaN(plGoodVal) && plGoodVal / 100 !== ref.platformTargetGood}
+                />
+                <p className="text-xs text-muted-foreground">
+                  이 값 이상이면 &lsquo;높음&rsquo; 등급
+                </p>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">플랫폼몰</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor={plGoodId} className="text-xs">
-                    높음 임계 (%)
-                  </Label>
-                  <SuffixInput
-                    id={plGoodId}
-                    value={platformGood}
-                    onChange={setPlatformGood}
-                    suffix="%"
-                    min={0}
-                    max={100}
-                    step={0.1}
-                    placeholder="25"
-                    dirty={!isNaN(plGoodVal) && plGoodVal / 100 !== ref.platformTargetGood}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor={plFairId} className="text-xs">
-                    적합 하한 (%)
-                  </Label>
-                  <SuffixInput
-                    id={plFairId}
-                    value={platformFair}
-                    onChange={setPlatformFair}
-                    suffix="%"
-                    min={0}
-                    max={100}
-                    step={0.1}
-                    placeholder="15"
-                    dirty={!isNaN(plFairVal) && plFairVal / 100 !== ref.platformTargetFair}
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={plFairId} className="text-xs">
+                  적합 하한 (%)
+                </Label>
+                <SuffixInput
+                  id={plFairId}
+                  value={platformFair}
+                  onChange={setPlatformFair}
+                  suffix="%"
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  placeholder="15"
+                  dirty={!isNaN(plFairVal) && plFairVal / 100 !== ref.platformTargetFair}
+                />
+                <p className="text-xs text-muted-foreground">
+                  이 값 미만이면 &lsquo;낮음&rsquo; 등급
+                </p>
               </div>
             </div>
 

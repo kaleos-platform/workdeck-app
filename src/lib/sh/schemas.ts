@@ -199,9 +199,7 @@ export const pricingSettingsSchema = z.object({
   autoApplyChannelFee: z.boolean().default(false),
   autoApplyAdCost: z.boolean().default(false),
   autoApplyShipping: z.boolean().default(false),
-  // 마진 등급 임계값 — 0~1 비율 단위
-  selfMallTargetGood: z.number().min(0).max(1).default(0.35),
-  selfMallTargetFair: z.number().min(0).max(1).default(0.25),
+  // 마진 등급 임계값 — 0~1 비율 단위 (단일 기준)
   platformTargetGood: z.number().min(0).max(1).default(0.25),
   platformTargetFair: z.number().min(0).max(1).default(0.15),
   minimumAcceptableMargin: z.number().min(0).max(1).default(0.1),

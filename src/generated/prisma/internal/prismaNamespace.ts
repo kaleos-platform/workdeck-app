@@ -7413,8 +7413,6 @@ export const ProductPricingSettingsScalarFieldEnum = {
   autoApplyChannelFee: 'autoApplyChannelFee',
   autoApplyAdCost: 'autoApplyAdCost',
   autoApplyShipping: 'autoApplyShipping',
-  selfMallTargetGood: 'selfMallTargetGood',
-  selfMallTargetFair: 'selfMallTargetFair',
   platformTargetGood: 'platformTargetGood',
   platformTargetFair: 'platformTargetFair',
   minimumAcceptableMargin: 'minimumAcceptableMargin',

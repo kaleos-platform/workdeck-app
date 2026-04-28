@@ -1434,11 +1434,9 @@ model ProductPricingSettings {
   autoApplyChannelFee     Boolean @default(false) // 채널 수수료 자동 적용
   autoApplyAdCost         Boolean @default(false) // 광고비 자동 적용
   autoApplyShipping       Boolean @default(false) // 배송비 자동 적용
-  // 마진 등급 임계값 — 자사몰(SELF_MALL) / 플랫폼몰(그 외) 구분
-  selfMallTargetGood      Decimal @default(0.35) @db.Decimal(5, 4) // 자사몰 마진 '높음' 임계
-  selfMallTargetFair      Decimal @default(0.25) @db.Decimal(5, 4) // 자사몰 '적합' 하한
-  platformTargetGood      Decimal @default(0.25) @db.Decimal(5, 4) // 플랫폼몰 '높음' 임계
-  platformTargetFair      Decimal @default(0.15) @db.Decimal(5, 4) // 플랫폼몰 '적합' 하한
+  // 마진 등급 임계값 — 단일 기준 (사용자가 설정 페이지에서 조정 가능)
+  platformTargetGood      Decimal @default(0.25) @db.Decimal(5, 4) // '높음' 임계
+  platformTargetFair      Decimal @default(0.15) @db.Decimal(5, 4) // '적합' 하한
   minimumAcceptableMargin Decimal @default(0.10) @db.Decimal(5, 4) // 최소 허용 마진 (할인 한계 계산용)
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
