@@ -228,6 +228,7 @@ export type IdeaGeneratedBy = (typeof IdeaGeneratedBy)[keyof typeof IdeaGenerate
 
 
 export const ContentStatus = {
+  TODO: 'TODO',
   DRAFT: 'DRAFT',
   IN_REVIEW: 'IN_REVIEW',
   APPROVED: 'APPROVED',

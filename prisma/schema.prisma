@@ -1798,6 +1798,7 @@ enum IdeaGeneratedBy {
 // ─── Sales Content Deck (콘텐츠 제작) ────────────────────────────────────────
 
 enum ContentStatus {
+  TODO        // 신규 — 토픽만 선정된 상태 (본문 없음)
   DRAFT
   IN_REVIEW
   APPROVED

@@ -10,7 +10,7 @@ import { Editor } from '@/components/sc/editor/editor'
 import { ImagePicker } from '@/components/sc/editor/image-picker'
 import { ContentStatusBadge } from './content-status-badge'
 
-type Status = 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'SCHEDULED' | 'PUBLISHED' | 'ANALYZED'
+type Status = 'TODO' | 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'SCHEDULED' | 'PUBLISHED' | 'ANALYZED'
 
 type Props = {
   contentId: string
@@ -21,6 +21,7 @@ type Props = {
 }
 
 const TRANSITION_LABEL: Record<Status, string> = {
+  TODO: '할 일',
   DRAFT: '초안으로 되돌리기',
   IN_REVIEW: '검토 요청',
   APPROVED: '승인',

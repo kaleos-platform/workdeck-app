@@ -1,8 +1,9 @@
 import { Badge } from '@/components/ui/badge'
 
-type Status = 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'SCHEDULED' | 'PUBLISHED' | 'ANALYZED'
+type Status = 'TODO' | 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'SCHEDULED' | 'PUBLISHED' | 'ANALYZED'
 
 const LABEL: Record<Status, string> = {
+  TODO: '할 일',
   DRAFT: '초안',
   IN_REVIEW: '검토 중',
   APPROVED: '승인',
@@ -12,6 +13,7 @@ const LABEL: Record<Status, string> = {
 }
 
 const VARIANT: Record<Status, 'default' | 'outline' | 'secondary'> = {
+  TODO: 'outline',
   DRAFT: 'outline',
   IN_REVIEW: 'secondary',
   APPROVED: 'default',

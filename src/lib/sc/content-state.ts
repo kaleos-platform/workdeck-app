@@ -1,10 +1,12 @@
 // Content 상태 머신. D11:
-//   DRAFT → IN_REVIEW → APPROVED → SCHEDULED → PUBLISHED → ANALYZED
+//   TODO → DRAFT → IN_REVIEW → APPROVED → SCHEDULED → PUBLISHED → ANALYZED
 //   APPROVED → DRAFT (한 방향 역전만 허용 — 승인 후 재작성)
+//   TODO: 토픽만 선정된 상태 (본문 없음) — 아이데이션에서 "콘텐츠로 보내기" 시 진입
 
 import type { ContentStatus } from '@/generated/prisma/client'
 
 const TRANSITIONS: Record<ContentStatus, ContentStatus[]> = {
+  TODO: ['DRAFT'], // 작성 시작 시 DRAFT 전환
   DRAFT: ['IN_REVIEW'],
   IN_REVIEW: ['APPROVED', 'DRAFT'], // 리뷰 반려 시 DRAFT 복귀
   APPROVED: ['SCHEDULED', 'PUBLISHED', 'DRAFT'],

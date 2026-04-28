@@ -6,7 +6,7 @@ import { SALES_CONTENT_CONTENTS_PATH } from '@/lib/deck-routes'
 type ContentRow = {
   id: string
   title: string
-  status: 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'SCHEDULED' | 'PUBLISHED' | 'ANALYZED'
+  status: 'TODO' | 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'SCHEDULED' | 'PUBLISHED' | 'ANALYZED'
   updatedAt: Date
   channel: { id: string; name: string; platform: string } | null
 }
