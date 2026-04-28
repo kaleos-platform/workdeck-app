@@ -241,7 +241,9 @@ export function Sidebar({
   }
 
   return (
-    <div className="flex h-full w-64 flex-shrink-0 flex-col bg-slate-900 py-4 text-white">
+    <div
+      className={`flex h-full flex-shrink-0 flex-col bg-slate-900 py-4 text-white ${isSalesContentSidebar ? 'w-56' : 'w-64'}`}
+    >
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         {isWorkdeckSidebar && (
           <>
@@ -319,7 +321,7 @@ export function Sidebar({
         )}
 
         {isSalesContentSidebar && (
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {SALES_CONTENT_FLAT_ROUTES.map((route) => {
               // 설정 항목: /settings/* 또는 기존 /channels, /rules 에서도 active
               const isSettingsRoute = route.href === SALES_CONTENT_SETTINGS_PATH
@@ -333,11 +335,12 @@ export function Sidebar({
                   key={route.href}
                   href={route.href}
                   className={cn(
-                    'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                    isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
+                    // Linear 스타일: 더 작은 padding, 더 미세한 hover
+                    'group flex w-full cursor-pointer justify-start rounded-md px-2 py-2 text-sm font-medium transition hover:bg-white/[0.06] hover:text-white',
+                    isActive ? 'bg-white/[0.08] text-white' : 'text-zinc-400'
                   )}
                 >
-                  <route.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  <route.icon className="mr-2.5 h-4 w-4 flex-shrink-0" />
                   <span className="truncate">{route.label}</span>
                 </Link>
               )

@@ -60,7 +60,9 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center justify-between px-4">
+      <div
+        className={`flex items-center justify-between px-4 ${isSalesContentDeck ? 'h-12' : 'h-14'}`}
+      >
         <Link
           href={brandHref}
           aria-label={`${brandName} 홈으로 이동`}

@@ -1,0 +1,29 @@
+/**
+ * sales-content deck 전용 Linear 스타일 토큰
+ * 적용 범위: [data-deck="sales-content"] — 다른 deck 무영향
+ *
+ * 변경하는 값:
+ *   --radius          6px (전역 10px → 더 타이트한 모서리)
+ *   --border / --input  더 가벼운 모노크롬 테두리 (light: 옅은 회색, dark: solid dark-gray)
+ *   --muted           약간 더 밝은 배경 surface
+ *   --muted-foreground  약간 더 진한 보조 텍스트 (가독성 ↑)
+ *
+ * 변경하지 않는 값:
+ *   --primary, --accent, --background, --card, --chart-*
+ *   fuchsia-indigo 그라디언트 (header brand badge — Tailwind 클래스로 고정)
+ */
+
+[data-deck='sales-content'] {
+  --radius: 0.375rem; /* 6px (전역 0.625rem = 10px) */
+  --border: oklch(0.91 0 0); /* 가벼운 모노크롬 테두리 (light) */
+  --input: oklch(0.91 0 0);
+  --muted: oklch(0.975 0 0); /* 살짝 밝은 muted surface */
+  --muted-foreground: oklch(0.45 0 0); /* 더 진한 보조 텍스트 */
+}
+
+.dark [data-deck='sales-content'] {
+  --border: oklch(0.22 0 0); /* solid dark-gray (전역 white/10% → 더 명확한 선) */
+  --input: oklch(0.22 0 0);
+  --muted: oklch(0.18 0 0); /* 약간 어두운 muted surface */
+  --muted-foreground: oklch(0.62 0 0); /* dark mode 보조 텍스트 */
+}
