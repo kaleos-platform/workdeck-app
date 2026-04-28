@@ -150,6 +150,8 @@ export type SalesContentChannelInput = z.infer<typeof salesContentChannelInputSc
 
 export const contentCreateSchema = z.object({
   title: z.string().min(1).max(300),
+  // TODO 허용 — 아이데이션에서 "콘텐츠로 보내기" 시 status=TODO 로 생성
+  status: z.enum(['TODO', 'DRAFT']).optional(),
   templateId: z.string().cuid().optional().nullable(),
   ideationId: z.string().cuid().optional().nullable(),
   ideaIndex: z.number().int().min(0).max(19).optional().nullable(),

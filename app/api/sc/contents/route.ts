@@ -84,7 +84,8 @@ export async function POST(req: NextRequest) {
       spaceId: resolved.space.id,
       userId: resolved.user.id,
       title: derivedTitle,
-      status: 'DRAFT',
+      // 아이데이션에서 "콘텐츠로 보내기" 시 TODO 상태로 생성 가능, 기본값은 DRAFT
+      status: parsed.data.status ?? 'DRAFT',
       templateId: parsed.data.templateId ?? null,
       ideationId: parsed.data.ideationId ?? null,
       ideaIndex: parsed.data.ideaIndex ?? null,
