@@ -99,7 +99,7 @@ export const ModelName = {
   DelColumnMappingPreset: 'DelColumnMappingPreset',
   DelIntegrationHistory: 'DelIntegrationHistory',
   Brand: 'Brand',
-  ChannelGroup: 'ChannelGroup',
+  ChannelTypeDef: 'ChannelTypeDef',
   Channel: 'Channel',
   ChannelFeeRate: 'ChannelFeeRate',
   ProductionRun: 'ProductionRun',
@@ -879,25 +879,27 @@ export const BrandScalarFieldEnum = {
 export type BrandScalarFieldEnum = (typeof BrandScalarFieldEnum)[keyof typeof BrandScalarFieldEnum]
 
 
-export const ChannelGroupScalarFieldEnum = {
+export const ChannelTypeDefScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
+  isSalesChannel: 'isSalesChannel',
+  isSystem: 'isSystem',
+  sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type ChannelGroupScalarFieldEnum = (typeof ChannelGroupScalarFieldEnum)[keyof typeof ChannelGroupScalarFieldEnum]
+export type ChannelTypeDefScalarFieldEnum = (typeof ChannelTypeDefScalarFieldEnum)[keyof typeof ChannelTypeDefScalarFieldEnum]
 
 
 export const ChannelScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
-  groupId: 'groupId',
+  channelTypeDefId: 'channelTypeDefId',
   name: 'name',
-  kind: 'kind',
-  channelType: 'channelType',
   isActive: 'isActive',
+  useSimulation: 'useSimulation',
   adminUrl: 'adminUrl',
   freeShipping: 'freeShipping',
   freeShippingThreshold: 'freeShippingThreshold',

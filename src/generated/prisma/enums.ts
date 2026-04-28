@@ -81,29 +81,6 @@ export const SpaceMemberRole = {
 export type SpaceMemberRole = (typeof SpaceMemberRole)[keyof typeof SpaceMemberRole]
 
 
-export const ChannelKind = {
-  ONLINE_MARKETPLACE: 'ONLINE_MARKETPLACE',
-  ONLINE_MALL: 'ONLINE_MALL',
-  OFFLINE: 'OFFLINE',
-  INTERNAL_TRANSFER: 'INTERNAL_TRANSFER',
-  OTHER: 'OTHER'
-} as const
-
-export type ChannelKind = (typeof ChannelKind)[keyof typeof ChannelKind]
-
-
-export const ChannelType = {
-  OPEN_MARKET: 'OPEN_MARKET',
-  DEPT_STORE: 'DEPT_STORE',
-  SELF_MALL: 'SELF_MALL',
-  SOCIAL: 'SOCIAL',
-  WHOLESALE: 'WHOLESALE',
-  OTHER: 'OTHER'
-} as const
-
-export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
-
-
 export const PromotionType = {
   NONE: 'NONE',
   FLAT: 'FLAT',

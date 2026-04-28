@@ -9,20 +9,18 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = req.nextUrl
   const isActiveParam = searchParams.get('isActive')
-  const kindParam = searchParams.get('kind')
-  const groupId = searchParams.get('groupId')
+  const channelTypeDefId = searchParams.get('channelTypeDefId')
 
   const where: Record<string, unknown> = { spaceId: resolved.space.id }
   if (isActiveParam === 'true') where.isActive = true
   else if (isActiveParam === 'false') where.isActive = false
-  if (kindParam) where.kind = kindParam
-  if (groupId) where.groupId = groupId
+  if (channelTypeDefId) where.channelTypeDefId = channelTypeDefId
 
   const channels = await prisma.channel.findMany({
     where,
     orderBy: { name: 'asc' },
     include: {
-      group: { select: { id: true, name: true } },
+      channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
     },
   })
 
@@ -52,10 +50,9 @@ export async function POST(req: NextRequest) {
 
   const {
     name,
-    kind,
-    channelType,
-    groupId,
+    channelTypeDefId,
     isActive,
+    useSimulation,
     adminUrl,
     freeShipping,
     freeShippingThreshold,
@@ -71,24 +68,21 @@ export async function POST(req: NextRequest) {
     requireProducts,
   } = parsed.data
 
-  // groupId 소속 검증
-  if (groupId) {
-    const group = await prisma.channelGroup.findFirst({
-      where: { id: groupId, spaceId: resolved.space.id },
-      select: { id: true },
-    })
-    if (!group) return errorResponse('채널 그룹을 찾을 수 없습니다', 404)
-  }
+  // channelTypeDefId 소속 검증
+  const typeDef = await prisma.channelTypeDef.findFirst({
+    where: { id: channelTypeDefId, spaceId: resolved.space.id },
+    select: { id: true },
+  })
+  if (!typeDef) return errorResponse('채널 유형을 찾을 수 없습니다', 404)
 
   try {
     const channel = await prisma.channel.create({
       data: {
         spaceId: resolved.space.id,
         name,
-        kind,
-        channelType,
-        groupId: groupId ?? null,
+        channelTypeDefId,
         isActive,
+        useSimulation,
         adminUrl: adminUrl ?? null,
         freeShipping,
         freeShippingThreshold: freeShippingThreshold ?? null,
@@ -104,7 +98,7 @@ export async function POST(req: NextRequest) {
         requireProducts,
       },
       include: {
-        group: { select: { id: true, name: true } },
+        channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
       },
     })
     return NextResponse.json({ channel }, { status: 201 })

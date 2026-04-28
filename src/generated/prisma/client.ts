@@ -280,10 +280,10 @@ export type DelIntegrationHistory = Prisma.DelIntegrationHistoryModel
  */
 export type Brand = Prisma.BrandModel
 /**
- * Model ChannelGroup
+ * Model ChannelTypeDef
  * 
  */
-export type ChannelGroup = Prisma.ChannelGroupModel
+export type ChannelTypeDef = Prisma.ChannelTypeDefModel
 /**
  * Model Channel
  * 

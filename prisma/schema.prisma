@@ -70,24 +70,6 @@ enum SpaceMemberRole {
 
 // ─── 셀러 허브 열거형 ─────────────────────────────────────────────────────────
 
-enum ChannelKind {
-  ONLINE_MARKETPLACE
-  ONLINE_MALL
-  OFFLINE
-  INTERNAL_TRANSFER
-  OTHER
-}
-
-// 채널 유형 — 가격 시뮬레이션 수수료 자동 적용 분류
-enum ChannelType {
-  OPEN_MARKET // 오픈마켓 (쿠팡, 11번가 등)
-  DEPT_STORE // 백화점 온라인
-  SELF_MALL // 자사몰 (Shopify, 카페24 등)
-  SOCIAL // SNS 채널 (인스타그램, 틱톡 등)
-  WHOLESALE // 도매
-  OTHER // 기타
-}
-
 // 프로모션 유형
 enum PromotionType {
   NONE // 프로모션 없음
@@ -362,7 +344,7 @@ model Space {
 
   // 셀러 허브 공용 (Seller Hub)
   channels                Channel[]
-  channelGroups           ChannelGroup[]
+  channelTypeDefs         ChannelTypeDef[]
   brands                  Brand[]
   productPricingSettings  ProductPricingSettings?
   optionCodeAliases       SpaceOptionCodeAlias[]
@@ -1197,17 +1179,20 @@ model Brand {
   @@index([spaceId])
 }
 
-// 채널 그룹 (공용)
-model ChannelGroup {
-  id      String @id @default(cuid())
-  spaceId String
-  name    String
+// 채널 유형 정의 (사용자 정의 가능, 시스템 시드 포함)
+// isSalesChannel=false 면 이 유형의 채널을 통한 출고가 InvMovement TRANSFER로 처리됨
+model ChannelTypeDef {
+  id             String   @id @default(cuid())
+  spaceId        String
+  name           String // 예: "B2C", "B2B", "내부 이관", "견본 발송"
+  isSalesChannel Boolean  @default(true)
+  isSystem       Boolean  @default(false) // 시스템 시드 — 삭제 차단
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   space    Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channels Channel[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@unique([spaceId, name])
   @@index([spaceId])
@@ -1215,29 +1200,28 @@ model ChannelGroup {
 
 // 공용 판매 채널
 model Channel {
-  id                    String      @id @default(cuid())
+  id                    String   @id @default(cuid())
   spaceId               String
-  groupId               String?
+  channelTypeDefId      String? // 마이그레이션 후 NOT NULL로 강제하기 전까지 nullable
   name                  String
-  kind                  ChannelKind @default(ONLINE_MARKETPLACE)
-  channelType           ChannelType @default(OTHER) // 가격 시뮬 분류
-  isActive              Boolean     @default(true)
+  isActive              Boolean  @default(true)
+  useSimulation         Boolean  @default(true) // 가격 시뮬레이션 노출/필수입력 결정
   adminUrl              String?
-  freeShipping          Boolean     @default(false)
-  freeShippingThreshold Decimal?    @db.Decimal(18, 2) // 무료배송 최소 주문금액
-  defaultFeePct         Decimal?    @db.Decimal(6, 4) // 채널 기본 수수료율 (0~1)
-  usesMarketingBudget   Boolean     @default(false)
-  applyAdCost           Boolean     @default(false) // 시뮬레이션 시 광고비 자동 적용
-  shippingFee           Decimal?    @db.Decimal(18, 2)
-  vatIncludedInFee      Boolean     @default(true)
-  paymentFeeIncluded    Boolean     @default(true) // 결제 수수료 포함 여부
-  paymentFeePct         Decimal?    @db.Decimal(6, 4) // 결제 수수료율 (0~1)
-  requireOrderNumber    Boolean     @default(true)
-  requirePayment        Boolean     @default(true)
-  requireProducts       Boolean     @default(true)
+  freeShipping          Boolean  @default(false)
+  freeShippingThreshold Decimal? @db.Decimal(18, 2) // 무료배송 최소 주문금액
+  defaultFeePct         Decimal? @db.Decimal(6, 4) // 채널 기본 수수료율 (0~1)
+  usesMarketingBudget   Boolean  @default(false)
+  applyAdCost           Boolean  @default(false) // 시뮬레이션 시 광고비 자동 적용
+  shippingFee           Decimal? @db.Decimal(18, 2)
+  vatIncludedInFee      Boolean  @default(true)
+  paymentFeeIncluded    Boolean  @default(true) // 결제 수수료 포함 여부
+  paymentFeePct         Decimal? @db.Decimal(6, 4) // 결제 수수료율 (0~1)
+  requireOrderNumber    Boolean  @default(true)
+  requirePayment        Boolean  @default(true)
+  requireProducts       Boolean  @default(true)
 
   space                   Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  group                   ChannelGroup?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  channelTypeDef          ChannelTypeDef?           @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)
   feeRates                ChannelFeeRate[]
   invMovements            InvMovement[]
   delOrders               DelOrder[]
@@ -1253,7 +1237,7 @@ model Channel {
 
   @@unique([spaceId, name])
   @@index([spaceId])
-  @@index([groupId])
+  @@index([channelTypeDefId])
 }
 
 // 채널별 카테고리 수수료율
