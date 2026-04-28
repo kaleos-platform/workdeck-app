@@ -19,13 +19,13 @@ type Props = {
   onPick: (channel: DbChannel) => void
 }
 
-// ─── API 응답 채널 타입 (채널 API 응답 형태) ──────────────────────────────────
+// ─── API 응답 채널 타입 ────────────────────────────────────────────────────────
 
 type ApiChannel = {
   id: string
   name: string
-  channelType: string | null
-  kind: string | null
+  channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
+  useSimulation: boolean
   defaultFeePct: string | number | null
   shippingFee: string | number | null
   freeShippingThreshold: string | number | null
@@ -39,8 +39,8 @@ function toDbChannel(c: ApiChannel): DbChannel {
   return {
     id: c.id,
     name: c.name,
-    channelType: c.channelType,
-    kind: c.kind,
+    channelTypeDef: c.channelTypeDef,
+    useSimulation: c.useSimulation,
     defaultFeePct: c.defaultFeePct != null ? Number(c.defaultFeePct) : null,
     shippingFee: c.shippingFee != null ? Number(c.shippingFee) : null,
     freeShippingThreshold: c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : null,
@@ -50,22 +50,13 @@ function toDbChannel(c: ApiChannel): DbChannel {
   }
 }
 
-// ─── 채널 타입 배지 (간략) ────────────────────────────────────────────────────
+// ─── 채널 유형 배지 ────────────────────────────────────────────────────────────
 
-function TypeBadge({ channelType }: { channelType: string | null }) {
-  const map: Record<string, { label: string; cls: string }> = {
-    SELF_MALL: { label: '자사몰', cls: 'border-blue-400 text-blue-700' },
-    OPEN_MARKET: { label: '오픈마켓', cls: 'border-orange-400 text-orange-700' },
-    DEPT_STORE: { label: '백화점', cls: 'border-purple-400 text-purple-700' },
-    SOCIAL: { label: '소셜', cls: 'border-pink-400 text-pink-700' },
-    WHOLESALE: { label: '도매', cls: 'border-teal-400 text-teal-700' },
-  }
-  const info = channelType
-    ? (map[channelType] ?? { label: channelType, cls: 'border-slate-300 text-slate-600' })
-    : { label: '기타', cls: 'border-slate-300 text-slate-500' }
+function TypeBadge({ name }: { name: string | null | undefined }) {
+  if (!name) return null
   return (
-    <Badge variant="outline" className={cn('px-1.5 py-0 text-[10px]', info.cls)}>
-      {info.label}
+    <Badge variant="secondary" className={cn('px-1.5 py-0 text-[10px]')}>
+      {name}
     </Badge>
   )
 }
@@ -87,7 +78,9 @@ export function PricingChannelPickerDialog({ open, onOpenChange, excludeIds, onP
         const r = await fetch('/api/channels?isActive=true')
         const d: { channels?: ApiChannel[] } = await r.json()
         if (!cancelled) {
-          setChannels((d.channels ?? []).map(toDbChannel))
+          // useSimulation=false 채널은 피커에서 제외 (시뮬레이션 미사용)
+          const simulatable = (d.channels ?? []).filter((c) => c.useSimulation !== false)
+          setChannels(simulatable.map(toDbChannel))
         }
       } catch {
         if (!cancelled) setChannels([])
@@ -143,7 +136,7 @@ export function PricingChannelPickerDialog({ open, onOpenChange, excludeIds, onP
               >
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium">{ch.name}</span>
-                  <TypeBadge channelType={ch.channelType} />
+                  <TypeBadge name={ch.channelTypeDef?.name} />
                 </div>
                 <div className="mt-0.5 flex gap-x-3 text-[11px] text-muted-foreground">
                   {ch.defaultFeePct != null && (

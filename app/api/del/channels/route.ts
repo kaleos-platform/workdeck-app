@@ -2,46 +2,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { ChannelKind } from '@/generated/prisma/client'
 
 type DelChannelType = 'OUTBOUND' | 'TRANSFER'
 
-// Channel.kind ↔ DelSalesChannel.type 변환 헬퍼
-function kindToDelType(kind: ChannelKind): DelChannelType {
-  return kind === 'INTERNAL_TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
-}
-function delTypeToKind(type: DelChannelType): ChannelKind {
-  return type === 'TRANSFER' ? ChannelKind.INTERNAL_TRANSFER : ChannelKind.ONLINE_MARKETPLACE
+// channelTypeDef.isSalesChannel → DelChannelType 변환 헬퍼
+function isSalesToDelType(isSalesChannel: boolean): DelChannelType {
+  return isSalesChannel ? 'OUTBOUND' : 'TRANSFER'
 }
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('delivery-mgmt')
   if ('error' in resolved) return resolved.error
 
-  const groupId = req.nextUrl.searchParams.get('groupId')
   const isActiveParam = req.nextUrl.searchParams.get('isActive')
   const typeParam = req.nextUrl.searchParams.get('type') as DelChannelType | null
 
   const where: Record<string, unknown> = { spaceId: resolved.space.id }
-  if (groupId) where.groupId = groupId
   if (isActiveParam === 'true') where.isActive = true
   else if (isActiveParam === 'false') where.isActive = false
-  // type 필터 → kind 필터로 변환
-  if (typeParam === 'OUTBOUND') where.kind = { not: ChannelKind.INTERNAL_TRANSFER }
-  else if (typeParam === 'TRANSFER') where.kind = ChannelKind.INTERNAL_TRANSFER
+  // type 필터 → channelTypeDef.isSalesChannel 필터로 변환 (groupId 파라미터 제거)
+  if (typeParam === 'OUTBOUND') where.channelTypeDef = { isSalesChannel: true }
+  else if (typeParam === 'TRANSFER') where.channelTypeDef = { isSalesChannel: false }
 
   const channels = await prisma.channel.findMany({
     where,
     orderBy: { createdAt: 'asc' },
     include: {
-      group: { select: { id: true, name: true } },
+      channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
     },
   })
 
-  // 기존 클라이언트 호환: kind → type 필드 추가
+  // 기존 클라이언트 호환: isSalesChannel → type 필드 추가
   const mapped = channels.map((ch) => ({
     ...ch,
-    type: kindToDelType(ch.kind),
+    type: ch.channelTypeDef ? isSalesToDelType(ch.channelTypeDef.isSalesChannel) : 'OUTBOUND',
   }))
 
   return NextResponse.json({ channels: mapped })
@@ -53,8 +47,6 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}))
   const name = typeof body?.name === 'string' ? body.name.trim() : ''
-  const groupId: string | null =
-    typeof body?.groupId === 'string' && body.groupId.length > 0 ? body.groupId : null
   const type: DelChannelType = body?.type === 'TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
   const requireOrderNumber = body?.requireOrderNumber !== false
   const requirePayment = body?.requirePayment !== false
@@ -70,31 +62,37 @@ export async function POST(req: NextRequest) {
   })
   if (duplicate) return errorResponse('이미 존재하는 채널 이름입니다', 409)
 
-  if (groupId) {
-    const group = await prisma.channelGroup.findUnique({
-      where: { id: groupId },
-      select: { spaceId: true },
-    })
-    if (!group || group.spaceId !== resolved.space.id) {
-      return errorResponse('유효하지 않은 그룹입니다', 400)
-    }
-  }
+  // type → 시드 ChannelTypeDef 조회 (B2C=OUTBOUND, 내부 이관=TRANSFER)
+  const seedName = type === 'TRANSFER' ? '내부 이관' : 'B2C'
+  const typeDef = await prisma.channelTypeDef.findFirst({
+    where: { spaceId: resolved.space.id, name: seedName, isSystem: true },
+    select: { id: true },
+  })
+  if (!typeDef) return errorResponse(`기본 채널 유형(${seedName})을 찾을 수 없습니다`, 500)
 
   const channel = await prisma.channel.create({
     data: {
       spaceId: resolved.space.id,
       name,
-      groupId,
-      kind: delTypeToKind(type),
+      channelTypeDefId: typeDef.id,
       requireOrderNumber,
       requirePayment,
       requireProducts,
     },
-    include: { group: { select: { id: true, name: true } } },
+    include: {
+      channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
+    },
   })
 
   return NextResponse.json(
-    { channel: { ...channel, type: kindToDelType(channel.kind) } },
+    {
+      channel: {
+        ...channel,
+        type: channel.channelTypeDef
+          ? isSalesToDelType(channel.channelTypeDef.isSalesChannel)
+          : 'OUTBOUND',
+      },
+    },
     { status: 201 }
   )
 }

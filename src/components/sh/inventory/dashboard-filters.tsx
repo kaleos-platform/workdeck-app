@@ -16,7 +16,6 @@ import { getLastNDaysRangeKst, getTodayStrKst } from '@/lib/date-range'
 export type DashboardFilterValues = {
   locationId?: string
   channelId?: string
-  channelGroupId?: string
   from?: string
   to?: string
   movementTypes?: string[]
@@ -29,23 +28,20 @@ interface Props {
 
 type Location = { id: string; name: string }
 type Channel = { id: string; name: string }
-type ChannelGroup = { id: string; name: string }
 
 const ALL = '__all__'
 
 export function DashboardFilters({ value, onChange }: Props) {
   const [locations, setLocations] = useState<Location[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
-  const [groups, setGroups] = useState<ChannelGroup[]>([])
 
   useEffect(() => {
     let cancelled = false
     async function load() {
       try {
-        const [locRes, chRes, grpRes] = await Promise.all([
+        const [locRes, chRes] = await Promise.all([
           fetch('/api/sh/inventory/locations?isActive=true'),
           fetch('/api/inv/channels?isActive=true'),
-          fetch('/api/inv/channel-groups'),
         ])
         if (cancelled) return
         if (locRes.ok) {
@@ -55,10 +51,6 @@ export function DashboardFilters({ value, onChange }: Props) {
         if (chRes.ok) {
           const j = (await chRes.json()) as { channels: Channel[] }
           setChannels(j.channels ?? [])
-        }
-        if (grpRes.ok) {
-          const j = (await grpRes.json()) as { groups: ChannelGroup[] }
-          setGroups(j.groups ?? [])
         }
       } catch {
         // ignore
@@ -167,26 +159,6 @@ export function DashboardFilters({ value, onChange }: Props) {
               {channels.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <Label className="text-xs text-muted-foreground">채널 그룹</Label>
-          <Select
-            value={value.channelGroupId ?? ALL}
-            onValueChange={(v) => update('channelGroupId', v === ALL ? undefined : v)}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="전체" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>전체 그룹</SelectItem>
-              {groups.map((g) => (
-                <SelectItem key={g.id} value={g.id}>
-                  {g.name}
                 </SelectItem>
               ))}
             </SelectContent>

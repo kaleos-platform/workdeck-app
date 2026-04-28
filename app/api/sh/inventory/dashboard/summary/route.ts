@@ -35,51 +35,28 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const locationId = searchParams.get('locationId') || undefined
   const channelId = searchParams.get('channelId') || undefined
-  const channelGroupId = searchParams.get('channelGroupId') || undefined
   const from = parseKstDate(searchParams.get('from'))
   const to = parseKstDate(searchParams.get('to'), true)
-
-  // 채널 그룹 → 채널 ID 세트 해석 (Phase 3: 공용 Channel 사용)
-  let groupChannelIds: string[] | null = null
-  if (channelGroupId) {
-    const channels = await prisma.channel.findMany({
-      where: { spaceId, groupId: channelGroupId },
-      select: { id: true },
-    })
-    groupChannelIds = channels.map((c) => c.id)
-  }
 
   // 재고 관련 where (locationId만 영향, channel은 영향 없음)
   const stockWhere: { spaceId: string; locationId?: string } = { spaceId }
   if (locationId) stockWhere.locationId = locationId
 
   // 움직임 where base
-  const movementChannelFilter: { channelId?: string; channelId_in?: string[] } | null = (() => {
-    if (channelId) return { channelId }
-    if (groupChannelIds !== null) return { channelId_in: groupChannelIds }
-    return null
-  })()
+  const movementChannelFilter: { channelId?: string } | null = channelId ? { channelId } : null
 
   type MovementWhere = {
     spaceId: string
     locationId?: string
     type?: 'INBOUND' | 'OUTBOUND' | 'RETURN' | 'TRANSFER' | 'ADJUSTMENT'
-    channelId?: string | { in: string[] }
+    channelId?: string
     movementDate?: { gte?: Date; lte?: Date }
   }
 
   const baseMovementWhere: MovementWhere = { spaceId }
   if (locationId) baseMovementWhere.locationId = locationId
-  if (movementChannelFilter) {
-    if ('channelId' in movementChannelFilter && movementChannelFilter.channelId) {
-      baseMovementWhere.channelId = movementChannelFilter.channelId
-    } else if ('channelId_in' in movementChannelFilter && movementChannelFilter.channelId_in) {
-      baseMovementWhere.channelId =
-        movementChannelFilter.channelId_in.length > 0
-          ? { in: movementChannelFilter.channelId_in }
-          : { in: ['__none__'] }
-    }
-  }
+  if (movementChannelFilter?.channelId)
+    baseMovementWhere.channelId = movementChannelFilter.channelId
   if (from || to) {
     baseMovementWhere.movementDate = {}
     if (from) baseMovementWhere.movementDate.gte = from

@@ -64,7 +64,6 @@ function buildQuery(filters: DashboardFilterValues) {
   const p = new URLSearchParams()
   if (filters.locationId) p.set('locationId', filters.locationId)
   if (filters.channelId) p.set('channelId', filters.channelId)
-  if (filters.channelGroupId) p.set('channelGroupId', filters.channelGroupId)
   if (filters.from) p.set('from', filters.from)
   if (filters.to) p.set('to', filters.to)
   if (filters.movementTypes?.length) p.set('movementTypes', filters.movementTypes.join(','))

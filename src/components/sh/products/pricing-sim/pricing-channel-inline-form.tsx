@@ -11,13 +11,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
@@ -25,7 +18,6 @@ import { cn } from '@/lib/utils'
 
 export type ChannelInlineData = {
   name: string
-  channelType: 'SELF_MALL' | 'OTHER'
   defaultFeePct: number // 0~1
   shippingFee: number
   freeShippingThreshold: number
@@ -46,7 +38,6 @@ type Props = {
 
 const DEFAULT_DATA: ChannelInlineData = {
   name: '',
-  channelType: 'OTHER',
   defaultFeePct: 0,
   shippingFee: 0,
   freeShippingThreshold: 0,
@@ -111,7 +102,6 @@ function NumField({
 
 export function PricingChannelInlineForm({ open, onOpenChange, initialData, onConfirm }: Props) {
   const nameId = useId()
-  const typeId = useId()
   const feeId = useId()
   const shipId = useId()
   const threshId = useId()
@@ -124,15 +114,6 @@ export function PricingChannelInlineForm({ open, onOpenChange, initialData, onCo
 
   function patch(partial: Partial<ChannelInlineData>) {
     setData((prev) => ({ ...prev, ...partial }))
-  }
-
-  // 채널 타입 변경 시 paymentFeeIncluded 기본값 자동 설정
-  function handleTypeChange(t: 'SELF_MALL' | 'OTHER') {
-    patch({
-      channelType: t,
-      // SELF_MALL → 결제수수료 별도, OTHER(플랫폼 가정) → 포함
-      paymentFeeIncluded: t === 'OTHER',
-    })
   }
 
   function handleConfirm() {
@@ -164,34 +145,6 @@ export function PricingChannelInlineForm({ open, onOpenChange, initialData, onCo
               maxLength={100}
               className="h-8 text-sm"
             />
-          </div>
-
-          {/* 채널 유형 */}
-          <div className="space-y-1.5">
-            <Label htmlFor={typeId} className="text-xs">
-              채널 유형
-            </Label>
-            <Select
-              value={data.channelType}
-              onValueChange={(v) => handleTypeChange(v as 'SELF_MALL' | 'OTHER')}
-            >
-              <SelectTrigger id={typeId} className="h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="SELF_MALL" className="text-sm">
-                  자사몰 (SELF_MALL)
-                </SelectItem>
-                <SelectItem value="OTHER" className="text-sm">
-                  플랫폼/기타 (OTHER)
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-[10px] text-muted-foreground">
-              {data.channelType === 'SELF_MALL'
-                ? '자사몰: 결제 수수료(PG) 별도 발생'
-                : '플랫폼/기타: 결제 수수료 채널 수수료에 포함'}
-            </p>
           </div>
 
           {/* 채널 수수료율 / 배송비 / 무료배송 기준 */}
@@ -243,7 +196,7 @@ export function PricingChannelInlineForm({ open, onOpenChange, initialData, onCo
                 <p className="text-[10px] text-muted-foreground">
                   {data.paymentFeeIncluded
                     ? '채널 수수료에 PG 수수료 포함됨'
-                    : '별도 PG 수수료 발생 (자사몰)'}
+                    : '별도 PG 수수료 발생'}
                 </p>
               </div>
               <Switch

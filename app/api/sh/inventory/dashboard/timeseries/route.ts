@@ -49,7 +49,6 @@ export async function GET(req: NextRequest) {
 
   const locationId = searchParams.get('locationId') || undefined
   const channelId = searchParams.get('channelId') || undefined
-  const channelGroupId = searchParams.get('channelGroupId') || undefined
 
   // Parse movementTypes filter (comma-separated)
   const VALID_TYPES: MoveType[] = ['INBOUND', 'OUTBOUND', 'RETURN', 'TRANSFER', 'ADJUSTMENT']
@@ -83,17 +82,7 @@ export async function GET(req: NextRequest) {
     from = new Date(Date.UTC(y, m, d, 0, 0, 0) - KST_OFFSET_MS)
   }
 
-  // 채널 그룹 해석 (Phase 3: 공용 Channel 사용)
-  let channelInFilter: string | { in: string[] } | undefined
-  if (channelId) channelInFilter = channelId
-  else if (channelGroupId) {
-    const channels = await prisma.channel.findMany({
-      where: { spaceId, groupId: channelGroupId },
-      select: { id: true },
-    })
-    const ids = channels.map((c) => c.id)
-    channelInFilter = { in: ids.length > 0 ? ids : ['__none__'] }
-  }
+  const channelInFilter: string | undefined = channelId
 
   const where: {
     spaceId: string
@@ -121,11 +110,8 @@ export async function GET(req: NextRequest) {
     },
   })
 
-  const channelIdSet: Set<string> | null =
-    channelInFilter && typeof channelInFilter === 'object' && 'in' in channelInFilter
-      ? new Set(channelInFilter.in)
-      : null
-  const singleChannelId = typeof channelInFilter === 'string' ? channelInFilter : null
+  const channelIdSet: Set<string> | null = null
+  const singleChannelId = channelInFilter ?? null
 
   // 버킷 초기화
   const bucket = new Map<

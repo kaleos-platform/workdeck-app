@@ -177,7 +177,7 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   const netProfit = r2(effectiveRevenue - totalCost)
   const margin = effectiveRevenue > 0 ? r4(netProfit / effectiveRevenue) : 0
   const unitsPerSet = Math.max(1, Math.round(n(option.unitsPerSet)))
-  const tier = classifyTier(margin, channel.channelType, thresholds)
+  const tier = classifyTier(margin, thresholds)
 
   return {
     discountRate,
@@ -216,8 +216,7 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
 function calcRecommendedRetail(inputs: MatrixInputs): number | null {
   try {
     const { option, channel, globals, thresholds } = inputs
-    const isSelfMall = channel.channelType === 'SELF_MALL'
-    const goodTarget = isSelfMall ? thresholds.selfMallTargetGood : thresholds.platformTargetGood
+    const goodTarget = thresholds.platformTargetGood
 
     let totalPctCost = n(channel.defaultFeePct) + n(globals.operatingCostPct)
     if (!channel.paymentFeeIncluded) totalPctCost += n(channel.paymentFeePct)

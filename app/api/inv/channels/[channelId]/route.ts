@@ -20,11 +20,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     return errorResponse('채널을 찾을 수 없습니다', 404)
   }
 
-  const data: {
-    name?: string
-    groupId?: string | null
-    isActive?: boolean
-  } = {}
+  const data: { name?: string; isActive?: boolean } = {}
 
   if (body?.name !== undefined) {
     if (typeof body.name !== 'string' || !body.name.trim()) {
@@ -41,23 +37,6 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     data.name = name
   }
 
-  if (body?.groupId !== undefined) {
-    if (body.groupId === null || body.groupId === '') {
-      data.groupId = null
-    } else if (typeof body.groupId === 'string') {
-      const group = await prisma.channelGroup.findUnique({
-        where: { id: body.groupId },
-        select: { spaceId: true },
-      })
-      if (!group || group.spaceId !== resolved.space.id) {
-        return errorResponse('유효하지 않은 그룹입니다', 400)
-      }
-      data.groupId = body.groupId
-    } else {
-      return errorResponse('유효하지 않은 그룹입니다', 400)
-    }
-  }
-
   if (body?.isActive !== undefined) {
     if (typeof body.isActive !== 'boolean') {
       return errorResponse('isActive는 boolean이어야 합니다', 400)
@@ -68,7 +47,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   const channel = await prisma.channel.update({
     where: { id: channelId },
     data,
-    include: { group: { select: { id: true, name: true } } },
+    include: { channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } } },
   })
 
   return NextResponse.json({ channel })
