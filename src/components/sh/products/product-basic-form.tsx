@@ -95,7 +95,7 @@ export function ProductBasicForm({
       setDescription(prod.description ?? '')
       setManufacturer(prod.manufacturer ?? '')
       setManufactureCountry(prod.manufactureCountry ?? '')
-      setManufactureDate(prod.manufactureDate ? prod.manufactureDate.split('T')[0] : '')
+      setManufactureDate(prod.manufactureDate ? prod.manufactureDate.slice(0, 7) : '')
       // msrp는 Prisma Decimal이라 string/number 둘 다 올 수 있음
       setMsrp(prod.msrp != null ? String(prod.msrp) : '')
       setBrandId(prod.brandId ?? '')
@@ -149,7 +149,7 @@ export function ProductBasicForm({
           description: description.trim() || null,
           manufacturer: manufacturer.trim() || null,
           manufactureCountry: manufactureCountry.trim() || null,
-          manufactureDate: manufactureDate || null,
+          manufactureDate: manufactureDate ? `${manufactureDate}-01` : null,
           msrp: msrp ? parseFloat(msrp) : null,
           brandId: brandId || null,
           groupId: groupId || null,
@@ -204,7 +204,7 @@ export function ProductBasicForm({
           id="bf-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="판매채널(쿠팡 등)에 노출되는 정식 상품명"
+          placeholder="고객에게 표시되는 공식 상품명"
         />
         <p className="text-xs text-muted-foreground">판매채널에 노출되는 이름입니다.</p>
       </div>
@@ -325,10 +325,10 @@ export function ProductBasicForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="bf-mfr-date">제조일</Label>
+          <Label htmlFor="bf-mfr-date">제조년월</Label>
           <Input
             id="bf-mfr-date"
-            type="date"
+            type="month"
             value={manufactureDate}
             onChange={(e) => setManufactureDate(e.target.value)}
           />

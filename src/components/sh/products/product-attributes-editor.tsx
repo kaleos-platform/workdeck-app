@@ -271,6 +271,13 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-end">
+        <Button size="sm" onClick={handleSaveClick} disabled={saving}>
+          {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+          속성/조합 저장
+        </Button>
+      </div>
+
       <ProductOptionAttributesEditor
         attributes={attributes}
         combinations={combinations}
@@ -278,14 +285,8 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         onCombinationsChange={setCombinations}
         productCode={product?.code ?? null}
         showCombinationsPreview={false}
+        excludeProductId={productId}
       />
-
-      <div className="flex items-center justify-end">
-        <Button size="sm" onClick={handleSaveClick} disabled={saving}>
-          {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-          속성/조합 저장
-        </Button>
-      </div>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="sm:max-w-md">

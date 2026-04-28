@@ -54,6 +54,10 @@ export default function ProductNewPage() {
   const [creatingBrand, setCreatingBrand] = useState(false)
   const [newBrandName, setNewBrandName] = useState('')
 
+  // 카테고리 인라인 추가 토글
+  const [creatingCategory, setCreatingCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+
   // 옵션 속성 + 조합
   const [attributes, setAttributes] = useState<OptionAttribute[]>([])
   const [combinations, setCombinations] = useState<CombinationRow[]>([])
@@ -97,6 +101,32 @@ export default function ProductNewPage() {
       toast.success(`브랜드 "${created.name}" 생성됨`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '브랜드 생성 실패')
+    }
+  }
+
+  async function handleCreateCategory() {
+    const trimmed = newCategoryName.trim()
+    if (!trimmed) return
+    try {
+      const res = await fetch('/api/sh/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message ?? '카테고리 생성 실패')
+      const created = data.category as Category
+      setCategories((prev) =>
+        [...prev, { id: created.id, name: created.name }].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )
+      )
+      setGroupId(created.id)
+      setCreatingCategory(false)
+      setNewCategoryName('')
+      toast.success(`카테고리 "${created.name}" 생성됨`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '카테고리 생성 실패')
     }
   }
 
@@ -149,7 +179,7 @@ export default function ProductNewPage() {
           brandId: brandId || undefined,
           manufacturer: manufacturer.trim() || undefined,
           manufactureCountry: manufactureCountry.trim() || undefined,
-          manufactureDate: manufactureDate || undefined,
+          manufactureDate: manufactureDate ? `${manufactureDate}-01` : undefined,
           msrp: msrp ? parseFloat(msrp) : undefined,
           description: description.trim() || undefined,
           features: trimmedFeatures.length > 0 ? trimmedFeatures : undefined,
@@ -216,7 +246,7 @@ export default function ProductNewPage() {
                   id="new-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="판매채널(쿠팡 등)에 노출되는 정식 상품명"
+                  placeholder="고객에게 표시되는 공식 상품명"
                   autoFocus
                 />
                 <p className="text-xs text-muted-foreground">판매채널에 노출되는 이름입니다.</p>
@@ -253,27 +283,77 @@ export default function ProductNewPage() {
                   <Label>
                     카테고리 <span className="text-destructive">*</span>
                   </Label>
-                  <Select
-                    value={groupId || '__none__'}
-                    onValueChange={(v) => setGroupId(v === '__none__' ? '' : v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="카테고리 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.length === 0 ? (
-                        <SelectItem value="__none__" disabled>
-                          카테고리가 없습니다
-                        </SelectItem>
-                      ) : (
-                        categories.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name}
+                  {!creatingCategory ? (
+                    <Select
+                      value={groupId || '__none__'}
+                      onValueChange={(v) => {
+                        if (v === '__new__') {
+                          setCreatingCategory(true)
+                          setNewCategoryName('')
+                          return
+                        }
+                        setGroupId(v === '__none__' ? '' : v)
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="카테고리 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.length === 0 ? (
+                          <SelectItem value="__none__" disabled>
+                            카테고리가 없습니다
                           </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                        ) : (
+                          categories.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}
+                            </SelectItem>
+                          ))
+                        )}
+                        <SelectItem value="__new__">+ 새 카테고리 만들기</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        autoFocus
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            void handleCreateCategory()
+                          }
+                          if (e.key === 'Escape') {
+                            setCreatingCategory(false)
+                            setNewCategoryName('')
+                          }
+                        }}
+                        placeholder="새 카테고리명"
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        onClick={handleCreateCategory}
+                        disabled={!newCategoryName.trim()}
+                        aria-label="카테고리 저장"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          setCreatingCategory(false)
+                          setNewCategoryName('')
+                        }}
+                        aria-label="취소"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>브랜드</Label>
@@ -370,7 +450,7 @@ export default function ProductNewPage() {
                 </div>
               </div>
 
-              {/* 제조사 / 제조국 / 제조일 */}
+              {/* 제조사 / 제조국 / 제조년월 */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="new-mfr">제조사</Label>
@@ -391,10 +471,10 @@ export default function ProductNewPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="new-mfr-date">제조일</Label>
+                  <Label htmlFor="new-mfr-date">제조년월</Label>
                   <Input
                     id="new-mfr-date"
-                    type="date"
+                    type="month"
                     value={manufactureDate}
                     onChange={(e) => setManufactureDate(e.target.value)}
                   />

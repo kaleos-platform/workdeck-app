@@ -578,7 +578,7 @@ export function ShChannelManager() {
               />
             </div>
 
-            {/* 종류 / 유형 */}
+            {/* 분류 — 채널 종류 / 정산 모델 */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>채널 종류</Label>
@@ -594,9 +594,12 @@ export function ShChannelManager() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-[11px] text-muted-foreground">
+                  운영·정산 분류. 재고·주문 흐름의 큰 분류입니다.
+                </p>
               </div>
               <div className="space-y-2">
-                <Label>채널 유형 (시뮬레이션)</Label>
+                <Label>정산 모델 (시뮬레이션)</Label>
                 <Select
                   value={fChannelType}
                   onValueChange={(v) => {
@@ -618,6 +621,9 @@ export function ShChannelManager() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-[11px] text-muted-foreground">
+                  가격 시뮬레이션 기본 수수료 구조. 결제 수수료 포함 여부의 프리셋입니다.
+                </p>
               </div>
             </div>
 
@@ -650,72 +656,103 @@ export function ShChannelManager() {
               />
             </div>
 
-            {/* 가격 시뮬레이션 기본값 */}
-            <div className="space-y-3 rounded-md border p-3">
-              <p className="text-xs font-medium text-muted-foreground">가격 시뮬레이션 기본값</p>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="ch-default-fee">기본 수수료율 (%)</Label>
-                  <Input
-                    id="ch-default-fee"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value={fDefaultFeePct}
-                    onChange={(e) => setFDefaultFeePct(e.target.value)}
-                    placeholder="예: 10.8"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ch-payment-fee">결제 수수료율 (%)</Label>
-                  <Input
-                    id="ch-payment-fee"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value={fPaymentFeePct}
-                    onChange={(e) => setFPaymentFeePct(e.target.value)}
-                    placeholder="예: 3.5"
-                  />
-                </div>
+            {/* ── 수수료 (시뮬레이션 기본값) ── */}
+            <div className="space-y-4 rounded-md border p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">
+                  수수료 (시뮬레이션 기본값)
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ch-free-threshold">무료배송 기준금액 (원)</Label>
+                <Label htmlFor="ch-default-fee">기본 수수료율 (%)</Label>
                 <Input
-                  id="ch-free-threshold"
+                  id="ch-default-fee"
                   type="number"
                   min="0"
-                  step="1000"
-                  value={fFreeShippingThreshold}
-                  onChange={(e) => setFFreeShippingThreshold(e.target.value)}
-                  placeholder="예: 50000"
+                  max="100"
+                  step="0.01"
+                  value={fDefaultFeePct}
+                  onChange={(e) => setFDefaultFeePct(e.target.value)}
+                  placeholder="예: 10.8"
+                />
+              </div>
+
+              {/* VAT 포함 토글 — 수수료 항목 안 */}
+              <div className="flex items-center justify-between rounded-md bg-muted/40 px-2.5 py-2">
+                <div>
+                  <Label htmlFor="ch-vat" className="cursor-pointer">
+                    수수료에 VAT 포함
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    위 수수료율이 부가세 포함 기준이면 ON
+                  </p>
+                </div>
+                <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
+              </div>
+
+              {/* 결제 수수료 포함 토글 + 결제 수수료율 입력 */}
+              <div className="flex items-center justify-between rounded-md bg-muted/40 px-2.5 py-2">
+                <div>
+                  <Label htmlFor="ch-payment-included" className="cursor-pointer">
+                    결제 수수료 포함
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    위 수수료율에 결제 수수료가 합산되어 있으면 ON
+                  </p>
+                </div>
+                <Switch
+                  id="ch-payment-included"
+                  checked={fPaymentFeeIncluded}
+                  onCheckedChange={setFPaymentFeeIncluded}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="ch-payment-fee"
+                  className={fPaymentFeeIncluded ? 'text-muted-foreground' : undefined}
+                >
+                  결제 수수료율 (%)
+                </Label>
+                <Input
+                  id="ch-payment-fee"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={fPaymentFeeIncluded ? '' : fPaymentFeePct}
+                  onChange={(e) => setFPaymentFeePct(e.target.value)}
+                  placeholder={fPaymentFeeIncluded ? '결제 수수료 포함 시 사용 안 함' : '예: 3.5'}
+                  disabled={fPaymentFeeIncluded}
                 />
               </div>
             </div>
 
-            {/* 배송비 */}
-            <div className="space-y-2">
-              <Label htmlFor="ch-shipping-fee">기본 배송비 (원)</Label>
-              <Input
-                id="ch-shipping-fee"
-                type="number"
-                min="0"
-                value={fShippingFee}
-                onChange={(e) => setFShippingFee(e.target.value)}
-                placeholder="0"
-              />
-            </div>
+            {/* ── 배송 ── */}
+            <div className="space-y-4 rounded-md border p-3">
+              <p className="text-xs font-medium text-muted-foreground">배송</p>
 
-            {/* 스위치 그룹 */}
-            <div className="space-y-3 rounded-md border p-3">
-              <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <Label htmlFor="ch-shipping-fee">기본 배송비 (원)</Label>
+                <Input
+                  id="ch-shipping-fee"
+                  type="number"
+                  min="0"
+                  value={fShippingFee}
+                  onChange={(e) => setFShippingFee(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+
+              {/* 무료 배송 토글 */}
+              <div className="flex items-center justify-between rounded-md bg-muted/40 px-2.5 py-2">
                 <div>
-                  <Label htmlFor="ch-free-shipping">무료 배송</Label>
-                  <p className="text-xs text-muted-foreground">이 채널은 무료 배송 제공</p>
+                  <Label htmlFor="ch-free-shipping" className="cursor-pointer">
+                    무료 배송
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    이 채널은 항상 무료배송 (기준금액 미적용)
+                  </p>
                 </div>
                 <Switch
                   id="ch-free-shipping"
@@ -723,6 +760,30 @@ export function ShChannelManager() {
                   onCheckedChange={setFFreeShipping}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="ch-free-threshold"
+                  className={fFreeShipping ? 'text-muted-foreground' : undefined}
+                >
+                  무료 배송 기준금액 (원)
+                </Label>
+                <Input
+                  id="ch-free-threshold"
+                  type="number"
+                  min="0"
+                  step="1000"
+                  value={fFreeShipping ? '' : fFreeShippingThreshold}
+                  onChange={(e) => setFFreeShippingThreshold(e.target.value)}
+                  placeholder={fFreeShipping ? '항상 무료배송 (사용 안 함)' : '예: 50000'}
+                  disabled={fFreeShipping}
+                />
+              </div>
+            </div>
+
+            {/* ── 마케팅 ── */}
+            <div className="space-y-3 rounded-md border p-3">
+              <p className="text-xs font-medium text-muted-foreground">마케팅</p>
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="ch-marketing">마케팅 예산 사용</Label>
@@ -741,34 +802,17 @@ export function ShChannelManager() {
                 </div>
                 <Switch id="ch-apply-ad" checked={fApplyAdCost} onCheckedChange={setFApplyAdCost} />
               </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="ch-vat">수수료에 VAT 포함</Label>
-                  <p className="text-xs text-muted-foreground">부가세 포함 수수료율 기준</p>
-                </div>
-                <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="ch-payment-included">결제 수수료 포함</Label>
-                  <p className="text-xs text-muted-foreground">수수료율에 결제 수수료 포함 여부</p>
-                </div>
-                <Switch
-                  id="ch-payment-included"
-                  checked={fPaymentFeeIncluded}
-                  onCheckedChange={setFPaymentFeeIncluded}
-                />
-              </div>
-              {editingChannel && (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="ch-active">활성 상태</Label>
-                    <p className="text-xs text-muted-foreground">비활성 시 신규 주문에 사용 불가</p>
-                  </div>
-                  <Switch id="ch-active" checked={fIsActive} onCheckedChange={setFIsActive} />
-                </div>
-              )}
             </div>
+
+            {editingChannel && (
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <Label htmlFor="ch-active">활성 상태</Label>
+                  <p className="text-xs text-muted-foreground">비활성 시 신규 주문에 사용 불가</p>
+                </div>
+                <Switch id="ch-active" checked={fIsActive} onCheckedChange={setFIsActive} />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button
