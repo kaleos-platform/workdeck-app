@@ -135,7 +135,7 @@ function KanbanCard({
       className="cursor-pointer transition hover:border-primary/40 hover:bg-accent"
       onClick={() => router.push(`${SALES_CONTENT_CONTENTS_PATH}/${card.id}`)}
     >
-      <CardContent className="p-3">
+      <CardContent className="p-2.5">
         {/* 상단: 배포 컬럼 세부 배지 */}
         {showDeployBadge && DEPLOY_BADGE_LABEL[card.status] && (
           <div className="mb-1.5">
