@@ -4,8 +4,8 @@ import { Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { ContentList } from '@/components/sc/contents/content-list'
-import { SALES_CONTENT_CONTENTS_PATH } from '@/lib/deck-routes'
+import { ContentKanban } from '@/components/sc/contents/content-kanban'
+import { SALES_CONTENT_CONTENTS_PATH, SALES_CONTENT_SETTINGS_PATH } from '@/lib/deck-routes'
 
 export default async function ContentsPage() {
   const resolved = await resolveDeckContext('sales-content')
@@ -14,7 +14,7 @@ export default async function ContentsPage() {
   const contents = await prisma.content.findMany({
     where: { spaceId: resolved.space.id },
     orderBy: { updatedAt: 'desc' },
-    take: 100,
+    take: 500,
     select: {
       id: true,
       title: true,
@@ -36,7 +36,7 @@ export default async function ContentsPage() {
         <div className="flex shrink-0 items-center gap-2">
           {/* 개선 규칙 진입 링크 */}
           <Link
-            href="/d/sales-content/settings?tab=rules"
+            href={`${SALES_CONTENT_SETTINGS_PATH}?tab=rules`}
             className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
           >
             <Settings2 className="h-3.5 w-3.5" />
@@ -47,7 +47,7 @@ export default async function ContentsPage() {
           </Button>
         </div>
       </div>
-      <ContentList contents={contents} />
+      <ContentKanban contents={contents} />
     </div>
   )
 }

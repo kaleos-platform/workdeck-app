@@ -73,7 +73,7 @@ export default async function IdeationDetailPage({ params }: Props) {
 
       <div className="space-y-3">
         {ideas.map((idea, i) => (
-          <IdeaCard key={i} idea={idea} index={i} />
+          <IdeaCard key={i} idea={idea} index={i} ideationId={ideation.id} />
         ))}
       </div>
 
