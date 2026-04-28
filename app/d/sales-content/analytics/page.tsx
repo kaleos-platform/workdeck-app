@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Settings2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
@@ -38,11 +39,21 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">성과</h1>
-        <p className="text-sm text-muted-foreground">
-          /c/[slug] 자체 클릭 집계 + 수동/자동 수집된 플랫폼 지표.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">성과 관리</h1>
+          <p className="text-sm text-muted-foreground">
+            /c/[slug] 자체 클릭 집계 + 수동/자동 수집된 플랫폼 지표.
+          </p>
+        </div>
+        {/* 개선 규칙 진입 링크 */}
+        <Link
+          href="/d/sales-content/settings?tab=rules"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+        >
+          <Settings2 className="h-3.5 w-3.5" />
+          개선 규칙 관리
+        </Link>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

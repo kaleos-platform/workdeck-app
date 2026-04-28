@@ -76,6 +76,9 @@ export const SALES_CONTENT_DEPLOYMENTS_PATH = `${SALES_CONTENT_BASE_PATH}/deploy
 export const SALES_CONTENT_ANALYTICS_PATH = `${SALES_CONTENT_BASE_PATH}/analytics`
 export const SALES_CONTENT_RULES_PATH = `${SALES_CONTENT_BASE_PATH}/rules`
 
+// 통합 설정 섹션 (PR-A: 평탄화 재구성)
+export const SALES_CONTENT_SETTINGS_PATH = `${SALES_CONTENT_BASE_PATH}/settings`
+
 export function getSalesContentIdeationPath(id: string): string {
   return `${SALES_CONTENT_IDEATION_PATH}/${id}`
 }

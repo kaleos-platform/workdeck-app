@@ -143,9 +143,9 @@ test.describe('Step 3 - 홈 렌더 및 사이드바 확인', () => {
     const header = page.locator('header').first()
     await expect(header).toBeVisible({ timeout: 5000 })
 
-    // 사이드바 존재 — sidebar는 div.bg-slate-900 구현이므로 섹션 버튼으로 확인
-    const sidebarSection = page.getByRole('button', { name: '정보 세팅' })
-    await expect(sidebarSection).toBeVisible({ timeout: 5000 })
+    // 사이드바 존재 — sidebar는 div.bg-slate-900 구현이므로 링크로 확인 (PR-A: 평탄 7항목)
+    const sidebarSettings = page.getByRole('link', { name: '설정' }).first()
+    await expect(sidebarSettings).toBeVisible({ timeout: 5000 })
   })
 })
 
@@ -156,11 +156,16 @@ test.describe('Step 4 - 내부 섹션 클릭 테스트', () => {
     await page.waitForLoadState('networkidle')
   })
 
+  // PR-A: 평탄 7항목 기준. /channels, /rules, /settings/products 는 redirect → 각 통합 설정 탭
   const sections = [
-    { name: '판매 상품', path: '/d/sales-content/settings/products' },
+    { name: '설정 (세일즈 정보)', path: '/d/sales-content/settings?tab=sales-info' },
+    { name: '설정 (채널 계정)', path: '/d/sales-content/settings?tab=channels' },
+    { name: '설정 (개선 규칙)', path: '/d/sales-content/settings?tab=rules' },
     { name: '아이데이션', path: '/d/sales-content/ideation' },
-    { name: '채널', path: '/d/sales-content/channels' },
-    { name: '개선 규칙', path: '/d/sales-content/rules' },
+    // 구 URL → redirect 동작 검증
+    { name: '채널 (구 URL redirect)', path: '/d/sales-content/channels' },
+    { name: '개선 규칙 (구 URL redirect)', path: '/d/sales-content/rules' },
+    { name: '판매 상품 (구 URL redirect)', path: '/d/sales-content/settings/products' },
   ]
 
   for (const section of sections) {
