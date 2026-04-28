@@ -593,18 +593,7 @@ export function ShChannelManager() {
             <DialogDescription>판매 채널 정보를 입력해 주세요</DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2 pr-1">
-            {/* 채널명 */}
-            <div className="space-y-2">
-              <Label htmlFor="ch-name">채널명 *</Label>
-              <Input
-                id="ch-name"
-                value={fName}
-                onChange={(e) => setFName(e.target.value)}
-                placeholder="예: 쿠팡"
-              />
-            </div>
-
-            {/* 채널 유형 */}
+            {/* 1) 채널 유형 */}
             <div className="space-y-2">
               <Label>채널 유형 *</Label>
               {!creatingType ? (
@@ -679,7 +668,52 @@ export function ShChannelManager() {
               )}
             </div>
 
-            {/* 가격 시뮬레이션 */}
+            {/* 2) 채널명 */}
+            <div className="space-y-2">
+              <Label htmlFor="ch-name">채널명 *</Label>
+              <Input
+                id="ch-name"
+                value={fName}
+                onChange={(e) => setFName(e.target.value)}
+                placeholder="예: 쿠팡"
+              />
+            </div>
+
+            {/* 3) 어드민 URL */}
+            <div className="space-y-2">
+              <Label htmlFor="ch-admin-url">어드민 URL (선택)</Label>
+              <Input
+                id="ch-admin-url"
+                value={fAdminUrl}
+                onChange={(e) => setFAdminUrl(e.target.value)}
+                placeholder="https://wing.coupang.com/..."
+              />
+            </div>
+
+            {/* 4) 마케팅 */}
+            <div className="space-y-3 rounded-md border p-3">
+              <p className="text-xs font-medium text-muted-foreground">마케팅</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="ch-marketing">마케팅 예산 사용</Label>
+                  <p className="text-xs text-muted-foreground">채널 광고비 별도 운영</p>
+                </div>
+                <Switch
+                  id="ch-marketing"
+                  checked={fUsesMarketing}
+                  onCheckedChange={setFUsesMarketing}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="ch-apply-ad">광고비 자동 적용</Label>
+                  <p className="text-xs text-muted-foreground">시뮬레이션 시 광고비 자동 포함</p>
+                </div>
+                <Switch id="ch-apply-ad" checked={fApplyAdCost} onCheckedChange={setFApplyAdCost} />
+              </div>
+            </div>
+
+            {/* 5) 가격 시뮬레이션 사용 */}
             <div className="flex items-center justify-between rounded-md border p-3">
               <div>
                 <Label htmlFor="ch-use-sim" className="cursor-pointer">
@@ -696,18 +730,7 @@ export function ShChannelManager() {
               />
             </div>
 
-            {/* 어드민 URL */}
-            <div className="space-y-2">
-              <Label htmlFor="ch-admin-url">어드민 URL (선택)</Label>
-              <Input
-                id="ch-admin-url"
-                value={fAdminUrl}
-                onChange={(e) => setFAdminUrl(e.target.value)}
-                placeholder="https://wing.coupang.com/..."
-              />
-            </div>
-
-            {/* ── 수수료 (시뮬레이션 기본값) ── */}
+            {/* 6) 수수료 (시뮬레이션 기본값) */}
             <div
               className={
                 fUseSimulation
@@ -852,29 +875,6 @@ export function ShChannelManager() {
                   placeholder={fFreeShipping ? '항상 무료배송 (사용 안 함)' : '예: 50000'}
                   disabled={fFreeShipping || !fUseSimulation}
                 />
-              </div>
-            </div>
-
-            {/* ── 마케팅 ── */}
-            <div className="space-y-3 rounded-md border p-3">
-              <p className="text-xs font-medium text-muted-foreground">마케팅</p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="ch-marketing">마케팅 예산 사용</Label>
-                  <p className="text-xs text-muted-foreground">채널 광고비 별도 운영</p>
-                </div>
-                <Switch
-                  id="ch-marketing"
-                  checked={fUsesMarketing}
-                  onCheckedChange={setFUsesMarketing}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="ch-apply-ad">광고비 자동 적용</Label>
-                  <p className="text-xs text-muted-foreground">시뮬레이션 시 광고비 자동 포함</p>
-                </div>
-                <Switch id="ch-apply-ad" checked={fApplyAdCost} onCheckedChange={setFApplyAdCost} />
               </div>
             </div>
 
