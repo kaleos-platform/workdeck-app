@@ -110,7 +110,6 @@ export async function GET(req: NextRequest) {
     },
   })
 
-  const channelIdSet: Set<string> | null = null
   const singleChannelId = channelInFilter ?? null
 
   // 버킷 초기화
@@ -150,10 +149,7 @@ export async function GET(req: NextRequest) {
   for (const m of movements) {
     const type = m.type as MoveType
     // OUTBOUND 이면서 채널 필터가 있으면 필터 적용
-    if (type === 'OUTBOUND' && (singleChannelId || channelIdSet)) {
-      if (singleChannelId && m.channelId !== singleChannelId) continue
-      if (channelIdSet && (!m.channelId || !channelIdSet.has(m.channelId))) continue
-    }
+    if (type === 'OUTBOUND' && singleChannelId && m.channelId !== singleChannelId) continue
     // TRANSFER는 source decrement event 한 번만 카운트 — InvMovement 구조상
     // source는 locationId, 대상은 toLocationId. 일반적으로 한 행 = 한 transfer이므로 그대로 카운트.
     const key = bucketKey(m.movementDate, granularity)

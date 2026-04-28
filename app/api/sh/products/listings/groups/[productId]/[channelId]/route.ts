@@ -41,7 +41,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }),
     prisma.channel.findFirst({
       where: { id: channelId, spaceId: resolved.space.id },
-      select: { id: true, name: true, kind: true },
+      select: {
+        id: true,
+        name: true,
+        channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
+      },
     }),
   ])
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
@@ -155,7 +159,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       brand: product.brand,
       optionAttributes,
     },
-    channel: { id: channel.id, name: channel.name, kind: channel.kind },
+    channel: { id: channel.id, name: channel.name, channelTypeDef: channel.channelTypeDef },
     meta: { keywords },
     listings,
   })
