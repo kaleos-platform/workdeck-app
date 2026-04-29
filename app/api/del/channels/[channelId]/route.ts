@@ -2,14 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { ChannelKind } from '@/generated/prisma/client'
 
 type DelChannelType = 'OUTBOUND' | 'TRANSFER'
 type Params = { params: Promise<{ channelId: string }> }
 
-// Channel.kind ↔ DelSalesChannel.type 변환 헬퍼
-function kindToDelType(kind: ChannelKind): DelChannelType {
-  return kind === 'INTERNAL_TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
+// channelTypeDef.isSalesChannel → DelChannelType 변환 헬퍼
+function isSalesToDelType(isSalesChannel: boolean): DelChannelType {
+  return isSalesChannel ? 'OUTBOUND' : 'TRANSFER'
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
@@ -37,25 +36,39 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data.name = name
   }
 
-  if (body?.groupId !== undefined) {
-    data.groupId = typeof body.groupId === 'string' && body.groupId.length > 0 ? body.groupId : null
-  }
   if (typeof body?.isActive === 'boolean') data.isActive = body.isActive
   if (typeof body?.requireOrderNumber === 'boolean')
     data.requireOrderNumber = body.requireOrderNumber
   if (typeof body?.requirePayment === 'boolean') data.requirePayment = body.requirePayment
   if (typeof body?.requireProducts === 'boolean') data.requireProducts = body.requireProducts
-  // type → kind 변환
-  if (body?.type === 'TRANSFER') data.kind = ChannelKind.INTERNAL_TRANSFER
-  else if (body?.type === 'OUTBOUND') data.kind = ChannelKind.ONLINE_MARKETPLACE
+
+  // type 변경 → 시드 ChannelTypeDef 재조회하여 channelTypeDefId 갱신 (groupId 파라미터 제거)
+  if (body?.type === 'TRANSFER' || body?.type === 'OUTBOUND') {
+    const seedName = body.type === 'TRANSFER' ? '내부 이관' : 'B2C'
+    const typeDef = await prisma.channelTypeDef.findFirst({
+      where: { spaceId: resolved.space.id, name: seedName, isSystem: true },
+      select: { id: true },
+    })
+    if (!typeDef) return errorResponse(`기본 채널 유형(${seedName})을 찾을 수 없습니다`, 500)
+    data.channelTypeDefId = typeDef.id
+  }
 
   const updated = await prisma.channel.update({
     where: { id: channelId },
     data,
-    include: { group: { select: { id: true, name: true } } },
+    include: {
+      channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
+    },
   })
 
-  return NextResponse.json({ channel: { ...updated, type: kindToDelType(updated.kind) } })
+  return NextResponse.json({
+    channel: {
+      ...updated,
+      type: updated.channelTypeDef
+        ? isSalesToDelType(updated.channelTypeDef.isSalesChannel)
+        : 'OUTBOUND',
+    },
+  })
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {

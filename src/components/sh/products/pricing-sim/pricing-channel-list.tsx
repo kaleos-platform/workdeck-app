@@ -17,8 +17,8 @@ import { PricingChannelPickerDialog } from './pricing-channel-picker-dialog'
 export type DbChannel = {
   id: string
   name: string
-  channelType: string | null
-  kind: string | null
+  channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
+  useSimulation: boolean
   defaultFeePct: number | null
   shippingFee: number | null
   freeShippingThreshold: number | null
@@ -42,39 +42,13 @@ type Props = {
   embedded?: boolean
 }
 
-// ─── 채널 타입 레이블 / 배지 ──────────────────────────────────────────────────
+// ─── 채널 유형 배지 ───────────────────────────────────────────────────────────
 
-function channelTypeBadge(channelType: string | null) {
-  if (channelType === 'SELF_MALL') {
-    return (
-      <Badge variant="outline" className="border-blue-400 px-1.5 py-0 text-[10px] text-blue-700">
-        자사몰
-      </Badge>
-    )
-  }
-  if (channelType === 'OPEN_MARKET') {
-    return (
-      <Badge
-        variant="outline"
-        className="border-orange-400 px-1.5 py-0 text-[10px] text-orange-700"
-      >
-        오픈마켓
-      </Badge>
-    )
-  }
-  if (channelType === 'DEPT_STORE') {
-    return (
-      <Badge
-        variant="outline"
-        className="border-purple-400 px-1.5 py-0 text-[10px] text-purple-700"
-      >
-        백화점
-      </Badge>
-    )
-  }
+function ChannelTypeBadge({ name }: { name: string | null | undefined }) {
+  if (!name) return null
   return (
     <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
-      {channelType ?? '기타'}
+      {name}
     </Badge>
   )
 }
@@ -103,7 +77,7 @@ function DbChannelCard({ ch, onRemove }: { ch: DbChannel; onRemove: () => void }
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-sm font-medium">{ch.name}</span>
-          {channelTypeBadge(ch.channelType)}
+          <ChannelTypeBadge name={ch.channelTypeDef?.name} />
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge
@@ -166,25 +140,20 @@ function InlineChannelCard({
   async function handlePromote() {
     setPromoting(true)
     try {
-      // channelSchema가 요구하는 필드 매핑
+      // 채널 생성 시 channelTypeDefId 없이 기본값으로 생성
+      // (인라인 채널은 정식 등록 시 유형을 따로 설정할 수 있도록 유형 없이 POST)
       const payload = {
         name: data.name,
-        kind:
-          data.channelType === 'SELF_MALL'
-            ? ('ONLINE_MALL' as const)
-            : ('ONLINE_MARKETPLACE' as const),
-        channelType: data.channelType === 'SELF_MALL' ? 'SELF_MALL' : 'OTHER',
         isActive: true,
         freeShipping: data.freeShippingThreshold > 0,
         freeShippingThreshold:
           data.freeShippingThreshold > 0 ? data.freeShippingThreshold : undefined,
-        // defaultFeePct: 이미 0~1
         defaultFeePct: data.defaultFeePct,
         applyAdCost: data.applyAdCost,
         shippingFee: data.shippingFee,
         paymentFeeIncluded: data.paymentFeeIncluded,
-        // paymentFeePct: 이미 0~1
         paymentFeePct: data.paymentFeePct,
+        useSimulation: true,
       }
 
       const res = await fetch('/api/channels', {
@@ -195,15 +164,15 @@ function InlineChannelCard({
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error((err as { error?: string }).error ?? '채널 등록 실패')
+        throw new Error((err as { error?: string; message?: string }).message ?? '채널 등록 실패')
       }
 
       const { channel: created } = (await res.json()) as {
         channel: {
           id: string
           name: string
-          channelType: string | null
-          kind: string | null
+          channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
+          useSimulation: boolean
           defaultFeePct: string | number | null
           shippingFee: string | number | null
           freeShippingThreshold: string | number | null
@@ -217,8 +186,8 @@ function InlineChannelCard({
       const dbChannel: DbChannel = {
         id: created.id,
         name: created.name,
-        channelType: created.channelType,
-        kind: created.kind,
+        channelTypeDef: created.channelTypeDef,
+        useSimulation: created.useSimulation,
         defaultFeePct: created.defaultFeePct != null ? Number(created.defaultFeePct) : null,
         shippingFee: created.shippingFee != null ? Number(created.shippingFee) : null,
         freeShippingThreshold:
@@ -242,7 +211,6 @@ function InlineChannelCard({
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-sm font-medium">{data.name}</span>
-          {channelTypeBadge(data.channelType)}
           <Badge
             variant="outline"
             className="border-slate-300 px-1.5 py-0 text-[10px] text-slate-500"

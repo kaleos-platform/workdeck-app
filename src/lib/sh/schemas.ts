@@ -133,15 +133,11 @@ const toOptionalNumber = (v: unknown) =>
 
 export const channelSchema = z.object({
   name: z.string().min(1).max(100),
-  kind: z
-    .enum(['ONLINE_MARKETPLACE', 'ONLINE_MALL', 'OFFLINE', 'INTERNAL_TRANSFER', 'OTHER'])
-    .default('ONLINE_MARKETPLACE'),
-  channelType: z
-    .enum(['OPEN_MARKET', 'DEPT_STORE', 'SELF_MALL', 'SOCIAL', 'WHOLESALE', 'OTHER'])
-    .default('OTHER'),
-  // groupId: null|'' → undefined → id 검증 skip (UUID/CUID 모두 허용)
-  groupId: z.preprocess(toUndef, idLike).optional(),
+  // 사용자 정의 채널 유형 (필수 — 시드 4개 중 하나 또는 사용자 추가 유형)
+  channelTypeDefId: z.preprocess(toUndef, idLike),
   isActive: z.boolean().default(true),
+  // 가격 시뮬레이션 사용 여부 (false면 수수료/배송 필드는 선택)
+  useSimulation: z.boolean().default(true),
   // adminUrl: null|'' → undefined → url 검증 skip
   adminUrl: z.preprocess(toUndef, z.string().url()).optional(),
   freeShipping: z.boolean().default(false),
@@ -162,12 +158,14 @@ export const channelSchema = z.object({
 })
 export type ChannelInput = z.infer<typeof channelSchema>
 
-// ─── 채널 그룹 ──────────────────────────────────────────────────────────────
+// ─── 채널 유형 정의 ─────────────────────────────────────────────────────────
 
-export const channelGroupSchema = z.object({
+export const channelTypeDefSchema = z.object({
   name: z.string().min(1).max(100),
+  isSalesChannel: z.boolean().default(true),
+  sortOrder: z.number().int().nonnegative().optional(),
 })
-export type ChannelGroupInput = z.infer<typeof channelGroupSchema>
+export type ChannelTypeDefInput = z.infer<typeof channelTypeDefSchema>
 
 // ─── 채널 수수료율 ──────────────────────────────────────────────────────────
 
@@ -201,9 +199,7 @@ export const pricingSettingsSchema = z.object({
   autoApplyChannelFee: z.boolean().default(false),
   autoApplyAdCost: z.boolean().default(false),
   autoApplyShipping: z.boolean().default(false),
-  // 마진 등급 임계값 — 0~1 비율 단위
-  selfMallTargetGood: z.number().min(0).max(1).default(0.35),
-  selfMallTargetFair: z.number().min(0).max(1).default(0.25),
+  // 마진 등급 임계값 — 0~1 비율 단위 (단일 기준)
   platformTargetGood: z.number().min(0).max(1).default(0.25),
   platformTargetFair: z.number().min(0).max(1).default(0.15),
   minimumAcceptableMargin: z.number().min(0).max(1).default(0.1),

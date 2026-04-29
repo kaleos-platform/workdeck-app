@@ -10,9 +10,9 @@ describe('calculateCTR', () => {
     expect(calculateCTR(1000, 10000)).toBe(10.0)
   })
 
-  it('소수점 반올림: round1 적용', () => {
-    // 333 / 10000 * 100 = 3.33 → 3.3
-    expect(calculateCTR(333, 10000)).toBe(3.3)
+  it('소수점 반올림: round2 적용', () => {
+    // 333 / 10000 * 100 = 3.33
+    expect(calculateCTR(333, 10000)).toBe(3.33)
   })
 
   it('노출수 0이면 null 반환', () => {
@@ -30,9 +30,9 @@ describe('calculateCVR', () => {
     expect(calculateCVR(50, 1000)).toBe(5.0)
   })
 
-  it('소수점 반올림: round1 적용', () => {
-    // 1 / 300 * 100 = 0.333... → 0.3
-    expect(calculateCVR(1, 300)).toBe(0.3)
+  it('소수점 반올림: round2 적용', () => {
+    // 1 / 300 * 100 = 0.333... → 0.33
+    expect(calculateCVR(1, 300)).toBe(0.33)
   })
 
   it('클릭수 0이면 null 반환', () => {
@@ -50,9 +50,9 @@ describe('calculateROAS', () => {
     expect(calculateROAS(500000, 100000)).toBe(500.0)
   })
 
-  it('소수점 반올림: round1 적용', () => {
-    // 10000 / 3000 * 100 = 333.333... → 333.3
-    expect(calculateROAS(10000, 3000)).toBe(333.3)
+  it('소수점 반올림: round2 적용', () => {
+    // 10000 / 3000 * 100 = 333.333... → 333.33
+    expect(calculateROAS(10000, 3000)).toBe(333.33)
   })
 
   it('광고비 0이면 null 반환', () => {
@@ -70,9 +70,9 @@ describe('calculateEngagementRate', () => {
     expect(calculateEngagementRate(200, 10000)).toBe(2.0)
   })
 
-  it('소수점 반올림: round1 적용', () => {
-    // 1 / 300 * 100 = 0.333... → 0.3
-    expect(calculateEngagementRate(1, 300)).toBe(0.3)
+  it('소수점 반올림: round2 적용', () => {
+    // 1 / 300 * 100 = 0.333... → 0.33
+    expect(calculateEngagementRate(1, 300)).toBe(0.33)
   })
 
   it('노출수 0이면 null 반환', () => {

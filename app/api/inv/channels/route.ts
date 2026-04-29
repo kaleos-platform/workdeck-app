@@ -8,11 +8,10 @@ export async function GET(req: NextRequest) {
   if ('error' in resolved) return resolved.error
 
   const isActiveParam = req.nextUrl.searchParams.get('isActive')
-  const where: {
-    spaceId: string
-    isActive?: boolean
-    kind: 'ONLINE_MARKETPLACE' | 'ONLINE_MALL' | 'OFFLINE' | 'INTERNAL_TRANSFER' | 'OTHER'
-  } = { spaceId: resolved.space.id, kind: 'ONLINE_MARKETPLACE' }
+  const where: Record<string, unknown> = {
+    spaceId: resolved.space.id,
+    channelTypeDef: { isSalesChannel: true },
+  }
   if (isActiveParam === 'true') where.isActive = true
   else if (isActiveParam === 'false') where.isActive = false
 
@@ -20,7 +19,7 @@ export async function GET(req: NextRequest) {
     where,
     orderBy: { createdAt: 'asc' },
     include: {
-      group: { select: { id: true, name: true } },
+      channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
     },
   })
 
@@ -33,39 +32,28 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}))
   const name = typeof body?.name === 'string' ? body.name.trim() : ''
-  const groupId: string | null =
-    typeof body?.groupId === 'string' && body.groupId.length > 0 ? body.groupId : null
 
-  if (!name) {
-    return errorResponse('채널 이름이 필요합니다', 400)
-  }
+  if (!name) return errorResponse('채널 이름이 필요합니다', 400)
 
   const duplicate = await prisma.channel.findFirst({
     where: { spaceId: resolved.space.id, name },
     select: { id: true },
   })
-  if (duplicate) {
-    return errorResponse('이미 존재하는 채널 이름입니다', 409)
-  }
+  if (duplicate) return errorResponse('이미 존재하는 채널 이름입니다', 409)
 
-  if (groupId) {
-    const group = await prisma.channelGroup.findUnique({
-      where: { id: groupId },
-      select: { spaceId: true },
-    })
-    if (!group || group.spaceId !== resolved.space.id) {
-      return errorResponse('유효하지 않은 그룹입니다', 400)
-    }
-  }
+  const defaultType = await prisma.channelTypeDef.findFirst({
+    where: { spaceId: resolved.space.id, name: 'B2C', isSystem: true },
+    select: { id: true },
+  })
+  if (!defaultType) return errorResponse('기본 채널 유형(B2C)을 찾을 수 없습니다', 500)
 
   const channel = await prisma.channel.create({
     data: {
       spaceId: resolved.space.id,
       name,
-      groupId,
-      kind: 'ONLINE_MARKETPLACE',
+      channelTypeDefId: defaultType.id,
     },
-    include: { group: { select: { id: true, name: true } } },
+    include: { channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } } },
   })
 
   return NextResponse.json({ channel })

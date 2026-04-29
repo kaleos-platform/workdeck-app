@@ -1,10 +1,21 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Download, Plus, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { ProductAttributesPicker } from './product-attributes-picker'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -52,6 +63,8 @@ type Props = {
   productCode?: string | null
   /** 조합 프리뷰 테이블 렌더 여부. 기본 true(상품 등록용); 상세에서는 false로 옵션 테이블이 대체. */
   showCombinationsPreview?: boolean
+  /** "다른 상품에서 불러오기" 피커에서 자기 자신을 제외할 때 사용 (편집 모드) */
+  excludeProductId?: string
 }
 
 function cartesian(arrays: string[][]): string[][] {
@@ -98,7 +111,17 @@ export function ProductOptionAttributesEditor({
   onCombinationsChange,
   productCode,
   showCombinationsPreview = true,
+  excludeProductId,
 }: Props) {
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  const handlePick = useCallback(
+    (loaded: OptionAttribute[]) => {
+      // 가져온 속성이 기존을 덮어쓴다. attributesKey 변경으로 조합도 자동 재계산됨.
+      onAttributesChange(loaded)
+    },
+    [onAttributesChange]
+  )
   const [valueInputs, setValueInputs] = useState<Record<number, string>>({})
   const [aliasMap, setAliasMap] = useState<Map<string, string> | null>(null)
 
@@ -294,8 +317,71 @@ export function ProductOptionAttributesEditor({
     [combinations, onCombinationsChange]
   )
 
+  // 일괄 편집 — 조합 키(combination.join('|'))로 선택 추적
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkOpen, setBulkOpen] = useState(false)
+  const [bulkCost, setBulkCost] = useState('')
+  const [bulkRetail, setBulkRetail] = useState('')
+
+  // combinations 가 재계산되면 사라진 키 정리
+  useEffect(() => {
+    setSelected((prev) => {
+      if (prev.size === 0) return prev
+      const valid = new Set(combinations.map((r) => r.combination.join('|')))
+      let changed = false
+      const next = new Set<string>()
+      for (const k of prev) {
+        if (valid.has(k)) next.add(k)
+        else changed = true
+      }
+      return changed ? next : prev
+    })
+  }, [combinations])
+
+  const toggleRow = useCallback((key: string, checked: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(key)
+      else next.delete(key)
+      return next
+    })
+  }, [])
+
+  const toggleAllRows = useCallback(
+    (checked: boolean) => {
+      setSelected(checked ? new Set(combinations.map((r) => r.combination.join('|'))) : new Set())
+    },
+    [combinations]
+  )
+
+  function applyBulkEdit() {
+    if (selected.size === 0) return
+    const costStr = bulkCost.trim()
+    const retailStr = bulkRetail.trim()
+    if (!costStr && !retailStr) {
+      toast.error('원가 또는 소비자가 중 하나 이상 입력하세요')
+      return
+    }
+    onCombinationsChange(
+      combinations.map((r) => {
+        const key = r.combination.join('|')
+        if (!selected.has(key)) return r
+        return {
+          ...r,
+          ...(costStr && { costPrice: costStr }),
+          ...(retailStr && { retailPrice: retailStr }),
+        }
+      })
+    )
+    toast.success(`${selected.size}개 조합 일괄 적용됨`)
+    setBulkOpen(false)
+    setBulkCost('')
+    setBulkRetail('')
+  }
+
   const hasAttributes = attributes.length > 0
   const hasCombinations = combinations.length > 0
+  const allRowsChecked = combinations.length > 0 && selected.size === combinations.length
   const canAddAttr = attributes.length < MAX_ATTRIBUTES
   const validAttrNames = validAttrs.map((a) => a.name)
 
@@ -309,17 +395,29 @@ export function ProductOptionAttributesEditor({
               최대 {MAX_ATTRIBUTES}개 속성. 값의 코드는 자동 제안되며 직접 수정 가능합니다.
             </p>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addAttribute}
-            disabled={!canAddAttr}
-            title={canAddAttr ? '속성 추가' : `최대 ${MAX_ATTRIBUTES}개까지 가능합니다`}
-          >
-            <Plus className="mr-1 h-3 w-3" />
-            속성 추가 ({attributes.length}/{MAX_ATTRIBUTES})
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setPickerOpen(true)}
+              title="저장된 다른 상품의 옵션 속성을 복사해 옵니다"
+            >
+              <Download className="mr-1 h-3 w-3" />
+              다른 상품에서 불러오기
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={addAttribute}
+              disabled={!canAddAttr}
+              title={canAddAttr ? '속성 추가' : `최대 ${MAX_ATTRIBUTES}개까지 가능합니다`}
+            >
+              <Plus className="mr-1 h-3 w-3" />
+              속성 추가 ({attributes.length}/{MAX_ATTRIBUTES})
+            </Button>
+          </div>
         </div>
 
         {!hasAttributes && (
@@ -420,19 +518,55 @@ export function ProductOptionAttributesEditor({
 
       {hasCombinations && showCombinationsPreview && (
         <div className="rounded-md border">
-          <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2">
             <p className="text-sm font-semibold">
               자동 생성 조합{' '}
               <span className="font-normal text-muted-foreground">({combinations.length}개)</span>
             </p>
-            <p className="text-xs text-muted-foreground">
-              관리코드는 자동 조립되며, 직접 수정하면 유지됩니다.
-            </p>
+            {selected.size > 0 ? (
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-medium">{selected.size}개 선택</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    setBulkCost('')
+                    setBulkRetail('')
+                    setBulkOpen(true)
+                  }}
+                >
+                  일괄 편집
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setSelected(new Set())}
+                  aria-label="선택 해제"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                관리코드는 자동 조립되며, 직접 수정하면 유지됩니다.
+              </p>
+            )}
           </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={allRowsChecked}
+                      onCheckedChange={(v) => toggleAllRows(v === true)}
+                      aria-label="전체 선택"
+                    />
+                  </TableHead>
                   {validAttrNames.map((attrName) => (
                     <TableHead key={attrName} className="min-w-[80px] text-xs">
                       {attrName}
@@ -444,48 +578,111 @@ export function ProductOptionAttributesEditor({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {combinations.map((row, rowIdx) => (
-                  <TableRow key={combinationLabel(row.combination)}>
-                    {row.combination.map((val, valIdx) => (
-                      <TableCell key={valIdx} className="py-1.5 text-sm font-medium">
-                        {val}
+                {combinations.map((row, rowIdx) => {
+                  const key = row.combination.join('|')
+                  const isSelected = selected.has(key)
+                  return (
+                    <TableRow
+                      key={combinationLabel(row.combination)}
+                      data-selected={isSelected || undefined}
+                      className="data-[selected=true]:bg-muted/50"
+                    >
+                      <TableCell className="py-1.5">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(v) => toggleRow(key, v === true)}
+                          aria-label={`${combinationLabel(row.combination)} 선택`}
+                        />
                       </TableCell>
-                    ))}
-                    <TableCell className="py-1.5">
-                      <Input
-                        value={row.sku}
-                        onChange={(e) => updateCombination(rowIdx, 'sku', e.target.value)}
-                        placeholder="(자동)"
-                        className="h-7 text-xs"
-                      />
-                    </TableCell>
-                    <TableCell className="py-1.5">
-                      <Input
-                        type="number"
-                        min="0"
-                        value={row.costPrice}
-                        onChange={(e) => updateCombination(rowIdx, 'costPrice', e.target.value)}
-                        placeholder="0"
-                        className="h-7 text-xs"
-                      />
-                    </TableCell>
-                    <TableCell className="py-1.5">
-                      <Input
-                        type="number"
-                        min="0"
-                        value={row.retailPrice}
-                        onChange={(e) => updateCombination(rowIdx, 'retailPrice', e.target.value)}
-                        placeholder="0"
-                        className="h-7 text-xs"
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      {row.combination.map((val, valIdx) => (
+                        <TableCell key={valIdx} className="py-1.5 text-sm font-medium">
+                          {val}
+                        </TableCell>
+                      ))}
+                      <TableCell className="py-1.5">
+                        <Input
+                          value={row.sku}
+                          onChange={(e) => updateCombination(rowIdx, 'sku', e.target.value)}
+                          placeholder="(자동)"
+                          className="h-7 text-xs"
+                        />
+                      </TableCell>
+                      <TableCell className="py-1.5">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={row.costPrice}
+                          onChange={(e) => updateCombination(rowIdx, 'costPrice', e.target.value)}
+                          placeholder="0"
+                          className="h-7 text-xs"
+                        />
+                      </TableCell>
+                      <TableCell className="py-1.5">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={row.retailPrice}
+                          onChange={(e) => updateCombination(rowIdx, 'retailPrice', e.target.value)}
+                          placeholder="0"
+                          className="h-7 text-xs"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
         </div>
       )}
+
+      <ProductAttributesPicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onPick={handlePick}
+        excludeProductId={excludeProductId}
+      />
+
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{selected.size}개 조합 일괄 편집</DialogTitle>
+            <DialogDescription>비워둔 필드는 변경되지 않습니다.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="combo-bulk-cost">원가</Label>
+              <Input
+                id="combo-bulk-cost"
+                type="number"
+                min="0"
+                value={bulkCost}
+                onChange={(e) => setBulkCost(e.target.value)}
+                placeholder="변경 없으면 비워두세요"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="combo-bulk-retail">소비자가</Label>
+              <Input
+                id="combo-bulk-retail"
+                type="number"
+                min="0"
+                value={bulkRetail}
+                onChange={(e) => setBulkRetail(e.target.value)}
+                placeholder="변경 없으면 비워두세요"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setBulkOpen(false)}>
+              취소
+            </Button>
+            <Button type="button" onClick={applyBulkEdit}>
+              적용
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

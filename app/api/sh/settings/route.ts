@@ -24,8 +24,6 @@ function serializeSettings(s: {
   autoApplyChannelFee: boolean
   autoApplyAdCost: boolean
   autoApplyShipping: boolean
-  selfMallTargetGood: Decimal
-  selfMallTargetFair: Decimal
   platformTargetGood: Decimal
   platformTargetFair: Decimal
   minimumAcceptableMargin: Decimal
@@ -41,8 +39,6 @@ function serializeSettings(s: {
     defaultShippingCost: d(s.defaultShippingCost),
     defaultReturnRate: d(s.defaultReturnRate),
     defaultReturnShipping: d(s.defaultReturnShipping),
-    selfMallTargetGood: d(s.selfMallTargetGood),
-    selfMallTargetFair: d(s.selfMallTargetFair),
     platformTargetGood: d(s.platformTargetGood),
     platformTargetFair: d(s.platformTargetFair),
     minimumAcceptableMargin: d(s.minimumAcceptableMargin),
@@ -69,8 +65,6 @@ export async function GET() {
       autoApplyChannelFee: false,
       autoApplyAdCost: false,
       autoApplyShipping: false,
-      selfMallTargetGood: 0.35,
-      selfMallTargetFair: 0.25,
       platformTargetGood: 0.25,
       platformTargetFair: 0.15,
       minimumAcceptableMargin: 0.1,
@@ -107,8 +101,6 @@ export async function PUT(req: NextRequest) {
     autoApplyChannelFee,
     autoApplyAdCost,
     autoApplyShipping,
-    selfMallTargetGood,
-    selfMallTargetFair,
     platformTargetGood,
     platformTargetFair,
     minimumAcceptableMargin,
@@ -125,8 +117,6 @@ export async function PUT(req: NextRequest) {
     autoApplyChannelFee,
     autoApplyAdCost,
     autoApplyShipping,
-    selfMallTargetGood,
-    selfMallTargetFair,
     platformTargetGood,
     platformTargetFair,
     minimumAcceptableMargin,

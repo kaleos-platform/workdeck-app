@@ -280,10 +280,10 @@ export type DelIntegrationHistory = Prisma.DelIntegrationHistoryModel
  */
 export type Brand = Prisma.BrandModel
 /**
- * Model ChannelGroup
+ * Model ChannelTypeDef
  * 
  */
-export type ChannelGroup = Prisma.ChannelGroupModel
+export type ChannelTypeDef = Prisma.ChannelTypeDefModel
 /**
  * Model Channel
  * 
@@ -354,3 +354,93 @@ export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel
  * 
  */
 export type ProductChannelGroupMeta = Prisma.ProductChannelGroupMetaModel
+/**
+ * Model B2BProduct
+ * 
+ */
+export type B2BProduct = Prisma.B2BProductModel
+/**
+ * Model Persona
+ * 
+ */
+export type Persona = Prisma.PersonaModel
+/**
+ * Model BrandProfile
+ * 
+ */
+export type BrandProfile = Prisma.BrandProfileModel
+/**
+ * Model WorkspaceAiCredit
+ * 
+ */
+export type WorkspaceAiCredit = Prisma.WorkspaceAiCreditModel
+/**
+ * Model ImageGenerationLog
+ * 
+ */
+export type ImageGenerationLog = Prisma.ImageGenerationLogModel
+/**
+ * Model TextGenerationLog
+ * 
+ */
+export type TextGenerationLog = Prisma.TextGenerationLogModel
+/**
+ * Model Template
+ * 
+ */
+export type Template = Prisma.TemplateModel
+/**
+ * Model SalesContentChannel
+ * 
+ */
+export type SalesContentChannel = Prisma.SalesContentChannelModel
+/**
+ * Model Content
+ * 
+ */
+export type Content = Prisma.ContentModel
+/**
+ * Model ContentDeployment
+ * 
+ */
+export type ContentDeployment = Prisma.ContentDeploymentModel
+/**
+ * Model ContentClickEvent
+ * 
+ */
+export type ContentClickEvent = Prisma.ContentClickEventModel
+/**
+ * Model ChannelCredential
+ * 
+ */
+export type ChannelCredential = Prisma.ChannelCredentialModel
+/**
+ * Model DeploymentMetric
+ * 
+ */
+export type DeploymentMetric = Prisma.DeploymentMetricModel
+/**
+ * Model SalesContentJob
+ * 
+ */
+export type SalesContentJob = Prisma.SalesContentJobModel
+/**
+ * Model ContentVersion
+ * 
+ */
+export type ContentVersion = Prisma.ContentVersionModel
+/**
+ * Model ContentAsset
+ * 
+ */
+export type ContentAsset = Prisma.ContentAssetModel
+/**
+ * Model ContentIdea
+ * 
+ */
+export type ContentIdea = Prisma.ContentIdeaModel
+/**
+ * Model ImprovementRule
+ * 
+ */
+export type ImprovementRule = Prisma.ImprovementRuleModel

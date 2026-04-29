@@ -34,8 +34,6 @@ export type ProductPricingSettingsAvgAggregateOutputType = {
   defaultShippingCost: runtime.Decimal | null
   defaultReturnRate: runtime.Decimal | null
   defaultReturnShipping: runtime.Decimal | null
-  selfMallTargetGood: runtime.Decimal | null
-  selfMallTargetFair: runtime.Decimal | null
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
@@ -49,8 +47,6 @@ export type ProductPricingSettingsSumAggregateOutputType = {
   defaultShippingCost: runtime.Decimal | null
   defaultReturnRate: runtime.Decimal | null
   defaultReturnShipping: runtime.Decimal | null
-  selfMallTargetGood: runtime.Decimal | null
-  selfMallTargetFair: runtime.Decimal | null
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
@@ -69,8 +65,6 @@ export type ProductPricingSettingsMinAggregateOutputType = {
   autoApplyChannelFee: boolean | null
   autoApplyAdCost: boolean | null
   autoApplyShipping: boolean | null
-  selfMallTargetGood: runtime.Decimal | null
-  selfMallTargetFair: runtime.Decimal | null
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
@@ -91,8 +85,6 @@ export type ProductPricingSettingsMaxAggregateOutputType = {
   autoApplyChannelFee: boolean | null
   autoApplyAdCost: boolean | null
   autoApplyShipping: boolean | null
-  selfMallTargetGood: runtime.Decimal | null
-  selfMallTargetFair: runtime.Decimal | null
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
@@ -113,8 +105,6 @@ export type ProductPricingSettingsCountAggregateOutputType = {
   autoApplyChannelFee: number
   autoApplyAdCost: number
   autoApplyShipping: number
-  selfMallTargetGood: number
-  selfMallTargetFair: number
   platformTargetGood: number
   platformTargetFair: number
   minimumAcceptableMargin: number
@@ -132,8 +122,6 @@ export type ProductPricingSettingsAvgAggregateInputType = {
   defaultShippingCost?: true
   defaultReturnRate?: true
   defaultReturnShipping?: true
-  selfMallTargetGood?: true
-  selfMallTargetFair?: true
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
@@ -147,8 +135,6 @@ export type ProductPricingSettingsSumAggregateInputType = {
   defaultShippingCost?: true
   defaultReturnRate?: true
   defaultReturnShipping?: true
-  selfMallTargetGood?: true
-  selfMallTargetFair?: true
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
@@ -167,8 +153,6 @@ export type ProductPricingSettingsMinAggregateInputType = {
   autoApplyChannelFee?: true
   autoApplyAdCost?: true
   autoApplyShipping?: true
-  selfMallTargetGood?: true
-  selfMallTargetFair?: true
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
@@ -189,8 +173,6 @@ export type ProductPricingSettingsMaxAggregateInputType = {
   autoApplyChannelFee?: true
   autoApplyAdCost?: true
   autoApplyShipping?: true
-  selfMallTargetGood?: true
-  selfMallTargetFair?: true
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
@@ -211,8 +193,6 @@ export type ProductPricingSettingsCountAggregateInputType = {
   autoApplyChannelFee?: true
   autoApplyAdCost?: true
   autoApplyShipping?: true
-  selfMallTargetGood?: true
-  selfMallTargetFair?: true
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
@@ -320,8 +300,6 @@ export type ProductPricingSettingsGroupByOutputType = {
   autoApplyChannelFee: boolean
   autoApplyAdCost: boolean
   autoApplyShipping: boolean
-  selfMallTargetGood: runtime.Decimal
-  selfMallTargetFair: runtime.Decimal
   platformTargetGood: runtime.Decimal
   platformTargetFair: runtime.Decimal
   minimumAcceptableMargin: runtime.Decimal
@@ -365,8 +343,6 @@ export type ProductPricingSettingsWhereInput = {
   autoApplyChannelFee?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
   autoApplyAdCost?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
   autoApplyShipping?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
-  selfMallTargetGood?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -388,8 +364,6 @@ export type ProductPricingSettingsOrderByWithRelationInput = {
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
-  selfMallTargetGood?: Prisma.SortOrder
-  selfMallTargetFair?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -414,8 +388,6 @@ export type ProductPricingSettingsWhereUniqueInput = Prisma.AtLeast<{
   autoApplyChannelFee?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
   autoApplyAdCost?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
   autoApplyShipping?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
-  selfMallTargetGood?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -437,8 +409,6 @@ export type ProductPricingSettingsOrderByWithAggregationInput = {
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
-  selfMallTargetGood?: Prisma.SortOrder
-  selfMallTargetFair?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -467,8 +437,6 @@ export type ProductPricingSettingsScalarWhereWithAggregatesInput = {
   autoApplyChannelFee?: Prisma.BoolWithAggregatesFilter<"ProductPricingSettings"> | boolean
   autoApplyAdCost?: Prisma.BoolWithAggregatesFilter<"ProductPricingSettings"> | boolean
   autoApplyShipping?: Prisma.BoolWithAggregatesFilter<"ProductPricingSettings"> | boolean
-  selfMallTargetGood?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -488,8 +456,6 @@ export type ProductPricingSettingsCreateInput = {
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -511,8 +477,6 @@ export type ProductPricingSettingsUncheckedCreateInput = {
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -532,8 +496,6 @@ export type ProductPricingSettingsUpdateInput = {
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  selfMallTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -555,8 +517,6 @@ export type ProductPricingSettingsUncheckedUpdateInput = {
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  selfMallTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -577,8 +537,6 @@ export type ProductPricingSettingsCreateManyInput = {
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -598,8 +556,6 @@ export type ProductPricingSettingsUpdateManyMutationInput = {
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  selfMallTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -620,8 +576,6 @@ export type ProductPricingSettingsUncheckedUpdateManyInput = {
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  selfMallTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -647,8 +601,6 @@ export type ProductPricingSettingsCountOrderByAggregateInput = {
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
-  selfMallTargetGood?: Prisma.SortOrder
-  selfMallTargetFair?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -664,8 +616,6 @@ export type ProductPricingSettingsAvgOrderByAggregateInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
-  selfMallTargetGood?: Prisma.SortOrder
-  selfMallTargetFair?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -684,8 +634,6 @@ export type ProductPricingSettingsMaxOrderByAggregateInput = {
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
-  selfMallTargetGood?: Prisma.SortOrder
-  selfMallTargetFair?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -706,8 +654,6 @@ export type ProductPricingSettingsMinOrderByAggregateInput = {
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
-  selfMallTargetGood?: Prisma.SortOrder
-  selfMallTargetFair?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -723,8 +669,6 @@ export type ProductPricingSettingsSumOrderByAggregateInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
-  selfMallTargetGood?: Prisma.SortOrder
-  selfMallTargetFair?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -774,8 +718,6 @@ export type ProductPricingSettingsCreateWithoutSpaceInput = {
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -795,8 +737,6 @@ export type ProductPricingSettingsUncheckedCreateWithoutSpaceInput = {
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -832,8 +772,6 @@ export type ProductPricingSettingsUpdateWithoutSpaceInput = {
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  selfMallTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -853,8 +791,6 @@ export type ProductPricingSettingsUncheckedUpdateWithoutSpaceInput = {
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  selfMallTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  selfMallTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -877,8 +813,6 @@ export type ProductPricingSettingsSelect<ExtArgs extends runtime.Types.Extension
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: boolean
-  selfMallTargetFair?: boolean
   platformTargetGood?: boolean
   platformTargetFair?: boolean
   minimumAcceptableMargin?: boolean
@@ -900,8 +834,6 @@ export type ProductPricingSettingsSelectCreateManyAndReturn<ExtArgs extends runt
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: boolean
-  selfMallTargetFair?: boolean
   platformTargetGood?: boolean
   platformTargetFair?: boolean
   minimumAcceptableMargin?: boolean
@@ -923,8 +855,6 @@ export type ProductPricingSettingsSelectUpdateManyAndReturn<ExtArgs extends runt
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: boolean
-  selfMallTargetFair?: boolean
   platformTargetGood?: boolean
   platformTargetFair?: boolean
   minimumAcceptableMargin?: boolean
@@ -946,8 +876,6 @@ export type ProductPricingSettingsSelectScalar = {
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
-  selfMallTargetGood?: boolean
-  selfMallTargetFair?: boolean
   platformTargetGood?: boolean
   platformTargetFair?: boolean
   minimumAcceptableMargin?: boolean
@@ -955,7 +883,7 @@ export type ProductPricingSettingsSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductPricingSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "defaultOperatingCostPct" | "defaultAdCostPct" | "defaultPackagingCost" | "defaultChannelFeePct" | "defaultShippingCost" | "defaultReturnRate" | "defaultReturnShipping" | "autoApplyChannelFee" | "autoApplyAdCost" | "autoApplyShipping" | "selfMallTargetGood" | "selfMallTargetFair" | "platformTargetGood" | "platformTargetFair" | "minimumAcceptableMargin" | "createdAt" | "updatedAt", ExtArgs["result"]["productPricingSettings"]>
+export type ProductPricingSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "defaultOperatingCostPct" | "defaultAdCostPct" | "defaultPackagingCost" | "defaultChannelFeePct" | "defaultShippingCost" | "defaultReturnRate" | "defaultReturnShipping" | "autoApplyChannelFee" | "autoApplyAdCost" | "autoApplyShipping" | "platformTargetGood" | "platformTargetFair" | "minimumAcceptableMargin" | "createdAt" | "updatedAt", ExtArgs["result"]["productPricingSettings"]>
 export type ProductPricingSettingsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -984,8 +912,6 @@ export type $ProductPricingSettingsPayload<ExtArgs extends runtime.Types.Extensi
     autoApplyChannelFee: boolean
     autoApplyAdCost: boolean
     autoApplyShipping: boolean
-    selfMallTargetGood: runtime.Decimal
-    selfMallTargetFair: runtime.Decimal
     platformTargetGood: runtime.Decimal
     platformTargetFair: runtime.Decimal
     minimumAcceptableMargin: runtime.Decimal
@@ -1427,8 +1353,6 @@ export interface ProductPricingSettingsFieldRefs {
   readonly autoApplyChannelFee: Prisma.FieldRef<"ProductPricingSettings", 'Boolean'>
   readonly autoApplyAdCost: Prisma.FieldRef<"ProductPricingSettings", 'Boolean'>
   readonly autoApplyShipping: Prisma.FieldRef<"ProductPricingSettings", 'Boolean'>
-  readonly selfMallTargetGood: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
-  readonly selfMallTargetFair: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly platformTargetGood: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly platformTargetFair: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly minimumAcceptableMargin: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>

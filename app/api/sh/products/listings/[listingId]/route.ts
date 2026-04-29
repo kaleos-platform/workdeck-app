@@ -23,7 +23,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const listing = await prisma.productListing.findFirst({
     where: { id: listingId, spaceId: resolved.space.id },
     include: {
-      channel: { select: { id: true, name: true, kind: true } },
+      channel: {
+        select: {
+          id: true,
+          name: true,
+          channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
+        },
+      },
       items: {
         orderBy: { sortOrder: 'asc' },
         include: {

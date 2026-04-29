@@ -179,10 +179,13 @@ function buildRowFromManualEntry(entry: ManualEntryData, defaults: DefaultSettin
 function toMatrixChannel(sc: ScenarioChannel): MatrixChannel {
   if (sc.source === 'db') {
     const ch = sc.channel
+    // channelType 필드는 MatrixChannel 타입에 존재하지만 계산에 미사용.
+    // isSalesChannel=false 이면 내부 이관 채널 식별용으로 전달.
+    const channelType = ch.channelTypeDef?.isSalesChannel === false ? 'INTERNAL_TRANSFER' : null
     return {
       id: ch.id,
       name: ch.name,
-      channelType: ch.channelType,
+      channelType,
       defaultFeePct: ch.defaultFeePct ?? 0,
       paymentFeeIncluded: ch.paymentFeeIncluded,
       paymentFeePct: ch.paymentFeePct ?? 0,
@@ -194,7 +197,7 @@ function toMatrixChannel(sc: ScenarioChannel): MatrixChannel {
     const il = sc.inline
     return {
       name: il.name,
-      channelType: il.channelType,
+      channelType: null,
       defaultFeePct: il.defaultFeePct,
       paymentFeeIncluded: il.paymentFeeIncluded,
       paymentFeePct: il.paymentFeePct,
@@ -260,8 +263,6 @@ export function PricingSimMain() {
     defaultOperatingCostPct: 0,
     defaultAdCostPct: 0,
     defaultPackagingCost: 0,
-    selfMallTargetGood: 0.35,
-    selfMallTargetFair: 0.25,
     platformTargetGood: 0.25,
     platformTargetFair: 0.15,
     expectedReturnRate: 0.05,
@@ -298,8 +299,8 @@ export function PricingSimMain() {
           type ApiCh = {
             id: string
             name: string
-            channelType: string | null
-            kind: string | null
+            channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
+            useSimulation: boolean
             defaultFeePct: string | number | null
             shippingFee: string | number | null
             freeShippingThreshold: string | number | null
@@ -313,8 +314,8 @@ export function PricingSimMain() {
               (c): DbChannel => ({
                 id: c.id,
                 name: c.name,
-                channelType: c.channelType,
-                kind: c.kind,
+                channelTypeDef: c.channelTypeDef,
+                useSimulation: c.useSimulation,
                 defaultFeePct: c.defaultFeePct != null ? Number(c.defaultFeePct) : null,
                 shippingFee: c.shippingFee != null ? Number(c.shippingFee) : null,
                 freeShippingThreshold:
@@ -339,8 +340,6 @@ export function PricingSimMain() {
             setFullSettings((prev) => ({
               ...prev,
               ...base,
-              selfMallTargetGood: Number(s.selfMallTargetGood ?? prev.selfMallTargetGood),
-              selfMallTargetFair: Number(s.selfMallTargetFair ?? prev.selfMallTargetFair),
               platformTargetGood: Number(s.platformTargetGood ?? prev.platformTargetGood),
               platformTargetFair: Number(s.platformTargetFair ?? prev.platformTargetFair),
               expectedReturnRate: Number(s.expectedReturnRate ?? prev.expectedReturnRate),
@@ -396,8 +395,8 @@ export function PricingSimMain() {
           const fallback: DbChannel = {
             id: partial.id,
             name: partial.name,
-            channelType: null,
-            kind: null,
+            channelTypeDef: null,
+            useSimulation: true,
             defaultFeePct: null,
             shippingFee: null,
             freeShippingThreshold: null,
@@ -551,8 +550,6 @@ export function PricingSimMain() {
   }
 
   const tierThresholds: TierThresholds = {
-    selfMallTargetGood: fullSettings.selfMallTargetGood ?? 0.35,
-    selfMallTargetFair: fullSettings.selfMallTargetFair ?? 0.25,
     platformTargetGood: fullSettings.platformTargetGood ?? 0.25,
     platformTargetFair: fullSettings.platformTargetFair ?? 0.15,
   }
@@ -1078,7 +1075,7 @@ export function PricingSimMain() {
                       const isChartExpanded = row.chartExpanded[key] === true // 기본 접힘
                       const chName = sc.source === 'db' ? sc.channel.name : sc.inline.name
                       const chType =
-                        sc.source === 'db' ? sc.channel.channelType : sc.inline.channelType
+                        sc.source === 'db' ? (sc.channel.channelTypeDef?.name ?? null) : null
                       const matrixChannel = toMatrixChannel(sc)
 
                       // 민감도 차트용 매트릭스 — 차트가 열려있을 때만 계산

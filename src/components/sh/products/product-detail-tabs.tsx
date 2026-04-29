@@ -1,6 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Copy, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ProductBasicForm } from '@/components/sh/products/product-basic-form'
@@ -50,9 +53,28 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
  * ProductBasicForm을 제출한다.
  */
 export function ProductDetailTabs({ productId }: Props) {
+  const router = useRouter()
   const [refreshKey, setRefreshKey] = useState(0)
   const [active, setActive] = useState<SectionKey>('basic')
   const [canSave, setCanSave] = useState(false)
+  const [duplicating, setDuplicating] = useState(false)
+
+  const handleDuplicate = useCallback(async () => {
+    if (!confirm('이 상품을 복제하시겠습니까? 새 상품으로 이동합니다.')) return
+    setDuplicating(true)
+    try {
+      const res = await fetch(`/api/sh/products/${productId}/duplicate`, { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '상품 복제 실패')
+      const newId = data?.product?.id as string | undefined
+      if (!newId) throw new Error('새 상품 ID를 받지 못했습니다')
+      toast.success('상품이 복제되었습니다')
+      router.push(`/d/seller-ops/products/${newId}`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '상품 복제 실패')
+      setDuplicating(false)
+    }
+  }, [productId, router])
 
   const sectionRefs = useRef<Record<SectionKey, HTMLElement | null>>({
     basic: null,
@@ -119,9 +141,25 @@ export function ProductDetailTabs({ productId }: Props) {
               </Button>
             ))}
           </nav>
-          <Button type="submit" form={BASIC_FORM_ID} disabled={!canSave} size="sm">
-            저장
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDuplicate}
+              disabled={duplicating}
+            >
+              {duplicating ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <Copy className="mr-1 h-3 w-3" />
+              )}
+              복제
+            </Button>
+            <Button type="submit" form={BASIC_FORM_ID} disabled={!canSave} size="sm">
+              저장
+            </Button>
+          </div>
         </div>
       </header>
 

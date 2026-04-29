@@ -29,7 +29,9 @@ export async function pushToInventoryDeck(
     },
     include: {
       items: true,
-      channel: { select: { id: true, name: true, kind: true } },
+      channel: {
+        select: { id: true, name: true, channelTypeDef: { select: { isSalesChannel: true } } },
+      },
       shippingMethod: { select: { name: true } },
       batch: { select: { completedAt: true, status: true } },
     },
@@ -49,8 +51,9 @@ export async function pushToInventoryDeck(
       continue
     }
 
-    // Phase 3: kind 기준으로 이동 유형 결정 (DelSalesChannel.type 제거)
-    const movementType = order.channel?.kind === 'INTERNAL_TRANSFER' ? 'TRANSFER' : 'OUTBOUND'
+    // Phase 3: channelTypeDef.isSalesChannel 기준으로 이동 유형 결정 (kind 제거)
+    const movementType =
+      order.channel?.channelTypeDef?.isSalesChannel === false ? 'TRANSFER' : 'OUTBOUND'
 
     // 공용 Channel을 그대로 사용 (Phase 3: InvSalesChannel 제거)
     const invChannelId: string | undefined = order.channel?.id

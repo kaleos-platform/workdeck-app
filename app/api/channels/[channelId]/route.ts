@@ -15,7 +15,7 @@ export async function GET(
   const channel = await prisma.channel.findFirst({
     where: { id: channelId, spaceId: resolved.space.id },
     include: {
-      group: { select: { id: true, name: true } },
+      channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
       feeRates: { orderBy: { categoryName: 'asc' } },
     },
   })
@@ -56,22 +56,11 @@ export async function PATCH(
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  const { groupId } = parsed.data
-
-  // groupId 소속 검증
-  if (groupId) {
-    const group = await prisma.channelGroup.findFirst({
-      where: { id: groupId, spaceId: resolved.space.id },
-      select: { id: true },
-    })
-    if (!group) return errorResponse('채널 그룹을 찾을 수 없습니다', 404)
-  }
-
   const {
     name,
-    kind,
-    channelType,
+    channelTypeDefId,
     isActive,
+    useSimulation,
     adminUrl,
     freeShipping,
     freeShippingThreshold,
@@ -87,15 +76,23 @@ export async function PATCH(
     requireProducts,
   } = parsed.data
 
+  // channelTypeDefId 변경 시 소속 검증
+  if (channelTypeDefId !== undefined) {
+    const typeDef = await prisma.channelTypeDef.findFirst({
+      where: { id: channelTypeDefId, spaceId: resolved.space.id },
+      select: { id: true },
+    })
+    if (!typeDef) return errorResponse('채널 유형을 찾을 수 없습니다', 404)
+  }
+
   try {
     const channel = await prisma.channel.update({
       where: { id: channelId },
       data: {
         ...(name !== undefined && { name }),
-        ...(kind !== undefined && { kind }),
-        ...(channelType !== undefined && { channelType }),
-        ...(groupId !== undefined && { groupId: groupId ?? null }),
+        ...(channelTypeDefId !== undefined && { channelTypeDefId }),
         ...(isActive !== undefined && { isActive }),
+        ...(useSimulation !== undefined && { useSimulation }),
         ...(adminUrl !== undefined && { adminUrl: adminUrl ?? null }),
         ...(freeShipping !== undefined && { freeShipping }),
         ...(freeShippingThreshold !== undefined && {
@@ -113,7 +110,7 @@ export async function PATCH(
         ...(requireProducts !== undefined && { requireProducts }),
       },
       include: {
-        group: { select: { id: true, name: true } },
+        channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
         feeRates: { orderBy: { categoryName: 'asc' } },
       },
     })

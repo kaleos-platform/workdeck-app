@@ -17,6 +17,10 @@ import {
   Package,
   Truck,
   Boxes,
+  FileText,
+  Lightbulb,
+  ClipboardList,
+  Rocket,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
@@ -48,6 +52,14 @@ import {
   SELLER_HUB_SHIPPING_METHODS_PATH,
   SELLER_HUB_SHIPPING_INTEGRATION_PATH,
   SELLER_HUB_CHANNELS_PATH,
+  SALES_CONTENT_BASE_PATH,
+  SALES_CONTENT_HOME_PATH,
+  SALES_CONTENT_IDEATION_PATH,
+  SALES_CONTENT_CONTENTS_PATH,
+  SALES_CONTENT_TEMPLATES_PATH,
+  SALES_CONTENT_DEPLOYMENTS_PATH,
+  SALES_CONTENT_ANALYTICS_PATH,
+  SALES_CONTENT_SETTINGS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 
@@ -59,7 +71,7 @@ type Campaign = {
   adTypes: string[]
 }
 
-type SidebarVariant = 'workdeck' | 'coupang-ads' | 'seller-hub'
+type SidebarVariant = 'workdeck' | 'coupang-ads' | 'seller-hub' | 'sales-content'
 
 type SidebarProps = {
   workspaceName: string
@@ -72,6 +84,7 @@ const NVB_AD_TYPE = '신규 구매 고객 확보'
 const DECK_ENTRY: Record<string, string> = {
   'coupang-ads': COUPANG_ADS_BASE_PATH,
   'seller-hub': SELLER_HUB_BASE_PATH,
+  'sales-content': SALES_CONTENT_BASE_PATH,
 }
 
 // ─── Seller Hub 메뉴 데이터 ───────────────────────────────────────────────────
@@ -102,6 +115,17 @@ const SELLER_HUB_SHIPPING_ITEMS: SidebarItem[] = [
 const SELLER_HUB_SETTINGS_ITEMS: SidebarItem[] = [
   { label: '채널 관리', href: SELLER_HUB_CHANNELS_PATH },
   { label: '일반 설정', href: SELLER_HUB_SETTINGS_PATH },
+]
+
+// ─── Sales Content 평탄 메뉴 데이터 (PR-A: 7항목 재구성) ────────────────────
+const SALES_CONTENT_FLAT_ROUTES = [
+  { label: '홈', icon: Home, href: SALES_CONTENT_HOME_PATH },
+  { label: '아이데이션', icon: Lightbulb, href: SALES_CONTENT_IDEATION_PATH },
+  { label: '콘텐츠 관리', icon: ClipboardList, href: SALES_CONTENT_CONTENTS_PATH },
+  { label: '배포 내역', icon: Rocket, href: SALES_CONTENT_DEPLOYMENTS_PATH },
+  { label: '성과 관리', icon: BarChart3, href: SALES_CONTENT_ANALYTICS_PATH },
+  { label: '템플릿 관리', icon: FileText, href: SALES_CONTENT_TEMPLATES_PATH },
+  { label: '설정', icon: Settings, href: SALES_CONTENT_SETTINGS_PATH },
 ]
 
 const COUPANG_MAIN_ROUTES = [
@@ -154,6 +178,7 @@ export function Sidebar({
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
   const isSellerHubSidebar = variant === 'seller-hub'
+  const isSalesContentSidebar = variant === 'sales-content'
   const isMyDeckMode = mode === 'my-deck'
 
   useEffect(() => {
@@ -216,7 +241,9 @@ export function Sidebar({
   }
 
   return (
-    <div className="flex h-full w-64 flex-shrink-0 flex-col bg-slate-900 py-4 text-white">
+    <div
+      className={`flex h-full flex-shrink-0 flex-col bg-slate-900 py-4 text-white ${isSalesContentSidebar ? 'w-56' : 'w-64'}`}
+    >
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         {isWorkdeckSidebar && (
           <>
@@ -290,6 +317,34 @@ export function Sidebar({
             <SidebarSection label="배송" icon={Truck} items={SELLER_HUB_SHIPPING_ITEMS} />
             {/* 설정 섹션 — 채널 관리 + 일반 설정 통합 */}
             <SidebarSection label="설정" icon={Settings} items={SELLER_HUB_SETTINGS_ITEMS} />
+          </div>
+        )}
+
+        {isSalesContentSidebar && (
+          <div className="space-y-0.5">
+            {SALES_CONTENT_FLAT_ROUTES.map((route) => {
+              // 설정 항목: /settings/* 또는 기존 /channels, /rules 에서도 active
+              const isSettingsRoute = route.href === SALES_CONTENT_SETTINGS_PATH
+              const isActive = isSettingsRoute
+                ? pathname.startsWith(SALES_CONTENT_SETTINGS_PATH)
+                : route.href === SALES_CONTENT_HOME_PATH
+                  ? pathname === route.href
+                  : pathname === route.href || pathname.startsWith(`${route.href}/`)
+              return (
+                <Link
+                  key={route.href}
+                  href={route.href}
+                  className={cn(
+                    // Linear 스타일: 더 작은 padding, 더 미세한 hover
+                    'group flex w-full cursor-pointer justify-start rounded-md px-2 py-2 text-sm font-medium transition hover:bg-white/[0.06] hover:text-white',
+                    isActive ? 'bg-white/[0.08] text-white' : 'text-zinc-400'
+                  )}
+                >
+                  <route.icon className="mr-2.5 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{route.label}</span>
+                </Link>
+              )
+            })}
           </div>
         )}
 
