@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ty
 
   const existing = await prisma.channelTypeDef.findFirst({
     where: { id: typeId, spaceId: resolved.space.id },
-    select: { id: true, isSystem: true },
+    select: { id: true },
   })
   if (!existing) return errorResponse('채널 유형을 찾을 수 없습니다', 404)
 
@@ -27,11 +27,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ty
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  // 시스템 시드는 isSalesChannel · sortOrder 만 변경 가능 (이름 보존)
   const data: Record<string, unknown> = {}
   if (parsed.data.isSalesChannel !== undefined) data.isSalesChannel = parsed.data.isSalesChannel
   if (parsed.data.sortOrder !== undefined) data.sortOrder = parsed.data.sortOrder
-  if (parsed.data.name !== undefined && !existing.isSystem) data.name = parsed.data.name.trim()
+  if (parsed.data.name !== undefined) data.name = parsed.data.name.trim()
 
   try {
     const updated = await prisma.channelTypeDef.update({
@@ -66,7 +65,6 @@ export async function DELETE(
     include: { _count: { select: { channels: true } } },
   })
   if (!existing) return errorResponse('채널 유형을 찾을 수 없습니다', 404)
-  if (existing.isSystem) return errorResponse('시스템 유형은 삭제할 수 없습니다', 400)
   if (existing._count.channels > 0) {
     return errorResponse(
       `이 유형을 사용 중인 채널이 ${existing._count.channels}개 있어 삭제할 수 없습니다`,

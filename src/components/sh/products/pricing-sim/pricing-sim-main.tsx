@@ -186,7 +186,7 @@ function toMatrixChannel(sc: ScenarioChannel): MatrixChannel {
       id: ch.id,
       name: ch.name,
       channelType,
-      defaultFeePct: ch.defaultFeePct ?? 0,
+      feeRates: ch.feeRates.length > 0 ? ch.feeRates : [{ categoryName: '기본', ratePercent: 0 }],
       paymentFeeIncluded: ch.paymentFeeIncluded,
       paymentFeePct: ch.paymentFeePct ?? 0,
       applyAdCost: ch.applyAdCost,
@@ -198,7 +198,8 @@ function toMatrixChannel(sc: ScenarioChannel): MatrixChannel {
     return {
       name: il.name,
       channelType: null,
-      defaultFeePct: il.defaultFeePct,
+      // 인라인 채널의 단일 수수료율을 '기본' 카테고리 feeRates로 변환
+      feeRates: [{ categoryName: '기본', ratePercent: il.defaultFeePct * 100 }],
       paymentFeeIncluded: il.paymentFeeIncluded,
       paymentFeePct: il.paymentFeePct,
       applyAdCost: il.applyAdCost,
@@ -301,7 +302,7 @@ export function PricingSimMain() {
             name: string
             channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
             useSimulation: boolean
-            defaultFeePct: string | number | null
+            feeRates: { categoryName: string; ratePercent: string | number }[]
             shippingFee: string | number | null
             freeShippingThreshold: string | number | null
             applyAdCost: boolean
@@ -316,7 +317,10 @@ export function PricingSimMain() {
                 name: c.name,
                 channelTypeDef: c.channelTypeDef,
                 useSimulation: c.useSimulation,
-                defaultFeePct: c.defaultFeePct != null ? Number(c.defaultFeePct) : null,
+                feeRates: (c.feeRates ?? []).map((fr) => ({
+                  categoryName: fr.categoryName,
+                  ratePercent: Number(fr.ratePercent),
+                })),
                 shippingFee: c.shippingFee != null ? Number(c.shippingFee) : null,
                 freeShippingThreshold:
                   c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : null,
@@ -397,7 +401,7 @@ export function PricingSimMain() {
             name: partial.name,
             channelTypeDef: null,
             useSimulation: true,
-            defaultFeePct: null,
+            feeRates: [{ categoryName: '기본', ratePercent: 0 }],
             shippingFee: null,
             freeShippingThreshold: null,
             applyAdCost: false,

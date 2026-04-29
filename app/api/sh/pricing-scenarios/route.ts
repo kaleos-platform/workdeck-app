@@ -43,7 +43,10 @@ export async function GET(req: NextRequest) {
                 id: true,
                 name: true,
                 channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
-                defaultFeePct: true,
+                feeRates: {
+                  select: { categoryName: true, ratePercent: true },
+                  orderBy: { categoryName: 'asc' },
+                },
                 shippingFee: true,
                 freeShippingThreshold: true,
                 applyAdCost: true,
@@ -76,7 +79,10 @@ export async function GET(req: NextRequest) {
         id: sc.channel.id,
         name: sc.channel.name,
         channelTypeDef: sc.channel.channelTypeDef,
-        defaultFeePct: sc.channel.defaultFeePct != null ? d(sc.channel.defaultFeePct) : 0,
+        feeRates: sc.channel.feeRates.map((fr) => ({
+          categoryName: fr.categoryName,
+          ratePercent: d(fr.ratePercent),
+        })),
         shippingFee: sc.channel.shippingFee != null ? d(sc.channel.shippingFee) : 0,
         freeShippingThreshold:
           sc.channel.freeShippingThreshold != null ? d(sc.channel.freeShippingThreshold) : null,

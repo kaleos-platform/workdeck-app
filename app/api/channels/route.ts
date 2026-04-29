@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveAnyDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { channelSchema } from '@/lib/sh/schemas'
+import { normalizeFeeRates } from '@/lib/sh/channel-fee-lookup'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveAnyDeckContext(['seller-hub', 'coupang-ads'])
@@ -21,6 +22,10 @@ export async function GET(req: NextRequest) {
     orderBy: { name: 'asc' },
     include: {
       channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
+      feeRates: {
+        select: { categoryName: true, ratePercent: true },
+        orderBy: { categoryName: 'asc' },
+      },
     },
   })
 
@@ -56,7 +61,6 @@ export async function POST(req: NextRequest) {
     adminUrl,
     freeShipping,
     freeShippingThreshold,
-    defaultFeePct,
     usesMarketingBudget,
     applyAdCost,
     shippingFee,
@@ -66,6 +70,7 @@ export async function POST(req: NextRequest) {
     requireOrderNumber,
     requirePayment,
     requireProducts,
+    feeRates,
   } = parsed.data
 
   // channelTypeDefId 소속 검증
@@ -75,31 +80,48 @@ export async function POST(req: NextRequest) {
   })
   if (!typeDef) return errorResponse('채널 유형을 찾을 수 없습니다', 404)
 
+  // feeRates 정규화 — '기본' 카테고리는 항상 1건 보장
+  const normalizedFeeRates = normalizeFeeRates(feeRates)
+
   try {
-    const channel = await prisma.channel.create({
-      data: {
-        spaceId: resolved.space.id,
-        name,
-        channelTypeDefId,
-        isActive,
-        useSimulation,
-        adminUrl: adminUrl ?? null,
-        freeShipping,
-        freeShippingThreshold: freeShippingThreshold ?? null,
-        defaultFeePct: defaultFeePct ?? null,
-        usesMarketingBudget,
-        applyAdCost,
-        shippingFee: shippingFee ?? null,
-        vatIncludedInFee,
-        paymentFeeIncluded,
-        paymentFeePct: paymentFeePct ?? null,
-        requireOrderNumber,
-        requirePayment,
-        requireProducts,
-      },
-      include: {
-        channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
-      },
+    const channel = await prisma.$transaction(async (tx) => {
+      const created = await tx.channel.create({
+        data: {
+          spaceId: resolved.space.id,
+          name,
+          channelTypeDefId,
+          isActive,
+          useSimulation,
+          adminUrl: adminUrl ?? null,
+          freeShipping,
+          freeShippingThreshold: freeShippingThreshold ?? null,
+          usesMarketingBudget,
+          applyAdCost,
+          shippingFee: shippingFee ?? null,
+          vatIncludedInFee,
+          paymentFeeIncluded,
+          paymentFeePct: paymentFeePct ?? null,
+          requireOrderNumber,
+          requirePayment,
+          requireProducts,
+        },
+      })
+
+      await tx.channelFeeRate.createMany({
+        data: normalizedFeeRates.map((fr) => ({
+          channelId: created.id,
+          categoryName: fr.categoryName,
+          ratePercent: fr.ratePercent,
+        })),
+      })
+
+      return tx.channel.findUniqueOrThrow({
+        where: { id: created.id },
+        include: {
+          channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
+          feeRates: { orderBy: { categoryName: 'asc' } },
+        },
+      })
     })
     return NextResponse.json({ channel }, { status: 201 })
   } catch (err: unknown) {

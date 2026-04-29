@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { lookupCategoryFeePct } from '@/lib/sh/channel-fee-lookup'
 import { PricingChannelInlineForm, type ChannelInlineData } from './pricing-channel-inline-form'
 import { PricingChannelPickerDialog } from './pricing-channel-picker-dialog'
 
@@ -19,7 +20,8 @@ export type DbChannel = {
   name: string
   channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
   useSimulation: boolean
-  defaultFeePct: number | null
+  /** 카테고리별 수수료율 배열 — '기본' 카테고리 항상 포함 */
+  feeRates: { categoryName: string; ratePercent: number }[]
   shippingFee: number | null
   freeShippingThreshold: number | null
   applyAdCost: boolean
@@ -100,7 +102,10 @@ function DbChannelCard({ ch, onRemove }: { ch: DbChannel; onRemove: () => void }
           </Tooltip>
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
-          <span>수수료 {fmtPct(ch.defaultFeePct)}</span>
+          <span>
+            기본 수수료 {fmtPct(lookupCategoryFeePct(ch.feeRates))}
+            {ch.feeRates.length > 1 && ` (외 ${ch.feeRates.length - 1}개 카테고리)`}
+          </span>
           <span>배송비 {fmtWon(ch.shippingFee)}</span>
           {ch.freeShippingThreshold != null && ch.freeShippingThreshold > 0 && (
             <span>무료배송 {fmtWon(ch.freeShippingThreshold)} 이상</span>
@@ -148,7 +153,8 @@ function InlineChannelCard({
         freeShipping: data.freeShippingThreshold > 0,
         freeShippingThreshold:
           data.freeShippingThreshold > 0 ? data.freeShippingThreshold : undefined,
-        defaultFeePct: data.defaultFeePct,
+        // 인라인 채널의 단일 수수료율을 '기본' 카테고리 feeRates로 변환
+        feeRates: [{ categoryName: '기본', ratePercent: data.defaultFeePct * 100 }],
         applyAdCost: data.applyAdCost,
         shippingFee: data.shippingFee,
         paymentFeeIncluded: data.paymentFeeIncluded,
@@ -173,7 +179,7 @@ function InlineChannelCard({
           name: string
           channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
           useSimulation: boolean
-          defaultFeePct: string | number | null
+          feeRates: { categoryName: string; ratePercent: string | number }[]
           shippingFee: string | number | null
           freeShippingThreshold: string | number | null
           applyAdCost: boolean
@@ -188,7 +194,10 @@ function InlineChannelCard({
         name: created.name,
         channelTypeDef: created.channelTypeDef,
         useSimulation: created.useSimulation,
-        defaultFeePct: created.defaultFeePct != null ? Number(created.defaultFeePct) : null,
+        feeRates: (created.feeRates ?? []).map((fr) => ({
+          categoryName: fr.categoryName,
+          ratePercent: Number(fr.ratePercent),
+        })),
         shippingFee: created.shippingFee != null ? Number(created.shippingFee) : null,
         freeShippingThreshold:
           created.freeShippingThreshold != null ? Number(created.freeShippingThreshold) : null,

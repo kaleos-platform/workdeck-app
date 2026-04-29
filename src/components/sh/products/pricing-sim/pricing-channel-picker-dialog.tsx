@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { lookupCategoryFeePct } from '@/lib/sh/channel-fee-lookup'
 import type { DbChannel } from './pricing-channel-list'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
@@ -26,7 +27,7 @@ type ApiChannel = {
   name: string
   channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
   useSimulation: boolean
-  defaultFeePct: string | number | null
+  feeRates: { categoryName: string; ratePercent: string | number }[]
   shippingFee: string | number | null
   freeShippingThreshold: string | number | null
   applyAdCost: boolean
@@ -41,7 +42,10 @@ function toDbChannel(c: ApiChannel): DbChannel {
     name: c.name,
     channelTypeDef: c.channelTypeDef,
     useSimulation: c.useSimulation,
-    defaultFeePct: c.defaultFeePct != null ? Number(c.defaultFeePct) : null,
+    feeRates: (c.feeRates ?? []).map((fr) => ({
+      categoryName: fr.categoryName,
+      ratePercent: Number(fr.ratePercent),
+    })),
     shippingFee: c.shippingFee != null ? Number(c.shippingFee) : null,
     freeShippingThreshold: c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : null,
     applyAdCost: c.applyAdCost,
@@ -139,8 +143,8 @@ export function PricingChannelPickerDialog({ open, onOpenChange, excludeIds, onP
                   <TypeBadge name={ch.channelTypeDef?.name} />
                 </div>
                 <div className="mt-0.5 flex gap-x-3 text-[11px] text-muted-foreground">
-                  {ch.defaultFeePct != null && (
-                    <span>수수료 {(ch.defaultFeePct * 100).toFixed(1)}%</span>
+                  {ch.feeRates.length > 0 && (
+                    <span>기본 수수료 {(lookupCategoryFeePct(ch.feeRates) * 100).toFixed(1)}%</span>
                   )}
                   {ch.shippingFee != null && (
                     <span>배송비 {Math.round(ch.shippingFee).toLocaleString('ko-KR')}원</span>

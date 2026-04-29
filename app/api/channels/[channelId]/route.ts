@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveAnyDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { channelSchema } from '@/lib/sh/schemas'
+import { normalizeFeeRates } from '@/lib/sh/channel-fee-lookup'
 
 export async function GET(
   _req: NextRequest,
@@ -64,7 +65,6 @@ export async function PATCH(
     adminUrl,
     freeShipping,
     freeShippingThreshold,
-    defaultFeePct,
     usesMarketingBudget,
     applyAdCost,
     shippingFee,
@@ -74,6 +74,7 @@ export async function PATCH(
     requireOrderNumber,
     requirePayment,
     requireProducts,
+    feeRates,
   } = parsed.data
 
   // channelTypeDefId 변경 시 소속 검증
@@ -86,33 +87,51 @@ export async function PATCH(
   }
 
   try {
-    const channel = await prisma.channel.update({
-      where: { id: channelId },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(channelTypeDefId !== undefined && { channelTypeDefId }),
-        ...(isActive !== undefined && { isActive }),
-        ...(useSimulation !== undefined && { useSimulation }),
-        ...(adminUrl !== undefined && { adminUrl: adminUrl ?? null }),
-        ...(freeShipping !== undefined && { freeShipping }),
-        ...(freeShippingThreshold !== undefined && {
-          freeShippingThreshold: freeShippingThreshold ?? null,
-        }),
-        ...(defaultFeePct !== undefined && { defaultFeePct: defaultFeePct ?? null }),
-        ...(usesMarketingBudget !== undefined && { usesMarketingBudget }),
-        ...(applyAdCost !== undefined && { applyAdCost }),
-        ...(shippingFee !== undefined && { shippingFee: shippingFee ?? null }),
-        ...(vatIncludedInFee !== undefined && { vatIncludedInFee }),
-        ...(paymentFeeIncluded !== undefined && { paymentFeeIncluded }),
-        ...(paymentFeePct !== undefined && { paymentFeePct: paymentFeePct ?? null }),
-        ...(requireOrderNumber !== undefined && { requireOrderNumber }),
-        ...(requirePayment !== undefined && { requirePayment }),
-        ...(requireProducts !== undefined && { requireProducts }),
-      },
-      include: {
-        channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
-        feeRates: { orderBy: { categoryName: 'asc' } },
-      },
+    const channel = await prisma.$transaction(async (tx) => {
+      await tx.channel.update({
+        where: { id: channelId },
+        data: {
+          ...(name !== undefined && { name }),
+          ...(channelTypeDefId !== undefined && { channelTypeDefId }),
+          ...(isActive !== undefined && { isActive }),
+          ...(useSimulation !== undefined && { useSimulation }),
+          ...(adminUrl !== undefined && { adminUrl: adminUrl ?? null }),
+          ...(freeShipping !== undefined && { freeShipping }),
+          ...(freeShippingThreshold !== undefined && {
+            freeShippingThreshold: freeShippingThreshold ?? null,
+          }),
+          ...(usesMarketingBudget !== undefined && { usesMarketingBudget }),
+          ...(applyAdCost !== undefined && { applyAdCost }),
+          ...(shippingFee !== undefined && { shippingFee: shippingFee ?? null }),
+          ...(vatIncludedInFee !== undefined && { vatIncludedInFee }),
+          ...(paymentFeeIncluded !== undefined && { paymentFeeIncluded }),
+          ...(paymentFeePct !== undefined && { paymentFeePct: paymentFeePct ?? null }),
+          ...(requireOrderNumber !== undefined && { requireOrderNumber }),
+          ...(requirePayment !== undefined && { requirePayment }),
+          ...(requireProducts !== undefined && { requireProducts }),
+        },
+      })
+
+      // feeRates가 입력되었을 때만 전체 교체. 항상 '기본' 1건 보장
+      if (feeRates !== undefined) {
+        const normalized = normalizeFeeRates(feeRates)
+        await tx.channelFeeRate.deleteMany({ where: { channelId } })
+        await tx.channelFeeRate.createMany({
+          data: normalized.map((fr) => ({
+            channelId,
+            categoryName: fr.categoryName,
+            ratePercent: fr.ratePercent,
+          })),
+        })
+      }
+
+      return tx.channel.findUniqueOrThrow({
+        where: { id: channelId },
+        include: {
+          channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
+          feeRates: { orderBy: { categoryName: 'asc' } },
+        },
+      })
     })
     return NextResponse.json({ channel })
   } catch (err: unknown) {

@@ -131,6 +131,19 @@ const toUndef = (v: unknown) => (v === null || v === '' ? undefined : v)
 const toOptionalNumber = (v: unknown) =>
   v === null || v === '' || v === undefined ? undefined : Number(v)
 
+// 채널 등록·수정 시 함께 보내는 카테고리별 수수료 입력 (% 단위 0~100)
+export const channelFeeRateInput = z.object({
+  categoryName: z.preprocess(
+    (v) => (typeof v === 'string' ? v.trim() : v),
+    z.string().min(1).max(50)
+  ),
+  ratePercent: z.preprocess(
+    (v) => (v === null || v === '' || v === undefined ? 0 : Number(v)),
+    z.number().min(0).max(100)
+  ),
+})
+export type ChannelFeeRateInputItem = z.infer<typeof channelFeeRateInput>
+
 export const channelSchema = z.object({
   name: z.string().min(1).max(100),
   // 사용자 정의 채널 유형 (필수 — 시드 4개 중 하나 또는 사용자 추가 유형)
@@ -143,8 +156,6 @@ export const channelSchema = z.object({
   freeShipping: z.boolean().default(false),
   // freeShippingThreshold: 무료배송 최소 주문금액 (원)
   freeShippingThreshold: z.preprocess(toOptionalNumber, z.number().nonnegative()).optional(),
-  // defaultFeePct: 채널 기본 수수료율 0~1
-  defaultFeePct: z.preprocess(toOptionalNumber, z.number().min(0).max(1)).optional(),
   usesMarketingBudget: z.boolean().default(false),
   applyAdCost: z.boolean().default(false),
   // shippingFee: null|'' → undefined → number 검증 skip
@@ -155,6 +166,8 @@ export const channelSchema = z.object({
   requireOrderNumber: z.boolean().default(true),
   requirePayment: z.boolean().default(true),
   requireProducts: z.boolean().default(true),
+  // 카테고리별 수수료 — 비어있거나 미전달 시 서버가 [{ '기본', 0 }] 자동 추가
+  feeRates: z.array(channelFeeRateInput).max(50).optional(),
 })
 export type ChannelInput = z.infer<typeof channelSchema>
 
@@ -167,20 +180,18 @@ export const channelTypeDefSchema = z.object({
 })
 export type ChannelTypeDefInput = z.infer<typeof channelTypeDefSchema>
 
-// ─── 채널 수수료율 ──────────────────────────────────────────────────────────
+// ─── 채널 수수료율 (개별 라우트용 — 채널 수정 다이얼로그가 통합 처리하므로 폐기 예정) ───
+// 호환을 위해 유지하되 vatIncluded는 제거되어 채널의 vatIncludedInFee가 단일 출처가 됨
 
 export const channelFeeRateSchema = z.object({
-  // 클라이언트가 null/공백 전송 시에도 유효성 검증을 통과하지 않도록 preprocess로 정규화
   categoryName: z.preprocess(
     (v) => (typeof v === 'string' ? v.trim() : v),
     z.string().min(1, '카테고리를 선택하세요').max(100)
   ),
-  // 문자열로 전송되더라도 number 로 강제 변환
   ratePercent: z.preprocess(
     (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
     z.number().min(0).max(100)
   ),
-  vatIncluded: z.boolean().default(true),
 })
 export type ChannelFeeRateInput = z.infer<typeof channelFeeRateSchema>
 

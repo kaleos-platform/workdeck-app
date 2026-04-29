@@ -37,7 +37,7 @@ export async function PATCH(
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  const { categoryName, ratePercent, vatIncluded } = parsed.data
+  const { categoryName, ratePercent } = parsed.data
 
   try {
     const feeRate = await prisma.channelFeeRate.update({
@@ -45,7 +45,6 @@ export async function PATCH(
       data: {
         ...(categoryName !== undefined && { categoryName }),
         ...(ratePercent !== undefined && { ratePercent }),
-        ...(vatIncluded !== undefined && { vatIncluded }),
       },
     })
     return NextResponse.json({ feeRate })
