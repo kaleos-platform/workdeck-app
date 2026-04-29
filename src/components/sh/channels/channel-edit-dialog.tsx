@@ -338,119 +338,120 @@ export function ChannelEditDialog({
           <DialogDescription>판매 채널 정보를 입력해 주세요</DialogDescription>
         </DialogHeader>
 
+        {/* 채널 유형 — Tabs 외부에 항상 노출 (수정/신규 모두) */}
+        <div className="space-y-2">
+          <Label>채널 유형 *</Label>
+          {!creatingType ? (
+            <Select
+              value={fTypeDefId}
+              onValueChange={(v) => {
+                if (v === NEW_TYPE) {
+                  setCreatingType(true)
+                  setNewTypeName('')
+                } else {
+                  setFTypeDefId(v)
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="유형 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_TYPE}>유형 없음</SelectItem>
+                {channelTypes.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+                {/* "+ 새 유형 만들기"는 신규 채널 등록 흐름에서만 노출 */}
+                {channel == null && <SelectItem value={NEW_TYPE}>+ 새 유형 만들기</SelectItem>}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="space-y-2 rounded-md border p-3">
+              <Input
+                value={newTypeName}
+                onChange={(e) => setNewTypeName(e.target.value)}
+                placeholder="새 유형 이름"
+                autoFocus
+                disabled={savingNewType}
+              />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="new-type-is-sales"
+                    checked={newTypeIsSales}
+                    onCheckedChange={setNewTypeIsSales}
+                    disabled={savingNewType}
+                  />
+                  <Label htmlFor="new-type-is-sales" className="cursor-pointer text-sm">
+                    판매채널
+                  </Label>
+                </div>
+                <div className="flex gap-1.5">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleCreateTypeInline}
+                    disabled={savingNewType || !newTypeName.trim()}
+                  >
+                    {savingNewType ? '생성 중...' : '생성'}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setCreatingType(false)
+                      setNewTypeName('')
+                    }}
+                    disabled={savingNewType}
+                  >
+                    취소
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 신규 채널: 유형 미선택 시 안내 (탭 자체를 숨김) */}
+        {!showOtherFields && (
+          <p className="mt-3 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+            채널 유형을 먼저 선택하면 나머지 항목이 표시됩니다.
+          </p>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="basic" className="flex-1">
-              기본
-            </TabsTrigger>
-            {isSalesChannel && showOtherFields && (
-              <>
-                <TabsTrigger
-                  value="fee"
-                  className={!fUseSimulation ? 'flex-1 text-muted-foreground' : 'flex-1'}
-                >
-                  수수료
-                </TabsTrigger>
-                <TabsTrigger
-                  value="shipping"
-                  className={!fUseSimulation ? 'flex-1 text-muted-foreground' : 'flex-1'}
-                >
-                  배송비
-                </TabsTrigger>
-              </>
-            )}
-            {showOtherFields && (
+          {showOtherFields && (
+            <TabsList className="w-full">
+              <TabsTrigger value="basic" className="flex-1">
+                기본
+              </TabsTrigger>
+              {isSalesChannel && (
+                <>
+                  <TabsTrigger
+                    value="fee"
+                    className={!fUseSimulation ? 'flex-1 text-muted-foreground' : 'flex-1'}
+                  >
+                    수수료
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="shipping"
+                    className={!fUseSimulation ? 'flex-1 text-muted-foreground' : 'flex-1'}
+                  >
+                    배송비
+                  </TabsTrigger>
+                </>
+              )}
               <TabsTrigger value="advanced" className="flex-1">
                 주문정보
               </TabsTrigger>
-            )}
-          </TabsList>
+            </TabsList>
+          )}
 
           {/* ── 기본 탭 ── */}
           <TabsContent value="basic" className="mt-4 max-h-[55vh] space-y-4 overflow-y-auto pr-1">
-            {/* 채널 유형 */}
-            <div className="space-y-2">
-              <Label>채널 유형 *</Label>
-              {!creatingType ? (
-                <Select
-                  value={fTypeDefId}
-                  onValueChange={(v) => {
-                    if (v === NEW_TYPE) {
-                      setCreatingType(true)
-                      setNewTypeName('')
-                    } else {
-                      setFTypeDefId(v)
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="유형 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NO_TYPE}>유형 없음</SelectItem>
-                    {channelTypes.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value={NEW_TYPE}>+ 새 유형 만들기</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <div className="space-y-2 rounded-md border p-3">
-                  <Input
-                    value={newTypeName}
-                    onChange={(e) => setNewTypeName(e.target.value)}
-                    placeholder="새 유형 이름"
-                    autoFocus
-                    disabled={savingNewType}
-                  />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="new-type-is-sales"
-                        checked={newTypeIsSales}
-                        onCheckedChange={setNewTypeIsSales}
-                        disabled={savingNewType}
-                      />
-                      <Label htmlFor="new-type-is-sales" className="cursor-pointer text-sm">
-                        판매채널
-                      </Label>
-                    </div>
-                    <div className="flex gap-1.5">
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleCreateTypeInline}
-                        disabled={savingNewType || !newTypeName.trim()}
-                      >
-                        {savingNewType ? '생성 중...' : '생성'}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setCreatingType(false)
-                          setNewTypeName('')
-                        }}
-                        disabled={savingNewType}
-                      >
-                        취소
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 신규 채널: 유형 미선택 시 안내 후 다른 필드 숨김 */}
-            {!showOtherFields && (
-              <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
-                채널 유형을 먼저 선택하면 나머지 항목이 표시됩니다.
-              </p>
-            )}
-
             {showOtherFields && (
               <>
                 {/* 채널명 */}
