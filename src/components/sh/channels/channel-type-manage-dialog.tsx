@@ -236,9 +236,7 @@ export function ChannelTypeManageDialog({ open, onOpenChange, channelTypes, onCh
                     disabled={isSaving}
                     aria-label="판매채널 유형"
                   />
-                  <span className="w-14 text-xs text-muted-foreground">
-                    {t.isSalesChannel ? '판매채널' : '내부이관'}
-                  </span>
+                  <span className="w-14 text-xs text-muted-foreground">판매채널</span>
                 </div>
 
                 {/* 채널 수 뱃지 */}
@@ -284,7 +282,7 @@ export function ChannelTypeManageDialog({ open, onOpenChange, channelTypes, onCh
                 id="new-type-is-sales"
               />
               <Label htmlFor="new-type-is-sales" className="w-14 cursor-pointer text-xs">
-                {newIsSales ? '판매채널' : '내부이관'}
+                판매채널
               </Label>
             </div>
             <Button

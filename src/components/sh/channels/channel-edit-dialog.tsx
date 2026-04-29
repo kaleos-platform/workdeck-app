@@ -121,6 +121,20 @@ export function ChannelEditDialog({
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
 
+  // 선택된 채널 유형 정보 — 판매채널 여부에 따라 표시 항목/탭이 달라짐
+  const selectedType = channelTypes.find((t) => t.id === fTypeDefId)
+  const isSalesChannel = selectedType?.isSalesChannel ?? true
+  const typeSelected = fTypeDefId !== NO_TYPE && selectedType !== undefined
+  // 신규 채널은 유형을 먼저 선택해야 다른 입력이 노출됨
+  const showOtherFields = channel != null || typeSelected
+
+  // 비-판매채널이 활성화된 탭에 머물러 있다면 기본 탭으로 강제 이동
+  useEffect(() => {
+    if (!isSalesChannel && (activeTab === 'fee' || activeTab === 'shipping')) {
+      setActiveTab('basic')
+    }
+  }, [isSalesChannel, activeTab])
+
   // ── Dialog 열릴 때 폼 초기화 ──
 
   useEffect(() => {
@@ -329,21 +343,27 @@ export function ChannelEditDialog({
             <TabsTrigger value="basic" className="flex-1">
               기본
             </TabsTrigger>
-            <TabsTrigger
-              value="fee"
-              className={!fUseSimulation ? 'flex-1 text-muted-foreground' : 'flex-1'}
-            >
-              수수료
-            </TabsTrigger>
-            <TabsTrigger
-              value="shipping"
-              className={!fUseSimulation ? 'flex-1 text-muted-foreground' : 'flex-1'}
-            >
-              배송
-            </TabsTrigger>
-            <TabsTrigger value="advanced" className="flex-1">
-              고급
-            </TabsTrigger>
+            {isSalesChannel && showOtherFields && (
+              <>
+                <TabsTrigger
+                  value="fee"
+                  className={!fUseSimulation ? 'flex-1 text-muted-foreground' : 'flex-1'}
+                >
+                  수수료
+                </TabsTrigger>
+                <TabsTrigger
+                  value="shipping"
+                  className={!fUseSimulation ? 'flex-1 text-muted-foreground' : 'flex-1'}
+                >
+                  배송비
+                </TabsTrigger>
+              </>
+            )}
+            {showOtherFields && (
+              <TabsTrigger value="advanced" className="flex-1">
+                주문정보
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* ── 기본 탭 ── */}
@@ -394,7 +414,7 @@ export function ChannelEditDialog({
                         disabled={savingNewType}
                       />
                       <Label htmlFor="new-type-is-sales" className="cursor-pointer text-sm">
-                        {newTypeIsSales ? '판매채널' : '내부 이관'}
+                        판매채널
                       </Label>
                     </div>
                     <div className="flex gap-1.5">
@@ -424,76 +444,95 @@ export function ChannelEditDialog({
               )}
             </div>
 
-            {/* 채널명 */}
-            <div className="space-y-2">
-              <Label htmlFor="ch-name">채널명 *</Label>
-              <Input
-                id="ch-name"
-                value={fName}
-                onChange={(e) => setFName(e.target.value)}
-                placeholder="예: 쿠팡"
-              />
-            </div>
+            {/* 신규 채널: 유형 미선택 시 안내 후 다른 필드 숨김 */}
+            {!showOtherFields && (
+              <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+                채널 유형을 먼저 선택하면 나머지 항목이 표시됩니다.
+              </p>
+            )}
 
-            {/* 어드민 URL */}
-            <div className="space-y-2">
-              <Label htmlFor="ch-admin-url">어드민 URL (선택)</Label>
-              <Input
-                id="ch-admin-url"
-                value={fAdminUrl}
-                onChange={(e) => setFAdminUrl(e.target.value)}
-                placeholder="https://wing.coupang.com/..."
-              />
-            </div>
-
-            {/* 마케팅 */}
-            <div className="space-y-3 rounded-md border p-3">
-              <p className="text-xs font-medium text-muted-foreground">마케팅</p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="ch-marketing">마케팅 예산 사용</Label>
-                  <p className="text-xs text-muted-foreground">채널 광고비 별도 운영</p>
+            {showOtherFields && (
+              <>
+                {/* 채널명 */}
+                <div className="space-y-2">
+                  <Label htmlFor="ch-name">채널명 *</Label>
+                  <Input
+                    id="ch-name"
+                    value={fName}
+                    onChange={(e) => setFName(e.target.value)}
+                    placeholder="예: 쿠팡"
+                  />
                 </div>
-                <Switch
-                  id="ch-marketing"
-                  checked={fUsesMarketing}
-                  onCheckedChange={setFUsesMarketing}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="ch-apply-ad">광고비 자동 적용</Label>
-                  <p className="text-xs text-muted-foreground">시뮬레이션 시 광고비 자동 포함</p>
+
+                {/* 판매채널만 노출되는 필드: 어드민 URL / 마케팅 / 가격 시뮬레이션 */}
+                {isSalesChannel && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="ch-admin-url">어드민 URL (선택)</Label>
+                      <Input
+                        id="ch-admin-url"
+                        value={fAdminUrl}
+                        onChange={(e) => setFAdminUrl(e.target.value)}
+                        placeholder="https://wing.coupang.com/..."
+                      />
+                    </div>
+
+                    <div className="space-y-3 rounded-md border p-3">
+                      <p className="text-xs font-medium text-muted-foreground">마케팅</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label htmlFor="ch-marketing">마케팅 예산 사용</Label>
+                          <p className="text-xs text-muted-foreground">채널 광고비 별도 운영</p>
+                        </div>
+                        <Switch
+                          id="ch-marketing"
+                          checked={fUsesMarketing}
+                          onCheckedChange={setFUsesMarketing}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label htmlFor="ch-apply-ad">광고비 자동 적용</Label>
+                          <p className="text-xs text-muted-foreground">
+                            시뮬레이션 시 광고비 자동 포함
+                          </p>
+                        </div>
+                        <Switch
+                          id="ch-apply-ad"
+                          checked={fApplyAdCost}
+                          onCheckedChange={setFApplyAdCost}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-md border p-3">
+                      <div>
+                        <Label htmlFor="ch-use-sim" className="cursor-pointer">
+                          가격 시뮬레이션 사용
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          OFF 시 수수료·배송 설정이 시뮬레이션에서 제외됩니다
+                        </p>
+                      </div>
+                      <Switch
+                        id="ch-use-sim"
+                        checked={fUseSimulation}
+                        onCheckedChange={setFUseSimulation}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 활성 상태 — 모든 채널 유형에서 노출 */}
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <Label htmlFor="ch-active">활성 상태</Label>
+                    <p className="text-xs text-muted-foreground">비활성 시 신규 주문에 사용 불가</p>
+                  </div>
+                  <Switch id="ch-active" checked={fIsActive} onCheckedChange={setFIsActive} />
                 </div>
-                <Switch id="ch-apply-ad" checked={fApplyAdCost} onCheckedChange={setFApplyAdCost} />
-              </div>
-            </div>
-
-            {/* 가격 시뮬레이션 */}
-            <div className="flex items-center justify-between rounded-md border p-3">
-              <div>
-                <Label htmlFor="ch-use-sim" className="cursor-pointer">
-                  가격 시뮬레이션 사용
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  OFF 시 수수료·배송 설정이 시뮬레이션에서 제외됩니다
-                </p>
-              </div>
-              <Switch
-                id="ch-use-sim"
-                checked={fUseSimulation}
-                onCheckedChange={setFUseSimulation}
-              />
-            </div>
-
-            {/* 활성 상태 */}
-            <div className="flex items-center justify-between rounded-md border p-3">
-              <div>
-                <Label htmlFor="ch-active">활성 상태</Label>
-                <p className="text-xs text-muted-foreground">비활성 시 신규 주문에 사용 불가</p>
-              </div>
-              <Switch id="ch-active" checked={fIsActive} onCheckedChange={setFIsActive} />
-            </div>
+              </>
+            )}
           </TabsContent>
 
           {/* ── 수수료 탭 ── */}
@@ -696,7 +735,7 @@ export function ChannelEditDialog({
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="ch-req-payment" className="cursor-pointer">
-                  결제 필수
+                  결제금액 필수
                 </Label>
                 <Switch
                   id="ch-req-payment"
