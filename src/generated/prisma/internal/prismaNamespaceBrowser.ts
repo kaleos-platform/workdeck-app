@@ -903,7 +903,6 @@ export const ChannelScalarFieldEnum = {
   adminUrl: 'adminUrl',
   freeShipping: 'freeShipping',
   freeShippingThreshold: 'freeShippingThreshold',
-  defaultFeePct: 'defaultFeePct',
   usesMarketingBudget: 'usesMarketingBudget',
   applyAdCost: 'applyAdCost',
   shippingFee: 'shippingFee',
@@ -925,7 +924,6 @@ export const ChannelFeeRateScalarFieldEnum = {
   channelId: 'channelId',
   categoryName: 'categoryName',
   ratePercent: 'ratePercent',
-  vatIncluded: 'vatIncluded',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

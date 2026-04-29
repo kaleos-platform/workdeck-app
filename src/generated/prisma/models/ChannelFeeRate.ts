@@ -39,7 +39,6 @@ export type ChannelFeeRateMinAggregateOutputType = {
   channelId: string | null
   categoryName: string | null
   ratePercent: runtime.Decimal | null
-  vatIncluded: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -49,7 +48,6 @@ export type ChannelFeeRateMaxAggregateOutputType = {
   channelId: string | null
   categoryName: string | null
   ratePercent: runtime.Decimal | null
-  vatIncluded: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -59,7 +57,6 @@ export type ChannelFeeRateCountAggregateOutputType = {
   channelId: number
   categoryName: number
   ratePercent: number
-  vatIncluded: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -79,7 +76,6 @@ export type ChannelFeeRateMinAggregateInputType = {
   channelId?: true
   categoryName?: true
   ratePercent?: true
-  vatIncluded?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -89,7 +85,6 @@ export type ChannelFeeRateMaxAggregateInputType = {
   channelId?: true
   categoryName?: true
   ratePercent?: true
-  vatIncluded?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -99,7 +94,6 @@ export type ChannelFeeRateCountAggregateInputType = {
   channelId?: true
   categoryName?: true
   ratePercent?: true
-  vatIncluded?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -196,7 +190,6 @@ export type ChannelFeeRateGroupByOutputType = {
   channelId: string
   categoryName: string
   ratePercent: runtime.Decimal
-  vatIncluded: boolean
   createdAt: Date
   updatedAt: Date
   _count: ChannelFeeRateCountAggregateOutputType | null
@@ -229,7 +222,6 @@ export type ChannelFeeRateWhereInput = {
   channelId?: Prisma.StringFilter<"ChannelFeeRate"> | string
   categoryName?: Prisma.StringFilter<"ChannelFeeRate"> | string
   ratePercent?: Prisma.DecimalFilter<"ChannelFeeRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFilter<"ChannelFeeRate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelFeeRate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelFeeRate"> | Date | string
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
@@ -240,7 +232,6 @@ export type ChannelFeeRateOrderByWithRelationInput = {
   channelId?: Prisma.SortOrder
   categoryName?: Prisma.SortOrder
   ratePercent?: Prisma.SortOrder
-  vatIncluded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   channel?: Prisma.ChannelOrderByWithRelationInput
@@ -255,7 +246,6 @@ export type ChannelFeeRateWhereUniqueInput = Prisma.AtLeast<{
   channelId?: Prisma.StringFilter<"ChannelFeeRate"> | string
   categoryName?: Prisma.StringFilter<"ChannelFeeRate"> | string
   ratePercent?: Prisma.DecimalFilter<"ChannelFeeRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFilter<"ChannelFeeRate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelFeeRate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelFeeRate"> | Date | string
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
@@ -266,7 +256,6 @@ export type ChannelFeeRateOrderByWithAggregationInput = {
   channelId?: Prisma.SortOrder
   categoryName?: Prisma.SortOrder
   ratePercent?: Prisma.SortOrder
-  vatIncluded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ChannelFeeRateCountOrderByAggregateInput
@@ -284,7 +273,6 @@ export type ChannelFeeRateScalarWhereWithAggregatesInput = {
   channelId?: Prisma.StringWithAggregatesFilter<"ChannelFeeRate"> | string
   categoryName?: Prisma.StringWithAggregatesFilter<"ChannelFeeRate"> | string
   ratePercent?: Prisma.DecimalWithAggregatesFilter<"ChannelFeeRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolWithAggregatesFilter<"ChannelFeeRate"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ChannelFeeRate"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ChannelFeeRate"> | Date | string
 }
@@ -293,7 +281,6 @@ export type ChannelFeeRateCreateInput = {
   id?: string
   categoryName: string
   ratePercent: runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   channel: Prisma.ChannelCreateNestedOneWithoutFeeRatesInput
@@ -304,7 +291,6 @@ export type ChannelFeeRateUncheckedCreateInput = {
   channelId: string
   categoryName: string
   ratePercent: runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -313,7 +299,6 @@ export type ChannelFeeRateUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   categoryName?: Prisma.StringFieldUpdateOperationsInput | string
   ratePercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneRequiredWithoutFeeRatesNestedInput
@@ -324,7 +309,6 @@ export type ChannelFeeRateUncheckedUpdateInput = {
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryName?: Prisma.StringFieldUpdateOperationsInput | string
   ratePercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -334,7 +318,6 @@ export type ChannelFeeRateCreateManyInput = {
   channelId: string
   categoryName: string
   ratePercent: runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -343,7 +326,6 @@ export type ChannelFeeRateUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   categoryName?: Prisma.StringFieldUpdateOperationsInput | string
   ratePercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -353,7 +335,6 @@ export type ChannelFeeRateUncheckedUpdateManyInput = {
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryName?: Prisma.StringFieldUpdateOperationsInput | string
   ratePercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -378,7 +359,6 @@ export type ChannelFeeRateCountOrderByAggregateInput = {
   channelId?: Prisma.SortOrder
   categoryName?: Prisma.SortOrder
   ratePercent?: Prisma.SortOrder
-  vatIncluded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -392,7 +372,6 @@ export type ChannelFeeRateMaxOrderByAggregateInput = {
   channelId?: Prisma.SortOrder
   categoryName?: Prisma.SortOrder
   ratePercent?: Prisma.SortOrder
-  vatIncluded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -402,7 +381,6 @@ export type ChannelFeeRateMinOrderByAggregateInput = {
   channelId?: Prisma.SortOrder
   categoryName?: Prisma.SortOrder
   ratePercent?: Prisma.SortOrder
-  vatIncluded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -457,7 +435,6 @@ export type ChannelFeeRateCreateWithoutChannelInput = {
   id?: string
   categoryName: string
   ratePercent: runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -466,7 +443,6 @@ export type ChannelFeeRateUncheckedCreateWithoutChannelInput = {
   id?: string
   categoryName: string
   ratePercent: runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -505,7 +481,6 @@ export type ChannelFeeRateScalarWhereInput = {
   channelId?: Prisma.StringFilter<"ChannelFeeRate"> | string
   categoryName?: Prisma.StringFilter<"ChannelFeeRate"> | string
   ratePercent?: Prisma.DecimalFilter<"ChannelFeeRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFilter<"ChannelFeeRate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelFeeRate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelFeeRate"> | Date | string
 }
@@ -514,7 +489,6 @@ export type ChannelFeeRateCreateManyChannelInput = {
   id?: string
   categoryName: string
   ratePercent: runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -523,7 +497,6 @@ export type ChannelFeeRateUpdateWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   categoryName?: Prisma.StringFieldUpdateOperationsInput | string
   ratePercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -532,7 +505,6 @@ export type ChannelFeeRateUncheckedUpdateWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   categoryName?: Prisma.StringFieldUpdateOperationsInput | string
   ratePercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -541,7 +513,6 @@ export type ChannelFeeRateUncheckedUpdateManyWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   categoryName?: Prisma.StringFieldUpdateOperationsInput | string
   ratePercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -553,7 +524,6 @@ export type ChannelFeeRateSelect<ExtArgs extends runtime.Types.Extensions.Intern
   channelId?: boolean
   categoryName?: boolean
   ratePercent?: boolean
-  vatIncluded?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
@@ -564,7 +534,6 @@ export type ChannelFeeRateSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   channelId?: boolean
   categoryName?: boolean
   ratePercent?: boolean
-  vatIncluded?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
@@ -575,7 +544,6 @@ export type ChannelFeeRateSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   channelId?: boolean
   categoryName?: boolean
   ratePercent?: boolean
-  vatIncluded?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
@@ -586,12 +554,11 @@ export type ChannelFeeRateSelectScalar = {
   channelId?: boolean
   categoryName?: boolean
   ratePercent?: boolean
-  vatIncluded?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ChannelFeeRateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "channelId" | "categoryName" | "ratePercent" | "vatIncluded" | "createdAt" | "updatedAt", ExtArgs["result"]["channelFeeRate"]>
+export type ChannelFeeRateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "channelId" | "categoryName" | "ratePercent" | "createdAt" | "updatedAt", ExtArgs["result"]["channelFeeRate"]>
 export type ChannelFeeRateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
 }
@@ -612,7 +579,6 @@ export type $ChannelFeeRatePayload<ExtArgs extends runtime.Types.Extensions.Inte
     channelId: string
     categoryName: string
     ratePercent: runtime.Decimal
-    vatIncluded: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["channelFeeRate"]>
@@ -1043,7 +1009,6 @@ export interface ChannelFeeRateFieldRefs {
   readonly channelId: Prisma.FieldRef<"ChannelFeeRate", 'String'>
   readonly categoryName: Prisma.FieldRef<"ChannelFeeRate", 'String'>
   readonly ratePercent: Prisma.FieldRef<"ChannelFeeRate", 'Decimal'>
-  readonly vatIncluded: Prisma.FieldRef<"ChannelFeeRate", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"ChannelFeeRate", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ChannelFeeRate", 'DateTime'>
 }

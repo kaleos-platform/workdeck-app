@@ -60,11 +60,11 @@ export async function POST(
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  const { categoryName, ratePercent, vatIncluded } = parsed.data
+  const { categoryName, ratePercent } = parsed.data
 
   try {
     const feeRate = await prisma.channelFeeRate.create({
-      data: { channelId, categoryName, ratePercent, vatIncluded },
+      data: { channelId, categoryName, ratePercent },
     })
     return NextResponse.json({ feeRate }, { status: 201 })
   } catch (err: unknown) {
@@ -80,7 +80,6 @@ export async function POST(
       channelId,
       categoryName,
       ratePercent,
-      vatIncluded,
       err,
     })
     return errorResponse('수수료율 저장 중 오류가 발생했습니다', 500, {

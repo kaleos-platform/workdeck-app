@@ -2,6 +2,7 @@
 // 옵션 × 채널 조합당 11개 할인율 셀을 순수 함수로 계산한다.
 
 import { classifyTier, type Tier, type TierThresholds } from './margin-tier'
+import { lookupCategoryFeePct, type FeeRateInput } from './channel-fee-lookup'
 
 // ─── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,8 @@ export type MatrixChannel = {
   id?: string
   name?: string
   channelType: string | null // 'SELF_MALL' | 'OPEN_MARKET' | ... | null
-  defaultFeePct: number // 0~1
+  /** 카테고리별 수수료율 배열 — 항상 '기본' 1건 이상 포함 */
+  feeRates: FeeRateInput[]
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1 (paymentFeeIncluded=false 일 때 사용)
   applyAdCost: boolean
@@ -133,8 +135,8 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   // 3. VAT 처리
   const nominalRevenue = globals.includeVat ? r2(finalPrice / (1 + n(globals.vatRate))) : finalPrice
 
-  // 4. 채널 수수료
-  const channelFee = r2(nominalRevenue * n(channel.defaultFeePct))
+  // 4. 채널 수수료 — item.categoryName으로 카테고리별 수수료 조회, 없으면 '기본' fallback
+  const channelFee = r2(nominalRevenue * lookupCategoryFeePct(channel.feeRates))
 
   // 5. 결제 수수료 (PG) — paymentFeeIncluded=true 이면 이미 채널 수수료에 포함
   const paymentFee = channel.paymentFeeIncluded ? 0 : r2(nominalRevenue * n(channel.paymentFeePct))
@@ -218,7 +220,7 @@ function calcRecommendedRetail(inputs: MatrixInputs): number | null {
     const { option, channel, globals, thresholds } = inputs
     const goodTarget = thresholds.platformTargetGood
 
-    let totalPctCost = n(channel.defaultFeePct) + n(globals.operatingCostPct)
+    let totalPctCost = lookupCategoryFeePct(channel.feeRates) + n(globals.operatingCostPct)
     if (!channel.paymentFeeIncluded) totalPctCost += n(channel.paymentFeePct)
     if (channel.applyAdCost) totalPctCost += n(globals.adCostPct)
     // 반품 보정 적용 시 유효 매출이 줄어드는 효과를 근사 반영

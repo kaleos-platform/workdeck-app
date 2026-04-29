@@ -1209,7 +1209,6 @@ model Channel {
   adminUrl              String?
   freeShipping          Boolean  @default(false)
   freeShippingThreshold Decimal? @db.Decimal(18, 2) // 무료배송 최소 주문금액
-  defaultFeePct         Decimal? @db.Decimal(6, 4) // 채널 기본 수수료율 (0~1)
   usesMarketingBudget   Boolean  @default(false)
   applyAdCost           Boolean  @default(false) // 시뮬레이션 시 광고비 자동 적용
   shippingFee           Decimal? @db.Decimal(18, 2)
@@ -1241,12 +1240,13 @@ model Channel {
 }
 
 // 채널별 카테고리 수수료율
+// '기본'은 시스템 보장 카테고리 (모든 채널에 항상 1건 존재)
+// VAT 포함 여부는 Channel.vatIncludedInFee로 통합 관리
 model ChannelFeeRate {
   id           String  @id @default(cuid())
   channelId    String
   categoryName String
   ratePercent  Decimal @db.Decimal(6, 3)
-  vatIncluded  Boolean @default(true)
 
   channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
