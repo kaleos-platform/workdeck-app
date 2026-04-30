@@ -151,18 +151,17 @@ export const channelSchema = z.object({
   isActive: z.boolean().default(true),
   // 가격 시뮬레이션 사용 여부 (false면 수수료/배송 필드는 선택)
   useSimulation: z.boolean().default(true),
-  // adminUrl: null|'' → undefined → url 검증 skip
-  adminUrl: z.preprocess(toUndef, z.string().url()).optional(),
+  // adminUrl/숫자 필드: null/'' 입력을 undefined로 정규화한 뒤 inner schema가 undefined도 허용하도록
+  // .optional()은 반드시 inner schema에 붙여야 함 (preprocess 결과가 undefined여도 통과)
+  adminUrl: z.preprocess(toUndef, z.string().url().optional()),
   freeShipping: z.boolean().default(false),
-  // freeShippingThreshold: 무료배송 최소 주문금액 (원)
-  freeShippingThreshold: z.preprocess(toOptionalNumber, z.number().nonnegative()).optional(),
+  freeShippingThreshold: z.preprocess(toOptionalNumber, z.number().nonnegative().optional()),
   usesMarketingBudget: z.boolean().default(false),
   applyAdCost: z.boolean().default(false),
-  // shippingFee: null|'' → undefined → number 검증 skip
-  shippingFee: z.preprocess(toOptionalNumber, z.number().nonnegative()).optional(),
+  shippingFee: z.preprocess(toOptionalNumber, z.number().nonnegative().optional()),
   vatIncludedInFee: z.boolean().default(true),
   paymentFeeIncluded: z.boolean().default(true),
-  paymentFeePct: z.preprocess(toOptionalNumber, z.number().min(0).max(1)).optional(),
+  paymentFeePct: z.preprocess(toOptionalNumber, z.number().min(0).max(1).optional()),
   requireOrderNumber: z.boolean().default(true),
   requirePayment: z.boolean().default(true),
   requireProducts: z.boolean().default(true),
