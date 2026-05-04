@@ -157,10 +157,15 @@ export async function PATCH(
     return NextResponse.json({ product })
   } catch (err: unknown) {
     const code = (err as { code?: string })?.code
+    const target = (err as { meta?: { target?: string[] } })?.meta?.target
     const detail = err instanceof Error ? err.message : String(err)
-    console.error('[products PATCH] update failed', { productId, code, detail })
+    console.error('[products PATCH] update failed', { productId, code, target, detail })
     if (code === 'P2002') {
-      return errorResponse('이미 동일한 값이 존재합니다 (unique 제약)', 409, { detail })
+      const targets = Array.isArray(target) ? target : []
+      let message = '이미 동일한 값이 존재합니다'
+      if (targets.includes('name')) message = '이미 같은 상품명이 존재합니다'
+      else if (targets.includes('code')) message = '이미 같은 상품 코드가 존재합니다'
+      return errorResponse(message, 409, { detail, target: targets })
     }
     if (code === 'P2003') {
       return errorResponse('연결된 데이터를 찾을 수 없습니다 (foreign key)', 400, { detail })

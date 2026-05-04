@@ -147,10 +147,12 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
       )
       const targetCombKeys = new Set(combinations.map((r) => r.combination.join('|')))
 
-      // 신규 + 유지 업데이트
+      // 신규 조합만 POST. 기존 조합의 cost/retail/sku는 인라인 테이블에서 별도 관리되므로
+      // [옵션 적용]은 절대 덮어쓰지 않는다 (조합 단위 add/remove만 책임).
       for (const row of combinations) {
         const key = row.combination.join('|')
-        const existing = existingByCombKey.get(key)
+        if (existingByCombKey.has(key)) continue
+
         const attributeValues: Record<string, string> = {}
         validAttrs.forEach((a, i) => {
           attributeValues[a.name] = row.combination[i] ?? ''
@@ -159,48 +161,20 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         const costPrice = row.costPrice ? parseFloat(row.costPrice) : null
         const retailPrice = row.retailPrice ? parseFloat(row.retailPrice) : null
 
-        if (existing) {
-          const prevSku = existing.sku ?? ''
-          const prevCost = existing.costPrice != null ? Number(existing.costPrice) : null
-          const prevRetail = existing.retailPrice != null ? Number(existing.retailPrice) : null
-          const changed =
-            prevSku !== row.sku ||
-            prevCost !== costPrice ||
-            prevRetail !== retailPrice ||
-            existing.name !== name
-          if (changed) {
-            const res = await fetch(`/api/sh/products/${productId}/options/${existing.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                name,
-                sku: row.sku || null,
-                costPrice,
-                retailPrice,
-                attributeValues,
-              }),
-            })
-            if (!res.ok) {
-              const err = await res.json().catch(() => ({}))
-              throw new Error(err?.message ?? '옵션 업데이트 실패')
-            }
-          }
-        } else {
-          const res = await fetch(`/api/sh/products/${productId}/options`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name,
-              sku: row.sku || undefined,
-              costPrice: costPrice ?? undefined,
-              retailPrice: retailPrice ?? undefined,
-              attributeValues,
-            }),
-          })
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}))
-            throw new Error(err?.message ?? '옵션 추가 실패')
-          }
+        const res = await fetch(`/api/sh/products/${productId}/options`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            sku: row.sku || undefined,
+            costPrice: costPrice ?? undefined,
+            retailPrice: retailPrice ?? undefined,
+            attributeValues,
+          }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err?.message ?? '옵션 추가 실패')
         }
       }
 
