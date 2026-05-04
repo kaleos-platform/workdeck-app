@@ -135,6 +135,16 @@ export function ChannelEditDialog({
     }
   }, [isSalesChannel, activeTab])
 
+  // 신규 모드 + 판매채널 유형 선택 시 주문 요구사항 토글을 기본 ON.
+  // 비-판매채널이면 OFF로 되돌림.
+  useEffect(() => {
+    if (!open || channel) return
+    if (fTypeDefId === NO_TYPE) return
+    setFRequireOrderNumber(isSalesChannel)
+    setFRequirePayment(isSalesChannel)
+    setFRequireProducts(isSalesChannel)
+  }, [open, channel, fTypeDefId, isSalesChannel])
+
   // ── Dialog 열릴 때 폼 초기화 ──
 
   useEffect(() => {
