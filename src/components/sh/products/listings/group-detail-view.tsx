@@ -863,7 +863,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="sticky top-4 z-20 -mx-1 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-background/95 px-4 py-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <Link
           href={SELLER_HUB_LISTINGS_PATH}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -871,7 +871,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
           <ArrowLeft className="h-4 w-4" />
           목록으로
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <SaveStatusChip
             saving={saving}
             dirty={totalDirty}
@@ -889,6 +889,23 @@ export function GroupDetailView({ productId, channelId }: Props) {
               void runAutoSave()
             }}
           />
+          <Button
+            size="sm"
+            onClick={async () => {
+              setLastError(null)
+              autoRetryCountRef.current = 0
+              setRetryCount(0)
+              if (autoRetryTimerRef.current) {
+                clearTimeout(autoRetryTimerRef.current)
+                autoRetryTimerRef.current = null
+              }
+              await flushPendingSave()
+            }}
+            disabled={!totalDirty || saving || mutating || groupActionLoading}
+          >
+            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+            저장
+          </Button>
           <Button
             variant="outline"
             size="sm"
