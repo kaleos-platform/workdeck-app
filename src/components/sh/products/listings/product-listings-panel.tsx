@@ -1,9 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { Plus } from 'lucide-react'
 
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -11,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SELLER_HUB_LISTING_NEW_PATH } from '@/lib/deck-routes'
 
 import { GroupsTable } from './groups-table'
 
@@ -34,39 +38,39 @@ export function ProductListingsPanel({ productId }: Props) {
     const load = async () => {
       setLoading(true)
       try {
-        const [allRes, productRes] = await Promise.all([
-          fetch('/api/channels?isActive=true&isSalesChannel=true'),
-          fetch(`/api/sh/products/${productId}/listings`),
-        ])
-        if (!allRes.ok) throw new Error('채널 조회 실패')
+        const productRes = await fetch(`/api/sh/products/${productId}/listings`)
         if (!productRes.ok) throw new Error('상품 listing 조회 실패')
 
-        const channelData: { channels: Array<{ id: string; name: string }> } = await allRes.json()
         const productData: {
-          groups: Array<{ channelId: string; listingCount: number }>
-          mixed: Array<{ channelId: string }>
+          groups: Array<{ channelId: string; channelName: string; listingCount: number }>
+          mixed: Array<{ channelId: string; channelName: string }>
         } = await productRes.json()
 
-        const countByChannel = new Map<string, number>()
+        const channelMap = new Map<string, ChannelWithCount>()
         for (const g of productData.groups ?? []) {
-          countByChannel.set(g.channelId, (countByChannel.get(g.channelId) ?? 0) + g.listingCount)
+          const cur = channelMap.get(g.channelId)
+          channelMap.set(g.channelId, {
+            id: g.channelId,
+            name: g.channelName,
+            listingCount: (cur?.listingCount ?? 0) + g.listingCount,
+          })
         }
         for (const m of productData.mixed ?? []) {
-          countByChannel.set(m.channelId, (countByChannel.get(m.channelId) ?? 0) + 1)
+          const cur = channelMap.get(m.channelId)
+          channelMap.set(m.channelId, {
+            id: m.channelId,
+            name: m.channelName,
+            listingCount: (cur?.listingCount ?? 0) + 1,
+          })
         }
 
-        const merged: ChannelWithCount[] = (channelData.channels ?? []).map((c) => ({
-          id: c.id,
-          name: c.name,
-          listingCount: countByChannel.get(c.id) ?? 0,
-        }))
+        const merged = Array.from(channelMap.values()).sort((a, b) =>
+          a.name.localeCompare(b.name, 'ko-KR')
+        )
         if (cancelled) return
         setChannels(merged)
-        if (!selectedChannelId) {
-          // 첫 listing 보유 채널을 기본 선택, 없으면 첫 채널
-          const firstWithListings = merged.find((c) => c.listingCount > 0)
-          const initial = firstWithListings ?? merged[0]
-          if (initial) setSelectedChannelId(initial.id)
+        if (!selectedChannelId && merged.length > 0) {
+          setSelectedChannelId(merged[0].id)
         }
       } catch {
         if (!cancelled) setChannels([])
@@ -81,17 +85,24 @@ export function ProductListingsPanel({ productId }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId])
 
-  const totalListings = useMemo(
-    () => channels.reduce((sum, c) => sum + c.listingCount, 0),
-    [channels]
-  )
-
   if (loading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>
   }
 
   if (channels.length === 0) {
-    return <p className="text-sm text-muted-foreground">활성 판매채널이 없습니다.</p>
+    return (
+      <div className="rounded-md border border-dashed py-10 text-center">
+        <p className="text-sm text-muted-foreground">
+          이 상품은 아직 판매채널 상품에 등록되지 않았습니다
+        </p>
+        <Button asChild variant="outline" size="sm" className="mt-3">
+          <Link href={SELLER_HUB_LISTING_NEW_PATH}>
+            <Plus className="mr-1 h-4 w-4" />
+            판매채널 상품 등록
+          </Link>
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -138,11 +149,6 @@ export function ProductListingsPanel({ productId }: Props) {
               )
             })}
           </ul>
-          {totalListings === 0 && (
-            <p className="mt-3 px-3 text-xs text-muted-foreground">
-              이 상품은 아직 판매채널 상품에 등록되지 않았습니다
-            </p>
-          )}
         </div>
       </Card>
       <div>
