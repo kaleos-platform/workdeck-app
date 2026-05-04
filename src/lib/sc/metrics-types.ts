@@ -11,6 +11,41 @@ import type {
   SalesContentPlatform,
 } from '@/generated/prisma/client'
 
+// ─── 콘텐츠 비교 ──────────────────────────────────────────────────────────────
+
+/**
+ * 비교 차트 한 콘텐츠의 데이터.
+ * daily.date: ISO 날짜 문자열 (YYYY-MM-DD) — RSC 직렬화 안전.
+ */
+export interface ContentCompareRow {
+  id: string
+  title: string
+  status: ContentStatus
+  channels: Array<{
+    name: string
+    kind: SalesContentChannelKind
+    platform: SalesContentPlatform
+  }>
+  /** 모든 배포의 지표 합계 */
+  totals: {
+    impressions: number
+    views: number
+    likes: number
+    comments: number
+    externalClicks: number
+    internalClicks: number
+  }
+  /** daysBack 기간 일별 지표 (모든 배포 합산, spine 완성 — 빈 날 0) */
+  daily: Array<{
+    date: string
+    impressions: number
+    views: number
+    likes: number
+    comments: number
+    externalClicks: number
+  }>
+}
+
 // ─── 성과 관리 테이블 ─────────────────────────────────────────────────────────
 
 /** 성과 관리 테이블의 콘텐츠 단위 행 */

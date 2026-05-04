@@ -4,7 +4,7 @@ import { Settings2 } from 'lucide-react'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getSpaceContentAnalytics } from '@/lib/sc/metrics'
-import { AnalyticsContentTable } from '@/components/sc/analytics/analytics-content-table'
+import { AnalyticsView } from '@/components/sc/analytics/analytics-view'
 import type { ChannelOption } from '@/components/sc/analytics/analytics-filters'
 
 export default async function AnalyticsPage() {
@@ -41,8 +41,8 @@ export default async function AnalyticsPage() {
         </Link>
       </div>
 
-      {/* 콘텐츠 단위 성과 테이블 */}
-      <AnalyticsContentTable contents={contents} channels={channels} />
+      {/* 콘텐츠 단위 성과 + 비교 (클라이언트 래퍼) */}
+      <AnalyticsView contents={contents} channels={channels} />
     </div>
   )
 }
