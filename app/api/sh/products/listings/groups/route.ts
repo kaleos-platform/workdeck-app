@@ -21,6 +21,7 @@ type GroupRow = {
   kind: 'group'
   productId: string
   productName: string
+  groupManagementName: string | null
   channelId: string
   channelName: string
   listingCount: number
@@ -32,6 +33,7 @@ type GroupRow = {
     id: string
     searchName: string
     displayName: string
+    managementName: string | null
     internalCode: string | null
     availableStock: number
     baselinePrice: number | null
@@ -48,6 +50,7 @@ type MixedRow = {
   channelName: string
   searchName: string
   displayName: string
+  managementName: string | null
   availableStock: number
   baselinePrice: number | null
   retailPrice: number | null
@@ -74,6 +77,7 @@ export async function GET(req: NextRequest) {
     where.OR = [
       { searchName: { contains: search, mode: 'insensitive' } },
       { displayName: { contains: search, mode: 'insensitive' } },
+      { managementName: { contains: search, mode: 'insensitive' } },
       { internalCode: { contains: search, mode: 'insensitive' } },
     ]
   }
@@ -91,7 +95,16 @@ export async function GET(req: NextRequest) {
               id: true,
               retailPrice: true,
               productId: true,
-              product: { select: { id: true, name: true, internalName: true, msrp: true } },
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  internalName: true,
+                  msrp: true,
+                  optionAttributes: true,
+                },
+              },
+              attributeValues: true,
             },
           },
         },
@@ -141,6 +154,7 @@ export async function GET(req: NextRequest) {
         channelName: l.channel.name,
         searchName: l.searchName,
         displayName: l.displayName,
+        managementName: l.managementName,
         availableStock: available,
         baselinePrice: baseline,
         retailPrice,
@@ -157,6 +171,7 @@ export async function GET(req: NextRequest) {
       id: l.id,
       searchName: l.searchName,
       displayName: l.displayName,
+      managementName: l.managementName,
       internalCode: l.internalCode,
       availableStock: available,
       baselinePrice: baseline,
@@ -169,6 +184,7 @@ export async function GET(req: NextRequest) {
         kind: 'group',
         productId: product.id,
         productName: productDisplayName(product),
+        groupManagementName: null,
         channelId: l.channelId,
         channelName: l.channel.name,
         listingCount: 1,
@@ -192,6 +208,57 @@ export async function GET(req: NextRequest) {
       existing.statusCounts[effective] += 1
       existing.listings.push(listingRow)
     }
+  }
+
+  // 각 group에 대표 관리용 상품명(가장 흔한 base) 부여
+  const productOptionAttrsByProductId = new Map<string, Array<{ name: string }>>()
+  for (const l of listings) {
+    const p = l.items[0]?.option.product
+    if (p && !productOptionAttrsByProductId.has(p.id)) {
+      const attrs = Array.isArray(p.optionAttributes)
+        ? (p.optionAttributes as Array<{ name: string }>)
+        : []
+      productOptionAttrsByProductId.set(p.id, attrs)
+    }
+  }
+  for (const l of listings) {
+    if (!l.managementName) continue
+  }
+  // listing별 attributeValues로부터 suffix 제거 후 base를 추출
+  const listingAttrsById = new Map<string, Record<string, string>>()
+  for (const l of listings) {
+    const first = l.items[0]
+    if (first) {
+      const av = (first.option.attributeValues ?? {}) as Record<string, string>
+      listingAttrsById.set(l.id, av)
+    }
+  }
+  for (const g of groupsMap.values()) {
+    const attrs = productOptionAttrsByProductId.get(g.productId) ?? []
+    const counts = new Map<string, number>()
+    for (const lr of g.listings) {
+      const mgmt = lr.managementName
+      if (!mgmt) continue
+      const av = listingAttrsById.get(lr.id) ?? {}
+      const suffix = attrs
+        .map((a) => av[a.name])
+        .filter(Boolean)
+        .join(' ')
+      let base = mgmt
+      if (suffix && mgmt.endsWith(suffix)) {
+        base = mgmt.slice(0, mgmt.length - suffix.length).trimEnd()
+      }
+      if (base) counts.set(base, (counts.get(base) ?? 0) + 1)
+    }
+    let best: string | null = null
+    let bestCount = 0
+    for (const [v, c] of counts) {
+      if (c > bestCount || (c === bestCount && best != null && v.length > best.length)) {
+        best = v
+        bestCount = c
+      }
+    }
+    g.groupManagementName = best
   }
 
   const groups = Array.from(groupsMap.values())

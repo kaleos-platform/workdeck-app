@@ -33,6 +33,7 @@ type GroupRow = {
   kind: 'group'
   productId: string
   productName: string
+  groupManagementName: string | null
   channelId: string
   channelName: string
   listingCount: number
@@ -44,6 +45,7 @@ type GroupRow = {
     id: string
     searchName: string
     displayName: string
+    managementName: string | null
     internalCode: string | null
     availableStock: number
     baselinePrice: number | null
@@ -60,6 +62,7 @@ type MixedRow = {
   channelName: string
   searchName: string
   displayName: string
+  managementName: string | null
   availableStock: number
   baselinePrice: number | null
   retailPrice: number | null
@@ -145,7 +148,7 @@ export function GroupsTable({ channelId }: Props) {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="검색명·노출명·관리코드"
+              placeholder="관리명·검색명·노출명·관리코드"
               className="w-64 pl-9"
             />
           </div>
@@ -173,7 +176,7 @@ export function GroupsTable({ channelId }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-10" />
-              <TableHead>상품 / 검색명</TableHead>
+              <TableHead>상품명</TableHead>
               <TableHead className="text-right">구성 수</TableHead>
               <TableHead className="text-right">재고</TableHead>
               <TableHead className="text-right">소비자가</TableHead>
@@ -273,7 +276,11 @@ function GroupRowView({
           </button>
         </TableCell>
         <TableCell>
-          <p className="font-medium">{group.productName}</p>
+          <p className="font-medium">{group.groupManagementName?.trim() || group.productName}</p>
+          {group.groupManagementName?.trim() &&
+            group.groupManagementName.trim() !== group.productName && (
+              <p className="text-xs text-muted-foreground">상품: {group.productName}</p>
+            )}
           <p className="text-xs text-muted-foreground">{group.channelName}</p>
         </TableCell>
         <TableCell className="text-right text-sm">{group.listingCount}</TableCell>
@@ -315,7 +322,10 @@ function GroupRowView({
             <TableRow key={l.id} className="bg-muted/20">
               <TableCell />
               <TableCell className="pl-8 text-sm">
-                {l.searchName}
+                {l.managementName?.trim() || l.searchName}
+                {l.managementName?.trim() && l.managementName.trim() !== l.searchName && (
+                  <p className="text-xs text-muted-foreground">검색명: {l.searchName}</p>
+                )}
                 {l.internalCode && (
                   <p className="text-xs text-muted-foreground">{l.internalCode}</p>
                 )}
@@ -358,8 +368,11 @@ function MixedRowView({ mixed }: { mixed: MixedRow }) {
           href={getSellerHubListingPath(mixed.id)}
           className="text-sm font-medium hover:underline"
         >
-          {mixed.searchName}
+          {mixed.managementName?.trim() || mixed.searchName}
         </Link>
+        {mixed.managementName?.trim() && mixed.managementName.trim() !== mixed.searchName && (
+          <p className="text-xs text-muted-foreground">검색명: {mixed.searchName}</p>
+        )}
         <p className="text-xs text-muted-foreground">{mixed.channelName} · 혼합 구성</p>
       </TableCell>
       <TableCell className="text-right text-sm">-</TableCell>
