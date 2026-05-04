@@ -49,11 +49,12 @@ export function PersonaForm({ mode, personaId, initial }: Props) {
     setSubmitting(true)
     setError(null)
     try {
+      const cleanCustomFields = state.customFields.filter((f) => f.key.trim())
       const body = {
         name: state.name,
         jobTitle: state.jobTitle || undefined,
         industry: state.industry || undefined,
-        customFields: state.customFields.length ? state.customFields : undefined,
+        customFields: cleanCustomFields.length ? cleanCustomFields : undefined,
         isActive: state.isActive,
       }
 

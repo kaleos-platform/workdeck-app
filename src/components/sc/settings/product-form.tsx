@@ -47,10 +47,11 @@ export function ProductForm({ mode, productId, initial }: Props) {
     setSubmitting(true)
     setError(null)
     try {
+      const cleanCustomFields = state.customFields.filter((f) => f.key.trim())
       const body = {
         name: state.name,
         oneLinerPitch: state.oneLinerPitch || undefined,
-        customFields: state.customFields.length ? state.customFields : undefined,
+        customFields: cleanCustomFields.length ? cleanCustomFields : undefined,
         isActive: state.isActive,
       }
 

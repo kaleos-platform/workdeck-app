@@ -42,11 +42,12 @@ export function BrandProfileForm({ initial }: Props) {
     setSubmitting(true)
     setMessage(null)
     try {
+      const cleanCustomFields = state.customFields.filter((f) => f.key.trim())
       const body = {
         companyName: state.companyName,
         shortDescription: state.shortDescription || undefined,
         toneOfVoice: state.toneOfVoice.length ? state.toneOfVoice : undefined,
-        customFields: state.customFields.length ? state.customFields : undefined,
+        customFields: cleanCustomFields.length ? cleanCustomFields : undefined,
       }
       const res = await fetch('/api/sc/brand-profile', {
         method: 'PUT',
