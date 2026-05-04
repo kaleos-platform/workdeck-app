@@ -1,8 +1,16 @@
 import { prisma } from '@/lib/prisma'
 import type { MetricSource } from '@/generated/prisma/client'
 // 타입 계약은 metrics-types.ts 에서 관리 (Bernstein 의 구현과 병렬 작업).
-export type { SpaceContentAnalyticsRow, ContentMetricsTotal } from './metrics-types'
-import type { SpaceContentAnalyticsRow, ContentMetricsTotal } from './metrics-types'
+export type {
+  SpaceContentAnalyticsRow,
+  ContentMetricsTotal,
+  ContentCompareRow,
+} from './metrics-types'
+import type {
+  SpaceContentAnalyticsRow,
+  ContentMetricsTotal,
+  ContentCompareRow,
+} from './metrics-types'
 
 // ─── 구현 ─────────────────────────────────────────────────────────────────────
 
@@ -303,6 +311,177 @@ export async function getContentMetricsTotal(contentId: string): Promise<Content
     daily,
     byDeployment,
   }
+}
+
+// ─── 콘텐츠 비교 ─────────────────────────────────────────────────────────────
+
+/**
+ * 2~5개 콘텐츠의 비교 데이터를 반환한다.
+ * - contentIds 는 모두 동일한 spaceId 에 속해야 함 (권한 체크)
+ * - 다른 space 의 id 가 포함되면 Error 를 throw
+ * - daysBack: 최근 N일 (기본 30일)
+ */
+export async function getContentsCompareData(
+  spaceId: string,
+  contentIds: string[],
+  daysBack = 30
+): Promise<ContentCompareRow[]> {
+  if (contentIds.length < 2 || contentIds.length > 5) {
+    throw new Error(`contentIds 는 2~5개여야 합니다. (받은 값: ${contentIds.length})`)
+  }
+
+  // 1. 콘텐츠 fetch (spaceId 포함 where 절 — 다른 space 의 id 는 자동 제외)
+  const contents = await prisma.content.findMany({
+    where: { id: { in: contentIds }, spaceId },
+    include: {
+      deployments: {
+        include: {
+          channel: { select: { name: true, kind: true, platform: true } },
+          _count: { select: { clickEvents: true } },
+        },
+      },
+    },
+  })
+
+  // 권한 체크: 요청한 id 중 space 에 없는 것이 있으면 거부
+  if (contents.length !== contentIds.length) {
+    const foundIds = new Set(contents.map((c) => c.id))
+    const missing = contentIds.filter((id) => !foundIds.has(id))
+    throw new Error(`접근 권한이 없거나 존재하지 않는 콘텐츠 id: ${missing.join(', ')}`)
+  }
+
+  if (contents.length === 0) return []
+
+  // 2. deployment ID → content ID 역매핑
+  const deploymentToContent = new Map<string, string>()
+  for (const c of contents) {
+    for (const d of c.deployments) {
+      deploymentToContent.set(d.id, c.id)
+    }
+  }
+  const allDeploymentIds = [...deploymentToContent.keys()]
+
+  // 3. 전체 합계용 groupBy (기간 무관)
+  const metricSums = await prisma.deploymentMetric.groupBy({
+    by: ['deploymentId'],
+    where: { deploymentId: { in: allDeploymentIds } },
+    _sum: {
+      impressions: true,
+      views: true,
+      likes: true,
+      comments: true,
+      externalClicks: true,
+    },
+  })
+  const sumByDeployment = new Map(metricSums.map((r) => [r.deploymentId, r._sum]))
+
+  // 4. 일별 추이용 groupBy (daysBack 기간)
+  const since = startOfDayUTC(new Date())
+  since.setUTCDate(since.getUTCDate() - (daysBack - 1))
+
+  const dailyRows = await prisma.deploymentMetric.groupBy({
+    by: ['deploymentId', 'date'],
+    where: {
+      deploymentId: { in: allDeploymentIds },
+      date: { gte: since },
+    },
+    _sum: {
+      impressions: true,
+      views: true,
+      likes: true,
+      comments: true,
+      externalClicks: true,
+    },
+    orderBy: { date: 'asc' },
+  })
+
+  // contentId + date → 지표 합산 맵
+  const contentDateMap = new Map<
+    string,
+    { impressions: number; views: number; likes: number; comments: number; externalClicks: number }
+  >()
+  for (const row of dailyRows) {
+    const contentId = deploymentToContent.get(row.deploymentId)
+    if (!contentId) continue
+    const key = `${contentId}__${toISODate(row.date)}`
+    const existing = contentDateMap.get(key) ?? {
+      impressions: 0,
+      views: 0,
+      likes: 0,
+      comments: 0,
+      externalClicks: 0,
+    }
+    contentDateMap.set(key, {
+      impressions: existing.impressions + (row._sum.impressions ?? 0),
+      views: existing.views + (row._sum.views ?? 0),
+      likes: existing.likes + (row._sum.likes ?? 0),
+      comments: existing.comments + (row._sum.comments ?? 0),
+      externalClicks: existing.externalClicks + (row._sum.externalClicks ?? 0),
+    })
+  }
+
+  // 5. 통합 date spine (daysBack 일, 과거 → 현재 순)
+  const dateSpine: string[] = []
+  const today = startOfDayUTC(new Date())
+  for (let i = daysBack - 1; i >= 0; i--) {
+    const d = new Date(today)
+    d.setUTCDate(d.getUTCDate() - i)
+    dateSpine.push(toISODate(d))
+  }
+
+  // 6. 콘텐츠 단위 결과 조립
+  return contents.map((c) => {
+    // internalClicks: clickEvents 건수 합산
+    const internalClicks = c.deployments.reduce((acc, d) => acc + d._count.clickEvents, 0)
+
+    // 전체 합계
+    const totalsRaw = c.deployments.reduce(
+      (acc, d) => {
+        const m = sumByDeployment.get(d.id)
+        return {
+          impressions: acc.impressions + (m?.impressions ?? 0),
+          views: acc.views + (m?.views ?? 0),
+          likes: acc.likes + (m?.likes ?? 0),
+          comments: acc.comments + (m?.comments ?? 0),
+          externalClicks: acc.externalClicks + (m?.externalClicks ?? 0),
+        }
+      },
+      { impressions: 0, views: 0, likes: 0, comments: 0, externalClicks: 0 }
+    )
+
+    // 채널 목록 (중복 제거)
+    const seenChannelNames = new Set<string>()
+    const channels = c.deployments
+      .filter(
+        (d) => !seenChannelNames.has(d.channel.name) && (seenChannelNames.add(d.channel.name), true)
+      )
+      .map((d) => ({
+        name: d.channel.name,
+        kind: d.channel.kind,
+        platform: d.channel.platform,
+      }))
+
+    // 일별 데이터 (spine 기준, 빈 날 0)
+    const daily = dateSpine.map((date) => {
+      const val = contentDateMap.get(`${c.id}__${date}`) ?? {
+        impressions: 0,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        externalClicks: 0,
+      }
+      return { date, ...val }
+    })
+
+    return {
+      id: c.id,
+      title: c.title,
+      status: c.status,
+      channels,
+      totals: { ...totalsRaw, internalClicks },
+      daily,
+    }
+  })
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
