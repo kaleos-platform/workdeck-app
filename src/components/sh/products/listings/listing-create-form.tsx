@@ -600,18 +600,26 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         </Card>
       ) : (
         <Card>
-          <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
-            <div>
-              <CardTitle className="text-lg">구성 옵션 ({rows.length}개)</CardTitle>
-              <CardDescription>
-                각 행마다 재고·판매가·판매상태를 설정하세요. 체크박스로 여러 옵션을 선택하면 한번에
-                수정할 수 있습니다. 소비자가는 옵션 소비자가에서 자동 계산됩니다.
-              </CardDescription>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1.5">
+                <CardTitle className="text-lg">구성 옵션 ({rows.length}개)</CardTitle>
+                <CardDescription>
+                  각 행마다 재고·판매가·판매상태를 설정하세요. 체크박스로 여러 옵션을 선택하면
+                  한번에 수정할 수 있습니다. 소비자가는 옵션 소비자가에서 자동 계산됩니다.
+                </CardDescription>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={resetComposition}
+                className="shrink-0"
+              >
+                <X className="mr-1 h-4 w-4" />
+                구성 다시 만들기
+              </Button>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={resetComposition}>
-              <X className="mr-1 h-4 w-4" />
-              구성 다시 만들기
-            </Button>
           </CardHeader>
           <CardContent>
             <CompositionRowsTable
