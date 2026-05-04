@@ -1,3 +1,4 @@
+/** @jest-environment node */
 // job-poller.ts — reportMetrics chunking 회귀.
 // 웹앱 측 max(60) 제한과 일치하도록 50건씩 분할 POST 하는지 검증.
 

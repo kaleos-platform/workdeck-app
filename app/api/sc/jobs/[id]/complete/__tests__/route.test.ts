@@ -1,3 +1,4 @@
+/** @jest-environment node */
 // /api/sc/jobs/[id]/complete — 핵심 분기 회귀 테스트.
 // Prisma · jobs · notifications 는 모두 mock — 라우트의 분기 로직만 검증.
 

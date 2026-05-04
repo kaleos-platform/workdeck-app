@@ -1,3 +1,4 @@
+/** @jest-environment node */
 // /api/sc/jobs/worker GET — claimJobs + reapStaleClaims + 응답 평탄화 회귀.
 // Prisma · jobs 모듈 · readChannelCredential · getAppOrigin 모두 mock.
 
