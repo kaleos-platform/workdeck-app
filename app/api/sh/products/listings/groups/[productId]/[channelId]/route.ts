@@ -122,6 +122,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       id: l.id,
       searchName: l.searchName,
       displayName: l.displayName,
+      managementName: l.managementName,
       internalCode: l.internalCode,
       memo: l.memo,
       status: l.status,

@@ -13,6 +13,7 @@ export type GroupListingForBase = {
   id: string
   searchName: string
   displayName: string
+  managementName: string | null
   internalCode: string | null
   memo: string | null
   items: Array<{
@@ -27,11 +28,13 @@ type Props = {
   channelName: string
   baseSearchName: string
   baseDisplayName: string
+  baseManagementName: string
   baseInternalCode: string
   memo: string
   inconsistentBases: string[]
   onBaseSearchNameChange: (v: string) => void
   onBaseDisplayNameChange: (v: string) => void
+  onBaseManagementNameChange: (v: string) => void
   onBaseInternalCodeChange: (v: string) => void
   onMemoChange: (v: string) => void
   disabled?: boolean
@@ -46,11 +49,13 @@ export function GroupBaseInfoCard({
   channelName,
   baseSearchName,
   baseDisplayName,
+  baseManagementName,
   baseInternalCode,
   memo,
   inconsistentBases,
   onBaseSearchNameChange,
   onBaseDisplayNameChange,
+  onBaseManagementNameChange,
   onBaseInternalCodeChange,
   onMemoChange,
   disabled,
@@ -119,6 +124,20 @@ export function GroupBaseInfoCard({
           />
         </div>
         <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="group-management">상품명 (관리용)</Label>
+            <NameCounter value={baseManagementName} />
+          </div>
+          <Input
+            id="group-management"
+            value={baseManagementName}
+            onChange={(e) => onBaseManagementNameChange(e.target.value)}
+            placeholder="내부 목록 표시용. 비우면 검색용 상품명을 사용합니다"
+            maxLength={MAX_NAME_LENGTH - 30}
+            disabled={disabled}
+          />
+        </div>
+        <div className="space-y-1.5">
           <Label htmlFor="group-memo">메모</Label>
           <Textarea
             id="group-memo"
@@ -167,17 +186,20 @@ export function deriveBaseValues(
 ): {
   baseSearchName: string
   baseDisplayName: string
+  baseManagementName: string
   baseInternalCode: string
   memo: string
   inconsistentBases: string[]
 } {
   const searchBases: string[] = []
   const displayBases: string[] = []
+  const managementBases: string[] = []
   const codeBases: string[] = []
   for (const l of listings) {
     const suffix = buildSuffix(l, attrs)
     searchBases.push(stripSuffix(l.searchName, suffix))
     displayBases.push(stripSuffix(l.displayName, suffix))
+    managementBases.push(stripSuffix(l.managementName, suffix))
     codeBases.push(stripSuffix(l.internalCode, suffix))
   }
 
@@ -188,6 +210,8 @@ export function deriveBaseValues(
   const sameAsSearchForAll = listings.every((_, idx) => displayBases[idx] === searchBases[idx])
   if (new Set(displayBases.filter((s) => s)).size > 1) inconsistent.push('노출명')
   const baseDisplayName = sameAsSearchForAll ? '' : rawBaseDisplayName
+  const baseManagementName = mostCommon(managementBases)
+  if (new Set(managementBases.filter((s) => s)).size > 1) inconsistent.push('관리명')
   const baseInternalCode = mostCommon(codeBases)
   if (new Set(codeBases.filter((s) => s)).size > 1) inconsistent.push('관리 코드')
 
@@ -197,6 +221,7 @@ export function deriveBaseValues(
   return {
     baseSearchName,
     baseDisplayName,
+    baseManagementName,
     baseInternalCode,
     memo,
     inconsistentBases: inconsistent,
