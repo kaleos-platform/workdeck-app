@@ -178,7 +178,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           ? `/api/sh/products/listings/groups/${duplicateFromProductId}/${duplicateFromChannelId}?g=${encodeURIComponent(duplicateFromGroupKey)}`
           : `/api/sh/products/listings/groups/${duplicateFromProductId}/${duplicateFromChannelId}`
         const res = await fetch(url, { cache: 'no-store' })
-        if (!res.ok) throw new Error('원본 그룹 조회 실패')
+        if (!res.ok) throw new Error('원본 채널 상품 조회 실패')
         const data: {
           product: {
             id: string
@@ -287,7 +287,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         setRows(newRows)
         setSelected(new Set())
 
-        toast.success('원본 그룹의 정보를 미리 채웠습니다 — 검토 후 저장하세요')
+        toast.success('원본 채널 상품의 정보를 미리 채웠습니다 — 검토 후 저장하세요')
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '복제 prefill 실패')
       }
@@ -412,7 +412,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         })
       } catch {
         // 키워드 저장 실패는 치명적이지 않음 — 토스트 경고만
-        toast.warning('listing은 생성되었으나 키워드 저장에 실패했습니다')
+        toast.warning('판매 옵션은 생성되었으나 키워드 저장에 실패했습니다')
       }
     }
 
@@ -471,7 +471,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         <CardHeader>
           <CardTitle className="text-lg">기본 정보</CardTitle>
           <CardDescription>
-            생성될 모든 listing에 공통으로 적용되는 값. 개별 옵션 suffix는 자동으로 덧붙습니다.
+            생성될 모든 판매 옵션에 공통으로 적용되는 값. 개별 옵션 코드는 자동으로 덧붙습니다.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -497,7 +497,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                 id="listing-code"
                 value={internalCode}
                 onChange={(e) => setInternalCode(e.target.value)}
-                placeholder="예: CP-MUD — 뒤에 속성 suffix가 붙어 각 listing에 설정됩니다"
+                placeholder="예: CP-MUD — 뒤에 옵션 코드가 붙어 각 판매 옵션에 설정됩니다"
                 maxLength={50}
               />
             </div>
@@ -646,8 +646,8 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           <DialogHeader>
             <DialogTitle>판매채널 상품 구성 만들기</DialogTitle>
             <DialogDescription>
-              상품과 속성을 선택해 묶음 구성을 만듭니다. 여러 조합이 나오면 listing이 자동으로 분할
-              생성됩니다.
+              상품과 속성을 선택해 묶음 구성을 만듭니다. 여러 조합이 나오면 판매 옵션이 자동으로
+              분할 생성됩니다.
             </DialogDescription>
           </DialogHeader>
           <CompositionBuilder onCommit={handleBuilderCommit} disabled={saving} />

@@ -67,15 +67,15 @@ export function GroupBaseInfoCard({
       <CardHeader>
         <CardTitle className="text-lg">기본 정보</CardTitle>
         <CardDescription>
-          이 그룹의 모든 listing에 공통으로 적용되는 값. 각 listing의 속성 suffix(예: &lsquo;S
-          누드&rsquo;)는 그대로 유지되고 앞부분만 일괄 재작성됩니다.
+          이 채널 상품의 모든 판매 옵션에 공통으로 적용되는 값. 각 판매 옵션의 옵션 코드(예:
+          &lsquo;S 누드&rsquo;)는 그대로 유지되고 앞부분만 일괄 재작성됩니다.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         {inconsistentBases.length > 0 && (
           <p className="text-xs text-amber-600">
-            ⚠ {inconsistentBases.join(' · ')}의 base가 listing마다 달라 대표값을 표시합니다. 저장 시
-            모든 listing에 동일하게 적용됩니다.
+            ⚠ {inconsistentBases.join(' · ')}이 판매 옵션마다 달라 대표값을 표시합니다. 저장 시 모든
+            판매 옵션에 동일하게 적용됩니다.
           </p>
         )}
         <div className="grid gap-5 md:grid-cols-2">
@@ -89,7 +89,7 @@ export function GroupBaseInfoCard({
               id="group-code"
               value={baseInternalCode}
               onChange={(e) => onBaseInternalCodeChange(e.target.value)}
-              placeholder="예: CP-MUD — suffix가 붙어 각 listing에 설정됩니다"
+              placeholder="예: CP-MUD — 옵션 코드가 붙어 각 판매 옵션에 설정됩니다"
               maxLength={50}
               disabled={disabled}
             />
@@ -143,7 +143,7 @@ export function GroupBaseInfoCard({
             id="group-memo"
             value={memo}
             onChange={(e) => onMemoChange(e.target.value)}
-            placeholder="내부 참고용 메모 — 저장 시 모든 listing에 동일하게 적용"
+            placeholder="내부 참고용 메모 — 저장 시 모든 판매 옵션에 동일하게 적용"
             rows={2}
             disabled={disabled}
           />

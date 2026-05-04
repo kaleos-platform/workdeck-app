@@ -221,7 +221,7 @@ export function GroupsTable({ channelId, productId }: Props) {
                       colSpan={8}
                       className="bg-muted/30 py-2 text-xs text-muted-foreground"
                     >
-                      혼합 구성 listing ({mixed.length}개) — 단일 편집 폼에서 개별 관리
+                      혼합 구성 판매 옵션 ({mixed.length}개) — 단일 편집 폼에서 개별 관리
                     </TableCell>
                   </TableRow>
                 )}
@@ -235,8 +235,8 @@ export function GroupsTable({ channelId, productId }: Props) {
       </div>
       {totalListings > 0 && (
         <p className="text-xs text-muted-foreground">
-          총 {groups.length.toLocaleString('ko-KR')}개 상품 그룹 ·{' '}
-          {totalListings.toLocaleString('ko-KR')}개 listing
+          총 {groups.length.toLocaleString('ko-KR')}개 채널 상품 ·{' '}
+          {totalListings.toLocaleString('ko-KR')}개 판매 옵션
           {mixed.length > 0 ? ` · 혼합 ${mixed.length}` : ''}
         </p>
       )}
