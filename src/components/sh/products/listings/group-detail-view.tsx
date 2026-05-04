@@ -372,6 +372,11 @@ export function GroupDetailView({ productId, channelId }: Props) {
 
   async function confirmGroupDelete() {
     if (!data) return
+    if (!allSuspended) {
+      toast.error('비활성화 후 삭제할 수 있습니다')
+      setGroupDeleteOpen(false)
+      return
+    }
     await flushPendingSave()
     setGroupActionLoading(true)
     const failures: string[] = []
@@ -906,7 +911,8 @@ export function GroupDetailView({ productId, channelId }: Props) {
             variant="outline"
             size="sm"
             onClick={() => setGroupDeleteOpen(true)}
-            disabled={mutating || groupActionLoading || data.listings.length === 0}
+            disabled={mutating || groupActionLoading || data.listings.length === 0 || !allSuspended}
+            title={!allSuspended ? '비활성화 후 삭제할 수 있습니다' : undefined}
           >
             <Trash2 className="mr-1 h-4 w-4" />
             삭제
