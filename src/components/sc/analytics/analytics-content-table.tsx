@@ -2,8 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
+import { ArrowUp, ArrowDown, ArrowUpDown, GitCompareArrows, X, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '@/components/ui/button'
 import { ContentStatusBadge } from '@/components/sc/contents/content-status-badge'
 import {
   AnalyticsFilters,
@@ -30,6 +32,16 @@ interface Props {
   contents: SpaceContentAnalyticsRow[]
   /** 실제 등록된 채널 목록 (필터 UI 용) */
   channels: ChannelOption[]
+  /** 현재 선택된 콘텐츠 id 배열 (부모 상태) */
+  selectedIds: string[]
+  /** 체크박스 토글 콜백 */
+  onToggle: (id: string, checked: boolean) => void
+  /** 비교 보기 버튼 콜백 */
+  onCompare: () => void
+  /** 선택 초기화 콜백 */
+  onResetSelection: () => void
+  /** 비교 fetch 진행 중 여부 */
+  compareLoading: boolean
 }
 
 // ─── 헬퍼 ─────────────────────────────────────────────────────────────────
@@ -154,7 +166,15 @@ function applySort(rows: SpaceContentAnalyticsRow[], sort: SortState): SpaceCont
 
 // ─── 컴포넌트 ──────────────────────────────────────────────────────────────
 
-export function AnalyticsContentTable({ contents, channels }: Props) {
+export function AnalyticsContentTable({
+  contents,
+  channels,
+  selectedIds,
+  onToggle,
+  onCompare,
+  onResetSelection,
+  compareLoading,
+}: Props) {
   const router = useRouter()
 
   const [sort, setSort] = useState<SortState>({ key: 'latestPublishedAt', dir: 'desc' })
@@ -188,6 +208,9 @@ export function AnalyticsContentTable({ contents, channels }: Props) {
     { key: 'clicks', label: '클릭', align: 'right' },
   ]
 
+  const selectedCount = selectedIds.length
+  const canCompare = selectedCount >= 2
+
   return (
     <div className="space-y-4">
       <AnalyticsFilters channels={channels} value={filters} onChange={setFilters} />
@@ -196,6 +219,10 @@ export function AnalyticsContentTable({ contents, channels }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/30">
+              {/* 체크박스 헤더 */}
+              <th scope="col" className="w-10 px-3 py-2 text-left">
+                <span className="sr-only">선택</span>
+              </th>
               {columns.map((col) => (
                 <th
                   key={col.key}
@@ -230,7 +257,7 @@ export function AnalyticsContentTable({ contents, channels }: Props) {
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="border-t border-dashed px-3 py-10 text-center text-sm text-muted-foreground"
                 >
                   표시할 콘텐츠가 없습니다.
@@ -245,12 +272,28 @@ export function AnalyticsContentTable({ contents, channels }: Props) {
             ) : (
               rows.map((row) => {
                 const clicks = row.metrics.internalClicks + row.metrics.externalClicks
+                const isSelected = selectedIds.includes(row.id)
+                // 5건 이미 선택 + 이 행은 미선택 → 체크박스 disabled
+                const isDisabled = !isSelected && selectedCount >= 5
+
                 return (
                   <tr
                     key={row.id}
                     onClick={() => router.push(`/d/sales-content/contents/${row.id}`)}
-                    className="cursor-pointer border-t transition hover:bg-accent/50"
+                    className={[
+                      'cursor-pointer border-t transition hover:bg-accent/50',
+                      isSelected ? 'bg-accent/30' : '',
+                    ].join(' ')}
                   >
+                    {/* 체크박스 셀 — 행 클릭 전파 차단 */}
+                    <td className="w-10 px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        disabled={isDisabled}
+                        onCheckedChange={(checked) => onToggle(row.id, checked === true)}
+                        aria-label={`${row.title} 비교 선택`}
+                      />
+                    </td>
                     {/* 제목 + 상태 배지 */}
                     <td className="max-w-[260px] px-3 py-2.5">
                       <div className="flex items-center gap-2">
@@ -297,6 +340,46 @@ export function AnalyticsContentTable({ contents, channels }: Props) {
           {rows.length}개 콘텐츠
           {rows.length !== contents.length && ` (전체 ${contents.length}개 중 필터됨)`}
         </p>
+      )}
+
+      {/* Sticky 선택 액션 바 — 1건 이상 선택 시 표시 */}
+      {selectedCount > 0 && (
+        <div
+          className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+          role="status"
+          aria-live="polite"
+          aria-label={`${selectedCount}건 선택됨`}
+        >
+          <div className="flex items-center gap-3 rounded-full border bg-background/95 px-5 py-2.5 shadow-lg backdrop-blur-sm">
+            <span className="text-sm font-medium">
+              <span className="text-primary">{selectedCount}건</span> 선택됨
+            </span>
+            <span className="text-xs text-muted-foreground">(최대 5건)</span>
+            <div className="h-4 w-px bg-border" aria-hidden="true" />
+            <Button
+              size="sm"
+              variant="default"
+              onClick={onCompare}
+              disabled={!canCompare || compareLoading}
+              className="h-7 gap-1.5 rounded-full px-3 text-xs"
+            >
+              {compareLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <GitCompareArrows className="h-3.5 w-3.5" />
+              )}
+              비교 보기
+            </Button>
+            <button
+              type="button"
+              onClick={onResetSelection}
+              className="rounded-full p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+              aria-label="선택 초기화"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
