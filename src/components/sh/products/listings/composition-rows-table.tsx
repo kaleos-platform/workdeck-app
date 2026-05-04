@@ -101,6 +101,12 @@ export function CompositionRowsTable({
     )
   }
 
+  function deleteSelected() {
+    if (selected.size === 0) return
+    onRowsChange(rows.filter((r) => !selected.has(r.key)))
+    onSelectedChange(new Set())
+  }
+
   if (rows.length === 0) {
     return (
       <div className="rounded-md border border-dashed py-10 text-center text-sm text-muted-foreground">
@@ -116,6 +122,7 @@ export function CompositionRowsTable({
           selectedCount={selected.size}
           onClear={() => onSelectedChange(new Set())}
           onApply={async (patch) => applyBulk(patch)}
+          onRequestDelete={deleteSelected}
         />
       )}
       <div className="rounded-md border">
