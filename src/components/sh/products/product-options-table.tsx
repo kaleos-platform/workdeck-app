@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Loader2, RefreshCw, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Info, Loader2, RefreshCw, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   generateOptionSku,
   normalizeOptionAttributes,
@@ -193,7 +194,7 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
     const costVal = bulkCost.trim() !== '' ? parseFloat(bulkCost) : null
     const retailVal = bulkRetail.trim() !== '' ? parseFloat(bulkRetail) : null
     if (costVal === null && retailVal === null) {
-      toast.error('원가 또는 소비자가 중 하나 이상 입력하세요')
+      toast.error('공급원가 또는 소비자가 중 하나 이상 입력하세요')
       return
     }
     setBulkSaving(true)
@@ -293,7 +294,7 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
 
   const allChecked = options.length > 0 && selected.size === options.length
   const attrNames = attributes.map((a) => a.name)
-  const colSpan = 1 + attrNames.length + 5 // 체크박스 + 속성컬럼 + sku/원가/소비자가/재고/액션
+  const colSpan = 1 + attrNames.length + 6 // 체크박스 + 속성 + sku/공급원가/소비자가/마진율/재고/액션
 
   return (
     <div className="space-y-3">
@@ -363,8 +364,23 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
               ))}
               {attrNames.length === 0 && <TableHead className="min-w-[120px]">옵션명</TableHead>}
               <TableHead className="min-w-[140px]">관리코드 (SKU)</TableHead>
-              <TableHead className="min-w-[90px]">원가</TableHead>
+              <TableHead className="min-w-[100px]">
+                <span className="inline-flex items-center gap-1">
+                  공급원가
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help text-muted-foreground">
+                          <Info className="h-3.5 w-3.5" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>생산원가에 운영, 광고비 등이 포함된 금액</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </span>
+              </TableHead>
               <TableHead className="min-w-[90px]">소비자가</TableHead>
+              <TableHead className="min-w-[80px] text-right">마진율</TableHead>
               <TableHead className="w-16 text-right">재고</TableHead>
               <TableHead className="w-24" />
             </TableRow>
@@ -448,6 +464,9 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
                         className="h-8"
                       />
                     </TableCell>
+                    <TableCell className="text-right text-muted-foreground tabular-nums">
+                      {marginPercent(draft.costPrice, draft.retailPrice)}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {(opt.totalStock ?? 0).toLocaleString('ko-KR')}
                     </TableCell>
@@ -491,7 +510,7 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="bulk-cost">원가</Label>
+              <Label htmlFor="bulk-cost">공급원가</Label>
               <Input
                 id="bulk-cost"
                 type="number"
@@ -526,4 +545,11 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
       </Dialog>
     </div>
   )
+}
+
+function marginPercent(cost: string, retail: string): string {
+  const c = parseFloat(cost)
+  const r = parseFloat(retail)
+  if (!isFinite(c) || !isFinite(r) || r <= 0) return '-'
+  return `${(((r - c) / r) * 100).toFixed(1)}%`
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Download, Plus, X } from 'lucide-react'
+import { Download, Info, Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   aliasMapKey,
   generateOptionSku,
@@ -359,7 +360,7 @@ export function ProductOptionAttributesEditor({
     const costStr = bulkCost.trim()
     const retailStr = bulkRetail.trim()
     if (!costStr && !retailStr) {
-      toast.error('원가 또는 소비자가 중 하나 이상 입력하세요')
+      toast.error('공급원가 또는 소비자가 중 하나 이상 입력하세요')
       return
     }
     onCombinationsChange(
@@ -573,8 +574,23 @@ export function ProductOptionAttributesEditor({
                     </TableHead>
                   ))}
                   <TableHead className="min-w-[140px] text-xs">관리코드 (SKU)</TableHead>
-                  <TableHead className="min-w-[90px] text-xs">원가</TableHead>
+                  <TableHead className="min-w-[100px] text-xs">
+                    <span className="inline-flex items-center gap-1">
+                      공급원가
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help text-muted-foreground">
+                              <Info className="h-3.5 w-3.5" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>생산원가에 운영, 광고비 등이 포함된 금액</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </span>
+                  </TableHead>
                   <TableHead className="min-w-[90px] text-xs">소비자가</TableHead>
+                  <TableHead className="min-w-[80px] text-right text-xs">마진율</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -627,6 +643,9 @@ export function ProductOptionAttributesEditor({
                           className="h-7 text-xs"
                         />
                       </TableCell>
+                      <TableCell className="py-1.5 text-right text-xs text-muted-foreground tabular-nums">
+                        {marginPercent(row.costPrice, row.retailPrice)}
+                      </TableCell>
                     </TableRow>
                   )
                 })}
@@ -651,7 +670,7 @@ export function ProductOptionAttributesEditor({
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="combo-bulk-cost">원가</Label>
+              <Label htmlFor="combo-bulk-cost">공급원가</Label>
               <Input
                 id="combo-bulk-cost"
                 type="number"
@@ -685,4 +704,11 @@ export function ProductOptionAttributesEditor({
       </Dialog>
     </div>
   )
+}
+
+function marginPercent(cost: string, retail: string): string {
+  const c = parseFloat(cost)
+  const r = parseFloat(retail)
+  if (!isFinite(c) || !isFinite(r) || r <= 0) return '-'
+  return `${(((r - c) / r) * 100).toFixed(1)}%`
 }
