@@ -16,6 +16,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
+import {
+  applyChannelAllocation,
+  computeDiscount,
+  computeEffectiveStatus,
+} from '@/lib/sh/listing-calc'
 
 import { KeywordEditor } from './keyword-editor'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
@@ -176,7 +181,13 @@ export function GroupDetailView({ productId, channelId }: Props) {
     for (const r of rows) {
       const o = origById.get(r.id)
       if (!o) continue
-      if (r.retailPrice !== o.retailPrice || r.status !== o.status) set.add(r.id)
+      if (
+        r.retailPrice !== o.retailPrice ||
+        r.channelAllocation !== o.channelAllocation ||
+        r.status !== o.status
+      ) {
+        set.add(r.id)
+      }
     }
     return set
   }, [rows, data])
@@ -190,12 +201,24 @@ export function GroupDetailView({ productId, channelId }: Props) {
         if (r.id !== id) return r
         const next = { ...r }
         if (patch.retailPrice !== undefined) next.retailPrice = patch.retailPrice
+        if (patch.channelAllocation !== undefined) {
+          next.channelAllocation = patch.channelAllocation
+          next.availableStock = applyChannelAllocation(
+            next.autoAvailableStock,
+            next.channelAllocation
+          )
+        }
         if (patch.status !== undefined) next.status = patch.status
+        if (patch.status !== undefined || patch.channelAllocation !== undefined) {
+          next.effectiveStatus = computeEffectiveStatus(next.status, next.availableStock)
+        }
+        const discount = computeDiscount(next.baselinePrice, next.retailPrice)
+        next.discountAmount = discount.diff
+        next.discountPercent = discount.percent
         return next
       })
     )
-    // Select(판매상태)는 즉시, 텍스트(판매가)는 800ms debounce
-    scheduleAutoSave(patch.status !== undefined ? 0 : 800)
+    scheduleAutoSave(patch.status !== undefined ? 0 : 400)
   }
 
   function applyBulkPatch(patch: BulkPatch) {
@@ -205,12 +228,23 @@ export function GroupDetailView({ productId, channelId }: Props) {
         if (!selected.has(r.id)) return r
         const next = { ...r }
         if (patch.retailPrice !== undefined) next.retailPrice = patch.retailPrice
+        if (patch.channelAllocation !== undefined) {
+          next.channelAllocation = patch.channelAllocation
+          next.availableStock = applyChannelAllocation(
+            next.autoAvailableStock,
+            next.channelAllocation
+          )
+        }
         if (patch.status !== undefined) next.status = patch.status
+        next.effectiveStatus = computeEffectiveStatus(next.status, next.availableStock)
+        const discount = computeDiscount(next.baselinePrice, next.retailPrice)
+        next.discountAmount = discount.diff
+        next.discountPercent = discount.percent
         return next
       })
     )
     toast.success(`${selected.size}개 listing에 적용했습니다`)
-    scheduleAutoSave(0)
+    scheduleAutoSave(patch.status !== undefined ? 0 : 400)
   }
 
   function handleKeywordsChange(next: string[]) {
@@ -277,7 +311,10 @@ export function GroupDetailView({ productId, channelId }: Props) {
     return groups.map((g) => {
       const suffix = g.suffixParts.join(' ')
       const searchName = joinName(baseSearchName.trim() || ctx.displayName, suffix)
-      const displayName = joinName(baseDisplayName.trim() || ctx.displayName, suffix)
+      const displayName = joinName(
+        baseDisplayName.trim() || baseSearchName.trim() || ctx.displayName,
+        suffix
+      )
       const internalCode = baseInternalCode.trim()
         ? joinName(baseInternalCode.trim(), suffix)
         : undefined
@@ -438,7 +475,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
     if (!totalDirty) return
 
     // 필수 필드 가드: 공백이면 저장 스킵 (error chip 대신 dirty 유지)
-    if (baseDirty && (!baseSearchName.trim() || !baseDisplayName.trim())) return
+    if (baseDirty && !baseSearchName.trim()) return
 
     const promise = doSave()
     activeSavePromiseRef.current = promise
@@ -475,6 +512,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
         internalCode?: string | null
         memo?: string | null
         retailPrice?: number | null
+        channelAllocation?: number | null
         status?: 'ACTIVE' | 'SUSPENDED'
       }
     >()
@@ -488,6 +526,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
         internalCode?: string | null
         memo?: string | null
         retailPrice?: number | null
+        channelAllocation?: number | null
         status?: 'ACTIVE' | 'SUSPENDED'
       } = {}
 
@@ -507,7 +546,9 @@ export function GroupDetailView({ productId, channelId }: Props) {
           data.product.optionAttributes
         )
         patch.searchName = joinName(snapBase.searchName.trim(), suffix) || l.searchName
-        patch.displayName = joinName(snapBase.displayName.trim(), suffix) || l.displayName
+        patch.displayName =
+          joinName(snapBase.displayName.trim() || snapBase.searchName.trim(), suffix) ||
+          l.displayName
         patch.internalCode = snapBase.internalCode.trim()
           ? joinName(snapBase.internalCode.trim(), suffix)
           : null
@@ -516,6 +557,9 @@ export function GroupDetailView({ productId, channelId }: Props) {
 
       const orig = origById.get(l.id)!
       if (current.retailPrice !== orig.retailPrice) patch.retailPrice = current.retailPrice
+      if (current.channelAllocation !== orig.channelAllocation) {
+        patch.channelAllocation = current.channelAllocation
+      }
       if (current.status !== orig.status) patch.status = current.status
 
       if (Object.keys(patch).length === 0) continue
@@ -573,7 +617,31 @@ export function GroupDetailView({ productId, channelId }: Props) {
               ...(p.internalCode !== undefined ? { internalCode: p.internalCode } : {}),
               ...(p.memo !== undefined ? { memo: p.memo } : {}),
               ...(p.retailPrice !== undefined ? { retailPrice: p.retailPrice } : {}),
-              ...(p.status !== undefined ? { status: p.status } : {}),
+              ...(p.channelAllocation !== undefined
+                ? {
+                    channelAllocation: p.channelAllocation,
+                    availableStock: applyChannelAllocation(
+                      l.autoAvailableStock,
+                      p.channelAllocation
+                    ),
+                    effectiveStatus: computeEffectiveStatus(
+                      p.status ?? l.status,
+                      applyChannelAllocation(l.autoAvailableStock, p.channelAllocation)
+                    ),
+                  }
+                : {}),
+              ...(p.status !== undefined
+                ? {
+                    status: p.status,
+                    effectiveStatus:
+                      p.channelAllocation !== undefined
+                        ? computeEffectiveStatus(
+                            p.status,
+                            applyChannelAllocation(l.autoAvailableStock, p.channelAllocation)
+                          )
+                        : computeEffectiveStatus(p.status, l.availableStock),
+                  }
+                : {}),
             }
           }),
         }
@@ -757,8 +825,8 @@ export function GroupDetailView({ productId, channelId }: Props) {
           <div>
             <CardTitle className="text-lg">옵션 구성 ({rows.length}개)</CardTitle>
             <CardDescription>
-              체크박스로 여러 옵션을 선택하면 판매가·판매상태를 한 번에 바꿀 수 있습니다. 변경은
-              자동으로 저장됩니다. 소비자가는 상품의 옵션 소비자가에서 자동 계산됩니다.
+              체크박스로 여러 옵션을 선택하면 재고·판매가·판매상태를 한 번에 바꿀 수 있습니다.
+              변경은 자동으로 저장됩니다. 소비자가는 상품의 옵션 소비자가에서 자동 계산됩니다.
             </CardDescription>
           </div>
           <div className="flex items-center gap-1.5">

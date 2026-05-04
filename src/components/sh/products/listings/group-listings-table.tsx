@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { computeDiscount } from '@/lib/sh/listing-calc'
 
 export type GroupListingRow = {
   id: string
@@ -33,7 +34,9 @@ export type GroupListingRow = {
   baselinePrice: number | null
   discountAmount: number | null
   discountPercent: number | null
+  channelAllocation: number | null
   availableStock: number
+  autoAvailableStock: number
   items: Array<{
     optionId: string
     optionName: string
@@ -49,7 +52,11 @@ type Props = {
   onSelectedChange: (next: Set<string>) => void
   onRowChange: (
     id: string,
-    patch: { retailPrice?: number | null; status?: 'ACTIVE' | 'SUSPENDED' }
+    patch: {
+      retailPrice?: number | null
+      channelAllocation?: number | null
+      status?: 'ACTIVE' | 'SUSPENDED'
+    }
   ) => void
   onDeleteRequest?: (id: string) => void
   deleteDisabledReason?: string
@@ -114,6 +121,7 @@ export function GroupListingsTable({
         <TableBody>
           {rows.map((r) => {
             const retailValue = r.retailPrice != null ? String(r.retailPrice) : ''
+            const discount = computeDiscount(r.baselinePrice, r.retailPrice)
             const statusBadge =
               r.effectiveStatus === 'SUSPENDED' ? (
                 <Badge variant="outline">판매중지</Badge>
@@ -165,12 +173,12 @@ export function GroupListingsTable({
                       })
                     }}
                     placeholder="-"
-                    className="h-8 text-right"
+                    className="h-8 bg-background text-right"
                     disabled={disabled}
                   />
                 </TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">
-                  {r.discountPercent != null ? `${r.discountPercent.toFixed(1)}%` : '-'}
+                  {discount.percent != null ? `${discount.percent.toFixed(1)}%` : '-'}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
@@ -181,7 +189,7 @@ export function GroupListingsTable({
                       }
                       disabled={disabled}
                     >
-                      <SelectTrigger className="h-8 w-28">
+                      <SelectTrigger className="h-8 w-28 bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

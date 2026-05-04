@@ -21,12 +21,30 @@ export function KeywordEditor({ value, onChange, suggestions = [], placeholder }
 
   const normalized = useMemo(() => new Set(value.map((v) => v.toLowerCase())), [value])
 
-  function add(raw: string) {
-    const keyword = raw.trim()
-    if (!keyword) return
-    if (normalized.has(keyword.toLowerCase())) return
-    if (value.length >= MAX_KEYWORDS) return
-    onChange([...value, keyword])
+  function parseKeywords(raw: string) {
+    return raw
+      .split(/[,\n]/)
+      .map((token) => token.trim())
+      .filter(Boolean)
+  }
+
+  function addMany(raw: string) {
+    const incoming = parseKeywords(raw)
+    if (incoming.length === 0) return
+
+    const next = [...value]
+    const seen = new Set(normalized)
+
+    for (const keyword of incoming) {
+      if (seen.has(keyword.toLowerCase())) continue
+      if (next.length >= MAX_KEYWORDS) break
+      next.push(keyword)
+      seen.add(keyword.toLowerCase())
+    }
+
+    if (next.length !== value.length) {
+      onChange(next)
+    }
   }
 
   function remove(idx: number) {
@@ -37,12 +55,21 @@ export function KeywordEditor({ value, onChange, suggestions = [], placeholder }
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
       if (draft.trim()) {
-        add(draft)
+        addMany(draft)
         setDraft('')
       }
     } else if (e.key === 'Backspace' && draft.length === 0 && value.length > 0) {
       remove(value.length - 1)
     }
+  }
+
+  function onInputPaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    const pasted = e.clipboardData.getData('text')
+    if (!/[,\n]/.test(pasted)) return
+
+    e.preventDefault()
+    addMany(pasted)
+    setDraft('')
   }
 
   const freshSuggestions = suggestions.filter((s) => !normalized.has(s.toLowerCase())).slice(0, 8)
@@ -72,6 +99,7 @@ export function KeywordEditor({ value, onChange, suggestions = [], placeholder }
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onInputKeyDown}
+          onPaste={onInputPaste}
           placeholder={atMax ? `최대 ${MAX_KEYWORDS}개` : (placeholder ?? '키워드 입력 후 Enter')}
           disabled={atMax}
           className="h-7 min-w-[140px] flex-1 border-0 px-1 shadow-none focus-visible:ring-0"
@@ -90,7 +118,7 @@ export function KeywordEditor({ value, onChange, suggestions = [], placeholder }
               variant="outline"
               size="sm"
               disabled={atMax}
-              onClick={() => add(s)}
+              onClick={() => addMany(s)}
               className="h-6 gap-1 px-2 text-xs"
             >
               <Plus className="h-3 w-3" />

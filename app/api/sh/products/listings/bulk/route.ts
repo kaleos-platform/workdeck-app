@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { productListingBulkPatchSchema } from '@/lib/sh/schemas'
 
 /**
- * 여러 Listing 일괄 수정 — 현재는 retailPrice(판매가)와 status만 지원.
+ * 여러 Listing 일괄 수정 — 판매가, 채널 할당 재고, 상태를 지원.
  * 그룹 상세 화면의 bulk edit 바에서 호출.
  */
 export async function PATCH(req: NextRequest) {
@@ -29,8 +29,13 @@ export async function PATCH(req: NextRequest) {
     return errorResponse('일부 listing을 찾을 수 없습니다', 400)
   }
 
-  const data: { retailPrice?: number | null; status?: 'ACTIVE' | 'SUSPENDED' } = {}
+  const data: {
+    retailPrice?: number | null
+    channelAllocation?: number | null
+    status?: 'ACTIVE' | 'SUSPENDED'
+  } = {}
   if (patch.retailPrice !== undefined) data.retailPrice = patch.retailPrice
+  if (patch.channelAllocation !== undefined) data.channelAllocation = patch.channelAllocation
   if (patch.status !== undefined) data.status = patch.status
 
   const result = await prisma.productListing.updateMany({

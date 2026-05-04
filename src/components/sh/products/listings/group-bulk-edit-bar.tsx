@@ -15,6 +15,7 @@ import {
 
 export type BulkPatch = {
   retailPrice?: number | null
+  channelAllocation?: number | null
   status?: 'ACTIVE' | 'SUSPENDED'
 }
 
@@ -34,17 +35,29 @@ export function GroupBulkEditBar({
   loading,
 }: Props) {
   const [retailDraft, setRetailDraft] = useState('')
+  const [channelAllocationDraft, setChannelAllocationDraft] = useState('')
   const [statusDraft, setStatusDraft] = useState<'' | 'ACTIVE' | 'SUSPENDED'>('')
 
-  const hasChange = retailDraft.trim() !== '' || statusDraft !== ''
+  const hasChange =
+    retailDraft.trim() !== '' || channelAllocationDraft.trim() !== '' || statusDraft !== ''
 
   async function apply() {
     const patch: BulkPatch = {}
     if (retailDraft.trim() !== '') patch.retailPrice = Number(retailDraft)
+    if (channelAllocationDraft.trim() !== '') {
+      patch.channelAllocation = Number(channelAllocationDraft)
+    }
     if (statusDraft !== '') patch.status = statusDraft
-    if (!patch.retailPrice && !patch.status) return
+    if (
+      patch.retailPrice === undefined &&
+      patch.channelAllocation === undefined &&
+      patch.status === undefined
+    ) {
+      return
+    }
     await onApply(patch)
     setRetailDraft('')
+    setChannelAllocationDraft('')
     setStatusDraft('')
   }
 
@@ -59,7 +72,18 @@ export function GroupBulkEditBar({
           value={retailDraft}
           onChange={(e) => setRetailDraft(e.target.value)}
           placeholder="변경 없음"
-          className="h-8 w-28"
+          className="h-8 w-28 bg-background"
+        />
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-muted-foreground">재고</span>
+        <Input
+          type="number"
+          min={0}
+          value={channelAllocationDraft}
+          onChange={(e) => setChannelAllocationDraft(e.target.value)}
+          placeholder="변경 없음"
+          className="h-8 w-28 bg-background"
         />
       </div>
       <div className="flex items-center gap-1.5">
@@ -68,7 +92,7 @@ export function GroupBulkEditBar({
           value={statusDraft || 'none'}
           onValueChange={(v) => setStatusDraft(v === 'none' ? '' : (v as 'ACTIVE' | 'SUSPENDED'))}
         >
-          <SelectTrigger className="h-8 w-28">
+          <SelectTrigger className="h-8 w-28 bg-background">
             <SelectValue placeholder="변경 없음" />
           </SelectTrigger>
           <SelectContent>

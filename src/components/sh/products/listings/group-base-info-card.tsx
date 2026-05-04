@@ -113,7 +113,7 @@ export function GroupBaseInfoCard({
             id="group-display"
             value={baseDisplayName}
             onChange={(e) => onBaseDisplayNameChange(e.target.value)}
-            placeholder="상세 페이지에 표시되는 상품명"
+            placeholder="비우면 검색용 상품명을 그대로 사용합니다"
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
@@ -184,8 +184,10 @@ export function deriveBaseValues(
   const inconsistent: string[] = []
   const baseSearchName = mostCommon(searchBases)
   if (new Set(searchBases.filter((s) => s)).size > 1) inconsistent.push('검색명')
-  const baseDisplayName = mostCommon(displayBases)
+  const rawBaseDisplayName = mostCommon(displayBases)
+  const sameAsSearchForAll = listings.every((_, idx) => displayBases[idx] === searchBases[idx])
   if (new Set(displayBases.filter((s) => s)).size > 1) inconsistent.push('노출명')
+  const baseDisplayName = sameAsSearchForAll ? '' : rawBaseDisplayName
   const baseInternalCode = mostCommon(codeBases)
   if (new Set(codeBases.filter((s) => s)).size > 1) inconsistent.push('관리 코드')
 

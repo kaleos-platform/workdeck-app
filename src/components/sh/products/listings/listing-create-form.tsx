@@ -123,7 +123,6 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         }
         setProductCtx(ctx)
         if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
-        if (!baseDisplayName.trim()) setBaseDisplayName(ctx.displayName)
 
         // CompositionRow 1개 직접 생성 (suffix 없이 — 단일 옵션)
         const row: CompositionRow = {
@@ -140,6 +139,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             },
           ],
           retailPrice: String(prefill.retailPrice),
+          channelAllocation: '',
           status: 'ACTIVE',
         }
         setRows([row])
@@ -176,7 +176,6 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     setRows(buildRowsFromGroups(newGroups))
     setSelected(new Set())
     if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
-    if (!baseDisplayName.trim()) setBaseDisplayName(ctx.displayName)
     setBuilderOpen(false)
     toast.success(`${newGroups.length}개의 옵션 구성이 준비되었습니다`)
   }
@@ -189,10 +188,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   }
 
   const readyToSave =
-    channelId.trim().length > 0 &&
-    baseSearchName.trim().length > 0 &&
-    baseDisplayName.trim().length > 0 &&
-    rows.length > 0
+    channelId.trim().length > 0 && baseSearchName.trim().length > 0 && rows.length > 0
 
   async function handleSave() {
     if (!readyToSave) {
@@ -209,7 +205,10 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     }> = []
     for (const row of rows) {
       const searchName = previewName(row.suffixParts, baseSearchName.trim())
-      const displayName = previewName(row.suffixParts, baseDisplayName.trim())
+      const displayName = previewName(
+        row.suffixParts,
+        baseDisplayName.trim() || baseSearchName.trim()
+      )
       const payload = {
         channelId,
         searchName,
@@ -219,6 +218,8 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           : undefined,
         memo: memo.trim() || undefined,
         retailPrice: row.retailPrice.trim() === '' ? undefined : Number(row.retailPrice),
+        channelAllocation:
+          row.channelAllocation.trim() === '' ? undefined : Number(row.channelAllocation),
         // 키워드는 ProductChannelGroupMeta에 저장 — 개별 listing에는 빈 배열
         keywords: [],
         status: row.status,
@@ -298,22 +299,24 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <Link
-          href={SELLER_HUB_LISTINGS_PATH}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          목록으로
-        </Link>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => router.back()} disabled={saving}>
-            취소
-          </Button>
-          <Button onClick={handleSave} disabled={!readyToSave || saving}>
-            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-            저장 ({rows.length}개 생성)
-          </Button>
+      <div className="sticky top-4 z-20 rounded-lg border bg-background/95 px-4 py-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href={SELLER_HUB_LISTINGS_PATH}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            목록으로
+          </Link>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => router.back()} disabled={saving}>
+              취소
+            </Button>
+            <Button onClick={handleSave} disabled={!readyToSave || saving}>
+              {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              저장 ({rows.length}개 생성)
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -371,14 +374,14 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="listing-display">상품명 (노출용) *</Label>
+              <Label htmlFor="listing-display">상품명 (노출용)</Label>
               <NameCounter value={baseDisplayName} limit={nameLimit.displayName} />
             </div>
             <Input
               id="listing-display"
               value={baseDisplayName}
               onChange={(e) => setBaseDisplayName(e.target.value)}
-              placeholder="상세 페이지에 표시되는 상품명"
+              placeholder="비우면 검색용 상품명을 그대로 사용합니다"
               maxLength={MAX_NAME_LENGTH - 30}
             />
           </div>
@@ -443,7 +446,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             <div>
               <CardTitle className="text-lg">구성 옵션 ({rows.length}개)</CardTitle>
               <CardDescription>
-                각 행마다 판매가·판매상태를 설정하세요. 체크박스로 여러 옵션을 선택하면 한번에
+                각 행마다 재고·판매가·판매상태를 설정하세요. 체크박스로 여러 옵션을 선택하면 한번에
                 수정할 수 있습니다. 소비자가는 옵션 소비자가에서 자동 계산됩니다.
               </CardDescription>
             </div>
@@ -498,6 +501,7 @@ function buildRowsFromGroups(groups: BuiltGroup[]): CompositionRow[] {
     suffixParts: g.suffixParts,
     items: g.items,
     retailPrice: '',
+    channelAllocation: '',
     status: 'ACTIVE',
   }))
 }

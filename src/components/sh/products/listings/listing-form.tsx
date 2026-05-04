@@ -88,7 +88,9 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   const [channels, setChannels] = useState<Channel[]>([])
   const [channelId, setChannelId] = useState<string>(initial?.channel.id ?? defaultChannelId ?? '')
   const [searchName, setSearchName] = useState(initial?.searchName ?? '')
-  const [displayName, setDisplayName] = useState(initial?.displayName ?? '')
+  const [displayName, setDisplayName] = useState(
+    initial?.displayName === initial?.searchName ? '' : (initial?.displayName ?? '')
+  )
   const [internalCode, setInternalCode] = useState(initial?.internalCode ?? '')
   const [memo, setMemo] = useState(initial?.memo ?? '')
   const [retailPrice, setRetailPrice] = useState<string>(
@@ -196,11 +198,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
     setItems((prev) => prev.filter((it) => it.optionId !== optionId))
   }
 
-  const formValid =
-    channelId.trim().length > 0 &&
-    searchName.trim().length > 0 &&
-    displayName.trim().length > 0 &&
-    items.length > 0
+  const formValid = channelId.trim().length > 0 && searchName.trim().length > 0 && items.length > 0
 
   async function handleSave() {
     if (!formValid) {
@@ -209,10 +207,12 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
     }
     setSaving(true)
     try {
+      const normalizedSearchName = searchName.trim()
+      const normalizedDisplayName = displayName.trim() || normalizedSearchName
       const payload = {
         channelId,
-        searchName: searchName.trim(),
-        displayName: displayName.trim(),
+        searchName: normalizedSearchName,
+        displayName: normalizedDisplayName,
         internalCode: internalCode.trim() || undefined,
         memo: memo.trim() || undefined,
         retailPrice: retailPrice.trim() === '' ? undefined : Number(retailPrice),
@@ -265,32 +265,34 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <Link
-          href={SELLER_HUB_LISTINGS_PATH}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          목록으로
-        </Link>
-        <div className="flex items-center gap-2">
-          {mode === 'edit' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setDeleteOpen(true)}
-              disabled={saving || deleting}
-            >
-              <Trash2 className="mr-1 h-4 w-4" /> 삭제
+      <div className="sticky top-4 z-20 rounded-lg border bg-background/95 px-4 py-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href={SELLER_HUB_LISTINGS_PATH}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            목록으로
+          </Link>
+          <div className="flex items-center gap-2">
+            {mode === 'edit' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteOpen(true)}
+                disabled={saving || deleting}
+              >
+                <Trash2 className="mr-1 h-4 w-4" /> 삭제
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => router.back()} disabled={saving}>
+              취소
             </Button>
-          )}
-          <Button variant="outline" onClick={() => router.back()} disabled={saving}>
-            취소
-          </Button>
-          <Button onClick={handleSave} disabled={!formValid || saving}>
-            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-            저장
-          </Button>
+            <Button onClick={handleSave} disabled={!formValid || saving}>
+              {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              저장
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -349,14 +351,14 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="listing-display">상품명 (노출용) *</Label>
+              <Label htmlFor="listing-display">상품명 (노출용)</Label>
               <NameCounter value={displayName} limit={nameLimit.displayName} />
             </div>
             <Input
               id="listing-display"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="상세 페이지에 표시되는 상품명"
+              placeholder="비우면 검색용 상품명을 그대로 사용합니다"
               maxLength={MAX_NAME_LENGTH}
             />
           </div>

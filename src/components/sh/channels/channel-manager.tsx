@@ -59,8 +59,17 @@ type Channel = {
   requireProducts: boolean
 }
 
-// 사이드바 "전체" 탭 ID
+type SidebarFilterKey =
+  | '__all__'
+  | '__sales_channels__'
+  | '__non_sales_channels__'
+  | '__unclassified__'
+  | string
+
+// 사이드바 필터 키
 const ALL_TYPES = '__all__'
+const SALES_CHANNELS = '__sales_channels__'
+const NON_SALES_CHANNELS = '__non_sales_channels__'
 const UNCLASSIFIED_TYPE = '__unclassified__'
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
@@ -72,7 +81,7 @@ export function ShChannelManager() {
   const [loading, setLoading] = useState(true)
 
   // ── 사이드바 선택 유형 ──
-  const [selectedTypeId, setSelectedTypeId] = useState<string>(ALL_TYPES)
+  const [selectedTypeId, setSelectedTypeId] = useState<SidebarFilterKey>(ALL_TYPES)
 
   // ── 채널 테이블 확장 ──
   const [expandedChannelId, setExpandedChannelId] = useState<string | null>(null)
@@ -115,12 +124,13 @@ export function ShChannelManager() {
   const filteredChannels = useMemo(() => {
     return channels.filter((ch) => {
       // 사이드바 유형 필터
-      if (selectedTypeId === UNCLASSIFIED_TYPE && ch.channelTypeDefId !== null) return false
-      if (
-        selectedTypeId !== ALL_TYPES &&
-        selectedTypeId !== UNCLASSIFIED_TYPE &&
-        ch.channelTypeDefId !== selectedTypeId
-      ) {
+      if (selectedTypeId === UNCLASSIFIED_TYPE) {
+        if (ch.channelTypeDefId !== null) return false
+      } else if (selectedTypeId === SALES_CHANNELS) {
+        if (ch.channelTypeDef?.isSalesChannel !== true) return false
+      } else if (selectedTypeId === NON_SALES_CHANNELS) {
+        if (ch.channelTypeDef?.isSalesChannel !== false) return false
+      } else if (selectedTypeId !== ALL_TYPES && ch.channelTypeDefId !== selectedTypeId) {
         return false
       }
       // 상태 필터
@@ -153,6 +163,14 @@ export function ShChannelManager() {
     () => channelTypes.filter((t) => !t.isSalesChannel),
     [channelTypes]
   )
+  const salesChannelCount = useMemo(
+    () => channels.filter((ch) => ch.channelTypeDef?.isSalesChannel === true).length,
+    [channels]
+  )
+  const nonSalesChannelCount = useMemo(
+    () => channels.filter((ch) => ch.channelTypeDef?.isSalesChannel === false).length,
+    [channels]
+  )
 
   function renderTypeButton(t: ChannelTypeDef) {
     return (
@@ -170,6 +188,45 @@ export function ShChannelManager() {
         <span className="truncate">{t.name}</span>
         <Badge variant="secondary" className="ml-2 shrink-0 text-xs">
           {countByType[t.id] ?? 0}
+        </Badge>
+      </button>
+    )
+  }
+
+  function renderGroupButton(
+    label: string,
+    filterKey: SidebarFilterKey,
+    count: number,
+    markerTone: 'primary' | 'muted'
+  ) {
+    const active = selectedTypeId === filterKey
+
+    return (
+      <button
+        type="button"
+        onClick={() => setSelectedTypeId(filterKey)}
+        className={[
+          'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
+          active
+            ? 'bg-accent font-medium text-accent-foreground'
+            : 'text-foreground hover:bg-accent/50',
+        ].join(' ')}
+      >
+        <span className="flex items-center gap-2">
+          <span
+            className={[
+              'h-2 w-2 rounded-full',
+              active
+                ? markerTone === 'primary'
+                  ? 'bg-primary'
+                  : 'bg-foreground'
+                : 'bg-muted-foreground/40',
+            ].join(' ')}
+          />
+          {label}
+        </span>
+        <Badge variant="secondary" className="text-xs">
+          {count}
         </Badge>
       </button>
     )
@@ -249,8 +306,8 @@ export function ShChannelManager() {
             </button>
 
             <div className="pt-3">
-              <p className="mb-1 px-3 text-[11px] font-semibold text-muted-foreground">판매채널</p>
-              <div className="space-y-1">
+              {renderGroupButton('판매채널', SALES_CHANNELS, salesChannelCount, 'primary')}
+              <div className="mt-1 space-y-1">
                 {salesChannelTypes.length > 0 ? (
                   salesChannelTypes.map(renderTypeButton)
                 ) : (
@@ -262,10 +319,8 @@ export function ShChannelManager() {
             </div>
 
             <div className="pt-3">
-              <p className="mb-1 px-3 text-[11px] font-semibold text-muted-foreground">
-                비판매채널
-              </p>
-              <div className="space-y-1">
+              {renderGroupButton('비판매채널', NON_SALES_CHANNELS, nonSalesChannelCount, 'muted')}
+              <div className="mt-1 space-y-1">
                 {nonSalesChannelTypes.length > 0 ? (
                   nonSalesChannelTypes.map(renderTypeButton)
                 ) : (

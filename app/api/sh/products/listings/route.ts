@@ -15,6 +15,12 @@ import { productDisplayName } from '@/lib/sh/product-display'
 
 const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
 
+function normalizeDisplayName(searchName: string, displayName?: string) {
+  const trimmedSearchName = searchName.trim()
+  const trimmedDisplayName = displayName?.trim() ?? ''
+  return trimmedDisplayName || trimmedSearchName
+}
+
 type ListingListRow = {
   id: string
   channelId: string
@@ -171,6 +177,7 @@ export async function POST(req: NextRequest) {
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
   const input = parsed.data
+  const displayName = normalizeDisplayName(input.searchName, input.displayName)
 
   // 채널 소속 검증
   const channel = await prisma.channel.findFirst({
@@ -205,7 +212,7 @@ export async function POST(req: NextRequest) {
         spaceId: resolved.space.id,
         channelId: input.channelId,
         searchName: input.searchName,
-        displayName: input.displayName,
+        displayName,
         internalCode: input.internalCode ?? null,
         keywords: input.keywords ?? [],
         retailPrice: input.retailPrice ?? null,

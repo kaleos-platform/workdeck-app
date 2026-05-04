@@ -228,6 +228,10 @@ const listingNameSchema = z.preprocess(
   (v) => (typeof v === 'string' ? v.trim() : v),
   z.string().min(1, '상품명을 입력하세요').max(200)
 )
+const listingOptionalNameSchema = z.preprocess(
+  (v) => (typeof v === 'string' ? v.trim() : v),
+  z.string().max(200)
+)
 
 export const productListingItemSchema = z.object({
   optionId: idLike,
@@ -249,7 +253,7 @@ export const productListingSchema = z
     channelId: idLike,
     internalCode: emptyToUndefined.pipe(z.string().trim().max(50)).optional(),
     searchName: listingNameSchema,
-    displayName: listingNameSchema,
+    displayName: listingOptionalNameSchema.optional().default(''),
     keywords: z
       .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
       .max(30)
@@ -290,7 +294,7 @@ export const productListingPatchSchema = z
   .object({
     internalCode: emptyToUndefined.pipe(z.string().trim().max(50)).optional().nullable(),
     searchName: listingNameSchema.optional(),
-    displayName: listingNameSchema.optional(),
+    displayName: listingOptionalNameSchema.optional(),
     keywords: z
       .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
       .max(30)
@@ -505,10 +509,20 @@ export const productListingBulkPatchSchema = z.object({
           z.union([z.number().min(0).max(99_999_999), z.null()])
         )
         .optional(),
+      channelAllocation: z
+        .preprocess(
+          (v) => (v === null || v === '' ? null : v === undefined ? undefined : Number(v)),
+          z.union([z.number().int().min(0).max(999_999), z.null()])
+        )
+        .optional(),
       status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
     })
-    .refine((p) => p.retailPrice !== undefined || p.status !== undefined, {
-      message: '변경할 필드가 없습니다',
-    }),
+    .refine(
+      (p) =>
+        p.retailPrice !== undefined || p.channelAllocation !== undefined || p.status !== undefined,
+      {
+        message: '변경할 필드가 없습니다',
+      }
+    ),
 })
 export type ProductListingBulkPatchInput = z.infer<typeof productListingBulkPatchSchema>

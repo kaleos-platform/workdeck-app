@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { computeListingRetailBaseline } from '@/lib/sh/listing-calc'
+import { computeDiscount, computeListingRetailBaseline } from '@/lib/sh/listing-calc'
 
 import type { ItemEntry } from './composition-builder'
 import { GroupBulkEditBar, type BulkPatch } from './group-bulk-edit-bar'
@@ -36,6 +36,7 @@ export type CompositionRow = {
   suffixParts: string[]
   items: ItemEntry[]
   retailPrice: string
+  channelAllocation: string
   status: 'ACTIVE' | 'SUSPENDED'
 }
 
@@ -90,6 +91,10 @@ export function CompositionRowsTable({
         if (patch.retailPrice !== undefined) {
           next.retailPrice = patch.retailPrice == null ? '' : String(patch.retailPrice)
         }
+        if (patch.channelAllocation !== undefined) {
+          next.channelAllocation =
+            patch.channelAllocation == null ? '' : String(patch.channelAllocation)
+        }
         if (patch.status !== undefined) next.status = patch.status
         return next
       })
@@ -127,8 +132,10 @@ export function CompositionRowsTable({
               </TableHead>
               <TableHead>검색명 (생성 예정)</TableHead>
               <TableHead>구성 옵션</TableHead>
+              <TableHead className="w-28 text-right">재고</TableHead>
               <TableHead className="text-right">소비자가</TableHead>
               <TableHead className="w-36 text-right">판매가</TableHead>
+              <TableHead className="text-right">할인</TableHead>
               <TableHead className="w-32">판매상태</TableHead>
               <TableHead className="w-10" />
             </TableRow>
@@ -138,6 +145,8 @@ export function CompositionRowsTable({
               const baseline = computeListingRetailBaseline(
                 r.items.map((it) => ({ quantity: it.quantity, retailPrice: it.retailPrice }))
               )
+              const salePrice = r.retailPrice.trim() === '' ? null : Number(r.retailPrice)
+              const discount = computeDiscount(baseline, salePrice)
               const previewName = [baseSearchName, ...r.suffixParts].filter(Boolean).join(' ')
               const composition = r.items
                 .map((it) => `${it.optionName} ×${it.quantity}`)
@@ -159,6 +168,17 @@ export function CompositionRowsTable({
                     )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{composition}</TableCell>
+                  <TableCell className="text-right">
+                    <Input
+                      type="number"
+                      min={0}
+                      value={r.channelAllocation}
+                      onChange={(e) => updateRow(r.key, { channelAllocation: e.target.value })}
+                      placeholder="-"
+                      className="h-8 bg-background text-right"
+                      disabled={disabled}
+                    />
+                  </TableCell>
                   <TableCell className="text-right text-sm text-muted-foreground">
                     {baseline != null ? `${baseline.toLocaleString('ko-KR')}원` : '-'}
                   </TableCell>
@@ -169,9 +189,12 @@ export function CompositionRowsTable({
                       value={r.retailPrice}
                       onChange={(e) => updateRow(r.key, { retailPrice: e.target.value })}
                       placeholder="-"
-                      className="h-8 text-right"
+                      className="h-8 bg-background text-right"
                       disabled={disabled}
                     />
+                  </TableCell>
+                  <TableCell className="text-right text-sm text-muted-foreground">
+                    {discount.percent != null ? `${discount.percent.toFixed(1)}%` : '-'}
                   </TableCell>
                   <TableCell>
                     <Select
@@ -181,7 +204,7 @@ export function CompositionRowsTable({
                       }
                       disabled={disabled}
                     >
-                      <SelectTrigger className="h-8 w-28">
+                      <SelectTrigger className="h-8 w-28 bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

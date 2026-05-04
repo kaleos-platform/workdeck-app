@@ -15,6 +15,12 @@ import { productDisplayName } from '@/lib/sh/product-display'
 type Params = { params: Promise<{ listingId: string }> }
 const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
 
+function normalizeDisplayName(searchName: string, displayName?: string) {
+  const trimmedSearchName = searchName.trim()
+  const trimmedDisplayName = displayName?.trim() ?? ''
+  return trimmedDisplayName || trimmedSearchName
+}
+
 export async function GET(_req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
@@ -159,6 +165,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
   const input = parsed.data
+  const nextSearchName = input.searchName ?? existing.searchName
+  const nextDisplayName =
+    input.displayName === undefined
+      ? undefined
+      : normalizeDisplayName(nextSearchName, input.displayName)
 
   // searchName 변경 시 같은 채널 내 중복 검증
   if (input.searchName && input.searchName !== existing.searchName) {
@@ -191,7 +202,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       data: {
         internalCode: input.internalCode === undefined ? undefined : input.internalCode,
         searchName: input.searchName ?? undefined,
-        displayName: input.displayName ?? undefined,
+        displayName: nextDisplayName,
         keywords: input.keywords ?? undefined,
         retailPrice: input.retailPrice === undefined ? undefined : input.retailPrice,
         channelAllocation:
