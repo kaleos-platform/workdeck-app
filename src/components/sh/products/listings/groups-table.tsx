@@ -33,6 +33,7 @@ type GroupRow = {
   kind: 'group'
   productId: string
   productName: string
+  groupKey: string
   groupManagementName: string | null
   channelId: string
   channelName: string
@@ -203,7 +204,7 @@ export function GroupsTable({ channelId, productId }: Props) {
             ) : (
               <>
                 {groups.map((g) => {
-                  const key = `${g.productId}:${g.channelId}`
+                  const key = `${g.productId}:${g.channelId}:${g.groupKey}`
                   const isOpen = expanded.has(key)
                   return (
                     <GroupRowView
@@ -260,7 +261,7 @@ function GroupRowView({
   onToggle: () => void
 }) {
   const router = useRouter()
-  const groupHref = getSellerHubListingGroupPath(group.productId, group.channelId)
+  const groupHref = getSellerHubListingGroupPath(group.productId, group.channelId, group.groupKey)
   return (
     <>
       <TableRow className="cursor-pointer hover:bg-muted/40" onClick={() => router.push(groupHref)}>

@@ -67,9 +67,10 @@ type GroupDetail = {
 type Props = {
   productId: string
   channelId: string
+  groupKey?: string | null
 }
 
-export function GroupDetailView({ productId, channelId }: Props) {
+export function GroupDetailView({ productId, channelId, groupKey }: Props) {
   const router = useRouter()
   const [data, setData] = useState<GroupDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -111,7 +112,10 @@ export function GroupDetailView({ productId, channelId }: Props) {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/sh/products/listings/groups/${productId}/${channelId}`, {
+      const url = groupKey
+        ? `/api/sh/products/listings/groups/${productId}/${channelId}?g=${encodeURIComponent(groupKey)}`
+        : `/api/sh/products/listings/groups/${productId}/${channelId}`
+      const res = await fetch(url, {
         cache: 'no-store',
       })
       if (!res.ok) throw new Error('그룹 조회 실패')
@@ -145,7 +149,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [productId, channelId])
+  }, [productId, channelId, groupKey])
 
   useEffect(() => {
     load()
@@ -407,9 +411,11 @@ export function GroupDetailView({ productId, channelId }: Props) {
 
   async function goToDuplicate() {
     await flushPendingSave()
-    router.push(
-      `${SELLER_HUB_LISTING_NEW_PATH}?duplicateFromProductId=${productId}&duplicateFromChannelId=${channelId}`
-    )
+    const params = new URLSearchParams()
+    params.set('duplicateFromProductId', productId)
+    params.set('duplicateFromChannelId', channelId)
+    if (groupKey) params.set('duplicateFromGroupKey', groupKey)
+    router.push(`${SELLER_HUB_LISTING_NEW_PATH}?${params.toString()}`)
   }
 
   function buildListingPayloadsFromGroups(ctx: ProductContext, groups: BuiltGroup[]) {
