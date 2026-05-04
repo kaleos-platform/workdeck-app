@@ -19,7 +19,7 @@ export async function GET() {
   return NextResponse.json({ templates })
 }
 
-// POST: 사용자 템플릿 생성. 시스템 템플릿 복제는 body.cloneFromId 로.
+// POST: 사용자 템플릿 생성.
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('sales-content')
   if ('error' in resolved) return resolved.error
@@ -43,28 +43,15 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  try {
-    const created = await prisma.template.create({
-      data: {
-        spaceId: resolved.space.id,
-        name: parsed.data.name,
-        slug: parsed.data.slug,
-        kind: parsed.data.kind,
-        sections: sectionsParsed.data,
-        isSystem: false,
-        isActive: parsed.data.isActive ?? true,
-      },
-    })
-    return NextResponse.json({ template: created }, { status: 201 })
-  } catch (err: unknown) {
-    if (
-      typeof err === 'object' &&
-      err !== null &&
-      'code' in err &&
-      (err as { code: string }).code === 'P2002'
-    ) {
-      return errorResponse('이미 동일한 slug 의 템플릿이 존재합니다', 409)
-    }
-    throw err
-  }
+  const created = await prisma.template.create({
+    data: {
+      spaceId: resolved.space.id,
+      name: parsed.data.name,
+      kind: parsed.data.kind,
+      sections: sectionsParsed.data,
+      isSystem: false,
+      isActive: parsed.data.isActive ?? true,
+    },
+  })
+  return NextResponse.json({ template: created }, { status: 201 })
 }

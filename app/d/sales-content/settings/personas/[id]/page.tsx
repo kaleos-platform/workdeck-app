@@ -18,17 +18,9 @@ export default async function EditPersonaPage({ params }: { params: Promise<{ id
 
   const initial = {
     name: persona.name,
-    slug: persona.slug,
     jobTitle: persona.jobTitle ?? '',
     industry: persona.industry ?? '',
-    companySize: persona.companySize ?? '',
-    seniority: persona.seniority ?? '',
-    decisionRole: persona.decisionRole ?? '',
-    goals: (persona.goals as string[] | null) ?? [],
-    painPoints: (persona.painPoints as string[] | null) ?? [],
-    objections: (persona.objections as string[] | null) ?? [],
-    preferredChannels: (persona.preferredChannels as string[] | null) ?? [],
-    toneHints: persona.toneHints ?? '',
+    customFields: (persona.customFields as { key: string; value: string }[] | null) ?? [],
     isActive: persona.isActive,
   }
 
@@ -43,7 +35,6 @@ export default async function EditPersonaPage({ params }: { params: Promise<{ id
           페르소나 목록으로
         </Link>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">{persona.name}</h1>
-        <p className="mt-0.5 font-mono text-xs text-muted-foreground">/{persona.slug}</p>
       </div>
       <PersonaForm mode="edit" personaId={persona.id} initial={initial} />
     </div>

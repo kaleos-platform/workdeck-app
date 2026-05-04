@@ -42,7 +42,8 @@ export async function aggregateDeploymentPerformance(
   const since = new Date(Date.now() - input.sinceDays * 24 * 60 * 60 * 1000)
   const minSamples = input.minSamples ?? 1
 
-  // PUBLISHED 배포의 metrics + 콘텐츠(productId/templateId) + 채널 플랫폼을 로드
+  // PUBLISHED 배포의 metrics + 채널 플랫폼을 로드.
+  // Content.productId / templateId 는 MVP-1 에서 제거됨 — 버킷은 채널 플랫폼 단위로만 집계.
   const deployments = await prisma.contentDeployment.findMany({
     where: {
       spaceId: input.spaceId,
@@ -52,13 +53,8 @@ export async function aggregateDeploymentPerformance(
     select: {
       id: true,
       publishedAt: true,
-      channel: { select: { platform: true } },
-      content: {
-        select: {
-          productId: true,
-          templateId: true,
-        },
-      },
+      channelId: true,
+      contentId: true,
       metrics: {
         select: {
           date: true,
@@ -76,28 +72,26 @@ export async function aggregateDeploymentPerformance(
     },
   })
 
-  // templateId → kind 매핑을 한 번에 로드
-  const templateIds = Array.from(
-    new Set(deployments.map((d) => d.content.templateId).filter((v): v is string => !!v))
-  )
-  const templateKindById = new Map<string, string>()
-  if (templateIds.length > 0) {
-    const templates = await prisma.template.findMany({
-      where: { id: { in: templateIds } },
-      select: { id: true, kind: true },
+  // channelId → platform 매핑을 한 번에 로드
+  const channelIds = Array.from(new Set(deployments.map((d) => d.channelId)))
+  const platformById = new Map<string, string>()
+  if (channelIds.length > 0) {
+    const channels = await prisma.salesContentChannel.findMany({
+      where: { id: { in: channelIds } },
+      select: { id: true, platform: true },
     })
-    for (const t of templates) templateKindById.set(t.id, t.kind)
+    for (const c of channels) platformById.set(c.id, c.platform)
   }
 
   const bucketMap = new Map<string, InsightBucket>()
 
   for (const dep of deployments) {
+    const channelPlatform = platformById.get(dep.channelId) ?? dep.channelId
     const key: InsightBucketKey = {
-      channelPlatform: dep.channel.platform,
-      templateKind: dep.content.templateId
-        ? (templateKindById.get(dep.content.templateId) ?? null)
-        : null,
-      productId: dep.content.productId ?? null,
+      channelPlatform,
+      // templateKind / productId 는 MVP-1 에서 제거 — null 고정
+      templateKind: null,
+      productId: null,
     }
     const keyStr = JSON.stringify([key.channelPlatform, key.templateKind, key.productId])
     const existing = bucketMap.get(keyStr) ?? {

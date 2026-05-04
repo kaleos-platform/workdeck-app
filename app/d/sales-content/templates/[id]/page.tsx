@@ -38,7 +38,6 @@ export default async function TemplateDetailPage({ params }: Props) {
             </Badge>
           </div>
           <h1 className="mt-2 text-xl font-bold tracking-tight">{template.name}</h1>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">/{template.slug}</p>
         </div>
         <Button asChild variant="ghost">
           <Link href={SALES_CONTENT_TEMPLATES_PATH}>← 목록</Link>
@@ -62,7 +61,6 @@ export default async function TemplateDetailPage({ params }: Props) {
           templateId={template.id}
           initial={{
             name: template.name,
-            slug: template.slug,
             kind: template.kind,
             sections: template.sections,
             isActive: template.isActive,

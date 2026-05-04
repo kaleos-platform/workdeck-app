@@ -7,7 +7,6 @@ import { SALES_CONTENT_PRODUCTS_PATH } from '@/lib/deck-routes'
 type ProductRow = {
   id: string
   name: string
-  slug: string
   oneLinerPitch: string | null
   isActive: boolean
   updatedAt: Date
@@ -51,7 +50,6 @@ export function ProductList({ products }: Props) {
                   </Badge>
                 )}
               </div>
-              <p className="mt-0.5 font-mono text-xs text-muted-foreground">/{p.slug}</p>
               {p.oneLinerPitch && (
                 <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.oneLinerPitch}</p>
               )}

@@ -11,24 +11,15 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   if ('error' in resolved) redirect('/my-deck')
 
   const { id } = await params
-  const product = await prisma.b2BProduct.findFirst({
+  const product = await prisma.product.findFirst({
     where: { id, spaceId: resolved.space.id },
   })
   if (!product) notFound()
 
   const initial = {
     name: product.name,
-    slug: product.slug,
     oneLinerPitch: product.oneLinerPitch ?? '',
-    valueProposition: product.valueProposition ?? '',
-    targetCustomers: product.targetCustomers ?? '',
-    keyFeatures: (product.keyFeatures as string[] | null) ?? [],
-    differentiators: (product.differentiators as string[] | null) ?? [],
-    painPointsAddressed: (product.painPointsAddressed as string[] | null) ?? [],
-    pricingModel: product.pricingModel ?? '',
-    priceMin: product.priceMin?.toString() ?? '',
-    priceMax: product.priceMax?.toString() ?? '',
-    ctaTargetUrl: product.ctaTargetUrl ?? '',
+    customFields: (product.customFields as { key: string; value: string }[] | null) ?? [],
     isActive: product.isActive,
   }
 
@@ -43,7 +34,6 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           판매 상품 목록으로
         </Link>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">{product.name}</h1>
-        <p className="mt-0.5 font-mono text-xs text-muted-foreground">/{product.slug}</p>
       </div>
       <ProductForm mode="edit" productId={product.id} initial={initial} />
     </div>

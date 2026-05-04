@@ -9,11 +9,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if ('error' in resolved) return resolved.error
 
   const { id } = await params
-  const ideation = await prisma.contentIdea.findFirst({
+  const ideation = await prisma.ideation.findFirst({
     where: { id, spaceId: resolved.space.id },
     include: {
-      product: { select: { id: true, name: true, slug: true } },
-      persona: { select: { id: true, name: true, slug: true } },
+      persona: { select: { id: true, name: true } },
+      products: {
+        include: { product: { select: { id: true, name: true } } },
+      },
     },
   })
   if (!ideation) return errorResponse('아이데이션을 찾을 수 없습니다', 404)
@@ -26,12 +28,12 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if ('error' in resolved) return resolved.error
 
   const { id } = await params
-  const existing = await prisma.contentIdea.findFirst({
+  const existing = await prisma.ideation.findFirst({
     where: { id, spaceId: resolved.space.id },
     select: { id: true },
   })
   if (!existing) return errorResponse('아이데이션을 찾을 수 없습니다', 404)
 
-  await prisma.contentIdea.delete({ where: { id } })
+  await prisma.ideation.delete({ where: { id } })
   return NextResponse.json({ ok: true })
 }

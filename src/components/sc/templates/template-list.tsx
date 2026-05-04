@@ -6,7 +6,6 @@ import { SALES_CONTENT_TEMPLATES_PATH } from '@/lib/deck-routes'
 type TemplateRow = {
   id: string
   name: string
-  slug: string
   kind: 'BLOG' | 'SOCIAL' | 'CARDNEWS'
   isSystem: boolean
   isActive: boolean
@@ -55,9 +54,7 @@ export function TemplateList({ templates }: Props) {
                   </Badge>
                 )}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {KIND_LABEL[t.kind]} · <span className="font-mono">/{t.slug}</span>
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{KIND_LABEL[t.kind]}</p>
             </div>
             <span className="shrink-0 text-xs text-muted-foreground">
               {new Intl.DateTimeFormat('ko-KR', {

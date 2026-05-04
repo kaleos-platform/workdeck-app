@@ -33,35 +33,15 @@ export async function POST(req: NextRequest) {
 
   const data = parsed.data
 
-  try {
-    const persona = await prisma.persona.create({
-      data: {
-        spaceId: resolved.space.id,
-        name: data.name,
-        slug: data.slug,
-        jobTitle: data.jobTitle ?? null,
-        industry: data.industry ?? null,
-        companySize: data.companySize ?? null,
-        seniority: data.seniority ?? null,
-        decisionRole: data.decisionRole ?? null,
-        goals: data.goals ?? undefined,
-        painPoints: data.painPoints ?? undefined,
-        objections: data.objections ?? undefined,
-        preferredChannels: data.preferredChannels ?? undefined,
-        toneHints: data.toneHints ?? null,
-        isActive: data.isActive,
-      },
-    })
-    return NextResponse.json({ persona }, { status: 201 })
-  } catch (err: unknown) {
-    if (
-      typeof err === 'object' &&
-      err !== null &&
-      'code' in err &&
-      (err as { code: string }).code === 'P2002'
-    ) {
-      return errorResponse('이미 동일한 slug의 페르소나가 존재합니다', 409)
-    }
-    throw err
-  }
+  const persona = await prisma.persona.create({
+    data: {
+      spaceId: resolved.space.id,
+      name: data.name,
+      jobTitle: data.jobTitle ?? null,
+      industry: data.industry ?? null,
+      customFields: (data.customFields ?? []) as never,
+      isActive: data.isActive,
+    },
+  })
+  return NextResponse.json({ persona }, { status: 201 })
 }

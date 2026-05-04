@@ -10,46 +10,47 @@ export default async function IdeationPage() {
   if ('error' in resolved) redirect('/my-deck')
 
   const [products, personas, brandProfile, ideations] = await Promise.all([
-    prisma.b2BProduct.findMany({
+    prisma.product.findMany({
       where: { spaceId: resolved.space.id, isActive: true },
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true },
     }),
     prisma.persona.findMany({
       where: { spaceId: resolved.space.id, isActive: true },
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true },
     }),
     prisma.brandProfile.findUnique({
       where: { spaceId: resolved.space.id },
       select: { id: true },
     }),
-    prisma.contentIdea.findMany({
+    prisma.ideation.findMany({
       where: { spaceId: resolved.space.id },
       orderBy: { createdAt: 'desc' },
       take: 50,
       select: {
         id: true,
-        userPromptInput: true,
         generatedBy: true,
         providerName: true,
         createdAt: true,
         ideas: true,
-        product: { select: { id: true, name: true, slug: true } },
-        persona: { select: { id: true, name: true, slug: true } },
+        persona: { select: { id: true, name: true } },
+        products: { select: { product: { select: { id: true, name: true } } } },
       },
     }),
   ])
 
   const listRows = ideations.map((it) => {
     const ideasArr = (Array.isArray(it.ideas) ? it.ideas : []) as IdeaCardData[]
+    // IdeationProduct join → 첫 번째 상품 이름을 product 표시에 사용
+    const firstProduct = it.products[0]?.product ?? null
     return {
       id: it.id,
-      userPromptInput: it.userPromptInput,
-      generatedBy: it.generatedBy,
+      userPromptInput: null as string | null,
+      generatedBy: it.generatedBy as 'USER' | 'AI',
       providerName: it.providerName,
       createdAt: it.createdAt,
-      product: it.product,
+      product: firstProduct,
       persona: it.persona,
       ideaCount: ideasArr.length,
       firstTitle: ideasArr[0]?.title ?? null,

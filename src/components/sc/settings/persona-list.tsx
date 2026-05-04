@@ -7,10 +7,8 @@ import { SALES_CONTENT_PERSONAS_PATH } from '@/lib/deck-routes'
 type PersonaRow = {
   id: string
   name: string
-  slug: string
   jobTitle: string | null
   industry: string | null
-  companySize: string | null
   isActive: boolean
   updatedAt: Date
 }
@@ -49,10 +47,8 @@ export function PersonaList({ personas }: { personas: PersonaRow[] }) {
                   </Badge>
                 )}
               </div>
-              <p className="mt-0.5 font-mono text-xs text-muted-foreground">/{p.slug}</p>
               <p className="mt-2 text-xs text-muted-foreground">
-                {[p.jobTitle, p.industry, p.companySize].filter(Boolean).join(' · ') ||
-                  '세부 정보 미입력'}
+                {[p.jobTitle, p.industry].filter(Boolean).join(' · ') || '세부 정보 미입력'}
               </p>
             </div>
             <span className="shrink-0 text-xs text-muted-foreground">

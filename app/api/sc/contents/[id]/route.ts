@@ -65,6 +65,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       doc: (parsed.data.doc ?? undefined) as never,
       channelId: parsed.data.channelId ?? undefined,
       scheduledAt: parsed.data.scheduledAt ? new Date(parsed.data.scheduledAt) : undefined,
+      body: parsed.data.body ?? undefined,
+      urlSlug: parsed.data.urlSlug ?? undefined,
+      targetKeyword: parsed.data.targetKeyword ?? undefined,
+      relatedKeywords:
+        parsed.data.relatedKeywords !== undefined
+          ? (parsed.data.relatedKeywords as never)
+          : undefined,
     },
   })
   return NextResponse.json({ content: updated })

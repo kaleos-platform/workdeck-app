@@ -17,16 +17,18 @@ export default async function IdeationDetailPage({ params }: Props) {
   if ('error' in resolved) redirect('/my-deck')
 
   const { id } = await params
-  const ideation = await prisma.contentIdea.findFirst({
+  const ideation = await prisma.ideation.findFirst({
     where: { id, spaceId: resolved.space.id },
     include: {
-      product: { select: { id: true, name: true, slug: true } },
-      persona: { select: { id: true, name: true, slug: true } },
+      persona: { select: { id: true, name: true } },
+      products: { select: { product: { select: { id: true, name: true } } } },
     },
   })
   if (!ideation) notFound()
 
   const ideas = (Array.isArray(ideation.ideas) ? ideation.ideas : []) as IdeaCardData[]
+  // 연결된 상품 이름 목록
+  const productNames = ideation.products.map((ip) => ip.product.name)
 
   return (
     <div className="space-y-6">
@@ -49,27 +51,13 @@ export default async function IdeationDetailPage({ params }: Props) {
             아이데이션 결과 — {ideas.length}개
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {[ideation.product?.name, ideation.persona?.name].filter(Boolean).join(' · ') ||
-              '맥락 없음'}
+            {[...productNames, ideation.persona?.name].filter(Boolean).join(' · ') || '맥락 없음'}
           </p>
         </div>
         <Button asChild variant="ghost">
           <Link href={SALES_CONTENT_IDEATION_PATH}>← 목록</Link>
         </Button>
       </div>
-
-      {ideation.userPromptInput && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">사용자 지시</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-              {ideation.userPromptInput}
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       <div className="space-y-3">
         {ideas.map((idea, i) => (

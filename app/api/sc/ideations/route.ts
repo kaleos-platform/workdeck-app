@@ -9,24 +9,25 @@ export async function GET() {
   const resolved = await resolveDeckContext('sales-content')
   if ('error' in resolved) return resolved.error
 
-  const ideations = await prisma.contentIdea.findMany({
+  const ideations = await prisma.ideation.findMany({
     where: { spaceId: resolved.space.id },
     orderBy: { createdAt: 'desc' },
     take: 50,
     select: {
       id: true,
-      userPromptInput: true,
+      targetKeywords: true,
       generatedBy: true,
       providerName: true,
       latencyMs: true,
       createdAt: true,
-      product: { select: { id: true, name: true, slug: true } },
-      persona: { select: { id: true, name: true, slug: true } },
+      persona: { select: { id: true, name: true } },
+      products: {
+        select: { product: { select: { id: true, name: true } } },
+      },
       ideas: true,
     },
   })
 
-  // ideas 는 client 에서 count 만 써도 충분하지만, 미리보기 제목도 같이 주기 위해 그대로 전달.
   return NextResponse.json({ ideations })
 }
 
@@ -53,8 +54,9 @@ export async function POST(req: NextRequest) {
     const { ideationId } = await saveUserIdeation({
       spaceId: resolved.space.id,
       userId: resolved.user.id,
-      productId: parsed.data.productId ?? null,
-      personaId: parsed.data.personaId ?? null,
+      personaId: parsed.data.personaId,
+      productIds: parsed.data.productIds ?? null,
+      targetKeywords: parsed.data.targetKeywords ?? null,
       userPromptInput: parsed.data.userPromptInput ?? null,
       ideas: parsed.data.ideas,
     })
@@ -69,8 +71,9 @@ export async function POST(req: NextRequest) {
   const result = await runIdeation({
     spaceId: resolved.space.id,
     userId: resolved.user.id,
-    productId: parsed.data.productId ?? null,
-    personaId: parsed.data.personaId ?? null,
+    personaId: parsed.data.personaId,
+    productIds: parsed.data.productIds ?? null,
+    targetKeywords: parsed.data.targetKeywords ?? null,
     userPromptInput: parsed.data.userPromptInput ?? null,
     count: parsed.data.count,
   })

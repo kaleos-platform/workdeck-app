@@ -18,7 +18,6 @@ export default async function TemplatesPage() {
     select: {
       id: true,
       name: true,
-      slug: true,
       kind: true,
       isSystem: true,
       isActive: true,

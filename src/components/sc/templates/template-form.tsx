@@ -24,7 +24,6 @@ type Props = {
   templateId?: string
   initial?: {
     name?: string
-    slug?: string
     kind?: Kind
     sections?: unknown
     isActive?: boolean
@@ -36,7 +35,6 @@ type Props = {
 export function TemplateForm({ mode, templateId, initial }: Props) {
   const router = useRouter()
   const [name, setName] = useState(initial?.name ?? '')
-  const [slug, setSlug] = useState(initial?.slug ?? '')
   const [kind, setKind] = useState<Kind>(initial?.kind ?? 'BLOG')
   const [isActive, setIsActive] = useState(initial?.isActive ?? true)
   const [sectionsJson, setSectionsJson] = useState(() =>
@@ -62,7 +60,7 @@ export function TemplateForm({ mode, templateId, initial }: Props) {
       const res = await fetch(url, {
         method: mode === 'create' ? 'POST' : 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug, kind, sections, isActive }),
+        body: JSON.stringify({ name, kind, sections, isActive }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
@@ -85,21 +83,9 @@ export function TemplateForm({ mode, templateId, initial }: Props) {
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="name">이름</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="slug">슬러그</Label>
-              <Input
-                id="slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                required
-                placeholder="my-custom-blog"
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="name">이름</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
 
           <div className="space-y-1.5">

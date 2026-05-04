@@ -8,31 +8,13 @@ export default async function NewContentPage() {
   const resolved = await resolveDeckContext('sales-content')
   if ('error' in resolved) redirect('/my-deck')
 
-  const [templates, products, personas, channels, ideations] = await Promise.all([
-    prisma.template.findMany({
-      where: {
-        OR: [{ spaceId: null, isSystem: true }, { spaceId: resolved.space.id }],
-        isActive: true,
-      },
-      orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
-      select: { id: true, name: true, kind: true },
-    }),
-    prisma.b2BProduct.findMany({
-      where: { spaceId: resolved.space.id, isActive: true },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true },
-    }),
-    prisma.persona.findMany({
-      where: { spaceId: resolved.space.id, isActive: true },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true },
-    }),
+  const [channels, ideations] = await Promise.all([
     prisma.salesContentChannel.findMany({
       where: { spaceId: resolved.space.id, isActive: true },
       orderBy: { name: 'asc' },
       select: { id: true, name: true },
     }),
-    prisma.contentIdea.findMany({
+    prisma.ideation.findMany({
       where: { spaceId: resolved.space.id, generatedBy: 'AI' },
       orderBy: { createdAt: 'desc' },
       take: 20,
@@ -54,16 +36,10 @@ export default async function NewContentPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">새 콘텐츠</h1>
         <p className="text-sm text-muted-foreground">
-          글감·템플릿·맥락을 선택하면 초안이 자동으로 조립됩니다.
+          글감·채널을 선택하고 SEO 정보와 초안을 입력합니다.
         </p>
       </div>
-      <ContentNewForm
-        templates={templates}
-        products={products}
-        personas={personas}
-        channels={channels}
-        ideas={ideaOptions}
-      />
+      <ContentNewForm channels={channels} ideas={ideaOptions} />
     </div>
   )
 }

@@ -29,11 +29,6 @@ export type BrandProfileMinAggregateOutputType = {
   spaceId: string | null
   companyName: string | null
   shortDescription: string | null
-  missionStatement: string | null
-  styleGuideUrl: string | null
-  primaryColor: string | null
-  secondaryColor: string | null
-  logoUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -43,11 +38,6 @@ export type BrandProfileMaxAggregateOutputType = {
   spaceId: string | null
   companyName: string | null
   shortDescription: string | null
-  missionStatement: string | null
-  styleGuideUrl: string | null
-  primaryColor: string | null
-  secondaryColor: string | null
-  logoUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -57,14 +47,8 @@ export type BrandProfileCountAggregateOutputType = {
   spaceId: number
   companyName: number
   shortDescription: number
-  missionStatement: number
   toneOfVoice: number
-  forbiddenPhrases: number
-  preferredPhrases: number
-  styleGuideUrl: number
-  primaryColor: number
-  secondaryColor: number
-  logoUrl: number
+  customFields: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -76,11 +60,6 @@ export type BrandProfileMinAggregateInputType = {
   spaceId?: true
   companyName?: true
   shortDescription?: true
-  missionStatement?: true
-  styleGuideUrl?: true
-  primaryColor?: true
-  secondaryColor?: true
-  logoUrl?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -90,11 +69,6 @@ export type BrandProfileMaxAggregateInputType = {
   spaceId?: true
   companyName?: true
   shortDescription?: true
-  missionStatement?: true
-  styleGuideUrl?: true
-  primaryColor?: true
-  secondaryColor?: true
-  logoUrl?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -104,14 +78,8 @@ export type BrandProfileCountAggregateInputType = {
   spaceId?: true
   companyName?: true
   shortDescription?: true
-  missionStatement?: true
   toneOfVoice?: true
-  forbiddenPhrases?: true
-  preferredPhrases?: true
-  styleGuideUrl?: true
-  primaryColor?: true
-  secondaryColor?: true
-  logoUrl?: true
+  customFields?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -194,14 +162,8 @@ export type BrandProfileGroupByOutputType = {
   spaceId: string
   companyName: string
   shortDescription: string | null
-  missionStatement: string | null
   toneOfVoice: runtime.JsonValue | null
-  forbiddenPhrases: runtime.JsonValue | null
-  preferredPhrases: runtime.JsonValue | null
-  styleGuideUrl: string | null
-  primaryColor: string | null
-  secondaryColor: string | null
-  logoUrl: string | null
+  customFields: runtime.JsonValue
   createdAt: Date
   updatedAt: Date
   _count: BrandProfileCountAggregateOutputType | null
@@ -232,14 +194,8 @@ export type BrandProfileWhereInput = {
   spaceId?: Prisma.StringFilter<"BrandProfile"> | string
   companyName?: Prisma.StringFilter<"BrandProfile"> | string
   shortDescription?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
-  missionStatement?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
   toneOfVoice?: Prisma.JsonNullableFilter<"BrandProfile">
-  forbiddenPhrases?: Prisma.JsonNullableFilter<"BrandProfile">
-  preferredPhrases?: Prisma.JsonNullableFilter<"BrandProfile">
-  styleGuideUrl?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
-  primaryColor?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
-  secondaryColor?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
-  logoUrl?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
+  customFields?: Prisma.JsonFilter<"BrandProfile">
   createdAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -250,14 +206,8 @@ export type BrandProfileOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrderInput | Prisma.SortOrder
-  missionStatement?: Prisma.SortOrderInput | Prisma.SortOrder
   toneOfVoice?: Prisma.SortOrderInput | Prisma.SortOrder
-  forbiddenPhrases?: Prisma.SortOrderInput | Prisma.SortOrder
-  preferredPhrases?: Prisma.SortOrderInput | Prisma.SortOrder
-  styleGuideUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  primaryColor?: Prisma.SortOrderInput | Prisma.SortOrder
-  secondaryColor?: Prisma.SortOrderInput | Prisma.SortOrder
-  logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  customFields?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -271,14 +221,8 @@ export type BrandProfileWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.BrandProfileWhereInput | Prisma.BrandProfileWhereInput[]
   companyName?: Prisma.StringFilter<"BrandProfile"> | string
   shortDescription?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
-  missionStatement?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
   toneOfVoice?: Prisma.JsonNullableFilter<"BrandProfile">
-  forbiddenPhrases?: Prisma.JsonNullableFilter<"BrandProfile">
-  preferredPhrases?: Prisma.JsonNullableFilter<"BrandProfile">
-  styleGuideUrl?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
-  primaryColor?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
-  secondaryColor?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
-  logoUrl?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
+  customFields?: Prisma.JsonFilter<"BrandProfile">
   createdAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -289,14 +233,8 @@ export type BrandProfileOrderByWithAggregationInput = {
   spaceId?: Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrderInput | Prisma.SortOrder
-  missionStatement?: Prisma.SortOrderInput | Prisma.SortOrder
   toneOfVoice?: Prisma.SortOrderInput | Prisma.SortOrder
-  forbiddenPhrases?: Prisma.SortOrderInput | Prisma.SortOrder
-  preferredPhrases?: Prisma.SortOrderInput | Prisma.SortOrder
-  styleGuideUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  primaryColor?: Prisma.SortOrderInput | Prisma.SortOrder
-  secondaryColor?: Prisma.SortOrderInput | Prisma.SortOrder
-  logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  customFields?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.BrandProfileCountOrderByAggregateInput
@@ -312,14 +250,8 @@ export type BrandProfileScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"BrandProfile"> | string
   companyName?: Prisma.StringWithAggregatesFilter<"BrandProfile"> | string
   shortDescription?: Prisma.StringNullableWithAggregatesFilter<"BrandProfile"> | string | null
-  missionStatement?: Prisma.StringNullableWithAggregatesFilter<"BrandProfile"> | string | null
   toneOfVoice?: Prisma.JsonNullableWithAggregatesFilter<"BrandProfile">
-  forbiddenPhrases?: Prisma.JsonNullableWithAggregatesFilter<"BrandProfile">
-  preferredPhrases?: Prisma.JsonNullableWithAggregatesFilter<"BrandProfile">
-  styleGuideUrl?: Prisma.StringNullableWithAggregatesFilter<"BrandProfile"> | string | null
-  primaryColor?: Prisma.StringNullableWithAggregatesFilter<"BrandProfile"> | string | null
-  secondaryColor?: Prisma.StringNullableWithAggregatesFilter<"BrandProfile"> | string | null
-  logoUrl?: Prisma.StringNullableWithAggregatesFilter<"BrandProfile"> | string | null
+  customFields?: Prisma.JsonWithAggregatesFilter<"BrandProfile">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BrandProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BrandProfile"> | Date | string
 }
@@ -328,14 +260,8 @@ export type BrandProfileCreateInput = {
   id?: string
   companyName: string
   shortDescription?: string | null
-  missionStatement?: string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: string | null
-  primaryColor?: string | null
-  secondaryColor?: string | null
-  logoUrl?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBrandProfileInput
@@ -346,14 +272,8 @@ export type BrandProfileUncheckedCreateInput = {
   spaceId: string
   companyName: string
   shortDescription?: string | null
-  missionStatement?: string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: string | null
-  primaryColor?: string | null
-  secondaryColor?: string | null
-  logoUrl?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -362,14 +282,8 @@ export type BrandProfileUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  missionStatement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  secondaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBrandProfileNestedInput
@@ -380,14 +294,8 @@ export type BrandProfileUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  missionStatement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  secondaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -397,14 +305,8 @@ export type BrandProfileCreateManyInput = {
   spaceId: string
   companyName: string
   shortDescription?: string | null
-  missionStatement?: string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: string | null
-  primaryColor?: string | null
-  secondaryColor?: string | null
-  logoUrl?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -413,14 +315,8 @@ export type BrandProfileUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  missionStatement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  secondaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -430,14 +326,8 @@ export type BrandProfileUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  missionStatement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  secondaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -452,14 +342,8 @@ export type BrandProfileCountOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
-  missionStatement?: Prisma.SortOrder
   toneOfVoice?: Prisma.SortOrder
-  forbiddenPhrases?: Prisma.SortOrder
-  preferredPhrases?: Prisma.SortOrder
-  styleGuideUrl?: Prisma.SortOrder
-  primaryColor?: Prisma.SortOrder
-  secondaryColor?: Prisma.SortOrder
-  logoUrl?: Prisma.SortOrder
+  customFields?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -469,11 +353,6 @@ export type BrandProfileMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
-  missionStatement?: Prisma.SortOrder
-  styleGuideUrl?: Prisma.SortOrder
-  primaryColor?: Prisma.SortOrder
-  secondaryColor?: Prisma.SortOrder
-  logoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -483,11 +362,6 @@ export type BrandProfileMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
-  missionStatement?: Prisma.SortOrder
-  styleGuideUrl?: Prisma.SortOrder
-  primaryColor?: Prisma.SortOrder
-  secondaryColor?: Prisma.SortOrder
-  logoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -528,14 +402,8 @@ export type BrandProfileCreateWithoutSpaceInput = {
   id?: string
   companyName: string
   shortDescription?: string | null
-  missionStatement?: string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: string | null
-  primaryColor?: string | null
-  secondaryColor?: string | null
-  logoUrl?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -544,14 +412,8 @@ export type BrandProfileUncheckedCreateWithoutSpaceInput = {
   id?: string
   companyName: string
   shortDescription?: string | null
-  missionStatement?: string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: string | null
-  primaryColor?: string | null
-  secondaryColor?: string | null
-  logoUrl?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -576,14 +438,8 @@ export type BrandProfileUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  missionStatement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  secondaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -592,14 +448,8 @@ export type BrandProfileUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  missionStatement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  forbiddenPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredPhrases?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  styleGuideUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  secondaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -611,14 +461,8 @@ export type BrandProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   spaceId?: boolean
   companyName?: boolean
   shortDescription?: boolean
-  missionStatement?: boolean
   toneOfVoice?: boolean
-  forbiddenPhrases?: boolean
-  preferredPhrases?: boolean
-  styleGuideUrl?: boolean
-  primaryColor?: boolean
-  secondaryColor?: boolean
-  logoUrl?: boolean
+  customFields?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -629,14 +473,8 @@ export type BrandProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   spaceId?: boolean
   companyName?: boolean
   shortDescription?: boolean
-  missionStatement?: boolean
   toneOfVoice?: boolean
-  forbiddenPhrases?: boolean
-  preferredPhrases?: boolean
-  styleGuideUrl?: boolean
-  primaryColor?: boolean
-  secondaryColor?: boolean
-  logoUrl?: boolean
+  customFields?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -647,14 +485,8 @@ export type BrandProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   spaceId?: boolean
   companyName?: boolean
   shortDescription?: boolean
-  missionStatement?: boolean
   toneOfVoice?: boolean
-  forbiddenPhrases?: boolean
-  preferredPhrases?: boolean
-  styleGuideUrl?: boolean
-  primaryColor?: boolean
-  secondaryColor?: boolean
-  logoUrl?: boolean
+  customFields?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -665,19 +497,13 @@ export type BrandProfileSelectScalar = {
   spaceId?: boolean
   companyName?: boolean
   shortDescription?: boolean
-  missionStatement?: boolean
   toneOfVoice?: boolean
-  forbiddenPhrases?: boolean
-  preferredPhrases?: boolean
-  styleGuideUrl?: boolean
-  primaryColor?: boolean
-  secondaryColor?: boolean
-  logoUrl?: boolean
+  customFields?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BrandProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "companyName" | "shortDescription" | "missionStatement" | "toneOfVoice" | "forbiddenPhrases" | "preferredPhrases" | "styleGuideUrl" | "primaryColor" | "secondaryColor" | "logoUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["brandProfile"]>
+export type BrandProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "companyName" | "shortDescription" | "toneOfVoice" | "customFields" | "createdAt" | "updatedAt", ExtArgs["result"]["brandProfile"]>
 export type BrandProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -698,14 +524,8 @@ export type $BrandProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
     spaceId: string
     companyName: string
     shortDescription: string | null
-    missionStatement: string | null
     toneOfVoice: runtime.JsonValue | null
-    forbiddenPhrases: runtime.JsonValue | null
-    preferredPhrases: runtime.JsonValue | null
-    styleGuideUrl: string | null
-    primaryColor: string | null
-    secondaryColor: string | null
-    logoUrl: string | null
+    customFields: runtime.JsonValue
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["brandProfile"]>
@@ -1136,14 +956,8 @@ export interface BrandProfileFieldRefs {
   readonly spaceId: Prisma.FieldRef<"BrandProfile", 'String'>
   readonly companyName: Prisma.FieldRef<"BrandProfile", 'String'>
   readonly shortDescription: Prisma.FieldRef<"BrandProfile", 'String'>
-  readonly missionStatement: Prisma.FieldRef<"BrandProfile", 'String'>
   readonly toneOfVoice: Prisma.FieldRef<"BrandProfile", 'Json'>
-  readonly forbiddenPhrases: Prisma.FieldRef<"BrandProfile", 'Json'>
-  readonly preferredPhrases: Prisma.FieldRef<"BrandProfile", 'Json'>
-  readonly styleGuideUrl: Prisma.FieldRef<"BrandProfile", 'String'>
-  readonly primaryColor: Prisma.FieldRef<"BrandProfile", 'String'>
-  readonly secondaryColor: Prisma.FieldRef<"BrandProfile", 'String'>
-  readonly logoUrl: Prisma.FieldRef<"BrandProfile", 'String'>
+  readonly customFields: Prisma.FieldRef<"BrandProfile", 'Json'>
   readonly createdAt: Prisma.FieldRef<"BrandProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BrandProfile", 'DateTime'>
 }

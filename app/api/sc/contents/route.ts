@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { contentCreateSchema } from '@/lib/sc/schemas'
-import { renderSkeleton, type TemplateSectionsShape } from '@/lib/sc/template-engine'
 import type { IdeaItem } from '@/lib/sc/ideation'
 
 // GET: Content 목록. 상태 필터(?status=DRAFT) 지원.
@@ -53,24 +52,14 @@ export async function POST(req: NextRequest) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  // 초기 doc — 템플릿이 있으면 skeleton, 없으면 빈 문서.
-  let initialDoc: unknown = { type: 'doc', content: [] }
-  if (parsed.data.templateId) {
-    const template = await prisma.template.findFirst({
-      where: {
-        id: parsed.data.templateId,
-        OR: [{ spaceId: null, isSystem: true }, { spaceId: resolved.space.id }],
-      },
-    })
-    if (template) {
-      initialDoc = renderSkeleton(template.kind, template.sections as TemplateSectionsShape).doc
-    }
-  }
+  // 초기 doc — ideationId 가 없으면 빈 문서.
+  // templateId 는 제거됨 — skeleton 렌더 불가. 빈 doc 으로 시작.
+  const initialDoc: unknown = { type: 'doc', content: [] }
 
   // idea 가 있으면 title 자동 채움 (없으면 입력된 title 사용).
   let derivedTitle = parsed.data.title
   if (parsed.data.ideationId && parsed.data.ideaIndex != null) {
-    const ideation = await prisma.contentIdea.findFirst({
+    const ideation = await prisma.ideation.findFirst({
       where: { id: parsed.data.ideationId, spaceId: resolved.space.id },
       select: { ideas: true },
     })
@@ -86,12 +75,12 @@ export async function POST(req: NextRequest) {
       title: derivedTitle,
       // 아이데이션에서 "콘텐츠로 보내기" 시 TODO 상태로 생성 가능, 기본값은 DRAFT
       status: parsed.data.status ?? 'DRAFT',
-      templateId: parsed.data.templateId ?? null,
       ideationId: parsed.data.ideationId ?? null,
       ideaIndex: parsed.data.ideaIndex ?? null,
-      productId: parsed.data.productId ?? null,
-      personaId: parsed.data.personaId ?? null,
       channelId: parsed.data.channelId ?? null,
+      urlSlug: parsed.data.urlSlug ?? null,
+      targetKeyword: parsed.data.targetKeyword ?? null,
+      relatedKeywords: (parsed.data.relatedKeywords ?? []) as never,
       doc: initialDoc as never,
     },
   })

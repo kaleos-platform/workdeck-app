@@ -135,13 +135,11 @@ export function renderSkeleton(
 // ─── 시스템 템플릿 ──────────────────────────────────────────────────────────
 
 export const SYSTEM_TEMPLATES: Array<{
-  slug: string
   name: string
   kind: 'BLOG' | 'SOCIAL' | 'CARDNEWS'
   sections: TemplateSectionsShape
 }> = [
   {
-    slug: 'system-blog-long',
     name: '블로그 장문',
     kind: 'BLOG',
     sections: {
@@ -175,7 +173,6 @@ export const SYSTEM_TEMPLATES: Array<{
     },
   },
   {
-    slug: 'system-social-short',
     name: '소셜 텍스트',
     kind: 'SOCIAL',
     sections: {
@@ -193,7 +190,6 @@ export const SYSTEM_TEMPLATES: Array<{
     },
   },
   {
-    slug: 'system-cardnews',
     name: '카드뉴스 (5장)',
     kind: 'CARDNEWS',
     sections: {
