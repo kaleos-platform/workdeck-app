@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Plus } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -10,6 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { ChannelEditDialog } from '@/components/sh/channels/channel-edit-dialog'
+
+type ChannelTypeDef = {
+  id: string
+  name: string
+  isSalesChannel: boolean
+  isSystem: boolean
+  sortOrder: number
+  channelCount: number
+}
 
 type ChannelWithCount = {
   id: string
@@ -33,16 +45,26 @@ export function ChannelRail({
 }: Props) {
   const [channels, setChannels] = useState<ChannelWithCount[]>([])
   const [loading, setLoading] = useState(true)
+  const [channelTypes, setChannelTypes] = useState<ChannelTypeDef[]>([])
+  const [createOpen, setCreateOpen] = useState(false)
+  const [localRefresh, setLocalRefresh] = useState(0)
 
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       setLoading(true)
       try {
-        const res = await fetch('/api/channels?isActive=true&isSalesChannel=true')
-        if (!res.ok) throw new Error('채널 조회 실패')
+        const [chRes, typeRes] = await Promise.all([
+          fetch('/api/channels?isActive=true&isSalesChannel=true'),
+          fetch('/api/channel-types'),
+        ])
+        if (!chRes.ok) throw new Error('채널 조회 실패')
         const data: { channels: Array<{ id: string; name: string; kind: string }> } =
-          await res.json()
+          await chRes.json()
+        if (typeRes.ok) {
+          const td: { types: ChannelTypeDef[] } = await typeRes.json()
+          if (!cancelled) setChannelTypes(td.types ?? [])
+        }
         const channelsList = data.channels ?? []
         // 채널별 listing count 병렬 조회
         const counts = await Promise.all(
@@ -79,7 +101,7 @@ export function ChannelRail({
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey])
+  }, [refreshKey, localRefresh])
 
   // 모바일용 Select
   const mobileSelect = (
@@ -103,7 +125,18 @@ export function ChannelRail({
     <div>
       {mobileSelect}
       <div className="hidden md:block">
-        <div className="mb-2 text-xs font-medium text-muted-foreground">채널</div>
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground">채널</span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => setCreateOpen(true)}
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" />새 채널
+          </Button>
+        </div>
         {loading ? (
           <p className="px-2 text-sm text-muted-foreground">불러오는 중...</p>
         ) : channels.length === 0 ? (
@@ -133,6 +166,17 @@ export function ChannelRail({
           </ul>
         )}
       </div>
+      <ChannelEditDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        channel={null}
+        channelTypes={channelTypes}
+        onSaved={() => {
+          setCreateOpen(false)
+          setLocalRefresh((n) => n + 1)
+        }}
+        onTypesChanged={() => setLocalRefresh((n) => n + 1)}
+      />
     </div>
   )
 }
