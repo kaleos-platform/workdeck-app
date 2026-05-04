@@ -12,13 +12,12 @@ export default async function SettingsPage() {
   const spaceId = resolved.space.id
 
   const [products, personas, brandProfile, channels, rules] = await Promise.all([
-    prisma.b2BProduct.findMany({
+    prisma.product.findMany({
       where: { spaceId },
       orderBy: { updatedAt: 'desc' },
       select: {
         id: true,
         name: true,
-        slug: true,
         oneLinerPitch: true,
         isActive: true,
         updatedAt: true,
@@ -30,10 +29,8 @@ export default async function SettingsPage() {
       select: {
         id: true,
         name: true,
-        slug: true,
         jobTitle: true,
         industry: true,
-        companySize: true,
         isActive: true,
         updatedAt: true,
       },
@@ -66,14 +63,8 @@ export default async function SettingsPage() {
     ? {
         companyName: brandProfile.companyName,
         shortDescription: brandProfile.shortDescription ?? '',
-        missionStatement: brandProfile.missionStatement ?? '',
         toneOfVoice: (brandProfile.toneOfVoice as string[] | null) ?? [],
-        forbiddenPhrases: (brandProfile.forbiddenPhrases as string[] | null) ?? [],
-        preferredPhrases: (brandProfile.preferredPhrases as string[] | null) ?? [],
-        styleGuideUrl: brandProfile.styleGuideUrl ?? '',
-        primaryColor: brandProfile.primaryColor ?? '',
-        secondaryColor: brandProfile.secondaryColor ?? '',
-        logoUrl: brandProfile.logoUrl ?? '',
+        customFields: (brandProfile.customFields as { key: string; value: string }[] | null) ?? [],
       }
     : undefined
 

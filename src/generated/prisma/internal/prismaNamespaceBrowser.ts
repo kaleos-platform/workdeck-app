@@ -114,7 +114,8 @@ export const ModelName = {
   ProductListingItem: 'ProductListingItem',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
   ProductChannelGroupMeta: 'ProductChannelGroupMeta',
-  B2BProduct: 'B2BProduct',
+  Product: 'Product',
+  ProductPersona: 'ProductPersona',
   Persona: 'Persona',
   BrandProfile: 'BrandProfile',
   WorkspaceAiCredit: 'WorkspaceAiCredit',
@@ -130,7 +131,8 @@ export const ModelName = {
   SalesContentJob: 'SalesContentJob',
   ContentVersion: 'ContentVersion',
   ContentAsset: 'ContentAsset',
-  ContentIdea: 'ContentIdea',
+  Ideation: 'Ideation',
+  IdeationProduct: 'IdeationProduct',
   ImprovementRule: 'ImprovementRule'
 } as const
 
@@ -1120,46 +1122,36 @@ export const ProductChannelGroupMetaScalarFieldEnum = {
 export type ProductChannelGroupMetaScalarFieldEnum = (typeof ProductChannelGroupMetaScalarFieldEnum)[keyof typeof ProductChannelGroupMetaScalarFieldEnum]
 
 
-export const B2BProductScalarFieldEnum = {
+export const ProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
-  slug: 'slug',
   oneLinerPitch: 'oneLinerPitch',
-  valueProposition: 'valueProposition',
-  targetCustomers: 'targetCustomers',
-  keyFeatures: 'keyFeatures',
-  differentiators: 'differentiators',
-  painPointsAddressed: 'painPointsAddressed',
-  proofPoints: 'proofPoints',
-  pricingModel: 'pricingModel',
-  priceMin: 'priceMin',
-  priceMax: 'priceMax',
-  ctaTargetUrl: 'ctaTargetUrl',
+  customFields: 'customFields',
   isActive: 'isActive',
-  sourceInvProductId: 'sourceInvProductId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type B2BProductScalarFieldEnum = (typeof B2BProductScalarFieldEnum)[keyof typeof B2BProductScalarFieldEnum]
+export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+
+
+export const ProductPersonaScalarFieldEnum = {
+  productId: 'productId',
+  personaId: 'personaId',
+  createdAt: 'createdAt'
+} as const
+
+export type ProductPersonaScalarFieldEnum = (typeof ProductPersonaScalarFieldEnum)[keyof typeof ProductPersonaScalarFieldEnum]
 
 
 export const PersonaScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
-  slug: 'slug',
   jobTitle: 'jobTitle',
   industry: 'industry',
-  companySize: 'companySize',
-  seniority: 'seniority',
-  decisionRole: 'decisionRole',
-  goals: 'goals',
-  painPoints: 'painPoints',
-  objections: 'objections',
-  preferredChannels: 'preferredChannels',
-  toneHints: 'toneHints',
+  customFields: 'customFields',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1173,14 +1165,8 @@ export const BrandProfileScalarFieldEnum = {
   spaceId: 'spaceId',
   companyName: 'companyName',
   shortDescription: 'shortDescription',
-  missionStatement: 'missionStatement',
   toneOfVoice: 'toneOfVoice',
-  forbiddenPhrases: 'forbiddenPhrases',
-  preferredPhrases: 'preferredPhrases',
-  styleGuideUrl: 'styleGuideUrl',
-  primaryColor: 'primaryColor',
-  secondaryColor: 'secondaryColor',
-  logoUrl: 'logoUrl',
+  customFields: 'customFields',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1246,7 +1232,6 @@ export const TemplateScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
-  slug: 'slug',
   kind: 'kind',
   sections: 'sections',
   isSystem: 'isSystem',
@@ -1281,14 +1266,15 @@ export const ContentScalarFieldEnum = {
   spaceId: 'spaceId',
   userId: 'userId',
   title: 'title',
+  body: 'body',
+  doc: 'doc',
   status: 'status',
-  templateId: 'templateId',
+  urlSlug: 'urlSlug',
+  targetKeyword: 'targetKeyword',
+  relatedKeywords: 'relatedKeywords',
   ideationId: 'ideationId',
   ideaIndex: 'ideaIndex',
-  productId: 'productId',
-  personaId: 'personaId',
   channelId: 'channelId',
-  doc: 'doc',
   snapshotHash: 'snapshotHash',
   publishedAt: 'publishedAt',
   scheduledAt: 'scheduledAt',
@@ -1427,24 +1413,31 @@ export const ContentAssetScalarFieldEnum = {
 export type ContentAssetScalarFieldEnum = (typeof ContentAssetScalarFieldEnum)[keyof typeof ContentAssetScalarFieldEnum]
 
 
-export const ContentIdeaScalarFieldEnum = {
+export const IdeationScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   userId: 'userId',
-  productId: 'productId',
   personaId: 'personaId',
-  userPromptInput: 'userPromptInput',
-  generatedBy: 'generatedBy',
+  targetKeywords: 'targetKeywords',
   ideas: 'ideas',
-  promptTraceHash: 'promptTraceHash',
-  ruleIdsSnapshot: 'ruleIdsSnapshot',
+  generatedBy: 'generatedBy',
   providerName: 'providerName',
   providerModel: 'providerModel',
   latencyMs: 'latencyMs',
+  promptTraceHash: 'promptTraceHash',
+  ruleIdsSnapshot: 'ruleIdsSnapshot',
   createdAt: 'createdAt'
 } as const
 
-export type ContentIdeaScalarFieldEnum = (typeof ContentIdeaScalarFieldEnum)[keyof typeof ContentIdeaScalarFieldEnum]
+export type IdeationScalarFieldEnum = (typeof IdeationScalarFieldEnum)[keyof typeof IdeationScalarFieldEnum]
+
+
+export const IdeationProductScalarFieldEnum = {
+  ideationId: 'ideationId',
+  productId: 'productId'
+} as const
+
+export type IdeationProductScalarFieldEnum = (typeof IdeationProductScalarFieldEnum)[keyof typeof IdeationProductScalarFieldEnum]
 
 
 export const ImprovementRuleScalarFieldEnum = {

@@ -21,9 +21,6 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const content = await prisma.content.findFirst({
     where: { id, spaceId: resolved.space.id },
-    include: {
-      // product/persona 는 FK optional — 정보만 가져오려면 수동 join.
-    },
   })
   if (!content) return errorResponse('콘텐츠를 찾을 수 없습니다', 404)
 
@@ -39,31 +36,30 @@ export async function POST(req: NextRequest, { params }: Params) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  // 맥락 수집
-  const [product, persona, brand, ideation] = await Promise.all([
-    content.productId
-      ? prisma.b2BProduct.findUnique({
-          where: { id: content.productId },
-          select: { name: true },
-        })
-      : null,
-    content.personaId
-      ? prisma.persona.findUnique({ where: { id: content.personaId }, select: { name: true } })
-      : null,
+  // 맥락 수집 — 페르소나/상품 정보는 ideationId 를 통해 lookup (Content 에 직접 FK 없음)
+  const [brand, ideation] = await Promise.all([
     prisma.brandProfile.findUnique({
       where: { spaceId: resolved.space.id },
-      select: { toneOfVoice: true, forbiddenPhrases: true },
+      select: { toneOfVoice: true },
     }),
     content.ideationId
-      ? prisma.contentIdea.findUnique({
+      ? prisma.ideation.findUnique({
           where: { id: content.ideationId },
-          select: { ideas: true },
+          select: {
+            ideas: true,
+            persona: { select: { name: true } },
+            products: { include: { product: { select: { name: true } } } },
+          },
         })
       : null,
   ])
 
   const ideas = (Array.isArray(ideation?.ideas) ? ideation?.ideas : []) as IdeaItem[]
   const chosen = content.ideaIndex != null ? ideas[content.ideaIndex] : undefined
+
+  // 상품명 — 아이데이션에 연결된 첫 번째 상품
+  const productName = ideation?.products?.[0]?.product?.name ?? null
+  const personaName = ideation?.persona?.name ?? null
 
   const built = buildSectionFillPrompt({
     sectionLabel: parsed.data.sectionLabel,
@@ -72,13 +68,13 @@ export async function POST(req: NextRequest, { params }: Params) {
     constraints: parsed.data.constraints,
     additionalInstruction: parsed.data.additionalInstruction ?? null,
     context: {
-      productName: product?.name ?? null,
-      personaName: persona?.name ?? null,
+      productName,
+      personaName,
       ideaTitle: chosen?.title ?? null,
       ideaAngle: chosen?.angle ?? null,
       ideaKeyPoints: chosen?.keyPoints ?? null,
       brandTone: (brand?.toneOfVoice as string[] | null) ?? null,
-      brandForbidden: (brand?.forbiddenPhrases as string[] | null) ?? null,
+      brandForbidden: null,
     },
   })
 

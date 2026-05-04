@@ -4,14 +4,14 @@ describe('buildIdeationPrompt', () => {
   const baseProduct = {
     id: 'prod1',
     name: '테스트 제품',
-    valueProposition: '시간을 아껴줍니다',
-    differentiators: ['빠름', '저렴'],
+    oneLinerPitch: '시간을 아껴줍니다',
+    customFields: [{ key: '차별화', value: '빠름, 저렴' }],
   }
   const basePersona = {
     id: 'per1',
     name: '중소기업 운영팀장',
     industry: '이커머스',
-    painPoints: ['재고 파악 어려움'],
+    customFields: [{ key: '고충', value: '재고 파악 어려움' }],
   }
 
   it('상품·페르소나가 system 프롬프트에 포함된다', () => {

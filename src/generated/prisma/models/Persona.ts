@@ -28,13 +28,8 @@ export type PersonaMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
-  slug: string | null
   jobTitle: string | null
   industry: string | null
-  companySize: string | null
-  seniority: string | null
-  decisionRole: string | null
-  toneHints: string | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -44,13 +39,8 @@ export type PersonaMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
-  slug: string | null
   jobTitle: string | null
   industry: string | null
-  companySize: string | null
-  seniority: string | null
-  decisionRole: string | null
-  toneHints: string | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -60,17 +50,9 @@ export type PersonaCountAggregateOutputType = {
   id: number
   spaceId: number
   name: number
-  slug: number
   jobTitle: number
   industry: number
-  companySize: number
-  seniority: number
-  decisionRole: number
-  goals: number
-  painPoints: number
-  objections: number
-  preferredChannels: number
-  toneHints: number
+  customFields: number
   isActive: number
   createdAt: number
   updatedAt: number
@@ -82,13 +64,8 @@ export type PersonaMinAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  slug?: true
   jobTitle?: true
   industry?: true
-  companySize?: true
-  seniority?: true
-  decisionRole?: true
-  toneHints?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -98,13 +75,8 @@ export type PersonaMaxAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  slug?: true
   jobTitle?: true
   industry?: true
-  companySize?: true
-  seniority?: true
-  decisionRole?: true
-  toneHints?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -114,17 +86,9 @@ export type PersonaCountAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  slug?: true
   jobTitle?: true
   industry?: true
-  companySize?: true
-  seniority?: true
-  decisionRole?: true
-  goals?: true
-  painPoints?: true
-  objections?: true
-  preferredChannels?: true
-  toneHints?: true
+  customFields?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -207,17 +171,9 @@ export type PersonaGroupByOutputType = {
   id: string
   spaceId: string
   name: string
-  slug: string
   jobTitle: string | null
   industry: string | null
-  companySize: string | null
-  seniority: string | null
-  decisionRole: string | null
-  goals: runtime.JsonValue | null
-  painPoints: runtime.JsonValue | null
-  objections: runtime.JsonValue | null
-  preferredChannels: runtime.JsonValue | null
-  toneHints: string | null
+  customFields: runtime.JsonValue
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -248,87 +204,57 @@ export type PersonaWhereInput = {
   id?: Prisma.StringFilter<"Persona"> | string
   spaceId?: Prisma.StringFilter<"Persona"> | string
   name?: Prisma.StringFilter<"Persona"> | string
-  slug?: Prisma.StringFilter<"Persona"> | string
   jobTitle?: Prisma.StringNullableFilter<"Persona"> | string | null
   industry?: Prisma.StringNullableFilter<"Persona"> | string | null
-  companySize?: Prisma.StringNullableFilter<"Persona"> | string | null
-  seniority?: Prisma.StringNullableFilter<"Persona"> | string | null
-  decisionRole?: Prisma.StringNullableFilter<"Persona"> | string | null
-  goals?: Prisma.JsonNullableFilter<"Persona">
-  painPoints?: Prisma.JsonNullableFilter<"Persona">
-  objections?: Prisma.JsonNullableFilter<"Persona">
-  preferredChannels?: Prisma.JsonNullableFilter<"Persona">
-  toneHints?: Prisma.StringNullableFilter<"Persona"> | string | null
+  customFields?: Prisma.JsonFilter<"Persona">
   isActive?: Prisma.BoolFilter<"Persona"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Persona"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Persona"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
-  contentIdeas?: Prisma.ContentIdeaListRelationFilter
+  ideations?: Prisma.IdeationListRelationFilter
+  products?: Prisma.ProductPersonaListRelationFilter
 }
 
 export type PersonaOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   jobTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   industry?: Prisma.SortOrderInput | Prisma.SortOrder
-  companySize?: Prisma.SortOrderInput | Prisma.SortOrder
-  seniority?: Prisma.SortOrderInput | Prisma.SortOrder
-  decisionRole?: Prisma.SortOrderInput | Prisma.SortOrder
-  goals?: Prisma.SortOrderInput | Prisma.SortOrder
-  painPoints?: Prisma.SortOrderInput | Prisma.SortOrder
-  objections?: Prisma.SortOrderInput | Prisma.SortOrder
-  preferredChannels?: Prisma.SortOrderInput | Prisma.SortOrder
-  toneHints?: Prisma.SortOrderInput | Prisma.SortOrder
+  customFields?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
-  contentIdeas?: Prisma.ContentIdeaOrderByRelationAggregateInput
+  ideations?: Prisma.IdeationOrderByRelationAggregateInput
+  products?: Prisma.ProductPersonaOrderByRelationAggregateInput
 }
 
 export type PersonaWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  spaceId_slug?: Prisma.PersonaSpaceIdSlugCompoundUniqueInput
   AND?: Prisma.PersonaWhereInput | Prisma.PersonaWhereInput[]
   OR?: Prisma.PersonaWhereInput[]
   NOT?: Prisma.PersonaWhereInput | Prisma.PersonaWhereInput[]
   spaceId?: Prisma.StringFilter<"Persona"> | string
   name?: Prisma.StringFilter<"Persona"> | string
-  slug?: Prisma.StringFilter<"Persona"> | string
   jobTitle?: Prisma.StringNullableFilter<"Persona"> | string | null
   industry?: Prisma.StringNullableFilter<"Persona"> | string | null
-  companySize?: Prisma.StringNullableFilter<"Persona"> | string | null
-  seniority?: Prisma.StringNullableFilter<"Persona"> | string | null
-  decisionRole?: Prisma.StringNullableFilter<"Persona"> | string | null
-  goals?: Prisma.JsonNullableFilter<"Persona">
-  painPoints?: Prisma.JsonNullableFilter<"Persona">
-  objections?: Prisma.JsonNullableFilter<"Persona">
-  preferredChannels?: Prisma.JsonNullableFilter<"Persona">
-  toneHints?: Prisma.StringNullableFilter<"Persona"> | string | null
+  customFields?: Prisma.JsonFilter<"Persona">
   isActive?: Prisma.BoolFilter<"Persona"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Persona"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Persona"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
-  contentIdeas?: Prisma.ContentIdeaListRelationFilter
-}, "id" | "spaceId_slug">
+  ideations?: Prisma.IdeationListRelationFilter
+  products?: Prisma.ProductPersonaListRelationFilter
+}, "id">
 
 export type PersonaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   jobTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   industry?: Prisma.SortOrderInput | Prisma.SortOrder
-  companySize?: Prisma.SortOrderInput | Prisma.SortOrder
-  seniority?: Prisma.SortOrderInput | Prisma.SortOrder
-  decisionRole?: Prisma.SortOrderInput | Prisma.SortOrder
-  goals?: Prisma.SortOrderInput | Prisma.SortOrder
-  painPoints?: Prisma.SortOrderInput | Prisma.SortOrder
-  objections?: Prisma.SortOrderInput | Prisma.SortOrder
-  preferredChannels?: Prisma.SortOrderInput | Prisma.SortOrder
-  toneHints?: Prisma.SortOrderInput | Prisma.SortOrder
+  customFields?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -344,17 +270,9 @@ export type PersonaScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Persona"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"Persona"> | string
   name?: Prisma.StringWithAggregatesFilter<"Persona"> | string
-  slug?: Prisma.StringWithAggregatesFilter<"Persona"> | string
   jobTitle?: Prisma.StringNullableWithAggregatesFilter<"Persona"> | string | null
   industry?: Prisma.StringNullableWithAggregatesFilter<"Persona"> | string | null
-  companySize?: Prisma.StringNullableWithAggregatesFilter<"Persona"> | string | null
-  seniority?: Prisma.StringNullableWithAggregatesFilter<"Persona"> | string | null
-  decisionRole?: Prisma.StringNullableWithAggregatesFilter<"Persona"> | string | null
-  goals?: Prisma.JsonNullableWithAggregatesFilter<"Persona">
-  painPoints?: Prisma.JsonNullableWithAggregatesFilter<"Persona">
-  objections?: Prisma.JsonNullableWithAggregatesFilter<"Persona">
-  preferredChannels?: Prisma.JsonNullableWithAggregatesFilter<"Persona">
-  toneHints?: Prisma.StringNullableWithAggregatesFilter<"Persona"> | string | null
+  customFields?: Prisma.JsonWithAggregatesFilter<"Persona">
   isActive?: Prisma.BoolWithAggregatesFilter<"Persona"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Persona"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Persona"> | Date | string
@@ -363,102 +281,66 @@ export type PersonaScalarWhereWithAggregatesInput = {
 export type PersonaCreateInput = {
   id?: string
   name: string
-  slug: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutPersonasInput
-  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutPersonaInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutPersonaInput
+  products?: Prisma.ProductPersonaCreateNestedManyWithoutPersonaInput
 }
 
 export type PersonaUncheckedCreateInput = {
   id?: string
   spaceId: string
   name: string
-  slug: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutPersonaInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutPersonaInput
+  products?: Prisma.ProductPersonaUncheckedCreateNestedManyWithoutPersonaInput
 }
 
 export type PersonaUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutPersonasNestedInput
-  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutPersonaNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutPersonaNestedInput
+  products?: Prisma.ProductPersonaUpdateManyWithoutPersonaNestedInput
 }
 
 export type PersonaUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutPersonaNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutPersonaNestedInput
+  products?: Prisma.ProductPersonaUncheckedUpdateManyWithoutPersonaNestedInput
 }
 
 export type PersonaCreateManyInput = {
   id?: string
   spaceId: string
   name: string
-  slug: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -467,17 +349,9 @@ export type PersonaCreateManyInput = {
 export type PersonaUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -487,17 +361,9 @@ export type PersonaUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -513,26 +379,18 @@ export type PersonaOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type PersonaSpaceIdSlugCompoundUniqueInput = {
-  spaceId: string
-  slug: string
+export type PersonaScalarRelationFilter = {
+  is?: Prisma.PersonaWhereInput
+  isNot?: Prisma.PersonaWhereInput
 }
 
 export type PersonaCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   jobTitle?: Prisma.SortOrder
   industry?: Prisma.SortOrder
-  companySize?: Prisma.SortOrder
-  seniority?: Prisma.SortOrder
-  decisionRole?: Prisma.SortOrder
-  goals?: Prisma.SortOrder
-  painPoints?: Prisma.SortOrder
-  objections?: Prisma.SortOrder
-  preferredChannels?: Prisma.SortOrder
-  toneHints?: Prisma.SortOrder
+  customFields?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -542,13 +400,8 @@ export type PersonaMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   jobTitle?: Prisma.SortOrder
   industry?: Prisma.SortOrder
-  companySize?: Prisma.SortOrder
-  seniority?: Prisma.SortOrder
-  decisionRole?: Prisma.SortOrder
-  toneHints?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -558,21 +411,11 @@ export type PersonaMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   jobTitle?: Prisma.SortOrder
   industry?: Prisma.SortOrder
-  companySize?: Prisma.SortOrder
-  seniority?: Prisma.SortOrder
-  decisionRole?: Prisma.SortOrder
-  toneHints?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type PersonaNullableScalarRelationFilter = {
-  is?: Prisma.PersonaWhereInput | null
-  isNot?: Prisma.PersonaWhereInput | null
 }
 
 export type PersonaCreateNestedManyWithoutSpaceInput = {
@@ -617,60 +460,58 @@ export type PersonaUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.PersonaScalarWhereInput | Prisma.PersonaScalarWhereInput[]
 }
 
-export type PersonaCreateNestedOneWithoutContentIdeasInput = {
-  create?: Prisma.XOR<Prisma.PersonaCreateWithoutContentIdeasInput, Prisma.PersonaUncheckedCreateWithoutContentIdeasInput>
-  connectOrCreate?: Prisma.PersonaCreateOrConnectWithoutContentIdeasInput
+export type PersonaCreateNestedOneWithoutProductsInput = {
+  create?: Prisma.XOR<Prisma.PersonaCreateWithoutProductsInput, Prisma.PersonaUncheckedCreateWithoutProductsInput>
+  connectOrCreate?: Prisma.PersonaCreateOrConnectWithoutProductsInput
   connect?: Prisma.PersonaWhereUniqueInput
 }
 
-export type PersonaUpdateOneWithoutContentIdeasNestedInput = {
-  create?: Prisma.XOR<Prisma.PersonaCreateWithoutContentIdeasInput, Prisma.PersonaUncheckedCreateWithoutContentIdeasInput>
-  connectOrCreate?: Prisma.PersonaCreateOrConnectWithoutContentIdeasInput
-  upsert?: Prisma.PersonaUpsertWithoutContentIdeasInput
-  disconnect?: Prisma.PersonaWhereInput | boolean
-  delete?: Prisma.PersonaWhereInput | boolean
+export type PersonaUpdateOneRequiredWithoutProductsNestedInput = {
+  create?: Prisma.XOR<Prisma.PersonaCreateWithoutProductsInput, Prisma.PersonaUncheckedCreateWithoutProductsInput>
+  connectOrCreate?: Prisma.PersonaCreateOrConnectWithoutProductsInput
+  upsert?: Prisma.PersonaUpsertWithoutProductsInput
   connect?: Prisma.PersonaWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.PersonaUpdateToOneWithWhereWithoutContentIdeasInput, Prisma.PersonaUpdateWithoutContentIdeasInput>, Prisma.PersonaUncheckedUpdateWithoutContentIdeasInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PersonaUpdateToOneWithWhereWithoutProductsInput, Prisma.PersonaUpdateWithoutProductsInput>, Prisma.PersonaUncheckedUpdateWithoutProductsInput>
+}
+
+export type PersonaCreateNestedOneWithoutIdeationsInput = {
+  create?: Prisma.XOR<Prisma.PersonaCreateWithoutIdeationsInput, Prisma.PersonaUncheckedCreateWithoutIdeationsInput>
+  connectOrCreate?: Prisma.PersonaCreateOrConnectWithoutIdeationsInput
+  connect?: Prisma.PersonaWhereUniqueInput
+}
+
+export type PersonaUpdateOneRequiredWithoutIdeationsNestedInput = {
+  create?: Prisma.XOR<Prisma.PersonaCreateWithoutIdeationsInput, Prisma.PersonaUncheckedCreateWithoutIdeationsInput>
+  connectOrCreate?: Prisma.PersonaCreateOrConnectWithoutIdeationsInput
+  upsert?: Prisma.PersonaUpsertWithoutIdeationsInput
+  connect?: Prisma.PersonaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PersonaUpdateToOneWithWhereWithoutIdeationsInput, Prisma.PersonaUpdateWithoutIdeationsInput>, Prisma.PersonaUncheckedUpdateWithoutIdeationsInput>
 }
 
 export type PersonaCreateWithoutSpaceInput = {
   id?: string
   name: string
-  slug: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  contentIdeas?: Prisma.ContentIdeaCreateNestedManyWithoutPersonaInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutPersonaInput
+  products?: Prisma.ProductPersonaCreateNestedManyWithoutPersonaInput
 }
 
 export type PersonaUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
-  slug: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  contentIdeas?: Prisma.ContentIdeaUncheckedCreateNestedManyWithoutPersonaInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutPersonaInput
+  products?: Prisma.ProductPersonaUncheckedCreateNestedManyWithoutPersonaInput
 }
 
 export type PersonaCreateOrConnectWithoutSpaceInput = {
@@ -706,132 +547,156 @@ export type PersonaScalarWhereInput = {
   id?: Prisma.StringFilter<"Persona"> | string
   spaceId?: Prisma.StringFilter<"Persona"> | string
   name?: Prisma.StringFilter<"Persona"> | string
-  slug?: Prisma.StringFilter<"Persona"> | string
   jobTitle?: Prisma.StringNullableFilter<"Persona"> | string | null
   industry?: Prisma.StringNullableFilter<"Persona"> | string | null
-  companySize?: Prisma.StringNullableFilter<"Persona"> | string | null
-  seniority?: Prisma.StringNullableFilter<"Persona"> | string | null
-  decisionRole?: Prisma.StringNullableFilter<"Persona"> | string | null
-  goals?: Prisma.JsonNullableFilter<"Persona">
-  painPoints?: Prisma.JsonNullableFilter<"Persona">
-  objections?: Prisma.JsonNullableFilter<"Persona">
-  preferredChannels?: Prisma.JsonNullableFilter<"Persona">
-  toneHints?: Prisma.StringNullableFilter<"Persona"> | string | null
+  customFields?: Prisma.JsonFilter<"Persona">
   isActive?: Prisma.BoolFilter<"Persona"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Persona"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Persona"> | Date | string
 }
 
-export type PersonaCreateWithoutContentIdeasInput = {
+export type PersonaCreateWithoutProductsInput = {
   id?: string
   name: string
-  slug: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutPersonasInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutPersonaInput
 }
 
-export type PersonaUncheckedCreateWithoutContentIdeasInput = {
+export type PersonaUncheckedCreateWithoutProductsInput = {
   id?: string
   spaceId: string
   name: string
-  slug: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutPersonaInput
 }
 
-export type PersonaCreateOrConnectWithoutContentIdeasInput = {
+export type PersonaCreateOrConnectWithoutProductsInput = {
   where: Prisma.PersonaWhereUniqueInput
-  create: Prisma.XOR<Prisma.PersonaCreateWithoutContentIdeasInput, Prisma.PersonaUncheckedCreateWithoutContentIdeasInput>
+  create: Prisma.XOR<Prisma.PersonaCreateWithoutProductsInput, Prisma.PersonaUncheckedCreateWithoutProductsInput>
 }
 
-export type PersonaUpsertWithoutContentIdeasInput = {
-  update: Prisma.XOR<Prisma.PersonaUpdateWithoutContentIdeasInput, Prisma.PersonaUncheckedUpdateWithoutContentIdeasInput>
-  create: Prisma.XOR<Prisma.PersonaCreateWithoutContentIdeasInput, Prisma.PersonaUncheckedCreateWithoutContentIdeasInput>
+export type PersonaUpsertWithoutProductsInput = {
+  update: Prisma.XOR<Prisma.PersonaUpdateWithoutProductsInput, Prisma.PersonaUncheckedUpdateWithoutProductsInput>
+  create: Prisma.XOR<Prisma.PersonaCreateWithoutProductsInput, Prisma.PersonaUncheckedCreateWithoutProductsInput>
   where?: Prisma.PersonaWhereInput
 }
 
-export type PersonaUpdateToOneWithWhereWithoutContentIdeasInput = {
+export type PersonaUpdateToOneWithWhereWithoutProductsInput = {
   where?: Prisma.PersonaWhereInput
-  data: Prisma.XOR<Prisma.PersonaUpdateWithoutContentIdeasInput, Prisma.PersonaUncheckedUpdateWithoutContentIdeasInput>
+  data: Prisma.XOR<Prisma.PersonaUpdateWithoutProductsInput, Prisma.PersonaUncheckedUpdateWithoutProductsInput>
 }
 
-export type PersonaUpdateWithoutContentIdeasInput = {
+export type PersonaUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutPersonasNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutPersonaNestedInput
 }
 
-export type PersonaUncheckedUpdateWithoutContentIdeasInput = {
+export type PersonaUncheckedUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutPersonaNestedInput
+}
+
+export type PersonaCreateWithoutIdeationsInput = {
+  id?: string
+  name: string
+  jobTitle?: string | null
+  industry?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutPersonasInput
+  products?: Prisma.ProductPersonaCreateNestedManyWithoutPersonaInput
+}
+
+export type PersonaUncheckedCreateWithoutIdeationsInput = {
+  id?: string
+  spaceId: string
+  name: string
+  jobTitle?: string | null
+  industry?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  products?: Prisma.ProductPersonaUncheckedCreateNestedManyWithoutPersonaInput
+}
+
+export type PersonaCreateOrConnectWithoutIdeationsInput = {
+  where: Prisma.PersonaWhereUniqueInput
+  create: Prisma.XOR<Prisma.PersonaCreateWithoutIdeationsInput, Prisma.PersonaUncheckedCreateWithoutIdeationsInput>
+}
+
+export type PersonaUpsertWithoutIdeationsInput = {
+  update: Prisma.XOR<Prisma.PersonaUpdateWithoutIdeationsInput, Prisma.PersonaUncheckedUpdateWithoutIdeationsInput>
+  create: Prisma.XOR<Prisma.PersonaCreateWithoutIdeationsInput, Prisma.PersonaUncheckedCreateWithoutIdeationsInput>
+  where?: Prisma.PersonaWhereInput
+}
+
+export type PersonaUpdateToOneWithWhereWithoutIdeationsInput = {
+  where?: Prisma.PersonaWhereInput
+  data: Prisma.XOR<Prisma.PersonaUpdateWithoutIdeationsInput, Prisma.PersonaUncheckedUpdateWithoutIdeationsInput>
+}
+
+export type PersonaUpdateWithoutIdeationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutPersonasNestedInput
+  products?: Prisma.ProductPersonaUpdateManyWithoutPersonaNestedInput
+}
+
+export type PersonaUncheckedUpdateWithoutIdeationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  products?: Prisma.ProductPersonaUncheckedUpdateManyWithoutPersonaNestedInput
 }
 
 export type PersonaCreateManySpaceInput = {
   id?: string
   name: string
-  slug: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -840,57 +705,35 @@ export type PersonaCreateManySpaceInput = {
 export type PersonaUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  contentIdeas?: Prisma.ContentIdeaUpdateManyWithoutPersonaNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutPersonaNestedInput
+  products?: Prisma.ProductPersonaUpdateManyWithoutPersonaNestedInput
 }
 
 export type PersonaUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  contentIdeas?: Prisma.ContentIdeaUncheckedUpdateManyWithoutPersonaNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutPersonaNestedInput
+  products?: Prisma.ProductPersonaUncheckedUpdateManyWithoutPersonaNestedInput
 }
 
 export type PersonaUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companySize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  seniority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  decisionRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  goals?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  painPoints?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  objections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  preferredChannels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  toneHints?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -902,11 +745,13 @@ export type PersonaUncheckedUpdateManyWithoutSpaceInput = {
  */
 
 export type PersonaCountOutputType = {
-  contentIdeas: number
+  ideations: number
+  products: number
 }
 
 export type PersonaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  contentIdeas?: boolean | PersonaCountOutputTypeCountContentIdeasArgs
+  ideations?: boolean | PersonaCountOutputTypeCountIdeationsArgs
+  products?: boolean | PersonaCountOutputTypeCountProductsArgs
 }
 
 /**
@@ -922,8 +767,15 @@ export type PersonaCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
 /**
  * PersonaCountOutputType without action
  */
-export type PersonaCountOutputTypeCountContentIdeasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ContentIdeaWhereInput
+export type PersonaCountOutputTypeCountIdeationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.IdeationWhereInput
+}
+
+/**
+ * PersonaCountOutputType without action
+ */
+export type PersonaCountOutputTypeCountProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductPersonaWhereInput
 }
 
 
@@ -931,22 +783,15 @@ export type PersonaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  slug?: boolean
   jobTitle?: boolean
   industry?: boolean
-  companySize?: boolean
-  seniority?: boolean
-  decisionRole?: boolean
-  goals?: boolean
-  painPoints?: boolean
-  objections?: boolean
-  preferredChannels?: boolean
-  toneHints?: boolean
+  customFields?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
-  contentIdeas?: boolean | Prisma.Persona$contentIdeasArgs<ExtArgs>
+  ideations?: boolean | Prisma.Persona$ideationsArgs<ExtArgs>
+  products?: boolean | Prisma.Persona$productsArgs<ExtArgs>
   _count?: boolean | Prisma.PersonaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["persona"]>
 
@@ -954,17 +799,9 @@ export type PersonaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  slug?: boolean
   jobTitle?: boolean
   industry?: boolean
-  companySize?: boolean
-  seniority?: boolean
-  decisionRole?: boolean
-  goals?: boolean
-  painPoints?: boolean
-  objections?: boolean
-  preferredChannels?: boolean
-  toneHints?: boolean
+  customFields?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -975,17 +812,9 @@ export type PersonaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  slug?: boolean
   jobTitle?: boolean
   industry?: boolean
-  companySize?: boolean
-  seniority?: boolean
-  decisionRole?: boolean
-  goals?: boolean
-  painPoints?: boolean
-  objections?: boolean
-  preferredChannels?: boolean
-  toneHints?: boolean
+  customFields?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -996,26 +825,19 @@ export type PersonaSelectScalar = {
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  slug?: boolean
   jobTitle?: boolean
   industry?: boolean
-  companySize?: boolean
-  seniority?: boolean
-  decisionRole?: boolean
-  goals?: boolean
-  painPoints?: boolean
-  objections?: boolean
-  preferredChannels?: boolean
-  toneHints?: boolean
+  customFields?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PersonaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "slug" | "jobTitle" | "industry" | "companySize" | "seniority" | "decisionRole" | "goals" | "painPoints" | "objections" | "preferredChannels" | "toneHints" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["persona"]>
+export type PersonaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "jobTitle" | "industry" | "customFields" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["persona"]>
 export type PersonaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
-  contentIdeas?: boolean | Prisma.Persona$contentIdeasArgs<ExtArgs>
+  ideations?: boolean | Prisma.Persona$ideationsArgs<ExtArgs>
+  products?: boolean | Prisma.Persona$productsArgs<ExtArgs>
   _count?: boolean | Prisma.PersonaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PersonaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1029,23 +851,16 @@ export type $PersonaPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "Persona"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
-    contentIdeas: Prisma.$ContentIdeaPayload<ExtArgs>[]
+    ideations: Prisma.$IdeationPayload<ExtArgs>[]
+    products: Prisma.$ProductPersonaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     spaceId: string
     name: string
-    slug: string
     jobTitle: string | null
     industry: string | null
-    companySize: string | null
-    seniority: string | null
-    decisionRole: string | null
-    goals: runtime.JsonValue | null
-    painPoints: runtime.JsonValue | null
-    objections: runtime.JsonValue | null
-    preferredChannels: runtime.JsonValue | null
-    toneHints: string | null
+    customFields: runtime.JsonValue
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1444,7 +1259,8 @@ readonly fields: PersonaFieldRefs;
 export interface Prisma__PersonaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  contentIdeas<T extends Prisma.Persona$contentIdeasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Persona$contentIdeasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentIdeaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ideations<T extends Prisma.Persona$ideationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Persona$ideationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IdeationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  products<T extends Prisma.Persona$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Persona$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductPersonaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1477,17 +1293,9 @@ export interface PersonaFieldRefs {
   readonly id: Prisma.FieldRef<"Persona", 'String'>
   readonly spaceId: Prisma.FieldRef<"Persona", 'String'>
   readonly name: Prisma.FieldRef<"Persona", 'String'>
-  readonly slug: Prisma.FieldRef<"Persona", 'String'>
   readonly jobTitle: Prisma.FieldRef<"Persona", 'String'>
   readonly industry: Prisma.FieldRef<"Persona", 'String'>
-  readonly companySize: Prisma.FieldRef<"Persona", 'String'>
-  readonly seniority: Prisma.FieldRef<"Persona", 'String'>
-  readonly decisionRole: Prisma.FieldRef<"Persona", 'String'>
-  readonly goals: Prisma.FieldRef<"Persona", 'Json'>
-  readonly painPoints: Prisma.FieldRef<"Persona", 'Json'>
-  readonly objections: Prisma.FieldRef<"Persona", 'Json'>
-  readonly preferredChannels: Prisma.FieldRef<"Persona", 'Json'>
-  readonly toneHints: Prisma.FieldRef<"Persona", 'String'>
+  readonly customFields: Prisma.FieldRef<"Persona", 'Json'>
   readonly isActive: Prisma.FieldRef<"Persona", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Persona", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Persona", 'DateTime'>
@@ -1887,27 +1695,51 @@ export type PersonaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
- * Persona.contentIdeas
+ * Persona.ideations
  */
-export type Persona$contentIdeasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Persona$ideationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the ContentIdea
+   * Select specific fields to fetch from the Ideation
    */
-  select?: Prisma.ContentIdeaSelect<ExtArgs> | null
+  select?: Prisma.IdeationSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the ContentIdea
+   * Omit specific fields from the Ideation
    */
-  omit?: Prisma.ContentIdeaOmit<ExtArgs> | null
+  omit?: Prisma.IdeationOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ContentIdeaInclude<ExtArgs> | null
-  where?: Prisma.ContentIdeaWhereInput
-  orderBy?: Prisma.ContentIdeaOrderByWithRelationInput | Prisma.ContentIdeaOrderByWithRelationInput[]
-  cursor?: Prisma.ContentIdeaWhereUniqueInput
+  include?: Prisma.IdeationInclude<ExtArgs> | null
+  where?: Prisma.IdeationWhereInput
+  orderBy?: Prisma.IdeationOrderByWithRelationInput | Prisma.IdeationOrderByWithRelationInput[]
+  cursor?: Prisma.IdeationWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ContentIdeaScalarFieldEnum | Prisma.ContentIdeaScalarFieldEnum[]
+  distinct?: Prisma.IdeationScalarFieldEnum | Prisma.IdeationScalarFieldEnum[]
+}
+
+/**
+ * Persona.products
+ */
+export type Persona$productsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductPersona
+   */
+  select?: Prisma.ProductPersonaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProductPersona
+   */
+  omit?: Prisma.ProductPersonaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductPersonaInclude<ExtArgs> | null
+  where?: Prisma.ProductPersonaWhereInput
+  orderBy?: Prisma.ProductPersonaOrderByWithRelationInput | Prisma.ProductPersonaOrderByWithRelationInput[]
+  cursor?: Prisma.ProductPersonaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductPersonaScalarFieldEnum | Prisma.ProductPersonaScalarFieldEnum[]
 }
 
 /**

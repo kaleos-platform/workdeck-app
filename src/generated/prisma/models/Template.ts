@@ -28,7 +28,6 @@ export type TemplateMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
-  slug: string | null
   kind: $Enums.TemplateKind | null
   isSystem: boolean | null
   isActive: boolean | null
@@ -40,7 +39,6 @@ export type TemplateMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
-  slug: string | null
   kind: $Enums.TemplateKind | null
   isSystem: boolean | null
   isActive: boolean | null
@@ -52,7 +50,6 @@ export type TemplateCountAggregateOutputType = {
   id: number
   spaceId: number
   name: number
-  slug: number
   kind: number
   sections: number
   isSystem: number
@@ -67,7 +64,6 @@ export type TemplateMinAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  slug?: true
   kind?: true
   isSystem?: true
   isActive?: true
@@ -79,7 +75,6 @@ export type TemplateMaxAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  slug?: true
   kind?: true
   isSystem?: true
   isActive?: true
@@ -91,7 +86,6 @@ export type TemplateCountAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
-  slug?: true
   kind?: true
   sections?: true
   isSystem?: true
@@ -177,7 +171,6 @@ export type TemplateGroupByOutputType = {
   id: string
   spaceId: string | null
   name: string
-  slug: string
   kind: $Enums.TemplateKind
   sections: runtime.JsonValue
   isSystem: boolean
@@ -211,7 +204,6 @@ export type TemplateWhereInput = {
   id?: Prisma.StringFilter<"Template"> | string
   spaceId?: Prisma.StringNullableFilter<"Template"> | string | null
   name?: Prisma.StringFilter<"Template"> | string
-  slug?: Prisma.StringFilter<"Template"> | string
   kind?: Prisma.EnumTemplateKindFilter<"Template"> | $Enums.TemplateKind
   sections?: Prisma.JsonFilter<"Template">
   isSystem?: Prisma.BoolFilter<"Template"> | boolean
@@ -225,7 +217,6 @@ export type TemplateOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   sections?: Prisma.SortOrder
   isSystem?: Prisma.SortOrder
@@ -237,13 +228,11 @@ export type TemplateOrderByWithRelationInput = {
 
 export type TemplateWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  spaceId_slug?: Prisma.TemplateSpaceIdSlugCompoundUniqueInput
   AND?: Prisma.TemplateWhereInput | Prisma.TemplateWhereInput[]
   OR?: Prisma.TemplateWhereInput[]
   NOT?: Prisma.TemplateWhereInput | Prisma.TemplateWhereInput[]
   spaceId?: Prisma.StringNullableFilter<"Template"> | string | null
   name?: Prisma.StringFilter<"Template"> | string
-  slug?: Prisma.StringFilter<"Template"> | string
   kind?: Prisma.EnumTemplateKindFilter<"Template"> | $Enums.TemplateKind
   sections?: Prisma.JsonFilter<"Template">
   isSystem?: Prisma.BoolFilter<"Template"> | boolean
@@ -251,13 +240,12 @@ export type TemplateWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Template"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Template"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceNullableScalarRelationFilter, Prisma.SpaceWhereInput> | null
-}, "id" | "spaceId_slug">
+}, "id">
 
 export type TemplateOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   sections?: Prisma.SortOrder
   isSystem?: Prisma.SortOrder
@@ -276,7 +264,6 @@ export type TemplateScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Template"> | string
   spaceId?: Prisma.StringNullableWithAggregatesFilter<"Template"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"Template"> | string
-  slug?: Prisma.StringWithAggregatesFilter<"Template"> | string
   kind?: Prisma.EnumTemplateKindWithAggregatesFilter<"Template"> | $Enums.TemplateKind
   sections?: Prisma.JsonWithAggregatesFilter<"Template">
   isSystem?: Prisma.BoolWithAggregatesFilter<"Template"> | boolean
@@ -288,7 +275,6 @@ export type TemplateScalarWhereWithAggregatesInput = {
 export type TemplateCreateInput = {
   id?: string
   name: string
-  slug: string
   kind: $Enums.TemplateKind
   sections: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: boolean
@@ -302,7 +288,6 @@ export type TemplateUncheckedCreateInput = {
   id?: string
   spaceId?: string | null
   name: string
-  slug: string
   kind: $Enums.TemplateKind
   sections: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: boolean
@@ -314,7 +299,6 @@ export type TemplateUncheckedCreateInput = {
 export type TemplateUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumTemplateKindFieldUpdateOperationsInput | $Enums.TemplateKind
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -328,7 +312,6 @@ export type TemplateUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumTemplateKindFieldUpdateOperationsInput | $Enums.TemplateKind
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -341,7 +324,6 @@ export type TemplateCreateManyInput = {
   id?: string
   spaceId?: string | null
   name: string
-  slug: string
   kind: $Enums.TemplateKind
   sections: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: boolean
@@ -353,7 +335,6 @@ export type TemplateCreateManyInput = {
 export type TemplateUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumTemplateKindFieldUpdateOperationsInput | $Enums.TemplateKind
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -366,7 +347,6 @@ export type TemplateUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumTemplateKindFieldUpdateOperationsInput | $Enums.TemplateKind
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -385,16 +365,10 @@ export type TemplateOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type TemplateSpaceIdSlugCompoundUniqueInput = {
-  spaceId: string
-  slug: string
-}
-
 export type TemplateCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   sections?: Prisma.SortOrder
   isSystem?: Prisma.SortOrder
@@ -407,7 +381,6 @@ export type TemplateMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   isSystem?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -419,7 +392,6 @@ export type TemplateMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   isSystem?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -476,7 +448,6 @@ export type EnumTemplateKindFieldUpdateOperationsInput = {
 export type TemplateCreateWithoutSpaceInput = {
   id?: string
   name: string
-  slug: string
   kind: $Enums.TemplateKind
   sections: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: boolean
@@ -488,7 +459,6 @@ export type TemplateCreateWithoutSpaceInput = {
 export type TemplateUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
-  slug: string
   kind: $Enums.TemplateKind
   sections: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: boolean
@@ -530,7 +500,6 @@ export type TemplateScalarWhereInput = {
   id?: Prisma.StringFilter<"Template"> | string
   spaceId?: Prisma.StringNullableFilter<"Template"> | string | null
   name?: Prisma.StringFilter<"Template"> | string
-  slug?: Prisma.StringFilter<"Template"> | string
   kind?: Prisma.EnumTemplateKindFilter<"Template"> | $Enums.TemplateKind
   sections?: Prisma.JsonFilter<"Template">
   isSystem?: Prisma.BoolFilter<"Template"> | boolean
@@ -542,7 +511,6 @@ export type TemplateScalarWhereInput = {
 export type TemplateCreateManySpaceInput = {
   id?: string
   name: string
-  slug: string
   kind: $Enums.TemplateKind
   sections: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: boolean
@@ -554,7 +522,6 @@ export type TemplateCreateManySpaceInput = {
 export type TemplateUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumTemplateKindFieldUpdateOperationsInput | $Enums.TemplateKind
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -566,7 +533,6 @@ export type TemplateUpdateWithoutSpaceInput = {
 export type TemplateUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumTemplateKindFieldUpdateOperationsInput | $Enums.TemplateKind
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -578,7 +544,6 @@ export type TemplateUncheckedUpdateWithoutSpaceInput = {
 export type TemplateUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumTemplateKindFieldUpdateOperationsInput | $Enums.TemplateKind
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -593,7 +558,6 @@ export type TemplateSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  slug?: boolean
   kind?: boolean
   sections?: boolean
   isSystem?: boolean
@@ -607,7 +571,6 @@ export type TemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  slug?: boolean
   kind?: boolean
   sections?: boolean
   isSystem?: boolean
@@ -621,7 +584,6 @@ export type TemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  slug?: boolean
   kind?: boolean
   sections?: boolean
   isSystem?: boolean
@@ -635,7 +597,6 @@ export type TemplateSelectScalar = {
   id?: boolean
   spaceId?: boolean
   name?: boolean
-  slug?: boolean
   kind?: boolean
   sections?: boolean
   isSystem?: boolean
@@ -644,7 +605,7 @@ export type TemplateSelectScalar = {
   updatedAt?: boolean
 }
 
-export type TemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "slug" | "kind" | "sections" | "isSystem" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["template"]>
+export type TemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "kind" | "sections" | "isSystem" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["template"]>
 export type TemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.Template$spaceArgs<ExtArgs>
 }
@@ -664,7 +625,6 @@ export type $TemplatePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: string
     spaceId: string | null
     name: string
-    slug: string
     kind: $Enums.TemplateKind
     sections: runtime.JsonValue
     isSystem: boolean
@@ -1098,7 +1058,6 @@ export interface TemplateFieldRefs {
   readonly id: Prisma.FieldRef<"Template", 'String'>
   readonly spaceId: Prisma.FieldRef<"Template", 'String'>
   readonly name: Prisma.FieldRef<"Template", 'String'>
-  readonly slug: Prisma.FieldRef<"Template", 'String'>
   readonly kind: Prisma.FieldRef<"Template", 'TemplateKind'>
   readonly sections: Prisma.FieldRef<"Template", 'Json'>
   readonly isSystem: Prisma.FieldRef<"Template", 'Boolean'>

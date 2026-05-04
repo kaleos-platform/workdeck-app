@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
@@ -19,23 +20,20 @@ type Option = { id: string; name: string; kind?: string }
 type IdeaOption = { ideationId: string; ideaIndex: number; title: string }
 
 type Props = {
-  templates: Option[]
-  products: Option[]
-  personas: Option[]
   channels: Option[]
   ideas: IdeaOption[]
 }
 
 const NONE = '__none'
 
-export function ContentNewForm({ templates, products, personas, channels, ideas }: Props) {
+export function ContentNewForm({ channels, ideas }: Props) {
   const router = useRouter()
   const [title, setTitle] = useState('')
-  const [templateId, setTemplateId] = useState<string>(NONE)
-  const [productId, setProductId] = useState<string>(NONE)
-  const [personaId, setPersonaId] = useState<string>(NONE)
   const [channelId, setChannelId] = useState<string>(NONE)
   const [ideaCompoundId, setIdeaCompoundId] = useState<string>(NONE)
+  const [targetKeyword, setTargetKeyword] = useState('')
+  const [urlSlug, setUrlSlug] = useState('')
+  const [body, setBody] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,12 +49,12 @@ export function ContentNewForm({ templates, products, personas, channels, ideas 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim() || '제목 없음',
-          templateId: templateId === NONE ? null : templateId,
-          productId: productId === NONE ? null : productId,
-          personaId: personaId === NONE ? null : personaId,
           channelId: channelId === NONE ? null : channelId,
           ideationId,
           ideaIndex: ideaIndexStr != null ? Number(ideaIndexStr) : null,
+          targetKeyword: targetKeyword.trim() || undefined,
+          urlSlug: urlSlug.trim() || undefined,
+          body: body.trim() || undefined,
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -88,76 +86,44 @@ export function ContentNewForm({ templates, products, personas, channels, ideas 
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label>글감 (선택)</Label>
-              <Select value={ideaCompoundId} onValueChange={setIdeaCompoundId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="글감 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>선택 안 함</SelectItem>
-                  {ideas.map((i) => (
-                    <SelectItem
-                      key={`${i.ideationId}::${i.ideaIndex}`}
-                      value={`${i.ideationId}::${i.ideaIndex}`}
-                    >
-                      {i.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>템플릿</Label>
-              <Select value={templateId} onValueChange={setTemplateId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="템플릿 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>빈 문서</SelectItem>
-                  {templates.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-1.5">
+            <Label>글감 (선택)</Label>
+            <Select value={ideaCompoundId} onValueChange={setIdeaCompoundId}>
+              <SelectTrigger>
+                <SelectValue placeholder="글감 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>선택 안 함</SelectItem>
+                {ideas.map((i) => (
+                  <SelectItem
+                    key={`${i.ideationId}::${i.ideaIndex}`}
+                    value={`${i.ideationId}::${i.ideaIndex}`}
+                  >
+                    {i.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>상품</Label>
-              <Select value={productId} onValueChange={setProductId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="상품" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>선택 안 함</SelectItem>
-                  {products.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="targetKeyword">타겟 키워드</Label>
+              <Input
+                id="targetKeyword"
+                value={targetKeyword}
+                onChange={(e) => setTargetKeyword(e.target.value)}
+                placeholder="예: B2B SaaS 마케팅"
+              />
             </div>
             <div className="space-y-1.5">
-              <Label>페르소나</Label>
-              <Select value={personaId} onValueChange={setPersonaId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="페르소나" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>선택 안 함</SelectItem>
-                  {personas.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="urlSlug">URL 슬러그</Label>
+              <Input
+                id="urlSlug"
+                value={urlSlug}
+                onChange={(e) => setUrlSlug(e.target.value)}
+                placeholder="예: b2b-saas-marketing"
+              />
             </div>
           </div>
 
@@ -176,6 +142,17 @@ export function ContentNewForm({ templates, products, personas, channels, ideas 
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="body">초안 본문 (선택)</Label>
+            <Textarea
+              id="body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="직접 초안을 입력하거나 비워두면 에디터에서 작성합니다"
+              rows={5}
+            />
           </div>
 
           {error && (

@@ -26,7 +26,6 @@ import {
 type Product = {
   id: string
   name: string
-  slug: string
   oneLinerPitch: string | null
   isActive: boolean
   updatedAt: Date
@@ -35,10 +34,8 @@ type Product = {
 type Persona = {
   id: string
   name: string
-  slug: string
   jobTitle: string | null
   industry: string | null
-  companySize: string | null
   isActive: boolean
   updatedAt: Date
 }
@@ -47,14 +44,8 @@ type BrandProfileInitial =
   | {
       companyName: string
       shortDescription: string
-      missionStatement: string
       toneOfVoice: string[]
-      forbiddenPhrases: string[]
-      preferredPhrases: string[]
-      styleGuideUrl: string
-      primaryColor: string
-      secondaryColor: string
-      logoUrl: string
+      customFields: { key: string; value: string }[]
     }
   | undefined
 

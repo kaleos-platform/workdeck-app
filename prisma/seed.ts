@@ -36,9 +36,9 @@ async function main() {
 
   console.log('🌱 Sales Content 시스템 템플릿 seed...')
   for (const t of SYSTEM_TEMPLATES) {
-    // spaceId=null 인 행은 unique(spaceId, slug) 가 null 중복을 허용하므로 findFirst → update/create.
+    // spaceId=null + name 기준으로 기존 행 탐색 후 update/create.
     const existing = await prisma.template.findFirst({
-      where: { spaceId: null, slug: t.slug },
+      where: { spaceId: null, isSystem: true, name: t.name },
       select: { id: true },
     })
     if (existing) {
@@ -56,7 +56,6 @@ async function main() {
       await prisma.template.create({
         data: {
           spaceId: null,
-          slug: t.slug,
           name: t.name,
           kind: t.kind,
           sections: t.sections,
@@ -65,7 +64,7 @@ async function main() {
         },
       })
     }
-    console.log(`  ✔ Template [${t.slug}] upsert 완료`)
+    console.log(`  ✔ Template [${t.name}] upsert 완료`)
   }
 
   console.log('✅ 시드 완료')

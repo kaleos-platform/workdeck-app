@@ -40,39 +40,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const data = parsed.data
 
-  try {
-    const persona = await prisma.persona.update({
-      where: { id },
-      data: {
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.slug !== undefined && { slug: data.slug }),
-        ...(data.jobTitle !== undefined && { jobTitle: data.jobTitle ?? null }),
-        ...(data.industry !== undefined && { industry: data.industry ?? null }),
-        ...(data.companySize !== undefined && { companySize: data.companySize ?? null }),
-        ...(data.seniority !== undefined && { seniority: data.seniority ?? null }),
-        ...(data.decisionRole !== undefined && { decisionRole: data.decisionRole ?? null }),
-        ...(data.goals !== undefined && { goals: data.goals ?? undefined }),
-        ...(data.painPoints !== undefined && { painPoints: data.painPoints ?? undefined }),
-        ...(data.objections !== undefined && { objections: data.objections ?? undefined }),
-        ...(data.preferredChannels !== undefined && {
-          preferredChannels: data.preferredChannels ?? undefined,
-        }),
-        ...(data.toneHints !== undefined && { toneHints: data.toneHints ?? null }),
-        ...(data.isActive !== undefined && { isActive: data.isActive }),
-      },
-    })
-    return NextResponse.json({ persona })
-  } catch (err: unknown) {
-    if (
-      typeof err === 'object' &&
-      err !== null &&
-      'code' in err &&
-      (err as { code: string }).code === 'P2002'
-    ) {
-      return errorResponse('이미 동일한 slug의 페르소나가 존재합니다', 409)
-    }
-    throw err
-  }
+  const persona = await prisma.persona.update({
+    where: { id },
+    data: {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.jobTitle !== undefined && { jobTitle: data.jobTitle ?? null }),
+      ...(data.industry !== undefined && { industry: data.industry ?? null }),
+      ...(data.customFields !== undefined && { customFields: (data.customFields ?? []) as never }),
+      ...(data.isActive !== undefined && { isActive: data.isActive }),
+    },
+  })
+  return NextResponse.json({ persona })
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

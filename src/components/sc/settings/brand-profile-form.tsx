@@ -5,34 +5,22 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StringArrayField } from './string-array-field'
+import { CustomFieldsEditor, type CustomField } from '@/components/sc/shared/custom-fields-editor'
 
 type BrandProfileFormState = {
   companyName: string
   shortDescription: string
-  missionStatement: string
   toneOfVoice: string[]
-  forbiddenPhrases: string[]
-  preferredPhrases: string[]
-  styleGuideUrl: string
-  primaryColor: string
-  secondaryColor: string
-  logoUrl: string
+  customFields: CustomField[]
 }
 
 const EMPTY: BrandProfileFormState = {
   companyName: '',
   shortDescription: '',
-  missionStatement: '',
   toneOfVoice: [],
-  forbiddenPhrases: [],
-  preferredPhrases: [],
-  styleGuideUrl: '',
-  primaryColor: '',
-  secondaryColor: '',
-  logoUrl: '',
+  customFields: [],
 }
 
 type Props = {
@@ -57,14 +45,8 @@ export function BrandProfileForm({ initial }: Props) {
       const body = {
         companyName: state.companyName,
         shortDescription: state.shortDescription || undefined,
-        missionStatement: state.missionStatement || undefined,
         toneOfVoice: state.toneOfVoice.length ? state.toneOfVoice : undefined,
-        forbiddenPhrases: state.forbiddenPhrases.length ? state.forbiddenPhrases : undefined,
-        preferredPhrases: state.preferredPhrases.length ? state.preferredPhrases : undefined,
-        styleGuideUrl: state.styleGuideUrl || undefined,
-        primaryColor: state.primaryColor || undefined,
-        secondaryColor: state.secondaryColor || undefined,
-        logoUrl: state.logoUrl || undefined,
+        customFields: state.customFields.length ? state.customFields : undefined,
       }
       const res = await fetch('/api/sc/brand-profile', {
         method: 'PUT',
@@ -109,15 +91,6 @@ export function BrandProfileForm({ initial }: Props) {
               maxLength={400}
             />
           </div>
-          <div className="space-y-1.5 md:col-span-2">
-            <Label htmlFor="missionStatement">미션·비전</Label>
-            <Textarea
-              id="missionStatement"
-              value={state.missionStatement}
-              onChange={(e) => update('missionStatement', e.target.value)}
-              rows={3}
-            />
-          </div>
         </CardContent>
       </Card>
 
@@ -125,7 +98,7 @@ export function BrandProfileForm({ initial }: Props) {
         <CardHeader>
           <CardTitle className="text-base">보이스·톤</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <StringArrayField
             id="toneOfVoice"
             label="톤 키워드"
@@ -133,68 +106,22 @@ export function BrandProfileForm({ initial }: Props) {
             onChange={(v) => update('toneOfVoice', v)}
             placeholder="예: 전문적, 간결한, 공감하는"
           />
-          <StringArrayField
-            id="preferredPhrases"
-            label="선호 표현"
-            value={state.preferredPhrases}
-            onChange={(v) => update('preferredPhrases', v)}
-            helpText="AI가 가급적 포함하거나 흉내낼 표현"
-          />
-          <StringArrayField
-            id="forbiddenPhrases"
-            label="금칙 표현"
-            value={state.forbiddenPhrases}
-            onChange={(v) => update('forbiddenPhrases', v)}
-            helpText="AI가 사용하지 말아야 할 표현·단어"
-          />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">비주얼</CardTitle>
+          <CardTitle className="text-base">커스텀 필드</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="primaryColor">주 색상 (HEX)</Label>
-            <Input
-              id="primaryColor"
-              value={state.primaryColor}
-              onChange={(e) => update('primaryColor', e.target.value)}
-              placeholder="#1E40AF"
-              pattern="#[0-9a-fA-F]{6}"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="secondaryColor">보조 색상 (HEX)</Label>
-            <Input
-              id="secondaryColor"
-              value={state.secondaryColor}
-              onChange={(e) => update('secondaryColor', e.target.value)}
-              placeholder="#F59E0B"
-              pattern="#[0-9a-fA-F]{6}"
-            />
-          </div>
-          <div className="space-y-1.5 md:col-span-2">
-            <Label htmlFor="logoUrl">로고 URL</Label>
-            <Input
-              id="logoUrl"
-              type="url"
-              value={state.logoUrl}
-              onChange={(e) => update('logoUrl', e.target.value)}
-              placeholder="https://"
-            />
-          </div>
-          <div className="space-y-1.5 md:col-span-2">
-            <Label htmlFor="styleGuideUrl">스타일 가이드 URL</Label>
-            <Input
-              id="styleGuideUrl"
-              type="url"
-              value={state.styleGuideUrl}
-              onChange={(e) => update('styleGuideUrl', e.target.value)}
-              placeholder="https://"
-            />
-          </div>
+        <CardContent>
+          <p className="mb-3 text-xs text-muted-foreground">
+            AI 생성 시 추가로 반영할 브랜드 속성을 자유롭게 정의하세요 (예: 미션, 금칙어, 선호 표현
+            등).
+          </p>
+          <CustomFieldsEditor
+            value={state.customFields}
+            onChange={(v) => update('customFields', v)}
+          />
         </CardContent>
       </Card>
 

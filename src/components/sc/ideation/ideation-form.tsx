@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select'
 import { SALES_CONTENT_IDEATION_PATH } from '@/lib/deck-routes'
 
-type Option = { id: string; name: string; slug: string }
+type Option = { id: string; name: string }
 
 type Props = {
   products: Option[]
@@ -27,19 +27,21 @@ const NONE_VALUE = '__none'
 
 export function IdeationForm({ products, personas, brandConfigured }: Props) {
   const router = useRouter()
-  const [productId, setProductId] = useState<string>(NONE_VALUE)
+  // personaId 는 Ideation 에서 필수 — 선택 안 하면 제출 불가
   const [personaId, setPersonaId] = useState<string>(NONE_VALUE)
+  // 상품은 다중 선택이지만 현재 단순 단일 선택 UI (추후 체크박스 리스트로 확장 가능)
+  const [productId, setProductId] = useState<string>(NONE_VALUE)
   const [userPromptInput, setUserPromptInput] = useState('')
   const [count, setCount] = useState(5)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const missingContext = productId === NONE_VALUE && personaId === NONE_VALUE && !brandConfigured
+  const missingContext = personaId === NONE_VALUE && !brandConfigured
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (missingContext) {
-      setError('상품·페르소나·브랜드 프로필 중 최소 하나는 설정되어 있어야 합니다.')
+    if (personaId === NONE_VALUE) {
+      setError('타겟 페르소나를 선택해 주세요.')
       return
     }
     setSubmitting(true)
@@ -50,8 +52,8 @@ export function IdeationForm({ products, personas, brandConfigured }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mode: 'ai',
-          productId: productId === NONE_VALUE ? null : productId,
-          personaId: personaId === NONE_VALUE ? null : personaId,
+          productIds: productId === NONE_VALUE ? [] : [productId],
+          personaId,
           userPromptInput: userPromptInput.trim() || undefined,
           count,
         }),
@@ -77,14 +79,14 @@ export function IdeationForm({ products, personas, brandConfigured }: Props) {
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>판매 상품</Label>
-              <Select value={productId} onValueChange={setProductId}>
+              <Label>타겟 페르소나 *</Label>
+              <Select value={personaId} onValueChange={setPersonaId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="상품 선택" />
+                  <SelectValue placeholder="페르소나 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NONE_VALUE}>선택 안 함</SelectItem>
-                  {products.map((p) => (
+                  {personas.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
                     </SelectItem>
@@ -93,14 +95,14 @@ export function IdeationForm({ products, personas, brandConfigured }: Props) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>타겟 페르소나</Label>
-              <Select value={personaId} onValueChange={setPersonaId}>
+              <Label>판매 상품 (선택)</Label>
+              <Select value={productId} onValueChange={setProductId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="페르소나 선택" />
+                  <SelectValue placeholder="상품 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NONE_VALUE}>선택 안 함</SelectItem>
-                  {personas.map((p) => (
+                  {products.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
                     </SelectItem>
@@ -146,7 +148,7 @@ export function IdeationForm({ products, personas, brandConfigured }: Props) {
 
           {missingContext && (
             <p className="text-xs text-muted-foreground">
-              상품·페르소나·브랜드 프로필 중 최소 하나를 먼저 설정하면 결과 품질이 올라갑니다.
+              페르소나를 먼저 선택해야 글감 생성이 가능합니다.
             </p>
           )}
 

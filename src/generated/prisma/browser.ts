@@ -333,10 +333,15 @@ export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel
  */
 export type ProductChannelGroupMeta = Prisma.ProductChannelGroupMetaModel
 /**
- * Model B2BProduct
+ * Model Product
  * 
  */
-export type B2BProduct = Prisma.B2BProductModel
+export type Product = Prisma.ProductModel
+/**
+ * Model ProductPersona
+ * 
+ */
+export type ProductPersona = Prisma.ProductPersonaModel
 /**
  * Model Persona
  * 
@@ -413,10 +418,15 @@ export type ContentVersion = Prisma.ContentVersionModel
  */
 export type ContentAsset = Prisma.ContentAssetModel
 /**
- * Model ContentIdea
+ * Model Ideation
  * 
  */
-export type ContentIdea = Prisma.ContentIdeaModel
+export type Ideation = Prisma.IdeationModel
+/**
+ * Model IdeationProduct
+ * 
+ */
+export type IdeationProduct = Prisma.IdeationProductModel
 /**
  * Model ImprovementRule
  * 

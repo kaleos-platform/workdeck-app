@@ -15,11 +15,8 @@ export type IdeationProductCtx = {
   id: string
   name: string
   oneLinerPitch?: string | null
-  valueProposition?: string | null
-  targetCustomers?: string | null
-  keyFeatures?: string[] | null
-  differentiators?: string[] | null
-  painPointsAddressed?: string[] | null
+  // customFields 는 프롬프트에서 단순 KV 텍스트로 렌더링
+  customFields?: Array<{ key: string; value: string }> | null
 }
 
 export type IdeationPersonaCtx = {
@@ -27,23 +24,14 @@ export type IdeationPersonaCtx = {
   name: string
   jobTitle?: string | null
   industry?: string | null
-  companySize?: string | null
-  seniority?: string | null
-  decisionRole?: string | null
-  goals?: string[] | null
-  painPoints?: string[] | null
-  objections?: string[] | null
-  preferredChannels?: string[] | null
-  toneHints?: string | null
+  customFields?: Array<{ key: string; value: string }> | null
 }
 
 export type IdeationBrandCtx = {
   companyName: string
   shortDescription?: string | null
-  missionStatement?: string | null
   toneOfVoice?: string[] | null
-  forbiddenPhrases?: string[] | null
-  preferredPhrases?: string[] | null
+  customFields?: Array<{ key: string; value: string }> | null
 }
 
 export interface IdeationBuilderInput {
@@ -142,15 +130,17 @@ function canonicalReplacer(_key: string, value: unknown): unknown {
 
 // ─── 섹션 렌더 ──────────────────────────────────────────────────────────────
 
+function renderCustomFields(
+  fields: Array<{ key: string; value: string }> | null | undefined
+): string[] {
+  if (!fields?.length) return []
+  return fields.map((f) => `- ${f.key}: ${f.value}`)
+}
+
 function renderProduct(p: IdeationProductCtx): string {
   const lines = ['[상품]', `- 이름: ${p.name}`]
   if (p.oneLinerPitch) lines.push(`- 한 줄 소개: ${p.oneLinerPitch}`)
-  if (p.valueProposition) lines.push(`- 가치제안: ${p.valueProposition}`)
-  if (p.targetCustomers) lines.push(`- 타겟 고객: ${p.targetCustomers}`)
-  if (p.keyFeatures?.length) lines.push(`- 핵심 기능: ${p.keyFeatures.join(', ')}`)
-  if (p.differentiators?.length) lines.push(`- 차별화: ${p.differentiators.join(', ')}`)
-  if (p.painPointsAddressed?.length)
-    lines.push(`- 해결하는 고통: ${p.painPointsAddressed.join(', ')}`)
+  lines.push(...renderCustomFields(p.customFields))
   return lines.join('\n')
 }
 
@@ -158,25 +148,15 @@ function renderPersona(p: IdeationPersonaCtx): string {
   const lines = ['[페르소나]', `- 이름: ${p.name}`]
   if (p.jobTitle) lines.push(`- 직함: ${p.jobTitle}`)
   if (p.industry) lines.push(`- 산업: ${p.industry}`)
-  if (p.companySize) lines.push(`- 조직 규모: ${p.companySize}`)
-  if (p.seniority) lines.push(`- 시니어리티: ${p.seniority}`)
-  if (p.decisionRole) lines.push(`- 의사결정 역할: ${p.decisionRole}`)
-  if (p.goals?.length) lines.push(`- 목표: ${p.goals.join(', ')}`)
-  if (p.painPoints?.length) lines.push(`- 고통/과제: ${p.painPoints.join(', ')}`)
-  if (p.objections?.length) lines.push(`- 반대/이의: ${p.objections.join(', ')}`)
-  if (p.preferredChannels?.length) lines.push(`- 선호 채널: ${p.preferredChannels.join(', ')}`)
-  if (p.toneHints) lines.push(`- 선호 톤: ${p.toneHints}`)
+  lines.push(...renderCustomFields(p.customFields))
   return lines.join('\n')
 }
 
 function renderBrand(b: IdeationBrandCtx): string {
   const lines = ['[브랜드 가이드]', `- 회사명: ${b.companyName}`]
   if (b.shortDescription) lines.push(`- 간단 설명: ${b.shortDescription}`)
-  if (b.missionStatement) lines.push(`- 미션: ${b.missionStatement}`)
   if (b.toneOfVoice?.length) lines.push(`- 톤 오브 보이스: ${b.toneOfVoice.join(', ')}`)
-  if (b.forbiddenPhrases?.length)
-    lines.push(`- 금칙 표현(사용 금지): ${b.forbiddenPhrases.join(', ')}`)
-  if (b.preferredPhrases?.length) lines.push(`- 선호 표현: ${b.preferredPhrases.join(', ')}`)
+  lines.push(...renderCustomFields(b.customFields))
   return lines.join('\n')
 }
 

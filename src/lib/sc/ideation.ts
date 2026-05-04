@@ -32,8 +32,11 @@ export type IdeaItem = z.infer<typeof ideaItemSchema>
 export interface RunIdeationInput {
   spaceId: string
   userId: string
-  productId?: string | null
-  personaId?: string | null
+  // personaId 는 새 스키마에서 NOT NULL
+  personaId: string
+  // 상품은 0~N (M:N)
+  productIds?: string[] | null
+  targetKeywords?: string[] | null
   userPromptInput?: string | null
   count?: number
 }
@@ -57,76 +60,94 @@ export type RunIdeationResult = RunIdeationSuccess | RunIdeationFailure
 // Unit 13 에서 교체 — ImprovementRule 테이블에서 ACTIVE 규칙을 scope 매치로 조회.
 async function loadActiveRules(params: {
   spaceId: string
-  productId?: string | null
+  productIds?: string[] | null
   personaId?: string | null
 }): Promise<IdeationRule[]> {
   const { loadActiveImprovementRules } = await import('./improvement')
-  return loadActiveImprovementRules(params)
+  // improvement.ts 는 단일 productId 기대 — 첫 번째 상품 ID 만 전달 (MVP-1 단순화)
+  return loadActiveImprovementRules({
+    spaceId: params.spaceId,
+    productId: params.productIds?.[0] ?? null,
+    personaId: params.personaId,
+  })
 }
 
 async function loadBuilderContext(input: RunIdeationInput): Promise<{
-  product: IdeationProductCtx | null
+  products: IdeationProductCtx[]
   persona: IdeationPersonaCtx | null
   brand: IdeationBrandCtx | null
   rules: IdeationRule[]
 }> {
-  const [product, persona, brand, rules] = await Promise.all([
-    input.productId
-      ? prisma.b2BProduct.findFirst({
-          where: { id: input.productId, spaceId: input.spaceId },
+  const [productsRaw, persona, brand, rules] = await Promise.all([
+    input.productIds?.length
+      ? prisma.product.findMany({
+          where: { id: { in: input.productIds }, spaceId: input.spaceId },
           select: {
             id: true,
             name: true,
             oneLinerPitch: true,
-            valueProposition: true,
-            targetCustomers: true,
-            keyFeatures: true,
-            differentiators: true,
-            painPointsAddressed: true,
+            customFields: true,
           },
         })
-      : null,
-    input.personaId
-      ? prisma.persona.findFirst({
-          where: { id: input.personaId, spaceId: input.spaceId },
-          select: {
-            id: true,
-            name: true,
-            jobTitle: true,
-            industry: true,
-            companySize: true,
-            seniority: true,
-            decisionRole: true,
-            goals: true,
-            painPoints: true,
-            objections: true,
-            preferredChannels: true,
-            toneHints: true,
-          },
-        })
-      : null,
+      : [],
+    prisma.persona.findFirst({
+      where: { id: input.personaId, spaceId: input.spaceId },
+      select: {
+        id: true,
+        name: true,
+        jobTitle: true,
+        industry: true,
+        customFields: true,
+      },
+    }),
     prisma.brandProfile.findUnique({
       where: { spaceId: input.spaceId },
       select: {
         companyName: true,
         shortDescription: true,
-        missionStatement: true,
         toneOfVoice: true,
-        forbiddenPhrases: true,
-        preferredPhrases: true,
+        customFields: true,
       },
     }),
     loadActiveRules({
       spaceId: input.spaceId,
-      productId: input.productId,
+      productIds: input.productIds,
       personaId: input.personaId,
     }),
   ])
 
+  // customFields: Json → Array<{key,value}> 안전 캐스팅
+  const toCustomFields = (v: unknown): Array<{ key: string; value: string }> | null => {
+    if (!Array.isArray(v)) return null
+    return v as Array<{ key: string; value: string }>
+  }
+
+  const products: IdeationProductCtx[] = productsRaw.map((p) => ({
+    id: p.id,
+    name: p.name,
+    oneLinerPitch: p.oneLinerPitch,
+    customFields: toCustomFields(p.customFields),
+  }))
+
   return {
-    product: product as IdeationProductCtx | null,
-    persona: persona as IdeationPersonaCtx | null,
-    brand: brand as IdeationBrandCtx | null,
+    products,
+    persona: persona
+      ? {
+          id: persona.id,
+          name: persona.name,
+          jobTitle: persona.jobTitle,
+          industry: persona.industry,
+          customFields: toCustomFields(persona.customFields),
+        }
+      : null,
+    brand: brand
+      ? {
+          companyName: brand.companyName,
+          shortDescription: brand.shortDescription,
+          toneOfVoice: brand.toneOfVoice as string[] | null,
+          customFields: toCustomFields(brand.customFields),
+        }
+      : null,
     rules,
   }
 }
@@ -154,8 +175,9 @@ export async function runIdeation(input: RunIdeationInput): Promise<RunIdeationR
   const count = Math.min(Math.max(input.count ?? 5, 3), 10)
   const ctx = await loadBuilderContext(input)
 
+  // buildIdeationPrompt 는 단일 product 를 받으므로 첫 번째만 전달 (MVP-1 단순화)
   const builderInput: IdeationBuilderInput = {
-    product: ctx.product,
+    product: ctx.products[0] ?? null,
     persona: ctx.persona,
     brand: ctx.brand,
     rules: ctx.rules,
@@ -190,22 +212,32 @@ export async function runIdeation(input: RunIdeationInput): Promise<RunIdeationR
         continue
       }
 
-      const saved = await prisma.contentIdea.create({
-        data: {
-          spaceId: input.spaceId,
-          userId: input.userId,
-          productId: input.productId ?? null,
-          personaId: input.personaId ?? null,
-          userPromptInput: input.userPromptInput ?? null,
-          generatedBy: 'AI',
-          ideas: validated.data.ideas,
-          promptTraceHash: built.traceHash,
-          ruleIdsSnapshot: built.ruleIds,
-          providerName,
-          providerModel: result.model ?? null,
-          latencyMs: result.latencyMs,
-        },
-        select: { id: true },
+      // Ideation 생성 + IdeationProduct M:N rows 를 트랜잭션으로 저장
+      const productIds = input.productIds?.filter(Boolean) ?? []
+      const saved = await prisma.$transaction(async (tx) => {
+        const ideation = await tx.ideation.create({
+          data: {
+            spaceId: input.spaceId,
+            userId: input.userId,
+            personaId: input.personaId,
+            targetKeywords: (input.targetKeywords ?? []) as never,
+            generatedBy: 'AI',
+            ideas: validated.data.ideas as never,
+            promptTraceHash: built.traceHash,
+            ruleIdsSnapshot: built.ruleIds as never,
+            providerName,
+            providerModel: result.model ?? null,
+            latencyMs: result.latencyMs,
+          },
+          select: { id: true },
+        })
+        if (productIds.length > 0) {
+          await tx.ideationProduct.createMany({
+            data: productIds.map((productId) => ({ ideationId: ideation.id, productId })),
+            skipDuplicates: true,
+          })
+        }
+        return ideation
       })
 
       return {
@@ -220,7 +252,6 @@ export async function runIdeation(input: RunIdeationInput): Promise<RunIdeationR
   }
 
   const detail = lastError instanceof Error ? lastError.message : String(lastError)
-  // "구성되지 않았다" 류만 NOT_CONFIGURED 로. 살아있는 공급자의 5xx 는 AI_FAILURE 로 분류.
   const code = /not configured|구성되지 않|사용 가능한.*공급자가 구성되지/i.test(detail)
     ? 'NOT_CONFIGURED'
     : /JSON parse|schema/i.test(detail)
@@ -243,22 +274,32 @@ export async function runIdeation(input: RunIdeationInput): Promise<RunIdeationR
 export async function saveUserIdeation(input: {
   spaceId: string
   userId: string
-  productId?: string | null
-  personaId?: string | null
+  personaId: string
+  productIds?: string[] | null
+  targetKeywords?: string[] | null
   ideas: IdeaItem[]
   userPromptInput?: string | null
 }): Promise<{ ideationId: string }> {
-  const saved = await prisma.contentIdea.create({
-    data: {
-      spaceId: input.spaceId,
-      userId: input.userId,
-      productId: input.productId ?? null,
-      personaId: input.personaId ?? null,
-      userPromptInput: input.userPromptInput ?? null,
-      generatedBy: 'USER',
-      ideas: input.ideas,
-    },
-    select: { id: true },
+  const productIds = input.productIds?.filter(Boolean) ?? []
+  const saved = await prisma.$transaction(async (tx) => {
+    const ideation = await tx.ideation.create({
+      data: {
+        spaceId: input.spaceId,
+        userId: input.userId,
+        personaId: input.personaId,
+        targetKeywords: (input.targetKeywords ?? []) as never,
+        generatedBy: 'USER',
+        ideas: input.ideas as never,
+      },
+      select: { id: true },
+    })
+    if (productIds.length > 0) {
+      await tx.ideationProduct.createMany({
+        data: productIds.map((productId) => ({ ideationId: ideation.id, productId })),
+        skipDuplicates: true,
+      })
+    }
+    return ideation
   })
   return { ideationId: saved.id }
 }

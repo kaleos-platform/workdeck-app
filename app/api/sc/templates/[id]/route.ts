@@ -49,12 +49,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   if (wantsClone) {
     if (!isSystem) return errorResponse('복제는 시스템 템플릿에서만 가능합니다', 400)
-    const newSlug = `${existing.slug}-copy-${Date.now().toString(36)}`
     const cloned = await prisma.template.create({
       data: {
         spaceId: resolved.space.id,
         name: `${existing.name} (복사본)`,
-        slug: newSlug,
         kind: existing.kind,
         sections: existing.sections as TemplateSectionsShape,
         isSystem: false,
@@ -84,29 +82,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     sectionsOut = sectionsParsed.data
   }
 
-  try {
-    const updated = await prisma.template.update({
-      where: { id },
-      data: {
-        name: parsed.data.name ?? undefined,
-        slug: parsed.data.slug ?? undefined,
-        kind: parsed.data.kind ?? undefined,
-        sections: sectionsOut,
-        isActive: parsed.data.isActive ?? undefined,
-      },
-    })
-    return NextResponse.json({ template: updated })
-  } catch (err: unknown) {
-    if (
-      typeof err === 'object' &&
-      err !== null &&
-      'code' in err &&
-      (err as { code: string }).code === 'P2002'
-    ) {
-      return errorResponse('이미 동일한 slug 의 템플릿이 존재합니다', 409)
-    }
-    throw err
-  }
+  const updated = await prisma.template.update({
+    where: { id },
+    data: {
+      name: parsed.data.name ?? undefined,
+      kind: parsed.data.kind ?? undefined,
+      sections: sectionsOut,
+      isActive: parsed.data.isActive ?? undefined,
+    },
+  })
+  return NextResponse.json({ template: updated })
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {

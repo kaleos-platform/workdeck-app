@@ -5,43 +5,26 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { StringArrayField } from './string-array-field'
+import { CustomFieldsEditor, type CustomField } from '@/components/sc/shared/custom-fields-editor'
 import { SALES_CONTENT_PERSONAS_PATH } from '@/lib/deck-routes'
 
 type Mode = 'create' | 'edit'
 
 type PersonaFormState = {
   name: string
-  slug: string
   jobTitle: string
   industry: string
-  companySize: string
-  seniority: string
-  decisionRole: string
-  goals: string[]
-  painPoints: string[]
-  objections: string[]
-  preferredChannels: string[]
-  toneHints: string
+  customFields: CustomField[]
   isActive: boolean
 }
 
 const EMPTY: PersonaFormState = {
   name: '',
-  slug: '',
   jobTitle: '',
   industry: '',
-  companySize: '',
-  seniority: '',
-  decisionRole: '',
-  goals: [],
-  painPoints: [],
-  objections: [],
-  preferredChannels: [],
-  toneHints: '',
+  customFields: [],
   isActive: true,
 }
 
@@ -68,17 +51,9 @@ export function PersonaForm({ mode, personaId, initial }: Props) {
     try {
       const body = {
         name: state.name,
-        slug: state.slug,
         jobTitle: state.jobTitle || undefined,
         industry: state.industry || undefined,
-        companySize: state.companySize || undefined,
-        seniority: state.seniority || undefined,
-        decisionRole: state.decisionRole || undefined,
-        goals: state.goals.length ? state.goals : undefined,
-        painPoints: state.painPoints.length ? state.painPoints : undefined,
-        objections: state.objections.length ? state.objections : undefined,
-        preferredChannels: state.preferredChannels.length ? state.preferredChannels : undefined,
-        toneHints: state.toneHints || undefined,
+        customFields: state.customFields.length ? state.customFields : undefined,
         isActive: state.isActive,
       }
 
@@ -135,27 +110,6 @@ export function PersonaForm({ mode, personaId, initial }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="slug">Slug *</Label>
-            <Input
-              id="slug"
-              value={state.slug}
-              onChange={(e) => update('slug', e.target.value)}
-              required
-              pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-              placeholder="persona-slug"
-            />
-          </div>
-          <div className="flex items-center gap-2 pt-6">
-            <Switch
-              id="isActive"
-              checked={state.isActive}
-              onCheckedChange={(checked) => update('isActive', checked)}
-            />
-            <Label htmlFor="isActive" className="cursor-pointer">
-              활성
-            </Label>
-          </div>
-          <div className="space-y-1.5">
             <Label htmlFor="jobTitle">직함</Label>
             <Input
               id="jobTitle"
@@ -171,76 +125,32 @@ export function PersonaForm({ mode, personaId, initial }: Props) {
               onChange={(e) => update('industry', e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="companySize">기업 규모</Label>
-            <Input
-              id="companySize"
-              value={state.companySize}
-              onChange={(e) => update('companySize', e.target.value)}
-              placeholder="예: 중견 100~500명"
+          <div className="flex items-center gap-2 pt-2">
+            <Switch
+              id="isActive"
+              checked={state.isActive}
+              onCheckedChange={(checked) => update('isActive', checked)}
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="seniority">시니어리티</Label>
-            <Input
-              id="seniority"
-              value={state.seniority}
-              onChange={(e) => update('seniority', e.target.value)}
-              placeholder="예: 임원, 매니저, 실무자"
-            />
-          </div>
-          <div className="space-y-1.5 md:col-span-2">
-            <Label htmlFor="decisionRole">구매 의사결정 역할</Label>
-            <Input
-              id="decisionRole"
-              value={state.decisionRole}
-              onChange={(e) => update('decisionRole', e.target.value)}
-              placeholder="예: 최종 결정자 / 인플루언서 / 유저"
-            />
+            <Label htmlFor="isActive" className="cursor-pointer">
+              활성
+            </Label>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">업무 맥락</CardTitle>
+          <CardTitle className="text-base">커스텀 필드</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <StringArrayField
-            id="goals"
-            label="업무 목표"
-            value={state.goals}
-            onChange={(v) => update('goals', v)}
+        <CardContent>
+          <p className="mb-3 text-xs text-muted-foreground">
+            AI 아이데이션에 추가로 전달할 페르소나 속성을 자유롭게 정의하세요 (예: 업무 목표, 고통
+            포인트, 의사결정 역할 등).
+          </p>
+          <CustomFieldsEditor
+            value={state.customFields}
+            onChange={(v) => update('customFields', v)}
           />
-          <StringArrayField
-            id="painPoints"
-            label="업무적 고통 포인트"
-            value={state.painPoints}
-            onChange={(v) => update('painPoints', v)}
-          />
-          <StringArrayField
-            id="objections"
-            label="구매 시 예상 반대 포인트"
-            value={state.objections}
-            onChange={(v) => update('objections', v)}
-          />
-          <StringArrayField
-            id="preferredChannels"
-            label="정보 수집 선호 채널"
-            value={state.preferredChannels}
-            onChange={(v) => update('preferredChannels', v)}
-            placeholder="예: LinkedIn, 네이버 블로그, 업계 뉴스레터"
-          />
-          <div className="space-y-1.5">
-            <Label htmlFor="toneHints">어울리는 톤 힌트</Label>
-            <Textarea
-              id="toneHints"
-              value={state.toneHints}
-              onChange={(e) => update('toneHints', e.target.value)}
-              rows={2}
-              placeholder="예: 데이터 기반, 신중하고 실용적인 표현 선호"
-            />
-          </div>
         </CardContent>
       </Card>
 

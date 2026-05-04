@@ -9,8 +9,8 @@ type IdeationRow = {
   generatedBy: 'USER' | 'AI'
   providerName: string | null
   createdAt: Date
-  product: { id: string; name: string; slug: string } | null
-  persona: { id: string; name: string; slug: string } | null
+  product: { id: string; name: string } | null
+  persona: { id: string; name: string } | null
   ideaCount: number
   firstTitle: string | null
 }
@@ -62,7 +62,7 @@ export function IdeationList({ ideations }: Props) {
               </p>
               {it.userPromptInput && (
                 <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                  “{it.userPromptInput}”
+                  &ldquo;{it.userPromptInput}&rdquo;
                 </p>
               )}
             </div>
