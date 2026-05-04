@@ -18,10 +18,22 @@ export async function POST(
   if (!source) return errorResponse('상품을 찾을 수 없습니다', 404)
 
   const duplicated = await prisma.$transaction(async (tx) => {
+    // @@unique([spaceId, name]) 회피 — 이미 같은 이름이 있으면 (복사 2), (복사 3) 식으로 증가
+    const baseName = source.name.replace(/ \(복사( \d+)?\)$/, '')
+    let candidate = `${baseName} (복사)`
+    for (let i = 2; i < 100; i++) {
+      const exists = await tx.invProduct.findFirst({
+        where: { spaceId: source.spaceId, name: candidate },
+        select: { id: true },
+      })
+      if (!exists) break
+      candidate = `${baseName} (복사 ${i})`
+    }
+
     const created = await tx.invProduct.create({
       data: {
         spaceId: source.spaceId,
-        name: `${source.name} (복사)`,
+        name: candidate,
         internalName: source.internalName,
         nameEn: source.nameEn,
         code: null,
