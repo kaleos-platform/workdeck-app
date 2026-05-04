@@ -72,9 +72,10 @@ type MixedRow = {
 
 type Props = {
   channelId: string | null
+  productId?: string
 }
 
-export function GroupsTable({ channelId }: Props) {
+export function GroupsTable({ channelId, productId }: Props) {
   const [groups, setGroups] = useState<GroupRow[]>([])
   const [mixed, setMixed] = useState<MixedRow[]>([])
   const [loading, setLoading] = useState(false)
@@ -101,6 +102,7 @@ export function GroupsTable({ channelId }: Props) {
         const qs = new URLSearchParams()
         qs.set('channelId', channelId)
         qs.set('status', statusFilter)
+        if (productId) qs.set('productId', productId)
         if (debouncedSearch.trim()) qs.set('search', debouncedSearch.trim())
         const res = await fetch(`/api/sh/products/listings/groups?${qs.toString()}`)
         if (!res.ok) throw new Error('목록 조회 실패')
@@ -121,7 +123,7 @@ export function GroupsTable({ channelId }: Props) {
     return () => {
       cancelled = true
     }
-  }, [channelId, debouncedSearch, statusFilter])
+  }, [channelId, productId, debouncedSearch, statusFilter])
 
   const newLinkHref = useMemo(() => {
     const base = SELLER_HUB_LISTING_NEW_PATH

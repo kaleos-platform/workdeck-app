@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = req.nextUrl
   const channelId = searchParams.get('channelId')?.trim() || null
+  const productId = searchParams.get('productId')?.trim() || null
   const statusFilter = searchParams.get('status')?.trim() || 'all'
   const search = (searchParams.get('search') ?? '').trim()
 
@@ -72,6 +73,7 @@ export async function GET(req: NextRequest) {
     channel: { channelTypeDef: { isSalesChannel: true } },
   }
   if (channelId) where.channelId = channelId
+  if (productId) where.items = { some: { option: { productId } } }
   if (statusFilter === 'ACTIVE' || statusFilter === 'SUSPENDED') where.status = statusFilter
   if (search) {
     where.OR = [
