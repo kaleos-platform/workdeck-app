@@ -187,7 +187,7 @@ export function ChannelEditDialog({
       setFUseSimulation(true)
       setFIsActive(true)
 
-      setFVatIncluded(false)
+      setFVatIncluded(true)
       setFPaymentFeeIncluded(true)
       setFPaymentFeePct('')
       setFeeRows([{ categoryName: '기본', ratePercent: '0' }])

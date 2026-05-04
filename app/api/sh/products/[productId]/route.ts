@@ -93,67 +93,80 @@ export async function PATCH(
     optionAttributes,
   } = parsed.data
 
-  const product = await prisma.$transaction(async (tx) => {
-    const updated = await tx.invProduct.update({
-      where: { id: productId },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(internalName !== undefined && { internalName: internalName ?? null }),
-        ...(nameEn !== undefined && { nameEn: nameEn ?? null }),
-        ...(code !== undefined && { code: code ?? null }),
-        ...(brandId !== undefined && { brandId: brandId ?? null }),
-        ...(groupId !== undefined && { groupId }),
-        ...(manufacturer !== undefined && { manufacturer: manufacturer ?? null }),
-        ...(manufactureCountry !== undefined && {
-          manufactureCountry: manufactureCountry ?? null,
-        }),
-        ...(manufactureDate !== undefined && {
-          manufactureDate: manufactureDate ? new Date(manufactureDate) : null,
-        }),
-        ...(features !== undefined && { features }),
-        ...(certifications !== undefined && { certifications }),
-        ...(msrp !== undefined && { msrp: msrp ?? null }),
-        ...(description !== undefined && { description: description ?? null }),
-        ...(optionAttributes !== undefined && { optionAttributes }),
-      },
-      include: {
-        brand: { select: { id: true, name: true } },
-        options: true,
-      },
-    })
+  try {
+    const product = await prisma.$transaction(async (tx) => {
+      const updated = await tx.invProduct.update({
+        where: { id: productId },
+        data: {
+          ...(name !== undefined && { name }),
+          ...(internalName !== undefined && { internalName: internalName ?? null }),
+          ...(nameEn !== undefined && { nameEn: nameEn ?? null }),
+          ...(code !== undefined && { code: code ?? null }),
+          ...(brandId !== undefined && { brandId: brandId ?? null }),
+          ...(groupId !== undefined && { groupId }),
+          ...(manufacturer !== undefined && { manufacturer: manufacturer ?? null }),
+          ...(manufactureCountry !== undefined && {
+            manufactureCountry: manufactureCountry ?? null,
+          }),
+          ...(manufactureDate !== undefined && {
+            manufactureDate: manufactureDate ? new Date(manufactureDate) : null,
+          }),
+          ...(features !== undefined && { features }),
+          ...(certifications !== undefined && { certifications }),
+          ...(msrp !== undefined && { msrp: msrp ?? null }),
+          ...(description !== undefined && { description: description ?? null }),
+          ...(optionAttributes !== undefined && { optionAttributes }),
+        },
+        include: {
+          brand: { select: { id: true, name: true } },
+          options: true,
+        },
+      })
 
-    // Space 커스텀 사전 자동 학습
-    if (optionAttributes && Array.isArray(optionAttributes)) {
-      for (const attr of optionAttributes) {
-        if (!attr?.name?.trim() || !Array.isArray(attr.values)) continue
-        for (const v of attr.values) {
-          const value = String(v?.value ?? '').trim()
-          const code = String(v?.code ?? '').trim()
-          if (!value || !code) continue
-          await tx.spaceOptionCodeAlias.upsert({
-            where: {
-              spaceId_attributeName_value: {
+      // Space 커스텀 사전 자동 학습
+      if (optionAttributes && Array.isArray(optionAttributes)) {
+        for (const attr of optionAttributes) {
+          if (!attr?.name?.trim() || !Array.isArray(attr.values)) continue
+          for (const v of attr.values) {
+            const value = String(v?.value ?? '').trim()
+            const code = String(v?.code ?? '').trim()
+            if (!value || !code) continue
+            await tx.spaceOptionCodeAlias.upsert({
+              where: {
+                spaceId_attributeName_value: {
+                  spaceId: resolved.space.id,
+                  attributeName: attr.name.trim(),
+                  value,
+                },
+              },
+              create: {
                 spaceId: resolved.space.id,
                 attributeName: attr.name.trim(),
                 value,
+                code,
               },
-            },
-            create: {
-              spaceId: resolved.space.id,
-              attributeName: attr.name.trim(),
-              value,
-              code,
-            },
-            update: { code },
-          })
+              update: { code },
+            })
+          }
         }
       }
+
+      return updated
+    })
+
+    return NextResponse.json({ product })
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code
+    const detail = err instanceof Error ? err.message : String(err)
+    console.error('[products PATCH] update failed', { productId, code, detail })
+    if (code === 'P2002') {
+      return errorResponse('이미 동일한 값이 존재합니다 (unique 제약)', 409, { detail })
     }
-
-    return updated
-  })
-
-  return NextResponse.json({ product })
+    if (code === 'P2003') {
+      return errorResponse('연결된 데이터를 찾을 수 없습니다 (foreign key)', 400, { detail })
+    }
+    return errorResponse('상품 저장 중 오류가 발생했습니다', 500, { detail })
+  }
 }
 
 export async function DELETE(

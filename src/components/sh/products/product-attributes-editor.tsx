@@ -92,10 +92,9 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
     void load()
   }, [load])
 
-  async function handleSave() {
+  // 속성 정의만 PATCH (옵션 리스트는 건드리지 않음). Space alias 자동 학습 포함.
+  async function handleSaveAttributesOnly() {
     if (!product) return
-
-    // 유효 속성만 저장 대상
     const validAttrs = attributes.filter((a) => a.name.trim() && a.values.length > 0)
     if (validAttrs.length === 0) {
       toast.error('최소 1개 속성과 값이 필요합니다')
@@ -104,7 +103,6 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
 
     setSaving(true)
     try {
-      // 1) 상품 optionAttributes 저장 + Space alias 자동 학습 (한 번의 PATCH)
       const patchRes = await fetch(`/api/sh/products/${productId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -119,8 +117,27 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         const err = await patchRes.json().catch(() => ({}))
         throw new Error(err?.message ?? '속성 저장 실패')
       }
+      toast.success('속성 정의가 저장되었습니다')
+      await load()
+      onSaved?.()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '저장 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
 
-      // 2) 옵션 diff: 기존 options와 새 combinations 비교
+  // 현재 입력된 combinations를 기존 옵션 리스트와 동기화 (추가/유지+갱신/삭제)
+  async function handleApplyOptions() {
+    if (!product) return
+    const validAttrs = attributes.filter((a) => a.name.trim() && a.values.length > 0)
+    if (validAttrs.length === 0) {
+      toast.error('최소 1개 속성과 값이 필요합니다')
+      return
+    }
+
+    setSaving(true)
+    try {
       const existingByCombKey = new Map(
         product.options.map((o) => {
           const av = o.attributeValues ?? {}
@@ -128,10 +145,9 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
           return [comb.join('|'), o]
         })
       )
-
       const targetCombKeys = new Set(combinations.map((r) => r.combination.join('|')))
 
-      // 2a) 신규 + 유지 업데이트
+      // 신규 + 유지 업데이트
       for (const row of combinations) {
         const key = row.combination.join('|')
         const existing = existingByCombKey.get(key)
@@ -144,7 +160,6 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         const retailPrice = row.retailPrice ? parseFloat(row.retailPrice) : null
 
         if (existing) {
-          // 기존 옵션 업데이트 (sku/원가/소비자가 변경 감지 시만)
           const prevSku = existing.sku ?? ''
           const prevCost = existing.costPrice != null ? Number(existing.costPrice) : null
           const prevRetail = existing.retailPrice != null ? Number(existing.retailPrice) : null
@@ -171,7 +186,6 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
             }
           }
         } else {
-          // 신규 옵션
           const res = await fetch(`/api/sh/products/${productId}/options`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -190,7 +204,7 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         }
       }
 
-      // 2b) 사라진 옵션 삭제
+      // 사라진 옵션 삭제
       for (const existing of product.options) {
         const av = existing.attributeValues ?? {}
         const comb = validAttrs.map((a) => String(av[a.name] ?? ''))
@@ -205,13 +219,13 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
       if (!preHad) {
         toast.success(`${combinations.length}개 옵션이 생성되었습니다`)
       } else {
-        toast.success('옵션 속성이 저장되었습니다')
+        toast.success('옵션 리스트가 동기화되었습니다')
       }
       setConfirmOpen(false)
       await load()
       onSaved?.()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장 실패')
+      toast.error(err instanceof Error ? err.message : '동기화 실패')
     } finally {
       setSaving(false)
     }
@@ -250,13 +264,13 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
     return { added, kept, removed }
   }
 
-  function handleSaveClick() {
-    // 저장 클릭 — 기존 옵션이 0개면 즉시 저장, 아니면 diff 모달.
-    const hasExisting = (product?.options?.length ?? 0) > 0
-    if (!hasExisting) {
-      void handleSave()
-    } else {
+  function handleApplyOptionsClick() {
+    // 옵션 적용 — 삭제 발생 시에만 모달 확인, 아니면 즉시 동기화.
+    const willRemove = computeDiff().removed.length > 0
+    if (willRemove) {
       setConfirmOpen(true)
+    } else {
+      void handleApplyOptions()
     }
   }
 
@@ -271,10 +285,14 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <Button size="sm" onClick={handleSaveClick} disabled={saving}>
+      <div className="flex items-center justify-end gap-2">
+        <Button size="sm" variant="outline" onClick={handleSaveAttributesOnly} disabled={saving}>
           {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-          속성/조합 저장
+          속성 저장
+        </Button>
+        <Button size="sm" onClick={handleApplyOptionsClick} disabled={saving}>
+          {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+          옵션 적용
         </Button>
       </div>
 
@@ -332,7 +350,7 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
             <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={saving}>
               취소
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleApplyOptions} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
               계속
             </Button>

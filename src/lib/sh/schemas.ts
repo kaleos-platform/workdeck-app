@@ -82,41 +82,45 @@ export const productSchema = z.object({
       return v
     }, z.string().max(200).nullable())
     .optional(),
-  nameEn: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
-    .optional(),
-  code: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
-    .optional(),
-  brandId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike).optional(),
-  // 카테고리 필수 — POST에선 required, PATCH에선 partial()로 optional이 된다.
-  // null/'' 전달 시 undefined로 정규화해서 id 검증을 건너뛴다 (partial에서만 OK).
+  // .optional()은 inner schema에 적용해야 preprocess 결과(undefined)도 허용됨
+  nameEn: z.preprocess(
+    (v) => (v === null || v === '' ? undefined : v),
+    z.string().max(200).optional()
+  ),
+  code: z.preprocess(
+    (v) => (v === null || v === '' ? undefined : v),
+    z.string().max(100).optional()
+  ),
+  brandId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike.optional()),
+  // 카테고리 — POST에선 required, PATCH에선 partial()로 optional이 된다.
   groupId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike),
-  manufacturer: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(200))
-    .optional(),
-  manufactureCountry: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
-    .optional(),
-  // date-only(YYYY-MM-DD) / ISO datetime / null / '' 모두 허용 → 최종적으로 string | undefined
-  manufactureDate: z
-    .preprocess(
-      (v) => (v === null || v === '' ? undefined : v),
-      z.string().refine((s) => !Number.isNaN(new Date(s).getTime()), '유효한 날짜가 아닙니다')
-    )
-    .optional(),
+  manufacturer: z.preprocess(
+    (v) => (v === null || v === '' ? undefined : v),
+    z.string().max(200).optional()
+  ),
+  manufactureCountry: z.preprocess(
+    (v) => (v === null || v === '' ? undefined : v),
+    z.string().max(100).optional()
+  ),
+  // date-only(YYYY-MM-DD) / ISO datetime / null / '' 모두 허용
+  manufactureDate: z.preprocess(
+    (v) => (v === null || v === '' ? undefined : v),
+    z
+      .string()
+      .refine((s) => !Number.isNaN(new Date(s).getTime()), '유효한 날짜가 아닙니다')
+      .optional()
+  ),
   features: z.array(z.string()).optional(),
   // 프론트가 문자열 배열로 전송 — 인증번호 한 줄씩
   certifications: z.array(z.string()).optional(),
-  msrp: z
-    .preprocess(
-      (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
-      z.number().nonnegative()
-    )
-    .optional(),
-  description: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(2000))
-    .optional(),
+  msrp: z.preprocess(
+    (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
+    z.number().nonnegative().optional()
+  ),
+  description: z.preprocess(
+    (v) => (v === null || v === '' ? undefined : v),
+    z.string().max(2000).optional()
+  ),
   optionAttributes: z.array(optionAttributeSchema).optional(),
   options: z.array(productOptionSchema).optional(),
 })
