@@ -27,15 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { SELLER_HUB_LISTINGS_PATH, getSellerHubListingGroupPath } from '@/lib/deck-routes'
+import { SELLER_HUB_LISTINGS_PATH, getSellerHubProductPath } from '@/lib/deck-routes'
 import {
   applyChannelAllocation,
   computeDiscount,
@@ -118,9 +110,6 @@ export function GroupDetailView({ productId, channelId }: Props) {
 
   // 복제 다이얼로그 state
   const [duplicateOpen, setDuplicateOpen] = useState(false)
-  const [duplicateMode, setDuplicateMode] = useState<'same' | 'other'>('same')
-  const [duplicateTargetChannelId, setDuplicateTargetChannelId] = useState<string>('')
-  const [otherChannels, setOtherChannels] = useState<Array<{ id: string; name: string }>>([])
   const [duplicateLoading, setDuplicateLoading] = useState(false)
 
   const load = useCallback(async () => {
@@ -420,54 +409,20 @@ export function GroupDetailView({ productId, channelId }: Props) {
     }
   }
 
-  // 복제 다이얼로그 채널 목록 로드 (다른 채널로 복제 모드용)
-  useEffect(() => {
-    if (!duplicateOpen) return
-    let cancelled = false
-    const load = async () => {
-      try {
-        const res = await fetch('/api/channels?isActive=true&isSalesChannel=true')
-        if (!res.ok) throw new Error('채널 목록 조회 실패')
-        const data: { channels: Array<{ id: string; name: string }> } = await res.json()
-        if (cancelled) return
-        const others = (data.channels ?? []).filter((c) => c.id !== channelId)
-        setOtherChannels(others)
-        if (!duplicateTargetChannelId && others.length > 0) {
-          setDuplicateTargetChannelId(others[0].id)
-        }
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : '채널 목록 조회 실패')
-      }
-    }
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [duplicateOpen, channelId, duplicateTargetChannelId])
-
   async function confirmDuplicate() {
     if (!data) return
-    const targetChannelId = duplicateMode === 'same' ? channelId : duplicateTargetChannelId
-    if (!targetChannelId) {
-      toast.error('대상 채널을 선택해 주세요')
-      return
-    }
     await flushPendingSave()
     setDuplicateLoading(true)
     try {
-      const res = await fetch(
-        `/api/sh/products/listings/groups/${productId}/${channelId}/duplicate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ targetChannelId }),
-        }
-      )
+      const res = await fetch(`/api/sh/products/${productId}/duplicate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
       const body = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(body?.message ?? '복제 실패')
-      toast.success(`${body.count ?? 0}개 listing을 복제했습니다`)
+      toast.success(`상품이 복제되었습니다`)
       setDuplicateOpen(false)
-      router.push(getSellerHubListingGroupPath(productId, body.channelId ?? targetChannelId))
+      router.push(getSellerHubProductPath(body.product.id))
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '복제 실패')
     } finally {
@@ -1229,76 +1184,12 @@ export function GroupDetailView({ productId, channelId }: Props) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>판매채널 상품 복제</DialogTitle>
+            <DialogTitle>상품 복제</DialogTitle>
             <DialogDescription>
-              이 그룹의 listing {data.listings.length}개를 같은 옵션 구성·이름·가격으로 복제합니다.
-              검색명에는 &quot;(복사)&quot; suffix가 자동으로 추가됩니다.
+              상품명·옵션 구성·가격이 동일한 새 상품을 생성합니다. 복제 후 새 상품 수정 화면으로
+              이동합니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">복제 위치</Label>
-              <div className="space-y-1.5">
-                <label className="flex cursor-pointer items-start gap-2 rounded-md border p-3 hover:bg-muted/40">
-                  <input
-                    type="radio"
-                    className="mt-0.5"
-                    checked={duplicateMode === 'same'}
-                    onChange={() => setDuplicateMode('same')}
-                    disabled={duplicateLoading}
-                  />
-                  <span>
-                    <span className="block text-sm font-medium">
-                      현재 채널({data.channel.name})
-                    </span>
-                    <span className="block text-xs text-muted-foreground">
-                      같은 채널에 사본 그룹을 만듭니다
-                    </span>
-                  </span>
-                </label>
-                <label className="flex cursor-pointer items-start gap-2 rounded-md border p-3 hover:bg-muted/40">
-                  <input
-                    type="radio"
-                    className="mt-0.5"
-                    checked={duplicateMode === 'other'}
-                    onChange={() => setDuplicateMode('other')}
-                    disabled={duplicateLoading}
-                  />
-                  <span className="flex-1">
-                    <span className="block text-sm font-medium">다른 채널로 복제</span>
-                    <span className="block text-xs text-muted-foreground">
-                      선택한 채널에 같은 옵션 구성으로 새 그룹 생성
-                    </span>
-                  </span>
-                </label>
-              </div>
-            </div>
-            {duplicateMode === 'other' && (
-              <div className="space-y-1.5">
-                <Label htmlFor="duplicate-channel">대상 채널</Label>
-                {otherChannels.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">복제 가능한 다른 채널이 없습니다.</p>
-                ) : (
-                  <Select
-                    value={duplicateTargetChannelId}
-                    onValueChange={setDuplicateTargetChannelId}
-                    disabled={duplicateLoading}
-                  >
-                    <SelectTrigger id="duplicate-channel">
-                      <SelectValue placeholder="채널을 선택하세요" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {otherChannels.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            )}
-          </div>
           <DialogFooter>
             <Button
               variant="outline"
@@ -1307,14 +1198,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
             >
               취소
             </Button>
-            <Button
-              onClick={confirmDuplicate}
-              disabled={
-                duplicateLoading ||
-                (duplicateMode === 'other' &&
-                  (otherChannels.length === 0 || !duplicateTargetChannelId))
-              }
-            >
+            <Button onClick={confirmDuplicate} disabled={duplicateLoading}>
               {duplicateLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
               복제
             </Button>
