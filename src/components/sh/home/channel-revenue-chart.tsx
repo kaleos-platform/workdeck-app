@@ -211,17 +211,20 @@ export function ChannelRevenueChart() {
                 }
               />
               <Tooltip
-                formatter={(value: number | undefined, name: string | undefined) => {
-                  const channel = channels.find((c) => c.id === name)
-                  return [
-                    new Intl.NumberFormat('ko-KR', {
-                      style: 'currency',
-                      currency: 'KRW',
-                      maximumFractionDigits: 0,
-                    }).format(value ?? 0),
-                    channel?.name ?? name ?? '',
-                  ]
-                }}
+                formatter={
+                  ((value: number | string | undefined, name: string | number | undefined) => {
+                    const channel = channels.find((c) => c.id === String(name ?? ''))
+                    const numValue = typeof value === 'number' ? value : Number(value ?? 0)
+                    return [
+                      new Intl.NumberFormat('ko-KR', {
+                        style: 'currency',
+                        currency: 'KRW',
+                        maximumFractionDigits: 0,
+                      }).format(numValue),
+                      channel?.name ?? String(name ?? ''),
+                    ] as [string, string]
+                  }) as never
+                }
               />
               <Legend
                 formatter={(value) => {

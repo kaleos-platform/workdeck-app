@@ -48,7 +48,7 @@ type ChartDatum = MetricSeries & {
 }
 
 type TooltipEntry = {
-  name?: string
+  name?: string | number
   value?: number | string | null
   payload?: ChartDatum
 }
@@ -283,7 +283,7 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
             tickFormatter={formatRightAxisTick}
           />
           <Tooltip
-            content={renderTooltipContent}
+            content={renderTooltipContent as never}
             contentStyle={{
               fontSize: 12,
               borderRadius: 8,

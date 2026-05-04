@@ -10,6 +10,7 @@ import {
   type AnalyticsFiltersValue,
   type ChannelOption,
 } from './analytics-filters'
+import { Sparkline } from './sparkline'
 import type { SpaceContentAnalyticsRow } from '@/lib/sc/metrics'
 
 // ─── 정렬 타입 ─────────────────────────────────────────────────────────────
@@ -209,6 +210,13 @@ export function AnalyticsContentTable({ contents, channels }: Props) {
                   <SortIcon col={col.key} sort={sort} />
                 </th>
               ))}
+              {/* 추이 컬럼 — 정렬 불가 */}
+              <th
+                scope="col"
+                className="px-3 py-2 text-left text-xs font-medium text-muted-foreground"
+              >
+                추이
+              </th>
               {/* 채널 컬럼 — 정렬 불가 */}
               <th
                 scope="col"
@@ -222,7 +230,7 @@ export function AnalyticsContentTable({ contents, channels }: Props) {
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="border-t border-dashed px-3 py-10 text-center text-sm text-muted-foreground"
                 >
                   표시할 콘텐츠가 없습니다.
@@ -268,6 +276,10 @@ export function AnalyticsContentTable({ contents, channels }: Props) {
                     </td>
                     {/* 클릭 */}
                     <td className="px-3 py-2.5 text-right tabular-nums">{numStr(clicks)}</td>
+                    {/* 추이 sparkline */}
+                    <td className="px-3 py-2.5">
+                      <Sparkline data={row.sparkline} />
+                    </td>
                     {/* 채널 배지 */}
                     <td className="px-3 py-2.5">
                       <ChannelBadges channels={row.channels} />
