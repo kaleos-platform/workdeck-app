@@ -35,6 +35,12 @@ import { CompositionBuilder, type BuiltGroup, type ProductContext } from './comp
 import { CompositionRowsTable, type CompositionRow } from './composition-rows-table'
 import { KeywordEditor } from './keyword-editor'
 import { countChars, getChannelNameLimit } from './channel-name-limits'
+import { deriveBaseValues, type OptionAttribute } from './group-base-info-card'
+
+const COPY_SUFFIX_RE = / \(복사( \d+)?\)$/
+function stripCopySuffix(name: string | null | undefined): string {
+  return (name ?? '').replace(COPY_SUFFIX_RE, '')
+}
 
 const MAX_NAME_LENGTH = 200
 
@@ -49,6 +55,9 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const searchParams = useSearchParams()
   const prefillKey = searchParams.get('prefillKey')
   const prefillApplied = useRef(false)
+  const duplicateFromProductId = searchParams.get('duplicateFromProductId')
+  const duplicateFromChannelId = searchParams.get('duplicateFromChannelId')
+  const duplicateApplied = useRef(false)
 
   const [channels, setChannels] = useState<Channel[]>([])
   const [channelId, setChannelId] = useState<string>(defaultChannelId ?? '')
@@ -155,6 +164,136 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     apply()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillKey])
+
+  // ── 그룹 복제 prefill ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!duplicateFromProductId || !duplicateFromChannelId) return
+    if (duplicateApplied.current) return
+    duplicateApplied.current = true
+
+    const apply = async () => {
+      try {
+        const res = await fetch(
+          `/api/sh/products/listings/groups/${duplicateFromProductId}/${duplicateFromChannelId}`,
+          { cache: 'no-store' }
+        )
+        if (!res.ok) throw new Error('원본 그룹 조회 실패')
+        const data: {
+          product: {
+            id: string
+            name: string
+            internalName: string | null
+            displayName: string
+            brand: { name: string } | null
+            optionAttributes: OptionAttribute[]
+          }
+          channel: { id: string; name: string }
+          meta: { keywords: string[] }
+          listings: Array<{
+            id: string
+            searchName: string
+            displayName: string
+            managementName: string | null
+            internalCode: string | null
+            memo: string | null
+            status: 'ACTIVE' | 'SUSPENDED'
+            retailPrice: number | null
+            channelAllocation: number | null
+            items: Array<{
+              optionId: string
+              optionName: string
+              sku: string | null
+              quantity: number
+              attributeValues: Record<string, string>
+            }>
+          }>
+        } = await res.json()
+
+        // 채널 prefill
+        setChannelId(data.channel.id)
+
+        // ProductContext prefill
+        const ctx: ProductContext = {
+          id: data.product.id,
+          displayName: data.product.displayName,
+          officialName: data.product.name,
+          brandName: data.product.brand?.name ?? null,
+        }
+        setProductCtx(ctx)
+
+        // base 값 추출 + (복사) suffix 부여
+        const derived = deriveBaseValues(
+          data.listings.map((l) => ({
+            id: l.id,
+            searchName: l.searchName,
+            displayName: l.displayName,
+            managementName: l.managementName,
+            internalCode: l.internalCode,
+            memo: l.memo,
+            items: l.items.map((it) => ({
+              optionId: it.optionId,
+              attributeValues: it.attributeValues,
+            })),
+          })),
+          data.product.optionAttributes
+        )
+        const copySuffix = ' (복사)'
+        setBaseSearchName(`${stripCopySuffix(derived.baseSearchName)}${copySuffix}`)
+        setBaseDisplayName(
+          derived.baseDisplayName ? `${stripCopySuffix(derived.baseDisplayName)}${copySuffix}` : ''
+        )
+        setBaseManagementName(
+          derived.baseManagementName
+            ? `${stripCopySuffix(derived.baseManagementName)}${copySuffix}`
+            : ''
+        )
+        setInternalCode(
+          derived.baseInternalCode
+            ? `${stripCopySuffix(derived.baseInternalCode)}${copySuffix}`
+            : ''
+        )
+        setMemo(derived.memo ?? '')
+
+        // 키워드
+        setKeywords(data.meta.keywords ?? [])
+
+        // listings → rows
+        const newRows: CompositionRow[] = data.listings.map((l, idx) => {
+          const suffixParts: string[] = []
+          const firstItem = l.items[0]
+          if (firstItem) {
+            for (const attr of data.product.optionAttributes) {
+              const v = firstItem.attributeValues?.[attr.name]
+              if (v) suffixParts.push(v)
+            }
+          }
+          return {
+            key: `dup-${idx}-${l.id}`,
+            suffixParts,
+            items: l.items.map((it) => ({
+              optionId: it.optionId,
+              optionName: it.optionName,
+              sku: it.sku,
+              quantity: it.quantity,
+              retailPrice: null,
+              attributeValues: it.attributeValues,
+            })),
+            retailPrice: l.retailPrice != null ? String(l.retailPrice) : '',
+            channelAllocation: l.channelAllocation != null ? String(l.channelAllocation) : '',
+            status: l.status,
+          }
+        })
+        setRows(newRows)
+        setSelected(new Set())
+
+        toast.success('원본 그룹의 정보를 미리 채웠습니다 — 검토 후 저장하세요')
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '복제 prefill 실패')
+      }
+    }
+
+    apply()
+  }, [duplicateFromProductId, duplicateFromChannelId])
 
   const currentChannel = channels.find((c) => c.id === channelId) ?? null
   const nameLimit = getChannelNameLimit(currentChannel?.name ?? null)
