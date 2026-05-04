@@ -54,6 +54,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const [channelId, setChannelId] = useState<string>(defaultChannelId ?? '')
   const [baseSearchName, setBaseSearchName] = useState('')
   const [baseDisplayName, setBaseDisplayName] = useState('')
+  const [baseManagementName, setBaseManagementName] = useState('')
   const [internalCode, setInternalCode] = useState('')
   const [memo, setMemo] = useState('')
   const [keywords, setKeywords] = useState<string[]>([])
@@ -209,10 +210,14 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         row.suffixParts,
         baseDisplayName.trim() || baseSearchName.trim()
       )
+      const managementName = baseManagementName.trim()
+        ? previewName(row.suffixParts, baseManagementName.trim())
+        : undefined
       const payload = {
         channelId,
         searchName,
         displayName,
+        managementName,
         internalCode: internalCode.trim()
           ? previewName(row.suffixParts, internalCode.trim())
           : undefined,
@@ -384,6 +389,20 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               placeholder="비우면 검색용 상품명을 그대로 사용합니다"
               maxLength={MAX_NAME_LENGTH - 30}
             />
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="listing-management">상품명 (관리용)</Label>
+              <NameCounter value={baseManagementName} />
+            </div>
+            <Input
+              id="listing-management"
+              value={baseManagementName}
+              onChange={(e) => setBaseManagementName(e.target.value)}
+              placeholder="내부 목록 표시용. 비우면 검색용 상품명을 사용합니다"
+              maxLength={MAX_NAME_LENGTH - 30}
+            />
+            <p className="text-xs text-muted-foreground">생성 시 속성값이 자동으로 뒤에 붙습니다</p>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="listing-memo">메모</Label>
