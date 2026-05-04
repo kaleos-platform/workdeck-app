@@ -91,6 +91,7 @@ export const productSchema = z.object({
     (v) => (v === null || v === '' ? undefined : v),
     z.string().max(100).optional()
   ),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
   brandId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike.optional()),
   // 카테고리 — POST에선 required, PATCH에선 partial()로 optional이 된다.
   groupId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike),

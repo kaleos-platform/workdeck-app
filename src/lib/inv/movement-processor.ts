@@ -65,10 +65,13 @@ async function assertLocationInSpace(
 async function assertOptionInSpace(tx: Tx, spaceId: string, optionId: string) {
   const option = await tx.invProductOption.findUnique({
     where: { id: optionId },
-    include: { product: { select: { spaceId: true } } },
+    include: { product: { select: { spaceId: true, status: true } } },
   })
   if (!option || option.product.spaceId !== spaceId) {
     throw new MovementError('상품 옵션을 찾을 수 없습니다', 404)
+  }
+  if (option.product.status !== 'ACTIVE') {
+    throw new MovementError('미사용 상품입니다. 사용 재개 후 처리하세요', 400)
   }
   return option
 }
@@ -94,15 +97,27 @@ async function resolveOrCreateOption(
   let product = null as Awaited<ReturnType<typeof tx.invProduct.findFirst>> | null
   if (input.productCode) {
     product = await tx.invProduct.findFirst({
-      where: { spaceId, code: input.productCode },
+      where: { spaceId, code: input.productCode, status: 'ACTIVE' },
     })
   }
   if (!product) {
     product = await tx.invProduct.findFirst({
-      where: { spaceId, name: productName },
+      where: { spaceId, name: productName, status: 'ACTIVE' },
     })
   }
   if (!product) {
+    const inactiveProduct = await tx.invProduct.findFirst({
+      where: {
+        spaceId,
+        status: 'INACTIVE',
+        OR: [...(input.productCode ? [{ code: input.productCode }] : []), { name: productName }],
+      },
+      select: { id: true },
+    })
+    if (inactiveProduct) {
+      throw new MovementError('미사용 상품이 존재합니다. 사용 재개 후 처리하세요', 400)
+    }
+
     // groupId 필수 — 기본 카테고리 upsert
     const defaultGroup = await tx.invProductGroup.upsert({
       where: { spaceId_name: { spaceId, name: '기본' } },

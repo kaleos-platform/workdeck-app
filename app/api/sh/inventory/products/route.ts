@@ -13,11 +13,13 @@ export async function GET(req: NextRequest) {
   const sortByRaw = searchParams.get('sortBy') ?? 'name'
   const sortBy = ['name', 'createdAt'].includes(sortByRaw) ? sortByRaw : 'name'
   const sortOrder = searchParams.get('sortOrder') === 'desc' ? 'desc' : 'asc'
+  const statusParam = searchParams.get('status') ?? 'ACTIVE'
 
   const groupIdParam = searchParams.get('groupId')
 
   const where: {
     spaceId: string
+    status?: 'ACTIVE' | 'INACTIVE'
     groupId?: string
     OR?: Array<
       | { internalName: { contains: string; mode: 'insensitive' } }
@@ -26,6 +28,12 @@ export async function GET(req: NextRequest) {
       | { options: { some: { sku: { contains: string; mode: 'insensitive' } } } }
     >
   } = { spaceId: resolved.space.id }
+
+  if (statusParam === 'ACTIVE' || statusParam === 'INACTIVE') {
+    where.status = statusParam
+  } else if (statusParam !== 'all') {
+    where.status = 'ACTIVE'
+  }
 
   // groupId 필수 필드로 변경 — 'none' 필터는 더 이상 지원하지 않음
   if (groupIdParam && groupIdParam !== 'none') {
@@ -53,6 +61,7 @@ export async function GET(req: NextRequest) {
         name: true,
         internalName: true,
         code: true,
+        status: true,
         createdAt: true,
         updatedAt: true,
         group: { select: { id: true, name: true } },
@@ -81,6 +90,7 @@ export async function GET(req: NextRequest) {
       internalName: p.internalName,
       officialName: p.name,
       code: p.code,
+      status: p.status,
       groupId: p.group.id,
       groupName: p.group.name,
       createdAt: p.createdAt,

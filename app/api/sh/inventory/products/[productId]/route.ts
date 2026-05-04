@@ -51,6 +51,7 @@ export async function GET(
     id: product.id,
     name: product.name,
     code: product.code,
+    status: product.status,
     groupId: product.groupId,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,

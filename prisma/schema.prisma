@@ -85,6 +85,12 @@ enum ProductListingStatus {
   SUSPENDED
 }
 
+// 상품 마스터 상태 — INACTIVE는 기존 이력은 보존하되 신규 작업 선택에서 제외.
+enum InvProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
 // ─── 사용자 모델 (Supabase Auth와 연동) ──────────────────────────────────────
 
 model User {
@@ -728,11 +734,12 @@ model InvProductGroup {
 
 // 상품 (옵션 단위로 관리)
 model InvProduct {
-  id      String  @id @default(cuid())
+  id      String           @id @default(cuid())
   spaceId String
   name    String // 공식 상품명 — 판매채널 노출명 (필수)
   code    String? // 상품 코드 (space 내 unique, null 허용)
   groupId String // 카테고리 필수 (non-null)
+  status  InvProductStatus @default(ACTIVE)
 
   // 셀러 허브 확장 필드 (모두 nullable)
   brandId            String?

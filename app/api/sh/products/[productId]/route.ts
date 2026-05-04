@@ -83,6 +83,7 @@ export async function PATCH(
     internalName,
     nameEn,
     code,
+    status,
     manufacturer,
     manufactureCountry,
     manufactureDate,
@@ -102,6 +103,7 @@ export async function PATCH(
           ...(internalName !== undefined && { internalName: internalName ?? null }),
           ...(nameEn !== undefined && { nameEn: nameEn ?? null }),
           ...(code !== undefined && { code: code ?? null }),
+          ...(status !== undefined && { status }),
           ...(brandId !== undefined && { brandId: brandId ?? null }),
           ...(groupId !== undefined && { groupId }),
           ...(manufacturer !== undefined && { manufacturer: manufacturer ?? null }),
@@ -185,11 +187,24 @@ export async function DELETE(
 
   const existing = await prisma.invProduct.findFirst({
     where: { id: productId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, status: true },
   })
   if (!existing) return errorResponse('상품을 찾을 수 없습니다', 404)
 
-  await prisma.invProduct.delete({ where: { id: productId } })
+  if (existing.status !== 'INACTIVE') {
+    return errorResponse('상품을 미사용 처리한 뒤 삭제할 수 있습니다', 409)
+  }
+
+  try {
+    await prisma.invProduct.delete({ where: { id: productId } })
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code
+    const detail = err instanceof Error ? err.message : String(err)
+    if (code === 'P2003') {
+      return errorResponse('연결된 데이터가 있어 삭제할 수 없습니다', 409, { detail })
+    }
+    return errorResponse('상품 삭제 중 오류가 발생했습니다', 500, { detail })
+  }
 
   return new NextResponse(null, { status: 204 })
 }

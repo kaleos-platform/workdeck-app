@@ -177,11 +177,11 @@ export async function POST(req: NextRequest) {
   // 옵션 소속 검증 (같은 Space의 상품 옵션이어야 함)
   const optionIds = input.items.map((it) => it.optionId)
   const validOptions = await prisma.invProductOption.findMany({
-    where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
+    where: { id: { in: optionIds }, product: { spaceId: resolved.space.id, status: 'ACTIVE' } },
     select: { id: true },
   })
   if (validOptions.length !== optionIds.length) {
-    return errorResponse('일부 옵션을 찾을 수 없습니다', 400)
+    return errorResponse('일부 옵션을 찾을 수 없거나 미사용 상품에 속해 있습니다', 400)
   }
 
   // 검색명 중복 검증 (같은 채널 내)

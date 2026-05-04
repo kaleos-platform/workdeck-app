@@ -593,6 +593,7 @@ export const InvProductScalarFieldEnum = {
   name: 'name',
   code: 'code',
   groupId: 'groupId',
+  status: 'status',
   brandId: 'brandId',
   internalName: 'internalName',
   nameEn: 'nameEn',

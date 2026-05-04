@@ -100,6 +100,14 @@ export const ProductListingStatus = {
 export type ProductListingStatus = (typeof ProductListingStatus)[keyof typeof ProductListingStatus]
 
 
+export const InvProductStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+} as const
+
+export type InvProductStatus = (typeof InvProductStatus)[keyof typeof InvProductStatus]
+
+
 export const InvMovementType = {
   INBOUND: 'INBOUND',
   OUTBOUND: 'OUTBOUND',

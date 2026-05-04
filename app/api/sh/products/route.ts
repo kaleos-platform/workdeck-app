@@ -13,8 +13,14 @@ export async function GET(req: NextRequest) {
   const search = (searchParams.get('search') ?? '').trim()
   const brandId = searchParams.get('brandId')
   const groupId = searchParams.get('groupId')
+  const statusParam = searchParams.get('status') ?? 'ACTIVE'
 
   const where: Record<string, unknown> = { spaceId: resolved.space.id }
+  if (statusParam === 'ACTIVE' || statusParam === 'INACTIVE') {
+    where.status = statusParam
+  } else if (statusParam !== 'all') {
+    where.status = 'ACTIVE'
+  }
   if (brandId) where.brandId = brandId
   if (groupId === 'none') where.groupId = null
   else if (groupId) where.groupId = groupId
@@ -88,6 +94,7 @@ export async function POST(req: NextRequest) {
     internalName,
     nameEn,
     code,
+    status,
     brandId,
     groupId,
     manufacturer,
@@ -131,6 +138,7 @@ export async function POST(req: NextRequest) {
         internalName: internalName ?? null,
         nameEn: nameEn ?? null,
         code: code ?? null,
+        status: status ?? 'ACTIVE',
         brandId: brandId ?? null,
         groupId,
         manufacturer: manufacturer ?? null,

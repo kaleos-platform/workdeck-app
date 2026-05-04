@@ -40,6 +40,7 @@ export type InvProductMinAggregateOutputType = {
   name: string | null
   code: string | null
   groupId: string | null
+  status: $Enums.InvProductStatus | null
   brandId: string | null
   internalName: string | null
   nameEn: string | null
@@ -58,6 +59,7 @@ export type InvProductMaxAggregateOutputType = {
   name: string | null
   code: string | null
   groupId: string | null
+  status: $Enums.InvProductStatus | null
   brandId: string | null
   internalName: string | null
   nameEn: string | null
@@ -76,6 +78,7 @@ export type InvProductCountAggregateOutputType = {
   name: number
   code: number
   groupId: number
+  status: number
   brandId: number
   internalName: number
   nameEn: number
@@ -107,6 +110,7 @@ export type InvProductMinAggregateInputType = {
   name?: true
   code?: true
   groupId?: true
+  status?: true
   brandId?: true
   internalName?: true
   nameEn?: true
@@ -125,6 +129,7 @@ export type InvProductMaxAggregateInputType = {
   name?: true
   code?: true
   groupId?: true
+  status?: true
   brandId?: true
   internalName?: true
   nameEn?: true
@@ -143,6 +148,7 @@ export type InvProductCountAggregateInputType = {
   name?: true
   code?: true
   groupId?: true
+  status?: true
   brandId?: true
   internalName?: true
   nameEn?: true
@@ -251,6 +257,7 @@ export type InvProductGroupByOutputType = {
   name: string
   code: string | null
   groupId: string
+  status: $Enums.InvProductStatus
   brandId: string | null
   internalName: string | null
   nameEn: string | null
@@ -295,6 +302,7 @@ export type InvProductWhereInput = {
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   groupId?: Prisma.StringFilter<"InvProduct"> | string
+  status?: Prisma.EnumInvProductStatusFilter<"InvProduct"> | $Enums.InvProductStatus
   brandId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   internalName?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   nameEn?: Prisma.StringNullableFilter<"InvProduct"> | string | null
@@ -322,6 +330,7 @@ export type InvProductOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   internalName?: Prisma.SortOrderInput | Prisma.SortOrder
   nameEn?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -353,6 +362,7 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   groupId?: Prisma.StringFilter<"InvProduct"> | string
+  status?: Prisma.EnumInvProductStatusFilter<"InvProduct"> | $Enums.InvProductStatus
   brandId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   internalName?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   nameEn?: Prisma.StringNullableFilter<"InvProduct"> | string | null
@@ -380,6 +390,7 @@ export type InvProductOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   internalName?: Prisma.SortOrderInput | Prisma.SortOrder
   nameEn?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -409,6 +420,7 @@ export type InvProductScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"InvProduct"> | string
   code?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
   groupId?: Prisma.StringWithAggregatesFilter<"InvProduct"> | string
+  status?: Prisma.EnumInvProductStatusWithAggregatesFilter<"InvProduct"> | $Enums.InvProductStatus
   brandId?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
   internalName?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
   nameEn?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
@@ -428,6 +440,7 @@ export type InvProductCreateInput = {
   id?: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -454,6 +467,7 @@ export type InvProductUncheckedCreateInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -476,6 +490,7 @@ export type InvProductUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -502,6 +517,7 @@ export type InvProductUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -526,6 +542,7 @@ export type InvProductCreateManyInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -545,6 +562,7 @@ export type InvProductUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -565,6 +583,7 @@ export type InvProductUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -601,6 +620,7 @@ export type InvProductCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   brandId?: Prisma.SortOrder
   internalName?: Prisma.SortOrder
   nameEn?: Prisma.SortOrder
@@ -626,6 +646,7 @@ export type InvProductMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   brandId?: Prisma.SortOrder
   internalName?: Prisma.SortOrder
   nameEn?: Prisma.SortOrder
@@ -644,6 +665,7 @@ export type InvProductMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   brandId?: Prisma.SortOrder
   internalName?: Prisma.SortOrder
   nameEn?: Prisma.SortOrder
@@ -749,6 +771,10 @@ export type InvProductUncheckedUpdateManyWithoutGroupNestedInput = {
   deleteMany?: Prisma.InvProductScalarWhereInput | Prisma.InvProductScalarWhereInput[]
 }
 
+export type EnumInvProductStatusFieldUpdateOperationsInput = {
+  set?: $Enums.InvProductStatus
+}
+
 export type InvProductCreateNestedOneWithoutOptionsInput = {
   create?: Prisma.XOR<Prisma.InvProductCreateWithoutOptionsInput, Prisma.InvProductUncheckedCreateWithoutOptionsInput>
   connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutOptionsInput
@@ -837,6 +863,7 @@ export type InvProductCreateWithoutSpaceInput = {
   id?: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -861,6 +888,7 @@ export type InvProductUncheckedCreateWithoutSpaceInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -914,6 +942,7 @@ export type InvProductScalarWhereInput = {
   name?: Prisma.StringFilter<"InvProduct"> | string
   code?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   groupId?: Prisma.StringFilter<"InvProduct"> | string
+  status?: Prisma.EnumInvProductStatusFilter<"InvProduct"> | $Enums.InvProductStatus
   brandId?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   internalName?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   nameEn?: Prisma.StringNullableFilter<"InvProduct"> | string | null
@@ -933,6 +962,7 @@ export type InvProductCreateWithoutGroupInput = {
   id?: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -957,6 +987,7 @@ export type InvProductUncheckedCreateWithoutGroupInput = {
   spaceId: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -1005,6 +1036,7 @@ export type InvProductCreateWithoutOptionsInput = {
   id?: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -1030,6 +1062,7 @@ export type InvProductUncheckedCreateWithoutOptionsInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -1067,6 +1100,7 @@ export type InvProductUpdateWithoutOptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1092,6 +1126,7 @@ export type InvProductUncheckedUpdateWithoutOptionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1113,6 +1148,7 @@ export type InvProductCreateWithoutReorderConfigInput = {
   id?: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -1138,6 +1174,7 @@ export type InvProductUncheckedCreateWithoutReorderConfigInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -1175,6 +1212,7 @@ export type InvProductUpdateWithoutReorderConfigInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1200,6 +1238,7 @@ export type InvProductUncheckedUpdateWithoutReorderConfigInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1221,6 +1260,7 @@ export type InvProductCreateWithoutBrandInput = {
   id?: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -1246,6 +1286,7 @@ export type InvProductUncheckedCreateWithoutBrandInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -1293,6 +1334,7 @@ export type InvProductCreateWithoutChannelGroupMetaInput = {
   id?: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -1318,6 +1360,7 @@ export type InvProductUncheckedCreateWithoutChannelGroupMetaInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -1355,6 +1398,7 @@ export type InvProductUpdateWithoutChannelGroupMetaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1380,6 +1424,7 @@ export type InvProductUncheckedUpdateWithoutChannelGroupMetaInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1402,6 +1447,7 @@ export type InvProductCreateManySpaceInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -1421,6 +1467,7 @@ export type InvProductUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1445,6 +1492,7 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1468,6 +1516,7 @@ export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1488,6 +1537,7 @@ export type InvProductCreateManyGroupInput = {
   spaceId: string
   name: string
   code?: string | null
+  status?: $Enums.InvProductStatus
   brandId?: string | null
   internalName?: string | null
   nameEn?: string | null
@@ -1507,6 +1557,7 @@ export type InvProductUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1531,6 +1582,7 @@ export type InvProductUncheckedUpdateWithoutGroupInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1554,6 +1606,7 @@ export type InvProductUncheckedUpdateManyWithoutGroupInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1575,6 +1628,7 @@ export type InvProductCreateManyBrandInput = {
   name: string
   code?: string | null
   groupId: string
+  status?: $Enums.InvProductStatus
   internalName?: string | null
   nameEn?: string | null
   manufacturer?: string | null
@@ -1593,6 +1647,7 @@ export type InvProductUpdateWithoutBrandInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1618,6 +1673,7 @@ export type InvProductUncheckedUpdateWithoutBrandInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1641,6 +1697,7 @@ export type InvProductUncheckedUpdateManyWithoutBrandInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
   internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1701,6 +1758,7 @@ export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   name?: boolean
   code?: boolean
   groupId?: boolean
+  status?: boolean
   brandId?: boolean
   internalName?: boolean
   nameEn?: boolean
@@ -1729,6 +1787,7 @@ export type InvProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   name?: boolean
   code?: boolean
   groupId?: boolean
+  status?: boolean
   brandId?: boolean
   internalName?: boolean
   nameEn?: boolean
@@ -1753,6 +1812,7 @@ export type InvProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   name?: boolean
   code?: boolean
   groupId?: boolean
+  status?: boolean
   brandId?: boolean
   internalName?: boolean
   nameEn?: boolean
@@ -1777,6 +1837,7 @@ export type InvProductSelectScalar = {
   name?: boolean
   code?: boolean
   groupId?: boolean
+  status?: boolean
   brandId?: boolean
   internalName?: boolean
   nameEn?: boolean
@@ -1792,7 +1853,7 @@ export type InvProductSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "brandId" | "internalName" | "nameEn" | "manufacturer" | "manufactureCountry" | "manufactureDate" | "features" | "certifications" | "msrp" | "description" | "optionAttributes" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
+export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "status" | "brandId" | "internalName" | "nameEn" | "manufacturer" | "manufactureCountry" | "manufactureDate" | "features" | "certifications" | "msrp" | "description" | "optionAttributes" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
 export type InvProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
@@ -1829,6 +1890,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     name: string
     code: string | null
     groupId: string
+    status: $Enums.InvProductStatus
     brandId: string | null
     internalName: string | null
     nameEn: string | null
@@ -2276,6 +2338,7 @@ export interface InvProductFieldRefs {
   readonly name: Prisma.FieldRef<"InvProduct", 'String'>
   readonly code: Prisma.FieldRef<"InvProduct", 'String'>
   readonly groupId: Prisma.FieldRef<"InvProduct", 'String'>
+  readonly status: Prisma.FieldRef<"InvProduct", 'InvProductStatus'>
   readonly brandId: Prisma.FieldRef<"InvProduct", 'String'>
   readonly internalName: Prisma.FieldRef<"InvProduct", 'String'>
   readonly nameEn: Prisma.FieldRef<"InvProduct", 'String'>

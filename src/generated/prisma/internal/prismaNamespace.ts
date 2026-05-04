@@ -7108,6 +7108,7 @@ export const InvProductScalarFieldEnum = {
   name: 'name',
   code: 'code',
   groupId: 'groupId',
+  status: 'status',
   brandId: 'brandId',
   internalName: 'internalName',
   nameEn: 'nameEn',
@@ -8215,6 +8216,20 @@ export type EnumExecutionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'ExecutionStatus[]'
  */
 export type ListEnumExecutionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExecutionStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'InvProductStatus'
+ */
+export type EnumInvProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvProductStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'InvProductStatus[]'
+ */
+export type ListEnumInvProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvProductStatus[]'>
     
 
 
