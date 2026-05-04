@@ -26,6 +26,7 @@ type ListingListRow = {
   channelId: string
   searchName: string
   displayName: string
+  managementName: string | null
   internalCode: string | null
   status: 'ACTIVE' | 'SUSPENDED'
   effectiveStatus: 'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'
@@ -67,6 +68,7 @@ export async function GET(req: NextRequest) {
     where.OR = [
       { searchName: { contains: search, mode: 'insensitive' } },
       { displayName: { contains: search, mode: 'insensitive' } },
+      { managementName: { contains: search, mode: 'insensitive' } },
       { internalCode: { contains: search, mode: 'insensitive' } },
     ]
   }
@@ -136,6 +138,7 @@ export async function GET(req: NextRequest) {
       channelId: l.channelId,
       searchName: l.searchName,
       displayName: l.displayName,
+      managementName: l.managementName,
       internalCode: l.internalCode,
       status: l.status,
       effectiveStatus: effective,
@@ -213,6 +216,7 @@ export async function POST(req: NextRequest) {
         channelId: input.channelId,
         searchName: input.searchName,
         displayName,
+        managementName: input.managementName ?? null,
         internalCode: input.internalCode ?? null,
         keywords: input.keywords ?? [],
         retailPrice: input.retailPrice ?? null,

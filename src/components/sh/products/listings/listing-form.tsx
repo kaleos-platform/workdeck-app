@@ -67,6 +67,7 @@ export type ListingFormInitial = {
   internalCode: string | null
   searchName: string
   displayName: string
+  managementName: string | null
   keywords: string[]
   retailPrice: number | null
   channelAllocation: number | null
@@ -92,6 +93,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
     initial?.displayName === initial?.searchName ? '' : (initial?.displayName ?? '')
   )
   const [internalCode, setInternalCode] = useState(initial?.internalCode ?? '')
+  const [managementName, setManagementName] = useState(initial?.managementName ?? '')
   const [memo, setMemo] = useState(initial?.memo ?? '')
   const [retailPrice, setRetailPrice] = useState<string>(
     initial?.retailPrice != null ? String(initial.retailPrice) : ''
@@ -213,6 +215,12 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
         channelId,
         searchName: normalizedSearchName,
         displayName: normalizedDisplayName,
+        managementName:
+          mode === 'edit'
+            ? managementName.trim() === ''
+              ? null
+              : managementName.trim()
+            : managementName.trim() || undefined,
         internalCode: internalCode.trim() || undefined,
         memo: memo.trim() || undefined,
         retailPrice: retailPrice.trim() === '' ? undefined : Number(retailPrice),
@@ -359,6 +367,20 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="비우면 검색용 상품명을 그대로 사용합니다"
+              maxLength={MAX_NAME_LENGTH}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="listing-management">상품명 (관리용)</Label>
+              <NameCounter value={managementName} />
+            </div>
+            <Input
+              id="listing-management"
+              value={managementName}
+              onChange={(e) => setManagementName(e.target.value)}
+              placeholder="내부 목록에 표시될 이름. 비우면 검색용 상품명을 사용합니다"
               maxLength={MAX_NAME_LENGTH}
             />
           </div>

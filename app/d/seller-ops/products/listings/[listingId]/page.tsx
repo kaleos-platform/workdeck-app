@@ -15,6 +15,7 @@ type ListingDetail = {
   internalCode: string | null
   searchName: string
   displayName: string
+  managementName: string | null
   keywords: string[]
   retailPrice: number | null
   baselinePrice: number | null
@@ -96,6 +97,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ listin
     internalCode: listing.internalCode,
     searchName: listing.searchName,
     displayName: listing.displayName,
+    managementName: listing.managementName,
     keywords: listing.keywords,
     retailPrice: listing.retailPrice,
     channelAllocation: listing.channelAllocation,

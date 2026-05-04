@@ -30,6 +30,7 @@ type ListingRow = {
   channelId: string
   searchName: string
   displayName: string
+  managementName: string | null
   internalCode: string | null
   status: 'ACTIVE' | 'SUSPENDED'
   effectiveStatus: 'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'
@@ -109,7 +110,7 @@ export function ListingsTable({ channelId }: Props) {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="검색명·노출명·관리코드"
+              placeholder="관리명·검색명·노출명·관리코드"
               className="w-64 pl-9"
             />
           </div>
@@ -136,7 +137,7 @@ export function ListingsTable({ channelId }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>검색명</TableHead>
+              <TableHead>상품명</TableHead>
               <TableHead>노출명</TableHead>
               <TableHead>구성</TableHead>
               <TableHead className="text-right">재고</TableHead>
@@ -192,12 +193,19 @@ function ListingRowView({ row }: { row: ListingRow }) {
       <Badge>판매중</Badge>
     )
 
+  const primaryName = row.managementName?.trim() || row.searchName
+  const showSearchHint =
+    !!row.managementName?.trim() && row.managementName.trim() !== row.searchName
+
   return (
     <TableRow className="cursor-pointer hover:bg-muted/40">
       <TableCell>
         <Link href={getSellerHubListingPath(row.id)} className="font-medium hover:underline">
-          {row.searchName}
+          {primaryName}
         </Link>
+        {showSearchHint && (
+          <p className="text-xs text-muted-foreground">검색명: {row.searchName}</p>
+        )}
         {row.internalCode && <p className="text-xs text-muted-foreground">{row.internalCode}</p>}
       </TableCell>
       <TableCell className="max-w-[260px]">
