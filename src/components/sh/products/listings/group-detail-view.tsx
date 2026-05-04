@@ -118,7 +118,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
       const res = await fetch(url, {
         cache: 'no-store',
       })
-      if (!res.ok) throw new Error('그룹 조회 실패')
+      if (!res.ok) throw new Error('채널 상품 조회 실패')
       const d: GroupDetail = await res.json()
       setData(d)
       setKeywords(d.meta.keywords ?? [])
@@ -145,7 +145,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
       setBaseInternalCode(derived.baseInternalCode)
       setMemo(derived.memo)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '그룹 조회 실패')
+      toast.error(err instanceof Error ? err.message : '채널 상품 조회 실패')
     } finally {
       setLoading(false)
     }
@@ -270,7 +270,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
         return next
       })
     )
-    toast.success(`${selected.size}개 listing에 적용했습니다`)
+    toast.success(`${selected.size}개 판매 옵션에 적용했습니다`)
     scheduleAutoSave(patch.status !== undefined ? 0 : 400)
   }
 
@@ -302,7 +302,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
     if (selected.size === 0) return
     const ids = Array.from(selected)
     const first = rows.find((r) => r.id === ids[0])
-    const label = ids.length === 1 && first ? first.searchName : `${ids.length}개 listing`
+    const label = ids.length === 1 && first ? first.searchName : `${ids.length}개 판매 옵션`
     setDeleteTarget({ ids, label })
   }
 
@@ -330,7 +330,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
     if (failures.length > 0) {
       toast.warning(`일부 삭제 실패 (${failures.length}건)`)
     } else {
-      toast.success(`${deleteTarget.ids.length}개 listing이 삭제되었습니다`)
+      toast.success(`${deleteTarget.ids.length}개 판매 옵션이 삭제되었습니다`)
     }
     await load()
   }
@@ -454,7 +454,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
   async function handleAddCommit(ctx: ProductContext, groups: BuiltGroup[]) {
     if (!data) return
     if (ctx.id !== productId) {
-      toast.error('다른 상품은 이 그룹에 추가할 수 없습니다')
+      toast.error('다른 상품은 이 채널 상품에 추가할 수 없습니다')
       return
     }
     await flushPendingSave()
@@ -575,7 +575,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
         `${created}개 생성 · 실패 ${totalFailures}건 (삭제 ${deleteFailures.length} / 생성 ${createFailures.length})`
       )
     } else {
-      toast.success(`구성을 다시 설정했습니다 (${created}개 listing)`)
+      toast.success(`구성을 다시 설정했습니다 (${created}개 판매 옵션)`)
     }
     await load()
   }
@@ -961,13 +961,14 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
       </div>
 
       <div>
-        <p className="text-xs text-muted-foreground">
-          {data.channel.name} · 판매채널 상품 (상품 단위)
+        <p className="text-xs text-muted-foreground">{data.channel.name} · 판매채널 상품 상세</p>
+        <h1 className="text-2xl font-bold">
+          {baseManagementName.trim() || baseSearchName.trim() || '판매채널 상품'}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          기준 상품: {data.product.displayName}
+          {data.product.brand && ` · ${data.product.brand.name}`}
         </p>
-        <h1 className="text-2xl font-bold">{data.product.displayName}</h1>
-        {data.product.brand && (
-          <p className="mt-1 text-sm text-muted-foreground">{data.product.brand.name}</p>
-        )}
       </div>
 
       <GroupBaseInfoCard
@@ -1072,8 +1073,8 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
             <DialogTitle>판매채널 상품 삭제</DialogTitle>
             <DialogDescription>
               <span className="font-medium">{deleteTarget?.label}</span>을(를) 삭제하시겠습니까?
-              <br />이 listing과 매칭된 배송 별칭도 함께 삭제됩니다. 이미 매칭된 배송 주문은
-              listing=null로 유지됩니다 (이력 보존). 이 작업은 되돌릴 수 없습니다.
+              <br />이 판매 옵션과 매칭된 배송 별칭도 함께 삭제됩니다. 이미 매칭된 배송 주문은 해당
+              옵션 연결만 해제됩니다 (이력 보존). 이 작업은 되돌릴 수 없습니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1100,8 +1101,8 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
             <DialogTitle>판매채널 상품 {allSuspended ? '활성화' : '비활성화'}</DialogTitle>
             <DialogDescription>
               {data.channel.name}의 이 상품에 속한{' '}
-              <span className="font-medium">{data.listings.length}개</span> 옵션 listing의
-              판매상태를 일괄{' '}
+              <span className="font-medium">{data.listings.length}개</span> 판매 옵션의 판매상태를
+              일괄{' '}
               <span className="font-medium">
                 {allSuspended ? '판매중(ACTIVE)' : '판매중지(SUSPENDED)'}
               </span>
@@ -1136,10 +1137,10 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
             <DialogTitle>판매채널 상품 삭제</DialogTitle>
             <DialogDescription>
               {data.channel.name}의 이 상품에 속한{' '}
-              <span className="font-medium">{data.listings.length}개</span> 옵션 listing을 모두
+              <span className="font-medium">{data.listings.length}개</span> 판매 옵션을 모두
               삭제합니다.
               <br />• 매칭된 배송 별칭(alias)도 함께 삭제됩니다.
-              <br />• 이미 매칭된 배송 주문은 listing=null로 유지됩니다 (이력 보존).
+              <br />• 이미 매칭된 배송 주문은 해당 옵션 연결만 해제됩니다 (이력 보존).
               <br />이 작업은 되돌릴 수 없습니다.
             </DialogDescription>
           </DialogHeader>
@@ -1174,7 +1175,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
           <DialogHeader>
             <DialogTitle>옵션 추가</DialogTitle>
             <DialogDescription>
-              현재 그룹에 새 옵션 구성을 추가합니다. 이미 존재하는 동일 구성은 건너뜁니다.
+              현재 채널 상품에 새 옵션 구성을 추가합니다. 이미 존재하는 동일 구성은 건너뜁니다.
             </DialogDescription>
           </DialogHeader>
           <CompositionBuilder onCommit={handleAddCommit} disabled={mutating} />
@@ -1187,11 +1188,11 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
           <DialogHeader>
             <DialogTitle>구성 다시 설정</DialogTitle>
             <DialogDescription>
-              이 그룹의 기존 판매채널 상품 <span className="font-medium">{rows.length}개</span>를
+              이 채널 상품의 기존 판매 옵션 <span className="font-medium">{rows.length}개</span>를
               삭제하고 처음부터 다시 구성합니다.
-              <br />• 각 listing의 판매가·판매상태는 사라집니다.
-              <br />• 이 listing으로 매칭된 배송 별칭(alias)은 함께 삭제됩니다.
-              <br />• 이미 매칭된 배송 주문은 listing=null로 유지됩니다 (이력 보존).
+              <br />• 각 판매 옵션의 판매가·판매상태는 사라집니다.
+              <br />• 이 판매 옵션으로 매칭된 배송 별칭(alias)은 함께 삭제됩니다.
+              <br />• 이미 매칭된 배송 주문은 해당 옵션 연결만 해제됩니다 (이력 보존).
               <br />이 작업은 되돌릴 수 없습니다.
             </DialogDescription>
           </DialogHeader>
@@ -1223,8 +1224,8 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
           <DialogHeader>
             <DialogTitle>구성 다시 설정</DialogTitle>
             <DialogDescription>
-              기존 listing을 모두 삭제하고 새 구성을 생성합니다. 기본 정보(상품명·관리 코드·메모)는
-              유지됩니다.
+              기존 판매 옵션을 모두 삭제하고 새 구성을 생성합니다. 기본 정보(상품명·관리
+              코드·메모)는 유지됩니다.
             </DialogDescription>
           </DialogHeader>
           <CompositionBuilder onCommit={handleResetCommit} disabled={mutating} />
