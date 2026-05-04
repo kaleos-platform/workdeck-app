@@ -27,6 +27,7 @@ export type GroupListingRow = {
   id: string
   searchName: string
   displayName: string
+  managementName: string | null
   internalCode: string | null
   status: 'ACTIVE' | 'SUSPENDED'
   effectiveStatus: 'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'
@@ -147,7 +148,10 @@ export function GroupListingsTable({
                   />
                 </TableCell>
                 <TableCell>
-                  <p className="text-sm font-medium">{r.searchName}</p>
+                  <p className="text-sm font-medium">{r.managementName?.trim() || r.searchName}</p>
+                  {r.managementName?.trim() && r.managementName.trim() !== r.searchName && (
+                    <p className="text-xs text-muted-foreground">검색명: {r.searchName}</p>
+                  )}
                   <p className="text-xs text-muted-foreground">{compositionLine}</p>
                   {r.internalCode && (
                     <p className="text-xs text-muted-foreground">{r.internalCode}</p>

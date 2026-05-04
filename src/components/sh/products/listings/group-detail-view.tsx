@@ -1,8 +1,19 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertCircle, ArrowLeft, Check, Layers, Loader2, Plus } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowLeft,
+  Check,
+  Layers,
+  Loader2,
+  Pause,
+  Play,
+  Plus,
+  Trash2,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -58,6 +69,7 @@ type Props = {
 }
 
 export function GroupDetailView({ productId, channelId }: Props) {
+  const router = useRouter()
   const [data, setData] = useState<GroupDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -78,6 +90,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
   // 기본 정보 편집 state
   const [baseSearchName, setBaseSearchName] = useState('')
   const [baseDisplayName, setBaseDisplayName] = useState('')
+  const [baseManagementName, setBaseManagementName] = useState('')
   const [baseInternalCode, setBaseInternalCode] = useState('')
   const [memo, setMemo] = useState('')
 
@@ -88,6 +101,11 @@ export function GroupDetailView({ productId, channelId }: Props) {
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false)
   const [resetBuilderOpen, setResetBuilderOpen] = useState(false)
   const [mutating, setMutating] = useState(false)
+
+  // 그룹 단위 액션 state
+  const [groupSuspendOpen, setGroupSuspendOpen] = useState(false)
+  const [groupDeleteOpen, setGroupDeleteOpen] = useState(false)
+  const [groupActionLoading, setGroupActionLoading] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -106,6 +124,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
           id: l.id,
           searchName: l.searchName,
           displayName: l.displayName,
+          managementName: l.managementName,
           internalCode: l.internalCode,
           memo: l.memo,
           items: l.items.map((it) => ({
@@ -117,6 +136,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
       )
       setBaseSearchName(derived.baseSearchName)
       setBaseDisplayName(derived.baseDisplayName)
+      setBaseManagementName(derived.baseManagementName)
       setBaseInternalCode(derived.baseInternalCode)
       setMemo(derived.memo)
     } catch (err) {
@@ -147,6 +167,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
         id: l.id,
         searchName: l.searchName,
         displayName: l.displayName,
+        managementName: l.managementName,
         internalCode: l.internalCode,
         memo: l.memo,
         items: l.items.map((it) => ({
@@ -163,10 +184,11 @@ export function GroupDetailView({ productId, channelId }: Props) {
     return (
       baseSearchName !== derivedBase.baseSearchName ||
       baseDisplayName !== derivedBase.baseDisplayName ||
+      baseManagementName !== derivedBase.baseManagementName ||
       baseInternalCode !== derivedBase.baseInternalCode ||
       memo !== derivedBase.memo
     )
-  }, [derivedBase, baseSearchName, baseDisplayName, baseInternalCode, memo])
+  }, [derivedBase, baseSearchName, baseDisplayName, baseManagementName, baseInternalCode, memo])
 
   const keywordsDirty = useMemo(() => {
     const original = data?.meta.keywords ?? []
@@ -253,11 +275,12 @@ export function GroupDetailView({ productId, channelId }: Props) {
   }
 
   function handleBaseChange(
-    field: 'searchName' | 'displayName' | 'internalCode' | 'memo',
+    field: 'searchName' | 'displayName' | 'managementName' | 'internalCode' | 'memo',
     value: string
   ) {
     if (field === 'searchName') setBaseSearchName(value)
     else if (field === 'displayName') setBaseDisplayName(value)
+    else if (field === 'managementName') setBaseManagementName(value)
     else if (field === 'internalCode') setBaseInternalCode(value)
     else setMemo(value)
     scheduleAutoSave(800)
@@ -307,6 +330,75 @@ export function GroupDetailView({ productId, channelId }: Props) {
     await load()
   }
 
+  const allSuspended = data ? data.listings.every((l) => l.status === 'SUSPENDED') : false
+
+  async function confirmGroupSuspendToggle() {
+    if (!data) return
+    await flushPendingSave()
+    setGroupActionLoading(true)
+    const targetStatus: 'ACTIVE' | 'SUSPENDED' = allSuspended ? 'ACTIVE' : 'SUSPENDED'
+    const failures: string[] = []
+    await Promise.all(
+      data.listings.map(async (l) => {
+        if (l.status === targetStatus) return
+        try {
+          const res = await fetch(`/api/sh/products/listings/${l.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: targetStatus }),
+          })
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            failures.push(`${l.searchName}: ${err?.message ?? '실패'}`)
+          }
+        } catch (err) {
+          failures.push(`${l.searchName}: ${err instanceof Error ? err.message : '실패'}`)
+        }
+      })
+    )
+    setGroupActionLoading(false)
+    setGroupSuspendOpen(false)
+    if (failures.length > 0) {
+      toast.warning(`일부 처리 실패 (${failures.length}건)`)
+    } else {
+      toast.success(
+        targetStatus === 'SUSPENDED'
+          ? '판매채널 상품을 비활성화했습니다'
+          : '판매채널 상품을 활성화했습니다'
+      )
+    }
+    await load()
+  }
+
+  async function confirmGroupDelete() {
+    if (!data) return
+    await flushPendingSave()
+    setGroupActionLoading(true)
+    const failures: string[] = []
+    await Promise.all(
+      data.listings.map(async (l) => {
+        try {
+          const res = await fetch(`/api/sh/products/listings/${l.id}`, { method: 'DELETE' })
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            failures.push(`${l.searchName}: ${err?.message ?? '삭제 실패'}`)
+          }
+        } catch (err) {
+          failures.push(`${l.searchName}: ${err instanceof Error ? err.message : '삭제 실패'}`)
+        }
+      })
+    )
+    setGroupActionLoading(false)
+    setGroupDeleteOpen(false)
+    if (failures.length > 0) {
+      toast.warning(`일부 삭제 실패 (${failures.length}건)`)
+      await load()
+    } else {
+      toast.success('판매채널 상품을 삭제했습니다')
+      router.push(SELLER_HUB_LISTINGS_PATH)
+    }
+  }
+
   function buildListingPayloadsFromGroups(ctx: ProductContext, groups: BuiltGroup[]) {
     return groups.map((g) => {
       const suffix = g.suffixParts.join(' ')
@@ -315,12 +407,16 @@ export function GroupDetailView({ productId, channelId }: Props) {
         baseDisplayName.trim() || baseSearchName.trim() || ctx.displayName,
         suffix
       )
+      const managementName = baseManagementName.trim()
+        ? joinName(baseManagementName.trim(), suffix)
+        : undefined
       const internalCode = baseInternalCode.trim()
         ? joinName(baseInternalCode.trim(), suffix)
         : undefined
       return {
         searchName,
         displayName,
+        managementName,
         internalCode,
         memo: memo.trim() || undefined,
         items: g.items.map((it, idx) => ({
@@ -370,6 +466,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
             channelId,
             searchName: p.searchName,
             displayName: p.displayName,
+            managementName: p.managementName,
             internalCode: p.internalCode,
             memo: p.memo,
             keywords: [],
@@ -433,6 +530,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
             channelId,
             searchName: p.searchName,
             displayName: p.displayName,
+            managementName: p.managementName,
             internalCode: p.internalCode,
             memo: p.memo,
             keywords: [],
@@ -498,6 +596,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
     const snapBase = {
       searchName: baseSearchName,
       displayName: baseDisplayName,
+      managementName: baseManagementName,
       internalCode: baseInternalCode,
       memo,
     }
@@ -509,6 +608,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
       {
         searchName?: string
         displayName?: string
+        managementName?: string | null
         internalCode?: string | null
         memo?: string | null
         retailPrice?: number | null
@@ -523,6 +623,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
       const patch: {
         searchName?: string
         displayName?: string
+        managementName?: string | null
         internalCode?: string | null
         memo?: string | null
         retailPrice?: number | null
@@ -536,6 +637,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
             id: l.id,
             searchName: l.searchName,
             displayName: l.displayName,
+            managementName: l.managementName,
             internalCode: l.internalCode,
             memo: l.memo,
             items: l.items.map((it) => ({
@@ -549,6 +651,9 @@ export function GroupDetailView({ productId, channelId }: Props) {
         patch.displayName =
           joinName(snapBase.displayName.trim() || snapBase.searchName.trim(), suffix) ||
           l.displayName
+        patch.managementName = snapBase.managementName.trim()
+          ? joinName(snapBase.managementName.trim(), suffix)
+          : null
         patch.internalCode = snapBase.internalCode.trim()
           ? joinName(snapBase.internalCode.trim(), suffix)
           : null
@@ -614,6 +719,7 @@ export function GroupDetailView({ productId, channelId }: Props) {
               ...l,
               ...(p.searchName !== undefined ? { searchName: p.searchName } : {}),
               ...(p.displayName !== undefined ? { displayName: p.displayName } : {}),
+              ...(p.managementName !== undefined ? { managementName: p.managementName } : {}),
               ...(p.internalCode !== undefined ? { internalCode: p.internalCode } : {}),
               ...(p.memo !== undefined ? { memo: p.memo } : {}),
               ...(p.retailPrice !== undefined ? { retailPrice: p.retailPrice } : {}),
@@ -760,24 +866,52 @@ export function GroupDetailView({ productId, channelId }: Props) {
           <ArrowLeft className="h-4 w-4" />
           목록으로
         </Link>
-        <SaveStatusChip
-          saving={saving}
-          dirty={totalDirty}
-          dirtyCount={dirtyCount}
-          error={lastError}
-          retryCount={retryCount}
-          onRetry={() => {
-            setLastError(null)
-            // 수동 재시도: 자동 backoff 카운터 리셋하고 즉시 저장 시도
-            autoRetryCountRef.current = 0
-            setRetryCount(0)
-            if (autoRetryTimerRef.current) {
-              clearTimeout(autoRetryTimerRef.current)
-              autoRetryTimerRef.current = null
-            }
-            void runAutoSave()
-          }}
-        />
+        <div className="flex items-center gap-2">
+          <SaveStatusChip
+            saving={saving}
+            dirty={totalDirty}
+            dirtyCount={dirtyCount}
+            error={lastError}
+            retryCount={retryCount}
+            onRetry={() => {
+              setLastError(null)
+              autoRetryCountRef.current = 0
+              setRetryCount(0)
+              if (autoRetryTimerRef.current) {
+                clearTimeout(autoRetryTimerRef.current)
+                autoRetryTimerRef.current = null
+              }
+              void runAutoSave()
+            }}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setGroupSuspendOpen(true)}
+            disabled={mutating || groupActionLoading || data.listings.length === 0}
+          >
+            {allSuspended ? (
+              <>
+                <Play className="mr-1 h-4 w-4" />
+                활성화
+              </>
+            ) : (
+              <>
+                <Pause className="mr-1 h-4 w-4" />
+                비활성화
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setGroupDeleteOpen(true)}
+            disabled={mutating || groupActionLoading || data.listings.length === 0}
+          >
+            <Trash2 className="mr-1 h-4 w-4" />
+            삭제
+          </Button>
+        </div>
       </div>
 
       <div>
@@ -794,11 +928,13 @@ export function GroupDetailView({ productId, channelId }: Props) {
         channelName={data.channel.name}
         baseSearchName={baseSearchName}
         baseDisplayName={baseDisplayName}
+        baseManagementName={baseManagementName}
         baseInternalCode={baseInternalCode}
         memo={memo}
         inconsistentBases={derivedBase?.inconsistentBases ?? []}
         onBaseSearchNameChange={(v) => handleBaseChange('searchName', v)}
         onBaseDisplayNameChange={(v) => handleBaseChange('displayName', v)}
+        onBaseManagementNameChange={(v) => handleBaseChange('managementName', v)}
         onBaseInternalCodeChange={(v) => handleBaseChange('internalCode', v)}
         onMemoChange={(v) => handleBaseChange('memo', v)}
         disabled={mutating}
@@ -900,6 +1036,81 @@ export function GroupDetailView({ productId, channelId }: Props) {
             </Button>
             <Button variant="destructive" onClick={confirmDelete} disabled={deleting}>
               {deleting && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 그룹 일괄 비활성화/활성화 확인 */}
+      <Dialog
+        open={groupSuspendOpen}
+        onOpenChange={(v) => {
+          if (!groupActionLoading) setGroupSuspendOpen(v)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>판매채널 상품 {allSuspended ? '활성화' : '비활성화'}</DialogTitle>
+            <DialogDescription>
+              {data.channel.name}의 이 상품에 속한{' '}
+              <span className="font-medium">{data.listings.length}개</span> 옵션 listing의
+              판매상태를 일괄{' '}
+              <span className="font-medium">
+                {allSuspended ? '판매중(ACTIVE)' : '판매중지(SUSPENDED)'}
+              </span>
+              로 변경합니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setGroupSuspendOpen(false)}
+              disabled={groupActionLoading}
+            >
+              취소
+            </Button>
+            <Button onClick={confirmGroupSuspendToggle} disabled={groupActionLoading}>
+              {groupActionLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              {allSuspended ? '활성화' : '비활성화'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 그룹 전체 삭제 확인 */}
+      <Dialog
+        open={groupDeleteOpen}
+        onOpenChange={(v) => {
+          if (!groupActionLoading) setGroupDeleteOpen(v)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>판매채널 상품 삭제</DialogTitle>
+            <DialogDescription>
+              {data.channel.name}의 이 상품에 속한{' '}
+              <span className="font-medium">{data.listings.length}개</span> 옵션 listing을 모두
+              삭제합니다.
+              <br />• 매칭된 배송 별칭(alias)도 함께 삭제됩니다.
+              <br />• 이미 매칭된 배송 주문은 listing=null로 유지됩니다 (이력 보존).
+              <br />이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setGroupDeleteOpen(false)}
+              disabled={groupActionLoading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmGroupDelete}
+              disabled={groupActionLoading}
+            >
+              {groupActionLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
               삭제
             </Button>
           </DialogFooter>

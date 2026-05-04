@@ -1,3 +1,4 @@
+/** @jest-environment node */
 import { currentYearMonth, CreditExceededError } from '../credit'
 
 describe('currentYearMonth', () => {

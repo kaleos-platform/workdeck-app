@@ -1,3 +1,4 @@
+/** @jest-environment node */
 import { buildInsightPrompt, parseInsightResponse, type InsightBucket } from '../insights'
 
 const bucket: InsightBucket = {
