@@ -30,12 +30,6 @@ export const productSchema = z.object({
 })
 export type ProductInput = z.infer<typeof productSchema>
 
-// 하위 호환용 별칭 — 기존 import 가 남아있는 동안 alias 유지
-/** @deprecated productSchema 를 사용하세요 */
-export const b2bProductSchema = productSchema
-/** @deprecated ProductInput 을 사용하세요 */
-export type B2BProductInput = ProductInput
-
 // ─── Persona ────────────────────────────────────────────────────────────────
 export const personaSchema = z.object({
   name: z.string().min(1, '페르소나 이름을 입력하세요').max(200),
