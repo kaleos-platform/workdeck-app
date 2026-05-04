@@ -7592,6 +7592,7 @@ export const ProductListingScalarFieldEnum = {
   internalCode: 'internalCode',
   searchName: 'searchName',
   displayName: 'displayName',
+  managementName: 'managementName',
   keywords: 'keywords',
   retailPrice: 'retailPrice',
   channelAllocation: 'channelAllocation',

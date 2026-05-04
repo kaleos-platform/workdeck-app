@@ -90,7 +90,6 @@ const DECK_ENTRY: Record<string, string> = {
 // ─── Seller Hub 메뉴 데이터 ───────────────────────────────────────────────────
 const SELLER_HUB_PRODUCTS_ITEMS: SidebarItem[] = [
   { label: '상품 목록', href: SELLER_HUB_PRODUCTS_LIST_PATH },
-  { label: '브랜드', href: SELLER_HUB_BRANDS_PATH },
   { label: '가격 시뮬레이션', href: SELLER_HUB_PRICING_SIM_PATH },
   { label: '판매채널 상품', href: SELLER_HUB_LISTINGS_PATH },
   { label: '생산 관리', href: SELLER_HUB_PRODUCTION_PATH },
@@ -114,6 +113,7 @@ const SELLER_HUB_SHIPPING_ITEMS: SidebarItem[] = [
 // "설정" 섹션 — 채널 관리 + 일반 설정을 한 곳으로 통합
 const SELLER_HUB_SETTINGS_ITEMS: SidebarItem[] = [
   { label: '채널 관리', href: SELLER_HUB_CHANNELS_PATH },
+  { label: '브랜드', href: SELLER_HUB_BRANDS_PATH },
   { label: '일반 설정', href: SELLER_HUB_SETTINGS_PATH },
 ]
 

@@ -254,6 +254,7 @@ export const productListingSchema = z
     internalCode: emptyToUndefined.pipe(z.string().trim().max(50)).optional(),
     searchName: listingNameSchema,
     displayName: listingOptionalNameSchema.optional().default(''),
+    managementName: emptyToUndefined.pipe(z.string().trim().max(200)).optional(),
     keywords: z
       .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
       .max(30)
@@ -295,6 +296,7 @@ export const productListingPatchSchema = z
     internalCode: emptyToUndefined.pipe(z.string().trim().max(50)).optional().nullable(),
     searchName: listingNameSchema.optional(),
     displayName: listingOptionalNameSchema.optional(),
+    managementName: emptyToUndefined.pipe(z.string().trim().max(200)).optional().nullable(),
     keywords: z
       .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
       .max(30)

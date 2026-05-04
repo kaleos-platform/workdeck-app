@@ -102,6 +102,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       internalCode: listing.internalCode,
       searchName: listing.searchName,
       displayName: listing.displayName,
+      managementName: listing.managementName,
       keywords: Array.isArray(listing.keywords) ? listing.keywords : [],
       retailPrice,
       baselinePrice: baseline,
@@ -203,6 +204,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         internalCode: input.internalCode === undefined ? undefined : input.internalCode,
         searchName: input.searchName ?? undefined,
         displayName: nextDisplayName,
+        managementName: input.managementName === undefined ? undefined : input.managementName,
         keywords: input.keywords ?? undefined,
         retailPrice: input.retailPrice === undefined ? undefined : input.retailPrice,
         channelAllocation:
