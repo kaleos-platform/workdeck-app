@@ -23,8 +23,9 @@ type Params = { params: Promise<{ productId: string; channelId: string }> }
 
 const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   const { productId, channelId } = await params
+  const groupKeyFilter = req.nextUrl.searchParams.get('g') || null
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
 
@@ -84,9 +85,31 @@ export async function GET(_req: NextRequest, { params }: Params) {
   })
 
   // 단일 product listing만 그룹에 포함
-  const singleProductListings = candidateListings.filter((l) =>
+  const singleAll = candidateListings.filter((l) =>
     l.items.every((it) => it.option.productId === productId)
   )
+
+  // groupKey 필터: 같은 product × channel에 여러 그룹이 존재할 수 있으므로
+  // base managementName / searchName 기준으로 추가 필터.
+  const productAttrs = Array.isArray(product.optionAttributes)
+    ? (product.optionAttributes as Array<{ name: string }>)
+    : []
+  const computeGroupKey = (l: (typeof singleAll)[number]): string => {
+    const av = (l.items[0]?.option.attributeValues ?? {}) as Record<string, string>
+    const suffix = productAttrs
+      .map((a) => av[a.name])
+      .filter(Boolean)
+      .join(' ')
+    const strip = (v: string | null): string => {
+      if (!v) return ''
+      if (suffix && v.endsWith(suffix)) return v.slice(0, v.length - suffix.length).trimEnd()
+      return v
+    }
+    return strip(l.managementName) || strip(l.searchName) || `__listing_${l.id}`
+  }
+  const singleProductListings = groupKeyFilter
+    ? singleAll.filter((l) => computeGroupKey(l) === groupKeyFilter)
+    : singleAll
 
   // 재고 배치
   const optionIds = Array.from(

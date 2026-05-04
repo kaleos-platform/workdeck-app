@@ -33,8 +33,14 @@ export function getSellerHubProductPath(id: string) {
 export function getSellerHubListingPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/listings/${id}`
 }
-export function getSellerHubListingGroupPath(productId: string, channelId: string) {
-  return `${SELLER_HUB_BASE_PATH}/products/listings/groups/${productId}/${channelId}`
+export function getSellerHubListingGroupPath(
+  productId: string,
+  channelId: string,
+  groupKey?: string | null
+) {
+  const base = `${SELLER_HUB_BASE_PATH}/products/listings/groups/${productId}/${channelId}`
+  if (!groupKey) return base
+  return `${base}?g=${encodeURIComponent(groupKey)}`
 }
 
 // 재고 섹션

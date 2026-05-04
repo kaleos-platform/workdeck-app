@@ -21,6 +21,7 @@ type GroupRow = {
   kind: 'group'
   productId: string
   productName: string
+  groupKey: string
   groupManagementName: string | null
   channelId: string
   channelName: string
@@ -167,7 +168,24 @@ export async function GET(req: NextRequest) {
     }
 
     const product = l.items[0].option.product
-    const key = `${product.id}:${l.channelId}`
+    const attrs = Array.isArray(product.optionAttributes)
+      ? (product.optionAttributes as Array<{ name: string }>)
+      : []
+    const firstAttrs = (l.items[0].option.attributeValues ?? {}) as Record<string, string>
+    const suffix = attrs
+      .map((a) => firstAttrs[a.name])
+      .filter(Boolean)
+      .join(' ')
+    const stripSuffix = (v: string | null): string => {
+      if (!v) return ''
+      if (suffix && v.endsWith(suffix)) return v.slice(0, v.length - suffix.length).trimEnd()
+      return v
+    }
+    const baseManagement = stripSuffix(l.managementName)
+    const baseSearch = stripSuffix(l.searchName)
+    // 우선순위: 관리용 상품명 base → 검색명 base. 없으면 listing id로 단독 그룹.
+    const groupKey = baseManagement || baseSearch || `__listing_${l.id}`
+    const key = `${product.id}:${l.channelId}:${groupKey}`
     const existing = groupsMap.get(key)
     const listingRow = {
       id: l.id,
@@ -186,6 +204,7 @@ export async function GET(req: NextRequest) {
         kind: 'group',
         productId: product.id,
         productName: productDisplayName(product),
+        groupKey,
         groupManagementName: null,
         channelId: l.channelId,
         channelName: l.channel.name,

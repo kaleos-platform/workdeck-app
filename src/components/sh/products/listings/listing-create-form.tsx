@@ -57,6 +57,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const prefillApplied = useRef(false)
   const duplicateFromProductId = searchParams.get('duplicateFromProductId')
   const duplicateFromChannelId = searchParams.get('duplicateFromChannelId')
+  const duplicateFromGroupKey = searchParams.get('duplicateFromGroupKey')
   const duplicateApplied = useRef(false)
 
   const [channels, setChannels] = useState<Channel[]>([])
@@ -173,10 +174,10 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
 
     const apply = async () => {
       try {
-        const res = await fetch(
-          `/api/sh/products/listings/groups/${duplicateFromProductId}/${duplicateFromChannelId}`,
-          { cache: 'no-store' }
-        )
+        const url = duplicateFromGroupKey
+          ? `/api/sh/products/listings/groups/${duplicateFromProductId}/${duplicateFromChannelId}?g=${encodeURIComponent(duplicateFromGroupKey)}`
+          : `/api/sh/products/listings/groups/${duplicateFromProductId}/${duplicateFromChannelId}`
+        const res = await fetch(url, { cache: 'no-store' })
         if (!res.ok) throw new Error('원본 그룹 조회 실패')
         const data: {
           product: {
@@ -433,7 +434,8 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
 
     // 상품 × 채널 그룹 상세로 이동 (productCtx 있을 때), 아니면 목록으로
     if (productCtx) {
-      router.push(getSellerHubListingGroupPath(productCtx.id, channelId))
+      const newGroupKey = baseManagementName.trim() || baseSearchName.trim()
+      router.push(getSellerHubListingGroupPath(productCtx.id, channelId, newGroupKey || undefined))
     } else if (okResults.length === 1 && okResults[0].id) {
       router.push(getSellerHubListingPath(okResults[0].id))
     } else {
