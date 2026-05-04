@@ -6,10 +6,31 @@ import type { SpaceContentAnalyticsRow, ContentMetricsTotal } from './metrics-ty
 
 // ─── 구현 ─────────────────────────────────────────────────────────────────────
 
+/** ISO 날짜 문자열 (YYYY-MM-DD) 생성 헬퍼 */
+function toISODate(d: Date): string {
+  return d.toISOString().slice(0, 10)
+}
+
+/**
+ * 14일 날짜 스파인 생성 (오늘 포함 14일, 과거 → 현재 순).
+ * 반환값은 YYYY-MM-DD 문자열 배열.
+ */
+function buildDateSpine14(): string[] {
+  const spine: string[] = []
+  const today = startOfDayUTC(new Date())
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today)
+    d.setUTCDate(d.getUTCDate() - i)
+    spine.push(toISODate(d))
+  }
+  return spine
+}
+
 /**
  * 스페이스의 콘텐츠 단위 성과 데이터를 반환한다.
  * - 배포가 1개 이상 있는 콘텐츠만 포함 (최대 200건, 최신순)
  * - N+1 방지: DeploymentMetric 은 groupBy 로 한 번에 조회
+ * - 각 행에 sparkline (최근 14일 일별 조회, 14개 고정 spine 포함)
  */
 export async function getSpaceContentAnalytics(
   spaceId: string
@@ -48,7 +69,35 @@ export async function getSpaceContentAnalytics(
   })
   const sumByDeployment = new Map(metricSums.map((r) => [r.deploymentId, r._sum]))
 
-  // 3. 콘텐츠 단위 집계
+  // 3. sparkline 용: 최근 14일 (deploymentId + date) 그룹핑
+  const since = new Date()
+  since.setUTCDate(since.getUTCDate() - 13)
+  const sparklineRows = await prisma.deploymentMetric.groupBy({
+    by: ['deploymentId', 'date'],
+    where: {
+      deploymentId: { in: deploymentIds },
+      date: { gte: startOfDayUTC(since) },
+    },
+    _sum: { views: true },
+  })
+  // deploymentId → contentId 매핑 (deployments 에서 역추적)
+  const deploymentToContent = new Map<string, string>()
+  for (const c of contents) {
+    for (const d of c.deployments) {
+      deploymentToContent.set(d.id, c.id)
+    }
+  }
+  // contentId + date → views 합산 (여러 배포 + 여러 source 합산)
+  const contentDateViews = new Map<string, number>()
+  for (const row of sparklineRows) {
+    const contentId = deploymentToContent.get(row.deploymentId)
+    if (!contentId) continue
+    const key = `${contentId}__${toISODate(row.date)}`
+    contentDateViews.set(key, (contentDateViews.get(key) ?? 0) + (row._sum.views ?? 0))
+  }
+  const dateSpine = buildDateSpine14()
+
+  // 4. 콘텐츠 단위 집계
   return contents.map((c) => {
     // internalClicks: ContentClickEvent 건수 합산
     const internalClicks = c.deployments.reduce((acc, d) => acc + d._count.clickEvents, 0)
@@ -85,6 +134,12 @@ export async function getSpaceContentAnalytics(
         kind: d.channel.kind,
       }))
 
+    // sparkline: 14일 spine 기준으로 조회수 채움 (없는 날 = 0)
+    const sparkline = dateSpine.map((date) => ({
+      date,
+      views: contentDateViews.get(`${c.id}__${date}`) ?? 0,
+    }))
+
     return {
       id: c.id,
       title: c.title,
@@ -92,12 +147,31 @@ export async function getSpaceContentAnalytics(
       latestPublishedAt,
       channels,
       metrics: { ...metrics, internalClicks },
+      sparkline,
     }
   })
 }
 
 /**
- * 단일 콘텐츠의 합계 지표 + 배포별 분해를 반환한다.
+ * 날짜 spine 생성 헬퍼 — startDate 부터 오늘까지 (최대 maxDays 일).
+ * 반환값은 YYYY-MM-DD 문자열 배열 (과거 → 현재 순).
+ */
+function buildDateSpine(startDate: Date, maxDays = 90): string[] {
+  const today = startOfDayUTC(new Date())
+  const start = startOfDayUTC(startDate)
+  const diffMs = today.getTime() - start.getTime()
+  const diffDays = Math.min(Math.floor(diffMs / 86_400_000), maxDays - 1)
+  const spine: string[] = []
+  for (let i = diffDays; i >= 0; i--) {
+    const d = new Date(today)
+    d.setUTCDate(d.getUTCDate() - i)
+    spine.push(toISODate(d))
+  }
+  return spine
+}
+
+/**
+ * 단일 콘텐츠의 합계 지표 + 배포별 분해 + 일별 추이를 반환한다.
  * - N+1 방지: DeploymentMetric 은 groupBy 로 한 번에 조회
  * - 배포가 0개면 빈 데이터 반환
  */
@@ -122,11 +196,12 @@ export async function getContentMetricsTotal(contentId: string): Promise<Content
         externalClicks: 0,
         channelCount: 0,
       },
+      daily: [],
       byDeployment: [],
     }
   }
 
-  // 2. metrics groupBy 한 번에 조회
+  // 2. metrics groupBy 한 번에 조회 (전체 합계용)
   const deploymentIds = deployments.map((d) => d.id)
   const metricSums = await prisma.deploymentMetric.groupBy({
     by: ['deploymentId'],
@@ -141,7 +216,49 @@ export async function getContentMetricsTotal(contentId: string): Promise<Content
   })
   const sumByDeployment = new Map(metricSums.map((r) => [r.deploymentId, r._sum]))
 
-  // 3. 배포별 데이터 구성
+  // 3. 일별 추이용 groupBy (date 기준, 모든 배포 합산)
+  const dailyGrouped = await prisma.deploymentMetric.groupBy({
+    by: ['date'],
+    where: { deploymentId: { in: deploymentIds } },
+    _sum: {
+      impressions: true,
+      views: true,
+      likes: true,
+      comments: true,
+      externalClicks: true,
+    },
+    orderBy: { date: 'asc' },
+  })
+
+  // 4. 날짜 spine 구성 (첫 게시일 기준, 최대 90일)
+  const earliestPublishedAt = deployments
+    .filter((d) => d.publishedAt !== null)
+    .map((d) => d.publishedAt!)
+    .sort((a, b) => a.getTime() - b.getTime())[0]
+
+  let daily: import('./metrics-types').DailyMetricRow[] = []
+  if (dailyGrouped.length > 0 || earliestPublishedAt) {
+    // 첫 게시일이 없는 경우 (publishedAt=null 이지만 메트릭이 존재하는 예외 케이스):
+    // dailyGrouped 는 orderBy date asc 이므로 첫 행이 가장 과거 날짜.
+    const earliestFromMetrics = dailyGrouped[0]?.date
+    const spineStart = earliestPublishedAt ?? earliestFromMetrics ?? new Date()
+    const spine = buildDateSpine(spineStart)
+    // date string → grouped row 매핑
+    const groupedByDate = new Map(dailyGrouped.map((r) => [toISODate(r.date), r._sum]))
+    daily = spine.map((date) => {
+      const s = groupedByDate.get(date)
+      return {
+        date,
+        impressions: s?.impressions ?? 0,
+        views: s?.views ?? 0,
+        likes: s?.likes ?? 0,
+        comments: s?.comments ?? 0,
+        externalClicks: s?.externalClicks ?? 0,
+      }
+    })
+  }
+
+  // 5. 배포별 데이터 구성
   const byDeployment = deployments.map((d) => {
     const m = sumByDeployment.get(d.id)
     return {
@@ -165,7 +282,7 @@ export async function getContentMetricsTotal(contentId: string): Promise<Content
     }
   })
 
-  // 4. 전체 합계 계산
+  // 6. 전체 합계 계산
   const total = byDeployment.reduce(
     (acc, d) => ({
       impressions: acc.impressions + d.metrics.impressions,
@@ -183,6 +300,7 @@ export async function getContentMetricsTotal(contentId: string): Promise<Content
 
   return {
     total: { ...total, channelCount },
+    daily,
     byDeployment,
   }
 }

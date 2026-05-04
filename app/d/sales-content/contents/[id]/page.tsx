@@ -11,6 +11,7 @@ import { SALES_CONTENT_CONTENTS_PATH, SALES_CONTENT_ANALYTICS_PATH } from '@/lib
 import { nextAllowed } from '@/lib/sc/content-state'
 import { getContentMetricsTotal } from '@/lib/sc/metrics'
 import { PLATFORM_LABEL } from '@/components/sc/analytics/analytics-filters'
+import { ContentMetricsChart } from '@/components/sc/analytics/content-metrics-chart'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -127,6 +128,16 @@ export default async function ContentDetailPage({ params }: Props) {
 
       {/* 합계 Stats Row */}
       <StatsRow total={metricsData.total} />
+
+      {/* 일별 추이 차트 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">일별 추이</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContentMetricsChart daily={metricsData.daily} />
+        </CardContent>
+      </Card>
 
       {/* 다음 상태 전이 */}
       <Card>

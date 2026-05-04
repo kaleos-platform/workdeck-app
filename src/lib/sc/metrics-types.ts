@@ -35,11 +35,30 @@ export interface SpaceContentAnalyticsRow {
     internalClicks: number // ContentClickEvent 건수
     externalClicks: number
   }
+  /**
+   * 최근 14일 일별 조회수 (sparkline 용).
+   * date: ISO 날짜 문자열 (YYYY-MM-DD). RSC 경계 직렬화를 위해 Date 아닌 string 사용.
+   * 데이터 없는 날짜도 포함 (views=0). 길이 = 14 고정.
+   */
+  sparkline: Array<{ date: string; views: number }>
 }
 
 // ─── 콘텐츠 상세 ──────────────────────────────────────────────────────────────
 
-/** 콘텐츠 상세 페이지의 합계 + 배포별 분해 */
+/**
+ * 일별 추이 한 row.
+ * date: ISO 날짜 문자열 (YYYY-MM-DD). RSC 경계 직렬화를 위해 Date 아닌 string 사용.
+ */
+export interface DailyMetricRow {
+  date: string
+  impressions: number
+  views: number
+  likes: number
+  comments: number
+  externalClicks: number
+}
+
+/** 콘텐츠 상세 페이지의 합계 + 배포별 분해 + 일별 추이 */
 export interface ContentMetricsTotal {
   total: {
     impressions: number
@@ -50,6 +69,11 @@ export interface ContentMetricsTotal {
     externalClicks: number
     channelCount: number
   }
+  /**
+   * 일별 추이 (콘텐츠의 모든 배포 합산).
+   * 데이터 없는 날짜도 포함 (전 지표 0). 기간 = 첫 게시일부터 오늘까지 (최대 90일).
+   */
+  daily: DailyMetricRow[]
   byDeployment: Array<{
     deploymentId: string
     shortSlug: string
