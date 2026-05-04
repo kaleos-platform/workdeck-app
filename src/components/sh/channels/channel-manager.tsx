@@ -61,6 +61,7 @@ type Channel = {
 
 // 사이드바 "전체" 탭 ID
 const ALL_TYPES = '__all__'
+const UNCLASSIFIED_TYPE = '__unclassified__'
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
@@ -114,7 +115,14 @@ export function ShChannelManager() {
   const filteredChannels = useMemo(() => {
     return channels.filter((ch) => {
       // 사이드바 유형 필터
-      if (selectedTypeId !== ALL_TYPES && ch.channelTypeDefId !== selectedTypeId) return false
+      if (selectedTypeId === UNCLASSIFIED_TYPE && ch.channelTypeDefId !== null) return false
+      if (
+        selectedTypeId !== ALL_TYPES &&
+        selectedTypeId !== UNCLASSIFIED_TYPE &&
+        ch.channelTypeDefId !== selectedTypeId
+      ) {
+        return false
+      }
       // 상태 필터
       if (filterStatus === 'active' && !ch.isActive) return false
       if (filterStatus === 'inactive' && ch.isActive) return false
@@ -131,12 +139,41 @@ export function ShChannelManager() {
   const countByType = useMemo(() => {
     const map: Record<string, number> = {}
     for (const ch of channels) {
-      if (ch.channelTypeDefId) {
-        map[ch.channelTypeDefId] = (map[ch.channelTypeDefId] ?? 0) + 1
-      }
+      const key = ch.channelTypeDefId ?? UNCLASSIFIED_TYPE
+      map[key] = (map[key] ?? 0) + 1
     }
     return map
   }, [channels])
+
+  const salesChannelTypes = useMemo(
+    () => channelTypes.filter((t) => t.isSalesChannel),
+    [channelTypes]
+  )
+  const nonSalesChannelTypes = useMemo(
+    () => channelTypes.filter((t) => !t.isSalesChannel),
+    [channelTypes]
+  )
+
+  function renderTypeButton(t: ChannelTypeDef) {
+    return (
+      <button
+        key={t.id}
+        type="button"
+        onClick={() => setSelectedTypeId(t.id)}
+        className={[
+          'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
+          selectedTypeId === t.id
+            ? 'bg-accent font-medium text-accent-foreground'
+            : 'text-foreground hover:bg-accent/50',
+        ].join(' ')}
+      >
+        <span className="truncate">{t.name}</span>
+        <Badge variant="secondary" className="ml-2 shrink-0 text-xs">
+          {countByType[t.id] ?? 0}
+        </Badge>
+      </button>
+    )
+  }
 
   // ── 상태 Switch 즉시 PATCH ──
 
@@ -211,25 +248,54 @@ export function ShChannelManager() {
               </Badge>
             </button>
 
-            {/* 유형별 */}
-            {channelTypes.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setSelectedTypeId(t.id)}
-                className={[
-                  'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
-                  selectedTypeId === t.id
-                    ? 'bg-accent font-medium text-accent-foreground'
-                    : 'text-foreground hover:bg-accent/50',
-                ].join(' ')}
-              >
-                <span className="truncate">{t.name}</span>
-                <Badge variant="secondary" className="ml-2 shrink-0 text-xs">
-                  {countByType[t.id] ?? 0}
-                </Badge>
-              </button>
-            ))}
+            <div className="pt-3">
+              <p className="mb-1 px-3 text-[11px] font-semibold text-muted-foreground">판매채널</p>
+              <div className="space-y-1">
+                {salesChannelTypes.length > 0 ? (
+                  salesChannelTypes.map(renderTypeButton)
+                ) : (
+                  <p className="px-3 py-2 text-xs text-muted-foreground">
+                    판매채널 유형이 없습니다
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-3">
+              <p className="mb-1 px-3 text-[11px] font-semibold text-muted-foreground">
+                비판매채널
+              </p>
+              <div className="space-y-1">
+                {nonSalesChannelTypes.length > 0 ? (
+                  nonSalesChannelTypes.map(renderTypeButton)
+                ) : (
+                  <p className="px-3 py-2 text-xs text-muted-foreground">
+                    비판매채널 유형이 없습니다
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {(countByType[UNCLASSIFIED_TYPE] ?? 0) > 0 && (
+              <div className="pt-3">
+                <p className="mb-1 px-3 text-[11px] font-semibold text-muted-foreground">미분류</p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTypeId(UNCLASSIFIED_TYPE)}
+                  className={[
+                    'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
+                    selectedTypeId === UNCLASSIFIED_TYPE
+                      ? 'bg-accent font-medium text-accent-foreground'
+                      : 'text-foreground hover:bg-accent/50',
+                  ].join(' ')}
+                >
+                  <span className="truncate">미분류</span>
+                  <Badge variant="secondary" className="ml-2 shrink-0 text-xs">
+                    {countByType[UNCLASSIFIED_TYPE] ?? 0}
+                  </Badge>
+                </button>
+              </div>
+            )}
           </nav>
         </div>
       </aside>

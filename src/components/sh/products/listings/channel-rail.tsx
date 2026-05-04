@@ -39,7 +39,7 @@ export function ChannelRail({
     const load = async () => {
       setLoading(true)
       try {
-        const res = await fetch('/api/channels?isActive=true')
+        const res = await fetch('/api/channels?isActive=true&isSalesChannel=true')
         if (!res.ok) throw new Error('채널 조회 실패')
         const data: { channels: Array<{ id: string; name: string; kind: string }> } =
           await res.json()

@@ -68,7 +68,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     let cancelled = false
     const load = async () => {
       try {
-        const res = await fetch('/api/channels?isActive=true')
+        const res = await fetch('/api/channels?isActive=true&isSalesChannel=true')
         if (!res.ok) throw new Error('채널 조회 실패')
         const data: { channels: Channel[] } = await res.json()
         if (!cancelled) setChannels(data.channels ?? [])

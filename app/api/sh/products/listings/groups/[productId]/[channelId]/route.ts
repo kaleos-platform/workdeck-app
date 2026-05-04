@@ -21,6 +21,8 @@ import { productChannelGroupMetaSchema } from '@/lib/sh/schemas'
 
 type Params = { params: Promise<{ productId: string; channelId: string }> }
 
+const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
+
 export async function GET(_req: NextRequest, { params }: Params) {
   const { productId, channelId } = await params
   const resolved = await resolveDeckContext('seller-hub')
@@ -50,6 +52,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
   ])
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
   if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
+  if (channel.channelTypeDef?.isSalesChannel !== true) {
+    return errorResponse(SALES_CHANNEL_ONLY_MESSAGE, 400)
+  }
 
   // 해당 productId 옵션이 들어간 listing 목록 (channel 제한)
   const candidateListings = await prisma.productListing.findMany({
@@ -178,11 +183,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }),
     prisma.channel.findFirst({
       where: { id: channelId, spaceId: resolved.space.id },
-      select: { id: true },
+      select: { id: true, channelTypeDef: { select: { isSalesChannel: true } } },
     }),
   ])
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
   if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
+  if (channel.channelTypeDef?.isSalesChannel !== true) {
+    return errorResponse(SALES_CHANNEL_ONLY_MESSAGE, 400)
+  }
 
   const body = await req.json().catch(() => ({}))
   const parsed = productChannelGroupMetaSchema.safeParse(body)

@@ -13,6 +13,7 @@ import {
 import { productDisplayName } from '@/lib/sh/product-display'
 
 type Params = { params: Promise<{ listingId: string }> }
+const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
 
 export async function GET(_req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -139,9 +140,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const existing = await prisma.productListing.findFirst({
     where: { id: listingId, spaceId: resolved.space.id },
-    select: { id: true, channelId: true, searchName: true },
+    select: {
+      id: true,
+      channelId: true,
+      searchName: true,
+      channel: { select: { channelTypeDef: { select: { isSalesChannel: true } } } },
+    },
   })
   if (!existing) return errorResponse('판매채널 상품을 찾을 수 없습니다', 404)
+  if (existing.channel.channelTypeDef?.isSalesChannel !== true) {
+    return errorResponse(SALES_CHANNEL_ONLY_MESSAGE, 400)
+  }
 
   const body = await req.json().catch(() => ({}))
   const parsed = productListingPatchSchema.safeParse(body)

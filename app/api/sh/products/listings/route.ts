@@ -13,6 +13,8 @@ import {
 } from '@/lib/sh/listing-calc'
 import { productDisplayName } from '@/lib/sh/product-display'
 
+const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
+
 type ListingListRow = {
   id: string
   channelId: string
@@ -49,7 +51,10 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
 
-  const where: Prisma.ProductListingWhereInput = { spaceId: resolved.space.id }
+  const where: Prisma.ProductListingWhereInput = {
+    spaceId: resolved.space.id,
+    channel: { channelTypeDef: { isSalesChannel: true } },
+  }
   if (channelId) where.channelId = channelId
   if (statusFilter === 'ACTIVE' || statusFilter === 'SUSPENDED') where.status = statusFilter
   if (search) {
@@ -170,9 +175,12 @@ export async function POST(req: NextRequest) {
   // 채널 소속 검증
   const channel = await prisma.channel.findFirst({
     where: { id: input.channelId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, channelTypeDef: { select: { isSalesChannel: true } } },
   })
   if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
+  if (channel.channelTypeDef?.isSalesChannel !== true) {
+    return errorResponse(SALES_CHANNEL_ONLY_MESSAGE, 400)
+  }
 
   // 옵션 소속 검증 (같은 Space의 상품 옵션이어야 함)
   const optionIds = input.items.map((it) => it.optionId)

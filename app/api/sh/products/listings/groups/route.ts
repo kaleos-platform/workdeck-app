@@ -64,7 +64,10 @@ export async function GET(req: NextRequest) {
   const statusFilter = searchParams.get('status')?.trim() || 'all'
   const search = (searchParams.get('search') ?? '').trim()
 
-  const where: Prisma.ProductListingWhereInput = { spaceId: resolved.space.id }
+  const where: Prisma.ProductListingWhereInput = {
+    spaceId: resolved.space.id,
+    channel: { channelTypeDef: { isSalesChannel: true } },
+  }
   if (channelId) where.channelId = channelId
   if (statusFilter === 'ACTIVE' || statusFilter === 'SUSPENDED') where.status = statusFilter
   if (search) {

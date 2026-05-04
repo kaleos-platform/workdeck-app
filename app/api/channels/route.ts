@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { Prisma } from '@/generated/prisma/client'
 import { resolveAnyDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { channelSchema } from '@/lib/sh/schemas'
@@ -10,11 +11,14 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = req.nextUrl
   const isActiveParam = searchParams.get('isActive')
+  const isSalesChannelParam = searchParams.get('isSalesChannel')
   const channelTypeDefId = searchParams.get('channelTypeDefId')
 
-  const where: Record<string, unknown> = { spaceId: resolved.space.id }
+  const where: Prisma.ChannelWhereInput = { spaceId: resolved.space.id }
   if (isActiveParam === 'true') where.isActive = true
   else if (isActiveParam === 'false') where.isActive = false
+  if (isSalesChannelParam === 'true') where.channelTypeDef = { isSalesChannel: true }
+  else if (isSalesChannelParam === 'false') where.channelTypeDef = { isSalesChannel: false }
   if (channelTypeDefId) where.channelTypeDefId = channelTypeDefId
 
   const channels = await prisma.channel.findMany({
