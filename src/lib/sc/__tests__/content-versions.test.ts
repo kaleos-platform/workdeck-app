@@ -1,3 +1,4 @@
+/** @jest-environment node */
 // Phase 2 Unit 16 — 콘텐츠 버전 히스토리 순수 로직 단위 테스트
 // Prisma 의존 함수(snapshotContent, rollbackContent)는 테스트하지 않음.
 // nextVersionNumber 순수 함수만 검증.

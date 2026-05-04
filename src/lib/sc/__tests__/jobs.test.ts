@@ -1,3 +1,4 @@
+/** @jest-environment node */
 // jobs.ts — 순수 함수 단위 테스트 + Prisma mock 기반 핵심 회귀 테스트.
 
 import { isRetryableErrorCode, MAX_ATTEMPTS, nextRetryAt, STALE_CLAIM_MS } from '../jobs'
