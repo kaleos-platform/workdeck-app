@@ -173,8 +173,8 @@ export function joinName(base: string, suffix: string): string {
 
 function stripSuffix(value: string | null, suffix: string): string {
   if (!value) return ''
-  // 끝의 ` N개` (번들 세트 수량 차원) 먼저 제거
-  let v = value.replace(/\s+\d+개$/, '')
+  // 끝의 묶음 라벨(` #N ...`)과 ` N개` 차원을 먼저 제거
+  let v = value.replace(/\s+#\d+\s.*$/, '').replace(/\s+\d+개$/, '')
   if (suffix && v.endsWith(suffix)) {
     v = v.slice(0, v.length - suffix.length).trimEnd()
   }
