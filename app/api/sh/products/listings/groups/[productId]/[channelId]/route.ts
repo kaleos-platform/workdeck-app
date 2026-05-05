@@ -93,7 +93,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   // groupKey 필터: 같은 product × channel에 여러 그룹이 존재할 수 있으므로
   // base managementName / searchName 기준으로 추가 필터.
   const productAttrs = Array.isArray(product.optionAttributes)
-    ? (product.optionAttributes as Array<{ name: string }>)
+    ? (product.optionAttributes as Array<{ name: string; values?: Array<{ value: string }> }>)
     : []
   const computeGroupKey = (l: (typeof singleAll)[number]): string =>
     computeListingGroupKey({
