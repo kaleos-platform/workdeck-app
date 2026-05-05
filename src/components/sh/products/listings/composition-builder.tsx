@@ -238,9 +238,11 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
       return
     }
 
-    // 모든 속성의 cartesian 펼침
+    // attrState에 활성화된 속성은 선택된 값만, 미활성 속성은 전체 값을 펼침
     const combos = attrs.reduce<Array<Record<string, string>>>((acc, attr) => {
-      const vals = attr.values.map((v) => v.value)
+      const state = attrState[attr.name]
+      const selectedVals = state?.enabled ? Object.keys(state.valueQuantities) : []
+      const vals = selectedVals.length > 0 ? selectedVals : attr.values.map((v) => v.value)
       if (acc.length === 0) return vals.map((v) => ({ [attr.name]: v }))
       return acc.flatMap((prev) => vals.map((v) => ({ ...prev, [attr.name]: v })))
     }, [])
@@ -418,7 +420,14 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
               </TabsList>
 
               <TabsContent value="simple" className="mt-3">
-                <SimpleModeSettings product={product} setQty={setQty} onSetQtyChange={setSetQty} />
+                <SimpleModeSettings
+                  product={product}
+                  setQty={setQty}
+                  onSetQtyChange={setSetQty}
+                  attrState={attrState}
+                  onToggleAttr={toggleAttr}
+                  onToggleValue={toggleValue}
+                />
               </TabsContent>
 
               <TabsContent value="advanced" className="mt-3">
@@ -549,46 +558,43 @@ function SimpleModeSettings({
   product,
   setQty,
   onSetQtyChange,
+  attrState,
+  onToggleAttr,
+  onToggleValue,
 }: {
   product: ProductDetail
   setQty: number
   onSetQtyChange: (v: number) => void
+  attrState: Record<string, AttrState>
+  onToggleAttr: (name: string, enabled: boolean) => void
+  onToggleValue: (attrName: string, value: string, on: boolean) => void
 }) {
   const attrs = product.optionAttributes ?? []
-  const comboCount =
-    attrs.length === 0
-      ? product.options.length > 0
-        ? 1
-        : 0
-      : attrs.reduce((n, a) => n * a.values.length, 1)
 
-  // 샘플: cartesian 조합 중 최대 3개만 표시
-  const samples: string[] = (() => {
-    if (attrs.length === 0) {
-      const first = product.options[0]?.name
-      return first ? [first] : []
-    }
-    // 첫 3조합만 펼침 (조기 slice로 폭주 방지)
+  // 선택된 cartesian (활성 속성은 선택값만, 미활성은 전체)
+  const effectiveCombos: Record<string, string>[] = (() => {
+    if (attrs.length === 0) return product.options.length > 0 ? [{}] : []
     let combos: Record<string, string>[] = [{}]
     for (const a of attrs) {
+      const state = attrState[a.name]
+      const selected = state?.enabled ? Object.keys(state.valueQuantities) : []
+      const vals = selected.length > 0 ? selected : a.values.map((v) => v.value)
       const next: Record<string, string>[] = []
       for (const prev of combos) {
-        for (const v of a.values) {
-          next.push({ ...prev, [a.name]: v.value })
-          if (next.length >= 3) break
-        }
-        if (next.length >= 3) break
+        for (const v of vals) next.push({ ...prev, [a.name]: v })
       }
       combos = next
-      if (combos.length >= 3) break
     }
-    return combos.slice(0, 3).map((c) =>
-      attrs
-        .map((a) => c[a.name])
-        .filter(Boolean)
-        .join(' / ')
-    )
+    return combos
   })()
+  const comboCount = effectiveCombos.length
+
+  const samples = effectiveCombos.slice(0, 3).map((c) =>
+    attrs
+      .map((a) => c[a.name])
+      .filter(Boolean)
+      .join(' / ')
+  )
 
   return (
     <div className="space-y-3 rounded-md border bg-background p-3">
@@ -605,10 +611,55 @@ function SimpleModeSettings({
             className="h-9 w-24"
           />
           <span className="text-xs text-muted-foreground">
-            이 수량이 모든 옵션 조합에 각각 적용됩니다
+            선택한 옵션 조합마다 이 수량이 적용됩니다
           </span>
         </div>
       </div>
+
+      {attrs.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs font-medium">옵션 선택 (선택 안 하면 전체)</div>
+          <div className="space-y-2">
+            {attrs.map((attr) => {
+              const state = attrState[attr.name] ?? { enabled: false, valueQuantities: {} }
+              return (
+                <div key={attr.name} className="rounded-md border p-2">
+                  <label className="flex cursor-pointer items-center gap-2 text-xs">
+                    <Checkbox
+                      checked={state.enabled}
+                      onCheckedChange={(v) => onToggleAttr(attr.name, v === true)}
+                    />
+                    <span className="font-medium">{attr.name}</span>
+                    <span className="text-muted-foreground">(값 {attr.values.length}개)</span>
+                  </label>
+                  {state.enabled && (
+                    <div className="mt-2 flex flex-wrap gap-1.5 pl-6">
+                      {attr.values.map((v) => {
+                        const checked = state.valueQuantities[v.value] !== undefined
+                        return (
+                          <label
+                            key={v.value}
+                            className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs ${
+                              checked ? 'border-primary bg-primary/10' : 'hover:bg-muted'
+                            }`}
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(c) => onToggleValue(attr.name, v.value, c === true)}
+                            />
+                            <span>{v.value}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
         <strong className="text-foreground">{comboCount}</strong>개의 listing이 생성됩니다 · 각
         listing = 1 옵션 × {setQty} 수량
