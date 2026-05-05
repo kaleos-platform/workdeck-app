@@ -1,6 +1,7 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Trash2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -65,6 +66,34 @@ type Props = {
   disabled?: boolean
 }
 
+type SortKey = 'name' | 'stock' | 'baseline' | 'retail' | 'status'
+type SortDir = 'asc' | 'desc'
+type SortState = { key: SortKey; dir: SortDir } | null
+
+function nextSort(prev: SortState, key: SortKey): SortState {
+  if (!prev || prev.key !== key) return { key, dir: 'asc' }
+  if (prev.dir === 'asc') return { key, dir: 'desc' }
+  return null
+}
+
+function compareNullableNumber(a: number | null, b: number | null, dir: SortDir): number {
+  if (a == null && b == null) return 0
+  if (a == null) return 1
+  if (b == null) return -1
+  return dir === 'asc' ? a - b : b - a
+}
+
+function compareString(a: string, b: string, dir: SortDir): number {
+  const r = a.localeCompare(b, 'ko')
+  return dir === 'asc' ? r : -r
+}
+
+const STATUS_ORDER: Record<'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED', number> = {
+  ACTIVE: 0,
+  SOLD_OUT: 1,
+  SUSPENDED: 2,
+}
+
 export function GroupListingsTable({
   rows,
   selected,
@@ -75,8 +104,40 @@ export function GroupListingsTable({
   dirtyIds,
   disabled,
 }: Props) {
+  const [sort, setSort] = useState<SortState>(null)
   const allSelected = rows.length > 0 && rows.every((r) => selected.has(r.id))
   const someSelected = rows.some((r) => selected.has(r.id)) && !allSelected
+
+  const displayRows = useMemo(() => {
+    if (!sort) return rows
+    const dir = sort.dir
+    const arr = [...rows]
+    arr.sort((a, b) => {
+      switch (sort.key) {
+        case 'name': {
+          const aN = a.managementName?.trim() || a.searchName
+          const bN = b.managementName?.trim() || b.searchName
+          return compareString(aN, bN, dir)
+        }
+        case 'stock':
+          return compareNullableNumber(a.availableStock, b.availableStock, dir)
+        case 'baseline':
+          return compareNullableNumber(a.baselinePrice, b.baselinePrice, dir)
+        case 'retail':
+          return compareNullableNumber(a.retailPrice, b.retailPrice, dir)
+        case 'status': {
+          const aV = STATUS_ORDER[a.effectiveStatus]
+          const bV = STATUS_ORDER[b.effectiveStatus]
+          return dir === 'asc' ? aV - bV : bV - aV
+        }
+      }
+    })
+    return arr
+  }, [rows, sort])
+
+  function toggleSort(key: SortKey) {
+    setSort((prev) => nextSort(prev, key))
+  }
 
   function toggleAll(checked: boolean) {
     onSelectedChange(checked ? new Set(rows.map((r) => r.id)) : new Set())
@@ -110,17 +171,50 @@ export function GroupListingsTable({
                 disabled={disabled}
               />
             </TableHead>
-            <TableHead>구성</TableHead>
-            <TableHead className="text-right">재고</TableHead>
-            <TableHead className="text-right">소비자가</TableHead>
-            <TableHead className="w-36 text-right">판매가</TableHead>
+            <TableHead>
+              <SortableHeaderButton label="구성" sortKey="name" sort={sort} onToggle={toggleSort} />
+            </TableHead>
+            <TableHead className="text-right">
+              <SortableHeaderButton
+                label="재고"
+                sortKey="stock"
+                sort={sort}
+                onToggle={toggleSort}
+                align="right"
+              />
+            </TableHead>
+            <TableHead className="text-right">
+              <SortableHeaderButton
+                label="소비자가"
+                sortKey="baseline"
+                sort={sort}
+                onToggle={toggleSort}
+                align="right"
+              />
+            </TableHead>
+            <TableHead className="w-36 text-right">
+              <SortableHeaderButton
+                label="판매가"
+                sortKey="retail"
+                sort={sort}
+                onToggle={toggleSort}
+                align="right"
+              />
+            </TableHead>
             <TableHead className="text-right">할인</TableHead>
-            <TableHead className="w-32">판매상태</TableHead>
+            <TableHead className="w-32">
+              <SortableHeaderButton
+                label="판매상태"
+                sortKey="status"
+                sort={sort}
+                onToggle={toggleSort}
+              />
+            </TableHead>
             {onDeleteRequest && <TableHead className="w-10" />}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((r) => {
+          {displayRows.map((r) => {
             const retailValue = r.retailPrice != null ? String(r.retailPrice) : ''
             const discount = computeDiscount(r.baselinePrice, r.retailPrice)
             const statusBadge =
@@ -225,5 +319,35 @@ export function GroupListingsTable({
         </TableBody>
       </Table>
     </div>
+  )
+}
+
+function SortableHeaderButton({
+  label,
+  sortKey,
+  sort,
+  onToggle,
+  align,
+}: {
+  label: string
+  sortKey: SortKey
+  sort: SortState
+  onToggle: (k: SortKey) => void
+  align?: 'right'
+}) {
+  const active = sort?.key === sortKey
+  const dir = active ? sort!.dir : null
+  const Icon = dir === 'asc' ? ArrowUp : dir === 'desc' ? ArrowDown : ArrowUpDown
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(sortKey)}
+      className={`inline-flex items-center gap-1 hover:text-foreground ${
+        active ? 'text-foreground' : 'text-muted-foreground'
+      } ${align === 'right' ? 'ml-auto' : ''}`}
+    >
+      <span>{label}</span>
+      <Icon className={`h-3 w-3 ${active ? '' : 'opacity-50'}`} />
+    </button>
   )
 }
