@@ -170,7 +170,7 @@ export async function GET(req: NextRequest) {
 
     const product = l.items[0].option.product
     const attrs = Array.isArray(product.optionAttributes)
-      ? (product.optionAttributes as Array<{ name: string }>)
+      ? (product.optionAttributes as Array<{ name: string; values?: Array<{ value: string }> }>)
       : []
     const itemAttributeValues = l.items.map(
       (it) => (it.option.attributeValues ?? {}) as Record<string, string>

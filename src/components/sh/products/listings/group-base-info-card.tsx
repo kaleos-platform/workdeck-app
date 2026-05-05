@@ -155,7 +155,8 @@ export function GroupBaseInfoCard({
 
 export function buildSuffix(listing: GroupListingForBase, attrs: OptionAttribute[]): string {
   if (listing.items.length === 0) return ''
-  // 모든 item이 공통으로 가지는 속성값만 suffix로 사용 (묶음 item일 때 안전)
+  // 모든 item이 공통으로 가지는 속성값만 suffix로 사용 (묶음 item일 때 안전).
+  // 단, 공통값이라도 listing 이름 끝에 실제로 들어가지 않을 수 있으므로 후처리는 stripSuffix에서.
   const parts: string[] = []
   for (const a of attrs) {
     const first = listing.items[0].attributeValues?.[a.name]
