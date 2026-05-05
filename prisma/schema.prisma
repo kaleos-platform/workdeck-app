@@ -1225,6 +1225,7 @@ model Channel {
   requireOrderNumber    Boolean  @default(true)
   requirePayment        Boolean  @default(true)
   requireProducts       Boolean  @default(true)
+  sortOrder             Int      @default(0) // 사용자 정의 정렬 순서 (오름차순, 동률은 name asc)
 
   space                   Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channelTypeDef          ChannelTypeDef?           @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)

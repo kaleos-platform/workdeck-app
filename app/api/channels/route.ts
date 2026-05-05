@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   const channels = await prisma.channel.findMany({
     where,
-    orderBy: { name: 'asc' },
+    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     include: {
       channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
       feeRates: {
