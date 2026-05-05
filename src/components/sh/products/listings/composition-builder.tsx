@@ -56,6 +56,16 @@ type AttrState = {
   valueQuantities: Record<string, number>
 }
 
+/**
+ * advanced 모드의 한 "묶음".
+ * 수량 지정 속성(attrState[name].enabled === true)별로 어떤 값에 몇 개씩 들어가는지.
+ * 미선택 속성은 묶음과 무관하게 cartesian으로 펼쳐짐.
+ */
+type Bundle = {
+  id: string
+  valueQuantities: Record<string, Record<string, number>>
+}
+
 type BuilderMode = 'simple' | 'advanced'
 
 export type ItemEntry = {
@@ -94,12 +104,14 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
 
   // advanced 모드
   const [attrState, setAttrState] = useState<Record<string, AttrState>>({})
+  const [bundles, setBundles] = useState<Bundle[]>([{ id: 'b1', valueQuantities: {} }])
 
   // 상품이 바뀌면 상태 초기화
   useEffect(() => {
     if (!product) {
       setAttrState({})
       setSetQuantities([1])
+      setBundles([{ id: 'b1', valueQuantities: {} }])
       setMode('simple')
       return
     }
@@ -108,6 +120,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
       next[attr.name] = { enabled: false, valueQuantities: {} }
     }
     setAttrState(next)
+    setBundles([{ id: `b-${Date.now()}`, valueQuantities: {} }])
   }, [product])
 
   function handlePickProduct(p: ProductRow) {
@@ -163,6 +176,60 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
       ...prev,
       [name]: { enabled, valueQuantities: enabled ? (prev[name]?.valueQuantities ?? {}) : {} },
     }))
+    // 속성을 끄면 묶음들에서도 해당 속성 정보 정리
+    if (!enabled) {
+      setBundles((prev) =>
+        prev.map((b) => {
+          if (!(name in b.valueQuantities)) return b
+          const next = { ...b.valueQuantities }
+          delete next[name]
+          return { ...b, valueQuantities: next }
+        })
+      )
+    }
+  }
+
+  function addBundle() {
+    setBundles((prev) => [...prev, { id: `b-${Date.now()}-${prev.length}`, valueQuantities: {} }])
+  }
+
+  function removeBundle(id: string) {
+    setBundles((prev) => (prev.length > 1 ? prev.filter((b) => b.id !== id) : prev))
+  }
+
+  function toggleBundleValue(bundleId: string, attrName: string, value: string, on: boolean) {
+    setBundles((prev) =>
+      prev.map((b) => {
+        if (b.id !== bundleId) return b
+        const attrMap = { ...(b.valueQuantities[attrName] ?? {}) }
+        if (on) {
+          attrMap[value] = attrMap[value] ?? 1
+        } else {
+          delete attrMap[value]
+        }
+        const nextVQ = { ...b.valueQuantities }
+        if (Object.keys(attrMap).length === 0) delete nextVQ[attrName]
+        else nextVQ[attrName] = attrMap
+        return { ...b, valueQuantities: nextVQ }
+      })
+    )
+  }
+
+  function updateBundleValueQty(bundleId: string, attrName: string, value: string, qty: number) {
+    setBundles((prev) =>
+      prev.map((b) => {
+        if (b.id !== bundleId) return b
+        const attrMap = b.valueQuantities[attrName]
+        if (!attrMap || !(value in attrMap)) return b
+        return {
+          ...b,
+          valueQuantities: {
+            ...b.valueQuantities,
+            [attrName]: { ...attrMap, [value]: Math.max(1, qty) },
+          },
+        }
+      })
+    )
   }
 
   function toggleValue(attrName: string, value: string, on: boolean) {
@@ -175,20 +242,6 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
         delete valueQuantities[value]
       }
       return { ...prev, [attrName]: { ...current, valueQuantities } }
-    })
-  }
-
-  function updateValueQty(attrName: string, value: string, qty: number) {
-    setAttrState((prev) => {
-      const current = prev[attrName]
-      if (!current) return prev
-      return {
-        ...prev,
-        [attrName]: {
-          ...current,
-          valueQuantities: { ...current.valueQuantities, [value]: Math.max(1, qty) },
-        },
-      }
     })
   }
 
@@ -306,28 +359,36 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
       return
     }
 
-    // 선택된 속성(= 값·수량 지정) / 선택 안 된 속성(= 모든 값 펼침)
-    const selected: Array<{ name: string; valueQuantities: Record<string, number> }> = []
+    // 수량 지정 속성(enabled) / 미지정 속성(= 모든 값 펼침)
+    const selectedAttrNames: string[] = []
     const unselected: Array<{ name: string; values: string[] }> = []
     for (const attr of attrs) {
       const st = attrState[attr.name]
       const vals = attr.values.map((v) => v.value)
-      const hasQty = st?.enabled && Object.keys(st.valueQuantities).length > 0
-      if (hasQty) {
-        selected.push({
-          name: attr.name,
-          valueQuantities: { ...st!.valueQuantities },
-        })
+      if (st?.enabled) {
+        selectedAttrNames.push(attr.name)
       } else {
         unselected.push({ name: attr.name, values: vals })
       }
     }
 
-    if (selected.length === 0) {
-      toast.error('수량을 지정할 속성과 값을 1개 이상 선택하세요')
+    if (selectedAttrNames.length === 0) {
+      toast.error('수량을 지정할 속성을 1개 이상 선택하세요')
       return
     }
 
+    // 각 묶음에 수량 지정 속성에 대한 값·수량이 1개 이상 있어야 유효
+    const validBundles = bundles.filter((b) =>
+      selectedAttrNames.some(
+        (n) => b.valueQuantities[n] && Object.keys(b.valueQuantities[n]).length > 0
+      )
+    )
+    if (validBundles.length === 0) {
+      toast.error('묶음마다 수량을 지정할 값을 1개 이상 선택하세요')
+      return
+    }
+
+    // 미선택 속성의 cartesian
     const combos: Array<Record<string, string>> = unselected.reduce<Array<Record<string, string>>>(
       (acc, attr) => {
         if (acc.length === 0) return attr.values.map((v) => ({ [attr.name]: v }))
@@ -345,41 +406,56 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
 
     const groups: BuiltGroup[] = []
     for (const combo of effectiveCombos) {
-      const groupItems: ItemEntry[] = []
+      // 각 묶음 → 별도 listing
+      validBundles.forEach((bundle, bundleIdx) => {
+        const groupItems: ItemEntry[] = []
 
-      // selected 속성들의 value × quantity Cartesian
-      type SelectedCombo = { values: Record<string, string>; qty: number }
-      let selectedCombos: SelectedCombo[] = [{ values: {}, qty: 1 }]
-      for (const s of selected) {
-        const expanded: SelectedCombo[] = []
-        for (const prev of selectedCombos) {
-          for (const [value, q] of Object.entries(s.valueQuantities)) {
-            expanded.push({
-              values: { ...prev.values, [s.name]: value },
-              qty: prev.qty === 1 ? q : prev.qty * q,
-            })
+        // 묶음 안의 수량 지정 속성·값 cartesian (속성 간 cartesian)
+        type SelectedCombo = { values: Record<string, string>; qty: number }
+        let selectedCombos: SelectedCombo[] = [{ values: {}, qty: 1 }]
+        let bundleHasQty = false
+        for (const name of selectedAttrNames) {
+          const valueQty = bundle.valueQuantities[name]
+          if (!valueQty || Object.keys(valueQty).length === 0) continue
+          bundleHasQty = true
+          const expanded: SelectedCombo[] = []
+          for (const prev of selectedCombos) {
+            for (const [value, q] of Object.entries(valueQty)) {
+              expanded.push({
+                values: { ...prev.values, [name]: value },
+                qty: prev.qty === 1 ? q : prev.qty * q,
+              })
+            }
           }
+          selectedCombos = expanded
         }
-        selectedCombos = expanded
-      }
+        if (!bundleHasQty) return
 
-      for (const sc of selectedCombos) {
-        const target = { ...combo, ...sc.values }
-        const opt = findOption(product.options, target)
-        if (!opt) continue
-        groupItems.push({
-          optionId: opt.id,
-          optionName: opt.name,
-          sku: opt.sku,
-          quantity: sc.qty,
-          retailPrice: opt.retailPrice,
-          attributeValues: opt.attributeValues,
+        for (const sc of selectedCombos) {
+          const target = { ...combo, ...sc.values }
+          const opt = findOption(product.options, target)
+          if (!opt) continue
+          groupItems.push({
+            optionId: opt.id,
+            optionName: opt.name,
+            sku: opt.sku,
+            quantity: sc.qty,
+            retailPrice: opt.retailPrice,
+            attributeValues: opt.attributeValues,
+          })
+        }
+
+        if (groupItems.length === 0) return
+
+        // suffix 구성: 미선택 속성값 + 묶음 식별 라벨
+        const baseParts = unselected.map((a) => combo[a.name]).filter(Boolean)
+        const bundleLabel =
+          validBundles.length > 1 ? [`#${bundleIdx + 1} ${bundleSummary(bundle)}`] : []
+        groups.push({
+          suffixParts: [...baseParts, ...bundleLabel],
+          items: groupItems,
         })
-      }
-
-      if (groupItems.length === 0) continue
-      const suffixParts = unselected.map((a) => combo[a.name]).filter(Boolean)
-      groups.push({ suffixParts, items: groupItems })
+      })
     }
 
     if (groups.length === 0) {
@@ -443,14 +519,17 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
               </TabsContent>
 
               <TabsContent value="advanced" className="mt-3">
-                <AttributesPicker
+                <BundlesEditor
                   product={product}
                   attrState={attrState}
+                  bundles={bundles}
                   onToggleAttr={toggleAttr}
-                  onToggleValue={toggleValue}
-                  onUpdateQty={updateValueQty}
+                  onAddBundle={addBundle}
+                  onRemoveBundle={removeBundle}
+                  onToggleBundleValue={toggleBundleValue}
+                  onUpdateBundleValueQty={updateBundleValueQty}
                 />
-                <AdvancedPreview product={product} attrState={attrState} />
+                <AdvancedPreview product={product} attrState={attrState} bundles={bundles} />
               </TabsContent>
             </Tabs>
           </div>
@@ -720,18 +799,24 @@ function SimpleModeSettings({
 }
 
 // ─── Advanced 모드 ───────────────────────────────────────────────────────────
-function AttributesPicker({
+function BundlesEditor({
   product,
   attrState,
+  bundles,
   onToggleAttr,
-  onToggleValue,
-  onUpdateQty,
+  onAddBundle,
+  onRemoveBundle,
+  onToggleBundleValue,
+  onUpdateBundleValueQty,
 }: {
   product: ProductDetail
   attrState: Record<string, AttrState>
+  bundles: Bundle[]
   onToggleAttr: (name: string, enabled: boolean) => void
-  onToggleValue: (name: string, value: string, on: boolean) => void
-  onUpdateQty: (name: string, value: string, qty: number) => void
+  onAddBundle: () => void
+  onRemoveBundle: (id: string) => void
+  onToggleBundleValue: (bundleId: string, attrName: string, value: string, on: boolean) => void
+  onUpdateBundleValueQty: (bundleId: string, attrName: string, value: string, qty: number) => void
 }) {
   const attrs = product.optionAttributes ?? []
   if (attrs.length === 0) {
@@ -741,70 +826,128 @@ function AttributesPicker({
       </div>
     )
   }
+  const selectedAttrs = attrs.filter((a) => attrState[a.name]?.enabled)
   return (
-    <div className="space-y-3">
-      <p className="text-xs text-muted-foreground">
-        선택 안 된 속성은 모든 값에 기본 적용되어 listing이 자동으로 나뉘어 생성됩니다
-      </p>
-      {attrs.map((attr) => {
-        const st = attrState[attr.name] ?? { enabled: false, valueQuantities: {} }
-        return (
-          <div key={attr.name} className="rounded-md border bg-background px-3 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+    <div className="space-y-4">
+      {/* 1) 어떤 속성을 "수량 지정"으로 다룰지 선택 */}
+      <div className="space-y-2">
+        <Label className="text-xs">수량 지정 속성</Label>
+        <p className="text-xs text-muted-foreground">
+          선택한 속성은 묶음별로 값·수량을 지정합니다. 선택 안 된 속성은 모든 값에 기본 적용되어
+          listing이 자동으로 나뉘어 생성됩니다
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {attrs.map((attr) => {
+            const enabled = attrState[attr.name]?.enabled ?? false
+            return (
+              <label
+                key={attr.name}
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs ${
+                  enabled ? 'border-primary bg-primary/10' : 'hover:bg-muted'
+                }`}
+              >
                 <Checkbox
-                  id={`attr-${attr.name}`}
-                  checked={st.enabled}
+                  checked={enabled}
                   onCheckedChange={(v) => onToggleAttr(attr.name, v === true)}
                 />
-                <Label htmlFor={`attr-${attr.name}`} className="text-sm font-medium">
-                  {attr.name}
-                </Label>
-                <span className="text-xs text-muted-foreground">
-                  {st.enabled ? '지정' : '선택 안 함 (모든 값에 기본 적용)'}
-                </span>
-              </div>
-            </div>
-            {st.enabled && (
-              <div className="mt-2 space-y-1.5 pl-6">
-                {attr.values.map((v) => {
-                  const checked = v.value in st.valueQuantities
-                  return (
-                    <div key={v.value} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`val-${attr.name}-${v.value}`}
-                        checked={checked}
-                        onCheckedChange={(on) => onToggleValue(attr.name, v.value, on === true)}
-                      />
-                      <Label
-                        htmlFor={`val-${attr.name}-${v.value}`}
-                        className="min-w-[80px] text-sm"
-                      >
-                        {v.value}
-                      </Label>
-                      {checked && (
-                        <>
-                          <span className="text-xs text-muted-foreground">수량</span>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={999}
-                            value={st.valueQuantities[v.value] ?? 1}
-                            onChange={(e) =>
-                              onUpdateQty(attr.name, v.value, Number(e.target.value || 1))
-                            }
-                            className="h-7 w-20"
-                          />
-                        </>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+                <span className="font-medium">{attr.name}</span>
+                <span className="text-muted-foreground">(값 {attr.values.length}개)</span>
+              </label>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 2) 묶음 카드 */}
+      {selectedAttrs.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">묶음 ({bundles.length}개)</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={onAddBundle}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" />
+              묶음 추가
+            </Button>
           </div>
-        )
-      })}
+          <div className="space-y-2">
+            {bundles.map((bundle, idx) => (
+              <div key={bundle.id} className="rounded-md border bg-background px-3 py-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">묶음 #{idx + 1}</Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {bundleSummary(bundle) || '값을 선택하세요'}
+                    </span>
+                  </div>
+                  {bundles.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => onRemoveBundle(bundle.id)}
+                      aria-label="묶음 제거"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-2.5">
+                  {selectedAttrs.map((attr) => {
+                    const valueMap = bundle.valueQuantities[attr.name] ?? {}
+                    return (
+                      <div key={attr.name}>
+                        <div className="mb-1 text-xs font-medium">{attr.name}</div>
+                        <div className="space-y-1 pl-1">
+                          {attr.values.map((v) => {
+                            const checked = v.value in valueMap
+                            return (
+                              <div key={v.value} className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={(on) =>
+                                    onToggleBundleValue(bundle.id, attr.name, v.value, on === true)
+                                  }
+                                />
+                                <span className="min-w-[80px] text-sm">{v.value}</span>
+                                {checked && (
+                                  <>
+                                    <span className="text-xs text-muted-foreground">수량</span>
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      max={999}
+                                      value={valueMap[v.value] ?? 1}
+                                      onChange={(e) =>
+                                        onUpdateBundleValueQty(
+                                          bundle.id,
+                                          attr.name,
+                                          v.value,
+                                          Number(e.target.value || 1)
+                                        )
+                                      }
+                                      className="h-7 w-20"
+                                    />
+                                  </>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -812,11 +955,16 @@ function AttributesPicker({
 function AdvancedPreview({
   product,
   attrState,
+  bundles,
 }: {
   product: ProductDetail
   attrState: Record<string, AttrState>
+  bundles: Bundle[]
 }) {
-  const preview = useMemo(() => computeAdvancedPreview(product, attrState), [product, attrState])
+  const preview = useMemo(
+    () => computeAdvancedPreview(product, attrState, bundles),
+    [product, attrState, bundles]
+  )
   return (
     <div className="mt-3 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
       {preview.groupCount > 0 ? (
@@ -831,7 +979,7 @@ function AdvancedPreview({
           )}
         </>
       ) : (
-        <span>수량을 지정한 속성·값이 있으면 미리 보기가 표시됩니다</span>
+        <span>수량 지정 속성을 선택하고 묶음마다 값을 1개 이상 골라야 미리 보기가 표시됩니다</span>
       )}
     </div>
   )
@@ -855,34 +1003,50 @@ function findOption(options: OptionRow[], target: Record<string, string>): Optio
   return null
 }
 
-function computeAdvancedPreview(
-  product: ProductDetail,
-  attrState: Record<string, AttrState>
-): { groupCount: number; selectedCount: number; samples: string[] } {
-  const attrs = product.optionAttributes ?? []
-  if (attrs.length === 0) {
-    return { groupCount: product.options.length > 0 ? 1 : 0, selectedCount: 0, samples: [] }
-  }
-  let selectedCount = 0
-  const unselectedValues: string[][] = []
-  for (const a of attrs) {
-    const st = attrState[a.name]
-    const hasQty = st?.enabled && Object.keys(st.valueQuantities).length > 0
-    if (hasQty) {
-      selectedCount += Object.keys(st!.valueQuantities).length
-    } else {
-      unselectedValues.push(a.values.map((v) => v.value))
+function bundleSummary(bundle: Bundle): string {
+  const parts: string[] = []
+  for (const [, valMap] of Object.entries(bundle.valueQuantities)) {
+    for (const [val, qty] of Object.entries(valMap)) {
+      parts.push(`${val}×${qty}`)
     }
   }
-  if (selectedCount === 0) return { groupCount: 0, selectedCount: 0, samples: [] }
-  const groupCount = unselectedValues.reduce((n, arr) => n * arr.length, 1)
+  return parts.join(' + ')
+}
 
-  // 샘플: unselected 속성의 cartesian 중 최대 3개
+function computeAdvancedPreview(
+  product: ProductDetail,
+  attrState: Record<string, AttrState>,
+  bundles: Bundle[]
+): { groupCount: number; samples: string[] } {
+  const attrs = product.optionAttributes ?? []
+  if (attrs.length === 0) {
+    return { groupCount: product.options.length > 0 ? 1 : 0, samples: [] }
+  }
+  const selectedAttrNames = attrs.filter((a) => attrState[a.name]?.enabled).map((a) => a.name)
+  if (selectedAttrNames.length === 0) return { groupCount: 0, samples: [] }
+
+  const validBundles = bundles.filter((b) =>
+    selectedAttrNames.some(
+      (n) => b.valueQuantities[n] && Object.keys(b.valueQuantities[n]).length > 0
+    )
+  )
+  if (validBundles.length === 0) return { groupCount: 0, samples: [] }
+
+  const unselectedValues: Array<{ name: string; values: string[] }> = []
+  for (const a of attrs) {
+    if (!selectedAttrNames.includes(a.name)) {
+      unselectedValues.push({ name: a.name, values: a.values.map((v) => v.value) })
+    }
+  }
+  const unselectedCount = unselectedValues.reduce((n, arr) => n * arr.values.length, 1)
+  const groupCount = unselectedCount * validBundles.length
+
+  // 샘플: 미선택 속성 cartesian (최대 3) × 묶음 라벨 (첫 묶음 1개)
   let combos: string[][] = [[]]
-  for (const vs of unselectedValues) {
+  for (const av of unselectedValues) {
     const next: string[][] = []
     for (const prev of combos) {
-      for (const v of vs) {
+      for (const v of av.values) {
         next.push([...prev, v])
         if (next.length >= 3) break
       }
@@ -891,7 +1055,15 @@ function computeAdvancedPreview(
     combos = next
     if (combos.length >= 3) break
   }
-  const samples = combos.length === 0 ? [] : combos.slice(0, 3).map((c) => c.join(' / '))
-  // selected만 있고 unselected 없는 경우 samples 비어있음 → 빈 배열 그대로 (groupCount=1)
-  return { groupCount, selectedCount, samples }
+  const baseSamples = combos.length === 0 ? [''] : combos.slice(0, 3).map((c) => c.join(' / '))
+  const samples = baseSamples
+    .map((base) => {
+      const bundleLabel = validBundles.length > 1 ? `#1 ${bundleSummary(validBundles[0])}` : ''
+      if (!base && !bundleLabel) return ''
+      if (!base) return bundleLabel
+      if (!bundleLabel) return base
+      return `${base} · ${bundleLabel}`
+    })
+    .filter(Boolean)
+  return { groupCount, samples }
 }
