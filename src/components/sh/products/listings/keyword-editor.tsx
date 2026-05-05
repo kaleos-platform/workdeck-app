@@ -52,6 +52,8 @@ export function KeywordEditor({ value, onChange, suggestions = [], placeholder }
   }
 
   function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    // 한글 등 IME 조합 중인 Enter는 무시 (조합 확정용)
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
       if (draft.trim()) {

@@ -480,6 +480,8 @@ export function ProductOptionAttributesEditor({
                       setValueInputs((prev) => ({ ...prev, [attrIdx]: e.target.value }))
                     }
                     onKeyDown={(e) => {
+                      // 한글 등 IME 조합 중인 Enter는 무시 (조합 확정용)
+                      if (e.nativeEvent.isComposing || e.keyCode === 229) return
                       if (e.key === 'Enter') {
                         e.preventDefault()
                         addValue(attrIdx)
