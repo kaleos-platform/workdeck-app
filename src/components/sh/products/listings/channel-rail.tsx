@@ -1,7 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { GripVertical, Plus } from 'lucide-react'
+import { toast } from 'sonner'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -49,6 +67,11 @@ export function ChannelRail({
   const [createOpen, setCreateOpen] = useState(false)
   const [localRefresh, setLocalRefresh] = useState(0)
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
   useEffect(() => {
     let cancelled = false
     const load = async () => {
@@ -66,7 +89,6 @@ export function ChannelRail({
           if (!cancelled) setChannelTypes(td.types ?? [])
         }
         const channelsList = data.channels ?? []
-        // 채널별 listing count 병렬 조회
         const counts = await Promise.all(
           channelsList.map(async (c) => {
             try {
@@ -86,7 +108,6 @@ export function ChannelRail({
         if (cancelled) return
         setChannels(merged)
         onChannelsLoaded?.(merged)
-        // 초기 선택: 현재 미선택이면 첫 채널 자동
         if (!selectedChannelId && merged.length > 0) {
           onSelectChannel(merged[0].id)
         }
@@ -103,7 +124,33 @@ export function ChannelRail({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey, localRefresh])
 
-  // 모바일용 Select
+  async function handleDragEnd(e: DragEndEvent) {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+    const oldIdx = channels.findIndex((c) => c.id === active.id)
+    const newIdx = channels.findIndex((c) => c.id === over.id)
+    if (oldIdx < 0 || newIdx < 0) return
+
+    const next = arrayMove(channels, oldIdx, newIdx)
+    const previous = channels
+    setChannels(next)
+
+    try {
+      const res = await fetch('/api/channels/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedIds: next.map((c) => c.id) }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.message ?? '정렬 저장 실패')
+      }
+    } catch (err) {
+      setChannels(previous)
+      toast.error(err instanceof Error ? err.message : '정렬 저장 실패')
+    }
+  }
+
   const mobileSelect = (
     <div className="md:hidden">
       <Select value={selectedChannelId ?? undefined} onValueChange={(v) => onSelectChannel(v)}>
@@ -142,28 +189,27 @@ export function ChannelRail({
         ) : channels.length === 0 ? (
           <p className="px-2 text-sm text-muted-foreground">활성 채널이 없습니다</p>
         ) : (
-          <ul className="space-y-1">
-            {channels.map((c) => {
-              const isSelected = c.id === selectedChannelId
-              return (
-                <li key={c.id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelectChannel(c.id)}
-                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition ${
-                      isSelected ? 'bg-primary/10 font-medium text-primary' : 'hover:bg-muted/60'
-                    }`}
-                    aria-current={isSelected ? 'true' : undefined}
-                  >
-                    <span className="truncate">{c.name}</span>
-                    <Badge variant={isSelected ? 'default' : 'secondary'} className="ml-2 shrink-0">
-                      {c.listingCount}
-                    </Badge>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={channels.map((c) => c.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="space-y-1">
+                {channels.map((c) => (
+                  <SortableChannelItem
+                    key={c.id}
+                    channel={c}
+                    isSelected={c.id === selectedChannelId}
+                    onSelect={() => onSelectChannel(c.id)}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
       <ChannelEditDialog
@@ -178,5 +224,56 @@ export function ChannelRail({
         onTypesChanged={() => setLocalRefresh((n) => n + 1)}
       />
     </div>
+  )
+}
+
+function SortableChannelItem({
+  channel,
+  isSelected,
+  onSelect,
+}: {
+  channel: ChannelWithCount
+  isSelected: boolean
+  onSelect: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: channel.id,
+  })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+  return (
+    <li ref={setNodeRef} style={style}>
+      <div
+        className={`flex items-center gap-1 rounded-md transition ${
+          isSelected ? 'bg-primary/10 text-primary' : 'hover:bg-muted/60'
+        }`}
+      >
+        <button
+          type="button"
+          aria-label="순서 이동"
+          className="cursor-grab px-1.5 py-2 text-muted-foreground hover:text-foreground active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={onSelect}
+          aria-current={isSelected ? 'true' : undefined}
+          className={`flex flex-1 items-center justify-between py-2 pr-3 text-sm ${
+            isSelected ? 'font-medium' : ''
+          }`}
+        >
+          <span className="truncate">{channel.name}</span>
+          <Badge variant={isSelected ? 'default' : 'secondary'} className="ml-2 shrink-0">
+            {channel.listingCount}
+          </Badge>
+        </button>
+      </div>
+    </li>
   )
 }
