@@ -154,13 +154,14 @@ export function GroupBaseInfoCard({
 }
 
 export function buildSuffix(listing: GroupListingForBase, attrs: OptionAttribute[]): string {
-  const firstItem = listing.items[0]
-  if (!firstItem) return ''
-  const values = firstItem.attributeValues ?? {}
+  if (listing.items.length === 0) return ''
+  // 모든 item이 공통으로 가지는 속성값만 suffix로 사용 (묶음 item일 때 안전)
   const parts: string[] = []
   for (const a of attrs) {
-    const v = values[a.name]
-    if (v) parts.push(v)
+    const first = listing.items[0].attributeValues?.[a.name]
+    if (!first) continue
+    const allSame = listing.items.every((it) => (it.attributeValues ?? {})[a.name] === first)
+    if (allSame) parts.push(first)
   }
   return parts.join(' ')
 }
