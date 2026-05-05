@@ -30,12 +30,14 @@ export type ChannelAvgAggregateOutputType = {
   freeShippingThreshold: runtime.Decimal | null
   shippingFee: runtime.Decimal | null
   paymentFeePct: runtime.Decimal | null
+  sortOrder: number | null
 }
 
 export type ChannelSumAggregateOutputType = {
   freeShippingThreshold: runtime.Decimal | null
   shippingFee: runtime.Decimal | null
   paymentFeePct: runtime.Decimal | null
+  sortOrder: number | null
 }
 
 export type ChannelMinAggregateOutputType = {
@@ -57,6 +59,7 @@ export type ChannelMinAggregateOutputType = {
   requireOrderNumber: boolean | null
   requirePayment: boolean | null
   requireProducts: boolean | null
+  sortOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -80,6 +83,7 @@ export type ChannelMaxAggregateOutputType = {
   requireOrderNumber: boolean | null
   requirePayment: boolean | null
   requireProducts: boolean | null
+  sortOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -103,6 +107,7 @@ export type ChannelCountAggregateOutputType = {
   requireOrderNumber: number
   requirePayment: number
   requireProducts: number
+  sortOrder: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -113,12 +118,14 @@ export type ChannelAvgAggregateInputType = {
   freeShippingThreshold?: true
   shippingFee?: true
   paymentFeePct?: true
+  sortOrder?: true
 }
 
 export type ChannelSumAggregateInputType = {
   freeShippingThreshold?: true
   shippingFee?: true
   paymentFeePct?: true
+  sortOrder?: true
 }
 
 export type ChannelMinAggregateInputType = {
@@ -140,6 +147,7 @@ export type ChannelMinAggregateInputType = {
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
+  sortOrder?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -163,6 +171,7 @@ export type ChannelMaxAggregateInputType = {
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
+  sortOrder?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -186,6 +195,7 @@ export type ChannelCountAggregateInputType = {
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
+  sortOrder?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -296,6 +306,7 @@ export type ChannelGroupByOutputType = {
   requireOrderNumber: boolean
   requirePayment: boolean
   requireProducts: boolean
+  sortOrder: number
   createdAt: Date
   updatedAt: Date
   _count: ChannelCountAggregateOutputType | null
@@ -342,6 +353,7 @@ export type ChannelWhereInput = {
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
+  sortOrder?: Prisma.IntFilter<"Channel"> | number
   createdAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -376,6 +388,7 @@ export type ChannelOrderByWithRelationInput = {
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -414,6 +427,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
+  sortOrder?: Prisma.IntFilter<"Channel"> | number
   createdAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -448,6 +462,7 @@ export type ChannelOrderByWithAggregationInput = {
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ChannelCountOrderByAggregateInput
@@ -479,6 +494,7 @@ export type ChannelScalarWhereWithAggregatesInput = {
   requireOrderNumber?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
+  sortOrder?: Prisma.IntWithAggregatesFilter<"Channel"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Channel"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Channel"> | Date | string
 }
@@ -500,6 +516,7 @@ export type ChannelCreateInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -534,6 +551,7 @@ export type ChannelUncheckedCreateInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -564,6 +582,7 @@ export type ChannelUpdateInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -598,6 +617,7 @@ export type ChannelUncheckedUpdateInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -630,6 +650,7 @@ export type ChannelCreateManyInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -651,6 +672,7 @@ export type ChannelUpdateManyMutationInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -674,6 +696,7 @@ export type ChannelUncheckedUpdateManyInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -722,6 +745,7 @@ export type ChannelCountOrderByAggregateInput = {
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -730,6 +754,7 @@ export type ChannelAvgOrderByAggregateInput = {
   freeShippingThreshold?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
 }
 
 export type ChannelMaxOrderByAggregateInput = {
@@ -751,6 +776,7 @@ export type ChannelMaxOrderByAggregateInput = {
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -774,6 +800,7 @@ export type ChannelMinOrderByAggregateInput = {
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -782,6 +809,7 @@ export type ChannelSumOrderByAggregateInput = {
   freeShippingThreshold?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
 }
 
 export type ChannelCreateNestedManyWithoutSpaceInput = {
@@ -1019,6 +1047,7 @@ export type ChannelCreateWithoutSpaceInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
@@ -1051,6 +1080,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -1112,6 +1142,7 @@ export type ChannelScalarWhereInput = {
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
+  sortOrder?: Prisma.IntFilter<"Channel"> | number
   createdAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
 }
@@ -1133,6 +1164,7 @@ export type ChannelCreateWithoutInvMovementsInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -1166,6 +1198,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -1211,6 +1244,7 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -1244,6 +1278,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -1273,6 +1308,7 @@ export type ChannelCreateWithoutDelOrdersInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -1306,6 +1342,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -1351,6 +1388,7 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -1384,6 +1422,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -1413,6 +1452,7 @@ export type ChannelCreateWithoutProductAliasesInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -1446,6 +1486,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -1491,6 +1532,7 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -1524,6 +1566,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -1553,6 +1596,7 @@ export type ChannelCreateWithoutColumnMappingPresetsInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -1586,6 +1630,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -1631,6 +1676,7 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -1664,6 +1710,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -1693,6 +1740,7 @@ export type ChannelCreateWithoutChannelTypeDefInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -1725,6 +1773,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -1781,6 +1830,7 @@ export type ChannelCreateWithoutFeeRatesInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -1814,6 +1864,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
@@ -1859,6 +1910,7 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -1892,6 +1944,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
@@ -1921,6 +1974,7 @@ export type ChannelCreateWithoutPricingScenariosInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -1954,6 +2008,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -1999,6 +2054,7 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -2032,6 +2088,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -2061,6 +2118,7 @@ export type ChannelCreateWithoutPricingScenarioChannelsInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -2094,6 +2152,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -2139,6 +2198,7 @@ export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -2172,6 +2232,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -2201,6 +2262,7 @@ export type ChannelCreateWithoutProductListingsInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -2234,6 +2296,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -2279,6 +2342,7 @@ export type ChannelUpdateWithoutProductListingsInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -2312,6 +2376,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -2341,6 +2406,7 @@ export type ChannelCreateWithoutProductGroupMetaInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
@@ -2374,6 +2440,7 @@ export type ChannelUncheckedCreateWithoutProductGroupMetaInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
@@ -2419,6 +2486,7 @@ export type ChannelUpdateWithoutProductGroupMetaInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -2452,6 +2520,7 @@ export type ChannelUncheckedUpdateWithoutProductGroupMetaInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -2482,6 +2551,7 @@ export type ChannelCreateManySpaceInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2503,6 +2573,7 @@ export type ChannelUpdateWithoutSpaceInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
@@ -2535,6 +2606,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -2566,6 +2638,7 @@ export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2588,6 +2661,7 @@ export type ChannelCreateManyChannelTypeDefInput = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2609,6 +2683,7 @@ export type ChannelUpdateWithoutChannelTypeDefInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
@@ -2641,6 +2716,7 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
@@ -2672,6 +2748,7 @@ export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2798,6 +2875,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -2833,6 +2911,7 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -2858,6 +2937,7 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -2883,11 +2963,12 @@ export type ChannelSelectScalar = {
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
+  sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "shippingFee" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "shippingFee" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
@@ -2945,6 +3026,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     requireOrderNumber: boolean
     requirePayment: boolean
     requireProducts: boolean
+    sortOrder: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["channel"]>
@@ -3399,6 +3481,7 @@ export interface ChannelFieldRefs {
   readonly requireOrderNumber: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly requirePayment: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly requireProducts: Prisma.FieldRef<"Channel", 'Boolean'>
+  readonly sortOrder: Prisma.FieldRef<"Channel", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Channel", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Channel", 'DateTime'>
 }

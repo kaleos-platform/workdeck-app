@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, Plus, Search } from 'lucide-react'
+import { ChevronLeft, Plus, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -90,7 +90,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
   const [mode, setMode] = useState<BuilderMode>('simple')
 
   // simple 모드
-  const [setQty, setSetQty] = useState<number>(1)
+  const [setQuantities, setSetQuantities] = useState<number[]>([1])
 
   // advanced 모드
   const [attrState, setAttrState] = useState<Record<string, AttrState>>({})
@@ -99,7 +99,7 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
   useEffect(() => {
     if (!product) {
       setAttrState({})
-      setSetQty(1)
+      setSetQuantities([1])
       setMode('simple')
       return
     }
@@ -212,7 +212,8 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
   function commitSimple() {
     if (!product) return
     const attrs = product.optionAttributes ?? []
-    const qty = Math.max(1, setQty)
+    const qtys = setQuantities.map((q) => Math.max(1, q))
+    const includeQtySuffix = qtys.length > 1
 
     if (attrs.length === 0) {
       const defaultOpt = product.options[0]
@@ -220,21 +221,21 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
         toast.error('이 상품에는 선택할 옵션이 없습니다')
         return
       }
-      emit([
-        {
-          suffixParts: [],
+      emit(
+        qtys.map((q) => ({
+          suffixParts: includeQtySuffix ? [`${q}개`] : [],
           items: [
             {
               optionId: defaultOpt.id,
               optionName: defaultOpt.name,
               sku: defaultOpt.sku,
-              quantity: qty,
+              quantity: q,
               retailPrice: defaultOpt.retailPrice,
               attributeValues: defaultOpt.attributeValues,
             },
           ],
-        },
-      ])
+        }))
+      )
       return
     }
 
@@ -251,19 +252,22 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
     for (const combo of combos) {
       const opt = findOption(product.options, combo)
       if (!opt) continue
-      groups.push({
-        suffixParts: attrs.map((a) => combo[a.name]),
-        items: [
-          {
-            optionId: opt.id,
-            optionName: opt.name,
-            sku: opt.sku,
-            quantity: qty,
-            retailPrice: opt.retailPrice,
-            attributeValues: opt.attributeValues,
-          },
-        ],
-      })
+      const baseParts = attrs.map((a) => combo[a.name])
+      for (const q of qtys) {
+        groups.push({
+          suffixParts: includeQtySuffix ? [...baseParts, `${q}개`] : baseParts,
+          items: [
+            {
+              optionId: opt.id,
+              optionName: opt.name,
+              sku: opt.sku,
+              quantity: q,
+              retailPrice: opt.retailPrice,
+              attributeValues: opt.attributeValues,
+            },
+          ],
+        })
+      }
     }
 
     if (groups.length === 0) {
@@ -422,8 +426,16 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
               <TabsContent value="simple" className="mt-3">
                 <SimpleModeSettings
                   product={product}
-                  setQty={setQty}
-                  onSetQtyChange={setSetQty}
+                  setQuantities={setQuantities}
+                  onAddBundle={() => setSetQuantities((prev) => [...prev, 1])}
+                  onRemoveBundle={(idx) =>
+                    setSetQuantities((prev) =>
+                      prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
+                    )
+                  }
+                  onUpdateBundleQty={(idx, q) =>
+                    setSetQuantities((prev) => prev.map((x, i) => (i === idx ? Math.max(1, q) : x)))
+                  }
                   attrState={attrState}
                   onToggleAttr={toggleAttr}
                   onToggleValue={toggleValue}
@@ -556,20 +568,25 @@ function SelectedProductHeader({ product }: { product: ProductDetail }) {
 // ─── Simple 모드 ─────────────────────────────────────────────────────────────
 function SimpleModeSettings({
   product,
-  setQty,
-  onSetQtyChange,
+  setQuantities,
+  onAddBundle,
+  onRemoveBundle,
+  onUpdateBundleQty,
   attrState,
   onToggleAttr,
   onToggleValue,
 }: {
   product: ProductDetail
-  setQty: number
-  onSetQtyChange: (v: number) => void
+  setQuantities: number[]
+  onAddBundle: () => void
+  onRemoveBundle: (idx: number) => void
+  onUpdateBundleQty: (idx: number, qty: number) => void
   attrState: Record<string, AttrState>
   onToggleAttr: (name: string, enabled: boolean) => void
   onToggleValue: (attrName: string, value: string, on: boolean) => void
 }) {
   const attrs = product.optionAttributes ?? []
+  const bundleCount = setQuantities.length
 
   // 선택된 cartesian (활성 속성은 선택값만, 미활성은 전체)
   const effectiveCombos: Record<string, string>[] = (() => {
@@ -588,6 +605,7 @@ function SimpleModeSettings({
     return combos
   })()
   const comboCount = effectiveCombos.length
+  const totalListings = comboCount * bundleCount
 
   const samples = effectiveCombos.slice(0, 3).map((c) =>
     attrs
@@ -599,20 +617,45 @@ function SimpleModeSettings({
   return (
     <div className="space-y-3 rounded-md border bg-background p-3">
       <div className="space-y-1.5">
-        <Label htmlFor="set-qty">세트 수량</Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="set-qty"
-            type="number"
-            min={1}
-            max={999}
-            value={setQty}
-            onChange={(e) => onSetQtyChange(Math.max(1, Number(e.target.value || 1)))}
-            className="h-9 w-24"
-          />
-          <span className="text-xs text-muted-foreground">
-            선택한 옵션 조합마다 이 수량이 적용됩니다
-          </span>
+        <Label>세트 수량</Label>
+        <div className="space-y-1.5">
+          {setQuantities.map((q, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <Input
+                type="number"
+                min={1}
+                max={999}
+                value={q}
+                onChange={(e) => onUpdateBundleQty(idx, Math.max(1, Number(e.target.value || 1)))}
+                className="h-9 w-24"
+              />
+              <span className="text-xs text-muted-foreground">
+                {idx === 0 ? '선택한 옵션 조합마다 이 수량이 적용됩니다' : `번들 세트 ${idx + 1}`}
+              </span>
+              {bundleCount > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => onRemoveBundle(idx)}
+                  aria-label="세트 수량 제거"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+            onClick={onAddBundle}
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            번들세트 추가
+          </Button>
         </div>
       </div>
 
@@ -661,8 +704,10 @@ function SimpleModeSettings({
       )}
 
       <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-        <strong className="text-foreground">{comboCount}</strong>개의 listing이 생성됩니다 · 각
-        listing = 1 옵션 × {setQty} 수량
+        <strong className="text-foreground">{totalListings}</strong>개의 listing이 생성됩니다 ·{' '}
+        {bundleCount > 1
+          ? `옵션 조합 ${comboCount}개 × 세트 수량 ${bundleCount}종 (${setQuantities.join(', ')})`
+          : `각 listing = 1 옵션 × ${setQuantities[0]} 수량`}
         {samples.length > 0 && (
           <span className="mt-0.5 block">
             예: {samples.join(', ')}

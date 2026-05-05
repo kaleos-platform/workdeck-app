@@ -7430,6 +7430,7 @@ export const ChannelScalarFieldEnum = {
   requireOrderNumber: 'requireOrderNumber',
   requirePayment: 'requirePayment',
   requireProducts: 'requireProducts',
+  sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
