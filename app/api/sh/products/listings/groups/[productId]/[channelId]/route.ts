@@ -11,6 +11,7 @@ import {
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
 import { productChannelGroupMetaSchema } from '@/lib/sh/schemas'
+import { computeListingGroupKey } from '@/lib/sh/group-key'
 
 /**
  * 판매채널 상품 "상품 × 채널" 그룹 뷰 API.
@@ -94,19 +95,14 @@ export async function GET(req: NextRequest, { params }: Params) {
   const productAttrs = Array.isArray(product.optionAttributes)
     ? (product.optionAttributes as Array<{ name: string }>)
     : []
-  const computeGroupKey = (l: (typeof singleAll)[number]): string => {
-    const av = (l.items[0]?.option.attributeValues ?? {}) as Record<string, string>
-    const suffix = productAttrs
-      .map((a) => av[a.name])
-      .filter(Boolean)
-      .join(' ')
-    const strip = (v: string | null): string => {
-      if (!v) return ''
-      if (suffix && v.endsWith(suffix)) return v.slice(0, v.length - suffix.length).trimEnd()
-      return v
-    }
-    return strip(l.managementName) || strip(l.searchName) || `__listing_${l.id}`
-  }
+  const computeGroupKey = (l: (typeof singleAll)[number]): string =>
+    computeListingGroupKey({
+      managementName: l.managementName,
+      searchName: l.searchName,
+      attributeValues: (l.items[0]?.option.attributeValues ?? {}) as Record<string, string>,
+      productAttrs,
+      listingId: l.id,
+    })
   const singleProductListings = groupKeyFilter
     ? singleAll.filter((l) => computeGroupKey(l) === groupKeyFilter)
     : singleAll

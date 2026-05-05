@@ -9,6 +9,7 @@ import {
   computeListingAvailableStock,
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
+import { computeListingGroupKey } from '@/lib/sh/group-key'
 
 /**
  * 판매채널 상품 목록(그룹 단위).
@@ -172,19 +173,13 @@ export async function GET(req: NextRequest) {
       ? (product.optionAttributes as Array<{ name: string }>)
       : []
     const firstAttrs = (l.items[0].option.attributeValues ?? {}) as Record<string, string>
-    const suffix = attrs
-      .map((a) => firstAttrs[a.name])
-      .filter(Boolean)
-      .join(' ')
-    const stripSuffix = (v: string | null): string => {
-      if (!v) return ''
-      if (suffix && v.endsWith(suffix)) return v.slice(0, v.length - suffix.length).trimEnd()
-      return v
-    }
-    const baseManagement = stripSuffix(l.managementName)
-    const baseSearch = stripSuffix(l.searchName)
-    // 우선순위: 관리용 상품명 base → 검색명 base. 없으면 listing id로 단독 그룹.
-    const groupKey = baseManagement || baseSearch || `__listing_${l.id}`
+    const groupKey = computeListingGroupKey({
+      managementName: l.managementName,
+      searchName: l.searchName,
+      attributeValues: firstAttrs,
+      productAttrs: attrs,
+      listingId: l.id,
+    })
     const key = `${product.id}:${l.channelId}:${groupKey}`
     const existing = groupsMap.get(key)
     const listingRow = {

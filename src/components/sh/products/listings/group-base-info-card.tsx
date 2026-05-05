@@ -173,11 +173,12 @@ export function joinName(base: string, suffix: string): string {
 
 function stripSuffix(value: string | null, suffix: string): string {
   if (!value) return ''
-  if (!suffix) return value
-  if (value.endsWith(suffix)) {
-    return value.slice(0, value.length - suffix.length).trimEnd()
+  // 끝의 ` N개` (번들 세트 수량 차원) 먼저 제거
+  let v = value.replace(/\s+\d+개$/, '')
+  if (suffix && v.endsWith(suffix)) {
+    v = v.slice(0, v.length - suffix.length).trimEnd()
   }
-  return value
+  return v
 }
 
 export function deriveBaseValues(
