@@ -18,7 +18,7 @@ export default function NewListingPage() {
         <p className="text-sm text-muted-foreground">
           {isDuplicate
             ? '원본 그룹의 정보를 미리 채웠습니다. 채널·이름·가격 등을 검토하고 저장하세요'
-            : '상품을 선택하고 속성별로 구성하면 필요한 listing이 자동으로 만들어집니다'}
+            : '상품을 선택하고 속성별로 구성하면 필요한 판매 옵션이 자동으로 만들어집니다'}
         </p>
       </div>
       <ListingCreateForm defaultChannelId={channelId} />

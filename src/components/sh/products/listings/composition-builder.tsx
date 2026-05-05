@@ -783,10 +783,10 @@ function SimpleModeSettings({
       )}
 
       <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-        <strong className="text-foreground">{totalListings}</strong>개의 listing이 생성됩니다 ·{' '}
+        <strong className="text-foreground">{totalListings}</strong>개의 판매 옵션이 생성됩니다 ·{' '}
         {bundleCount > 1
           ? `옵션 조합 ${comboCount}개 × 세트 수량 ${bundleCount}종 (${setQuantities.join(', ')})`
-          : `각 listing = 1 옵션 × ${setQuantities[0]} 수량`}
+          : `각 판매 옵션 = 1 옵션 × ${setQuantities[0]} 수량`}
         {samples.length > 0 && (
           <span className="mt-0.5 block">
             예: {samples.join(', ')}
@@ -834,7 +834,7 @@ function BundlesEditor({
         <Label className="text-xs">수량 지정 속성</Label>
         <p className="text-xs text-muted-foreground">
           선택한 속성은 묶음별로 값·수량을 지정합니다. 선택 안 된 속성은 모든 값에 기본 적용되어
-          listing이 자동으로 나뉘어 생성됩니다
+          판매 옵션이 자동으로 나뉘어 생성됩니다
         </p>
         <div className="flex flex-wrap gap-2">
           {attrs.map((attr) => {
@@ -969,7 +969,8 @@ function AdvancedPreview({
     <div className="mt-3 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
       {preview.groupCount > 0 ? (
         <>
-          <strong className="text-foreground">{preview.groupCount}</strong>개의 listing이 생성됩니다
+          <strong className="text-foreground">{preview.groupCount}</strong>개의 판매 옵션이
+          생성됩니다
           {preview.samples.length > 0 && (
             <span className="mt-0.5 block">
               예: {preview.samples.join(', ')}
