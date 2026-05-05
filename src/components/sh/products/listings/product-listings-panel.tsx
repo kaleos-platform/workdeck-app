@@ -39,7 +39,7 @@ export function ProductListingsPanel({ productId }: Props) {
       setLoading(true)
       try {
         const productRes = await fetch(`/api/sh/products/${productId}/listings`)
-        if (!productRes.ok) throw new Error('상품 listing 조회 실패')
+        if (!productRes.ok) throw new Error('판매 옵션 조회 실패')
 
         const productData: {
           groups: Array<{ channelId: string; channelName: string; listingCount: number }>

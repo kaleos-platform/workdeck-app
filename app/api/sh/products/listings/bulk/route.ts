@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest) {
     select: { id: true },
   })
   if (existing.length !== ids.length) {
-    return errorResponse('일부 listing을 찾을 수 없습니다', 400)
+    return errorResponse('일부 판매 옵션을 찾을 수 없습니다', 400)
   }
 
   const data: {
