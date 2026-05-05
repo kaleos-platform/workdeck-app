@@ -172,11 +172,13 @@ export async function GET(req: NextRequest) {
     const attrs = Array.isArray(product.optionAttributes)
       ? (product.optionAttributes as Array<{ name: string }>)
       : []
-    const firstAttrs = (l.items[0].option.attributeValues ?? {}) as Record<string, string>
+    const itemAttributeValues = l.items.map(
+      (it) => (it.option.attributeValues ?? {}) as Record<string, string>
+    )
     const groupKey = computeListingGroupKey({
       managementName: l.managementName,
       searchName: l.searchName,
-      attributeValues: firstAttrs,
+      itemAttributeValues,
       productAttrs: attrs,
       listingId: l.id,
     })

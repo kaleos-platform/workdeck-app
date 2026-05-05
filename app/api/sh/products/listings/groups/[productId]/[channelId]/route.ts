@@ -99,7 +99,9 @@ export async function GET(req: NextRequest, { params }: Params) {
     computeListingGroupKey({
       managementName: l.managementName,
       searchName: l.searchName,
-      attributeValues: (l.items[0]?.option.attributeValues ?? {}) as Record<string, string>,
+      itemAttributeValues: l.items.map(
+        (it) => (it.option.attributeValues ?? {}) as Record<string, string>
+      ),
       productAttrs,
       listingId: l.id,
     })
