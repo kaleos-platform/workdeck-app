@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertTriangle, Info, Loader2, RefreshCw, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -51,6 +51,14 @@ type ProductResp = {
 type Props = {
   productId: string
   onChanged?: () => void
+  /** dirty 행 수를 부모로 보고 — SaveStatusChip 통합 */
+  onDirtyChange?: (count: number) => void
+  /** 자동 저장 진행 중 여부를 부모로 보고 */
+  onSavingChange?: (saving: boolean) => void
+  /** 자동 저장 실패 메시지 */
+  onError?: (msg: string | null) => void
+  /** 부모가 재시도를 호출할 수 있게 트리거 노출 */
+  onRetryRefAvailable?: (retry: () => void) => void
 }
 
 /** 행별 draft (sku/원가/소비자가 inline 편집) */
@@ -64,17 +72,26 @@ function rowToString(v: number | string | null): string {
   return v != null ? String(v) : ''
 }
 
-export function ProductOptionsTable({ productId, onChanged }: Props) {
+export function ProductOptionsTable({
+  productId,
+  onChanged,
+  onDirtyChange,
+  onSavingChange,
+  onError,
+  onRetryRefAvailable,
+}: Props) {
   const [product, setProduct] = useState<ProductResp | null>(null)
   const [options, setOptions] = useState<OptionRow[]>([])
   const [drafts, setDrafts] = useState<Record<string, OptionDraft>>({})
   const [loading, setLoading] = useState(true)
-  const [savingId, setSavingId] = useState<string | null>(null)
+  const [autoSaving, setAutoSaving] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkSaving, setBulkSaving] = useState(false)
   const [bulkCost, setBulkCost] = useState('')
   const [bulkRetail, setBulkRetail] = useState('')
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const activeSavePromiseRef = useRef<Promise<void> | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -125,35 +142,143 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
     return m
   }, [options, drafts])
 
+  // 원본 옵션과 draft 비교로 dirty id 계산
+  const dirtyIds = useMemo(() => {
+    const set = new Set<string>()
+    for (const o of options) {
+      const d = drafts[o.id]
+      if (!d) continue
+      const origSku = o.sku ?? ''
+      const origCost = rowToString(o.costPrice)
+      const origRetail = rowToString(o.retailPrice)
+      if (d.sku !== origSku || d.costPrice !== origCost || d.retailPrice !== origRetail) {
+        set.add(o.id)
+      }
+    }
+    return set
+  }, [options, drafts])
+
+  // dirty/saving 보고
+  useEffect(() => {
+    onDirtyChange?.(dirtyIds.size)
+  }, [dirtyIds, onDirtyChange])
+
+  useEffect(() => {
+    onSavingChange?.(autoSaving)
+  }, [autoSaving, onSavingChange])
+
   function updateDraft(id: string, field: keyof OptionDraft, value: string) {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }))
+    scheduleAutoSave(400)
   }
 
-  async function saveOption(optionId: string) {
-    const draft = drafts[optionId]
-    if (!draft) return
-    setSavingId(optionId)
-    try {
-      const res = await fetch(`/api/sh/products/${productId}/options/${optionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sku: draft.sku.trim() || null,
-          costPrice: draft.costPrice ? parseFloat(draft.costPrice) : null,
-          retailPrice: draft.retailPrice ? parseFloat(draft.retailPrice) : null,
-        }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.message ?? '저장 실패')
-      toast.success('옵션이 저장되었습니다')
-      await load()
-      onChanged?.()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장 실패')
-    } finally {
-      setSavingId(null)
-    }
+  const runAutoSave = useCallback(async () => {
+    if (autoSaving) return
+    if (dirtyIds.size === 0) return
+    setAutoSaving(true)
+    onError?.(null)
+    const promise = (async () => {
+      const failures: string[] = []
+      const idsToSave = Array.from(dirtyIds)
+      const responses = await Promise.all(
+        idsToSave.map(async (id) => {
+          const d = drafts[id]
+          if (!d) return null
+          try {
+            const res = await fetch(`/api/sh/products/${productId}/options/${id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sku: d.sku.trim() || null,
+                costPrice: d.costPrice ? parseFloat(d.costPrice) : null,
+                retailPrice: d.retailPrice ? parseFloat(d.retailPrice) : null,
+              }),
+            })
+            const data = await res.json().catch(() => ({}))
+            if (!res.ok) {
+              failures.push(data?.message ?? `옵션 ${id} 저장 실패`)
+              return null
+            }
+            const updated = (data?.option ?? data) as OptionRow
+            return { id, updated }
+          } catch (err) {
+            failures.push(err instanceof Error ? err.message : '저장 실패')
+            return null
+          }
+        })
+      )
+      // 응답으로 받은 옵션을 options에 머지 (전체 reload 대신)
+      const updates = responses.filter((r): r is { id: string; updated: OptionRow } => !!r)
+      if (updates.length > 0) {
+        setOptions((prev) =>
+          prev.map((o) => {
+            const u = updates.find((x) => x.id === o.id)
+            return u ? { ...o, ...u.updated } : o
+          })
+        )
+        // drafts도 새 원본값으로 동기화
+        setDrafts((prev) => {
+          const next = { ...prev }
+          for (const u of updates) {
+            next[u.id] = {
+              sku: u.updated.sku ?? '',
+              costPrice: rowToString(u.updated.costPrice),
+              retailPrice: rowToString(u.updated.retailPrice),
+            }
+          }
+          return next
+        })
+        onChanged?.()
+      }
+      if (failures.length > 0) {
+        onError?.(failures[0])
+      }
+      setAutoSaving(false)
+      activeSavePromiseRef.current = null
+    })()
+    activeSavePromiseRef.current = promise
+    await promise
+  }, [dirtyIds, drafts, productId, autoSaving, onError, onChanged])
+
+  const runAutoSaveRef = useRef(runAutoSave)
+  runAutoSaveRef.current = runAutoSave
+
+  function scheduleAutoSave(delay = 400) {
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSaveTimerRef.current = null
+      void runAutoSaveRef.current()
+    }, delay)
   }
+
+  // 재시도 트리거 노출
+  useEffect(() => {
+    if (onRetryRefAvailable) {
+      onRetryRefAvailable(() => {
+        onError?.(null)
+        void runAutoSaveRef.current()
+      })
+    }
+  }, [onRetryRefAvailable, onError])
+
+  // 언마운트 정리
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    }
+  }, [])
+
+  // 페이지 이탈 방지
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (dirtyIds.size > 0 || autoSaving) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirtyIds, autoSaving])
 
   async function deleteOption(optionId: string) {
     if (!confirm('이 옵션을 삭제하시겠습니까? 재고 기록도 함께 삭제됩니다.')) return
@@ -382,7 +507,7 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
               <TableHead className="min-w-[90px]">소비자가</TableHead>
               <TableHead className="min-w-[80px] text-right">마진율</TableHead>
               <TableHead className="w-16 text-right">재고</TableHead>
-              <TableHead className="w-24" />
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -399,14 +524,16 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
                   costPrice: rowToString(opt.costPrice),
                   retailPrice: rowToString(opt.retailPrice),
                 }
-                const isSaving = savingId === opt.id
+                const isDirty = dirtyIds.has(opt.id)
                 const skuKey = draft.sku.trim()
                 const isDuplicate = skuKey && (skuCount.get(skuKey) ?? 0) > 1
                 return (
                   <TableRow
                     key={opt.id}
                     data-selected={selected.has(opt.id) || undefined}
-                    className="data-[selected=true]:bg-muted/50"
+                    className={`data-[selected=true]:bg-muted/50 ${
+                      isDirty ? 'bg-amber-500/5' : ''
+                    }`}
                   >
                     <TableCell>
                       <Checkbox
@@ -471,26 +598,15 @@ export function ProductOptionsTable({ productId, onChanged }: Props) {
                       {(opt.totalStock ?? 0).toLocaleString('ko-KR')}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs"
-                          disabled={isSaving}
-                          onClick={() => saveOption(opt.id)}
-                        >
-                          {isSaving && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                          저장
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => deleteOption(opt.id)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => deleteOption(opt.id)}
+                        aria-label={`${opt.name} 삭제`}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 )

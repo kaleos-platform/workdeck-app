@@ -1,12 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Plus, X } from 'lucide-react'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -38,24 +37,29 @@ type ProductData = {
 type Props = {
   productId: string
   onSaved?: () => void
-  /** 외부 <button type="submit" form={formId}>에서 저장을 트리거할 때 사용 */
-  formId?: string
-  /** 폼 하단의 기본 "저장" 버튼을 숨긴다 — 상위에서 sticky 저장 버튼을 제공할 때 */
-  hideInlineSaveButton?: boolean
-  /** 상품명·카테고리가 모두 채워져 저장 가능해지면 true를 보고한다 */
-  onValidChange?: (valid: boolean) => void
+  /** dirty(미저장 변경) 건수 변경 시 호출 — 상위 SaveStatusChip 통합용 */
+  onDirtyChange?: (count: number) => void
+  /** 자동 저장 시작/완료 시 호출 */
+  onSavingChange?: (saving: boolean) => void
+  /** 자동 저장 실패 메시지(또는 null) */
+  onError?: (msg: string | null) => void
+  /** 자동 저장 재시도 트리거를 상위에서 호출할 수 있게 노출 */
+  onRetryRefAvailable?: (retry: () => void) => void
 }
 
 export function ProductBasicForm({
   productId,
   onSaved,
-  formId,
-  hideInlineSaveButton,
-  onValidChange,
+  onDirtyChange,
+  onSavingChange,
+  onError,
+  onRetryRefAvailable,
 }: Props) {
   const [data, setData] = useState<ProductData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const activeSavePromiseRef = useRef<Promise<void> | null>(null)
 
   const [brands, setBrands] = useState<Brand[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -122,61 +126,169 @@ export function ProductBasicForm({
     void loadData()
   }, [loadData])
 
-  // 상위 sticky 저장 버튼 활성 여부를 보고한다.
-  useEffect(() => {
-    onValidChange?.(name.trim().length > 0 && groupId.length > 0 && !saving)
-  }, [name, groupId, saving, onValidChange])
+  // dirty 계산 — 원본 data와 현재 입력값 비교
+  const dirty = (() => {
+    if (!data) return false
+    const ymdToYm = (v: string | null) => (v ? v.slice(0, 7) : '')
+    return (
+      name !== data.name ||
+      internalName !== (data.internalName ?? '') ||
+      nameEn !== (data.nameEn ?? '') ||
+      code !== (data.code ?? '') ||
+      description !== (data.description ?? '') ||
+      manufacturer !== (data.manufacturer ?? '') ||
+      manufactureCountry !== (data.manufactureCountry ?? '') ||
+      manufactureDate !== ymdToYm(data.manufactureDate) ||
+      msrp !== (data.msrp != null ? String(data.msrp) : '') ||
+      brandId !== (data.brandId ?? '') ||
+      groupId !== (data.groupId ?? '') ||
+      JSON.stringify(features) !== JSON.stringify(data.features ?? []) ||
+      JSON.stringify(certifications) !== JSON.stringify(data.certifications ?? [])
+    )
+  })()
 
-  async function handleSave() {
-    if (!name.trim()) {
-      toast.error('공식 상품명을 입력해 주세요')
-      return
-    }
-    if (!groupId) {
-      toast.error('카테고리를 선택해 주세요')
-      return
-    }
+  // dirty 보고
+  useEffect(() => {
+    onDirtyChange?.(dirty ? 1 : 0)
+  }, [dirty, onDirtyChange])
+
+  // saving 보고
+  useEffect(() => {
+    onSavingChange?.(saving)
+  }, [saving, onSavingChange])
+
+  const runAutoSave = useCallback(async () => {
+    if (!data) return
+    if (!name.trim() || !groupId) return // invalid 상태에서는 스킵 (dirty는 표시)
+    if (saving) return
     setSaving(true)
-    try {
-      const res = await fetch(`/api/sh/products/${productId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          internalName: internalName.trim() || null,
-          nameEn: nameEn.trim() || null,
-          code: code.trim() || null,
-          description: description.trim() || null,
-          manufacturer: manufacturer.trim() || null,
-          manufactureCountry: manufactureCountry.trim() || null,
-          manufactureDate: manufactureDate ? `${manufactureDate}-01` : null,
-          msrp: msrp ? parseFloat(msrp) : null,
-          brandId: brandId || null,
-          groupId: groupId || null,
-          features: features.filter((f) => f.trim()),
-          certifications: certifications.filter((c) => c.trim()),
-        }),
-      })
-      const resData = await res.json()
-      if (!res.ok) {
-        const fieldErrors = resData?.errors?.fieldErrors as
-          | Record<string, string[] | undefined>
-          | undefined
-        const firstField = fieldErrors
-          ? Object.entries(fieldErrors).find(([, v]) => v && v.length > 0)
-          : undefined
-        const suffix = firstField ? ` (${firstField[0]}: ${firstField[1]?.[0]})` : ''
-        const detail = resData?.detail ? `: ${resData.detail}` : ''
-        throw new Error((resData?.message ?? '저장 실패') + suffix + detail)
+    onError?.(null)
+    const promise = (async () => {
+      try {
+        const res = await fetch(`/api/sh/products/${productId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.trim(),
+            internalName: internalName.trim() || null,
+            nameEn: nameEn.trim() || null,
+            code: code.trim() || null,
+            description: description.trim() || null,
+            manufacturer: manufacturer.trim() || null,
+            manufactureCountry: manufactureCountry.trim() || null,
+            manufactureDate: manufactureDate ? `${manufactureDate}-01` : null,
+            msrp: msrp ? parseFloat(msrp) : null,
+            brandId: brandId || null,
+            groupId: groupId || null,
+            features: features.filter((f) => f.trim()),
+            certifications: certifications.filter((c) => c.trim()),
+          }),
+        })
+        const resData = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          const fieldErrors = resData?.errors?.fieldErrors as
+            | Record<string, string[] | undefined>
+            | undefined
+          const firstField = fieldErrors
+            ? Object.entries(fieldErrors).find(([, v]) => v && v.length > 0)
+            : undefined
+          const suffix = firstField ? ` (${firstField[0]}: ${firstField[1]?.[0]})` : ''
+          throw new Error((resData?.message ?? '저장 실패') + suffix)
+        }
+        // 응답으로 받은 product를 data로 교체 — dirty 상태 자동 해소
+        const savedProd: ProductData = resData.product ?? resData
+        setData(savedProd)
+        onSaved?.()
+      } catch (err) {
+        onError?.(err instanceof Error ? err.message : '저장 실패')
+      } finally {
+        setSaving(false)
+        activeSavePromiseRef.current = null
       }
-      toast.success('상품 정보가 저장되었습니다')
-      onSaved?.()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장 실패')
-    } finally {
-      setSaving(false)
+    })()
+    activeSavePromiseRef.current = promise
+    await promise
+  }, [
+    data,
+    name,
+    internalName,
+    nameEn,
+    code,
+    description,
+    manufacturer,
+    manufactureCountry,
+    manufactureDate,
+    msrp,
+    brandId,
+    groupId,
+    features,
+    certifications,
+    productId,
+    saving,
+    onError,
+    onSaved,
+  ])
+
+  const runAutoSaveRef = useRef(runAutoSave)
+  runAutoSaveRef.current = runAutoSave
+
+  const scheduleAutoSave = useCallback((delay = 400) => {
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSaveTimerRef.current = null
+      void runAutoSaveRef.current()
+    }, delay)
+  }, [])
+
+  // dirty 상태가 되면 자동 저장 스케줄
+  useEffect(() => {
+    if (dirty) scheduleAutoSave(400)
+  }, [
+    dirty,
+    name,
+    internalName,
+    nameEn,
+    code,
+    description,
+    manufacturer,
+    manufactureCountry,
+    manufactureDate,
+    msrp,
+    brandId,
+    groupId,
+    features,
+    certifications,
+    scheduleAutoSave,
+  ])
+
+  // 재시도 핸들 노출
+  useEffect(() => {
+    if (onRetryRefAvailable) {
+      onRetryRefAvailable(() => {
+        onError?.(null)
+        void runAutoSaveRef.current()
+      })
     }
-  }
+  }, [onRetryRefAvailable, onError])
+
+  // 언마운트 정리
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    }
+  }, [])
+
+  // 페이지 이탈 방지 — dirty 또는 저장 중이면 경고
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (dirty || saving) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty, saving])
 
   if (loading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>
@@ -187,14 +299,7 @@ export function ProductBasicForm({
   }
 
   return (
-    <form
-      id={formId}
-      onSubmit={(e) => {
-        e.preventDefault()
-        void handleSave()
-      }}
-      className="space-y-5"
-    >
+    <div className="space-y-5">
       {/* 공식 상품명 (판매채널 노출) — 필수 */}
       <div className="space-y-2">
         <Label htmlFor="bf-name">
@@ -428,12 +533,6 @@ export function ProductBasicForm({
           )}
         </div>
       </div>
-
-      {!hideInlineSaveButton && (
-        <Button type="submit" disabled={saving || !groupId} className="w-full sm:w-auto">
-          {saving ? '저장 중...' : '저장'}
-        </Button>
-      )}
-    </form>
+    </div>
   )
 }
