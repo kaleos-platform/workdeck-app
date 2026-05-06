@@ -11,12 +11,11 @@ import { ProductAttributesEditor } from '@/components/sh/products/product-attrib
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
 import { ProductListingsPanel } from '@/components/sh/products/listings/product-listings-panel'
 import { ProductProductionRunsPanel } from '@/components/sh/products/production/product-production-runs-panel'
+import { SaveStatusChip } from '@/components/sh/save-status-chip'
 
 type Props = {
   productId: string
 }
-
-const BASIC_FORM_ID = 'product-basic-form'
 
 type SectionKey = 'basic' | 'options' | 'production' | 'listings'
 
@@ -56,8 +55,23 @@ export function ProductDetailTabs({ productId }: Props) {
   const router = useRouter()
   const [refreshKey, setRefreshKey] = useState(0)
   const [active, setActive] = useState<SectionKey>('basic')
-  const [canSave, setCanSave] = useState(false)
   const [duplicating, setDuplicating] = useState(false)
+  // 자동 저장 상태 — BasicForm + OptionsTable 합산
+  const [basicDirty, setBasicDirty] = useState(0)
+  const [basicSaving, setBasicSaving] = useState(false)
+  const [optionsDirty, setOptionsDirty] = useState(0)
+  const [optionsSaving, setOptionsSaving] = useState(false)
+  const [lastError, setLastError] = useState<string | null>(null)
+  const basicRetryRef = useRef<(() => void) | null>(null)
+  const optionsRetryRef = useRef<(() => void) | null>(null)
+
+  const dirtyCount = basicDirty + optionsDirty
+  const saving = basicSaving || optionsSaving
+  const handleRetry = useCallback(() => {
+    setLastError(null)
+    basicRetryRef.current?.()
+    optionsRetryRef.current?.()
+  }, [])
 
   const handleDuplicate = useCallback(async () => {
     if (!confirm('이 상품을 복제하시겠습니까? 새 상품으로 이동합니다.')) return
@@ -142,6 +156,14 @@ export function ProductDetailTabs({ productId }: Props) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <SaveStatusChip
+              saving={saving}
+              dirty={dirtyCount > 0}
+              dirtyCount={dirtyCount}
+              error={lastError}
+              retryCount={0}
+              onRetry={handleRetry}
+            />
             <Button
               type="button"
               variant="outline"
@@ -155,9 +177,6 @@ export function ProductDetailTabs({ productId }: Props) {
                 <Copy className="mr-1 h-3 w-3" />
               )}
               복제
-            </Button>
-            <Button type="submit" form={BASIC_FORM_ID} disabled={!canSave} size="sm">
-              저장
             </Button>
           </div>
         </div>
@@ -174,10 +193,13 @@ export function ProductDetailTabs({ productId }: Props) {
         <SectionHeader title={SECTIONS[0].title} description={SECTIONS[0].description} />
         <ProductBasicForm
           productId={productId}
-          formId={BASIC_FORM_ID}
-          hideInlineSaveButton
-          onValidChange={setCanSave}
           onSaved={() => setRefreshKey((k) => k + 1)}
+          onDirtyChange={setBasicDirty}
+          onSavingChange={setBasicSaving}
+          onError={setLastError}
+          onRetryRefAvailable={(fn) => {
+            basicRetryRef.current = fn
+          }}
         />
       </section>
 
@@ -199,6 +221,12 @@ export function ProductDetailTabs({ productId }: Props) {
           key={`opts-${refreshKey}`}
           productId={productId}
           onChanged={() => setRefreshKey((k) => k + 1)}
+          onDirtyChange={setOptionsDirty}
+          onSavingChange={setOptionsSaving}
+          onError={setLastError}
+          onRetryRefAvailable={(fn) => {
+            optionsRetryRef.current = fn
+          }}
         />
       </section>
 

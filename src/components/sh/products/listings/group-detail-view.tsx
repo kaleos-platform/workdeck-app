@@ -3,18 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  AlertCircle,
-  ArrowLeft,
-  Check,
-  Copy,
-  Layers,
-  Loader2,
-  Pause,
-  Play,
-  Plus,
-  Trash2,
-} from 'lucide-react'
+import { ArrowLeft, Copy, Layers, Loader2, Pause, Play, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -28,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SELLER_HUB_LISTING_NEW_PATH, SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
+import { SaveStatusChip } from '@/components/sh/save-status-chip'
 import {
   applyChannelAllocation,
   computeDiscount,
@@ -1232,68 +1222,5 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
-
-function SaveStatusChip({
-  saving,
-  dirty,
-  dirtyCount,
-  error,
-  retryCount,
-  onRetry,
-}: {
-  saving: boolean
-  dirty: boolean
-  dirtyCount: number
-  error: string | null
-  retryCount: number
-  onRetry: () => void
-}) {
-  if (saving) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        저장 중...
-      </span>
-    )
-  }
-  if (error) {
-    return (
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={onRetry}
-        className="h-8 gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-        title={error}
-      >
-        <AlertCircle className="h-3.5 w-3.5" />
-        저장 실패 — 재시도
-      </Button>
-    )
-  }
-  // 자동 재시도 대기 중: backoff 타이머가 돌고 있는 동안 retryCount > 0
-  if (retryCount > 0) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-amber-600">
-        <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
-        저장 시도 중... ({retryCount}/3)
-      </span>
-    )
-  }
-  if (dirty) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-amber-600">
-        <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
-        저장 대기 중... ({dirtyCount}건)
-      </span>
-    )
-  }
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-      <Check className="h-3.5 w-3.5 text-emerald-600" />
-      저장됨
-    </span>
   )
 }
