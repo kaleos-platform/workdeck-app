@@ -330,32 +330,27 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     channelId.trim().length > 0 && baseSearchName.trim().length > 0 && rows.length > 0
 
   async function handleSave() {
-    if (!readyToSave) {
+    if (!readyToSave || !productCtx) {
       toast.error('필수 항목과 구성을 확인해 주세요')
       return
     }
     setSaving(true)
 
-    const results: Array<{
-      ok: boolean
-      id?: string
-      error?: string
-      suffix: string[]
-    }> = []
-    for (const row of rows) {
-      const searchName = previewName(row.suffixParts, baseSearchName.trim())
-      const displayName = previewName(
-        row.suffixParts,
-        baseDisplayName.trim() || baseSearchName.trim()
-      )
-      const managementName = baseManagementName.trim()
-        ? previewName(row.suffixParts, baseManagementName.trim())
-        : undefined
-      const payload = {
-        channelId,
-        searchName,
-        displayName,
-        managementName,
+    const payload = {
+      productId: productCtx.id,
+      channelId,
+      baseSearchName: baseSearchName.trim(),
+      baseDisplayName: baseDisplayName.trim() || undefined,
+      baseManagementName: baseManagementName.trim() || undefined,
+      baseInternalCode: internalCode.trim() || undefined,
+      memo: memo.trim() || undefined,
+      keywords,
+      listings: rows.map((row) => ({
+        searchName: previewName(row.suffixParts, baseSearchName.trim()),
+        displayName: previewName(row.suffixParts, baseDisplayName.trim() || baseSearchName.trim()),
+        managementName: baseManagementName.trim()
+          ? previewName(row.suffixParts, baseManagementName.trim())
+          : undefined,
         internalCode: internalCode.trim()
           ? previewName(row.suffixParts, internalCode.trim())
           : undefined,
@@ -363,59 +358,33 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         retailPrice: row.retailPrice.trim() === '' ? undefined : Number(row.retailPrice),
         channelAllocation:
           row.channelAllocation.trim() === '' ? undefined : Number(row.channelAllocation),
-        keywords,
         status: row.status,
         items: row.items.map((it, idx) => ({
           optionId: it.optionId,
           quantity: it.quantity,
           sortOrder: idx,
         })),
+      })),
+    }
+
+    try {
+      const res = await fetch('/api/sh/products/listings/channel-products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data?.message ?? '저장 실패')
+        return
       }
-      try {
-        const res = await fetch('/api/sh/products/listings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-        const data = await res.json()
-        if (!res.ok) {
-          results.push({
-            ok: false,
-            error: data?.message ?? '저장 실패',
-            suffix: row.suffixParts,
-          })
-        } else {
-          results.push({ ok: true, id: data.listing.id, suffix: row.suffixParts })
-        }
-      } catch (err) {
-        results.push({
-          ok: false,
-          error: err instanceof Error ? err.message : '저장 실패',
-          suffix: row.suffixParts,
-        })
-      }
+      toast.success(`${data.listings.length}개의 판매채널 상품이 생성되었습니다`)
+      router.push(SELLER_HUB_LISTINGS_PATH)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '저장 실패')
+    } finally {
+      setSaving(false)
     }
-
-    const okResults = results.filter((r) => r.ok)
-    const failResults = results.filter((r) => !r.ok)
-
-    setSaving(false)
-
-    if (okResults.length === 0) {
-      toast.error(failResults[0]?.error ?? '저장 실패')
-      return
-    }
-    if (failResults.length > 0) {
-      toast.warning(
-        `${okResults.length}개 저장 성공 · ${failResults.length}개 실패 — ${failResults
-          .map((r) => r.suffix.join(' '))
-          .join(', ')}`
-      )
-    } else {
-      toast.success(`${okResults.length}개의 판매채널 상품이 생성되었습니다`)
-    }
-
-    router.push(SELLER_HUB_LISTINGS_PATH)
   }
 
   return (
