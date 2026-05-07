@@ -328,10 +328,10 @@ export type ProductListingItem = Prisma.ProductListingItemModel
  */
 export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel
 /**
- * Model ProductChannelGroupMeta
+ * Model ChannelProduct
  * 
  */
-export type ProductChannelGroupMeta = Prisma.ProductChannelGroupMetaModel
+export type ChannelProduct = Prisma.ChannelProductModel
 /**
  * Model Product
  * 

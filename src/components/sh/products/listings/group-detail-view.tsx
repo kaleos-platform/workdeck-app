@@ -49,18 +49,28 @@ type GroupDetail = {
     brand: { id: string; name: string } | null
     optionAttributes: OptionAttribute[]
   }
-  channel: { id: string; name: string; kind: string }
-  meta: { keywords: string[] }
+  channel: {
+    id: string
+    name: string
+    channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
+  }
+  channelProduct: {
+    id: string
+    baseSearchName: string
+    baseDisplayName: string | null
+    baseManagementName: string | null
+    baseInternalCode: string | null
+    memo: string | null
+    keywords: string[]
+  }
   listings: GroupListingFull[]
 }
 
 type Props = {
-  productId: string
-  channelId: string
-  groupKey?: string | null
+  channelProductId: string
 }
 
-export function GroupDetailView({ productId, channelId, groupKey }: Props) {
+export function GroupDetailView({ channelProductId }: Props) {
   const router = useRouter()
   const [data, setData] = useState<GroupDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -102,16 +112,13 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const url = groupKey
-        ? `/api/sh/products/listings/groups/${productId}/${channelId}?g=${encodeURIComponent(groupKey)}`
-        : `/api/sh/products/listings/groups/${productId}/${channelId}`
-      const res = await fetch(url, {
+      const res = await fetch(`/api/sh/products/listings/channel-products/${channelProductId}`, {
         cache: 'no-store',
       })
       if (!res.ok) throw new Error('채널 상품 조회 실패')
       const d: GroupDetail = await res.json()
       setData(d)
-      setKeywords(d.meta.keywords ?? [])
+      setKeywords(d.channelProduct.keywords ?? [])
       setRows(d.listings)
       setSelected(new Set())
       const derived = deriveBaseValues(
@@ -139,7 +146,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [productId, channelId, groupKey])
+  }, [channelProductId])
 
   useEffect(() => {
     load()
@@ -186,7 +193,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
   }, [derivedBase, baseSearchName, baseDisplayName, baseManagementName, baseInternalCode, memo])
 
   const keywordsDirty = useMemo(() => {
-    const original = data?.meta.keywords ?? []
+    const original = data?.channelProduct.keywords ?? []
     if (keywords.length !== original.length) return true
     return keywords.some((k, i) => k !== original[i])
   }, [keywords, data])
@@ -400,11 +407,12 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
   }
 
   async function goToDuplicate() {
+    if (!data) return
     await flushPendingSave()
     const params = new URLSearchParams()
-    params.set('duplicateFromProductId', productId)
-    params.set('duplicateFromChannelId', channelId)
-    if (groupKey) params.set('duplicateFromGroupKey', groupKey)
+    params.set('duplicateFromChannelProductId', channelProductId)
+    params.set('duplicateFromProductId', data.product.id)
+    params.set('duplicateFromChannelId', data.channel.id)
     router.push(`${SELLER_HUB_LISTING_NEW_PATH}?${params.toString()}`)
   }
 
@@ -443,7 +451,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
 
   async function handleAddCommit(ctx: ProductContext, groups: BuiltGroup[]) {
     if (!data) return
-    if (ctx.id !== productId) {
+    if (ctx.id !== data.product.id) {
       toast.error('다른 상품은 이 채널 상품에 추가할 수 없습니다')
       return
     }
@@ -472,7 +480,8 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            channelId,
+            channelId: data.channel.id,
+            channelProductId,
             searchName: p.searchName,
             displayName: p.displayName,
             managementName: p.managementName,
@@ -509,7 +518,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
 
   async function handleResetCommit(ctx: ProductContext, groups: BuiltGroup[]) {
     if (!data) return
-    if (ctx.id !== productId) {
+    if (ctx.id !== data.product.id) {
       toast.error('다른 상품으로 재구성할 수 없습니다')
       return
     }
@@ -536,7 +545,8 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            channelId,
+            channelId: data.channel.id,
+            channelProductId,
             searchName: p.searchName,
             displayName: p.displayName,
             managementName: p.managementName,
@@ -698,7 +708,7 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
     let keywordsSaved = false
     if (snapKeywordsDirty) {
       try {
-        const res = await fetch(`/api/sh/products/listings/groups/${productId}/${channelId}`, {
+        const res = await fetch(`/api/sh/products/listings/channel-products/${channelProductId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ keywords: snapKeywords }),
@@ -720,7 +730,9 @@ export function GroupDetailView({ productId, channelId, groupKey }: Props) {
         if (!prev) return prev
         return {
           ...prev,
-          meta: keywordsSaved ? { ...prev.meta, keywords: snapKeywords } : prev.meta,
+          channelProduct: keywordsSaved
+            ? { ...prev.channelProduct, keywords: snapKeywords }
+            : prev.channelProduct,
           listings: prev.listings.map((l) => {
             const p = patchedById.get(l.id)
             if (!p) return l

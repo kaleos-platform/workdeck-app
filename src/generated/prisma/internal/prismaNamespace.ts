@@ -446,7 +446,7 @@ export const ModelName = {
   ProductListing: 'ProductListing',
   ProductListingItem: 'ProductListingItem',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
-  ProductChannelGroupMeta: 'ProductChannelGroupMeta',
+  ChannelProduct: 'ChannelProduct',
   Product: 'Product',
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
@@ -482,7 +482,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "productChannelGroupMeta" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5074,77 +5074,77 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    ProductChannelGroupMeta: {
-      payload: Prisma.$ProductChannelGroupMetaPayload<ExtArgs>
-      fields: Prisma.ProductChannelGroupMetaFieldRefs
+    ChannelProduct: {
+      payload: Prisma.$ChannelProductPayload<ExtArgs>
+      fields: Prisma.ChannelProductFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.ProductChannelGroupMetaFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload> | null
+          args: Prisma.ChannelProductFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.ProductChannelGroupMetaFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>
+          args: Prisma.ChannelProductFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>
         }
         findFirst: {
-          args: Prisma.ProductChannelGroupMetaFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload> | null
+          args: Prisma.ChannelProductFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.ProductChannelGroupMetaFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>
+          args: Prisma.ChannelProductFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>
         }
         findMany: {
-          args: Prisma.ProductChannelGroupMetaFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>[]
+          args: Prisma.ChannelProductFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>[]
         }
         create: {
-          args: Prisma.ProductChannelGroupMetaCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>
+          args: Prisma.ChannelProductCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>
         }
         createMany: {
-          args: Prisma.ProductChannelGroupMetaCreateManyArgs<ExtArgs>
+          args: Prisma.ChannelProductCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.ProductChannelGroupMetaCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>[]
+          args: Prisma.ChannelProductCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>[]
         }
         delete: {
-          args: Prisma.ProductChannelGroupMetaDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>
+          args: Prisma.ChannelProductDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>
         }
         update: {
-          args: Prisma.ProductChannelGroupMetaUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>
+          args: Prisma.ChannelProductUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>
         }
         deleteMany: {
-          args: Prisma.ProductChannelGroupMetaDeleteManyArgs<ExtArgs>
+          args: Prisma.ChannelProductDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.ProductChannelGroupMetaUpdateManyArgs<ExtArgs>
+          args: Prisma.ChannelProductUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.ProductChannelGroupMetaUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>[]
+          args: Prisma.ChannelProductUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>[]
         }
         upsert: {
-          args: Prisma.ProductChannelGroupMetaUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductChannelGroupMetaPayload>
+          args: Prisma.ChannelProductUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelProductPayload>
         }
         aggregate: {
-          args: Prisma.ProductChannelGroupMetaAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateProductChannelGroupMeta>
+          args: Prisma.ChannelProductAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelProduct>
         }
         groupBy: {
-          args: Prisma.ProductChannelGroupMetaGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ProductChannelGroupMetaGroupByOutputType>[]
+          args: Prisma.ChannelProductGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelProductGroupByOutputType>[]
         }
         count: {
-          args: Prisma.ProductChannelGroupMetaCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ProductChannelGroupMetaCountAggregateOutputType> | number
+          args: Prisma.ChannelProductCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelProductCountAggregateOutputType> | number
         }
       }
     }
@@ -7590,6 +7590,7 @@ export const ProductListingScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   channelId: 'channelId',
+  channelProductId: 'channelProductId',
   internalCode: 'internalCode',
   searchName: 'searchName',
   displayName: 'displayName',
@@ -7627,17 +7628,22 @@ export const DelOrderItemFulfillmentScalarFieldEnum = {
 export type DelOrderItemFulfillmentScalarFieldEnum = (typeof DelOrderItemFulfillmentScalarFieldEnum)[keyof typeof DelOrderItemFulfillmentScalarFieldEnum]
 
 
-export const ProductChannelGroupMetaScalarFieldEnum = {
+export const ChannelProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
-  productId: 'productId',
   channelId: 'channelId',
+  productId: 'productId',
+  baseSearchName: 'baseSearchName',
+  baseDisplayName: 'baseDisplayName',
+  baseManagementName: 'baseManagementName',
+  baseInternalCode: 'baseInternalCode',
+  memo: 'memo',
   keywords: 'keywords',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type ProductChannelGroupMetaScalarFieldEnum = (typeof ProductChannelGroupMetaScalarFieldEnum)[keyof typeof ProductChannelGroupMetaScalarFieldEnum]
+export type ChannelProductScalarFieldEnum = (typeof ChannelProductScalarFieldEnum)[keyof typeof ChannelProductScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {
@@ -8741,7 +8747,7 @@ export type GlobalOmitConfig = {
   productListing?: Prisma.ProductListingOmit
   productListingItem?: Prisma.ProductListingItemOmit
   delOrderItemFulfillment?: Prisma.DelOrderItemFulfillmentOmit
-  productChannelGroupMeta?: Prisma.ProductChannelGroupMetaOmit
+  channelProduct?: Prisma.ChannelProductOmit
   product?: Prisma.ProductOmit
   productPersona?: Prisma.ProductPersonaOmit
   persona?: Prisma.PersonaOmit

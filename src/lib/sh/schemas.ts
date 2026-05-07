@@ -331,15 +331,6 @@ export const productListingPatchSchema = z
   })
 export type ProductListingPatchInput = z.infer<typeof productListingPatchSchema>
 
-// 그룹(상품 × 채널) 메타 — 키워드 공통 저장
-export const productChannelGroupMetaSchema = z.object({
-  keywords: z
-    .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
-    .max(30)
-    .default([]),
-})
-export type ProductChannelGroupMetaInput = z.infer<typeof productChannelGroupMetaSchema>
-
 // ─── 생산 발주 (ProductionRun) ───────────────────────────────────────────────
 
 export const productionRunCostSchema = z.object({

@@ -35,16 +35,17 @@ import {
 } from '@/components/ui/table'
 import {
   SELLER_HUB_LISTING_NEW_PATH,
-  getSellerHubListingGroupPath,
+  getSellerHubChannelProductPath,
   getSellerHubListingPath,
 } from '@/lib/deck-routes'
 
 type GroupRow = {
   kind: 'group'
+  id: string
   productId: string
   productName: string
-  groupKey: string
-  groupManagementName: string | null
+  baseSearchName: string
+  baseManagementName: string | null
   channelId: string
   channelName: string
   listingCount: number
@@ -66,8 +67,8 @@ type GroupRow = {
   }>
 }
 
-type MixedRow = {
-  kind: 'mixed'
+type SoloRow = {
+  kind: 'solo' | 'mixed'
   id: string
   channelId: string
   channelName: string
@@ -88,7 +89,7 @@ type Props = {
 
 export function GroupsTable({ channelId, productId }: Props) {
   const [groups, setGroups] = useState<GroupRow[]>([])
-  const [mixed, setMixed] = useState<MixedRow[]>([])
+  const [mixed, setMixed] = useState<SoloRow[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -120,12 +121,12 @@ export function GroupsTable({ channelId, productId }: Props) {
         qs.set('status', statusFilter)
         if (productId) qs.set('productId', productId)
         if (debouncedSearch.trim()) qs.set('search', debouncedSearch.trim())
-        const res = await fetch(`/api/sh/products/listings/groups?${qs.toString()}`)
+        const res = await fetch(`/api/sh/products/listings/channel-products?${qs.toString()}`)
         if (!res.ok) throw new Error('목록 조회 실패')
-        const data: { groups: GroupRow[]; mixed: MixedRow[] } = await res.json()
+        const data: { groups: GroupRow[]; solo: SoloRow[] } = await res.json()
         if (cancelled) return
         setGroups(data.groups ?? [])
-        setMixed(data.mixed ?? [])
+        setMixed(data.solo ?? [])
         setSelectedRows(new Set())
       } catch {
         if (!cancelled) {
@@ -157,9 +158,9 @@ export function GroupsTable({ channelId, productId }: Props) {
   }
 
   function rowKeyForGroup(g: GroupRow): string {
-    return `g:${g.productId}:${g.channelId}:${g.groupKey}`
+    return `g:${g.id}`
   }
-  function rowKeyForMixed(m: MixedRow): string {
+  function rowKeyForMixed(m: SoloRow): string {
     return `m:${m.id}`
   }
 
@@ -386,7 +387,7 @@ export function GroupsTable({ channelId, productId }: Props) {
             ) : (
               <>
                 {groups.map((g) => {
-                  const key = `${g.productId}:${g.channelId}:${g.groupKey}`
+                  const key = g.id
                   const isOpen = expanded.has(key)
                   const rowKey = rowKeyForGroup(g)
                   return (
@@ -522,7 +523,7 @@ function GroupRowView({
   onToggleSelect: () => void
 }) {
   const router = useRouter()
-  const groupHref = getSellerHubListingGroupPath(group.productId, group.channelId, group.groupKey)
+  const groupHref = getSellerHubChannelProductPath(group.id)
   return (
     <>
       <TableRow className="cursor-pointer hover:bg-muted/40" onClick={() => router.push(groupHref)}>
@@ -530,7 +531,7 @@ function GroupRowView({
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => onToggleSelect()}
-            aria-label={`${group.groupManagementName ?? group.productName} 선택`}
+            aria-label={`${group.baseManagementName ?? group.productName} 선택`}
           />
         </TableCell>
         <TableCell>
@@ -547,9 +548,9 @@ function GroupRowView({
           </button>
         </TableCell>
         <TableCell>
-          <p className="font-medium">{group.groupManagementName?.trim() || group.productName}</p>
-          {group.groupManagementName?.trim() &&
-            group.groupManagementName.trim() !== group.productName && (
+          <p className="font-medium">{group.baseManagementName?.trim() || group.productName}</p>
+          {group.baseManagementName?.trim() &&
+            group.baseManagementName.trim() !== group.productName && (
               <p className="text-xs text-muted-foreground">상품: {group.productName}</p>
             )}
           <p className="text-xs text-muted-foreground">{group.channelName}</p>
@@ -628,7 +629,7 @@ function MixedRowView({
   isSelected,
   onToggleSelect,
 }: {
-  mixed: MixedRow
+  mixed: SoloRow
   isSelected: boolean
   onToggleSelect: () => void
 }) {

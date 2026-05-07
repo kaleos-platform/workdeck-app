@@ -25,11 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  SELLER_HUB_LISTINGS_PATH,
-  getSellerHubListingGroupPath,
-  getSellerHubListingPath,
-} from '@/lib/deck-routes'
+import { SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { CompositionRowsTable, type CompositionRow } from './composition-rows-table'
@@ -55,9 +51,9 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const searchParams = useSearchParams()
   const prefillKey = searchParams.get('prefillKey')
   const prefillApplied = useRef(false)
+  const duplicateFromChannelProductId = searchParams.get('duplicateFromChannelProductId')
   const duplicateFromProductId = searchParams.get('duplicateFromProductId')
   const duplicateFromChannelId = searchParams.get('duplicateFromChannelId')
-  const duplicateFromGroupKey = searchParams.get('duplicateFromGroupKey')
   const duplicateApplied = useRef(false)
 
   const [channels, setChannels] = useState<Channel[]>([])
@@ -168,14 +164,15 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
 
   // ── 그룹 복제 prefill ─────────────────────────────────────────────────────
   useEffect(() => {
-    if (!duplicateFromProductId || !duplicateFromChannelId) return
+    if (!duplicateFromChannelProductId && (!duplicateFromProductId || !duplicateFromChannelId))
+      return
     if (duplicateApplied.current) return
     duplicateApplied.current = true
 
     const apply = async () => {
       try {
-        const url = duplicateFromGroupKey
-          ? `/api/sh/products/listings/groups/${duplicateFromProductId}/${duplicateFromChannelId}?g=${encodeURIComponent(duplicateFromGroupKey)}`
+        const url = duplicateFromChannelProductId
+          ? `/api/sh/products/listings/channel-products/${duplicateFromChannelProductId}`
           : `/api/sh/products/listings/groups/${duplicateFromProductId}/${duplicateFromChannelId}`
         const res = await fetch(url, { cache: 'no-store' })
         if (!res.ok) throw new Error('원본 채널 상품 조회 실패')
@@ -189,7 +186,8 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             optionAttributes: OptionAttribute[]
           }
           channel: { id: string; name: string }
-          meta: { keywords: string[] }
+          channelProduct?: { keywords: string[] }
+          meta?: { keywords: string[] }
           listings: Array<{
             id: string
             searchName: string
@@ -256,7 +254,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         setMemo(derived.memo ?? '')
 
         // 키워드
-        setKeywords(data.meta.keywords ?? [])
+        setKeywords(data.channelProduct?.keywords ?? data.meta?.keywords ?? [])
 
         // listings → rows
         const newRows: CompositionRow[] = data.listings.map((l, idx) => {
@@ -294,7 +292,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     }
 
     apply()
-  }, [duplicateFromProductId, duplicateFromChannelId])
+  }, [duplicateFromChannelProductId, duplicateFromProductId, duplicateFromChannelId])
 
   const currentChannel = channels.find((c) => c.id === channelId) ?? null
   const nameLimit = getChannelNameLimit(currentChannel?.name ?? null)
@@ -365,8 +363,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         retailPrice: row.retailPrice.trim() === '' ? undefined : Number(row.retailPrice),
         channelAllocation:
           row.channelAllocation.trim() === '' ? undefined : Number(row.channelAllocation),
-        // 키워드는 ProductChannelGroupMeta에 저장 — 개별 listing에는 빈 배열
-        keywords: [],
+        keywords,
         status: row.status,
         items: row.items.map((it, idx) => ({
           optionId: it.optionId,
@@ -402,20 +399,6 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     const okResults = results.filter((r) => r.ok)
     const failResults = results.filter((r) => !r.ok)
 
-    // 키워드 저장 (ProductChannelGroupMeta)
-    if (okResults.length > 0 && productCtx && keywords.length > 0) {
-      try {
-        await fetch(`/api/sh/products/listings/groups/${productCtx.id}/${channelId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ keywords }),
-        })
-      } catch {
-        // 키워드 저장 실패는 치명적이지 않음 — 토스트 경고만
-        toast.warning('판매 옵션은 생성되었으나 키워드 저장에 실패했습니다')
-      }
-    }
-
     setSaving(false)
 
     if (okResults.length === 0) {
@@ -432,15 +415,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       toast.success(`${okResults.length}개의 판매채널 상품이 생성되었습니다`)
     }
 
-    // 상품 × 채널 그룹 상세로 이동 (productCtx 있을 때), 아니면 목록으로
-    if (productCtx) {
-      const newGroupKey = baseManagementName.trim() || baseSearchName.trim()
-      router.push(getSellerHubListingGroupPath(productCtx.id, channelId, newGroupKey || undefined))
-    } else if (okResults.length === 1 && okResults[0].id) {
-      router.push(getSellerHubListingPath(okResults[0].id))
-    } else {
-      router.push(SELLER_HUB_LISTINGS_PATH)
-    }
+    router.push(SELLER_HUB_LISTINGS_PATH)
   }
 
   return (

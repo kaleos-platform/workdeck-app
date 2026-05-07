@@ -113,7 +113,7 @@ export const ModelName = {
   ProductListing: 'ProductListing',
   ProductListingItem: 'ProductListingItem',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
-  ProductChannelGroupMeta: 'ProductChannelGroupMeta',
+  ChannelProduct: 'ChannelProduct',
   Product: 'Product',
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
@@ -1075,6 +1075,7 @@ export const ProductListingScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   channelId: 'channelId',
+  channelProductId: 'channelProductId',
   internalCode: 'internalCode',
   searchName: 'searchName',
   displayName: 'displayName',
@@ -1112,17 +1113,22 @@ export const DelOrderItemFulfillmentScalarFieldEnum = {
 export type DelOrderItemFulfillmentScalarFieldEnum = (typeof DelOrderItemFulfillmentScalarFieldEnum)[keyof typeof DelOrderItemFulfillmentScalarFieldEnum]
 
 
-export const ProductChannelGroupMetaScalarFieldEnum = {
+export const ChannelProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
-  productId: 'productId',
   channelId: 'channelId',
+  productId: 'productId',
+  baseSearchName: 'baseSearchName',
+  baseDisplayName: 'baseDisplayName',
+  baseManagementName: 'baseManagementName',
+  baseInternalCode: 'baseInternalCode',
+  memo: 'memo',
   keywords: 'keywords',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type ProductChannelGroupMetaScalarFieldEnum = (typeof ProductChannelGroupMetaScalarFieldEnum)[keyof typeof ProductChannelGroupMetaScalarFieldEnum]
+export type ChannelProductScalarFieldEnum = (typeof ChannelProductScalarFieldEnum)[keyof typeof ChannelProductScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {
