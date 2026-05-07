@@ -7,10 +7,11 @@ import {
   ListingForm,
   type ListingFormInitial,
 } from '@/components/sh/products/listings/listing-form'
-import { getSellerHubListingGroupPath } from '@/lib/deck-routes'
+import { getSellerHubChannelProductPath } from '@/lib/deck-routes'
 
 type ListingDetail = {
   id: string
+  channelProductId: string | null
   channel: { id: string; name: string; kind: string }
   internalCode: string | null
   searchName: string
@@ -63,10 +64,9 @@ export default function ListingDetailPage({ params }: { params: Promise<{ listin
         if (!res.ok) throw new Error('조회 실패')
         const data: { listing: ListingDetail } = await res.json()
         if (cancelled) return
-        // 단일 상품 구성이면 상품×채널 그룹 상세로 리다이렉트
-        const productIds = Array.from(new Set(data.listing.items.map((it) => it.productId)))
-        if (productIds.length === 1) {
-          router.replace(getSellerHubListingGroupPath(productIds[0], data.listing.channel.id))
+        // channelProductId가 있으면 채널상품 상세로 리다이렉트
+        if (data.listing.channelProductId) {
+          router.replace(getSellerHubChannelProductPath(data.listing.channelProductId))
           return
         }
         // 혼합 구성 → 기존 단일 편집 폼으로 fallback

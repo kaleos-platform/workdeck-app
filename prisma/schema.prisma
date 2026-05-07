@@ -355,7 +355,7 @@ model Space {
   productPricingSettings  ProductPricingSettings?
   optionCodeAliases       SpaceOptionCodeAlias[]
   productListings         ProductListing[]
-  productChannelGroupMeta ProductChannelGroupMeta[]
+  channelProducts         ChannelProduct[]
   productionRuns          ProductionRun[]
   pricingScenarios        PricingScenario[]
 
@@ -759,7 +759,7 @@ model InvProduct {
   brand            Brand?                    @relation(fields: [brandId], references: [id], onDelete: SetNull)
   options          InvProductOption[]
   reorderConfig    InvReorderConfig?
-  channelGroupMeta ProductChannelGroupMeta[]
+  channelProducts  ChannelProduct[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1235,7 +1235,7 @@ model Channel {
   columnMappingPresets    DelColumnMappingPreset[]  @relation("PresetChannel")
   productAliases          ChannelProductAlias[]
   productListings         ProductListing[]
-  productGroupMeta        ProductChannelGroupMeta[]
+  channelProducts         ChannelProduct[]
   pricingScenarios        PricingScenario[]
   pricingScenarioChannels PricingScenarioChannel[]
 
@@ -1480,6 +1480,7 @@ model ProductListing {
   id                String               @id @default(cuid())
   spaceId           String
   channelId         String
+  channelProductId  String? // 채널상품(ChannelProduct) 귀속 — null이면 단독 listing
   internalCode      String? // 사용자 관리용 식별자 (선택)
   searchName        String // 상품명(검색용) — 채널 리스팅 상단 노출
   displayName       String // 상품명(노출용) — 상세 페이지 타이틀
@@ -1493,11 +1494,12 @@ model ProductListing {
   status            ProductListingStatus @default(ACTIVE)
   memo              String?
 
-  space    Space                 @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  channel  Channel               @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  items    ProductListingItem[]
-  aliases  ChannelProductAlias[]
-  delItems DelOrderItem[]
+  space          Space                 @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel        Channel               @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelProduct ChannelProduct?       @relation(fields: [channelProductId], references: [id], onDelete: SetNull)
+  items          ProductListingItem[]
+  aliases        ChannelProductAlias[]
+  delItems       DelOrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1505,6 +1507,7 @@ model ProductListing {
   @@unique([channelId, searchName])
   @@index([spaceId, channelId])
   @@index([status])
+  @@index([channelProductId])
 }
 
 // 판매채널 상품의 구성 옵션 (InvProductOption × 수량)
@@ -1536,25 +1539,33 @@ model DelOrderItemFulfillment {
   @@index([optionId])
 }
 
-// 상품 × 채널 그룹 단위 메타 — 같은 상품의 옵션 listing들을 한 상세 화면에서 묶어 관리할 때 공유되는 값
-// 현재는 키워드만, 추후 대표 이미지/설명 등 확장 예정
-model ProductChannelGroupMeta {
+// 채널상품 — product × channel 단위 판매 묶음의 실체 엔티티.
+// 자식 ProductListing들은 channelProductId FK로 귀속됨.
+model ChannelProduct {
   id        String @id @default(cuid())
   spaceId   String
-  productId String
   channelId String
-  keywords  Json   @default("[]") // string[]
+  productId String // 단일 product 채널상품만 지원
 
-  space   Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  product InvProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
-  channel Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  baseSearchName     String
+  baseDisplayName    String?
+  baseManagementName String?
+  baseInternalCode   String?
+  memo               String?
+  keywords           Json   @default("[]") // string[]
+
+  space    Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel  Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  product  InvProduct       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  listings ProductListing[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([productId, channelId])
   @@index([spaceId, channelId])
+  @@index([productId, channelId])
 }
+
 
 // ─── Sales Content Deck (정보 세팅) ───────────────────────────────────────────
 

@@ -364,7 +364,7 @@ export type ChannelWhereInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetListRelationFilter
   productAliases?: Prisma.ChannelProductAliasListRelationFilter
   productListings?: Prisma.ProductListingListRelationFilter
-  productGroupMeta?: Prisma.ProductChannelGroupMetaListRelationFilter
+  channelProducts?: Prisma.ChannelProductListRelationFilter
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
   pricingScenarioChannels?: Prisma.PricingScenarioChannelListRelationFilter
 }
@@ -399,7 +399,7 @@ export type ChannelOrderByWithRelationInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetOrderByRelationAggregateInput
   productAliases?: Prisma.ChannelProductAliasOrderByRelationAggregateInput
   productListings?: Prisma.ProductListingOrderByRelationAggregateInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaOrderByRelationAggregateInput
+  channelProducts?: Prisma.ChannelProductOrderByRelationAggregateInput
   pricingScenarios?: Prisma.PricingScenarioOrderByRelationAggregateInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelOrderByRelationAggregateInput
 }
@@ -438,7 +438,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   columnMappingPresets?: Prisma.DelColumnMappingPresetListRelationFilter
   productAliases?: Prisma.ChannelProductAliasListRelationFilter
   productListings?: Prisma.ProductListingListRelationFilter
-  productGroupMeta?: Prisma.ProductChannelGroupMetaListRelationFilter
+  channelProducts?: Prisma.ChannelProductListRelationFilter
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
   pricingScenarioChannels?: Prisma.PricingScenarioChannelListRelationFilter
 }, "id" | "spaceId_name">
@@ -527,7 +527,7 @@ export type ChannelCreateInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -560,7 +560,7 @@ export type ChannelUncheckedCreateInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -593,7 +593,7 @@ export type ChannelUpdateInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -626,7 +626,7 @@ export type ChannelUncheckedUpdateInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -1016,18 +1016,18 @@ export type ChannelUpdateOneRequiredWithoutProductListingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutProductListingsInput, Prisma.ChannelUpdateWithoutProductListingsInput>, Prisma.ChannelUncheckedUpdateWithoutProductListingsInput>
 }
 
-export type ChannelCreateNestedOneWithoutProductGroupMetaInput = {
-  create?: Prisma.XOR<Prisma.ChannelCreateWithoutProductGroupMetaInput, Prisma.ChannelUncheckedCreateWithoutProductGroupMetaInput>
-  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutProductGroupMetaInput
+export type ChannelCreateNestedOneWithoutChannelProductsInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutChannelProductsInput, Prisma.ChannelUncheckedCreateWithoutChannelProductsInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutChannelProductsInput
   connect?: Prisma.ChannelWhereUniqueInput
 }
 
-export type ChannelUpdateOneRequiredWithoutProductGroupMetaNestedInput = {
-  create?: Prisma.XOR<Prisma.ChannelCreateWithoutProductGroupMetaInput, Prisma.ChannelUncheckedCreateWithoutProductGroupMetaInput>
-  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutProductGroupMetaInput
-  upsert?: Prisma.ChannelUpsertWithoutProductGroupMetaInput
+export type ChannelUpdateOneRequiredWithoutChannelProductsNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutChannelProductsInput, Prisma.ChannelUncheckedCreateWithoutChannelProductsInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutChannelProductsInput
+  upsert?: Prisma.ChannelUpsertWithoutChannelProductsInput
   connect?: Prisma.ChannelWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutProductGroupMetaInput, Prisma.ChannelUpdateWithoutProductGroupMetaInput>, Prisma.ChannelUncheckedUpdateWithoutProductGroupMetaInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutChannelProductsInput, Prisma.ChannelUpdateWithoutChannelProductsInput>, Prisma.ChannelUncheckedUpdateWithoutChannelProductsInput>
 }
 
 export type ChannelCreateWithoutSpaceInput = {
@@ -1057,7 +1057,7 @@ export type ChannelCreateWithoutSpaceInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -1089,7 +1089,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -1174,7 +1174,7 @@ export type ChannelCreateWithoutInvMovementsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -1206,7 +1206,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -1254,7 +1254,7 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -1286,7 +1286,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -1318,7 +1318,7 @@ export type ChannelCreateWithoutDelOrdersInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -1350,7 +1350,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -1398,7 +1398,7 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -1430,7 +1430,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -1462,7 +1462,7 @@ export type ChannelCreateWithoutProductAliasesInput = {
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -1494,7 +1494,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -1542,7 +1542,7 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -1574,7 +1574,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -1606,7 +1606,7 @@ export type ChannelCreateWithoutColumnMappingPresetsInput = {
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -1638,7 +1638,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -1686,7 +1686,7 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -1718,7 +1718,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -1750,7 +1750,7 @@ export type ChannelCreateWithoutChannelTypeDefInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -1782,7 +1782,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -1840,7 +1840,7 @@ export type ChannelCreateWithoutFeeRatesInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -1872,7 +1872,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -1920,7 +1920,7 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -1952,7 +1952,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -1985,7 +1985,7 @@ export type ChannelCreateWithoutPricingScenariosInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
@@ -2017,7 +2017,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
@@ -2065,7 +2065,7 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
@@ -2097,7 +2097,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
@@ -2129,7 +2129,7 @@ export type ChannelCreateWithoutPricingScenarioChannelsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
 }
 
@@ -2161,7 +2161,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
 }
 
@@ -2209,7 +2209,7 @@ export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
 }
 
@@ -2241,7 +2241,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
 }
 
@@ -2272,7 +2272,7 @@ export type ChannelCreateWithoutProductListingsInput = {
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
@@ -2304,7 +2304,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
   productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
@@ -2352,7 +2352,7 @@ export type ChannelUpdateWithoutProductListingsInput = {
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -2384,12 +2384,12 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
-export type ChannelCreateWithoutProductGroupMetaInput = {
+export type ChannelCreateWithoutChannelProductsInput = {
   id?: string
   name: string
   isActive?: boolean
@@ -2421,7 +2421,7 @@ export type ChannelCreateWithoutProductGroupMetaInput = {
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
 }
 
-export type ChannelUncheckedCreateWithoutProductGroupMetaInput = {
+export type ChannelUncheckedCreateWithoutChannelProductsInput = {
   id?: string
   spaceId: string
   channelTypeDefId?: string | null
@@ -2453,23 +2453,23 @@ export type ChannelUncheckedCreateWithoutProductGroupMetaInput = {
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
 }
 
-export type ChannelCreateOrConnectWithoutProductGroupMetaInput = {
+export type ChannelCreateOrConnectWithoutChannelProductsInput = {
   where: Prisma.ChannelWhereUniqueInput
-  create: Prisma.XOR<Prisma.ChannelCreateWithoutProductGroupMetaInput, Prisma.ChannelUncheckedCreateWithoutProductGroupMetaInput>
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutChannelProductsInput, Prisma.ChannelUncheckedCreateWithoutChannelProductsInput>
 }
 
-export type ChannelUpsertWithoutProductGroupMetaInput = {
-  update: Prisma.XOR<Prisma.ChannelUpdateWithoutProductGroupMetaInput, Prisma.ChannelUncheckedUpdateWithoutProductGroupMetaInput>
-  create: Prisma.XOR<Prisma.ChannelCreateWithoutProductGroupMetaInput, Prisma.ChannelUncheckedCreateWithoutProductGroupMetaInput>
+export type ChannelUpsertWithoutChannelProductsInput = {
+  update: Prisma.XOR<Prisma.ChannelUpdateWithoutChannelProductsInput, Prisma.ChannelUncheckedUpdateWithoutChannelProductsInput>
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutChannelProductsInput, Prisma.ChannelUncheckedCreateWithoutChannelProductsInput>
   where?: Prisma.ChannelWhereInput
 }
 
-export type ChannelUpdateToOneWithWhereWithoutProductGroupMetaInput = {
+export type ChannelUpdateToOneWithWhereWithoutChannelProductsInput = {
   where?: Prisma.ChannelWhereInput
-  data: Prisma.XOR<Prisma.ChannelUpdateWithoutProductGroupMetaInput, Prisma.ChannelUncheckedUpdateWithoutProductGroupMetaInput>
+  data: Prisma.XOR<Prisma.ChannelUpdateWithoutChannelProductsInput, Prisma.ChannelUncheckedUpdateWithoutChannelProductsInput>
 }
 
-export type ChannelUpdateWithoutProductGroupMetaInput = {
+export type ChannelUpdateWithoutChannelProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2501,7 +2501,7 @@ export type ChannelUpdateWithoutProductGroupMetaInput = {
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
 
-export type ChannelUncheckedUpdateWithoutProductGroupMetaInput = {
+export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2583,7 +2583,7 @@ export type ChannelUpdateWithoutSpaceInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -2615,7 +2615,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -2693,7 +2693,7 @@ export type ChannelUpdateWithoutChannelTypeDefInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
 }
@@ -2725,7 +2725,7 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
-  productGroupMeta?: Prisma.ProductChannelGroupMetaUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -2765,7 +2765,7 @@ export type ChannelCountOutputType = {
   columnMappingPresets: number
   productAliases: number
   productListings: number
-  productGroupMeta: number
+  channelProducts: number
   pricingScenarios: number
   pricingScenarioChannels: number
 }
@@ -2777,7 +2777,7 @@ export type ChannelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   columnMappingPresets?: boolean | ChannelCountOutputTypeCountColumnMappingPresetsArgs
   productAliases?: boolean | ChannelCountOutputTypeCountProductAliasesArgs
   productListings?: boolean | ChannelCountOutputTypeCountProductListingsArgs
-  productGroupMeta?: boolean | ChannelCountOutputTypeCountProductGroupMetaArgs
+  channelProducts?: boolean | ChannelCountOutputTypeCountChannelProductsArgs
   pricingScenarios?: boolean | ChannelCountOutputTypeCountPricingScenariosArgs
   pricingScenarioChannels?: boolean | ChannelCountOutputTypeCountPricingScenarioChannelsArgs
 }
@@ -2837,8 +2837,8 @@ export type ChannelCountOutputTypeCountProductListingsArgs<ExtArgs extends runti
 /**
  * ChannelCountOutputType without action
  */
-export type ChannelCountOutputTypeCountProductGroupMetaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ProductChannelGroupMetaWhereInput
+export type ChannelCountOutputTypeCountChannelProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChannelProductWhereInput
 }
 
 /**
@@ -2886,7 +2886,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   columnMappingPresets?: boolean | Prisma.Channel$columnMappingPresetsArgs<ExtArgs>
   productAliases?: boolean | Prisma.Channel$productAliasesArgs<ExtArgs>
   productListings?: boolean | Prisma.Channel$productListingsArgs<ExtArgs>
-  productGroupMeta?: boolean | Prisma.Channel$productGroupMetaArgs<ExtArgs>
+  channelProducts?: boolean | Prisma.Channel$channelProductsArgs<ExtArgs>
   pricingScenarios?: boolean | Prisma.Channel$pricingScenariosArgs<ExtArgs>
   pricingScenarioChannels?: boolean | Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
@@ -2978,7 +2978,7 @@ export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   columnMappingPresets?: boolean | Prisma.Channel$columnMappingPresetsArgs<ExtArgs>
   productAliases?: boolean | Prisma.Channel$productAliasesArgs<ExtArgs>
   productListings?: boolean | Prisma.Channel$productListingsArgs<ExtArgs>
-  productGroupMeta?: boolean | Prisma.Channel$productGroupMetaArgs<ExtArgs>
+  channelProducts?: boolean | Prisma.Channel$channelProductsArgs<ExtArgs>
   pricingScenarios?: boolean | Prisma.Channel$pricingScenariosArgs<ExtArgs>
   pricingScenarioChannels?: boolean | Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
@@ -3003,7 +3003,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     columnMappingPresets: Prisma.$DelColumnMappingPresetPayload<ExtArgs>[]
     productAliases: Prisma.$ChannelProductAliasPayload<ExtArgs>[]
     productListings: Prisma.$ProductListingPayload<ExtArgs>[]
-    productGroupMeta: Prisma.$ProductChannelGroupMetaPayload<ExtArgs>[]
+    channelProducts: Prisma.$ChannelProductPayload<ExtArgs>[]
     pricingScenarios: Prisma.$PricingScenarioPayload<ExtArgs>[]
     pricingScenarioChannels: Prisma.$PricingScenarioChannelPayload<ExtArgs>[]
   }
@@ -3431,7 +3431,7 @@ export interface Prisma__ChannelClient<T, Null = never, ExtArgs extends runtime.
   columnMappingPresets<T extends Prisma.Channel$columnMappingPresetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$columnMappingPresetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelColumnMappingPresetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productAliases<T extends Prisma.Channel$productAliasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$productAliasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelProductAliasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productListings<T extends Prisma.Channel$productListingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$productListingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductListingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  productGroupMeta<T extends Prisma.Channel$productGroupMetaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$productGroupMetaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductChannelGroupMetaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  channelProducts<T extends Prisma.Channel$channelProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$channelProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pricingScenarios<T extends Prisma.Channel$pricingScenariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$pricingScenariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pricingScenarioChannels<T extends Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -4043,27 +4043,27 @@ export type Channel$productListingsArgs<ExtArgs extends runtime.Types.Extensions
 }
 
 /**
- * Channel.productGroupMeta
+ * Channel.channelProducts
  */
-export type Channel$productGroupMetaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Channel$channelProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the ProductChannelGroupMeta
+   * Select specific fields to fetch from the ChannelProduct
    */
-  select?: Prisma.ProductChannelGroupMetaSelect<ExtArgs> | null
+  select?: Prisma.ChannelProductSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the ProductChannelGroupMeta
+   * Omit specific fields from the ChannelProduct
    */
-  omit?: Prisma.ProductChannelGroupMetaOmit<ExtArgs> | null
+  omit?: Prisma.ChannelProductOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ProductChannelGroupMetaInclude<ExtArgs> | null
-  where?: Prisma.ProductChannelGroupMetaWhereInput
-  orderBy?: Prisma.ProductChannelGroupMetaOrderByWithRelationInput | Prisma.ProductChannelGroupMetaOrderByWithRelationInput[]
-  cursor?: Prisma.ProductChannelGroupMetaWhereUniqueInput
+  include?: Prisma.ChannelProductInclude<ExtArgs> | null
+  where?: Prisma.ChannelProductWhereInput
+  orderBy?: Prisma.ChannelProductOrderByWithRelationInput | Prisma.ChannelProductOrderByWithRelationInput[]
+  cursor?: Prisma.ChannelProductWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ProductChannelGroupMetaScalarFieldEnum | Prisma.ProductChannelGroupMetaScalarFieldEnum[]
+  distinct?: Prisma.ChannelProductScalarFieldEnum | Prisma.ChannelProductScalarFieldEnum[]
 }
 
 /**
