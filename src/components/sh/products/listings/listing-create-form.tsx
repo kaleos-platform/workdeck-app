@@ -422,7 +422,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="listing-channel">판매채널 *</Label>
-              <Select value={channelId} onValueChange={setChannelId}>
+              <Select value={channelId || undefined} onValueChange={setChannelId}>
                 <SelectTrigger id="listing-channel">
                   <SelectValue placeholder="채널을 선택하세요" />
                 </SelectTrigger>

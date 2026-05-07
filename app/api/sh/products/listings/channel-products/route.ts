@@ -309,47 +309,61 @@ export async function POST(req: NextRequest) {
     return errorResponse('판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다', 400)
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    const cp = await tx.channelProduct.create({
-      data: {
-        spaceId: resolved.space.id,
-        channelId,
-        productId,
-        ...cpFields,
-        keywords: cpFields.keywords,
-      },
-    })
+  let result: {
+    channelProduct: { id: string }
+    listings: { id: string; searchName: string; status: string }[]
+  }
+  try {
+    result = await prisma.$transaction(async (tx) => {
+      const cp = await tx.channelProduct.create({
+        data: {
+          spaceId: resolved.space.id,
+          channelId,
+          productId,
+          ...cpFields,
+          keywords: cpFields.keywords,
+        },
+      })
 
-    const createdListings = await Promise.all(
-      listingInputs.map((li) =>
-        tx.productListing.create({
-          data: {
-            spaceId: resolved.space.id,
-            channelId,
-            channelProductId: cp.id,
-            searchName: li.searchName,
-            displayName: li.displayName,
-            managementName: li.managementName,
-            internalCode: li.internalCode,
-            memo: li.memo,
-            retailPrice: li.retailPrice ?? null,
-            channelAllocation: li.channelAllocation ?? null,
-            status: li.status,
-            items: {
-              create: li.items.map((it) => ({
-                optionId: it.optionId,
-                quantity: it.quantity,
-                sortOrder: it.sortOrder,
-              })),
+      const createdListings = await Promise.all(
+        listingInputs.map((li) =>
+          tx.productListing.create({
+            data: {
+              spaceId: resolved.space.id,
+              channelId,
+              channelProductId: cp.id,
+              searchName: li.searchName,
+              displayName: li.displayName,
+              managementName: li.managementName,
+              internalCode: li.internalCode,
+              memo: li.memo,
+              retailPrice: li.retailPrice ?? null,
+              channelAllocation: li.channelAllocation ?? null,
+              status: li.status,
+              items: {
+                create: li.items.map((it) => ({
+                  optionId: it.optionId,
+                  quantity: it.quantity,
+                  sortOrder: it.sortOrder,
+                })),
+              },
             },
-          },
-          select: { id: true, searchName: true, status: true },
-        })
+            select: { id: true, searchName: true, status: true },
+          })
+        )
       )
-    )
 
-    return { channelProduct: cp, listings: createdListings }
-  })
+      return { channelProduct: cp, listings: createdListings }
+    })
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      return errorResponse(
+        '이미 같은 상품명의 판매채널 상품이 존재합니다. 상품명을 변경해 주세요.',
+        409
+      )
+    }
+    throw e
+  }
 
   return NextResponse.json(
     { channelProduct: result.channelProduct, listings: result.listings },
