@@ -358,7 +358,7 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
       return errorResponse(
-        '이미 같은 상품명의 판매채널 상품이 존재합니다. 상품명을 변경해 주세요.',
+        '이미 같은 관리용 상품명이 이 채널에 등록되어 있습니다. 관리용 상품명을 변경해 주세요.',
         409
       )
     }
