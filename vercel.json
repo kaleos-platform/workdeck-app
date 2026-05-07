@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npx prisma migrate deploy && npx prisma generate && next build",
+  "buildCommand": "rm -rf .next && npx prisma migrate deploy && npx prisma generate && next build",
   "installCommand": "npm install",
   "regions": ["icn1"],
   "functions": {
