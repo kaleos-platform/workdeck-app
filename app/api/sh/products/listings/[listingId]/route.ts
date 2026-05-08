@@ -239,10 +239,20 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const listing = await prisma.productListing.findFirst({
     where: { id: listingId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, channelProductId: true },
   })
   if (!listing) return errorResponse('판매채널 상품을 찾을 수 없습니다', 404)
 
   await prisma.productListing.delete({ where: { id: listingId } })
+
+  if (listing.channelProductId) {
+    const remaining = await prisma.productListing.count({
+      where: { channelProductId: listing.channelProductId },
+    })
+    if (remaining === 0) {
+      await prisma.channelProduct.delete({ where: { id: listing.channelProductId } })
+    }
+  }
+
   return NextResponse.json({ ok: true })
 }
