@@ -211,6 +211,21 @@ export function GroupsTable({ channelId, productId }: Props) {
   const allSelectedSuspended =
     selectedListingStatuses.length > 0 && selectedListingStatuses.every((s) => s === 'SUSPENDED')
 
+  // 삭제 가드: effectiveStatus 기준 (옵션 없거나 품절/중지된 listing은 삭제 허용)
+  const selectedEffectiveStatuses = useMemo(() => {
+    const statuses: Array<'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'> = []
+    for (const g of groups) {
+      if (selectedRows.has(rowKeyForGroup(g)))
+        statuses.push(...g.listings.map((l) => l.effectiveStatus))
+    }
+    for (const m of mixed) {
+      if (selectedRows.has(rowKeyForMixed(m))) statuses.push(m.effectiveStatus)
+    }
+    return statuses
+  }, [groups, mixed, selectedRows])
+  const allSelectedDeletable =
+    selectedEffectiveStatuses.length > 0 && selectedEffectiveStatuses.every((s) => s !== 'ACTIVE')
+
   async function runBulkPatch(status: 'ACTIVE' | 'SUSPENDED') {
     if (selectedListingIds.length === 0) return
     setBulkLoading(true)
@@ -240,8 +255,8 @@ export function GroupsTable({ channelId, productId }: Props) {
 
   async function runBulkDelete() {
     if (selectedListingIds.length === 0) return
-    if (!allSelectedSuspended) {
-      toast.error('비활성화 상태의 판매 옵션만 삭제할 수 있습니다')
+    if (!allSelectedDeletable) {
+      toast.error('판매 중인 옵션은 비활성화 후 삭제할 수 있습니다')
       return
     }
     setBulkLoading(true)
@@ -325,8 +340,8 @@ export function GroupsTable({ channelId, productId }: Props) {
               size="sm"
               variant="destructive"
               onClick={() => {
-                if (!allSelectedSuspended) {
-                  toast.error('비활성화 상태의 판매 옵션만 삭제할 수 있습니다')
+                if (!allSelectedDeletable) {
+                  toast.error('판매 중인 옵션은 비활성화 후 삭제할 수 있습니다')
                   return
                 }
                 setBulkAction('delete')
