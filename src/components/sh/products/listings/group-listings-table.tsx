@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { applyRangeSelection } from '@/lib/range-selection'
 import { computeDiscount } from '@/lib/sh/listing-calc'
 
 export type GroupListingRow = {
@@ -146,16 +147,15 @@ export function GroupListingsTable({
   }
 
   function toggleOne(id: string, index: number, shiftKey: boolean) {
-    const allIds = rows.map((r) => r.id)
-    const next = new Set(selected)
-    if (shiftKey && lastClickedIndex.current !== null) {
-      const from = Math.min(lastClickedIndex.current, index)
-      const to = Math.max(lastClickedIndex.current, index)
-      const adding = !selected.has(id)
-      allIds.slice(from, to + 1).forEach((k) => (adding ? next.add(k) : next.delete(k)))
-    } else {
-      next.has(id) ? next.delete(id) : next.add(id)
-    }
+    const allIds = displayRows.map((r) => r.id)
+    const next = applyRangeSelection(
+      selected,
+      allIds,
+      id,
+      index,
+      shiftKey,
+      lastClickedIndex.current
+    )
     lastClickedIndex.current = index
     onSelectedChange(next)
   }

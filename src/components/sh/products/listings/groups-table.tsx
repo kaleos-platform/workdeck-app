@@ -38,6 +38,7 @@ import {
   getSellerHubChannelProductPath,
   getSellerHubListingPath,
 } from '@/lib/deck-routes'
+import { applyRangeSelection } from '@/lib/range-selection'
 
 type GroupRow = {
   kind: 'group'
@@ -173,19 +174,9 @@ export function GroupsTable({ channelId, productId }: Props) {
   const someSelected = !allSelected && allRowKeys.some((k) => selectedRows.has(k))
 
   function toggleRow(key: string, index: number, shiftKey: boolean) {
-    setSelectedRows((prev) => {
-      const next = new Set(prev)
-      if (shiftKey && lastClickedRowIndex.current !== null) {
-        const from = Math.min(lastClickedRowIndex.current, index)
-        const to = Math.max(lastClickedRowIndex.current, index)
-        const rangeKeys = allRowKeys.slice(from, to + 1)
-        const adding = !prev.has(key)
-        rangeKeys.forEach((k) => (adding ? next.add(k) : next.delete(k)))
-      } else {
-        next.has(key) ? next.delete(key) : next.add(key)
-      }
-      return next
-    })
+    setSelectedRows((prev) =>
+      applyRangeSelection(prev, allRowKeys, key, index, shiftKey, lastClickedRowIndex.current)
+    )
     lastClickedRowIndex.current = index
   }
 
