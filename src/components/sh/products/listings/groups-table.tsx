@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -95,7 +95,8 @@ export function GroupsTable({ channelId, productId }: Props) {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
-  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set()) // group key 또는 mixed:<id>
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const lastClickedRowIndex = useRef<number | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [bulkAction, setBulkAction] = useState<null | 'suspend' | 'activate' | 'delete'>(null)
   const [bulkLoading, setBulkLoading] = useState(false)
@@ -164,15 +165,6 @@ export function GroupsTable({ channelId, productId }: Props) {
     return `m:${m.id}`
   }
 
-  function toggleRow(key: string) {
-    setSelectedRows((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-  }
-
   const allRowKeys = useMemo(
     () => [...groups.map(rowKeyForGroup), ...mixed.map(rowKeyForMixed)],
     [groups, mixed]
@@ -180,8 +172,26 @@ export function GroupsTable({ channelId, productId }: Props) {
   const allSelected = allRowKeys.length > 0 && allRowKeys.every((k) => selectedRows.has(k))
   const someSelected = !allSelected && allRowKeys.some((k) => selectedRows.has(k))
 
+  function toggleRow(key: string, index: number, shiftKey: boolean) {
+    setSelectedRows((prev) => {
+      const next = new Set(prev)
+      if (shiftKey && lastClickedRowIndex.current !== null) {
+        const from = Math.min(lastClickedRowIndex.current, index)
+        const to = Math.max(lastClickedRowIndex.current, index)
+        const rangeKeys = allRowKeys.slice(from, to + 1)
+        const adding = !prev.has(key)
+        rangeKeys.forEach((k) => (adding ? next.add(k) : next.delete(k)))
+      } else {
+        next.has(key) ? next.delete(key) : next.add(key)
+      }
+      return next
+    })
+    lastClickedRowIndex.current = index
+  }
+
   function toggleAllRows(checked: boolean) {
     setSelectedRows(checked ? new Set(allRowKeys) : new Set())
+    lastClickedRowIndex.current = null
   }
 
   // 선택된 row → 영향 listing id 모음 (그룹은 속한 모든 listing)
@@ -386,7 +396,7 @@ export function GroupsTable({ channelId, productId }: Props) {
               </TableRow>
             ) : (
               <>
-                {groups.map((g) => {
+                {groups.map((g, gi) => {
                   const key = g.id
                   const isOpen = expanded.has(key)
                   const rowKey = rowKeyForGroup(g)
@@ -397,7 +407,7 @@ export function GroupsTable({ channelId, productId }: Props) {
                       isOpen={isOpen}
                       onToggle={() => toggleGroup(key)}
                       isSelected={selectedRows.has(rowKey)}
-                      onToggleSelect={() => toggleRow(rowKey)}
+                      onToggleSelect={(shiftKey) => toggleRow(rowKey, gi, shiftKey)}
                     />
                   )
                 })}
@@ -411,14 +421,15 @@ export function GroupsTable({ channelId, productId }: Props) {
                     </TableCell>
                   </TableRow>
                 )}
-                {mixed.map((m) => {
+                {mixed.map((m, mi) => {
                   const rowKey = rowKeyForMixed(m)
+                  const index = groups.length + mi
                   return (
                     <MixedRowView
                       key={m.id}
                       mixed={m}
                       isSelected={selectedRows.has(rowKey)}
-                      onToggleSelect={() => toggleRow(rowKey)}
+                      onToggleSelect={(shiftKey) => toggleRow(rowKey, index, shiftKey)}
                     />
                   )
                 })}
@@ -520,7 +531,7 @@ function GroupRowView({
   isOpen: boolean
   onToggle: () => void
   isSelected: boolean
-  onToggleSelect: () => void
+  onToggleSelect: (shiftKey: boolean) => void
 }) {
   const router = useRouter()
   const groupHref = getSellerHubChannelProductPath(group.id)
@@ -530,7 +541,8 @@ function GroupRowView({
         <TableCell onClick={(e) => e.stopPropagation()}>
           <Checkbox
             checked={isSelected}
-            onCheckedChange={() => onToggleSelect()}
+            onClick={(e: React.MouseEvent) => onToggleSelect(e.shiftKey)}
+            onCheckedChange={() => {}}
             aria-label={`${group.baseManagementName ?? group.productName} 선택`}
           />
         </TableCell>
@@ -631,7 +643,7 @@ function MixedRowView({
 }: {
   mixed: SoloRow
   isSelected: boolean
-  onToggleSelect: () => void
+  onToggleSelect: (shiftKey: boolean) => void
 }) {
   const badge =
     mixed.effectiveStatus === 'SUSPENDED' ? (
@@ -646,7 +658,8 @@ function MixedRowView({
       <TableCell>
         <Checkbox
           checked={isSelected}
-          onCheckedChange={() => onToggleSelect()}
+          onClick={(e: React.MouseEvent) => onToggleSelect(e.shiftKey)}
+          onCheckedChange={() => {}}
           aria-label={`${mixed.searchName} 선택`}
         />
       </TableCell>

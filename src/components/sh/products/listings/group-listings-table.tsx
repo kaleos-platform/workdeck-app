@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown, Trash2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -105,6 +105,7 @@ export function GroupListingsTable({
   disabled,
 }: Props) {
   const [sort, setSort] = useState<SortState>(null)
+  const lastClickedIndex = useRef<number | null>(null)
   const allSelected = rows.length > 0 && rows.every((r) => selected.has(r.id))
   const someSelected = rows.some((r) => selected.has(r.id)) && !allSelected
 
@@ -141,12 +142,21 @@ export function GroupListingsTable({
 
   function toggleAll(checked: boolean) {
     onSelectedChange(checked ? new Set(rows.map((r) => r.id)) : new Set())
+    lastClickedIndex.current = null
   }
 
-  function toggleOne(id: string, checked: boolean) {
+  function toggleOne(id: string, index: number, shiftKey: boolean) {
+    const allIds = rows.map((r) => r.id)
     const next = new Set(selected)
-    if (checked) next.add(id)
-    else next.delete(id)
+    if (shiftKey && lastClickedIndex.current !== null) {
+      const from = Math.min(lastClickedIndex.current, index)
+      const to = Math.max(lastClickedIndex.current, index)
+      const adding = !selected.has(id)
+      allIds.slice(from, to + 1).forEach((k) => (adding ? next.add(k) : next.delete(k)))
+    } else {
+      next.has(id) ? next.delete(id) : next.add(id)
+    }
+    lastClickedIndex.current = index
     onSelectedChange(next)
   }
 
@@ -214,7 +224,7 @@ export function GroupListingsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {displayRows.map((r) => {
+          {displayRows.map((r, ri) => {
             const retailValue = r.retailPrice != null ? String(r.retailPrice) : ''
             const discount = computeDiscount(r.baselinePrice, r.retailPrice)
             const statusBadge =
@@ -236,7 +246,8 @@ export function GroupListingsTable({
                 <TableCell>
                   <Checkbox
                     checked={isSelected}
-                    onCheckedChange={(v) => toggleOne(r.id, v === true)}
+                    onClick={(e: React.MouseEvent) => toggleOne(r.id, ri, e.shiftKey)}
+                    onCheckedChange={() => {}}
                     aria-label={`${r.searchName} 선택`}
                     disabled={disabled}
                   />
