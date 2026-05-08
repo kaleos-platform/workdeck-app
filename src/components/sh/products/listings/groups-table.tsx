@@ -290,9 +290,9 @@ export function GroupsTable({ channelId, productId }: Props) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">전체 상태</SelectItem>
-              <SelectItem value="ACTIVE">판매중 포함</SelectItem>
-              <SelectItem value="SOLD_OUT">품절 포함</SelectItem>
-              <SelectItem value="SUSPENDED">판매중지 포함</SelectItem>
+              <SelectItem value="ACTIVE">판매중</SelectItem>
+              <SelectItem value="SOLD_OUT">품절</SelectItem>
+              <SelectItem value="SUSPENDED">판매중지</SelectItem>
             </SelectContent>
           </Select>
         </div>
