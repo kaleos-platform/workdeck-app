@@ -332,7 +332,7 @@ export function GroupDetailView({ channelProductId }: Props) {
     await load()
   }
 
-  const allSuspended = data ? data.listings.every((l) => l.status === 'SUSPENDED') : false
+  const allSuspended = data ? data.listings.every((l) => l.effectiveStatus !== 'ACTIVE') : false
 
   async function confirmGroupSuspendToggle() {
     if (!data) return
