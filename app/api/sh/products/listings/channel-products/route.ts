@@ -187,9 +187,11 @@ export async function GET(req: NextRequest) {
     }
   })
 
-  // SOLD_OUT 필터 후처리
+  // status 필터 후처리 (effectiveStatus 기준)
   const filteredGroups =
-    statusFilter === 'SOLD_OUT' ? groups.filter((g) => g.statusCounts.SOLD_OUT > 0) : groups
+    statusFilter === 'all'
+      ? groups
+      : groups.filter((g) => g.statusCounts[statusFilter as keyof typeof g.statusCounts] > 0)
 
   // channelProductId 없는 단독 listing (solo/mixed)
   const soloWhere: Prisma.ProductListingWhereInput = {
@@ -198,7 +200,6 @@ export async function GET(req: NextRequest) {
     channel: { channelTypeDef: { isSalesChannel: true } },
   }
   if (channelId) soloWhere.channelId = channelId
-  if (statusFilter === 'ACTIVE' || statusFilter === 'SUSPENDED') soloWhere.status = statusFilter
   if (search) {
     soloWhere.OR = [
       { searchName: { contains: search, mode: 'insensitive' } },
@@ -272,9 +273,7 @@ export async function GET(req: NextRequest) {
   })
 
   const filteredSolo =
-    statusFilter === 'SOLD_OUT'
-      ? soloRows.filter((r) => r.effectiveStatus === 'SOLD_OUT')
-      : soloRows
+    statusFilter === 'all' ? soloRows : soloRows.filter((r) => r.effectiveStatus === statusFilter)
 
   return NextResponse.json({ groups: filteredGroups, solo: filteredSolo })
 }
