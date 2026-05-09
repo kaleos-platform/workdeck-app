@@ -3,12 +3,17 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  FloatingActionBar,
+  floatingActionButtonClass,
+  floatingActionButtonDestructiveClass,
+} from '@/components/ui/floating-action-bar'
 import {
   Dialog,
   DialogContent,
@@ -310,60 +315,48 @@ export function GroupsTable({ channelId, productId }: Props) {
         </Button>
       </div>
 
-      {selectedRowCount > 0 && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4 duration-200">
-          <div className="pointer-events-auto flex flex-wrap items-center gap-3 rounded-xl border border-border/40 bg-foreground/95 px-4 py-2.5 text-background shadow-2xl backdrop-blur supports-[backdrop-filter]:bg-foreground/90">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-semibold">{selectedRowCount}개 선택됨</span>
-              <span className="text-xs text-background/60">
-                (영향 옵션 {selectedListingIds.length}개
-                {selectedEmptyGroupIds.length > 0 && `, 빈 그룹 ${selectedEmptyGroupIds.length}개`})
-              </span>
-            </div>
-            <div className="mx-1 h-5 w-px bg-background/20" />
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-8 text-background hover:bg-background/15 hover:text-background"
-                onClick={() => setBulkAction(allSelectedSuspended ? 'activate' : 'suspend')}
-                disabled={bulkLoading || selectedListingIds.length === 0}
-              >
-                {allSelectedSuspended ? '활성화' : '비활성화'}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-8 text-red-300 hover:bg-red-500/20 hover:text-red-200 disabled:text-background/40"
-                onClick={() => {
-                  if (!allSelectedDeletable) {
-                    toast.error('판매 중인 옵션은 비활성화 후 삭제할 수 있습니다')
-                    return
-                  }
-                  setBulkAction('delete')
-                }}
-                disabled={bulkLoading || totalSelectedToDelete === 0}
-              >
-                <Trash2 className="mr-1 h-3.5 w-3.5" />
-                삭제
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 text-background/70 hover:bg-background/15 hover:text-background"
-                onClick={() => setSelectedRows(new Set())}
-                disabled={bulkLoading}
-                aria-label="선택 해제"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <FloatingActionBar
+        open={selectedRowCount > 0}
+        onClear={() => setSelectedRows(new Set())}
+        clearDisabled={bulkLoading}
+        actions={
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              onClick={() => setBulkAction(allSelectedSuspended ? 'activate' : 'suspend')}
+              disabled={bulkLoading || selectedListingIds.length === 0}
+            >
+              {allSelectedSuspended ? '활성화' : '비활성화'}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonDestructiveClass}
+              onClick={() => {
+                if (!allSelectedDeletable) {
+                  toast.error('판매 중인 옵션은 비활성화 후 삭제할 수 있습니다')
+                  return
+                }
+                setBulkAction('delete')
+              }}
+              disabled={bulkLoading || totalSelectedToDelete === 0}
+            >
+              <Trash2 className="mr-1 h-3.5 w-3.5" />
+              삭제
+            </Button>
+          </>
+        }
+      >
+        <span className="text-sm font-semibold">{selectedRowCount}개 선택됨</span>
+        <span className="text-xs text-background/60">
+          (영향 옵션 {selectedListingIds.length}개
+          {selectedEmptyGroupIds.length > 0 && `, 빈 그룹 ${selectedEmptyGroupIds.length}개`})
+        </span>
+      </FloatingActionBar>
 
       <div className="rounded-md border">
         <Table>

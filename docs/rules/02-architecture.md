@@ -24,6 +24,17 @@
 - 비즈니스 로직은 UI와 분리.
 - 복잡 로직은 custom hook 또는 별도 모듈로 분리.
 
+### 3.1 다중 선택 목록 표준 패턴
+
+체크박스로 다중 선택이 가능한 목록(테이블/리스트)에서는 다음 패턴을 따른다.
+
+- **일괄 액션 표시**: 화면 하단 floating action bar로 표시한다 (Linear/Notion 스타일).
+  - 공통 컴포넌트 `@/components/ui/floating-action-bar`의 `FloatingActionBar` 사용.
+  - 다크 배경 위 ghost 버튼은 `floatingActionButtonClass` / `floatingActionButtonDestructiveClass` 사용.
+  - 페이지 흐름 안에 액션 영역을 두면 스크롤 시 화면 밖으로 나가므로 금지.
+- **선택 동작**: 헤더 체크박스(전체 선택 + indeterminate) + 행별 체크박스 + Shift+클릭 범위 선택을 표준으로 제공.
+  - 범위 선택은 `@/lib/range-selection`의 `applyRangeSelection` 헬퍼를 재사용한다.
+
 ## 4. Prisma & DB Migration
 
 - Dev/Prod DB 는 별도 Supabase 프로젝트로 분리되어 있으며, 데이터는 절대 서로 옮겨지지 않는다. 스키마 동기화는 마이그레이션 파일로만 이뤄진다.
