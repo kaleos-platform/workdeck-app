@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Download, Info, Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { FloatingActionBar, floatingActionButtonClass } from '@/components/ui/floating-action-bar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -526,14 +527,18 @@ export function ProductOptionAttributesEditor({
               자동 생성 조합{' '}
               <span className="font-normal text-muted-foreground">({combinations.length}개)</span>
             </p>
-            {selected.size > 0 ? (
-              <div className="flex items-center gap-2 text-xs">
-                <span className="font-medium">{selected.size}개 선택</span>
+            <p className="text-xs text-muted-foreground">
+              관리코드는 자동 조립되며, 직접 수정하면 유지됩니다.
+            </p>
+            <FloatingActionBar
+              open={selected.size > 0}
+              onClear={() => setSelected(new Set())}
+              actions={
                 <Button
                   type="button"
-                  variant="outline"
                   size="sm"
-                  className="h-7 text-xs"
+                  variant="ghost"
+                  className={floatingActionButtonClass}
                   onClick={() => {
                     setBulkCost('')
                     setBulkRetail('')
@@ -542,22 +547,10 @@ export function ProductOptionAttributesEditor({
                 >
                   일괄 편집
                 </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setSelected(new Set())}
-                  aria-label="선택 해제"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                관리코드는 자동 조립되며, 직접 수정하면 유지됩니다.
-              </p>
-            )}
+              }
+            >
+              <span className="text-sm font-semibold">{selected.size}개 선택</span>
+            </FloatingActionBar>
           </div>
           <div className="overflow-x-auto">
             <Table>

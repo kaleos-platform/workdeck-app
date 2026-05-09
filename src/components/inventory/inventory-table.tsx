@@ -14,6 +14,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
+  FloatingActionBar,
+  floatingActionButtonClass,
+  floatingActionButtonDestructiveClass,
+} from '@/components/ui/floating-action-bar'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -43,7 +48,16 @@ type InventoryRow = {
   itemWinnerRate: number | null
 }
 
-type SortField = 'productName' | 'availableStock' | 'revenue30d' | 'salesQty30d' | 'storageFee' | 'conversionRate' | 'returns30d' | 'returnRate' | 'storageFeeRate'
+type SortField =
+  | 'productName'
+  | 'availableStock'
+  | 'revenue30d'
+  | 'salesQty30d'
+  | 'storageFee'
+  | 'conversionRate'
+  | 'returns30d'
+  | 'returnRate'
+  | 'storageFeeRate'
 
 // 클라이언트 정렬이 필요한 계산 필드
 const CLIENT_SORT_FIELDS: SortField[] = ['returnRate', 'storageFeeRate']
@@ -76,11 +90,11 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
   function getCalcValue(r: InventoryRow, field: SortField): number | null {
     if (field === 'returnRate') {
       if (r.returns30d == null || r.salesQty30d == null || r.salesQty30d === 0) return null
-      return r.returns30d / r.salesQty30d * 100
+      return (r.returns30d / r.salesQty30d) * 100
     }
     if (field === 'storageFeeRate') {
       if (r.storageFee == null || r.revenue30d == null || Number(r.revenue30d) === 0) return null
-      return r.storageFee / Number(r.revenue30d) * 100
+      return (r.storageFee / Number(r.revenue30d)) * 100
     }
     return null
   }
@@ -130,7 +144,9 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
     }
   }, [page, search, sortBy, sortOrder, isItemWinner, productNameFilter, productGrade, excludedView])
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   function toggleSort(field: SortField) {
     if (sortBy === field) {
@@ -157,24 +173,28 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ optionId: row.optionId }),
         })
-        setExcludedOptionIds(prev => prev.filter(id => id !== row.optionId))
+        setExcludedOptionIds((prev) => prev.filter((id) => id !== row.optionId))
       } else {
         await fetch('/api/inventory/excluded', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ productId: row.productId, optionId: row.optionId }),
         })
-        setExcludedOptionIds(prev => [...prev, row.optionId])
+        setExcludedOptionIds((prev) => [...prev, row.optionId])
       }
       // 필터에 따라 행 제거 (active 뷰에서 제외하면 사라짐, excluded 뷰에서 복원하면 사라짐)
       if (
         (excludedView === 'active' && !isCurrentlyExcluded) ||
         (excludedView === 'excluded' && isCurrentlyExcluded)
       ) {
-        setRecords(prev => prev.filter(r => r.optionId !== row.optionId))
-        setTotal(prev => prev - 1)
+        setRecords((prev) => prev.filter((r) => r.optionId !== row.optionId))
+        setTotal((prev) => prev - 1)
       }
-      setSelectedIds(prev => { const next = new Set(prev); next.delete(row.id); return next })
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(row.id)
+        return next
+      })
       onExcludeChange?.()
     } catch {
       // ignore
@@ -183,10 +203,10 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
 
   // 일괄 제외/복원
   async function bulkToggleExclude(exclude: boolean) {
-    const selected = records.filter(r => selectedIds.has(r.id))
+    const selected = records.filter((r) => selectedIds.has(r.id))
     if (selected.length === 0) return
 
-    const promises = selected.map(row => {
+    const promises = selected.map((row) => {
       if (exclude) {
         return fetch('/api/inventory/excluded', {
           method: 'POST',
@@ -203,20 +223,17 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
     })
     await Promise.all(promises)
 
-    const selectedOptionIds = new Set(selected.map(r => r.optionId))
+    const selectedOptionIds = new Set(selected.map((r) => r.optionId))
     if (exclude) {
-      setExcludedOptionIds(prev => [...prev, ...selected.map(r => r.optionId)])
+      setExcludedOptionIds((prev) => [...prev, ...selected.map((r) => r.optionId)])
     } else {
-      setExcludedOptionIds(prev => prev.filter(id => !selectedOptionIds.has(id)))
+      setExcludedOptionIds((prev) => prev.filter((id) => !selectedOptionIds.has(id)))
     }
 
     // 필터에 따라 행 제거
-    if (
-      (excludedView === 'active' && exclude) ||
-      (excludedView === 'excluded' && !exclude)
-    ) {
-      setRecords(prev => prev.filter(r => !selectedOptionIds.has(r.optionId)))
-      setTotal(prev => prev - selected.length)
+    if ((excludedView === 'active' && exclude) || (excludedView === 'excluded' && !exclude)) {
+      setRecords((prev) => prev.filter((r) => !selectedOptionIds.has(r.optionId)))
+      setTotal((prev) => prev - selected.length)
     }
     setSelectedIds(new Set())
     onExcludeChange?.()
@@ -230,7 +247,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
 
   // 체크박스 핸들러
   function toggleSelect(id: string) {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
@@ -242,7 +259,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
     if (selectedIds.size === records.length) {
       setSelectedIds(new Set())
     } else {
-      setSelectedIds(new Set(records.map(r => r.id)))
+      setSelectedIds(new Set(records.map((r) => r.id)))
     }
   }
 
@@ -252,25 +269,30 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
   function stockBadge(stock: number | null) {
     if (stock == null) return <span className="text-muted-foreground">-</span>
     if (stock === 0) return <Badge variant="destructive">품절</Badge>
-    if (stock <= 10) return <Badge variant="outline" className="border-yellow-400 text-yellow-600">{stock}</Badge>
+    if (stock <= 10)
+      return (
+        <Badge variant="outline" className="border-yellow-400 text-yellow-600">
+          {stock}
+        </Badge>
+      )
     return <span>{stock.toLocaleString()}</span>
   }
 
   function calcReturnRate(returns30d: number | null, salesQty30d: number | null): string {
     if (returns30d == null || salesQty30d == null || salesQty30d === 0) return '-'
-    return `${(returns30d / salesQty30d * 100).toFixed(1)}%`
+    return `${((returns30d / salesQty30d) * 100).toFixed(1)}%`
   }
 
   function calcStorageFeeRate(storageFee: number | null, revenue30d: number | null): string {
     if (storageFee == null || revenue30d == null || Number(revenue30d) === 0) return '-'
-    return `${(storageFee / Number(revenue30d) * 100).toFixed(1)}%`
+    return `${((storageFee / Number(revenue30d)) * 100).toFixed(1)}%`
   }
 
   return (
     <div className="space-y-4">
       <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="상품명 검색..."
             value={searchInput}
@@ -278,24 +300,40 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
             className="pl-9"
           />
         </div>
-        <Button type="submit" variant="outline" size="sm">검색</Button>
+        <Button type="submit" variant="outline" size="sm">
+          검색
+        </Button>
       </form>
 
       {/* 필터: 상품명 → 등급 → 위너 → 관리 */}
-      <div className="flex gap-2 flex-wrap items-center">
-        <Select value={productNameFilter} onValueChange={(v) => { setProductNameFilter(v); setPage(1) }}>
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
+          value={productNameFilter}
+          onValueChange={(v) => {
+            setProductNameFilter(v)
+            setPage(1)
+          }}
+        >
           <SelectTrigger className="w-[200px]" size="sm">
             <SelectValue placeholder="상품명 선택" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">상품명: 전체</SelectItem>
-            {productNames.map(name => (
-              <SelectItem key={name} value={name}>{name}</SelectItem>
+            {productNames.map((name) => (
+              <SelectItem key={name} value={name}>
+                {name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select value={productGrade} onValueChange={(v) => { setProductGrade(v); setPage(1) }}>
+        <Select
+          value={productGrade}
+          onValueChange={(v) => {
+            setProductGrade(v)
+            setPage(1)
+          }}
+        >
           <SelectTrigger className="w-[130px]" size="sm">
             <SelectValue placeholder="상품등급" />
           </SelectTrigger>
@@ -306,7 +344,13 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
           </SelectContent>
         </Select>
 
-        <Select value={isItemWinner} onValueChange={(v) => { setIsItemWinner(v); setPage(1) }}>
+        <Select
+          value={isItemWinner}
+          onValueChange={(v) => {
+            setIsItemWinner(v)
+            setPage(1)
+          }}
+        >
           <SelectTrigger className="w-[150px]" size="sm">
             <SelectValue placeholder="위너 필터" />
           </SelectTrigger>
@@ -317,7 +361,13 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
           </SelectContent>
         </Select>
 
-        <Select value={excludedView} onValueChange={(v) => { setExcludedView(v); setPage(1) }}>
+        <Select
+          value={excludedView}
+          onValueChange={(v) => {
+            setExcludedView(v)
+            setPage(1)
+          }}
+        >
           <SelectTrigger className="w-[150px]" size="sm">
             <SelectValue placeholder="관리 상태" />
           </SelectTrigger>
@@ -327,18 +377,19 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
             <SelectItem value="all">전체</SelectItem>
           </SelectContent>
         </Select>
+      </div>
 
-        {/* 일괄 액션 */}
-        {someSelected && (
-          <div className="flex gap-2 ml-auto">
-            <span className="text-sm text-muted-foreground self-center">
-              {selectedIds.size}개 선택
-            </span>
+      <FloatingActionBar
+        open={someSelected}
+        onClear={() => setSelectedIds(new Set())}
+        actions={
+          <>
             {excludedView !== 'excluded' && (
               <Button
-                variant="destructive"
+                type="button"
                 size="sm"
-                className="text-xs h-8"
+                variant="ghost"
+                className={floatingActionButtonDestructiveClass}
                 onClick={() => bulkToggleExclude(true)}
               >
                 제외하기
@@ -346,27 +397,27 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
             )}
             {excludedView !== 'active' && (
               <Button
-                variant="outline"
+                type="button"
                 size="sm"
-                className="text-xs h-8"
+                variant="ghost"
+                className={floatingActionButtonClass}
                 onClick={() => bulkToggleExclude(false)}
               >
                 복원하기
               </Button>
             )}
-          </div>
-        )}
-      </div>
+          </>
+        }
+      >
+        <span className="text-sm font-semibold">{selectedIds.size}개 선택</span>
+      </FloatingActionBar>
 
-      <div className="rounded-md border overflow-x-auto">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[40px]">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={toggleSelectAll}
-                />
+                <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} />
               </TableHead>
               <TableHead className="min-w-[200px]">
                 <Button variant="ghost" size="sm" onClick={() => toggleSort('productName')}>
@@ -448,15 +499,27 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                     {/* 관리 상태 */}
                     <TableCell>
                       {excluded ? (
-                        <Badge variant="outline" className="text-[10px] border-gray-300 text-gray-500">제외</Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-gray-300 text-[10px] text-gray-500"
+                        >
+                          제외
+                        </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-600">관리</Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-blue-300 text-[10px] text-blue-600"
+                        >
+                          관리
+                        </Badge>
                       )}
                     </TableCell>
                     {/* 등급 */}
                     <TableCell>
                       {r.productGrade ? (
-                        <Badge variant="outline" className="text-[10px]">{r.productGrade}</Badge>
+                        <Badge variant="outline" className="text-[10px]">
+                          {r.productGrade}
+                        </Badge>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
@@ -464,7 +527,9 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                     {/* 위너 */}
                     <TableCell>
                       {r.isItemWinner === true ? (
-                        <Badge variant="secondary" className="text-[10px]">위너</Badge>
+                        <Badge variant="secondary" className="text-[10px]">
+                          위너
+                        </Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">-</span>
                       )}
@@ -499,14 +564,16 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                     </TableCell>
                     {/* 보관료율(%) */}
                     <TableCell>
-                      <span className="text-xs">{calcStorageFeeRate(r.storageFee, r.revenue30d)}</span>
+                      <span className="text-xs">
+                        {calcStorageFeeRate(r.storageFee, r.revenue30d)}
+                      </span>
                     </TableCell>
                     {/* 상품관리 */}
                     <TableCell>
                       <Button
                         variant={excluded ? 'outline' : 'destructive'}
                         size="sm"
-                        className="text-xs h-7 px-3"
+                        className="h-7 px-3 text-xs"
                         onClick={() => toggleExclude(r, excluded)}
                       >
                         {excluded ? '복원하기' : '제외하기'}
@@ -522,9 +589,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            총 {total.toLocaleString()}개 상품
-          </p>
+          <p className="text-sm text-muted-foreground">총 {total.toLocaleString()}개 상품</p>
           <div className="flex gap-2">
             <Button
               variant="outline"
