@@ -4,6 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertTriangle, Info, Loader2, RefreshCw, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  FloatingActionBar,
+  floatingActionButtonClass,
+  floatingActionButtonDestructiveClass,
+} from '@/components/ui/floating-action-bar'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
@@ -423,53 +428,52 @@ export function ProductOptionsTable({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">옵션 ({options.length})</h3>
-        {selected.size > 0 && (
-          <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-1.5 text-xs">
-            <span className="font-medium">{selected.size}개 선택</span>
+      <h3 className="text-sm font-semibold">옵션 ({options.length})</h3>
+
+      <FloatingActionBar
+        open={selected.size > 0}
+        onClear={() => setSelected(new Set())}
+        clearDisabled={bulkSaving}
+        actions={
+          <>
             <Button
-              variant="outline"
+              type="button"
               size="sm"
-              className="h-7 text-xs"
+              variant="ghost"
+              className={floatingActionButtonClass}
               onClick={() => setBulkOpen(true)}
               disabled={bulkSaving}
             >
               일괄 편집
             </Button>
             <Button
-              variant="outline"
+              type="button"
               size="sm"
-              className="h-7 text-xs"
+              variant="ghost"
+              className={floatingActionButtonClass}
               onClick={regenerateSku}
               disabled={bulkSaving}
               title="현재 속성 코드 규칙({상품코드}-{속성코드들})으로 관리코드를 다시 만들어 덮어씁니다"
             >
-              <RefreshCw className="mr-1 h-3 w-3" />
+              <RefreshCw className="mr-1 h-3.5 w-3.5" />
               관리코드(SKU) 재반영
             </Button>
             <Button
-              variant="outline"
+              type="button"
               size="sm"
-              className="h-7 text-xs text-destructive"
+              variant="ghost"
+              className={floatingActionButtonDestructiveClass}
               onClick={bulkDelete}
               disabled={bulkSaving}
             >
-              <Trash2 className="mr-1 h-3 w-3" />
+              <Trash2 className="mr-1 h-3.5 w-3.5" />
               삭제
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setSelected(new Set())}
-              aria-label="선택 해제"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
-      </div>
+          </>
+        }
+      >
+        <span className="text-sm font-semibold">{selected.size}개 선택</span>
+      </FloatingActionBar>
 
       <div className="overflow-x-auto rounded-md border">
         <Table>

@@ -2,8 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Settings, Trash2, X } from 'lucide-react'
+import { Settings, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  FloatingActionBar,
+  floatingActionButtonClass,
+  floatingActionButtonDestructiveClass,
+} from '@/components/ui/floating-action-bar'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -318,37 +323,35 @@ export function MethodLabelsTable({ methodId }: { methodId: string }) {
         </div>
       )}
 
-      {selected.size > 0 && hasLabelColumns && (
-        <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-1.5 text-xs">
-          <span className="font-medium">{selected.size}개 선택</span>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={() => setBulkOpen(true)}
-          >
-            일괄 편집
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs text-destructive"
-            onClick={bulkClear}
-          >
-            <Trash2 className="mr-1 h-3 w-3" />
-            배송 라벨 삭제
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setSelected(new Set())}
-            aria-label="선택 해제"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        </div>
-      )}
+      <FloatingActionBar
+        open={selected.size > 0 && hasLabelColumns}
+        onClear={() => setSelected(new Set())}
+        actions={
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              onClick={() => setBulkOpen(true)}
+            >
+              일괄 편집
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonDestructiveClass}
+              onClick={bulkClear}
+            >
+              <Trash2 className="mr-1 h-3.5 w-3.5" />
+              배송 라벨 삭제
+            </Button>
+          </>
+        }
+      >
+        <span className="text-sm font-semibold">{selected.size}개 선택</span>
+      </FloatingActionBar>
 
       <div
         className={`overflow-x-auto rounded-md border ${!hasLabelColumns ? 'pointer-events-none opacity-50' : ''}`}

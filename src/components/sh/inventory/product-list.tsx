@@ -6,6 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
+  FloatingActionBar,
+  floatingActionButtonClass,
+  floatingActionSelectTriggerClass,
+} from '@/components/ui/floating-action-bar'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -205,30 +210,39 @@ export function ProductList() {
         </Button>
       </div>
 
-      {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-4 py-2">
-          <span className="text-sm font-medium">{selectedIds.size}개 선택</span>
-          <Select value={bulkGroupId} onValueChange={setBulkGroupId}>
-            <SelectTrigger className="h-8 w-40">
-              <SelectValue placeholder="그룹 변경" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">(기본)</SelectItem>
-              {groups.map((g) => (
-                <SelectItem key={g.id} value={g.id}>
-                  {g.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button size="sm" onClick={handleBulkGroupChange} disabled={!bulkGroupId}>
-            적용
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
-            선택 해제
-          </Button>
-        </div>
-      )}
+      <FloatingActionBar
+        open={selectedIds.size > 0}
+        onClear={() => setSelectedIds(new Set())}
+        actions={
+          <>
+            <Select value={bulkGroupId} onValueChange={setBulkGroupId}>
+              <SelectTrigger className={`${floatingActionSelectTriggerClass} w-40`}>
+                <SelectValue placeholder="그룹 변경" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">(기본)</SelectItem>
+                {groups.map((g) => (
+                  <SelectItem key={g.id} value={g.id}>
+                    {g.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              onClick={handleBulkGroupChange}
+              disabled={!bulkGroupId}
+            >
+              적용
+            </Button>
+          </>
+        }
+      >
+        <span className="text-sm font-semibold">{selectedIds.size}개 선택</span>
+      </FloatingActionBar>
 
       <div className="rounded-md border">
         <Table>
