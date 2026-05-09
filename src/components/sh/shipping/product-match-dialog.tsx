@@ -223,7 +223,7 @@ export function ProductMatchDialog({
               const composition =
                 items
                   .slice(0, 3)
-                  .map((it) => `${it.optionName} ×${it.quantity}`)
+                  .map((it) => `${it.optionName} × ${it.quantity}`)
                   .join(' · ') + (items.length > 3 ? ' …' : '')
               return {
                 listingId: l.id,
@@ -467,23 +467,31 @@ export function ProductMatchDialog({
                         옵션 구성이 없습니다
                       </p>
                     ) : (
-                      selectedGroup.listings.map((e) => (
-                        <button
-                          key={e.listingId}
-                          type="button"
-                          disabled={submitting}
-                          onClick={() => pickListing(e)}
-                          className="flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate font-medium">{e.searchName}</p>
-                            <p className="truncate text-xs text-muted-foreground">
-                              {e.composition || `${e.itemCount}개 옵션 구성`}
-                            </p>
-                          </div>
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        </button>
-                      ))
+                      selectedGroup.listings.map((e) => {
+                        const showSubName =
+                          e.searchName && e.searchName !== selectedGroup.productName
+                        return (
+                          <button
+                            key={e.listingId}
+                            type="button"
+                            disabled={submitting}
+                            onClick={() => pickListing(e)}
+                            className="flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">
+                                {e.composition || `구성 ${e.itemCount}개`}
+                              </p>
+                              {showSubName && (
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {e.searchName}
+                                </p>
+                              )}
+                            </div>
+                            <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          </button>
+                        )
+                      })
                     )}
                   </div>
                 </div>
