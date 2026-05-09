@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Layers, Loader2, Plus, X } from 'lucide-react'
+import { ArrowLeft, Layers, Loader2, PackagePlus, Plus, Unlink, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -70,6 +70,8 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [builderOpen, setBuilderOpen] = useState(false)
+  // null = 닫힘, 'bulk' / 'manual' = 추가 모드로 열린 상태
+  const [appendBuilderMode, setAppendBuilderMode] = useState<'bulk' | 'manual' | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -178,15 +180,24 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         if (!res.ok) throw new Error('원본 채널 상품 조회 실패')
         const data: {
           product: {
+            kind?: 'single' | 'mixed'
             id: string
             name: string
             internalName: string | null
             displayName: string
             brand: { name: string } | null
             optionAttributes: OptionAttribute[]
+            products?: Array<{ id: string; name: string }>
           }
           channel: { id: string; name: string }
-          channelProduct?: { keywords: string[] }
+          channelProduct?: {
+            keywords: string[]
+            baseSearchName?: string
+            baseDisplayName?: string | null
+            baseManagementName?: string | null
+            baseInternalCode?: string | null
+            memo?: string | null
+          }
           meta?: { keywords: string[] }
           listings: Array<{
             id: string
@@ -208,56 +219,106 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           }>
         } = await res.json()
 
+        const isMixed = data.product.kind === 'mixed'
+
         // 채널 prefill
         setChannelId(data.channel.id)
 
-        // ProductContext prefill
-        const ctx: ProductContext = {
-          id: data.product.id,
-          displayName: data.product.displayName,
-          officialName: data.product.name,
-          brandName: data.product.brand?.name ?? null,
+        // ProductContext prefill — mixed는 null (ctx 불필요)
+        if (!isMixed) {
+          const ctx: ProductContext = {
+            id: data.product.id,
+            displayName: data.product.displayName,
+            officialName: data.product.name,
+            brandName: data.product.brand?.name ?? null,
+          }
+          setProductCtx(ctx)
+        } else {
+          setProductCtx(null)
         }
-        setProductCtx(ctx)
 
-        // base 값 추출 + (복사) suffix 부여
-        const derived = deriveBaseValues(
-          data.listings.map((l) => ({
-            id: l.id,
-            searchName: l.searchName,
-            displayName: l.displayName,
-            managementName: l.managementName,
-            internalCode: l.internalCode,
-            memo: l.memo,
-            items: l.items.map((it) => ({
-              optionId: it.optionId,
-              attributeValues: it.attributeValues,
-            })),
-          })),
-          data.product.optionAttributes
-        )
         const copySuffix = ' (복사)'
-        setBaseSearchName(`${stripCopySuffix(derived.baseSearchName)}${copySuffix}`)
-        setBaseDisplayName(
-          derived.baseDisplayName ? `${stripCopySuffix(derived.baseDisplayName)}${copySuffix}` : ''
-        )
-        setBaseManagementName(
-          derived.baseManagementName
-            ? `${stripCopySuffix(derived.baseManagementName)}${copySuffix}`
-            : ''
-        )
-        setInternalCode(
-          derived.baseInternalCode
-            ? `${stripCopySuffix(derived.baseInternalCode)}${copySuffix}`
-            : ''
-        )
-        setMemo(derived.memo ?? '')
+
+        if (isMixed) {
+          // mixed 복제: channel-product 기본값 사용, suffix 추출 없음
+          const cp = data.channelProduct
+          setBaseSearchName(`${stripCopySuffix(cp?.baseSearchName ?? '')}${copySuffix}`)
+          setBaseDisplayName(
+            cp?.baseDisplayName ? `${stripCopySuffix(cp.baseDisplayName)}${copySuffix}` : ''
+          )
+          setBaseManagementName(
+            cp?.baseManagementName ? `${stripCopySuffix(cp.baseManagementName)}${copySuffix}` : ''
+          )
+          setInternalCode(
+            cp?.baseInternalCode ? `${stripCopySuffix(cp.baseInternalCode)}${copySuffix}` : ''
+          )
+          setMemo(cp?.memo ?? '')
+        } else {
+          // single 복제: suffix 자동 추출
+          const derived = deriveBaseValues(
+            data.listings.map((l) => ({
+              id: l.id,
+              searchName: l.searchName,
+              displayName: l.displayName,
+              managementName: l.managementName,
+              internalCode: l.internalCode,
+              memo: l.memo,
+              items: l.items.map((it) => ({
+                optionId: it.optionId,
+                attributeValues: it.attributeValues,
+              })),
+            })),
+            data.product.optionAttributes
+          )
+          setBaseSearchName(`${stripCopySuffix(derived.baseSearchName)}${copySuffix}`)
+          setBaseDisplayName(
+            derived.baseDisplayName
+              ? `${stripCopySuffix(derived.baseDisplayName)}${copySuffix}`
+              : ''
+          )
+          setBaseManagementName(
+            derived.baseManagementName
+              ? `${stripCopySuffix(derived.baseManagementName)}${copySuffix}`
+              : ''
+          )
+          setInternalCode(
+            derived.baseInternalCode
+              ? `${stripCopySuffix(derived.baseInternalCode)}${copySuffix}`
+              : ''
+          )
+          setMemo(derived.memo ?? '')
+        }
 
         // 키워드
         setKeywords(data.channelProduct?.keywords ?? data.meta?.keywords ?? [])
 
         // listings → rows
         const newRows: CompositionRow[] = data.listings.map((l, idx) => {
+          if (isMixed) {
+            // mixed 복제: 각 listing의 이름을 manualNames로 보존
+            return {
+              key: `dup-${idx}-${l.id}`,
+              suffixParts: [],
+              items: l.items.map((it) => ({
+                optionId: it.optionId,
+                optionName: it.optionName,
+                sku: it.sku,
+                quantity: it.quantity,
+                retailPrice: null,
+                attributeValues: it.attributeValues,
+              })),
+              retailPrice: l.retailPrice != null ? String(l.retailPrice) : '',
+              channelAllocation: l.channelAllocation != null ? String(l.channelAllocation) : '',
+              status: l.status,
+              manualNames: {
+                searchName: l.searchName,
+                displayName: l.displayName,
+                managementName: l.managementName ?? undefined,
+                internalCode: l.internalCode ?? undefined,
+              },
+            }
+          }
+          // single 복제: suffix 추출
           const suffixParts: string[] = []
           const firstItem = l.items[0]
           if (firstItem) {
@@ -310,11 +371,11 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     return Array.from(set)
   }, [productCtx, rows])
 
-  function handleBuilderCommit(ctx: ProductContext, newGroups: BuiltGroup[]) {
+  function handleBuilderCommit(ctx: ProductContext | null, newGroups: BuiltGroup[]) {
     setProductCtx(ctx)
     setRows(buildRowsFromGroups(newGroups))
     setSelected(new Set())
-    if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
+    if (!baseSearchName.trim() && ctx) setBaseSearchName(ctx.displayName)
     setBuilderOpen(false)
     toast.success(`${newGroups.length}개의 옵션 구성이 준비되었습니다`)
   }
@@ -326,18 +387,53 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     setBuilderOpen(true)
   }
 
+  // 기존 rows에 결과를 추가 (중복 optionSignature 제거)
+  function handleAppendCommit(ctx: ProductContext | null, newGroups: BuiltGroup[]) {
+    // 기존 rows의 optionSignature 계산 (optionId + quantity 조합)
+    const existingSignatures = new Set(
+      rows.map((r) =>
+        r.items
+          .map((it) => `${it.optionId}:${it.quantity}`)
+          .sort()
+          .join('|')
+      )
+    )
+
+    const newRows = buildRowsFromGroups(newGroups).filter((r) => {
+      const sig = r.items
+        .map((it) => `${it.optionId}:${it.quantity}`)
+        .sort()
+        .join('|')
+      return !existingSignatures.has(sig)
+    })
+
+    // productCtx가 null이고 ctx가 있으면 ctx를 설정 (최초 bulk 추가)
+    if (!productCtx && ctx) {
+      setProductCtx(ctx)
+      if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
+    }
+
+    setRows((prev) => [...prev, ...newRows])
+    setAppendBuilderMode(null)
+
+    if (newRows.length === 0) {
+      toast.info('중복 구성이 모두 제외되어 추가된 항목이 없습니다')
+    } else {
+      toast.success(`${newRows.length}개의 구성이 추가되었습니다`)
+    }
+  }
+
   const readyToSave =
     channelId.trim().length > 0 && baseSearchName.trim().length > 0 && rows.length > 0
 
   async function handleSave() {
-    if (!readyToSave || !productCtx) {
+    if (!readyToSave) {
       toast.error('필수 항목과 구성을 확인해 주세요')
       return
     }
     setSaving(true)
 
     const payload = {
-      productId: productCtx.id,
       channelId,
       baseSearchName: baseSearchName.trim(),
       baseDisplayName: baseDisplayName.trim() || undefined,
@@ -346,14 +442,23 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       memo: memo.trim() || undefined,
       keywords,
       listings: rows.map((row) => ({
-        searchName: previewName(row.suffixParts, baseSearchName.trim()),
-        displayName: previewName(row.suffixParts, baseDisplayName.trim() || baseSearchName.trim()),
-        managementName: baseManagementName.trim()
-          ? previewName(row.suffixParts, baseManagementName.trim())
-          : undefined,
-        internalCode: internalCode.trim()
-          ? previewName(row.suffixParts, internalCode.trim())
-          : undefined,
+        // manual 모드(manualNames 있음): row 자체 이름 우선, suffix 없음
+        searchName: row.manualNames?.searchName
+          ? row.manualNames.searchName
+          : previewName(row.suffixParts, baseSearchName.trim()),
+        displayName: row.manualNames?.displayName
+          ? row.manualNames.displayName
+          : previewName(row.suffixParts, baseDisplayName.trim() || baseSearchName.trim()),
+        managementName: row.manualNames?.managementName
+          ? row.manualNames.managementName
+          : baseManagementName.trim()
+            ? previewName(row.suffixParts, baseManagementName.trim())
+            : undefined,
+        internalCode: row.manualNames?.internalCode
+          ? row.manualNames.internalCode
+          : internalCode.trim()
+            ? previewName(row.suffixParts, internalCode.trim())
+            : undefined,
         memo: memo.trim() || undefined,
         retailPrice: row.retailPrice.trim() === '' ? undefined : Number(row.retailPrice),
         channelAllocation:
@@ -555,16 +660,39 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                   한번에 수정할 수 있습니다. 소비자가는 옵션 소비자가에서 자동 계산됩니다.
                 </CardDescription>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={resetComposition}
-                className="shrink-0"
-              >
-                <X className="mr-1 h-4 w-4" />
-                구성 다시 만들기
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAppendBuilderMode('bulk')}
+                  disabled={saving}
+                >
+                  <PackagePlus className="mr-1 h-4 w-4" />
+                  다른 상품 추가
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAppendBuilderMode('manual')}
+                  disabled={saving}
+                >
+                  <Unlink className="mr-1 h-4 w-4" />
+                  직접 묶기 추가
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetComposition}
+                  disabled={saving}
+                  className="text-muted-foreground"
+                >
+                  <X className="mr-1 h-4 w-4" />
+                  다시 만들기
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -597,6 +725,32 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           <CompositionBuilder onCommit={handleBuilderCommit} disabled={saving} />
         </DialogContent>
       </Dialog>
+
+      {/* 추가 모드 빌더 — 기존 rows에 append */}
+      <Dialog
+        open={appendBuilderMode !== null}
+        onOpenChange={(v) => {
+          if (!v && !saving) setAppendBuilderMode(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {appendBuilderMode === 'manual' ? '직접 묶기 추가' : '다른 상품 추가'}
+            </DialogTitle>
+            <DialogDescription>
+              {appendBuilderMode === 'manual'
+                ? '여러 상품을 직접 묶어 추가합니다. 각 행에 이름과 구성 옵션을 직접 입력하세요.'
+                : '기존 구성에 다른 상품의 옵션을 추가합니다. 중복 구성은 자동으로 제외됩니다.'}
+            </DialogDescription>
+          </DialogHeader>
+          <CompositionBuilder
+            onCommit={handleAppendCommit}
+            disabled={saving}
+            initialMode={appendBuilderMode ?? 'bulk'}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -609,12 +763,13 @@ function previewName(suffix: string[], base: string) {
 
 function buildRowsFromGroups(groups: BuiltGroup[]): CompositionRow[] {
   return groups.map((g, idx) => ({
-    key: `g${idx}-${g.suffixParts.join('-') || 'default'}`,
+    key: `g${idx}-${g.suffixParts.join('-') || g.manualNames?.searchName || 'default'}`,
     suffixParts: g.suffixParts,
     items: g.items,
     retailPrice: '',
     channelAllocation: '',
     status: 'ACTIVE',
+    manualNames: g.manualNames,
   }))
 }
 

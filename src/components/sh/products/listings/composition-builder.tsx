@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, Plus, Search, X } from 'lucide-react'
+import { ChevronLeft, Plus, Search, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -80,6 +80,13 @@ export type ItemEntry = {
 export type BuiltGroup = {
   suffixParts: string[]
   items: ItemEntry[]
+  /** manual 모드에서만 설정. bulk 모드는 undefined. */
+  manualNames?: {
+    searchName?: string
+    displayName?: string
+    managementName?: string
+    internalCode?: string
+  }
 }
 
 export type ProductContext = {
@@ -89,12 +96,31 @@ export type ProductContext = {
   brandName: string | null
 }
 
-type Props = {
-  onCommit: (product: ProductContext, groups: BuiltGroup[]) => void
-  disabled?: boolean
+/** 최상위 모드: bulk = 기존 단일 상품 옵션 펼치기, manual = 여러 옵션 직접 묶기 */
+type TopLevelMode = 'bulk' | 'manual'
+
+/** manual 모드의 행 하나 */
+type ManualRow = {
+  id: string
+  searchName: string
+  displayName: string
+  managementName: string
+  internalCode: string
+  items: ItemEntry[]
 }
 
-export function CompositionBuilder({ onCommit, disabled }: Props) {
+type Props = {
+  onCommit: (product: ProductContext | null, groups: BuiltGroup[]) => void
+  disabled?: boolean
+  /** 최초 진입 모드. 기본값 'bulk' */
+  initialMode?: TopLevelMode
+}
+
+export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }: Props) {
+  // 최상위 모드 토글: bulk(기존) vs manual(새)
+  const [topMode, setTopMode] = useState<TopLevelMode>(initialMode)
+
+  // ── bulk 모드 상태 ──────────────────────────────────────────────
   const [product, setProduct] = useState<ProductDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<BuilderMode>('simple')
@@ -105,6 +131,9 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
   // advanced 모드
   const [attrState, setAttrState] = useState<Record<string, AttrState>>({})
   const [bundles, setBundles] = useState<Bundle[]>([{ id: 'b1', valueQuantities: {} }])
+
+  // ── manual 모드 상태 ────────────────────────────────────────────
+  const [manualRows, setManualRows] = useState<ManualRow[]>([])
 
   // 상품이 바뀌면 상태 초기화
   useEffect(() => {
@@ -257,9 +286,33 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
   }
 
   function handleCommit() {
+    if (topMode === 'manual') {
+      commitManual()
+      return
+    }
     if (!product) return
     if (mode === 'simple') commitSimple()
     else commitAdvanced()
+  }
+
+  function commitManual() {
+    const validRows = manualRows.filter((r) => r.items.length > 0)
+    if (validRows.length === 0) {
+      toast.error('옵션 구성이 없습니다. 각 행에 옵션을 추가하세요')
+      return
+    }
+    const groups: BuiltGroup[] = validRows.map((r) => ({
+      suffixParts: [],
+      items: r.items,
+      manualNames: {
+        searchName: r.searchName.trim() || undefined,
+        displayName: r.displayName.trim() || undefined,
+        managementName: r.managementName.trim() || undefined,
+        internalCode: r.internalCode.trim() || undefined,
+      },
+    }))
+    // manual 모드는 ProductContext 없이 null로 커밋
+    onCommit(null, groups)
   }
 
   function commitSimple() {
@@ -467,79 +520,533 @@ export function CompositionBuilder({ onCommit, disabled }: Props) {
 
   return (
     <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">{product ? '구성 설정' : '1) 상품 선택'}</h3>
-        {product && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setProduct(null)}
-            disabled={disabled || loading}
-          >
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            상품 다시 선택
-          </Button>
-        )}
+      {/* 최상위 모드 토글 */}
+      <div className="space-y-1">
+        <Label className="text-xs text-muted-foreground">구성 방식</Label>
+        <Tabs value={topMode} onValueChange={(v) => setTopMode(v as TopLevelMode)}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="bulk">한 상품의 옵션 펼치기</TabsTrigger>
+            <TabsTrigger value="manual">여러 옵션 직접 묶기</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      {!product ? (
-        <ProductSearchPane onPick={handlePickProduct} />
-      ) : loading ? (
-        <p className="text-sm text-muted-foreground">불러오는 중...</p>
+      {topMode === 'manual' ? (
+        /* ── manual 모드 ── */
+        <ManualModeEditor
+          rows={manualRows}
+          onRowsChange={setManualRows}
+          disabled={disabled}
+          onCommit={handleCommit}
+        />
       ) : (
-        <div className="space-y-5">
-          <SelectedProductHeader product={product} />
-
-          <div className="space-y-2">
-            <Label>2) 구성 방식</Label>
-            <Tabs value={mode} onValueChange={(v) => setMode(v as BuilderMode)}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="simple">수량 세트만 구성</TabsTrigger>
-                <TabsTrigger value="advanced">옵션 선택 구성</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="simple" className="mt-3">
-                <SimpleModeSettings
-                  product={product}
-                  setQuantities={setQuantities}
-                  onAddBundle={() => setSetQuantities((prev) => [...prev, 1])}
-                  onRemoveBundle={(idx) =>
-                    setSetQuantities((prev) =>
-                      prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
-                    )
-                  }
-                  onUpdateBundleQty={(idx, q) =>
-                    setSetQuantities((prev) => prev.map((x, i) => (i === idx ? Math.max(1, q) : x)))
-                  }
-                  attrState={attrState}
-                  onToggleAttr={toggleAttr}
-                  onToggleValue={toggleValue}
-                />
-              </TabsContent>
-
-              <TabsContent value="advanced" className="mt-3">
-                <BundlesEditor
-                  product={product}
-                  attrState={attrState}
-                  bundles={bundles}
-                  onToggleAttr={toggleAttr}
-                  onAddBundle={addBundle}
-                  onRemoveBundle={removeBundle}
-                  onToggleBundleValue={toggleBundleValue}
-                  onUpdateBundleValueQty={updateBundleValueQty}
-                />
-                <AdvancedPreview product={product} attrState={attrState} bundles={bundles} />
-              </TabsContent>
-            </Tabs>
+        /* ── bulk 모드 (기존) ── */
+        <>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">{product ? '구성 설정' : '1) 상품 선택'}</h3>
+            {product && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setProduct(null)}
+                disabled={disabled || loading}
+              >
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                상품 다시 선택
+              </Button>
+            )}
           </div>
 
-          <div className="flex justify-end border-t pt-3">
-            <Button type="button" onClick={handleCommit} disabled={disabled}>
-              <Plus className="mr-1 h-4 w-4" />
-              추가하기
-            </Button>
+          {!product ? (
+            <ProductSearchPane onPick={handlePickProduct} />
+          ) : loading ? (
+            <p className="text-sm text-muted-foreground">불러오는 중...</p>
+          ) : (
+            <div className="space-y-5">
+              <SelectedProductHeader product={product} />
+
+              <div className="space-y-2">
+                <Label>2) 구성 방식</Label>
+                <Tabs value={mode} onValueChange={(v) => setMode(v as BuilderMode)}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="simple">수량 세트만 구성</TabsTrigger>
+                    <TabsTrigger value="advanced">옵션 선택 구성</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="simple" className="mt-3">
+                    <SimpleModeSettings
+                      product={product}
+                      setQuantities={setQuantities}
+                      onAddBundle={() => setSetQuantities((prev) => [...prev, 1])}
+                      onRemoveBundle={(idx) =>
+                        setSetQuantities((prev) =>
+                          prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
+                        )
+                      }
+                      onUpdateBundleQty={(idx, q) =>
+                        setSetQuantities((prev) =>
+                          prev.map((x, i) => (i === idx ? Math.max(1, q) : x))
+                        )
+                      }
+                      attrState={attrState}
+                      onToggleAttr={toggleAttr}
+                      onToggleValue={toggleValue}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="advanced" className="mt-3">
+                    <BundlesEditor
+                      product={product}
+                      attrState={attrState}
+                      bundles={bundles}
+                      onToggleAttr={toggleAttr}
+                      onAddBundle={addBundle}
+                      onRemoveBundle={removeBundle}
+                      onToggleBundleValue={toggleBundleValue}
+                      onUpdateBundleValueQty={updateBundleValueQty}
+                    />
+                    <AdvancedPreview product={product} attrState={attrState} bundles={bundles} />
+                  </TabsContent>
+                </Tabs>
+              </div>
+
+              <div className="flex justify-end border-t pt-3">
+                <Button type="button" onClick={handleCommit} disabled={disabled}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  추가하기
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// ─── manual 모드 에디터 ───────────────────────────────────────────────────────
+function ManualModeEditor({
+  rows,
+  onRowsChange,
+  disabled,
+  onCommit,
+}: {
+  rows: ManualRow[]
+  onRowsChange: (next: ManualRow[]) => void
+  disabled?: boolean
+  onCommit: () => void
+}) {
+  function addRow() {
+    onRowsChange([
+      ...rows,
+      {
+        id: `m-${Date.now()}-${rows.length}`,
+        searchName: '',
+        displayName: '',
+        managementName: '',
+        internalCode: '',
+        items: [],
+      },
+    ])
+  }
+
+  function removeRow(id: string) {
+    onRowsChange(rows.filter((r) => r.id !== id))
+  }
+
+  function updateRow(id: string, patch: Partial<Omit<ManualRow, 'id'>>) {
+    onRowsChange(rows.map((r) => (r.id === id ? { ...r, ...patch } : r)))
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">
+        각 행이 판매 옵션 1개가 됩니다. 행마다 여러 상품의 옵션을 섞어 구성할 수 있습니다. 이름을
+        비우면 생성 시 검색명을 그대로 사용합니다.
+      </p>
+
+      {rows.length === 0 ? (
+        <div className="rounded-md border border-dashed py-8 text-center text-sm text-muted-foreground">
+          아래 버튼으로 행을 추가하세요
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {rows.map((row, idx) => (
+            <ManualRowEditor
+              key={row.id}
+              row={row}
+              index={idx}
+              onUpdate={(patch) => updateRow(row.id, patch)}
+              onRemove={() => removeRow(row.id)}
+              disabled={disabled}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between border-t pt-3">
+        <Button type="button" variant="outline" size="sm" onClick={addRow} disabled={disabled}>
+          <Plus className="mr-1 h-4 w-4" />행 추가
+        </Button>
+        <Button
+          type="button"
+          onClick={onCommit}
+          disabled={disabled || rows.filter((r) => r.items.length > 0).length === 0}
+        >
+          <Plus className="mr-1 h-4 w-4" />
+          추가하기
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function ManualRowEditor({
+  row,
+  index,
+  onUpdate,
+  onRemove,
+  disabled,
+}: {
+  row: ManualRow
+  index: number
+  onUpdate: (patch: Partial<Omit<ManualRow, 'id'>>) => void
+  onRemove: () => void
+  disabled?: boolean
+}) {
+  const [optionPickerOpen, setOptionPickerOpen] = useState(false)
+  const [optionQuery, setOptionQuery] = useState('')
+  const [optionProduct, setOptionProduct] = useState<ProductDetail | null>(null)
+  const [optionLoading, setOptionLoading] = useState(false)
+  const [optionResults, setOptionResults] = useState<ProductRow[]>([])
+  const [optionSearchDebounced, setOptionSearchDebounced] = useState('')
+
+  useEffect(() => {
+    const t = setTimeout(() => setOptionSearchDebounced(optionQuery), 300)
+    return () => clearTimeout(t)
+  }, [optionQuery])
+
+  useEffect(() => {
+    if (!optionPickerOpen) return
+    let cancelled = false
+    const load = async () => {
+      setOptionLoading(true)
+      try {
+        const qs = new URLSearchParams()
+        qs.set('pageSize', '20')
+        if (optionSearchDebounced.trim()) qs.set('search', optionSearchDebounced.trim())
+        const res = await fetch(`/api/sh/products?${qs.toString()}`)
+        if (!res.ok) throw new Error('검색 실패')
+        const data: { data?: ProductRow[]; products?: ProductRow[] } = await res.json()
+        if (!cancelled) setOptionResults(data.data ?? data.products ?? [])
+      } catch {
+        // 검색 실패는 조용히 처리
+      } finally {
+        if (!cancelled) setOptionLoading(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [optionSearchDebounced, optionPickerOpen])
+
+  async function pickOptionProduct(p: ProductRow) {
+    setOptionLoading(true)
+    try {
+      const res = await fetch(`/api/sh/products/${p.id}`)
+      if (!res.ok) throw new Error('상품 조회 실패')
+      const data: {
+        product: {
+          id: string
+          name: string
+          internalName: string | null
+          msrp?: string | number | null
+          optionAttributes: AttributeDef[] | null
+          brand: { id: string; name: string } | null
+          options: Array<{
+            id: string
+            name: string
+            sku: string | null
+            retailPrice?: string | number | null
+            attributeValues: Record<string, string> | null
+          }>
+        }
+      } = await res.json()
+      const prod = data.product
+      const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
+      setOptionProduct({
+        id: prod.id,
+        name: prod.name,
+        internalName: prod.internalName,
+        optionAttributes: Array.isArray(prod.optionAttributes) ? prod.optionAttributes : null,
+        brand: prod.brand,
+        options: prod.options.map((o) => ({
+          id: o.id,
+          name: o.name,
+          sku: o.sku,
+          retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
+          attributeValues: o.attributeValues ?? {},
+        })),
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '상품 조회 실패')
+    } finally {
+      setOptionLoading(false)
+    }
+  }
+
+  function addOptionToRow(opt: OptionRow) {
+    const newItem: ItemEntry = {
+      optionId: opt.id,
+      optionName: opt.name,
+      sku: opt.sku,
+      quantity: 1,
+      retailPrice: opt.retailPrice,
+      attributeValues: opt.attributeValues,
+    }
+    onUpdate({ items: [...row.items, newItem] })
+    setOptionPickerOpen(false)
+    setOptionProduct(null)
+    setOptionQuery('')
+  }
+
+  function updateItemQty(optionId: string, qty: number) {
+    onUpdate({
+      items: row.items.map((it) =>
+        it.optionId === optionId ? { ...it, quantity: Math.max(1, qty) } : it
+      ),
+    })
+  }
+
+  function removeItem(optionId: string) {
+    onUpdate({ items: row.items.filter((it) => it.optionId !== optionId) })
+  }
+
+  return (
+    <div className="space-y-3 rounded-md border bg-background p-3">
+      <div className="flex items-center justify-between">
+        <Badge variant="secondary">옵션 행 #{index + 1}</Badge>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+          onClick={onRemove}
+          disabled={disabled}
+          aria-label="행 제거"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* 이름 입력 필드 */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1">
+          <Label className="text-xs">검색명</Label>
+          <Input
+            value={row.searchName}
+            onChange={(e) => onUpdate({ searchName: e.target.value })}
+            placeholder="(기본 검색명 사용)"
+            className="h-8 text-sm"
+            disabled={disabled}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">노출명</Label>
+          <Input
+            value={row.displayName}
+            onChange={(e) => onUpdate({ displayName: e.target.value })}
+            placeholder="(검색명과 동일)"
+            className="h-8 text-sm"
+            disabled={disabled}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">관리명</Label>
+          <Input
+            value={row.managementName}
+            onChange={(e) => onUpdate({ managementName: e.target.value })}
+            placeholder="(선택)"
+            className="h-8 text-sm"
+            disabled={disabled}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">관리 코드</Label>
+          <Input
+            value={row.internalCode}
+            onChange={(e) => onUpdate({ internalCode: e.target.value })}
+            placeholder="(선택)"
+            className="h-8 text-sm"
+            disabled={disabled}
+          />
+        </div>
+      </div>
+
+      {/* 포함 옵션 목록 */}
+      {row.items.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">포함 옵션</p>
+          <div className="space-y-1">
+            {row.items.map((it) => (
+              <div
+                key={it.optionId}
+                className="flex items-center gap-2 rounded border bg-muted/30 px-2 py-1.5"
+              >
+                <span className="flex-1 text-xs">{it.optionName}</span>
+                <span className="text-xs text-muted-foreground">수량</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={999}
+                  value={it.quantity}
+                  onChange={(e) => updateItemQty(it.optionId, Number(e.target.value || 1))}
+                  className="h-6 w-16 text-xs"
+                  disabled={disabled}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                  onClick={() => removeItem(it.optionId)}
+                  disabled={disabled}
+                  aria-label="옵션 제거"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
           </div>
+        </div>
+      )}
+
+      {/* 옵션 추가 버튼 / picker */}
+      {!optionPickerOpen ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => setOptionPickerOpen(true)}
+          disabled={disabled}
+        >
+          <Plus className="mr-1 h-3.5 w-3.5" />
+          옵션 추가
+        </Button>
+      ) : (
+        <div className="space-y-2 rounded-md border bg-muted/20 p-2">
+          {!optionProduct ? (
+            <>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium">상품 검색</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => {
+                    setOptionPickerOpen(false)
+                    setOptionQuery('')
+                  }}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <div className="relative">
+                <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={optionQuery}
+                  onChange={(e) => setOptionQuery(e.target.value)}
+                  placeholder="상품명·관리코드"
+                  className="h-8 pl-8 text-sm"
+                  autoFocus
+                />
+              </div>
+              <div className="max-h-40 overflow-y-auto rounded-md border bg-background">
+                {optionLoading ? (
+                  <div className="p-3 text-center text-xs text-muted-foreground">검색 중...</div>
+                ) : optionResults.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-muted-foreground">
+                    {optionQuery ? '결과 없음' : '검색어를 입력하세요'}
+                  </div>
+                ) : (
+                  <ul className="divide-y">
+                    {optionResults.map((p) => (
+                      <li key={p.id}>
+                        <button
+                          type="button"
+                          onClick={() => pickOptionProduct(p)}
+                          className="w-full px-3 py-2 text-left text-xs hover:bg-muted/60"
+                        >
+                          <span className="font-medium">{productDisplayName(p)}</span>
+                          {p.brand?.name && (
+                            <span className="ml-1 text-muted-foreground">· {p.brand.name}</span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Badge variant="secondary" className="text-xs">
+                    {productDisplayName(optionProduct)}
+                  </Badge>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => setOptionProduct(null)}
+                >
+                  <ChevronLeft className="mr-1 h-3 w-3" />
+                  상품 변경
+                </Button>
+              </div>
+              <div className="max-h-40 overflow-y-auto rounded-md border bg-background">
+                {optionLoading ? (
+                  <div className="p-3 text-center text-xs text-muted-foreground">
+                    불러오는 중...
+                  </div>
+                ) : optionProduct.options.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-muted-foreground">
+                    옵션이 없습니다
+                  </div>
+                ) : (
+                  <ul className="divide-y">
+                    {optionProduct.options.map((opt) => {
+                      const alreadyAdded = row.items.some((it) => it.optionId === opt.id)
+                      return (
+                        <li key={opt.id}>
+                          <button
+                            type="button"
+                            onClick={() => !alreadyAdded && addOptionToRow(opt)}
+                            disabled={alreadyAdded}
+                            className={`w-full px-3 py-2 text-left text-xs transition ${
+                              alreadyAdded ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted/60'
+                            }`}
+                          >
+                            <span className="font-medium">{opt.name}</span>
+                            {alreadyAdded && (
+                              <span className="ml-1 text-muted-foreground">(이미 추가됨)</span>
+                            )}
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

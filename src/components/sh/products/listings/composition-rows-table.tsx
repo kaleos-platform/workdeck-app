@@ -39,6 +39,13 @@ export type CompositionRow = {
   retailPrice: string
   channelAllocation: string
   status: 'ACTIVE' | 'SUSPENDED'
+  /** manual 모드에서만 설정. BuiltGroup.manualNames에서 복사. */
+  manualNames?: {
+    searchName?: string
+    displayName?: string
+    managementName?: string
+    internalCode?: string
+  }
 }
 
 type Props = {
@@ -91,8 +98,12 @@ export function CompositionRowsTable({
     arr.sort((a, b) => {
       switch (sort.key) {
         case 'name': {
-          const aN = [baseSearchName, ...a.suffixParts].filter(Boolean).join(' ')
-          const bN = [baseSearchName, ...b.suffixParts].filter(Boolean).join(' ')
+          const aN =
+            a.manualNames?.searchName ??
+            [baseSearchName, ...a.suffixParts].filter(Boolean).join(' ')
+          const bN =
+            b.manualNames?.searchName ??
+            [baseSearchName, ...b.suffixParts].filter(Boolean).join(' ')
           return compareString(aN, bN, dir)
         }
         case 'composition': {
@@ -273,7 +284,10 @@ export function CompositionRowsTable({
               )
               const salePrice = r.retailPrice.trim() === '' ? null : Number(r.retailPrice)
               const discount = computeDiscount(baseline, salePrice)
-              const previewName = [baseSearchName, ...r.suffixParts].filter(Boolean).join(' ')
+              // manual 모드: manualNames.searchName 우선, 없으면 base+suffix 조합
+              const previewName = r.manualNames?.searchName
+                ? r.manualNames.searchName
+                : [baseSearchName, ...r.suffixParts].filter(Boolean).join(' ')
               const composition = r.items
                 .map((it) => `${it.optionName} ×${it.quantity}`)
                 .join(' · ')

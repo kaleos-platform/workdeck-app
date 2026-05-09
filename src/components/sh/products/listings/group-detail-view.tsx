@@ -40,20 +40,34 @@ type GroupListingFull = GroupListingRow & {
   memo: string | null
 }
 
+type SingleProduct = {
+  kind: 'single'
+  id: string
+  name: string
+  internalName: string | null
+  displayName: string
+  brand: { id: string; name: string } | null
+  optionAttributes: OptionAttribute[]
+  msrp: number | null
+}
+
+type MixedProduct = {
+  kind: 'mixed'
+  /** 혼합 구성의 첫 product 기반 backward-compat 필드 (표시 전용) */
+  id: string
+  name: string
+  internalName: string | null
+  displayName: string
+  brand: { id: string; name: string } | null
+  optionAttributes: OptionAttribute[]
+  msrp: number | null
+  products: Array<{ id: string; name: string }>
+}
+
+type ProductUnion = SingleProduct | MixedProduct
+
 type GroupDetail = {
-  // product: single이면 kind:'single' + 모든 메타 필드, mixed이면 kind:'mixed' + products 배열.
-  // UI는 현재 single 전용 필드를 직접 사용. mixed는 향후 별도 UI 에이전트가 처리.
-  product: {
-    kind: 'single' | 'mixed'
-    id: string
-    name: string
-    internalName: string | null
-    displayName: string
-    brand: { id: string; name: string } | null
-    optionAttributes: OptionAttribute[]
-    msrp: number | null
-    products?: Array<{ id: string; name: string }>
-  }
+  product: ProductUnion
   channel: {
     id: string
     name: string
@@ -126,26 +140,36 @@ export function GroupDetailView({ channelProductId }: Props) {
       setKeywords(d.channelProduct.keywords ?? [])
       setRows(d.listings)
       setSelected(new Set())
-      const derived = deriveBaseValues(
-        d.listings.map((l) => ({
-          id: l.id,
-          searchName: l.searchName,
-          displayName: l.displayName,
-          managementName: l.managementName,
-          internalCode: l.internalCode,
-          memo: l.memo,
-          items: l.items.map((it) => ({
-            optionId: it.optionId,
-            attributeValues: it.attributeValues,
+      // single 모드에서만 자동 suffix 추출. mixed는 channel-product 기본값 사용.
+      if (d.product.kind === 'single') {
+        const derived = deriveBaseValues(
+          d.listings.map((l) => ({
+            id: l.id,
+            searchName: l.searchName,
+            displayName: l.displayName,
+            managementName: l.managementName,
+            internalCode: l.internalCode,
+            memo: l.memo,
+            items: l.items.map((it) => ({
+              optionId: it.optionId,
+              attributeValues: it.attributeValues,
+            })),
           })),
-        })),
-        d.product.optionAttributes
-      )
-      setBaseSearchName(derived.baseSearchName)
-      setBaseDisplayName(derived.baseDisplayName)
-      setBaseManagementName(derived.baseManagementName)
-      setBaseInternalCode(derived.baseInternalCode)
-      setMemo(derived.memo)
+          d.product.optionAttributes
+        )
+        setBaseSearchName(derived.baseSearchName)
+        setBaseDisplayName(derived.baseDisplayName)
+        setBaseManagementName(derived.baseManagementName)
+        setBaseInternalCode(derived.baseInternalCode)
+        setMemo(derived.memo)
+      } else {
+        // mixed 모드: channel-product 저장값을 직접 사용
+        setBaseSearchName(d.channelProduct.baseSearchName)
+        setBaseDisplayName(d.channelProduct.baseDisplayName ?? '')
+        setBaseManagementName(d.channelProduct.baseManagementName ?? '')
+        setBaseInternalCode(d.channelProduct.baseInternalCode ?? '')
+        setMemo(d.channelProduct.memo ?? '')
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '채널 상품 조회 실패')
     } finally {
@@ -159,8 +183,12 @@ export function GroupDetailView({ channelProductId }: Props) {
 
   const keywordSuggestions = useMemo(() => {
     if (!data) return []
-    const set = new Set<string>([data.product.displayName])
-    if (data.product.brand) set.add(data.product.brand.name)
+    const set = new Set<string>()
+    // single 모드에서만 product.displayName / brand.name 사용
+    if (data.product.kind === 'single') {
+      set.add(data.product.displayName)
+      if (data.product.brand) set.add(data.product.brand.name)
+    }
     for (const l of data.listings) {
       for (const it of l.items) set.add(it.optionName)
     }
@@ -169,6 +197,8 @@ export function GroupDetailView({ channelProductId }: Props) {
 
   const derivedBase = useMemo(() => {
     if (!data) return null
+    // mixed 모드는 suffix 자동 추출 불필요 — null 반환
+    if (data.product.kind !== 'single') return null
     return deriveBaseValues(
       data.listings.map((l) => ({
         id: l.id,
@@ -187,15 +217,35 @@ export function GroupDetailView({ channelProductId }: Props) {
   }, [data])
 
   const baseDirty = useMemo(() => {
-    if (!derivedBase) return false
+    if (!data) return false
+    if (data.product.kind === 'single') {
+      // single: derived suffix 기반 비교
+      if (!derivedBase) return false
+      return (
+        baseSearchName !== derivedBase.baseSearchName ||
+        baseDisplayName !== derivedBase.baseDisplayName ||
+        baseManagementName !== derivedBase.baseManagementName ||
+        baseInternalCode !== derivedBase.baseInternalCode ||
+        memo !== derivedBase.memo
+      )
+    }
+    // mixed: channel-product 저장값과 직접 비교
     return (
-      baseSearchName !== derivedBase.baseSearchName ||
-      baseDisplayName !== derivedBase.baseDisplayName ||
-      baseManagementName !== derivedBase.baseManagementName ||
-      baseInternalCode !== derivedBase.baseInternalCode ||
-      memo !== derivedBase.memo
+      baseSearchName !== data.channelProduct.baseSearchName ||
+      baseDisplayName !== (data.channelProduct.baseDisplayName ?? '') ||
+      baseManagementName !== (data.channelProduct.baseManagementName ?? '') ||
+      baseInternalCode !== (data.channelProduct.baseInternalCode ?? '') ||
+      memo !== (data.channelProduct.memo ?? '')
     )
-  }, [derivedBase, baseSearchName, baseDisplayName, baseManagementName, baseInternalCode, memo])
+  }, [
+    data,
+    derivedBase,
+    baseSearchName,
+    baseDisplayName,
+    baseManagementName,
+    baseInternalCode,
+    memo,
+  ])
 
   const keywordsDirty = useMemo(() => {
     const original = data?.channelProduct.keywords ?? []
@@ -416,17 +466,43 @@ export function GroupDetailView({ channelProductId }: Props) {
     await flushPendingSave()
     const params = new URLSearchParams()
     params.set('duplicateFromChannelProductId', channelProductId)
-    params.set('duplicateFromProductId', data.product.id)
     params.set('duplicateFromChannelId', data.channel.id)
     router.push(`${SELLER_HUB_LISTING_NEW_PATH}?${params.toString()}`)
   }
 
-  function buildListingPayloadsFromGroups(ctx: ProductContext, groups: BuiltGroup[]) {
+  function buildListingPayloadsFromGroups(ctx: ProductContext | null, groups: BuiltGroup[]) {
     return groups.map((g) => {
+      // manual 모드: manualNames 우선, suffix 없음
+      if (g.manualNames) {
+        const fallbackBase = ctx?.displayName ?? baseSearchName.trim()
+        return {
+          searchName: g.manualNames.searchName || baseSearchName.trim() || fallbackBase,
+          displayName:
+            g.manualNames.displayName ||
+            g.manualNames.searchName ||
+            baseDisplayName.trim() ||
+            baseSearchName.trim() ||
+            fallbackBase,
+          managementName: g.manualNames.managementName || undefined,
+          internalCode: g.manualNames.internalCode || undefined,
+          memo: memo.trim() || undefined,
+          items: g.items.map((it, idx) => ({
+            optionId: it.optionId,
+            quantity: it.quantity,
+            sortOrder: idx,
+          })),
+          optionSignature: g.items
+            .map((it) => `${it.optionId}x${it.quantity}`)
+            .sort()
+            .join('|'),
+        }
+      }
+      // bulk 모드: suffix 자동 조합
       const suffix = g.suffixParts.join(' ')
-      const searchName = joinName(baseSearchName.trim() || ctx.displayName, suffix)
+      const ctxDisplay = ctx?.displayName ?? ''
+      const searchName = joinName(baseSearchName.trim() || ctxDisplay, suffix)
       const displayName = joinName(
-        baseDisplayName.trim() || baseSearchName.trim() || ctx.displayName,
+        baseDisplayName.trim() || baseSearchName.trim() || ctxDisplay,
         suffix
       )
       const managementName = baseManagementName.trim()
@@ -454,9 +530,10 @@ export function GroupDetailView({ channelProductId }: Props) {
     })
   }
 
-  async function handleAddCommit(ctx: ProductContext, groups: BuiltGroup[]) {
+  async function handleAddCommit(ctx: ProductContext | null, groups: BuiltGroup[]) {
     if (!data) return
-    if (ctx.id !== data.product.id) {
+    // bulk 모드(ctx 있음)에서 single product인 경우: 다른 상품 추가 차단
+    if (ctx && data.product.kind === 'single' && ctx.id !== data.product.id) {
       toast.error('다른 상품은 이 채널 상품에 추가할 수 없습니다')
       return
     }
@@ -521,9 +598,10 @@ export function GroupDetailView({ channelProductId }: Props) {
     await load()
   }
 
-  async function handleResetCommit(ctx: ProductContext, groups: BuiltGroup[]) {
+  async function handleResetCommit(ctx: ProductContext | null, groups: BuiltGroup[]) {
     if (!data) return
-    if (ctx.id !== data.product.id) {
+    // bulk 모드(ctx 있음)에서 single product인 경우만 상품 일치 검증
+    if (ctx && data.product.kind === 'single' && ctx.id !== data.product.id) {
       toast.error('다른 상품으로 재구성할 수 없습니다')
       return
     }
@@ -625,6 +703,8 @@ export function GroupDetailView({ channelProductId }: Props) {
       memo,
     }
 
+    const isMixed = data.product.kind === 'mixed'
+
     const origById = new Map(data.listings.map((l) => [l.id, l]))
     const failures: string[] = []
     const patchedById = new Map<
@@ -655,7 +735,8 @@ export function GroupDetailView({ channelProductId }: Props) {
         status?: 'ACTIVE' | 'SUSPENDED'
       } = {}
 
-      if (snapBaseDirty) {
+      // single 모드에서만 base → listing 이름 전파
+      if (!isMixed && snapBaseDirty) {
         const suffix = buildSuffix(
           {
             id: l.id,
@@ -710,6 +791,32 @@ export function GroupDetailView({ channelProductId }: Props) {
       }
     }
 
+    // mixed 모드의 base 필드 변경: channel-product에 직접 PATCH
+    let channelProductBaseSaved = false
+    if (isMixed && snapBaseDirty) {
+      try {
+        const res = await fetch(`/api/sh/products/listings/channel-products/${channelProductId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            baseSearchName: snapBase.searchName.trim() || undefined,
+            baseDisplayName: snapBase.displayName.trim() || null,
+            baseManagementName: snapBase.managementName.trim() || null,
+            baseInternalCode: snapBase.internalCode.trim() || null,
+            memo: snapBase.memo.trim() || null,
+          }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          failures.push(`기본 정보: ${err?.message ?? '저장 실패'}`)
+        } else {
+          channelProductBaseSaved = true
+        }
+      } catch (err) {
+        failures.push(`기본 정보: ${err instanceof Error ? err.message : '저장 실패'}`)
+      }
+    }
+
     let keywordsSaved = false
     if (snapKeywordsDirty) {
       try {
@@ -730,14 +837,27 @@ export function GroupDetailView({ channelProductId }: Props) {
     }
 
     // 로컬 data 업데이트 — load() 대신 저장된 값만 반영해 in-flight 편집 보호
-    if (patchedById.size > 0 || keywordsSaved) {
+    if (patchedById.size > 0 || keywordsSaved || channelProductBaseSaved) {
       setData((prev) => {
         if (!prev) return prev
+        // channel-product 레벨 업데이트 (keywords + mixed 모드 base 필드)
+        let nextChannelProduct = prev.channelProduct
+        if (keywordsSaved) {
+          nextChannelProduct = { ...nextChannelProduct, keywords: snapKeywords }
+        }
+        if (channelProductBaseSaved) {
+          nextChannelProduct = {
+            ...nextChannelProduct,
+            baseSearchName: snapBase.searchName.trim() || nextChannelProduct.baseSearchName,
+            baseDisplayName: snapBase.displayName.trim() || null,
+            baseManagementName: snapBase.managementName.trim() || null,
+            baseInternalCode: snapBase.internalCode.trim() || null,
+            memo: snapBase.memo.trim() || null,
+          }
+        }
         return {
           ...prev,
-          channelProduct: keywordsSaved
-            ? { ...prev.channelProduct, keywords: snapKeywords }
-            : prev.channelProduct,
+          channelProduct: nextChannelProduct,
           listings: prev.listings.map((l) => {
             const p = patchedById.get(l.id)
             if (!p) return l
@@ -973,8 +1093,17 @@ export function GroupDetailView({ channelProductId }: Props) {
           {baseManagementName.trim() || baseSearchName.trim() || '판매채널 상품'}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          기준 상품: {data.product.displayName}
-          {data.product.brand && ` · ${data.product.brand.name}`}
+          {data.product.kind === 'mixed' ? (
+            <>
+              혼합 구성: {data.product.products.map((p) => p.name).join(', ')}
+              <span className="ml-1 text-xs">({data.product.products.length}개 상품)</span>
+            </>
+          ) : (
+            <>
+              기준 상품: {data.product.displayName}
+              {data.product.brand && ` · ${data.product.brand.name}`}
+            </>
+          )}
         </p>
       </div>
 
@@ -1185,7 +1314,11 @@ export function GroupDetailView({ channelProductId }: Props) {
               현재 채널 상품에 새 옵션 구성을 추가합니다. 이미 존재하는 동일 구성은 건너뜁니다.
             </DialogDescription>
           </DialogHeader>
-          <CompositionBuilder onCommit={handleAddCommit} disabled={mutating} />
+          <CompositionBuilder
+            onCommit={handleAddCommit}
+            disabled={mutating}
+            initialMode={data.product.kind === 'mixed' ? 'manual' : 'bulk'}
+          />
         </DialogContent>
       </Dialog>
 
@@ -1235,7 +1368,11 @@ export function GroupDetailView({ channelProductId }: Props) {
               코드·메모)는 유지됩니다.
             </DialogDescription>
           </DialogHeader>
-          <CompositionBuilder onCommit={handleResetCommit} disabled={mutating} />
+          <CompositionBuilder
+            onCommit={handleResetCommit}
+            disabled={mutating}
+            initialMode={data.product.kind === 'mixed' ? 'manual' : 'bulk'}
+          />
         </DialogContent>
       </Dialog>
     </div>

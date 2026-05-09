@@ -33,18 +33,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  SELLER_HUB_LISTING_NEW_PATH,
-  getSellerHubChannelProductPath,
-  getSellerHubListingPath,
-} from '@/lib/deck-routes'
+import { SELLER_HUB_LISTING_NEW_PATH, getSellerHubChannelProductPath } from '@/lib/deck-routes'
 import { applyRangeSelection } from '@/lib/range-selection'
+
+type ProductUnion =
+  | { kind: 'single'; id: string; name: string }
+  | { kind: 'mixed'; products: Array<{ id: string; name: string }> }
 
 type GroupRow = {
   kind: 'group'
   id: string
-  productId?: string // deprecated — product union으로 대체됨. 호환성 유지용
+  /** backward-compat: product union의 표시명 (API가 채워 줌) */
   productName: string
+  /** 백엔드 응답의 product 필드. 없을 수도 있어 optional로 처리 */
+  product?: ProductUnion
   baseSearchName: string
   baseManagementName: string | null
   channelId: string
@@ -68,21 +70,6 @@ type GroupRow = {
   }>
 }
 
-type SoloRow = {
-  kind: 'solo' | 'mixed'
-  id: string
-  channelId: string
-  channelName: string
-  searchName: string
-  displayName: string
-  managementName: string | null
-  availableStock: number
-  baselinePrice: number | null
-  retailPrice: number | null
-  status: 'ACTIVE' | 'SUSPENDED'
-  effectiveStatus: 'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'
-}
-
 type Props = {
   channelId: string | null
   productId?: string
@@ -90,7 +77,6 @@ type Props = {
 
 export function GroupsTable({ channelId, productId }: Props) {
   const [groups, setGroups] = useState<GroupRow[]>([])
-  const [mixed, setMixed] = useState<SoloRow[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -110,7 +96,6 @@ export function GroupsTable({ channelId, productId }: Props) {
   useEffect(() => {
     if (!channelId) {
       setGroups([])
-      setMixed([])
       setSelectedRows(new Set())
       return
     }
@@ -125,15 +110,13 @@ export function GroupsTable({ channelId, productId }: Props) {
         if (debouncedSearch.trim()) qs.set('search', debouncedSearch.trim())
         const res = await fetch(`/api/sh/products/listings/channel-products?${qs.toString()}`)
         if (!res.ok) throw new Error('목록 조회 실패')
-        const data: { groups: GroupRow[]; solo?: SoloRow[] } = await res.json()
+        const data: { groups: GroupRow[] } = await res.json()
         if (cancelled) return
         setGroups(data.groups ?? [])
-        setMixed(data.solo ?? [])
         setSelectedRows(new Set())
       } catch {
         if (!cancelled) {
           setGroups([])
-          setMixed([])
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -162,14 +145,8 @@ export function GroupsTable({ channelId, productId }: Props) {
   function rowKeyForGroup(g: GroupRow): string {
     return `g:${g.id}`
   }
-  function rowKeyForMixed(m: SoloRow): string {
-    return `m:${m.id}`
-  }
 
-  const allRowKeys = useMemo(
-    () => [...groups.map(rowKeyForGroup), ...mixed.map(rowKeyForMixed)],
-    [groups, mixed]
-  )
+  const allRowKeys = useMemo(() => groups.map(rowKeyForGroup), [groups])
   const allSelected = allRowKeys.length > 0 && allRowKeys.every((k) => selectedRows.has(k))
   const someSelected = !allSelected && allRowKeys.some((k) => selectedRows.has(k))
 
@@ -191,11 +168,8 @@ export function GroupsTable({ channelId, productId }: Props) {
     for (const g of groups) {
       if (selectedRows.has(rowKeyForGroup(g))) ids.push(...g.listings.map((l) => l.id))
     }
-    for (const m of mixed) {
-      if (selectedRows.has(rowKeyForMixed(m))) ids.push(m.id)
-    }
     return ids
-  }, [groups, mixed, selectedRows])
+  }, [groups, selectedRows])
 
   // 선택된 listing의 status 분포 (삭제 가드용)
   const selectedListingStatuses = useMemo(() => {
@@ -203,11 +177,8 @@ export function GroupsTable({ channelId, productId }: Props) {
     for (const g of groups) {
       if (selectedRows.has(rowKeyForGroup(g))) statuses.push(...g.listings.map((l) => l.status))
     }
-    for (const m of mixed) {
-      if (selectedRows.has(rowKeyForMixed(m))) statuses.push(m.status)
-    }
     return statuses
-  }, [groups, mixed, selectedRows])
+  }, [groups, selectedRows])
   const allSelectedSuspended =
     selectedListingStatuses.length > 0 && selectedListingStatuses.every((s) => s === 'SUSPENDED')
 
@@ -218,11 +189,8 @@ export function GroupsTable({ channelId, productId }: Props) {
       if (selectedRows.has(rowKeyForGroup(g)))
         statuses.push(...g.listings.map((l) => l.effectiveStatus))
     }
-    for (const m of mixed) {
-      if (selectedRows.has(rowKeyForMixed(m))) statuses.push(m.effectiveStatus)
-    }
     return statuses
-  }, [groups, mixed, selectedRows])
+  }, [groups, selectedRows])
   const allSelectedDeletable =
     selectedEffectiveStatuses.length === 0 || selectedEffectiveStatuses.every((s) => s !== 'ACTIVE')
 
@@ -308,7 +276,7 @@ export function GroupsTable({ channelId, productId }: Props) {
   }
 
   const selectedRowCount = selectedRows.size
-  const totalListings = groups.reduce((sum, g) => sum + g.listingCount, 0) + mixed.length
+  const totalListings = groups.reduce((sum, g) => sum + g.listingCount, 0)
 
   return (
     <div className="space-y-3">
@@ -420,13 +388,13 @@ export function GroupsTable({ channelId, productId }: Props) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading && groups.length === 0 && mixed.length === 0 ? (
+            {loading && groups.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
-            ) : groups.length === 0 && mixed.length === 0 ? (
+            ) : groups.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
                   {channelId ? '등록된 판매채널 상품이 없습니다' : '좌측에서 채널을 선택하세요'}
@@ -449,28 +417,6 @@ export function GroupsTable({ channelId, productId }: Props) {
                     />
                   )
                 })}
-                {mixed.length > 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      className="bg-muted/30 py-2 text-xs text-muted-foreground"
-                    >
-                      혼합 구성 판매 옵션 ({mixed.length}개) — 단일 편집 폼에서 개별 관리
-                    </TableCell>
-                  </TableRow>
-                )}
-                {mixed.map((m, mi) => {
-                  const rowKey = rowKeyForMixed(m)
-                  const index = groups.length + mi
-                  return (
-                    <MixedRowView
-                      key={m.id}
-                      mixed={m}
-                      isSelected={selectedRows.has(rowKey)}
-                      onToggleSelect={(shiftKey) => toggleRow(rowKey, index, shiftKey)}
-                    />
-                  )
-                })}
               </>
             )}
           </TableBody>
@@ -480,7 +426,6 @@ export function GroupsTable({ channelId, productId }: Props) {
         <p className="text-xs text-muted-foreground">
           총 {groups.length.toLocaleString('ko-KR')}개 채널 상품 ·{' '}
           {totalListings.toLocaleString('ko-KR')}개 판매 옵션
-          {mixed.length > 0 ? ` · 혼합 ${mixed.length}` : ''}
         </p>
       )}
 
@@ -605,10 +550,21 @@ function GroupRowView({
         </TableCell>
         <TableCell>
           <p className="font-medium">{group.baseManagementName?.trim() || group.productName}</p>
-          {group.baseManagementName?.trim() &&
-            group.baseManagementName.trim() !== group.productName && (
-              <p className="text-xs text-muted-foreground">상품: {group.productName}</p>
-            )}
+          {(() => {
+            // product union이 있으면 정확한 표시, 없으면 backward-compat productName 사용
+            const displayProductName =
+              group.product?.kind === 'mixed'
+                ? `혼합 (${group.product.products.length}개 상품)`
+                : group.product?.kind === 'single'
+                  ? group.product.name
+                  : group.productName
+            const showSub =
+              group.baseManagementName?.trim() &&
+              group.baseManagementName.trim() !== displayProductName
+            return showSub ? (
+              <p className="text-xs text-muted-foreground">상품: {displayProductName}</p>
+            ) : null
+          })()}
           <p className="text-xs text-muted-foreground">{group.channelName}</p>
         </TableCell>
         <TableCell className="text-right text-sm">{group.listingCount}</TableCell>
@@ -677,71 +633,5 @@ function GroupRowView({
           )
         })}
     </>
-  )
-}
-
-function MixedRowView({
-  mixed,
-  isSelected,
-  onToggleSelect,
-}: {
-  mixed: SoloRow
-  isSelected: boolean
-  onToggleSelect: (shiftKey: boolean) => void
-}) {
-  const badge =
-    mixed.effectiveStatus === 'SUSPENDED' ? (
-      <Badge variant="outline">판매중지</Badge>
-    ) : mixed.effectiveStatus === 'SOLD_OUT' ? (
-      <Badge variant="secondary">품절</Badge>
-    ) : (
-      <Badge>판매중</Badge>
-    )
-  return (
-    <TableRow className="hover:bg-muted/40">
-      <TableCell>
-        <Checkbox
-          checked={isSelected}
-          onClick={(e: React.MouseEvent) => onToggleSelect(e.shiftKey)}
-          onCheckedChange={() => {}}
-          aria-label={`${mixed.searchName} 선택`}
-        />
-      </TableCell>
-      <TableCell />
-      <TableCell>
-        <Link
-          href={getSellerHubListingPath(mixed.id)}
-          className="text-sm font-medium hover:underline"
-        >
-          {mixed.managementName?.trim() || mixed.searchName}
-        </Link>
-        {mixed.managementName?.trim() && mixed.managementName.trim() !== mixed.searchName && (
-          <p className="text-xs text-muted-foreground">검색명: {mixed.searchName}</p>
-        )}
-        <p className="text-xs text-muted-foreground">{mixed.channelName} · 혼합 구성</p>
-      </TableCell>
-      <TableCell className="text-right text-sm">-</TableCell>
-      <TableCell
-        className={`text-right text-sm ${mixed.availableStock === 0 ? 'text-destructive' : ''}`}
-      >
-        {mixed.availableStock.toLocaleString('ko-KR')}
-      </TableCell>
-      <TableCell className="text-right text-sm text-muted-foreground">
-        {mixed.baselinePrice != null ? `${mixed.baselinePrice.toLocaleString('ko-KR')}원` : '-'}
-      </TableCell>
-      <TableCell className="text-right text-sm">
-        {mixed.retailPrice != null ? `${mixed.retailPrice.toLocaleString('ko-KR')}원` : '-'}
-      </TableCell>
-      <TableCell>{badge}</TableCell>
-      <TableCell>
-        <Link
-          href={getSellerHubListingPath(mixed.id)}
-          aria-label={`${mixed.searchName} 상세`}
-          className="inline-flex text-muted-foreground hover:text-foreground"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Link>
-      </TableCell>
-    </TableRow>
   )
 }
