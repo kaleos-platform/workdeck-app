@@ -1503,7 +1503,7 @@ model ProductListing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([channelProductId, managementName])
+  @@unique([channelProductId, searchName])
   @@index([spaceId, channelId])
   @@index([status])
   @@index([channelProductId])

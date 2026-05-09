@@ -330,7 +330,7 @@ export type ProductListingOrderByWithRelationInput = {
 
 export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  channelProductId_managementName?: Prisma.ProductListingChannelProductIdManagementNameCompoundUniqueInput
+  channelProductId_searchName?: Prisma.ProductListingChannelProductIdSearchNameCompoundUniqueInput
   AND?: Prisma.ProductListingWhereInput | Prisma.ProductListingWhereInput[]
   OR?: Prisma.ProductListingWhereInput[]
   NOT?: Prisma.ProductListingWhereInput | Prisma.ProductListingWhereInput[]
@@ -354,7 +354,7 @@ export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
   items?: Prisma.ProductListingItemListRelationFilter
   aliases?: Prisma.ChannelProductAliasListRelationFilter
   delItems?: Prisma.DelOrderItemListRelationFilter
-}, "id" | "channelProductId_managementName">
+}, "id" | "channelProductId_searchName">
 
 export type ProductListingOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -550,9 +550,9 @@ export type ProductListingNullableScalarRelationFilter = {
   isNot?: Prisma.ProductListingWhereInput | null
 }
 
-export type ProductListingChannelProductIdManagementNameCompoundUniqueInput = {
+export type ProductListingChannelProductIdSearchNameCompoundUniqueInput = {
   channelProductId: string
-  managementName: string
+  searchName: string
 }
 
 export type ProductListingCountOrderByAggregateInput = {
