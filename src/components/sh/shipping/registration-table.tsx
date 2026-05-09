@@ -170,22 +170,22 @@ export function RegistrationTable({
                   />
                 </TableHead>
               )}
-              <TableHead className="w-[88px]">
+              <TableHead className="w-[80px]">
                 배송방식<span className="ml-0.5 text-destructive">*</span>
               </TableHead>
-              <TableHead className="w-[88px]">
+              <TableHead className="w-[80px]">
                 판매채널<span className="ml-0.5 text-destructive">*</span>
               </TableHead>
-              <TableHead className="w-[80px]">받는분</TableHead>
-              <TableHead className="w-[130px]">전화</TableHead>
-              <TableHead className="min-w-[220px]">주소</TableHead>
+              <TableHead className="w-[100px]">받는분</TableHead>
+              <TableHead className="w-[140px]">전화</TableHead>
+              <TableHead className="min-w-[260px]">주소</TableHead>
               <TableHead className="w-[110px]">배송메시지</TableHead>
               <TableHead className="min-w-[220px]">상품</TableHead>
-              <TableHead className="w-[56px]">수량</TableHead>
+              <TableHead className="w-[44px]">수량</TableHead>
               <TableHead className="w-[124px]">주문일자</TableHead>
               <TableHead className="w-[124px]">주문번호</TableHead>
-              <TableHead className="w-[96px]">결제금액</TableHead>
-              <TableHead className="w-[110px]">메모</TableHead>
+              <TableHead className="w-[110px]">결제금액</TableHead>
+              <TableHead className="w-[140px]">메모</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
