@@ -41,13 +41,18 @@ type GroupListingFull = GroupListingRow & {
 }
 
 type GroupDetail = {
+  // product: single이면 kind:'single' + 모든 메타 필드, mixed이면 kind:'mixed' + products 배열.
+  // UI는 현재 single 전용 필드를 직접 사용. mixed는 향후 별도 UI 에이전트가 처리.
   product: {
+    kind: 'single' | 'mixed'
     id: string
     name: string
     internalName: string | null
     displayName: string
     brand: { id: string; name: string } | null
     optionAttributes: OptionAttribute[]
+    msrp: number | null
+    products?: Array<{ id: string; name: string }>
   }
   channel: {
     id: string

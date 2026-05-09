@@ -14,8 +14,9 @@ import {
 /**
  * 채널상품 목록 (GET) + 신규 채널상품 생성 (POST).
  *
- * GET: ChannelProduct 기반 목록 반환. channelProductId 없는 listing은 solo/mixed로 별도 표기.
+ * GET: ChannelProduct 기반 목록 반환. product union(single|mixed) 파생.
  * POST: 채널상품 + 하위 listing들을 트랜잭션으로 일괄 생성.
+ *       productId 불필요 — listing의 items에서 product가 결정됨.
  */
 
 // POST body schema
@@ -38,7 +39,6 @@ const listingInputSchema = z.object({
 })
 
 const createChannelProductSchema = z.object({
-  productId: z.string().min(1),
   channelId: z.string().min(1),
   baseSearchName: z.string().min(1).max(400),
   baseDisplayName: z.string().max(400).optional(),
@@ -48,6 +48,22 @@ const createChannelProductSchema = z.object({
   keywords: z.array(z.string()).default([]),
   listings: z.array(listingInputSchema).min(1),
 })
+
+// product discriminated union 타입
+type SingleProduct = {
+  kind: 'single'
+  id: string
+  name: string
+  internalName: string | null
+  brand: { id: string; name: string } | null
+  optionAttributes: Array<{ name: string; values: Array<{ value: string }> }>
+  msrp: number | null
+}
+type MixedProduct = {
+  kind: 'mixed'
+  products: Array<{ id: string; name: string }>
+}
+type ProductUnion = SingleProduct | MixedProduct
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -65,7 +81,10 @@ export async function GET(req: NextRequest) {
     channel: { channelTypeDef: { isSalesChannel: true } },
   }
   if (channelId) cpWhere.channelId = channelId
-  if (productId) cpWhere.productId = productId
+  // productId 필터: listing items를 통해 간접 필터링
+  if (productId) {
+    cpWhere.listings = { some: { items: { some: { option: { productId } } } } }
+  }
   if (search) {
     cpWhere.OR = [
       { baseSearchName: { contains: search, mode: 'insensitive' } },
@@ -77,9 +96,6 @@ export async function GET(req: NextRequest) {
     where: cpWhere,
     orderBy: { updatedAt: 'desc' },
     include: {
-      product: {
-        select: { id: true, name: true, internalName: true, msrp: true, optionAttributes: true },
-      },
       channel: { select: { id: true, name: true } },
       listings: {
         orderBy: { createdAt: 'asc' },
@@ -92,7 +108,16 @@ export async function GET(req: NextRequest) {
                   id: true,
                   retailPrice: true,
                   productId: true,
-                  product: { select: { msrp: true } },
+                  product: {
+                    select: {
+                      id: true,
+                      name: true,
+                      internalName: true,
+                      msrp: true,
+                      optionAttributes: true,
+                      brand: { select: { id: true, name: true } },
+                    },
+                  },
                   attributeValues: true,
                 },
               },
@@ -168,11 +193,50 @@ export async function GET(req: NextRequest) {
       statusCounts[lr.effectiveStatus] += 1
     }
 
+    // product discriminated union 파생
+    const allItems = cp.listings.flatMap((l) => l.items)
+    const productIds = [...new Set(allItems.map((it) => it.option.productId))]
+
+    let product: ProductUnion
+    if (productIds.length === 1) {
+      // single product — 대표 옵션의 product 정보 사용
+      const repProduct = allItems[0]?.option.product
+      const optionAttributes = Array.isArray(repProduct?.optionAttributes)
+        ? (repProduct.optionAttributes as Array<{ name: string; values: Array<{ value: string }> }>)
+        : []
+      product = {
+        kind: 'single',
+        id: repProduct?.id ?? productIds[0],
+        name: repProduct?.name ?? '',
+        internalName: repProduct?.internalName ?? null,
+        brand: repProduct?.brand ?? null,
+        optionAttributes,
+        msrp: repProduct?.msrp != null ? Number(repProduct.msrp) : null,
+      }
+    } else {
+      // mixed — 각 unique product의 id/name만
+      const seenIds = new Set<string>()
+      const mixedProducts: Array<{ id: string; name: string }> = []
+      for (const it of allItems) {
+        if (!seenIds.has(it.option.productId)) {
+          seenIds.add(it.option.productId)
+          mixedProducts.push({ id: it.option.productId, name: it.option.product?.name ?? '' })
+        }
+      }
+      product = { kind: 'mixed', products: mixedProducts }
+    }
+
+    // backward-compat: productName 필드 유지
+    const productName =
+      product.kind === 'single'
+        ? productDisplayName(product)
+        : `혼합 (${product.products.length}개 상품)`
+
     return {
       kind: 'group' as const,
       id: cp.id,
-      productId: cp.productId,
-      productName: productDisplayName(cp.product),
+      product,
+      productName,
       channelId: cp.channelId,
       channelName: cp.channel.name,
       baseSearchName: cp.baseSearchName,
@@ -193,89 +257,7 @@ export async function GET(req: NextRequest) {
       ? groups
       : groups.filter((g) => g.statusCounts[statusFilter as keyof typeof g.statusCounts] > 0)
 
-  // channelProductId 없는 단독 listing (solo/mixed)
-  const soloWhere: Prisma.ProductListingWhereInput = {
-    spaceId: resolved.space.id,
-    channelProductId: null,
-    channel: { channelTypeDef: { isSalesChannel: true } },
-  }
-  if (channelId) soloWhere.channelId = channelId
-  if (search) {
-    soloWhere.OR = [
-      { searchName: { contains: search, mode: 'insensitive' } },
-      { managementName: { contains: search, mode: 'insensitive' } },
-    ]
-  }
-
-  const soloListings = await prisma.productListing.findMany({
-    where: soloWhere,
-    orderBy: { updatedAt: 'desc' },
-    include: {
-      channel: { select: { id: true, name: true } },
-      items: {
-        include: {
-          option: {
-            select: {
-              id: true,
-              retailPrice: true,
-              productId: true,
-              product: { select: { msrp: true } },
-            },
-          },
-        },
-      },
-    },
-  })
-
-  const soloOptionIds = Array.from(
-    new Set(soloListings.flatMap((l) => l.items.map((it) => it.optionId)))
-  )
-  if (soloOptionIds.length > 0) {
-    const rows = await prisma.invStockLevel.groupBy({
-      by: ['optionId'],
-      where: { optionId: { in: soloOptionIds } },
-      _sum: { quantity: true },
-    })
-    for (const r of rows) stockMap.set(r.optionId, r._sum.quantity ?? 0)
-  }
-
-  const soloRows = soloListings.map((l) => {
-    const productIds = new Set(l.items.map((it) => it.option.productId))
-    const baseline = computeListingRetailBaseline(
-      l.items.map((it) => ({
-        quantity: it.quantity,
-        retailPrice:
-          it.option.retailPrice != null
-            ? Number(it.option.retailPrice)
-            : it.option.product?.msrp != null
-              ? Number(it.option.product.msrp)
-              : null,
-      }))
-    )
-    const available = computeListingAvailableStock(
-      l.items.map((it) => ({ quantity: it.quantity, optionStock: stockMap.get(it.optionId) ?? 0 }))
-    )
-    const retailPrice = l.retailPrice != null ? Number(l.retailPrice) : null
-    return {
-      kind: (productIds.size === 1 ? 'solo' : 'mixed') as 'solo' | 'mixed',
-      id: l.id,
-      channelId: l.channelId,
-      channelName: l.channel.name,
-      searchName: l.searchName,
-      displayName: l.displayName,
-      managementName: l.managementName,
-      availableStock: available,
-      baselinePrice: baseline,
-      retailPrice,
-      status: l.status,
-      effectiveStatus: computeEffectiveStatus(l.status, available),
-    }
-  })
-
-  const filteredSolo =
-    statusFilter === 'all' ? soloRows : soloRows.filter((r) => r.effectiveStatus === statusFilter)
-
-  return NextResponse.json({ groups: filteredGroups, solo: filteredSolo })
+  return NextResponse.json({ groups: filteredGroups })
 }
 
 export async function POST(req: NextRequest) {
@@ -289,23 +271,28 @@ export async function POST(req: NextRequest) {
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
 
-  const { productId, channelId, listings: listingInputs, ...cpFields } = parsed.data
+  const { channelId, listings: listingInputs, ...cpFields } = parsed.data
 
-  // product / channel 소속 검증
-  const [product, channel] = await Promise.all([
-    prisma.invProduct.findFirst({
-      where: { id: productId, spaceId: resolved.space.id },
-      select: { id: true },
-    }),
-    prisma.channel.findFirst({
-      where: { id: channelId, spaceId: resolved.space.id },
-      select: { id: true, channelTypeDef: { select: { isSalesChannel: true } } },
-    }),
-  ])
-  if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
+  // channel 소속 + 판매채널 검증
+  const channel = await prisma.channel.findFirst({
+    where: { id: channelId, spaceId: resolved.space.id },
+    select: { id: true, channelTypeDef: { select: { isSalesChannel: true } } },
+  })
   if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
   if (channel.channelTypeDef?.isSalesChannel !== true) {
     return errorResponse('판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다', 400)
+  }
+
+  // 모든 listing의 optionId 수집 → 한 번에 소속·ACTIVE 검증
+  const allOptionIds = [
+    ...new Set(listingInputs.flatMap((li) => li.items.map((it) => it.optionId))),
+  ]
+  const validOptions = await prisma.invProductOption.findMany({
+    where: { id: { in: allOptionIds }, product: { spaceId: resolved.space.id, status: 'ACTIVE' } },
+    select: { id: true },
+  })
+  if (validOptions.length !== allOptionIds.length) {
+    return errorResponse('일부 옵션을 찾을 수 없거나 미사용 상품에 속해 있습니다', 400)
   }
 
   let result: {
@@ -318,7 +305,6 @@ export async function POST(req: NextRequest) {
         data: {
           spaceId: resolved.space.id,
           channelId,
-          productId,
           ...cpFields,
           keywords: cpFields.keywords,
         },
@@ -357,7 +343,7 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
       return errorResponse(
-        '이미 같은 관리용 상품명이 이 채널에 등록되어 있습니다. 관리용 상품명을 변경해 주세요.',
+        '이 채널상품 안에 같은 관리용 상품명이 이미 있습니다. 관리용 상품명을 변경해 주세요.',
         409
       )
     }

@@ -43,7 +43,7 @@ import { applyRangeSelection } from '@/lib/range-selection'
 type GroupRow = {
   kind: 'group'
   id: string
-  productId: string
+  productId?: string // deprecated — product union으로 대체됨. 호환성 유지용
   productName: string
   baseSearchName: string
   baseManagementName: string | null
@@ -125,7 +125,7 @@ export function GroupsTable({ channelId, productId }: Props) {
         if (debouncedSearch.trim()) qs.set('search', debouncedSearch.trim())
         const res = await fetch(`/api/sh/products/listings/channel-products?${qs.toString()}`)
         if (!res.ok) throw new Error('목록 조회 실패')
-        const data: { groups: GroupRow[]; solo: SoloRow[] } = await res.json()
+        const data: { groups: GroupRow[]; solo?: SoloRow[] } = await res.json()
         if (cancelled) return
         setGroups(data.groups ?? [])
         setMixed(data.solo ?? [])

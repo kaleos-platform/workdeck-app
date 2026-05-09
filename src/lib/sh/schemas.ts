@@ -251,6 +251,7 @@ export type ProductListingItemInput = z.infer<typeof productListingItemSchema>
 export const productListingSchema = z
   .object({
     channelId: idLike,
+    channelProductId: idLike,
     internalCode: emptyToUndefined.pipe(z.string().trim().max(50)).optional(),
     searchName: listingNameSchema,
     displayName: listingOptionalNameSchema.optional().default(''),

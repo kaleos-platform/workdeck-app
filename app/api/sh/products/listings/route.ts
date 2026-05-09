@@ -21,9 +21,14 @@ function normalizeDisplayName(searchName: string, displayName?: string) {
   return trimmedDisplayName || trimmedSearchName
 }
 
+type SingleProduct = { kind: 'single'; id: string; name: string; displayName: string }
+type MixedProduct = { kind: 'mixed'; products: Array<{ id: string; name: string }> }
+type ProductUnion = SingleProduct | MixedProduct
+
 type ListingListRow = {
   id: string
   channelId: string
+  channelProductId: string | null
   searchName: string
   displayName: string
   managementName: string | null
@@ -36,6 +41,7 @@ type ListingListRow = {
   discountPercent: number | null
   availableStock: number
   itemCount: number
+  product: ProductUnion
   items: Array<{
     optionId: string
     optionName: string
@@ -133,9 +139,28 @@ export async function GET(req: NextRequest) {
     const effective = computeEffectiveStatus(l.status, available)
     const { diff, percent } = computeDiscount(baseline, retailPrice)
 
+    // product discriminated union 파생
+    const uniqueProductIds = [...new Set(l.items.map((it) => it.option.product.id))]
+    let product: ProductUnion
+    if (uniqueProductIds.length === 1) {
+      const p = l.items[0].option.product
+      product = { kind: 'single', id: p.id, name: p.name, displayName: productDisplayName(p) }
+    } else {
+      const seenIds = new Set<string>()
+      const mixedProducts: Array<{ id: string; name: string }> = []
+      for (const it of l.items) {
+        if (!seenIds.has(it.option.product.id)) {
+          seenIds.add(it.option.product.id)
+          mixedProducts.push({ id: it.option.product.id, name: it.option.product.name })
+        }
+      }
+      product = { kind: 'mixed', products: mixedProducts }
+    }
+
     return {
       id: l.id,
       channelId: l.channelId,
+      channelProductId: l.channelProductId,
       searchName: l.searchName,
       displayName: l.displayName,
       managementName: l.managementName,
@@ -150,6 +175,7 @@ export async function GET(req: NextRequest) {
       autoAvailableStock: autoAvailable,
       channelAllocation: l.channelAllocation,
       itemCount: l.items.length,
+      product,
       items: l.items.map((it) => ({
         optionId: it.optionId,
         optionName: it.option.name,
@@ -182,13 +208,22 @@ export async function POST(req: NextRequest) {
   const input = parsed.data
   const displayName = normalizeDisplayName(input.searchName, input.displayName)
 
-  // 채널 소속 검증
-  const channel = await prisma.channel.findFirst({
-    where: { id: input.channelId, spaceId: resolved.space.id },
-    select: { id: true, channelTypeDef: { select: { isSalesChannel: true } } },
+  // channelProductId 필수 검증
+  if (!input.channelProductId) {
+    return errorResponse('채널상품을 지정해주세요', 400)
+  }
+
+  // channelProduct 소속 + 채널 일치 검증
+  const channelProduct = await prisma.channelProduct.findFirst({
+    where: { id: input.channelProductId, spaceId: resolved.space.id },
+    select: {
+      id: true,
+      channelId: true,
+      channel: { select: { channelTypeDef: { select: { isSalesChannel: true } } } },
+    },
   })
-  if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
-  if (channel.channelTypeDef?.isSalesChannel !== true) {
+  if (!channelProduct) return errorResponse('채널상품을 찾을 수 없습니다', 404)
+  if (channelProduct.channel.channelTypeDef?.isSalesChannel !== true) {
     return errorResponse(SALES_CHANNEL_ONLY_MESSAGE, 400)
   }
 
@@ -204,16 +239,26 @@ export async function POST(req: NextRequest) {
 
   // 검색명 중복 검증 (같은 채널 내)
   const dup = await prisma.productListing.findFirst({
-    where: { channelId: input.channelId, searchName: input.searchName },
+    where: { channelId: channelProduct.channelId, searchName: input.searchName },
     select: { id: true },
   })
   if (dup) return errorResponse('같은 채널에 동일한 검색명이 이미 있습니다', 409)
+
+  // managementName 중복 검증 ((channelProductId, managementName) scope)
+  if (input.managementName) {
+    const dupMgmt = await prisma.productListing.findFirst({
+      where: { channelProductId: input.channelProductId, managementName: input.managementName },
+      select: { id: true },
+    })
+    if (dupMgmt) return errorResponse('이 채널상품 안에 같은 관리용 상품명이 이미 있습니다', 409)
+  }
 
   const created = await prisma.$transaction(async (tx) => {
     const listing = await tx.productListing.create({
       data: {
         spaceId: resolved.space.id,
-        channelId: input.channelId,
+        channelId: channelProduct.channelId,
+        channelProductId: input.channelProductId,
         searchName: input.searchName,
         displayName,
         managementName: input.managementName ?? null,

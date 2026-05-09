@@ -27,6 +27,23 @@ const patchSchema = z.object({
   keywords: z.array(z.string()).optional(),
 })
 
+// product 공통 메타 필드 (single: 해당 product, mixed: 첫 번째 product 기준 backward-compat)
+type ProductMeta = {
+  id: string
+  name: string
+  internalName: string | null
+  displayName: string
+  brand: { id: string; name: string } | null
+  optionAttributes: Array<{ name: string; values: Array<{ value: string }> }>
+  msrp: number | null
+}
+type SingleProduct = ProductMeta & { kind: 'single' }
+type MixedProduct = ProductMeta & {
+  kind: 'mixed'
+  products: Array<{ id: string; name: string }>
+}
+type ProductUnion = SingleProduct | MixedProduct
+
 export async function GET(_req: NextRequest, { params }: Params) {
   const { id } = await params
   const resolved = await resolveDeckContext('seller-hub')
@@ -35,16 +52,6 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const cp = await prisma.channelProduct.findFirst({
     where: { id, spaceId: resolved.space.id },
     include: {
-      product: {
-        select: {
-          id: true,
-          name: true,
-          internalName: true,
-          msrp: true,
-          optionAttributes: true,
-          brand: { select: { id: true, name: true } },
-        },
-      },
       channel: {
         select: {
           id: true,
@@ -66,6 +73,16 @@ export async function GET(_req: NextRequest, { params }: Params) {
                   retailPrice: true,
                   productId: true,
                   attributeValues: true,
+                  product: {
+                    select: {
+                      id: true,
+                      name: true,
+                      internalName: true,
+                      msrp: true,
+                      optionAttributes: true,
+                      brand: { select: { id: true, name: true } },
+                    },
+                  },
                 },
               },
             },
@@ -75,8 +92,6 @@ export async function GET(_req: NextRequest, { params }: Params) {
     },
   })
   if (!cp) return errorResponse('채널상품을 찾을 수 없습니다', 404)
-
-  const productMsrp = cp.product.msrp != null ? Number(cp.product.msrp) : null
 
   // 재고 배치 조회
   const optionIds = Array.from(
@@ -92,7 +107,60 @@ export async function GET(_req: NextRequest, { params }: Params) {
     for (const r of rows) stockMap.set(r.optionId, r._sum.quantity ?? 0)
   }
 
+  // product discriminated union 파생
+  const allItems = cp.listings.flatMap((l) => l.items)
+  const productIds = [...new Set(allItems.map((it) => it.option.productId))]
+
+  let product: ProductUnion
+  if (productIds.length <= 1) {
+    // single product (또는 listing 없음)
+    const repProduct = allItems[0]?.option.product
+    const optionAttributes = Array.isArray(repProduct?.optionAttributes)
+      ? (repProduct.optionAttributes as Array<{ name: string; values: Array<{ value: string }> }>)
+      : []
+    product = {
+      kind: 'single',
+      id: repProduct?.id ?? '',
+      name: repProduct?.name ?? '',
+      internalName: repProduct?.internalName ?? null,
+      displayName: repProduct ? productDisplayName(repProduct) : '',
+      brand: repProduct?.brand ?? null,
+      optionAttributes,
+      msrp: repProduct?.msrp != null ? Number(repProduct.msrp) : null,
+    }
+  } else {
+    // mixed — backward-compat: id/name/displayName/optionAttributes/brand/msrp를 첫 번째 product 기준으로 채움
+    const seenIds = new Set<string>()
+    const mixedProducts: Array<{ id: string; name: string }> = []
+    for (const it of allItems) {
+      if (!seenIds.has(it.option.productId)) {
+        seenIds.add(it.option.productId)
+        mixedProducts.push({ id: it.option.productId, name: it.option.product?.name ?? '' })
+      }
+    }
+    const repProduct = allItems[0]?.option.product
+    const optionAttributes = Array.isArray(repProduct?.optionAttributes)
+      ? (repProduct.optionAttributes as Array<{ name: string; values: Array<{ value: string }> }>)
+      : []
+    product = {
+      kind: 'mixed',
+      products: mixedProducts,
+      // backward-compat fields
+      id: repProduct?.id ?? '',
+      name: repProduct?.name ?? '',
+      internalName: repProduct?.internalName ?? null,
+      displayName: repProduct ? productDisplayName(repProduct) : '',
+      brand: repProduct?.brand ?? null,
+      optionAttributes,
+      msrp: repProduct?.msrp != null ? Number(repProduct.msrp) : null,
+    }
+  }
+
   const listings = cp.listings.map((l) => {
+    // msrp: listing items에서 product msrp 추출 (첫 번째 옵션 기준)
+    const firstProductMsrp = l.items[0]?.option.product?.msrp
+    const productMsrp = firstProductMsrp != null ? Number(firstProductMsrp) : null
+
     const priceSnapshots = l.items.map((it) => ({
       quantity: it.quantity,
       retailPrice: it.option.retailPrice != null ? Number(it.option.retailPrice) : productMsrp,
@@ -134,10 +202,6 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }
   })
 
-  const optionAttributes = Array.isArray(cp.product.optionAttributes)
-    ? (cp.product.optionAttributes as Array<{ name: string; values: Array<{ value: string }> }>)
-    : []
-
   return NextResponse.json({
     channelProduct: {
       id: cp.id,
@@ -148,14 +212,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       memo: cp.memo,
       keywords: Array.isArray(cp.keywords) ? (cp.keywords as string[]) : [],
     },
-    product: {
-      id: cp.product.id,
-      name: cp.product.name,
-      internalName: cp.product.internalName,
-      displayName: productDisplayName(cp.product),
-      brand: cp.product.brand,
-      optionAttributes,
-    },
+    product,
     channel: {
       id: cp.channel.id,
       name: cp.channel.name,
@@ -213,7 +270,6 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (!cp) return errorResponse('채널상품을 찾을 수 없습니다', 404)
 
   // listings는 channelProductId FK가 SetNull이므로 채널상품 삭제 시 자동 해제됨
-  // listings 자체를 삭제하려면 cascade가 필요하나 현재 정책은 listing 보존
   await prisma.channelProduct.delete({ where: { id } })
 
   return new NextResponse(null, { status: 204 })

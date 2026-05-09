@@ -759,7 +759,6 @@ model InvProduct {
   brand            Brand?                    @relation(fields: [brandId], references: [id], onDelete: SetNull)
   options          InvProductOption[]
   reorderConfig    InvReorderConfig?
-  channelProducts  ChannelProduct[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1504,7 +1503,7 @@ model ProductListing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([channelId, managementName])
+  @@unique([channelProductId, managementName])
   @@index([spaceId, channelId])
   @@index([status])
   @@index([channelProductId])
@@ -1539,13 +1538,13 @@ model DelOrderItemFulfillment {
   @@index([optionId])
 }
 
-// 채널상품 — product × channel 단위 판매 묶음의 실체 엔티티.
+// 채널상품 — channel 단위 판매 묶음의 실체 엔티티.
+// 혼합 구성(여러 product 옵션 묶음) listing도 지원.
 // 자식 ProductListing들은 channelProductId FK로 귀속됨.
 model ChannelProduct {
   id        String @id @default(cuid())
   spaceId   String
   channelId String
-  productId String // 단일 product 채널상품만 지원
 
   baseSearchName     String
   baseDisplayName    String?
@@ -1556,14 +1555,12 @@ model ChannelProduct {
 
   space    Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channel  Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  product  InvProduct       @relation(fields: [productId], references: [id], onDelete: Cascade)
   listings ProductListing[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([spaceId, channelId])
-  @@index([productId, channelId])
 }
 
 

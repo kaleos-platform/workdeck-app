@@ -202,7 +202,6 @@ async function main() {
           data: {
             spaceId: group.spaceId,
             channelId: group.channelId,
-            productId: group.productId,
             baseSearchName: group.baseSearchName,
             baseManagementName: group.baseManagementName,
             keywords,

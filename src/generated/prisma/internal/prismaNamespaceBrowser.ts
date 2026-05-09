@@ -1117,7 +1117,6 @@ export const ChannelProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   channelId: 'channelId',
-  productId: 'productId',
   baseSearchName: 'baseSearchName',
   baseDisplayName: 'baseDisplayName',
   baseManagementName: 'baseManagementName',
