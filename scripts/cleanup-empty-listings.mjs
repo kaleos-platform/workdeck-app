@@ -1,5 +1,5 @@
 /**
- * 옵션(items)이 없는 ProductListing 및 빈 ChannelProduct를 정리하는 스크립트.
+ * 옵션(items)이 없는 ProductListing 및 빈 ChannelProduct(listings 0개)를 정리하는 스크립트.
  *
  * 사용법:
  *   vercel env pull --environment=production .env.production.local
@@ -21,38 +21,61 @@ const client = new Client({ connectionString: process.env.DATABASE_URL })
 await client.connect()
 
 try {
-  const { rows: empties } = await client.query(`
+  // 1) 옵션 없는 ProductListing
+  const { rows: emptyListings } = await client.query(`
     SELECT l.id, l."searchName", l."channelId", l."channelProductId", l."status"
     FROM "ProductListing" l
     LEFT JOIN "ProductListingItem" i ON i."listingId" = l.id
     WHERE i.id IS NULL
     ORDER BY l."createdAt"
   `)
-  console.log(`옵션 없는 listing: ${empties.length}개`)
-  if (empties.length > 0) {
-    console.table(empties.slice(0, 30))
-    if (empties.length > 30) console.log(`... 외 ${empties.length - 30}개`)
+  console.log(`옵션 없는 ProductListing: ${emptyListings.length}개`)
+  if (emptyListings.length > 0) {
+    console.table(emptyListings.slice(0, 30))
+    if (emptyListings.length > 30) console.log(`... 외 ${emptyListings.length - 30}개`)
+  }
+
+  // 2) listings가 0개인 빈 ChannelProduct (현재 시점 기준 — 1단계 삭제 전이라도 이미 비어있는 케이스)
+  const { rows: emptyCpsPreview } = await client.query(`
+    SELECT cp.id, cp."baseSearchName", cp."baseManagementName"
+    FROM "ChannelProduct" cp
+    LEFT JOIN "ProductListing" l ON l."channelProductId" = cp.id
+    GROUP BY cp.id
+    HAVING COUNT(l.id) = 0
+    ORDER BY cp."baseSearchName"
+  `)
+  console.log(`\n빈 ChannelProduct: ${emptyCpsPreview.length}개`)
+  if (emptyCpsPreview.length > 0) {
+    console.table(emptyCpsPreview.slice(0, 30))
+    if (emptyCpsPreview.length > 30) console.log(`... 외 ${emptyCpsPreview.length - 30}개`)
   }
 
   if (dryRun) {
-    console.log('--dry 모드: 실제 삭제는 수행하지 않았습니다')
+    console.log('\n--dry 모드: 실제 삭제는 수행하지 않았습니다')
     process.exit(0)
   }
 
-  if (empties.length === 0) {
+  if (emptyListings.length === 0 && emptyCpsPreview.length === 0) {
     console.log('정리할 데이터가 없습니다')
     process.exit(0)
   }
 
   await client.query('BEGIN')
-  const ids = empties.map((r) => r.id)
-  const delListing = await client.query(`DELETE FROM "ProductListing" WHERE id = ANY($1)`, [ids])
 
+  let delListing = { rowCount: 0 }
+  if (emptyListings.length > 0) {
+    delListing = await client.query(`DELETE FROM "ProductListing" WHERE id = ANY($1)`, [
+      emptyListings.map((r) => r.id),
+    ])
+  }
+
+  // listing 삭제 후 다시 조회 (1단계로 인해 새로 비게 된 cp 포함)
   const { rows: emptyCps } = await client.query(`
-    SELECT cp.id, cp."baseSearchName"
+    SELECT cp.id
     FROM "ChannelProduct" cp
     LEFT JOIN "ProductListing" l ON l."channelProductId" = cp.id
-    WHERE l.id IS NULL
+    GROUP BY cp.id
+    HAVING COUNT(l.id) = 0
   `)
   let delCp = { rowCount: 0 }
   if (emptyCps.length > 0) {
@@ -63,7 +86,7 @@ try {
 
   await client.query('COMMIT')
   console.log(
-    `삭제 완료: ProductListing ${delListing.rowCount}개, ChannelProduct ${delCp.rowCount}개`
+    `\n삭제 완료: ProductListing ${delListing.rowCount}개, ChannelProduct ${delCp.rowCount}개`
   )
 } catch (e) {
   await client.query('ROLLBACK').catch(() => {})

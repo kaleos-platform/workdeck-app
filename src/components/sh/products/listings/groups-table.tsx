@@ -224,7 +224,17 @@ export function GroupsTable({ channelId, productId }: Props) {
     return statuses
   }, [groups, mixed, selectedRows])
   const allSelectedDeletable =
-    selectedEffectiveStatuses.length > 0 && selectedEffectiveStatuses.every((s) => s !== 'ACTIVE')
+    selectedEffectiveStatuses.length === 0 || selectedEffectiveStatuses.every((s) => s !== 'ACTIVE')
+
+  // 빈 그룹(listings=0) 별도 추적: 삭제 시 ChannelProduct 직접 삭제
+  const selectedEmptyGroupIds = useMemo(() => {
+    const ids: string[] = []
+    for (const g of groups) {
+      if (selectedRows.has(rowKeyForGroup(g)) && g.listings.length === 0) ids.push(g.id)
+    }
+    return ids
+  }, [groups, selectedRows])
+  const totalSelectedToDelete = selectedListingIds.length + selectedEmptyGroupIds.length
 
   async function runBulkPatch(status: 'ACTIVE' | 'SUSPENDED') {
     if (selectedListingIds.length === 0) return
@@ -254,15 +264,15 @@ export function GroupsTable({ channelId, productId }: Props) {
   }
 
   async function runBulkDelete() {
-    if (selectedListingIds.length === 0) return
+    if (totalSelectedToDelete === 0) return
     if (!allSelectedDeletable) {
       toast.error('판매 중인 옵션은 비활성화 후 삭제할 수 있습니다')
       return
     }
     setBulkLoading(true)
     const failures: string[] = []
-    await Promise.all(
-      selectedListingIds.map(async (id) => {
+    await Promise.all([
+      ...selectedListingIds.map(async (id) => {
         try {
           const res = await fetch(`/api/sh/products/listings/${id}`, { method: 'DELETE' })
           if (!res.ok) {
@@ -272,14 +282,27 @@ export function GroupsTable({ channelId, productId }: Props) {
         } catch (err) {
           failures.push(err instanceof Error ? err.message : id)
         }
-      })
-    )
+      }),
+      ...selectedEmptyGroupIds.map(async (id) => {
+        try {
+          const res = await fetch(`/api/sh/products/listings/channel-products/${id}`, {
+            method: 'DELETE',
+          })
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            failures.push(err?.message ?? id)
+          }
+        } catch (err) {
+          failures.push(err instanceof Error ? err.message : id)
+        }
+      }),
+    ])
     setBulkLoading(false)
     setBulkAction(null)
     if (failures.length > 0) {
       toast.warning(`일부 삭제 실패 (${failures.length}건)`)
     } else {
-      toast.success(`${selectedListingIds.length}개 판매 옵션이 삭제되었습니다`)
+      toast.success(`${totalSelectedToDelete}개 항목이 삭제되었습니다`)
     }
     setRefreshKey((n) => n + 1)
   }
@@ -346,7 +369,7 @@ export function GroupsTable({ channelId, productId }: Props) {
                 }
                 setBulkAction('delete')
               }}
-              disabled={bulkLoading || selectedListingIds.length === 0}
+              disabled={bulkLoading || totalSelectedToDelete === 0}
             >
               <Trash2 className="mr-1 h-3.5 w-3.5" />
               삭제
@@ -498,7 +521,13 @@ export function GroupsTable({ channelId, productId }: Props) {
             <DialogTitle>판매채널 상품 삭제</DialogTitle>
             <DialogDescription>
               선택한 <span className="font-medium">{selectedRowCount}개</span> 채널 상품(판매 옵션{' '}
-              <span className="font-medium">{selectedListingIds.length}개</span>)을 모두 삭제합니다.
+              <span className="font-medium">{selectedListingIds.length}개</span>
+              {selectedEmptyGroupIds.length > 0 && (
+                <>
+                  , 빈 그룹 <span className="font-medium">{selectedEmptyGroupIds.length}개</span>
+                </>
+              )}
+              )을 모두 삭제합니다.
               <br />• 매칭된 배송 별칭(alias)도 함께 삭제됩니다.
               <br />• 이미 매칭된 배송 주문은 해당 옵션 연결만 해제됩니다 (이력 보존).
               <br />이 작업은 되돌릴 수 없습니다.
