@@ -735,32 +735,49 @@ export function GroupDetailView({ channelProductId }: Props) {
         status?: 'ACTIVE' | 'SUSPENDED'
       } = {}
 
-      // single 모드에서만 base → listing 이름 전파
-      if (!isMixed && snapBaseDirty) {
-        const suffix = buildSuffix(
-          {
-            id: l.id,
-            searchName: l.searchName,
-            displayName: l.displayName,
-            managementName: l.managementName,
-            internalCode: l.internalCode,
-            memo: l.memo,
-            items: l.items.map((it) => ({
-              optionId: it.optionId,
-              attributeValues: it.attributeValues,
-            })),
-          },
-          data.product.optionAttributes
-        )
-        patch.searchName = joinName(snapBase.searchName.trim(), suffix) || l.searchName
-        patch.displayName =
-          joinName(snapBase.displayName.trim() || snapBase.searchName.trim(), suffix) ||
-          l.displayName
+      // single 모드에서만 base → listing 이름 전파.
+      // listing 고유 tail(=기존 base 이후 부분)을 보존해 같은 cp 안에서도 listing별로 다른 이름 유지.
+      if (!isMixed && snapBaseDirty && derivedBase) {
+        const tail = (name: string | null, oldBase: string): string => {
+          if (!name) return ''
+          if (oldBase && name.startsWith(oldBase)) return name.slice(oldBase.length)
+          // base가 매칭 안 되는 경우 attribute suffix로 회복
+          const suffix = buildSuffix(
+            {
+              id: l.id,
+              searchName: l.searchName,
+              displayName: l.displayName,
+              managementName: l.managementName,
+              internalCode: l.internalCode,
+              memo: l.memo,
+              items: l.items.map((it) => ({
+                optionId: it.optionId,
+                attributeValues: it.attributeValues,
+              })),
+            },
+            data.product.optionAttributes
+          )
+          return suffix ? ` ${suffix}` : ''
+        }
+        const newSearch = (
+          snapBase.searchName.trim() + tail(l.searchName, derivedBase.baseSearchName)
+        ).trim()
+        patch.searchName = newSearch || l.searchName
+        const newDisplay = (
+          (snapBase.displayName.trim() || snapBase.searchName.trim()) +
+          tail(l.displayName, derivedBase.baseDisplayName || derivedBase.baseSearchName)
+        ).trim()
+        patch.displayName = newDisplay || l.displayName
         patch.managementName = snapBase.managementName.trim()
-          ? joinName(snapBase.managementName.trim(), suffix)
+          ? (
+              snapBase.managementName.trim() +
+              tail(l.managementName, derivedBase.baseManagementName)
+            ).trim()
           : null
         patch.internalCode = snapBase.internalCode.trim()
-          ? joinName(snapBase.internalCode.trim(), suffix)
+          ? (
+              snapBase.internalCode.trim() + tail(l.internalCode, derivedBase.baseInternalCode)
+            ).trim()
           : null
         patch.memo = snapBase.memo.trim() || null
       }
