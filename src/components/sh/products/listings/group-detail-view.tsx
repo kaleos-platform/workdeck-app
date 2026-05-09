@@ -808,9 +808,10 @@ export function GroupDetailView({ channelProductId }: Props) {
       }
     }
 
-    // mixed 모드의 base 필드 변경: channel-product에 직접 PATCH
+    // base 필드 변경: channel-product에 직접 PATCH (single/mixed 모두)
+    // single 모드에서도 cp.baseManagementName이 목록 표시값이라 동기화 필수
     let channelProductBaseSaved = false
-    if (isMixed && snapBaseDirty) {
+    if (snapBaseDirty) {
       try {
         const res = await fetch(`/api/sh/products/listings/channel-products/${channelProductId}`, {
           method: 'PATCH',
