@@ -190,7 +190,7 @@ export function ProductMatchDialog({
       .finally(() => setOptionLoading(false))
   }, [open, tab, debouncedSearch])
 
-  // 채널상품 + 하위 listing 일괄 조회 (탭 'listing') — 현재 채널에 한정
+  // 채널상품 + 하위 listing(items 포함) 일괄 조회 (탭 'listing') — 현재 채널에 한정
   useEffect(() => {
     if (!open || tab !== 'listing' || !channelId) return
     const q = debouncedSearch.trim()
@@ -210,80 +210,37 @@ export function ProductMatchDialog({
             searchName: string
             displayName: string
             retailPrice: number | null
+            items?: Array<{ optionName: string; quantity: number }>
           }>
-          // listings의 items는 channel-products API에 포함되지 않으므로
-          // composition 표시는 listing 검색 시 별도 처리
         }> = data?.groups ?? []
-        // listings의 옵션 구성 정보는 channel-products API에 없으므로 listing 단계 진입 시 별도 fetch.
-        // 단, "옵션 구성" 라벨은 listingCount만으로도 충분히 식별 가능.
         setChannelProductGroups(
           groups.map((g) => ({
             channelProductId: g.id,
             productName: g.baseManagementName?.trim() || g.productName,
             listingCount: g.listingCount,
-            listings: (g.listings ?? []).map((l) => ({
-              listingId: l.id,
-              searchName: l.searchName,
-              displayName: l.displayName,
-              itemCount: 0,
-              channelName: channelName ?? null,
-              retailPrice: l.retailPrice,
-              composition: '',
-            })),
+            listings: (g.listings ?? []).map((l) => {
+              const items = l.items ?? []
+              const composition =
+                items
+                  .slice(0, 3)
+                  .map((it) => `${it.optionName} ×${it.quantity}`)
+                  .join(' · ') + (items.length > 3 ? ' …' : '')
+              return {
+                listingId: l.id,
+                searchName: l.searchName,
+                displayName: l.displayName,
+                itemCount: items.length,
+                channelName: channelName ?? null,
+                retailPrice: l.retailPrice,
+                composition,
+              }
+            }),
           }))
         )
       })
       .catch(() => setChannelProductGroups([]))
       .finally(() => setListingLoading(false))
   }, [open, tab, debouncedSearch, channelId, channelName])
-
-  // 선택된 채널상품의 listing들 (composition 정보가 채널상품 API에 없으므로
-  // 선택 시점에 listings API로 보강 fetch)
-  const [selectedListingDetails, setSelectedListingDetails] = useState<ListingEntry[]>([])
-  const [selectedListingsLoading, setSelectedListingsLoading] = useState(false)
-
-  useEffect(() => {
-    if (!selectedChannelProductId || !channelId) {
-      setSelectedListingDetails([])
-      return
-    }
-    const group = channelProductGroups.find((g) => g.channelProductId === selectedChannelProductId)
-    if (!group) return
-    setSelectedListingsLoading(true)
-    // listings API로 해당 채널상품의 listing 상세(items 포함) 조회
-    const qs = new URLSearchParams({ channelId, pageSize: '50' })
-    fetch(`/api/sh/products/listings?${qs.toString()}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        const rows: Array<{
-          id: string
-          channelProductId: string | null
-          searchName: string
-          displayName: string
-          itemCount: number
-          retailPrice: number | null
-          items: Array<{ optionName: string; productName: string; quantity: number }>
-        }> = data?.data ?? []
-        const filtered = rows.filter((l) => l.channelProductId === selectedChannelProductId)
-        setSelectedListingDetails(
-          filtered.map((l) => ({
-            listingId: l.id,
-            searchName: l.searchName,
-            displayName: l.displayName,
-            itemCount: l.itemCount,
-            channelName: channelName ?? null,
-            retailPrice: l.retailPrice,
-            composition:
-              (l.items ?? [])
-                .slice(0, 3)
-                .map((it) => `${it.optionName} ×${it.quantity}`)
-                .join(' · ') + (l.items && l.items.length > 3 ? ' …' : ''),
-          }))
-        )
-      })
-      .catch(() => setSelectedListingDetails([]))
-      .finally(() => setSelectedListingsLoading(false))
-  }, [selectedChannelProductId, channelProductGroups, channelId, channelName])
 
   const selectedGroup = useMemo(
     () => channelProductGroups.find((g) => g.channelProductId === selectedChannelProductId) ?? null,
@@ -505,16 +462,12 @@ export function ProductMatchDialog({
                     </p>
                   </div>
                   <div className="max-h-[45vh] space-y-1 overflow-y-auto rounded-md border p-1">
-                    {selectedListingsLoading ? (
-                      <p className="py-6 text-center text-sm text-muted-foreground">
-                        불러오는 중...
-                      </p>
-                    ) : selectedListingDetails.length === 0 ? (
+                    {selectedGroup.listings.length === 0 ? (
                       <p className="py-6 text-center text-sm text-muted-foreground">
                         옵션 구성이 없습니다
                       </p>
                     ) : (
-                      selectedListingDetails.map((e) => (
+                      selectedGroup.listings.map((e) => (
                         <button
                           key={e.listingId}
                           type="button"

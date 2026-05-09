@@ -106,6 +106,7 @@ export async function GET(req: NextRequest) {
               option: {
                 select: {
                   id: true,
+                  name: true,
                   retailPrice: true,
                   productId: true,
                   product: {
@@ -175,6 +176,12 @@ export async function GET(req: NextRequest) {
         retailPrice,
         status: l.status,
         effectiveStatus: computeEffectiveStatus(l.status, available),
+        items: l.items.map((it) => ({
+          optionId: it.optionId,
+          optionName: it.option.name,
+          productName: it.option.product?.name ?? '',
+          quantity: it.quantity,
+        })),
       }
     })
 
