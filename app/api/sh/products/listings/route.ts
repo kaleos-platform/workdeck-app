@@ -237,13 +237,6 @@ export async function POST(req: NextRequest) {
     return errorResponse('일부 옵션을 찾을 수 없거나 미사용 상품에 속해 있습니다', 400)
   }
 
-  // 검색명 중복 검증 (같은 채널상품 내, unique scope과 일치)
-  const dup = await prisma.productListing.findFirst({
-    where: { channelProductId: input.channelProductId, searchName: input.searchName },
-    select: { id: true },
-  })
-  if (dup) return errorResponse('이 채널상품 안에 같은 검색명이 이미 있습니다', 409)
-
   const created = await prisma.$transaction(async (tx) => {
     const listing = await tx.productListing.create({
       data: {

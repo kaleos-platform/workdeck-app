@@ -1503,7 +1503,7 @@ model ProductListing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([channelProductId, searchName])
+  // unique 제약 없음 — listing 식별은 옵션 구성으로 이루어지며, 이름은 표시용. 같은 cp 안에서도 동일 이름 허용.
   @@index([spaceId, channelId])
   @@index([status])
   @@index([channelProductId])

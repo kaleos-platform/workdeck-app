@@ -176,19 +176,6 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ? undefined
       : normalizeDisplayName(nextSearchName, input.displayName)
 
-  // searchName 변경 시 같은 채널상품 내 중복 검증
-  if (input.searchName && input.searchName !== existing.searchName && existing.channelProductId) {
-    const dup = await prisma.productListing.findFirst({
-      where: {
-        channelProductId: existing.channelProductId,
-        searchName: input.searchName,
-        NOT: { id: listingId },
-      },
-      select: { id: true },
-    })
-    if (dup) return errorResponse('이 채널상품 안에 같은 검색명이 이미 있습니다', 409)
-  }
-
   // items 변경 시 옵션 소속 검증
   if (input.items) {
     const optionIds = input.items.map((it) => it.optionId)
