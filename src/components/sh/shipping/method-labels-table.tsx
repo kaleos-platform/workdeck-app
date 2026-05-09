@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { applyRangeSelection } from '@/lib/range-selection'
 import { toast } from 'sonner'
 import { Settings, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -221,14 +222,23 @@ export function MethodLabelsTable({ methodId }: { methodId: string }) {
     [rows]
   )
 
-  const toggleOne = useCallback((optionId: string, checked: boolean) => {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (checked) next.add(optionId)
-      else next.delete(optionId)
-      return next
-    })
-  }, [])
+  const lastClickedIndexRef = useRef<number | null>(null)
+  const toggleOne = useCallback(
+    (optionId: string, index: number, shiftKey: boolean) => {
+      setSelected((prev) =>
+        applyRangeSelection(
+          prev,
+          rows.map((r) => r.optionId),
+          optionId,
+          index,
+          shiftKey,
+          lastClickedIndexRef.current
+        )
+      )
+      lastClickedIndexRef.current = index
+    },
+    [rows]
+  )
 
   async function bulkClear() {
     if (selected.size === 0) return
@@ -397,7 +407,7 @@ export function MethodLabelsTable({ methodId }: { methodId: string }) {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => {
+              rows.map((row, idx) => {
                 const draft = drafts[row.optionId] ?? {}
                 return (
                   <TableRow
@@ -408,7 +418,8 @@ export function MethodLabelsTable({ methodId }: { methodId: string }) {
                     <TableCell>
                       <Checkbox
                         checked={selected.has(row.optionId)}
-                        onCheckedChange={(v) => toggleOne(row.optionId, v === true)}
+                        onClick={(e: React.MouseEvent) => toggleOne(row.optionId, idx, e.shiftKey)}
+                        onCheckedChange={() => {}}
                         aria-label={`${row.optionName} 선택`}
                         disabled={!hasLabelColumns}
                       />

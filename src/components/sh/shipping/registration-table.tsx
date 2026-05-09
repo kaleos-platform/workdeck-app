@@ -1,10 +1,12 @@
 'use client'
 
+import { useRef } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
+import { applyRangeSelection } from '@/lib/range-selection'
 import {
   Select,
   SelectContent,
@@ -111,6 +113,7 @@ export function RegistrationTable({
   onItemPatch,
 }: RegistrationTableProps) {
   const selectionEnabled = !!selectedIds && !!onSelectionChange
+  const lastClickedIndexRef = useRef<number | null>(null)
 
   function addRow() {
     onChange([...rows, createEmptyRow()])
@@ -124,11 +127,18 @@ export function RegistrationTable({
     }
   }
 
-  function toggleRow(tempId: string, checked: boolean) {
+  function toggleRow(tempId: string, index: number, shiftKey: boolean) {
     if (!onSelectionChange || !selectedIds) return
-    const next = new Set(selectedIds)
-    if (checked) next.add(tempId)
-    else next.delete(tempId)
+    const allKeys = rows.map((r) => r.tempId)
+    const next = applyRangeSelection(
+      selectedIds,
+      allKeys,
+      tempId,
+      index,
+      shiftKey,
+      lastClickedIndexRef.current
+    )
+    lastClickedIndexRef.current = index
     onSelectionChange(next)
   }
 
@@ -190,7 +200,7 @@ export function RegistrationTable({
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => {
+              rows.map((row, idx) => {
                 const channel = channels.find((c) => c.id === row.channelId)
                 const requireOrderNumber = channel?.requireOrderNumber ?? false
                 const requirePayment = channel?.requirePayment ?? false
@@ -215,7 +225,8 @@ export function RegistrationTable({
                       <TableCell>
                         <Checkbox
                           checked={selectedIds?.has(row.tempId) ?? false}
-                          onCheckedChange={(v) => toggleRow(row.tempId, v === true)}
+                          onClick={(e: React.MouseEvent) => toggleRow(row.tempId, idx, e.shiftKey)}
+                          onCheckedChange={() => {}}
                           aria-label="행 선택"
                           className="mt-1.5"
                         />

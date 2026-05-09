@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { applyRangeSelection } from '@/lib/range-selection'
 import { Download, Info, Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -340,14 +341,23 @@ export function ProductOptionAttributesEditor({
     })
   }, [combinations])
 
-  const toggleRow = useCallback((key: string, checked: boolean) => {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (checked) next.add(key)
-      else next.delete(key)
-      return next
-    })
-  }, [])
+  const lastClickedIndexRef = useRef<number | null>(null)
+  const toggleRow = useCallback(
+    (key: string, index: number, shiftKey: boolean) => {
+      setSelected((prev) =>
+        applyRangeSelection(
+          prev,
+          combinations.map((r) => r.combination.join('|')),
+          key,
+          index,
+          shiftKey,
+          lastClickedIndexRef.current
+        )
+      )
+      lastClickedIndexRef.current = index
+    },
+    [combinations]
+  )
 
   const toggleAllRows = useCallback(
     (checked: boolean) => {
@@ -601,7 +611,8 @@ export function ProductOptionAttributesEditor({
                       <TableCell className="py-1.5">
                         <Checkbox
                           checked={isSelected}
-                          onCheckedChange={(v) => toggleRow(key, v === true)}
+                          onClick={(e: React.MouseEvent) => toggleRow(key, rowIdx, e.shiftKey)}
+                          onCheckedChange={() => {}}
                           aria-label={`${combinationLabel(row.combination)} 선택`}
                         />
                       </TableCell>

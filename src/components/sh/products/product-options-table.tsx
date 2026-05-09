@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertTriangle, Info, Loader2, RefreshCw, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { applyRangeSelection } from '@/lib/range-selection'
 import { Button } from '@/components/ui/button'
 import {
   FloatingActionBar,
@@ -310,14 +311,23 @@ export function ProductOptionsTable({
     [options]
   )
 
-  const toggleOne = useCallback((id: string, checked: boolean) => {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (checked) next.add(id)
-      else next.delete(id)
-      return next
-    })
-  }, [])
+  const lastClickedIndexRef = useRef<number | null>(null)
+  const toggleOne = useCallback(
+    (id: string, index: number, shiftKey: boolean) => {
+      setSelected((prev) =>
+        applyRangeSelection(
+          prev,
+          options.map((o) => o.id),
+          id,
+          index,
+          shiftKey,
+          lastClickedIndexRef.current
+        )
+      )
+      lastClickedIndexRef.current = index
+    },
+    [options]
+  )
 
   async function applyBulkEdit() {
     if (selected.size === 0) return
@@ -522,7 +532,7 @@ export function ProductOptionsTable({
                 </TableCell>
               </TableRow>
             ) : (
-              options.map((opt) => {
+              options.map((opt, idx) => {
                 const draft = drafts[opt.id] ?? {
                   sku: opt.sku ?? '',
                   costPrice: rowToString(opt.costPrice),
@@ -542,7 +552,8 @@ export function ProductOptionsTable({
                     <TableCell>
                       <Checkbox
                         checked={selected.has(opt.id)}
-                        onCheckedChange={(v) => toggleOne(opt.id, v === true)}
+                        onClick={(e: React.MouseEvent) => toggleOne(opt.id, idx, e.shiftKey)}
+                        onCheckedChange={() => {}}
                         aria-label={`${opt.name} 선택`}
                       />
                     </TableCell>

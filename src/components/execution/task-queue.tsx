@@ -1,14 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import {
-  Trash2,
-  TrendingUp,
-  Pause,
-  Play,
-  DollarSign,
-  Loader2,
-} from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Trash2, TrendingUp, Pause, Play, DollarSign, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -21,6 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { TaskDetailDialog } from '@/components/execution/task-detail-dialog'
+import { applyRangeSelection } from '@/lib/range-selection'
 import { cn } from '@/lib/utils'
 import type { ActionType, ExecutionStatus, ExecutionTask } from '@/types/execution'
 
@@ -80,15 +74,20 @@ export function TaskQueue({
   showRollback = false,
 }: TaskQueueProps) {
   const [detailTask, setDetailTask] = useState<ExecutionTask | null>(null)
+  const lastClickedIndexRef = useRef<number | null>(null)
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: string, index: number, shiftKey: boolean) => {
     if (!onSelectedChange) return
-    const next = new Set(selectedIds)
-    if (next.has(id)) {
-      next.delete(id)
-    } else {
-      next.add(id)
-    }
+    const allKeys = tasks.map((t) => t.id)
+    const next = applyRangeSelection(
+      selectedIds,
+      allKeys,
+      id,
+      index,
+      shiftKey,
+      lastClickedIndexRef.current
+    )
+    lastClickedIndexRef.current = index
     onSelectedChange(next)
   }
 
@@ -148,7 +147,7 @@ export function TaskQueue({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tasks.map((task) => {
+          {tasks.map((task, idx) => {
             const Icon = ACTION_TYPE_ICONS[task.actionType]
             return (
               <TableRow
@@ -160,16 +159,15 @@ export function TaskQueue({
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selectedIds.has(task.id)}
-                      onCheckedChange={() => toggleSelect(task.id)}
+                      onClick={(e: React.MouseEvent) => toggleSelect(task.id, idx, e.shiftKey)}
+                      onCheckedChange={() => {}}
                     />
                   </TableCell>
                 )}
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Icon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {ACTION_TYPE_LABELS[task.actionType]}
-                    </span>
+                    <span className="text-sm">{ACTION_TYPE_LABELS[task.actionType]}</span>
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">{task.campaignId}</TableCell>

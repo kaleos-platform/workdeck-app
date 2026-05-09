@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { applyRangeSelection } from '@/lib/range-selection'
 import {
   Table,
   TableBody,
@@ -246,13 +247,19 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
   }
 
   // 체크박스 핸들러
-  function toggleSelect(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  const lastClickedIndexRef = useRef<number | null>(null)
+  function toggleSelect(id: string, index: number, shiftKey: boolean) {
+    setSelectedIds((prev) =>
+      applyRangeSelection(
+        prev,
+        records.map((r) => r.id),
+        id,
+        index,
+        shiftKey,
+        lastClickedIndexRef.current
+      )
+    )
+    lastClickedIndexRef.current = index
   }
 
   function toggleSelectAll() {
@@ -476,7 +483,7 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                 </TableCell>
               </TableRow>
             ) : (
-              records.map((r) => {
+              records.map((r, idx) => {
                 const excluded = isOptionExcluded(r.optionId)
                 return (
                   <TableRow key={r.id} data-state={selectedIds.has(r.id) ? 'selected' : undefined}>
@@ -484,7 +491,8 @@ export function InventoryTable({ onExcludeChange }: { onExcludeChange?: () => vo
                     <TableCell>
                       <Checkbox
                         checked={selectedIds.has(r.id)}
-                        onCheckedChange={() => toggleSelect(r.id)}
+                        onClick={(e: React.MouseEvent) => toggleSelect(r.id, idx, e.shiftKey)}
+                        onCheckedChange={() => {}}
                       />
                     </TableCell>
                     {/* 상품명 */}

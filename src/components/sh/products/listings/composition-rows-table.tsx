@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { applyRangeSelection } from '@/lib/range-selection'
 import { ArrowDown, ArrowUp, ArrowUpDown, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -149,10 +150,17 @@ export function CompositionRowsTable({
     onSelectedChange(v ? new Set(rows.map((r) => r.key)) : new Set())
   }
 
-  function toggleOne(key: string, v: boolean) {
-    const next = new Set(selected)
-    if (v) next.add(key)
-    else next.delete(key)
+  const lastClickedIndexRef = useRef<number | null>(null)
+  function toggleOne(key: string, allKeys: string[], index: number, shiftKey: boolean) {
+    const next = applyRangeSelection(
+      selected,
+      allKeys,
+      key,
+      index,
+      shiftKey,
+      lastClickedIndexRef.current
+    )
+    lastClickedIndexRef.current = index
     onSelectedChange(next)
   }
 
@@ -278,7 +286,7 @@ export function CompositionRowsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {displayRows.map((r) => {
+            {displayRows.map((r, idx) => {
               const baseline = computeListingRetailBaseline(
                 r.items.map((it) => ({ quantity: it.quantity, retailPrice: it.retailPrice }))
               )
@@ -296,7 +304,15 @@ export function CompositionRowsTable({
                   <TableCell>
                     <Checkbox
                       checked={selected.has(r.key)}
-                      onCheckedChange={(v) => toggleOne(r.key, v === true)}
+                      onClick={(e: React.MouseEvent) =>
+                        toggleOne(
+                          r.key,
+                          displayRows.map((d) => d.key),
+                          idx,
+                          e.shiftKey
+                        )
+                      }
+                      onCheckedChange={() => {}}
                       aria-label={`${previewName} 선택`}
                       disabled={disabled}
                     />

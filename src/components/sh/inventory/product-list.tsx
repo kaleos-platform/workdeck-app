@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { applyRangeSelection } from '@/lib/range-selection'
 import { Settings2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -62,6 +63,7 @@ export function ProductList() {
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const lastClickedIndexRef = useRef<number | null>(null)
   const [bulkGroupId, setBulkGroupId] = useState('')
 
   // Group manager dialog state
@@ -136,16 +138,18 @@ export function ProductList() {
     }
   }
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
+  const toggleSelect = (id: string, index: number, shiftKey: boolean) => {
+    setSelectedIds((prev) =>
+      applyRangeSelection(
+        prev,
+        rows.map((r) => r.id),
+        id,
+        index,
+        shiftKey,
+        lastClickedIndexRef.current
+      )
+    )
+    lastClickedIndexRef.current = index
   }
 
   const handleBulkGroupChange = async () => {
@@ -276,7 +280,7 @@ export function ProductList() {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => (
+              rows.map((row, idx) => (
                 <TableRow
                   key={row.id}
                   className="cursor-pointer"
@@ -285,7 +289,8 @@ export function ProductList() {
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selectedIds.has(row.id)}
-                      onCheckedChange={() => toggleSelect(row.id)}
+                      onClick={(e: React.MouseEvent) => toggleSelect(row.id, idx, e.shiftKey)}
+                      onCheckedChange={() => {}}
                       aria-label={`${row.name} 선택`}
                     />
                   </TableCell>
