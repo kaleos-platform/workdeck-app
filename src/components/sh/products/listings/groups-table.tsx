@@ -111,6 +111,10 @@ function statusScore(s: GroupRow['statusCounts']): number {
   return s.ACTIVE * 100 + s.SOLD_OUT * 10 + s.SUSPENDED
 }
 
+function nameForSort(g: GroupRow): string {
+  return (g.baseManagementName?.trim() || g.productName || '').trim()
+}
+
 type Props = {
   channelId: string | null
   productId?: string
@@ -126,7 +130,7 @@ export function GroupsTable({ channelId, productId }: Props) {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const lastClickedRowIndex = useRef<number | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [sort, setSort] = useState<SortState>(null)
+  const [sort, setSort] = useState<SortState>({ key: 'name', dir: 'asc' })
   const [bulkAction, setBulkAction] = useState<null | 'suspend' | 'activate' | 'delete'>(null)
   const [bulkLoading, setBulkLoading] = useState(false)
 
@@ -195,7 +199,7 @@ export function GroupsTable({ channelId, productId }: Props) {
       const dir = sort.dir
       switch (sort.key) {
         case 'name':
-          return compareString(a.productName ?? '', b.productName ?? '', dir)
+          return compareString(nameForSort(a), nameForSort(b), dir)
         case 'count':
           return dir === 'asc' ? a.listingCount - b.listingCount : b.listingCount - a.listingCount
         case 'stock':
