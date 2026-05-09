@@ -3,7 +3,17 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2 } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  Plus,
+  Search,
+  Trash2,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -75,6 +85,32 @@ type GroupRow = {
   }>
 }
 
+type SortKey = 'name' | 'count' | 'stock' | 'baseline' | 'retail' | 'status'
+type SortDir = 'asc' | 'desc'
+type SortState = { key: SortKey; dir: SortDir } | null
+
+function nextSort(prev: SortState, key: SortKey): SortState {
+  if (!prev || prev.key !== key) return { key, dir: 'asc' }
+  if (prev.dir === 'asc') return { key, dir: 'desc' }
+  return null
+}
+
+function compareNullableNumber(a: number | null, b: number | null, dir: SortDir): number {
+  if (a == null && b == null) return 0
+  if (a == null) return 1
+  if (b == null) return -1
+  return dir === 'asc' ? a - b : b - a
+}
+
+function compareString(a: string, b: string, dir: SortDir): number {
+  const r = a.localeCompare(b, 'ko')
+  return dir === 'asc' ? r : -r
+}
+
+function statusScore(s: GroupRow['statusCounts']): number {
+  return s.ACTIVE * 100 + s.SOLD_OUT * 10 + s.SUSPENDED
+}
+
 type Props = {
   channelId: string | null
   productId?: string
@@ -90,6 +126,7 @@ export function GroupsTable({ channelId, productId }: Props) {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const lastClickedRowIndex = useRef<number | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [sort, setSort] = useState<SortState>(null)
   const [bulkAction, setBulkAction] = useState<null | 'suspend' | 'activate' | 'delete'>(null)
   const [bulkLoading, setBulkLoading] = useState(false)
 
@@ -151,9 +188,39 @@ export function GroupsTable({ channelId, productId }: Props) {
     return `g:${g.id}`
   }
 
-  const allRowKeys = useMemo(() => groups.map(rowKeyForGroup), [groups])
+  const displayGroups = useMemo(() => {
+    if (!sort) return groups
+    const arr = [...groups]
+    arr.sort((a, b) => {
+      const dir = sort.dir
+      switch (sort.key) {
+        case 'name':
+          return compareString(a.productName ?? '', b.productName ?? '', dir)
+        case 'count':
+          return dir === 'asc' ? a.listingCount - b.listingCount : b.listingCount - a.listingCount
+        case 'stock':
+          return dir === 'asc'
+            ? a.availableStockSum - b.availableStockSum
+            : b.availableStockSum - a.availableStockSum
+        case 'baseline':
+          return compareNullableNumber(a.baselinePriceRange.min, b.baselinePriceRange.min, dir)
+        case 'retail':
+          return compareNullableNumber(a.retailPriceRange.min, b.retailPriceRange.min, dir)
+        case 'status':
+          return dir === 'asc'
+            ? statusScore(a.statusCounts) - statusScore(b.statusCounts)
+            : statusScore(b.statusCounts) - statusScore(a.statusCounts)
+      }
+    })
+    return arr
+  }, [groups, sort])
+  const allRowKeys = useMemo(() => displayGroups.map(rowKeyForGroup), [displayGroups])
   const allSelected = allRowKeys.length > 0 && allRowKeys.every((k) => selectedRows.has(k))
   const someSelected = !allSelected && allRowKeys.some((k) => selectedRows.has(k))
+
+  function toggleSort(key: SortKey) {
+    setSort((prev) => nextSort(prev, key))
+  }
 
   function toggleRow(key: string, index: number, shiftKey: boolean) {
     setSelectedRows((prev) =>
@@ -371,12 +438,58 @@ export function GroupsTable({ channelId, productId }: Props) {
                 />
               </TableHead>
               <TableHead className="w-10" />
-              <TableHead>상품명</TableHead>
-              <TableHead className="text-right">구성 수</TableHead>
-              <TableHead className="text-right">재고</TableHead>
-              <TableHead className="text-right">소비자가</TableHead>
-              <TableHead className="text-right">판매가</TableHead>
-              <TableHead>상태</TableHead>
+              <TableHead>
+                <SortableHeaderButton
+                  label="상품명"
+                  sortKey="name"
+                  sort={sort}
+                  onToggle={toggleSort}
+                />
+              </TableHead>
+              <TableHead className="text-right">
+                <SortableHeaderButton
+                  label="구성 수"
+                  sortKey="count"
+                  sort={sort}
+                  onToggle={toggleSort}
+                  align="right"
+                />
+              </TableHead>
+              <TableHead className="text-right">
+                <SortableHeaderButton
+                  label="재고"
+                  sortKey="stock"
+                  sort={sort}
+                  onToggle={toggleSort}
+                  align="right"
+                />
+              </TableHead>
+              <TableHead className="text-right">
+                <SortableHeaderButton
+                  label="소비자가"
+                  sortKey="baseline"
+                  sort={sort}
+                  onToggle={toggleSort}
+                  align="right"
+                />
+              </TableHead>
+              <TableHead className="text-right">
+                <SortableHeaderButton
+                  label="판매가"
+                  sortKey="retail"
+                  sort={sort}
+                  onToggle={toggleSort}
+                  align="right"
+                />
+              </TableHead>
+              <TableHead>
+                <SortableHeaderButton
+                  label="상태"
+                  sortKey="status"
+                  sort={sort}
+                  onToggle={toggleSort}
+                />
+              </TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -395,7 +508,7 @@ export function GroupsTable({ channelId, productId }: Props) {
               </TableRow>
             ) : (
               <>
-                {groups.map((g, gi) => {
+                {displayGroups.map((g, gi) => {
                   const key = g.id
                   const isOpen = expanded.has(key)
                   const rowKey = rowKeyForGroup(g)
@@ -626,5 +739,35 @@ function GroupRowView({
           )
         })}
     </>
+  )
+}
+
+function SortableHeaderButton({
+  label,
+  sortKey,
+  sort,
+  onToggle,
+  align,
+}: {
+  label: string
+  sortKey: SortKey
+  sort: SortState
+  onToggle: (k: SortKey) => void
+  align?: 'right'
+}) {
+  const active = sort?.key === sortKey
+  const dir = active ? sort!.dir : null
+  const Icon = dir === 'asc' ? ArrowUp : dir === 'desc' ? ArrowDown : ArrowUpDown
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(sortKey)}
+      className={`inline-flex items-center gap-1 hover:text-foreground ${
+        active ? 'text-foreground' : 'text-muted-foreground'
+      } ${align === 'right' ? 'ml-auto' : ''}`}
+    >
+      <span>{label}</span>
+      <Icon className={`h-3 w-3 ${active ? '' : 'opacity-50'}`} />
+    </button>
   )
 }
