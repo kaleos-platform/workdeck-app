@@ -8,11 +8,18 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { AlertTriangle, ArrowRight, CheckCircle, Trash2, Upload, X } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CheckCircle, Trash2, Upload } from 'lucide-react'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  FloatingActionBar,
+  floatingActionButtonClass,
+  floatingActionButtonDestructiveClass,
+  floatingActionInputClass,
+  floatingActionSelectTriggerClass,
+} from '@/components/ui/floating-action-bar'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -637,46 +644,37 @@ export default function ShippingRegistrationPage() {
         </Button>
       </div>
 
-      {selectedIds.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
-          <Badge variant="default">{selectedIds.size}건 선택</Badge>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={() => setSelectedIds(new Set())}
-          >
-            <X className="mr-1 h-3 w-3" />
-            선택 해제
-          </Button>
-          <div className="mx-1 h-5 w-px bg-border" />
-          <Select key={`ship-${bulkSelectKey}`} onValueChange={handleBulkShipping}>
-            <SelectTrigger className="h-8 w-40 bg-background text-xs">
-              <SelectValue placeholder="배송방식 변경" />
-            </SelectTrigger>
-            <SelectContent>
-              {shippingMethods.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select key={`chan-${bulkSelectKey}`} onValueChange={handleBulkChannel}>
-            <SelectTrigger className="h-8 w-40 bg-background text-xs">
-              <SelectValue placeholder="판매채널 변경" />
-            </SelectTrigger>
-            <SelectContent>
-              {channels.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex items-center gap-1">
+      <FloatingActionBar
+        open={selectedIds.size > 0}
+        onClear={() => setSelectedIds(new Set())}
+        actions={
+          <>
+            <Select key={`ship-${bulkSelectKey}`} onValueChange={handleBulkShipping}>
+              <SelectTrigger className={`${floatingActionSelectTriggerClass} w-40 text-xs`}>
+                <SelectValue placeholder="배송방식 변경" />
+              </SelectTrigger>
+              <SelectContent>
+                {shippingMethods.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select key={`chan-${bulkSelectKey}`} onValueChange={handleBulkChannel}>
+              <SelectTrigger className={`${floatingActionSelectTriggerClass} w-40 text-xs`}>
+                <SelectValue placeholder="판매채널 변경" />
+              </SelectTrigger>
+              <SelectContent>
+                {channels.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input
-              className="h-8 w-40 bg-background text-xs"
+              className={`${floatingActionInputClass} w-40 text-xs`}
               value={bulkMemo}
               onChange={(e) => setBulkMemo(e.target.value)}
               placeholder="메모 입력"
@@ -685,26 +683,29 @@ export default function ShippingRegistrationPage() {
               }}
             />
             <Button
-              variant="outline"
+              type="button"
               size="sm"
-              className="h-8 bg-background text-xs"
+              variant="ghost"
+              className={floatingActionButtonClass}
               onClick={handleBulkMemo}
             >
               적용
             </Button>
-          </div>
-          <div className="mx-1 h-5 w-px bg-border" />
-          <Button
-            variant="destructive"
-            size="sm"
-            className="h-8 text-xs"
-            onClick={handleBulkDelete}
-          >
-            <Trash2 className="mr-1 h-3 w-3" />
-            선택 삭제
-          </Button>
-        </div>
-      )}
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonDestructiveClass}
+              onClick={handleBulkDelete}
+            >
+              <Trash2 className="mr-1 h-3.5 w-3.5" />
+              선택 삭제
+            </Button>
+          </>
+        }
+      >
+        <span className="text-sm font-semibold">{selectedIds.size}건 선택</span>
+      </FloatingActionBar>
 
       <RegistrationTable
         rows={rows}

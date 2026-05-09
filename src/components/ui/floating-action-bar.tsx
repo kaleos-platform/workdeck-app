@@ -71,3 +71,11 @@ export const floatingActionButtonClass =
 /** 다크 floating bar 안의 위험(삭제) 액션 버튼 className */
 export const floatingActionButtonDestructiveClass =
   'h-8 text-red-300 hover:bg-red-500/20 hover:text-red-200 disabled:text-background/40'
+
+/** 다크 floating bar 안의 Input className (시인성 확보) */
+export const floatingActionInputClass =
+  'h-8 border-background/20 bg-background/10 text-background placeholder:text-background/60 focus-visible:ring-background/40'
+
+/** 다크 floating bar 안의 SelectTrigger className (시인성 확보) */
+export const floatingActionSelectTriggerClass =
+  'h-8 border-background/20 bg-background/10 text-background data-[placeholder]:text-background/60'
