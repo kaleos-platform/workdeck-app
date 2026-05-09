@@ -75,7 +75,7 @@ function QtyInput({
           ;(e.target as HTMLInputElement).blur()
         }
       }}
-      className={cn('h-7 w-full text-center text-xs', className)}
+      className={cn('h-7 w-full px-1 text-center text-xs', className)}
     />
   )
 }
