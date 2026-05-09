@@ -153,7 +153,7 @@ export function ChannelRail({
 
   const mobileSelect = (
     <div className="md:hidden">
-      <Select value={selectedChannelId ?? undefined} onValueChange={(v) => onSelectChannel(v)}>
+      <Select value={selectedChannelId ?? ''} onValueChange={(v) => onSelectChannel(v)}>
         <SelectTrigger>
           <SelectValue placeholder="채널을 선택하세요" />
         </SelectTrigger>
