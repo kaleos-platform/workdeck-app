@@ -336,8 +336,10 @@ export function OrderProductQtyCell({
       {value.map((product, i) => (
         <div key={i} className="space-y-1">
           <QtyInput value={product.quantity} onCommit={(n) => commitQty(i, n)} />
-          {/* 상품 셀의 매칭 트리/버튼 높이와 맞추기 위한 invisible placeholder */}
-          <div aria-hidden className="invisible">
+          {/* 상품 셀의 매칭 트리/버튼 높이와 맞추기 위한 invisible placeholder.
+              가로 폭이 컬럼 min-width를 끌어올리지 않도록 w-0 + 자식 min-w-0/whitespace-nowrap=false로 차단.
+              세로 높이는 그대로 유지되어 수량 입력 baseline이 상품 셀 매칭 트리와 정렬된다. */}
+          <div aria-hidden className="invisible w-0 min-w-0 overflow-hidden [&_*]:!min-w-0">
             <MatchSummary product={product} canMatch={false} />
           </div>
         </div>
