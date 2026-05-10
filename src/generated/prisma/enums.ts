@@ -121,6 +121,8 @@ export type InvMovementType = (typeof InvMovementType)[keyof typeof InvMovementT
 
 export const InvReconciliationStatus = {
   PENDING: 'PENDING',
+  PARTIAL: 'PARTIAL',
+  APPLIED: 'APPLIED',
   CONFIRMED: 'CONFIRMED',
   CANCELLED: 'CANCELLED'
 } as const

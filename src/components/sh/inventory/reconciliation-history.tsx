@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { reconStatusBadge, type ReconStatus } from './recon-status-display'
 
 type HistoryRow = {
   id: string
   fileName: string
   snapshotDate: string
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED'
+  status: ReconStatus
   totalItems: number
   matchedItems: number
   adjustedItems: number
@@ -22,12 +22,6 @@ type Props = {
   refreshKey: number
   onSelect: (id: string) => void
   selectedId?: string | null
-}
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: '대기',
-  CONFIRMED: '확정',
-  CANCELLED: '취소',
 }
 
 export function ReconciliationHistory({ refreshKey, onSelect, selectedId }: Props) {
@@ -90,18 +84,7 @@ export function ReconciliationHistory({ refreshKey, onSelect, selectedId }: Prop
                 총 {r.totalItems} / 매칭 {r.matchedItems} / 조정 {r.adjustedItems}
               </p>
             </div>
-            <Badge
-              variant={
-                r.status === 'CONFIRMED'
-                  ? 'default'
-                  : r.status === 'CANCELLED'
-                    ? 'destructive'
-                    : 'secondary'
-              }
-              className="shrink-0 text-[10px]"
-            >
-              {STATUS_LABEL[r.status] ?? r.status}
-            </Badge>
+            <div className="shrink-0">{reconStatusBadge(r.status)}</div>
           </div>
         </button>
       ))}

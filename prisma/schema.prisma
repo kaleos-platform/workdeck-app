@@ -712,6 +712,8 @@ enum InvMovementType {
 
 enum InvReconciliationStatus {
   PENDING
+  PARTIAL
+  APPLIED
   CONFIRMED
   CANCELLED
 }

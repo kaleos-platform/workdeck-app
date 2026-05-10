@@ -27,6 +27,7 @@ import {
   type PickedOption,
 } from '@/components/sh/products/listings/option-picker-dialog'
 import { applyRangeSelection } from '@/lib/range-selection'
+import { reconStatusBadge, type ReconStatus } from './recon-status-display'
 
 type ParsedRow = {
   externalCode: string
@@ -77,10 +78,11 @@ type Reconciliation = {
   id: string
   fileName: string
   snapshotDate: string
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED'
+  status: ReconStatus
   totalItems: number
   matchedItems: number
   adjustedItems: number
+  appliedOptionIds: string[]
   location: { id: string; name: string }
   matchResults: MatchEntry[]
 }
@@ -119,7 +121,7 @@ const STATUS_FILTERS = [
   { value: 'system-only', label: '파일 누락' },
 ] as const
 
-function statusBadge(status: string) {
+function entryStatusBadge(status: string) {
   switch (status) {
     case 'matched-diff':
       return <Badge className="border-amber-200 bg-amber-100 text-amber-700">차이있음</Badge>
@@ -138,7 +140,6 @@ function statusBadge(status: string) {
   }
 }
 
-// 선택 가능한 행인지 (체크박스 노출 여부)
 function isSelectable(status: string) {
   return status === 'matched-diff' || status === 'manual-equal' || status === 'manual-diff'
 }
@@ -150,11 +151,8 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   const [statusFilter, setStatusFilter] = useState<
     'all' | 'matched-diff' | 'matched-equal' | 'file-only' | 'system-only'
   >('all')
-  // selected 키: matched-diff는 optionId, manual-*는 externalCode
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  // manual mappings (externalCode -> optionId)
   const [manualMap, setManualMap] = useState<Record<string, string>>({})
-  // picker 결과 메타 (productName, optionName, systemQty)
   const [manualMeta, setManualMeta] = useState<Record<string, ManualMeta>>({})
 
   const lastClickedIndexRef = useRef<number | null>(null)
@@ -171,11 +169,13 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
       if (!res.ok) throw new Error(data.message ?? '조회 실패')
       const r = data.reconciliation as Reconciliation
       setRecon(r)
-      // selected 키 형식과 일치시킴 (diff-<optionId>)
+      // 이미 적용된 optionId는 초기 선택에서 제외
+      const appliedSet = new Set(r.appliedOptionIds ?? [])
       const diffKeys = (r.matchResults ?? [])
         .filter(
           (e): e is Extract<MatchEntry, { status: 'matched-diff' }> => e.status === 'matched-diff'
         )
+        .filter((e) => !appliedSet.has(e.optionId))
         .map((e) => `diff-${e.optionId}`)
       setSelected(new Set(diffKeys))
     } catch (err) {
@@ -190,6 +190,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   }, [load])
 
   const entries = useMemo(() => recon?.matchResults ?? [], [recon])
+  const appliedOptionIds = useMemo(() => recon?.appliedOptionIds ?? [], [recon])
 
   const diffEntries = useMemo(
     () =>
@@ -247,8 +248,8 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
           productName: e.productName,
           optionName: e.optionName,
           systemQty: e.systemQuantity,
-          fileQty: null,
-          delta: null,
+          fileQty: e.row.quantity,
+          delta: 0,
           optionId: e.optionId,
           row: e.row,
         })
@@ -324,10 +325,29 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     [unifiedEntries, statusFilter]
   )
 
-  // 현재 필터 내 선택 가능한 행의 키 목록
+  // 적용된 행인지 판단
+  const isApplied = useCallback(
+    (entry: UnifiedEntry): boolean => {
+      if (entry.optionId && appliedOptionIds.includes(entry.optionId)) return true
+      if (
+        entry.externalCode &&
+        manualMap[entry.externalCode] &&
+        appliedOptionIds.includes(manualMap[entry.externalCode])
+      )
+        return true
+      return false
+    },
+    [appliedOptionIds, manualMap]
+  )
+
+  // 이미 적용된 행은 선택 대상에서 제외
   const selectableKeys = useMemo(
-    () => filteredEntries.filter((e) => isSelectable(e.status)).map((e) => e.key),
-    [filteredEntries]
+    () =>
+      filteredEntries
+        .filter((e) => isSelectable(e.status))
+        .filter((e) => !isApplied(e))
+        .map((e) => e.key),
+    [filteredEntries, isApplied]
   )
 
   const allSelected = selectableKeys.length > 0 && selectableKeys.every((k) => selected.has(k))
@@ -376,7 +396,6 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         systemQty: picked.totalStock,
       },
     }))
-    // 매핑된 file-only 행을 selected에 추가 (키는 file-${externalCode})
     setSelected((s) => {
       const next = new Set(s)
       next.add(`file-${code}`)
@@ -415,6 +434,8 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     return [...ids]
   }, [entries, manualMap])
 
+  // confirm (PENDING/PARTIAL → 적용, 결과에 따라 PARTIAL/APPLIED)
+  // confirm 후에는 recon을 재조회해 상태 반영 (프리뷰 닫지 않음)
   async function handleConfirm() {
     if (!recon) return
     setSubmitting(true)
@@ -423,9 +444,6 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         .filter(([, v]) => !!v)
         .map(([externalCode, optionId]) => ({ externalCode, optionId }))
 
-      // selected 키 → optionId 변환
-      // matched-diff: key=`diff-${optionId}`
-      // manual-*:    key=`file-${externalCode}` → manualMap에서 optionId 조회
       const selectedOptionIds: string[] = []
       for (const key of selected) {
         if (key.startsWith('diff-')) {
@@ -446,8 +464,31 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? '확정 실패')
+      if (!res.ok) throw new Error(data.message ?? '적용 실패')
       toast.success(`${data.adjustedCount}건 조정 완료`)
+      // 재조회로 appliedOptionIds + 새 상태 반영
+      await load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '적용 실패')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // finalize (APPLIED → CONFIRMED)
+  async function handleFinalize() {
+    if (!recon) return
+    if (!confirm('확정하면 더 이상 수정할 수 없습니다. 진행할까요?')) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/sh/inventory/reconciliation/${recon.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'finalize' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? '확정 실패')
+      toast.success('확정되었습니다')
       onConfirmed()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '확정 실패')
@@ -482,24 +523,38 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     )
   }
 
-  const isPending = recon.status === 'PENDING'
+  const canEdit = ['PENDING', 'PARTIAL'].includes(recon.status)
+  const canFinalize = recon.status === 'APPLIED'
+  const appliedCount = appliedOptionIds.length
 
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-xl font-semibold">{recon.fileName}</h2>
-          <p className="text-sm text-muted-foreground">
-            {recon.location.name} · 기준일 {new Date(recon.snapshotDate).toISOString().slice(0, 10)}{' '}
-            · <Badge variant="outline">{recon.status}</Badge>
-          </p>
+          <div className="mt-0.5 flex items-center gap-2 text-sm text-muted-foreground">
+            <span>
+              {recon.location.name} · 기준일{' '}
+              {new Date(recon.snapshotDate).toISOString().slice(0, 10)}
+            </span>
+            {reconStatusBadge(recon.status)}
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">
             총 {recon.totalItems}건 · 자동매칭 {recon.matchedItems}건 · 조정 {recon.adjustedItems}건
+            {appliedCount > 0 && ` · 적용 ${appliedCount}건`}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={onClose}>
-          닫기
-        </Button>
+        <div className="flex items-center gap-2">
+          {canFinalize && (
+            <Button size="sm" onClick={handleFinalize} disabled={submitting}>
+              {submitting && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
+              확정
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={onClose}>
+            닫기
+          </Button>
+        </div>
       </div>
 
       {/* Status filter buttons */}
@@ -532,7 +587,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10">
-                  {isPending && selectableKeys.length > 0 && (
+                  {canEdit && selectableKeys.length > 0 && (
                     <Checkbox
                       checked={allSelected}
                       onCheckedChange={toggleSelectAll}
@@ -540,7 +595,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                     />
                   )}
                 </TableHead>
-                <TableHead className="w-24">상태</TableHead>
+                <TableHead className="w-28">상태</TableHead>
                 <TableHead>상품명</TableHead>
                 <TableHead>옵션명</TableHead>
                 <TableHead className="w-20 text-right">현재 재고</TableHead>
@@ -552,30 +607,48 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
             <TableBody>
               {filteredEntries.map((entry, index) => {
                 const selectable = isSelectable(entry.status)
+                const applied = isApplied(entry)
                 const selectKey = entry.key
                 const isMapped = entry.externalCode !== undefined && !!manualMap[entry.externalCode]
 
                 return (
-                  <TableRow key={entry.key}>
+                  <TableRow key={entry.key} className={applied ? 'bg-green-50/30' : undefined}>
                     {/* 체크박스 컬럼 */}
                     <TableCell>
-                      {isPending && selectable && (
+                      {canEdit && selectable && (
                         <Checkbox
                           checked={selected.has(selectKey)}
-                          onClick={(e) => {
-                            toggleSelect(selectKey, index, e.shiftKey)
-                          }}
+                          disabled={applied}
+                          onClick={
+                            applied
+                              ? undefined
+                              : (e) => {
+                                  toggleSelect(selectKey, index, e.shiftKey)
+                                }
+                          }
                           aria-label="행 선택"
                         />
                       )}
                     </TableCell>
-                    <TableCell>{statusBadge(entry.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {entryStatusBadge(entry.status)}
+                        {applied && (
+                          <Badge
+                            variant="outline"
+                            className="border-green-400 text-[10px] text-green-600"
+                          >
+                            적용됨
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="font-medium">{entry.productName}</TableCell>
                     {/* 옵션명 셀 — 매핑됨이면 수정/취소 인라인 버튼 */}
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">{entry.optionName}</span>
-                        {isPending && isMapped && entry.externalCode && (
+                        {canEdit && isMapped && entry.externalCode && (
                           <>
                             <Button
                               variant="ghost"
@@ -618,14 +691,13 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                     </TableCell>
                     {/* 동작 컬럼 — 미매핑 file-only만 [상품 선택] 노출 */}
                     <TableCell>
-                      {isPending && entry.status === 'file-only' && entry.externalCode && (
+                      {canEdit && entry.status === 'file-only' && entry.externalCode && (
                         <div className="flex items-center gap-1">
                           {(entry.suggestions?.length ?? 0) > 0 && (
                             <Select
                               value={manualMap[entry.externalCode] ?? ''}
                               onValueChange={(v) => {
                                 const code = entry.externalCode!
-                                // suggestion 선택 시 meta 없이 optionId만 저장 (systemQty 미상)
                                 setManualMap((m) => ({ ...m, [code]: v }))
                                 const suggestion = entry.suggestions?.find((s) => s.optionId === v)
                                 if (suggestion) {
@@ -677,7 +749,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         </div>
       )}
 
-      {isPending && (
+      {canEdit && (
         <div className="flex justify-end gap-2 border-t pt-4">
           <Button variant="outline" onClick={handleCancel} disabled={submitting}>
             대조 취소
@@ -685,7 +757,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         </div>
       )}
 
-      {isPending && (
+      {canEdit && (
         <FloatingActionBar
           open={selected.size > 0}
           onClear={() => setSelected(new Set())}

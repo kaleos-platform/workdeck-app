@@ -8,7 +8,34 @@ export type ConfirmOptions = {
   manualMappings: { externalCode: string; optionId: string }[]
 }
 
-export type ConfirmResult = { adjustedCount: number }
+export type ConfirmResult = { adjustedCount: number; status: string }
+
+/**
+ * 적용 가능한 총 항목 수를 산출한다.
+ * matched-diff 수 + file-only 중 InvLocationProductMap에 매핑된 수
+ */
+async function calcApplicableCount(entries: MatchEntry[], locationId: string): Promise<number> {
+  // matched-diff 항목 수
+  const matchedDiffCount = entries.filter((e) => e.status === 'matched-diff').length
+
+  // file-only 항목 중 locationProductMap에 이미 매핑된 externalCode 수
+  const fileOnlyExternalCodes = entries
+    .filter((e) => e.status === 'file-only')
+    .map((e) => e.row.externalCode)
+    .filter(Boolean) as string[]
+
+  let mappedFileOnlyCount = 0
+  if (fileOnlyExternalCodes.length > 0) {
+    mappedFileOnlyCount = await prisma.invLocationProductMap.count({
+      where: {
+        locationId,
+        externalCode: { in: fileOnlyExternalCodes },
+      },
+    })
+  }
+
+  return matchedDiffCount + mappedFileOnlyCount
+}
 
 export async function confirmReconciliation(
   spaceId: string,
@@ -21,8 +48,9 @@ export async function confirmReconciliation(
   if (!recon || recon.spaceId !== spaceId) {
     throw new MovementError('대조 기록을 찾을 수 없습니다', 404)
   }
-  if (recon.status !== 'PENDING') {
-    throw new MovementError('이미 확정되었거나 취소된 대조입니다', 400)
+  // PENDING/PARTIAL 상태에서만 추가 confirm 허용
+  if (!['PENDING', 'PARTIAL'].includes(recon.status)) {
+    throw new MovementError('이미 적용 완료됐거나 확정·취소된 대조입니다', 400)
   }
 
   const entries = (recon.matchResults as unknown as MatchEntry[]) ?? []
@@ -63,8 +91,7 @@ export async function confirmReconciliation(
           data: {
             optionId: mm.optionId,
             externalName: entry.row.externalName ?? existing.externalName,
-            externalOptionName:
-              entry.row.externalOptionName ?? existing.externalOptionName,
+            externalOptionName: entry.row.externalOptionName ?? existing.externalOptionName,
           },
         })
       }
@@ -106,7 +133,6 @@ export async function confirmReconciliation(
   const movementDate = snapshotDate.toISOString()
   const snapshotStr = snapshotDate.toISOString().slice(0, 10)
 
-  let adjustedCount = 0
   for (const adj of all) {
     try {
       await processMovement(spaceId, {
@@ -118,20 +144,35 @@ export async function confirmReconciliation(
         reason: `파일 대조 조정 (${snapshotStr} 기준, 파일: ${fileName})`,
         referenceId: reconciliationId,
       })
-      adjustedCount += 1
     } catch (err) {
       console.error('[confirmReconciliation] adjustment 실패', adj, err)
     }
   }
 
+  // 3) 누적 적용 항목 수 — DB에서 직접 집계 (retry 시 drift 방지)
+  const appliedMovements = await prisma.invMovement.findMany({
+    where: { referenceId: reconciliationId, type: 'ADJUSTMENT' },
+    select: { optionId: true },
+    distinct: ['optionId'],
+  })
+  const cumulativeApplied = appliedMovements.length
+
+  // 4) 적용 가능 총수 산출
+  const applicableTotal = await calcApplicableCount(entries, locationId)
+
+  // 5) 상태 결정: 한 번이라도 confirm 호출 → 최소 PARTIAL
+  //    누적 적용 == 적용 가능 총수이면 APPLIED
+  const newStatus =
+    applicableTotal > 0 && cumulativeApplied >= applicableTotal ? 'APPLIED' : 'PARTIAL'
+
   await prisma.invReconciliation.update({
     where: { id: reconciliationId },
     data: {
-      status: 'CONFIRMED',
-      confirmedAt: new Date(),
-      adjustedItems: adjustedCount,
+      status: newStatus,
+      // confirmedAt은 finalize 액션에서만 기록
+      adjustedItems: cumulativeApplied,
     },
   })
 
-  return { adjustedCount }
+  return { adjustedCount: cumulativeApplied, status: newStatus }
 }
