@@ -2,20 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Loader2, Plus } from 'lucide-react'
+import { Loader2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -31,6 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  OptionPickerDialog,
+  type PickedOption,
+} from '@/components/sh/products/listings/option-picker-dialog'
 
 // Match entry types (mirror of server)
 type ParsedRow = {
@@ -147,16 +141,10 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   // applied manual map (adjust these too)
   const [applyMapped, setApplyMapped] = useState<Record<string, boolean>>({})
 
-  // New product registration dialog state
-  const [registerOpen, setRegisterOpen] = useState(false)
-  const [registerCode, setRegisterCode] = useState('')
-  const [registerForm, setRegisterForm] = useState({
-    productName: '',
-    optionName: '',
-    productCode: '',
-    optionSku: '',
-  })
-  const [registerSubmitting, setRegisterSubmitting] = useState(false)
+  // 옵션 선택 다이얼로그 (상품 → 옵션 2단계)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
+  const [pickerInitialQuery, setPickerInitialQuery] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -297,51 +285,32 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     })
   }
 
-  function openRegisterDialog(entry: UnifiedEntry) {
-    setRegisterCode(entry.externalCode ?? '')
-    setRegisterForm({
-      productName: entry.row?.externalName ?? '',
-      optionName: entry.row?.externalOptionName ?? '',
-      productCode: '',
-      optionSku: '',
-    })
-    setRegisterOpen(true)
+  function openPicker(entry: UnifiedEntry) {
+    if (!entry.externalCode) return
+    setPickerExternalCode(entry.externalCode)
+    setPickerInitialQuery(entry.row?.externalName ?? '')
+    setPickerOpen(true)
   }
 
-  async function handleRegisterProduct() {
-    setRegisterSubmitting(true)
-    try {
-      const res = await fetch('/api/sh/inventory/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: registerForm.productName,
-          code: registerForm.productCode || undefined,
-          options: [
-            {
-              name: registerForm.optionName,
-              sku: registerForm.optionSku || undefined,
-            },
-          ],
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? '등록 실패')
+  function handlePicked(picked: PickedOption) {
+    if (!pickerExternalCode) return
+    setManualMap((m) => ({ ...m, [pickerExternalCode]: picked.optionId }))
+    setApplyMapped((m) => ({ ...m, [pickerExternalCode]: true }))
+    setPickerOpen(false)
+    toast.success(`${picked.productName} / ${picked.optionName} 매칭됨`)
+  }
 
-      const newOptionId = data.product?.options?.[0]?.id ?? data.optionId
-      if (newOptionId && registerCode) {
-        setManualMap((m) => ({ ...m, [registerCode]: newOptionId }))
-        setApplyMapped((m) => ({ ...m, [registerCode]: true }))
-      }
-
-      toast.success('새 상품이 등록되었습니다')
-      setRegisterOpen(false)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '등록 실패')
-    } finally {
-      setRegisterSubmitting(false)
+  // 이미 매칭된 optionId는 picker에서 제외
+  const excludeOptionIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const e of entries) {
+      if ('optionId' in e && e.optionId) ids.add(e.optionId)
     }
-  }
+    for (const v of Object.values(manualMap)) {
+      if (v) ids.add(v)
+    }
+    return [...ids]
+  }, [entries, manualMap])
 
   async function handleConfirm() {
     if (!recon) return
@@ -535,12 +504,13 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                         />
                         {isPending && (
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             className="h-7 px-2 text-xs"
-                            onClick={() => openRegisterDialog(entry)}
+                            onClick={() => openPicker(entry)}
                           >
-                            <Plus className="mr-1 h-3 w-3" />새 상품
+                            <Search className="mr-1 h-3 w-3" />
+                            상품 선택
                           </Button>
                         )}
                       </div>
@@ -565,91 +535,14 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         </div>
       )}
 
-      {/* New product registration dialog */}
-      <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>새 상품 등록</DialogTitle>
-            <DialogDescription>
-              미매칭 항목에 대한 새 상품을 등록합니다. 등록 후 자동으로 매핑됩니다.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="reg-product-name">상품명</Label>
-              <Input
-                id="reg-product-name"
-                value={registerForm.productName}
-                onChange={(e) =>
-                  setRegisterForm((f) => ({
-                    ...f,
-                    productName: e.target.value,
-                  }))
-                }
-                placeholder="상품명을 입력하세요"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reg-option-name">옵션명</Label>
-              <Input
-                id="reg-option-name"
-                value={registerForm.optionName}
-                onChange={(e) =>
-                  setRegisterForm((f) => ({
-                    ...f,
-                    optionName: e.target.value,
-                  }))
-                }
-                placeholder="옵션명을 입력하세요"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reg-product-code">제품코드 (선택)</Label>
-              <Input
-                id="reg-product-code"
-                value={registerForm.productCode}
-                onChange={(e) =>
-                  setRegisterForm((f) => ({
-                    ...f,
-                    productCode: e.target.value,
-                  }))
-                }
-                placeholder="제품코드"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reg-option-sku">SKU (선택)</Label>
-              <Input
-                id="reg-option-sku"
-                value={registerForm.optionSku}
-                onChange={(e) =>
-                  setRegisterForm((f) => ({
-                    ...f,
-                    optionSku: e.target.value,
-                  }))
-                }
-                placeholder="SKU"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setRegisterOpen(false)}
-              disabled={registerSubmitting}
-            >
-              취소
-            </Button>
-            <Button
-              onClick={handleRegisterProduct}
-              disabled={registerSubmitting || !registerForm.productName.trim()}
-            >
-              {registerSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              등록
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <OptionPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onPick={handlePicked}
+        excludeOptionIds={excludeOptionIds}
+        initialQuery={pickerInitialQuery}
+        mode="two-step"
+      />
     </div>
   )
 }
