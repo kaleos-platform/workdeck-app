@@ -1,6 +1,6 @@
 'use client'
 
-import { StockStatusTable } from '@/components/sh/inventory/stock-status-table'
+import { StockStatusBoard } from '@/components/sh/inventory/stock-status-board'
 
 export default function StockStatusPage() {
   return (
@@ -11,7 +11,7 @@ export default function StockStatusPage() {
           상품 및 옵션별 재고를 위치별로 확인할 수 있습니다
         </p>
       </div>
-      <StockStatusTable />
+      <StockStatusBoard />
     </div>
   )
 }
