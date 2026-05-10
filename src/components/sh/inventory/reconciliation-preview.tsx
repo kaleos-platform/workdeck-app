@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Loader2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -21,12 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { FloatingActionBar, floatingActionButtonClass } from '@/components/ui/floating-action-bar'
 import {
   OptionPickerDialog,
   type PickedOption,
 } from '@/components/sh/products/listings/option-picker-dialog'
+import { applyRangeSelection } from '@/lib/range-selection'
 
-// Match entry types (mirror of server)
 type ParsedRow = {
   externalCode: string
   externalName?: string
@@ -90,6 +91,12 @@ type Props = {
   onConfirmed: () => void
 }
 
+type ManualMeta = {
+  productName: string
+  optionName: string
+  systemQty?: number
+}
+
 type UnifiedEntry = {
   key: string
   status: string
@@ -122,9 +129,18 @@ function statusBadge(status: string) {
       return <Badge className="border-red-200 bg-red-100 text-red-700">미매칭</Badge>
     case 'system-only':
       return <Badge className="border-gray-200 bg-gray-100 text-gray-600">파일 누락</Badge>
+    case 'manual-equal':
+      return <Badge className="border-green-200 bg-green-50 text-green-600">수동 일치</Badge>
+    case 'manual-diff':
+      return <Badge className="border-amber-200 bg-amber-50 text-amber-600">수동 차이</Badge>
     default:
       return null
   }
+}
+
+// 선택 가능한 행인지 (체크박스 노출 여부)
+function isSelectable(status: string) {
+  return status === 'matched-diff' || status === 'manual-equal' || status === 'manual-diff'
 }
 
 export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }: Props) {
@@ -134,14 +150,15 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   const [statusFilter, setStatusFilter] = useState<
     'all' | 'matched-diff' | 'matched-equal' | 'file-only' | 'system-only'
   >('all')
-  // selected matched-diff optionIds (default: all)
+  // selected 키: matched-diff는 optionId, manual-*는 externalCode
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  // manual mappings (externalCode -> optionId) chosen by user
+  // manual mappings (externalCode -> optionId)
   const [manualMap, setManualMap] = useState<Record<string, string>>({})
-  // applied manual map (adjust these too)
-  const [applyMapped, setApplyMapped] = useState<Record<string, boolean>>({})
+  // picker 결과 메타 (productName, optionName, systemQty)
+  const [manualMeta, setManualMeta] = useState<Record<string, ManualMeta>>({})
 
-  // 옵션 선택 다이얼로그 (상품 → 옵션 2단계)
+  const lastClickedIndexRef = useRef<number | null>(null)
+
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
   const [pickerContext, setPickerContext] = useState('')
@@ -154,12 +171,13 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
       if (!res.ok) throw new Error(data.message ?? '조회 실패')
       const r = data.reconciliation as Reconciliation
       setRecon(r)
-      const diffIds = (r.matchResults ?? [])
+      // selected 키 형식과 일치시킴 (diff-<optionId>)
+      const diffKeys = (r.matchResults ?? [])
         .filter(
           (e): e is Extract<MatchEntry, { status: 'matched-diff' }> => e.status === 'matched-diff'
         )
-        .map((e) => e.optionId)
-      setSelected(new Set(diffIds))
+        .map((e) => `diff-${e.optionId}`)
+      setSelected(new Set(diffKeys))
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '조회 실패')
     } finally {
@@ -171,7 +189,8 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     load()
   }, [load])
 
-  const entries = recon?.matchResults ?? []
+  const entries = useMemo(() => recon?.matchResults ?? [], [recon])
+
   const diffEntries = useMemo(
     () =>
       entries.filter(
@@ -203,7 +222,6 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     'system-only': systemOnlyEntries.length,
   }
 
-  // Build unified entries
   const unifiedEntries = useMemo<UnifiedEntry[]>(() => {
     const result: UnifiedEntry[] = []
 
@@ -238,15 +256,36 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     }
 
     for (const e of fileOnlyEntries) {
+      const code = e.row.externalCode
+      const mapped = manualMap[code]
+      const meta = manualMeta[code]
+
+      let status = 'file-only'
+      let displayProductName = e.row.externalName ?? e.row.externalCode
+      let displayOptionName = e.row.externalOptionName ?? '-'
+      let systemQty: number | null = null
+      let delta: number | null = null
+
+      if (mapped && meta) {
+        displayProductName = meta.productName
+        displayOptionName = meta.optionName
+        if (meta.systemQty !== undefined) {
+          systemQty = meta.systemQty
+          const diff = e.row.quantity - meta.systemQty
+          delta = diff
+          status = diff === 0 ? 'manual-equal' : 'manual-diff'
+        }
+      }
+
       result.push({
-        key: `file-${e.row.externalCode}`,
-        status: 'file-only',
-        productName: e.row.externalName ?? e.row.externalCode,
-        optionName: e.row.externalOptionName ?? '-',
-        systemQty: null,
+        key: `file-${code}`,
+        status,
+        productName: displayProductName,
+        optionName: displayOptionName,
+        systemQty,
         fileQty: e.row.quantity,
-        delta: null,
-        externalCode: e.row.externalCode,
+        delta,
+        externalCode: code,
         suggestions: e.suggestions,
         row: e.row,
       })
@@ -266,23 +305,54 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     }
 
     return result
-  }, [diffEntries, equalEntries, fileOnlyEntries, systemOnlyEntries])
+  }, [diffEntries, equalEntries, fileOnlyEntries, systemOnlyEntries, manualMap, manualMeta])
 
   const filteredEntries = useMemo(
     () =>
       statusFilter === 'all'
         ? unifiedEntries
-        : unifiedEntries.filter((e) => e.status === statusFilter),
+        : unifiedEntries.filter((e) => {
+            if (statusFilter === 'file-only') {
+              return (
+                e.status === 'file-only' ||
+                e.status === 'manual-equal' ||
+                e.status === 'manual-diff'
+              )
+            }
+            return e.status === statusFilter
+          }),
     [unifiedEntries, statusFilter]
   )
 
-  function toggle(optionId: string) {
-    setSelected((s) => {
-      const next = new Set(s)
-      if (next.has(optionId)) next.delete(optionId)
-      else next.add(optionId)
-      return next
-    })
+  // 현재 필터 내 선택 가능한 행의 키 목록
+  const selectableKeys = useMemo(
+    () => filteredEntries.filter((e) => isSelectable(e.status)).map((e) => e.key),
+    [filteredEntries]
+  )
+
+  const allSelected = selectableKeys.length > 0 && selectableKeys.every((k) => selected.has(k))
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelected((s) => {
+        const next = new Set(s)
+        selectableKeys.forEach((k) => next.delete(k))
+        return next
+      })
+    } else {
+      setSelected((s) => {
+        const next = new Set(s)
+        selectableKeys.forEach((k) => next.add(k))
+        return next
+      })
+    }
+  }
+
+  function toggleSelect(key: string, index: number, shiftKey: boolean) {
+    setSelected((prev) =>
+      applyRangeSelection(prev, selectableKeys, key, index, shiftKey, lastClickedIndexRef.current)
+    )
+    lastClickedIndexRef.current = index
   }
 
   function openPicker(entry: UnifiedEntry) {
@@ -296,13 +366,44 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
 
   function handlePicked(picked: PickedOption) {
     if (!pickerExternalCode) return
-    setManualMap((m) => ({ ...m, [pickerExternalCode]: picked.optionId }))
-    setApplyMapped((m) => ({ ...m, [pickerExternalCode]: true }))
+    const code = pickerExternalCode
+    setManualMap((m) => ({ ...m, [code]: picked.optionId }))
+    setManualMeta((m) => ({
+      ...m,
+      [code]: {
+        productName: picked.productName,
+        optionName: picked.optionName,
+        systemQty: picked.totalStock,
+      },
+    }))
+    // 매핑된 file-only 행을 selected에 추가 (키는 file-${externalCode})
+    setSelected((s) => {
+      const next = new Set(s)
+      next.add(`file-${code}`)
+      return next
+    })
     setPickerOpen(false)
     toast.success(`${picked.productName} / ${picked.optionName} 매칭됨`)
   }
 
-  // 이미 매칭된 optionId는 picker에서 제외
+  function removeMapping(externalCode: string) {
+    setManualMap((m) => {
+      const next = { ...m }
+      delete next[externalCode]
+      return next
+    })
+    setManualMeta((m) => {
+      const next = { ...m }
+      delete next[externalCode]
+      return next
+    })
+    setSelected((s) => {
+      const next = new Set(s)
+      next.delete(`file-${externalCode}`)
+      return next
+    })
+  }
+
   const excludeOptionIds = useMemo(() => {
     const ids = new Set<string>()
     for (const e of entries) {
@@ -322,11 +423,16 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         .filter(([, v]) => !!v)
         .map(([externalCode, optionId]) => ({ externalCode, optionId }))
 
-      const selectedOptionIds = [...selected]
-      // file-only items where user checked "apply"
-      for (const [externalCode, optionId] of Object.entries(manualMap)) {
-        if (optionId && applyMapped[externalCode]) {
-          selectedOptionIds.push(optionId)
+      // selected 키 → optionId 변환
+      // matched-diff: key=`diff-${optionId}`
+      // manual-*:    key=`file-${externalCode}` → manualMap에서 optionId 조회
+      const selectedOptionIds: string[] = []
+      for (const key of selected) {
+        if (key.startsWith('diff-')) {
+          selectedOptionIds.push(key.slice(5))
+        } else if (key.startsWith('file-')) {
+          const optionId = manualMap[key.slice(5)]
+          if (optionId) selectedOptionIds.push(optionId)
         }
       }
 
@@ -425,86 +531,132 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  {isPending && selectableKeys.length > 0 && (
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="전체 선택"
+                    />
+                  )}
+                </TableHead>
                 <TableHead className="w-24">상태</TableHead>
                 <TableHead>상품명</TableHead>
                 <TableHead>옵션명</TableHead>
-                <TableHead className="w-20 text-right">시스템</TableHead>
+                <TableHead className="w-20 text-right">현재 재고</TableHead>
                 <TableHead className="w-20 text-right">파일</TableHead>
                 <TableHead className="w-20 text-right">차이</TableHead>
-                <TableHead className="w-60">동작</TableHead>
+                <TableHead className="w-28">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEntries.map((entry) => (
-                <TableRow key={entry.key}>
-                  <TableCell>{statusBadge(entry.status)}</TableCell>
-                  <TableCell className="font-medium">{entry.productName}</TableCell>
-                  <TableCell className="text-muted-foreground">{entry.optionName}</TableCell>
-                  <TableCell className="text-right">
-                    {entry.systemQty !== null ? entry.systemQty : '-'}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold">
-                    {entry.fileQty !== null ? entry.fileQty : '-'}
-                  </TableCell>
-                  <TableCell
-                    className={`text-right font-mono ${
-                      entry.delta !== null
-                        ? entry.delta > 0
-                          ? 'text-emerald-600'
-                          : entry.delta < 0
-                            ? 'text-red-600'
-                            : ''
-                        : ''
-                    }`}
-                  >
-                    {entry.delta !== null ? `${entry.delta > 0 ? '+' : ''}${entry.delta}` : '-'}
-                  </TableCell>
-                  <TableCell>
-                    {entry.status === 'matched-diff' && entry.optionId && (
-                      <Checkbox
-                        checked={selected.has(entry.optionId)}
-                        onCheckedChange={() => toggle(entry.optionId!)}
-                        disabled={!isPending}
-                      />
-                    )}
-                    {entry.status === 'file-only' && entry.externalCode && (
-                      <div className="flex items-center gap-1.5">
-                        <Select
-                          value={manualMap[entry.externalCode] ?? ''}
-                          onValueChange={(v) =>
-                            setManualMap((m) => ({
-                              ...m,
-                              [entry.externalCode!]: v,
-                            }))
-                          }
-                          disabled={!isPending || (entry.suggestions?.length ?? 0) === 0}
-                        >
-                          <SelectTrigger className="h-7 w-36 text-xs">
-                            <SelectValue
-                              placeholder={
-                                (entry.suggestions?.length ?? 0) === 0 ? '후보 없음' : '후보 선택'
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(entry.suggestions ?? []).map((s) => (
-                              <SelectItem key={s.optionId} value={s.optionId}>
-                                {s.productName} / {s.optionName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+              {filteredEntries.map((entry, index) => {
+                const selectable = isSelectable(entry.status)
+                const selectKey = entry.key
+                const isMapped = entry.externalCode !== undefined && !!manualMap[entry.externalCode]
+
+                return (
+                  <TableRow key={entry.key}>
+                    {/* 체크박스 컬럼 */}
+                    <TableCell>
+                      {isPending && selectable && (
                         <Checkbox
-                          checked={!!applyMapped[entry.externalCode]}
-                          disabled={!isPending || !manualMap[entry.externalCode]}
-                          onCheckedChange={(v) =>
-                            setApplyMapped((m) => ({
-                              ...m,
-                              [entry.externalCode!]: v === true,
-                            }))
-                          }
+                          checked={selected.has(selectKey)}
+                          onClick={(e) => {
+                            toggleSelect(selectKey, index, e.shiftKey)
+                          }}
+                          aria-label="행 선택"
                         />
-                        {isPending && (
+                      )}
+                    </TableCell>
+                    <TableCell>{statusBadge(entry.status)}</TableCell>
+                    <TableCell className="font-medium">{entry.productName}</TableCell>
+                    {/* 옵션명 셀 — 매핑됨이면 수정/취소 인라인 버튼 */}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{entry.optionName}</span>
+                        {isPending && isMapped && entry.externalCode && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                              onClick={() => openPicker(entry)}
+                            >
+                              수정
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1.5 text-xs text-muted-foreground hover:text-destructive"
+                              onClick={() => removeMapping(entry.externalCode!)}
+                            >
+                              취소
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {entry.systemQty !== null ? entry.systemQty : '-'}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {entry.fileQty !== null ? entry.fileQty : '-'}
+                    </TableCell>
+                    <TableCell
+                      className={`text-right font-mono ${
+                        entry.delta !== null
+                          ? entry.delta > 0
+                            ? 'text-emerald-600'
+                            : entry.delta < 0
+                              ? 'text-red-600'
+                              : ''
+                          : ''
+                      }`}
+                    >
+                      {entry.delta !== null ? `${entry.delta > 0 ? '+' : ''}${entry.delta}` : '-'}
+                    </TableCell>
+                    {/* 동작 컬럼 — 미매핑 file-only만 [상품 선택] 노출 */}
+                    <TableCell>
+                      {isPending && entry.status === 'file-only' && entry.externalCode && (
+                        <div className="flex items-center gap-1">
+                          {(entry.suggestions?.length ?? 0) > 0 && (
+                            <Select
+                              value={manualMap[entry.externalCode] ?? ''}
+                              onValueChange={(v) => {
+                                const code = entry.externalCode!
+                                // suggestion 선택 시 meta 없이 optionId만 저장 (systemQty 미상)
+                                setManualMap((m) => ({ ...m, [code]: v }))
+                                const suggestion = entry.suggestions?.find((s) => s.optionId === v)
+                                if (suggestion) {
+                                  setManualMeta((m) => ({
+                                    ...m,
+                                    [code]: {
+                                      productName: suggestion.productName,
+                                      optionName: suggestion.optionName,
+                                    },
+                                  }))
+                                  setSelected((s) => {
+                                    const next = new Set(s)
+                                    next.add(`file-${code}`)
+                                    return next
+                                  })
+                                }
+                              }}
+                              disabled={(entry.suggestions?.length ?? 0) === 0}
+                            >
+                              <SelectTrigger className="h-7 w-32 text-xs">
+                                <SelectValue placeholder="후보 선택" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(entry.suggestions ?? []).map((s) => (
+                                  <SelectItem key={s.optionId} value={s.optionId}>
+                                    {s.productName} / {s.optionName}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
@@ -514,12 +666,12 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                             <Search className="mr-1 h-3 w-3" />
                             상품 선택
                           </Button>
-                        )}
-                      </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </div>
@@ -530,11 +682,29 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
           <Button variant="outline" onClick={handleCancel} disabled={submitting}>
             대조 취소
           </Button>
-          <Button onClick={handleConfirm} disabled={submitting}>
-            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            적용 ({selected.size}건 조정)
-          </Button>
         </div>
+      )}
+
+      {isPending && (
+        <FloatingActionBar
+          open={selected.size > 0}
+          onClear={() => setSelected(new Set())}
+          actions={
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              onClick={handleConfirm}
+              disabled={submitting}
+            >
+              {submitting && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
+              선택 적용
+            </Button>
+          }
+        >
+          <span className="text-sm font-semibold">{selected.size}건 선택</span>
+        </FloatingActionBar>
       )}
 
       <OptionPickerDialog
