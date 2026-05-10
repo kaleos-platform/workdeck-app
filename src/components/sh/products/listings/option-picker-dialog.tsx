@@ -61,6 +61,10 @@ type Props = {
   // 'flat' (default): 상품+옵션을 한 리스트로 표시 (기존 동작)
   // 'two-step': 1단계 상품 선택 → 2단계 그 상품의 옵션 선택
   mode?: 'flat' | 'two-step'
+  // 다이얼로그 상단에 표시할 컨텍스트(예: 매칭 대상 외부 상품명).
+  // 검색창에는 자동 입력하지 않고 사용자에게 "무엇을 매칭하는지"만 보여준다.
+  contextLabel?: string
+  contextValue?: string
 }
 
 export function OptionPickerDialog({
@@ -70,6 +74,8 @@ export function OptionPickerDialog({
   excludeOptionIds = [],
   initialQuery = '',
   mode = 'flat',
+  contextLabel,
+  contextValue,
 }: Props) {
   const [search, setSearch] = useState(initialQuery)
   const [debounced, setDebounced] = useState(initialQuery)
@@ -179,6 +185,12 @@ export function OptionPickerDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
+          {contextValue && (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm">
+              <span className="text-xs text-amber-700">{contextLabel ?? '매칭 대상'}</span>
+              <p className="mt-0.5 font-medium text-amber-900">{contextValue}</p>
+            </div>
+          )}
           {showOptionStep && (
             <Button
               type="button"

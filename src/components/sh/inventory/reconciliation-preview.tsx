@@ -144,7 +144,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   // 옵션 선택 다이얼로그 (상품 → 옵션 2단계)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
-  const [pickerInitialQuery, setPickerInitialQuery] = useState('')
+  const [pickerContext, setPickerContext] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -288,7 +288,9 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   function openPicker(entry: UnifiedEntry) {
     if (!entry.externalCode) return
     setPickerExternalCode(entry.externalCode)
-    setPickerInitialQuery(entry.row?.externalName ?? '')
+    const name = entry.row?.externalName ?? entry.externalCode
+    const optionName = entry.row?.externalOptionName
+    setPickerContext(optionName ? `${name} / ${optionName}` : name)
     setPickerOpen(true)
   }
 
@@ -540,8 +542,9 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         onOpenChange={setPickerOpen}
         onPick={handlePicked}
         excludeOptionIds={excludeOptionIds}
-        initialQuery={pickerInitialQuery}
         mode="two-step"
+        contextLabel="매칭 대상 (파일)"
+        contextValue={pickerContext}
       />
     </div>
   )
