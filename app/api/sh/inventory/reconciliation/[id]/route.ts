@@ -3,6 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { confirmReconciliation } from '@/lib/inv/reconciliation-processor'
 import { MovementError } from '@/lib/inv/movement-processor'
+import type { MatchEntry, FileOnlyEntry } from '@/lib/inv/reconciliation-matcher'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -26,7 +27,119 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   })
   const appliedOptionIds = movements.map((m) => m.optionId)
 
-  return NextResponse.json({ reconciliation: { ...recon, appliedOptionIds } })
+  // matchResults 후처리: file-only 중 InvLocationProductMap에 매핑된 항목은
+  // 현재 시스템 재고를 기준으로 matched-equal/matched-diff로 가상 변환한다.
+  // (스냅샷 DB는 수정하지 않음)
+  const rawEntries = (recon.matchResults ?? []) as MatchEntry[]
+  const resolved2 = await resolveFileOnlyEntries(rawEntries, recon.locationId)
+
+  // matched-equal/matched-diff 항목에 mappingId를 함께 내려준다 (매칭 수정 PATCH용).
+  const matchResults = await attachMappingIds(resolved2, recon.locationId)
+
+  return NextResponse.json({ reconciliation: { ...recon, matchResults, appliedOptionIds } })
+}
+
+/**
+ * matched-equal/matched-diff 항목에 InvLocationProductMap.id(mappingId)를 첨부한다.
+ * UI의 [매칭 수정] PATCH가 mappingId를 필요로 한다.
+ */
+async function attachMappingIds(
+  entries: (MatchEntry & { mappingId?: string })[],
+  locationId: string
+): Promise<(MatchEntry & { mappingId?: string })[]> {
+  const codes: string[] = []
+  for (const e of entries) {
+    if ((e.status === 'matched-equal' || e.status === 'matched-diff') && e.row?.externalCode) {
+      codes.push(e.row.externalCode)
+    }
+  }
+  if (codes.length === 0) return entries
+
+  const mappings = await prisma.invLocationProductMap.findMany({
+    where: { locationId, externalCode: { in: codes } },
+    select: { id: true, externalCode: true },
+  })
+  const idByCode = new Map<string, string>()
+  for (const m of mappings) idByCode.set(m.externalCode, m.id)
+
+  return entries.map((e) => {
+    if (
+      (e.status === 'matched-equal' || e.status === 'matched-diff') &&
+      e.row?.externalCode &&
+      idByCode.has(e.row.externalCode)
+    ) {
+      return { ...e, mappingId: idByCode.get(e.row.externalCode) }
+    }
+    return e
+  })
+}
+
+/**
+ * file-only 항목 중 InvLocationProductMap에 매핑이 생긴 것을
+ * 현재 InvStockLevel 기준으로 matched-equal/matched-diff로 가상 변환한다.
+ * 매핑이 없는 file-only는 그대로 유지한다.
+ */
+async function resolveFileOnlyEntries(
+  entries: MatchEntry[],
+  locationId: string
+): Promise<MatchEntry[]> {
+  // file-only 항목만 추출
+  const fileOnlyEntries = entries.filter((e): e is FileOnlyEntry => e.status === 'file-only')
+  if (fileOnlyEntries.length === 0) return entries
+
+  const externalCodes = fileOnlyEntries.map((e) => e.row.externalCode)
+
+  // 해당 externalCode들에 매핑이 있는지 일괄 조회
+  const mappings = await prisma.invLocationProductMap.findMany({
+    where: { locationId, externalCode: { in: externalCodes } },
+    include: {
+      option: { include: { product: { select: { name: true } } } },
+    },
+  })
+  if (mappings.length === 0) return entries
+
+  const mappingByCode = new Map<string, (typeof mappings)[number]>()
+  for (const m of mappings) mappingByCode.set(m.externalCode, m)
+
+  // 매핑된 optionId의 현재 시스템 재고 일괄 조회 (reconciliation-matcher와 동일 패턴)
+  const mappedOptionIds = mappings.map((m) => m.optionId)
+  const stocks = await prisma.invStockLevel.findMany({
+    where: { locationId, optionId: { in: mappedOptionIds } },
+  })
+  const stockByOption = new Map<string, number>()
+  for (const s of stocks) stockByOption.set(s.optionId, s.quantity)
+
+  return entries.map((entry) => {
+    if (entry.status !== 'file-only') return entry
+
+    const mapping = mappingByCode.get(entry.row.externalCode)
+    if (!mapping) return entry // 매핑 없음 — file-only 유지
+
+    const systemQty = stockByOption.get(mapping.optionId) ?? 0
+    const fileQty = entry.row.quantity
+
+    if (fileQty === systemQty) {
+      return {
+        status: 'matched-equal' as const,
+        row: entry.row,
+        optionId: mapping.optionId,
+        productName: mapping.option.product.name,
+        optionName: mapping.option.name,
+        systemQuantity: systemQty,
+      }
+    } else {
+      return {
+        status: 'matched-diff' as const,
+        row: entry.row,
+        optionId: mapping.optionId,
+        productName: mapping.option.product.name,
+        optionName: mapping.option.name,
+        systemQuantity: systemQty,
+        fileQuantity: fileQty,
+        delta: fileQty - systemQty,
+      }
+    }
+  })
 }
 
 // POST /api/sh/inventory/reconciliation/[id]

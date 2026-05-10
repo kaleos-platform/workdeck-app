@@ -52,6 +52,7 @@ type MatchEntry =
       systemQuantity: number
       fileQuantity: number
       delta: number
+      mappingId?: string
     }
   | {
       status: 'matched-equal'
@@ -60,6 +61,7 @@ type MatchEntry =
       productName: string
       optionName: string
       systemQuantity: number
+      mappingId?: string
     }
   | {
       status: 'file-only'
@@ -111,6 +113,8 @@ type UnifiedEntry = {
   externalCode?: string
   suggestions?: SuggestionOption[]
   row?: ParsedRow
+  // matched-* 행의 InvLocationProductMap.id — 백엔드 GET 변환 시 포함되면 활성화
+  mappingId?: string
 }
 
 const STATUS_FILTERS = [
@@ -160,6 +164,10 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
   const [pickerContext, setPickerContext] = useState('')
+
+  // matched-* 행 매칭 수정용 picker 상태
+  const [editMatcherOpen, setEditMatcherOpen] = useState(false)
+  const [editMatcherEntry, setEditMatcherEntry] = useState<UnifiedEntry | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -237,6 +245,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         delta: e.delta,
         optionId: e.optionId,
         row: e.row,
+        mappingId: e.mappingId,
       })
     }
 
@@ -252,6 +261,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
           delta: 0,
           optionId: e.optionId,
           row: e.row,
+          mappingId: e.mappingId,
         })
       }
     }
@@ -403,6 +413,40 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     })
     setPickerOpen(false)
     toast.success(`${picked.productName} / ${picked.optionName} 매칭됨`)
+  }
+
+  function openEditMatcher(entry: UnifiedEntry) {
+    setEditMatcherEntry(entry)
+    setEditMatcherOpen(true)
+  }
+
+  async function handleEditMatcherPick(picked: PickedOption) {
+    if (!editMatcherEntry || !recon) return
+    const entry = editMatcherEntry
+    setEditMatcherOpen(false)
+    setEditMatcherEntry(null)
+
+    if (!entry.mappingId) {
+      toast.error('이 행에는 수정 가능한 매핑이 없습니다')
+      return
+    }
+
+    try {
+      const res = await fetch(
+        `/api/sh/inventory/locations/${recon.location.id}/mappings?mappingId=${entry.mappingId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ optionId: picked.optionId }),
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? '매핑 수정 실패')
+      toast.success(`${picked.productName} / ${picked.optionName} 으로 매칭 변경됨`)
+      await load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '매핑 수정 실패')
+    }
   }
 
   function removeMapping(externalCode: string) {
@@ -632,7 +676,10 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap items-center gap-1">
-                        {entryStatusBadge(entry.status)}
+                        {/* applied=true인 file-only는 이론상 발생 안 해야 함 (GET에서 matched-*로 변환).
+                            만약 발생하면 status 배지 대신 "적용됨"만 표시해 혼동 방지 */}
+                        {!(applied && entry.status === 'file-only') &&
+                          entryStatusBadge(entry.status)}
                         {applied && (
                           <Badge
                             variant="outline"
@@ -689,8 +736,20 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                     >
                       {entry.delta !== null ? `${entry.delta > 0 ? '+' : ''}${entry.delta}` : '-'}
                     </TableCell>
-                    {/* 동작 컬럼 — 미매핑 file-only만 [상품 선택] 노출 */}
+                    {/* 동작 컬럼 — 미매핑 file-only: [상품 선택], matched-*: [매칭 수정] */}
                     <TableCell>
+                      {canEdit &&
+                        (entry.status === 'matched-equal' || entry.status === 'matched-diff') &&
+                        entry.row?.externalCode && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => openEditMatcher(entry)}
+                          >
+                            매칭 수정
+                          </Button>
+                        )}
                       {canEdit && entry.status === 'file-only' && entry.externalCode && (
                         <div className="flex items-center gap-1">
                           {(entry.suggestions?.length ?? 0) > 0 && (
@@ -787,6 +846,24 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         mode="two-step"
         contextLabel="매칭 대상 (파일)"
         contextValue={pickerContext}
+      />
+
+      {/* matched-* 행 매칭 수정용 picker */}
+      <OptionPickerDialog
+        open={editMatcherOpen}
+        onOpenChange={(v) => {
+          if (!v) {
+            setEditMatcherOpen(false)
+            setEditMatcherEntry(null)
+          }
+        }}
+        onPick={handleEditMatcherPick}
+        mode="two-step"
+        contextLabel="현재 매칭"
+        contextValue={
+          editMatcherEntry ? `${editMatcherEntry.productName} / ${editMatcherEntry.optionName}` : ''
+        }
+        excludeOptionIds={excludeOptionIds}
       />
     </div>
   )

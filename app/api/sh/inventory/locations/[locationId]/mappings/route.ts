@@ -99,6 +99,54 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
   return NextResponse.json({ mapping })
 }
 
+// PATCH /api/inv/locations/[locationId]/mappings?mappingId=xxx
+// body: { optionId: string }
+export async function PATCH(req: NextRequest, ctx: RouteContext) {
+  const resolved = await resolveDeckContext('seller-hub')
+  if ('error' in resolved) return resolved.error
+
+  const { locationId } = await ctx.params
+  const location = await assertLocation(resolved.space.id, locationId)
+  if (!location) return errorResponse('위치를 찾을 수 없습니다', 404)
+
+  const { searchParams } = new URL(req.url)
+  const mappingId = searchParams.get('mappingId')
+  if (!mappingId) return errorResponse('mappingId가 필요합니다', 400)
+
+  const body = (await req.json().catch(() => ({}))) as { optionId?: string }
+  const optionId = body.optionId?.trim()
+  if (!optionId) return errorResponse('optionId가 필요합니다', 400)
+
+  // 매핑이 이 locationId/spaceId에 속하는지 검증
+  const mapping = await prisma.invLocationProductMap.findFirst({
+    where: { id: mappingId, locationId, spaceId: resolved.space.id },
+    select: { id: true },
+  })
+  if (!mapping) return errorResponse('매핑을 찾을 수 없습니다', 404)
+
+  // optionId가 이 spaceId의 InvProductOption인지 검증
+  const option = await prisma.invProductOption.findFirst({
+    where: { id: optionId, product: { spaceId: resolved.space.id } },
+    select: { id: true },
+  })
+  if (!option) return errorResponse('상품 옵션을 찾을 수 없습니다', 404)
+
+  // optionId만 교체 — externalCode/externalName은 건드리지 않음
+  const updated = await prisma.invLocationProductMap.update({
+    where: { id: mapping.id },
+    data: { optionId },
+    include: {
+      option: {
+        include: {
+          product: { select: { id: true, name: true, code: true } },
+        },
+      },
+    },
+  })
+
+  return NextResponse.json({ mapping: updated })
+}
+
 // DELETE /api/inv/locations/[locationId]/mappings?mappingId=xxx
 export async function DELETE(req: NextRequest, ctx: RouteContext) {
   const resolved = await resolveDeckContext('seller-hub')
