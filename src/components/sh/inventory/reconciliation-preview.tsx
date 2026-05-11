@@ -140,8 +140,12 @@ function entryStatusBadge(status: string) {
   }
 }
 
-function isSelectable(status: string) {
-  return status === 'matched-diff'
+function isSelectable(entry: UnifiedEntry, manualMap: Record<string, PickedOptionWithQty[]>) {
+  if (entry.status === 'matched-diff') return true
+  if (entry.status === 'file-only' && entry.externalCode) {
+    return (manualMap[entry.externalCode]?.length ?? 0) > 0
+  }
+  return false
 }
 
 function manualItemsToLabel(items: PickedOptionWithQty[]): string {
@@ -348,10 +352,10 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
   const selectableKeys = useMemo(
     () =>
       filteredEntries
-        .filter((e) => isSelectable(e.status))
+        .filter((e) => isSelectable(e, manualMap))
         .filter((e) => !isApplied(e))
         .map((e) => e.key),
-    [filteredEntries, isApplied]
+    [filteredEntries, isApplied, manualMap]
   )
 
   const allSelected = selectableKeys.length > 0 && selectableKeys.every((k) => selected.has(k))
@@ -595,6 +599,17 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
               확정
             </Button>
           )}
+          {canEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              disabled={submitting}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              대조 취소
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={onClose}>
             닫기
           </Button>
@@ -648,7 +663,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
             </TableHeader>
             <TableBody>
               {filteredEntries.map((entry, index) => {
-                const selectable = isSelectable(entry.status)
+                const selectable = isSelectable(entry, manualMap)
                 const applied = isApplied(entry)
                 const selectKey = entry.key
                 const isMapped =
@@ -773,14 +788,6 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
               })}
             </TableBody>
           </Table>
-        </div>
-      )}
-
-      {canEdit && (
-        <div className="flex justify-end gap-2 border-t pt-4">
-          <Button variant="outline" onClick={handleCancel} disabled={submitting}>
-            대조 취소
-          </Button>
         </div>
       )}
 
