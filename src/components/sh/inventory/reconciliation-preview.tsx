@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Loader2, Search } from 'lucide-react'
+import { Loader2, Pencil, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
@@ -668,14 +668,14 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                     />
                   )}
                 </TableHead>
-                <TableHead className="w-28">상태</TableHead>
+                <TableHead className="w-24">상태</TableHead>
                 <TableHead>상품명</TableHead>
-                <TableHead>파일 옵션명</TableHead>
-                <TableHead>시스템 옵션</TableHead>
-                <TableHead className="w-20 text-right">현재 재고</TableHead>
-                <TableHead className="w-20 text-right">파일</TableHead>
-                <TableHead className="w-20 text-right">차이</TableHead>
-                <TableHead className="w-28">동작</TableHead>
+                <TableHead className="w-40">파일 옵션명</TableHead>
+                <TableHead>매칭 상품 옵션</TableHead>
+                <TableHead className="w-16 text-right">현재 재고</TableHead>
+                <TableHead className="w-16 text-right">파일</TableHead>
+                <TableHead className="w-16 text-right">차이</TableHead>
+                <TableHead className="w-32">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -742,24 +742,28 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                             )}
                         </span>
                         {canEdit && isMapped && entry.externalCode && (
-                          <>
+                          <div className="flex flex-wrap items-center gap-1">
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
-                              className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                              className="h-7 px-2"
                               onClick={() => openPicker(entry)}
+                              aria-label="매칭 수정"
+                              title="매칭 수정"
                             >
-                              수정
+                              <Pencil className="h-3 w-3" />
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
-                              className="h-6 px-1.5 text-xs text-muted-foreground hover:text-destructive"
+                              className="h-7 border-destructive/30 px-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
                               onClick={() => removeMapping(entry.externalCode!)}
+                              aria-label="매칭 취소"
+                              title="매칭 취소"
                             >
-                              취소
+                              <X className="h-3 w-3" />
                             </Button>
-                          </>
+                          </div>
                         )}
                       </div>
                     </TableCell>

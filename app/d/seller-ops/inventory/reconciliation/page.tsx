@@ -32,7 +32,7 @@ export default function ReconciliationPage() {
       </div>
 
       <div className="flex gap-4">
-        <div className="w-80 shrink-0">
+        <div className="w-64 shrink-0">
           <ReconciliationHistory
             refreshKey={refreshKey}
             onSelect={setPreviewId}
