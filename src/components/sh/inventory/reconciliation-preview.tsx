@@ -105,6 +105,8 @@ type UnifiedEntry = {
   status: string
   productName: string
   optionName: string
+  externalOptionName: string
+  isManualMatched?: boolean
   systemQty: number | null
   fileQty: number | null
   delta: number | null
@@ -151,6 +153,19 @@ function isSelectable(entry: UnifiedEntry, manualMap: Record<string, PickedOptio
 function manualItemsToLabel(items: PickedOptionWithQty[]): string {
   if (items.length === 0) return '-'
   const first = `${items[0].productName} / ${items[0].optionName}${items[0].quantity > 1 ? ` × ${items[0].quantity}` : ''}`
+  if (items.length === 1) return first
+  return `${first} 외 ${items.length - 1}개`
+}
+
+function manualItemsToProductLabel(items: PickedOptionWithQty[]): string {
+  if (items.length === 0) return '-'
+  if (items.length === 1) return items[0].productName
+  return `${items[0].productName} 외 ${items.length - 1}개`
+}
+
+function manualItemsToOptionLabel(items: PickedOptionWithQty[]): string {
+  if (items.length === 0) return '-'
+  const first = `${items[0].optionName}${items[0].quantity > 1 ? ` × ${items[0].quantity}` : ''}`
   if (items.length === 1) return first
   return `${first} 외 ${items.length - 1}개`
 }
@@ -252,6 +267,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         status: 'matched-diff',
         productName: e.productName,
         optionName: e.optionName,
+        externalOptionName: e.row.externalOptionName ?? '-',
         systemQty: e.systemQuantity,
         fileQty: e.fileQuantity,
         delta: e.delta,
@@ -269,6 +285,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         status: 'matched-equal',
         productName: e.productName,
         optionName: e.optionName,
+        externalOptionName: e.row.externalOptionName ?? '-',
         systemQty: e.systemQuantity,
         fileQty: e.fileQuantity,
         delta: 0,
@@ -283,20 +300,17 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     for (const e of fileOnlyEntries) {
       const code = e.row.externalCode
       const items = manualMap[code]
-      const isMapped = items && items.length > 0
-
-      const displayProductName = isMapped
-        ? items[0].productName
-        : (e.row.externalName ?? e.row.externalCode)
-      const displayOptionName = isMapped
-        ? manualItemsToLabel(items)
-        : (e.row.externalOptionName ?? '-')
+      const isMapped = !!(items && items.length > 0)
 
       result.push({
         key: `file-${code}`,
         status: 'file-only',
-        productName: displayProductName,
-        optionName: displayOptionName,
+        productName: isMapped
+          ? manualItemsToProductLabel(items!)
+          : (e.row.externalName ?? e.row.externalCode),
+        optionName: isMapped ? manualItemsToOptionLabel(items!) : '-',
+        externalOptionName: e.row.externalOptionName ?? '-',
+        isManualMatched: isMapped,
         systemQty: null,
         fileQty: e.row.quantity,
         delta: null,
@@ -312,6 +326,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         status: 'system-only',
         productName: e.productName,
         optionName: e.optionName,
+        externalOptionName: '-',
         systemQty: e.systemQuantity,
         fileQty: null,
         delta: null,
@@ -470,16 +485,17 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     })
   }
 
-  const excludeOptionIds = useMemo(() => {
+  // 다른 외부코드 간 옵션 중복 허용:
+  // - 서버에서 이미 자동 매칭된 optionId는 제외 (entries 내 optionId)
+  // - 현재 편집 중인 externalCode의 manualMap은 picker가 initialItems로 받으므로 별도 제외 불필요
+  // - 다른 externalCode의 manualMap optionId는 중복 허용 (제외하지 않음)
+  const getExcludeOptionIds = useCallback((): string[] => {
     const ids = new Set<string>()
     for (const e of entries) {
       if ('optionId' in e && e.optionId) ids.add(e.optionId)
     }
-    for (const items of Object.values(manualMap)) {
-      for (const i of items) ids.add(i.optionId)
-    }
     return [...ids]
-  }, [entries, manualMap])
+  }, [entries])
 
   async function handleConfirm() {
     if (!recon) return
@@ -654,7 +670,8 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                 </TableHead>
                 <TableHead className="w-28">상태</TableHead>
                 <TableHead>상품명</TableHead>
-                <TableHead>옵션명</TableHead>
+                <TableHead>파일 옵션명</TableHead>
+                <TableHead>시스템 옵션</TableHead>
                 <TableHead className="w-20 text-right">현재 재고</TableHead>
                 <TableHead className="w-20 text-right">파일</TableHead>
                 <TableHead className="w-20 text-right">차이</TableHead>
@@ -690,7 +707,13 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap items-center gap-1">
-                        {entryStatusBadge(entry.status)}
+                        {entry.status === 'file-only' && entry.isManualMatched ? (
+                          <Badge className="border-blue-200 bg-blue-100 text-blue-700">
+                            매칭됨
+                          </Badge>
+                        ) : (
+                          entryStatusBadge(entry.status)
+                        )}
                         {applied && (
                           <Badge
                             variant="outline"
@@ -702,6 +725,9 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{entry.productName}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {entry.externalOptionName}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">
@@ -821,7 +847,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         }}
         mode="multi-with-qty"
         onPickMulti={handlePickedMulti}
-        excludeOptionIds={excludeOptionIds}
+        excludeOptionIds={getExcludeOptionIds()}
         contextLabel="매칭 대상 (파일)"
         contextValue={pickerContext}
         initialItems={
@@ -842,7 +868,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         }}
         mode="multi-with-qty"
         onPickMulti={handleEditMatcherPickMulti}
-        excludeOptionIds={excludeOptionIds}
+        excludeOptionIds={getExcludeOptionIds()}
         contextLabel="현재 매칭"
         contextValue={
           editMatcherEntry ? `${editMatcherEntry.productName} / ${editMatcherEntry.optionName}` : ''
