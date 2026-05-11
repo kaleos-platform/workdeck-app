@@ -42,7 +42,7 @@ export class MovementError extends Error {
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
 
 // StockLevel 행 잠금 — Prisma 7 에 typed FOR UPDATE 가 없어서 raw SQL 사용
-async function lockStockLevel(tx: Tx, optionId: string, locationId: string): Promise<void> {
+export async function lockStockLevel(tx: Tx, optionId: string, locationId: string): Promise<void> {
   await tx.$queryRaw`SELECT id, quantity FROM "InvStockLevel" WHERE "optionId" = ${optionId} AND "locationId" = ${locationId} FOR UPDATE`
 }
 
@@ -442,4 +442,35 @@ export async function processMovement(
         throw new MovementError(`알 수 없는 이동 유형: ${String(input.type)}`, 400)
     }
   })
+}
+
+/**
+ * 이동 효과를 stock에 반대 부호로 적용해 재고 원상복구.
+ * 트랜잭션 내에서 호출, lockStockLevel은 호출 측이 미리 잡고 호출하는 것을 가정.
+ * 행 자체의 삭제/업데이트는 호출 측이 처리한다.
+ */
+export async function reverseMovement(
+  tx: Tx,
+  spaceId: string,
+  movement: InvMovement
+): Promise<void> {
+  const { type, optionId, locationId, toLocationId, quantity } = movement
+  switch (type) {
+    case 'INBOUND':
+    case 'RETURN':
+      await upsertStockLevel(tx, spaceId, optionId, locationId, -quantity)
+      return
+    case 'OUTBOUND':
+      await upsertStockLevel(tx, spaceId, optionId, locationId, quantity)
+      return
+    case 'TRANSFER':
+      if (!toLocationId) throw new MovementError('TRANSFER 역산 실패: toLocationId 누락', 500)
+      await upsertStockLevel(tx, spaceId, optionId, locationId, quantity)
+      await upsertStockLevel(tx, spaceId, optionId, toLocationId, -quantity)
+      return
+    case 'ADJUSTMENT':
+      // quantity는 delta로 저장됨. 반대 부호로 stock 갱신.
+      await upsertStockLevel(tx, spaceId, optionId, locationId, -quantity)
+      return
+  }
 }

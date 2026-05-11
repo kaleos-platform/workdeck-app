@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import {
   Table,
   TableBody,
@@ -20,6 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
+import { Pencil, Trash2 } from 'lucide-react'
 
 type MovementType = 'INBOUND' | 'OUTBOUND' | 'RETURN' | 'TRANSFER' | 'ADJUSTMENT'
 
@@ -30,6 +41,8 @@ type MovementRow = {
   movementDate: string
   orderDate: string | null
   reason: string | null
+  referenceId: string | null
+  importHistoryId: string | null
   option: {
     id: string
     name: string
@@ -76,17 +89,50 @@ function formatDate(d: string | null | undefined) {
 }
 
 function quantityDisplay(row: MovementRow) {
-  const t = row.type
-  const sign =
-    t === 'INBOUND' || t === 'RETURN' ? '+' : t === 'OUTBOUND' ? '-' : t === 'ADJUSTMENT' ? '=' : ''
-  const cls =
-    t === 'INBOUND' || t === 'RETURN' ? 'text-emerald-600' : t === 'OUTBOUND' ? 'text-red-600' : ''
-  return (
-    <span className={cls}>
-      {sign}
-      {Math.abs(row.quantity).toLocaleString()}
-    </span>
-  )
+  const { type, quantity } = row
+
+  if (type === 'INBOUND' || type === 'RETURN') {
+    return <span className="text-emerald-600">+{Math.abs(quantity).toLocaleString()}</span>
+  }
+  if (type === 'OUTBOUND') {
+    return <span className="text-red-600">-{Math.abs(quantity).toLocaleString()}</span>
+  }
+  if (type === 'TRANSFER') {
+    return <span className="text-slate-600">{Math.abs(quantity).toLocaleString()}</span>
+  }
+  // ADJUSTMENT: quantity는 delta
+  if (quantity > 0) {
+    return <span className="text-emerald-600">+{quantity.toLocaleString()}</span>
+  }
+  if (quantity < 0) {
+    return <span className="text-red-600">{quantity.toLocaleString()}</span>
+  }
+  return <span>{quantity.toLocaleString()}</span>
+}
+
+function isExternalRow(r: MovementRow) {
+  return r.referenceId != null || r.importHistoryId != null
+}
+
+// 수정 다이얼로그 상태
+type EditState = {
+  open: boolean
+  row: MovementRow | null
+  quantity: string
+  movementDate: string
+  reason: string
+  orderDate: string
+  saving: boolean
+}
+
+const EDIT_INIT: EditState = {
+  open: false,
+  row: null,
+  quantity: '',
+  movementDate: '',
+  reason: '',
+  orderDate: '',
+  saving: false,
 }
 
 export function MovementHistory() {
@@ -96,13 +142,16 @@ export function MovementHistory() {
   const [loading, setLoading] = useState(false)
   const pageSize = 50
 
-  // Filters
+  // 필터
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [locationFilter, setLocationFilter] = useState<string>('all')
   const [from, setFrom] = useState<string>('')
   const [to, setTo] = useState<string>('')
 
   const [locations, setLocations] = useState<LocationItem[]>([])
+
+  // 수정 다이얼로그
+  const [edit, setEdit] = useState<EditState>(EDIT_INIT)
 
   useEffect(() => {
     ;(async () => {
@@ -155,11 +204,109 @@ export function MovementHistory() {
     setPage(1)
   }
 
+  // 삭제
+  async function handleDelete(r: MovementRow) {
+    const ok = window.confirm('이 이동 기록을 삭제하면 재고가 자동 역산됩니다. 진행할까요?')
+    if (!ok) return
+    try {
+      const res = await fetch(`/api/sh/inventory/movements/${r.id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err?.error ?? '삭제에 실패했습니다.')
+        return
+      }
+      toast.success('이동 기록이 삭제되었습니다.')
+      fetchData()
+    } catch {
+      toast.error('삭제 중 오류가 발생했습니다.')
+    }
+  }
+
+  // 수정 다이얼로그 열기
+  function openEdit(r: MovementRow) {
+    setEdit({
+      open: true,
+      row: r,
+      quantity: String(r.quantity),
+      movementDate: r.movementDate ? r.movementDate.slice(0, 10) : '',
+      reason: r.reason ?? '',
+      orderDate: r.orderDate ? r.orderDate.slice(0, 10) : '',
+      saving: false,
+    })
+  }
+
+  // 수정 저장
+  async function handleEditSave() {
+    if (!edit.row) return
+    const r = edit.row
+    const qty = Number(edit.quantity)
+    if (isNaN(qty)) {
+      toast.error('수량이 올바르지 않습니다.')
+      return
+    }
+    if (r.type !== 'ADJUSTMENT' && qty <= 0) {
+      toast.error('조정 외 유형은 양수 수량만 입력할 수 있습니다.')
+      return
+    }
+    if (r.type === 'ADJUSTMENT' && edit.reason.trim() === '') {
+      toast.error('조정 유형은 사유를 입력해야 합니다.')
+      return
+    }
+
+    setEdit((prev) => ({ ...prev, saving: true }))
+    try {
+      const body: Record<string, unknown> = {
+        quantity: qty,
+        movementDate: edit.movementDate,
+        reason: edit.reason || null,
+      }
+      if (r.type === 'OUTBOUND' && edit.orderDate) {
+        body.orderDate = edit.orderDate
+      }
+      const res = await fetch(`/api/sh/inventory/movements/${r.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err?.error ?? '수정에 실패했습니다.')
+        return
+      }
+      toast.success('이동 기록이 수정되었습니다.')
+      setEdit(EDIT_INIT)
+      fetchData()
+    } catch {
+      toast.error('수정 중 오류가 발생했습니다.')
+    } finally {
+      setEdit((prev) => ({ ...prev, saving: false }))
+    }
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const colSpan = 8 // 날짜·타입·상품/옵션·수량·위치·채널·사유·동작
 
   return (
     <div className="space-y-4">
-      {/* Filter bar */}
+      {/* 위치 탭 */}
+      <Tabs
+        value={locationFilter}
+        onValueChange={(v) => {
+          setLocationFilter(v)
+          setPage(1)
+        }}
+      >
+        <TabsList>
+          <TabsTrigger value="all">전체</TabsTrigger>
+          {locations.map((l) => (
+            <TabsTrigger key={l.id} value={l.id}>
+              {l.name}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      {/* 필터바 (유형·시작일·종료일·초기화) */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
           <Label className="text-xs">유형</Label>
@@ -180,28 +327,6 @@ export function MovementHistory() {
               <SelectItem value="RETURN">반품</SelectItem>
               <SelectItem value="TRANSFER">이동</SelectItem>
               <SelectItem value="ADJUSTMENT">조정</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">위치</Label>
-          <Select
-            value={locationFilter}
-            onValueChange={(v) => {
-              setLocationFilter(v)
-              setPage(1)
-            }}
-          >
-            <SelectTrigger className="w-[160px]" size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
-              {locations.map((l) => (
-                <SelectItem key={l.id} value={l.id}>
-                  {l.name}
-                </SelectItem>
-              ))}
             </SelectContent>
           </Select>
         </div>
@@ -244,68 +369,106 @@ export function MovementHistory() {
               <TableHead className="text-right">수량</TableHead>
               <TableHead>위치</TableHead>
               <TableHead>채널</TableHead>
-              <TableHead>사유</TableHead>
+              <TableHead className="min-w-[280px]">사유</TableHead>
+              <TableHead className="w-24">동작</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={colSpan} className="h-24 text-center text-muted-foreground">
                   로딩 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={colSpan} className="h-24 text-center text-muted-foreground">
                   등록된 이동 기록이 없습니다. + 새 이동 기록 버튼으로 추가하세요.
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="text-sm whitespace-nowrap">
-                    {formatDate(r.movementDate)}
-                  </TableCell>
-                  <TableCell>{typeBadge(r.type)}</TableCell>
-                  <TableCell>
-                    <div className="max-w-[320px]">
-                      <p className="truncate text-sm font-medium">
-                        {r.option?.product?.name ?? '-'}
-                      </p>
-                      {r.option?.name && (
-                        <p className="truncate text-xs text-muted-foreground">
-                          {r.option.name}
-                          {r.option.sku ? ` · ${r.option.sku}` : ''}
+              rows.map((r) => {
+                const external = isExternalRow(r)
+                return (
+                  <TableRow key={r.id}>
+                    <TableCell className="text-sm whitespace-nowrap">
+                      {formatDate(r.movementDate)}
+                    </TableCell>
+                    <TableCell>{typeBadge(r.type)}</TableCell>
+                    <TableCell>
+                      <div className="max-w-[320px]">
+                        <p className="truncate text-sm font-medium">
+                          {r.option?.product?.name ?? '-'}
                         </p>
+                        {r.option?.name && (
+                          <p className="truncate text-xs text-muted-foreground">
+                            {r.option.name}
+                            {r.option.sku ? ` · ${r.option.sku}` : ''}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-sm">
+                      {quantityDisplay(r)}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {r.type === 'TRANSFER' && r.toLocation ? (
+                        <span>
+                          {r.location?.name ?? '-'} → {r.toLocation.name}
+                        </span>
+                      ) : (
+                        (r.location?.name ?? '-')
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm">
-                    {quantityDisplay(r)}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {r.type === 'TRANSFER' && r.toLocation ? (
-                      <span>
-                        {r.location?.name ?? '-'} → {r.toLocation.name}
-                      </span>
-                    ) : (
-                      (r.location?.name ?? '-')
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {r.type === 'OUTBOUND' ? (r.channel?.name ?? '-') : '-'}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {r.type === 'ADJUSTMENT' && r.reason ? (
-                      <span className="line-clamp-1 max-w-[200px]" title={r.reason}>
-                        {r.reason}
-                      </span>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {r.type === 'OUTBOUND' ? (r.channel?.name ?? '-') : '-'}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {r.reason ? (
+                        <span
+                          className="block max-w-[280px] break-words whitespace-normal"
+                          title={r.reason}
+                        >
+                          {r.reason}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={external}
+                          title={
+                            external
+                              ? '외부 출처(파일 업로드/대조)로 생성된 행은 수정할 수 없습니다'
+                              : '수정'
+                          }
+                          onClick={() => openEdit(r)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={external}
+                          title={
+                            external
+                              ? '외부 출처(파일 업로드/대조)로 생성된 행은 수정할 수 없습니다'
+                              : '삭제'
+                          }
+                          className="hover:text-red-600"
+                          onClick={() => handleDelete(r)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>
@@ -337,6 +500,85 @@ export function MovementHistory() {
           </div>
         </div>
       )}
+
+      {/* 수정 다이얼로그 */}
+      <Dialog open={edit.open} onOpenChange={(o) => !o && setEdit(EDIT_INIT)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>이동 기록 수정</DialogTitle>
+          </DialogHeader>
+          {edit.row && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <Label htmlFor="edit-qty" className="text-sm">
+                  수량
+                  {edit.row.type !== 'ADJUSTMENT' && (
+                    <span className="ml-1 text-xs text-muted-foreground">(양수만)</span>
+                  )}
+                  {edit.row.type === 'ADJUSTMENT' && (
+                    <span className="ml-1 text-xs text-muted-foreground">(음수 허용)</span>
+                  )}
+                </Label>
+                <Input
+                  id="edit-qty"
+                  type="number"
+                  value={edit.quantity}
+                  onChange={(e) => setEdit((prev) => ({ ...prev, quantity: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-date" className="text-sm">
+                  이동 일자
+                </Label>
+                <Input
+                  id="edit-date"
+                  type="date"
+                  value={edit.movementDate}
+                  onChange={(e) => setEdit((prev) => ({ ...prev, movementDate: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-reason" className="text-sm">
+                  사유
+                  {edit.row.type === 'ADJUSTMENT' ? (
+                    <span className="ml-1 text-xs text-red-500">*필수</span>
+                  ) : (
+                    <span className="ml-1 text-xs text-muted-foreground">(선택)</span>
+                  )}
+                </Label>
+                <Textarea
+                  id="edit-reason"
+                  value={edit.reason}
+                  onChange={(e) => setEdit((prev) => ({ ...prev, reason: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              {edit.row.type === 'OUTBOUND' && (
+                <div className="space-y-1">
+                  <Label htmlFor="edit-orderdate" className="text-sm">
+                    주문 일자
+                    <span className="ml-1 text-xs text-muted-foreground">(선택)</span>
+                  </Label>
+                  <Input
+                    id="edit-orderdate"
+                    type="date"
+                    value={edit.orderDate}
+                    onChange={(e) => setEdit((prev) => ({ ...prev, orderDate: e.target.value }))}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEdit(EDIT_INIT)} disabled={edit.saving}>
+              취소
+            </Button>
+            <Button onClick={handleEditSave} disabled={edit.saving}>
+              {edit.saving ? '저장 중...' : '저장'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
