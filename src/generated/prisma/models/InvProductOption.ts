@@ -267,7 +267,7 @@ export type InvProductOptionWhereInput = {
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
   movements?: Prisma.InvMovementListRelationFilter
   stockLevels?: Prisma.InvStockLevelListRelationFilter
-  locationMappings?: Prisma.InvLocationProductMapListRelationFilter
+  locationMappingItems?: Prisma.InvLocationProductMapItemListRelationFilter
   productionRunItems?: Prisma.ProductionRunItemListRelationFilter
   pricingScenarioItems?: Prisma.PricingScenarioItemListRelationFilter
   delOrderItems?: Prisma.DelOrderItemListRelationFilter
@@ -293,7 +293,7 @@ export type InvProductOptionOrderByWithRelationInput = {
   product?: Prisma.InvProductOrderByWithRelationInput
   movements?: Prisma.InvMovementOrderByRelationAggregateInput
   stockLevels?: Prisma.InvStockLevelOrderByRelationAggregateInput
-  locationMappings?: Prisma.InvLocationProductMapOrderByRelationAggregateInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemOrderByRelationAggregateInput
   productionRunItems?: Prisma.ProductionRunItemOrderByRelationAggregateInput
   pricingScenarioItems?: Prisma.PricingScenarioItemOrderByRelationAggregateInput
   delOrderItems?: Prisma.DelOrderItemOrderByRelationAggregateInput
@@ -322,7 +322,7 @@ export type InvProductOptionWhereUniqueInput = Prisma.AtLeast<{
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
   movements?: Prisma.InvMovementListRelationFilter
   stockLevels?: Prisma.InvStockLevelListRelationFilter
-  locationMappings?: Prisma.InvLocationProductMapListRelationFilter
+  locationMappingItems?: Prisma.InvLocationProductMapItemListRelationFilter
   productionRunItems?: Prisma.ProductionRunItemListRelationFilter
   pricingScenarioItems?: Prisma.PricingScenarioItemListRelationFilter
   delOrderItems?: Prisma.DelOrderItemListRelationFilter
@@ -383,7 +383,7 @@ export type InvProductOptionCreateInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -408,7 +408,7 @@ export type InvProductOptionUncheckedCreateInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -433,7 +433,7 @@ export type InvProductOptionUpdateInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -458,7 +458,7 @@ export type InvProductOptionUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -650,18 +650,18 @@ export type InvProductOptionUpdateOneRequiredWithoutStockLevelsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutStockLevelsInput, Prisma.InvProductOptionUpdateWithoutStockLevelsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutStockLevelsInput>
 }
 
-export type InvProductOptionCreateNestedOneWithoutLocationMappingsInput = {
-  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutLocationMappingsInput, Prisma.InvProductOptionUncheckedCreateWithoutLocationMappingsInput>
-  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutLocationMappingsInput
+export type InvProductOptionCreateNestedOneWithoutLocationMappingItemsInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutLocationMappingItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutLocationMappingItemsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutLocationMappingItemsInput
   connect?: Prisma.InvProductOptionWhereUniqueInput
 }
 
-export type InvProductOptionUpdateOneRequiredWithoutLocationMappingsNestedInput = {
-  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutLocationMappingsInput, Prisma.InvProductOptionUncheckedCreateWithoutLocationMappingsInput>
-  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutLocationMappingsInput
-  upsert?: Prisma.InvProductOptionUpsertWithoutLocationMappingsInput
+export type InvProductOptionUpdateOneRequiredWithoutLocationMappingItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductOptionCreateWithoutLocationMappingItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutLocationMappingItemsInput>
+  connectOrCreate?: Prisma.InvProductOptionCreateOrConnectWithoutLocationMappingItemsInput
+  upsert?: Prisma.InvProductOptionUpsertWithoutLocationMappingItemsInput
   connect?: Prisma.InvProductOptionWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutLocationMappingsInput, Prisma.InvProductOptionUpdateWithoutLocationMappingsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutLocationMappingsInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductOptionUpdateToOneWithWhereWithoutLocationMappingItemsInput, Prisma.InvProductOptionUpdateWithoutLocationMappingItemsInput>, Prisma.InvProductOptionUncheckedUpdateWithoutLocationMappingItemsInput>
 }
 
 export type InvProductOptionCreateNestedOneWithoutShippingLabelsInput = {
@@ -795,7 +795,7 @@ export type InvProductOptionCreateWithoutProductInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -819,7 +819,7 @@ export type InvProductOptionUncheckedCreateWithoutProductInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -886,7 +886,7 @@ export type InvProductOptionCreateWithoutMovementsInput = {
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -910,7 +910,7 @@ export type InvProductOptionUncheckedCreateWithoutMovementsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -950,7 +950,7 @@ export type InvProductOptionUpdateWithoutMovementsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -974,7 +974,7 @@ export type InvProductOptionUncheckedUpdateWithoutMovementsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -998,7 +998,7 @@ export type InvProductOptionCreateWithoutStockLevelsInput = {
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -1022,7 +1022,7 @@ export type InvProductOptionUncheckedCreateWithoutStockLevelsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -1062,7 +1062,7 @@ export type InvProductOptionUpdateWithoutStockLevelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -1086,7 +1086,7 @@ export type InvProductOptionUncheckedUpdateWithoutStockLevelsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -1097,7 +1097,7 @@ export type InvProductOptionUncheckedUpdateWithoutStockLevelsInput = {
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOptionNestedInput
 }
 
-export type InvProductOptionCreateWithoutLocationMappingsInput = {
+export type InvProductOptionCreateWithoutLocationMappingItemsInput = {
   id?: string
   name: string
   sku?: string | null
@@ -1121,7 +1121,7 @@ export type InvProductOptionCreateWithoutLocationMappingsInput = {
   fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOptionInput
 }
 
-export type InvProductOptionUncheckedCreateWithoutLocationMappingsInput = {
+export type InvProductOptionUncheckedCreateWithoutLocationMappingItemsInput = {
   id?: string
   productId: string
   name: string
@@ -1145,23 +1145,23 @@ export type InvProductOptionUncheckedCreateWithoutLocationMappingsInput = {
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOptionInput
 }
 
-export type InvProductOptionCreateOrConnectWithoutLocationMappingsInput = {
+export type InvProductOptionCreateOrConnectWithoutLocationMappingItemsInput = {
   where: Prisma.InvProductOptionWhereUniqueInput
-  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutLocationMappingsInput, Prisma.InvProductOptionUncheckedCreateWithoutLocationMappingsInput>
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutLocationMappingItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutLocationMappingItemsInput>
 }
 
-export type InvProductOptionUpsertWithoutLocationMappingsInput = {
-  update: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutLocationMappingsInput, Prisma.InvProductOptionUncheckedUpdateWithoutLocationMappingsInput>
-  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutLocationMappingsInput, Prisma.InvProductOptionUncheckedCreateWithoutLocationMappingsInput>
+export type InvProductOptionUpsertWithoutLocationMappingItemsInput = {
+  update: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutLocationMappingItemsInput, Prisma.InvProductOptionUncheckedUpdateWithoutLocationMappingItemsInput>
+  create: Prisma.XOR<Prisma.InvProductOptionCreateWithoutLocationMappingItemsInput, Prisma.InvProductOptionUncheckedCreateWithoutLocationMappingItemsInput>
   where?: Prisma.InvProductOptionWhereInput
 }
 
-export type InvProductOptionUpdateToOneWithWhereWithoutLocationMappingsInput = {
+export type InvProductOptionUpdateToOneWithWhereWithoutLocationMappingItemsInput = {
   where?: Prisma.InvProductOptionWhereInput
-  data: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutLocationMappingsInput, Prisma.InvProductOptionUncheckedUpdateWithoutLocationMappingsInput>
+  data: Prisma.XOR<Prisma.InvProductOptionUpdateWithoutLocationMappingItemsInput, Prisma.InvProductOptionUncheckedUpdateWithoutLocationMappingItemsInput>
 }
 
-export type InvProductOptionUpdateWithoutLocationMappingsInput = {
+export type InvProductOptionUpdateWithoutLocationMappingItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1185,7 +1185,7 @@ export type InvProductOptionUpdateWithoutLocationMappingsInput = {
   fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOptionNestedInput
 }
 
-export type InvProductOptionUncheckedUpdateWithoutLocationMappingsInput = {
+export type InvProductOptionUncheckedUpdateWithoutLocationMappingItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1223,7 +1223,7 @@ export type InvProductOptionCreateWithoutShippingLabelsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -1247,7 +1247,7 @@ export type InvProductOptionUncheckedCreateWithoutShippingLabelsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -1287,7 +1287,7 @@ export type InvProductOptionUpdateWithoutShippingLabelsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -1311,7 +1311,7 @@ export type InvProductOptionUncheckedUpdateWithoutShippingLabelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -1335,7 +1335,7 @@ export type InvProductOptionCreateWithoutDelOrderItemsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
@@ -1359,7 +1359,7 @@ export type InvProductOptionUncheckedCreateWithoutDelOrderItemsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
@@ -1399,7 +1399,7 @@ export type InvProductOptionUpdateWithoutDelOrderItemsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
@@ -1423,7 +1423,7 @@ export type InvProductOptionUncheckedUpdateWithoutDelOrderItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
@@ -1447,7 +1447,7 @@ export type InvProductOptionCreateWithoutChannelAliasesInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -1471,7 +1471,7 @@ export type InvProductOptionUncheckedCreateWithoutChannelAliasesInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -1511,7 +1511,7 @@ export type InvProductOptionUpdateWithoutChannelAliasesInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -1535,7 +1535,7 @@ export type InvProductOptionUncheckedUpdateWithoutChannelAliasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -1559,7 +1559,7 @@ export type InvProductOptionCreateWithoutAliasFulfillmentsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -1583,7 +1583,7 @@ export type InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -1623,7 +1623,7 @@ export type InvProductOptionUpdateWithoutAliasFulfillmentsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -1647,7 +1647,7 @@ export type InvProductOptionUncheckedUpdateWithoutAliasFulfillmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -1671,7 +1671,7 @@ export type InvProductOptionCreateWithoutProductionRunItemsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
@@ -1695,7 +1695,7 @@ export type InvProductOptionUncheckedCreateWithoutProductionRunItemsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
@@ -1735,7 +1735,7 @@ export type InvProductOptionUpdateWithoutProductionRunItemsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
@@ -1759,7 +1759,7 @@ export type InvProductOptionUncheckedUpdateWithoutProductionRunItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
@@ -1783,7 +1783,7 @@ export type InvProductOptionCreateWithoutPricingScenarioItemsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutOptionInput
@@ -1807,7 +1807,7 @@ export type InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutOptionInput
@@ -1847,7 +1847,7 @@ export type InvProductOptionUpdateWithoutPricingScenarioItemsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUpdateManyWithoutOptionNestedInput
@@ -1871,7 +1871,7 @@ export type InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
   channelAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutOptionNestedInput
@@ -1895,7 +1895,7 @@ export type InvProductOptionCreateWithoutListingItemsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -1919,7 +1919,7 @@ export type InvProductOptionUncheckedCreateWithoutListingItemsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -1959,7 +1959,7 @@ export type InvProductOptionUpdateWithoutListingItemsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -1983,7 +1983,7 @@ export type InvProductOptionUncheckedUpdateWithoutListingItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -2007,7 +2007,7 @@ export type InvProductOptionCreateWithoutFulfillmentsInput = {
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemCreateNestedManyWithoutOptionInput
@@ -2031,7 +2031,7 @@ export type InvProductOptionUncheckedCreateWithoutFulfillmentsInput = {
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutOptionInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutOptionInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutOptionInput
   delOrderItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutOptionInput
@@ -2071,7 +2071,7 @@ export type InvProductOptionUpdateWithoutFulfillmentsInput = {
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -2095,7 +2095,7 @@ export type InvProductOptionUncheckedUpdateWithoutFulfillmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -2131,7 +2131,7 @@ export type InvProductOptionUpdateWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUpdateManyWithoutOptionNestedInput
@@ -2155,7 +2155,7 @@ export type InvProductOptionUncheckedUpdateWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
-  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput
+  locationMappingItems?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutOptionNestedInput
   productionRunItems?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutOptionNestedInput
   pricingScenarioItems?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutOptionNestedInput
   delOrderItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutOptionNestedInput
@@ -2187,7 +2187,7 @@ export type InvProductOptionUncheckedUpdateManyWithoutProductInput = {
 export type InvProductOptionCountOutputType = {
   movements: number
   stockLevels: number
-  locationMappings: number
+  locationMappingItems: number
   productionRunItems: number
   pricingScenarioItems: number
   delOrderItems: number
@@ -2201,7 +2201,7 @@ export type InvProductOptionCountOutputType = {
 export type InvProductOptionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   movements?: boolean | InvProductOptionCountOutputTypeCountMovementsArgs
   stockLevels?: boolean | InvProductOptionCountOutputTypeCountStockLevelsArgs
-  locationMappings?: boolean | InvProductOptionCountOutputTypeCountLocationMappingsArgs
+  locationMappingItems?: boolean | InvProductOptionCountOutputTypeCountLocationMappingItemsArgs
   productionRunItems?: boolean | InvProductOptionCountOutputTypeCountProductionRunItemsArgs
   pricingScenarioItems?: boolean | InvProductOptionCountOutputTypeCountPricingScenarioItemsArgs
   delOrderItems?: boolean | InvProductOptionCountOutputTypeCountDelOrderItemsArgs
@@ -2239,8 +2239,8 @@ export type InvProductOptionCountOutputTypeCountStockLevelsArgs<ExtArgs extends 
 /**
  * InvProductOptionCountOutputType without action
  */
-export type InvProductOptionCountOutputTypeCountLocationMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.InvLocationProductMapWhereInput
+export type InvProductOptionCountOutputTypeCountLocationMappingItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvLocationProductMapItemWhereInput
 }
 
 /**
@@ -2315,7 +2315,7 @@ export type InvProductOptionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
   movements?: boolean | Prisma.InvProductOption$movementsArgs<ExtArgs>
   stockLevels?: boolean | Prisma.InvProductOption$stockLevelsArgs<ExtArgs>
-  locationMappings?: boolean | Prisma.InvProductOption$locationMappingsArgs<ExtArgs>
+  locationMappingItems?: boolean | Prisma.InvProductOption$locationMappingItemsArgs<ExtArgs>
   productionRunItems?: boolean | Prisma.InvProductOption$productionRunItemsArgs<ExtArgs>
   pricingScenarioItems?: boolean | Prisma.InvProductOption$pricingScenarioItemsArgs<ExtArgs>
   delOrderItems?: boolean | Prisma.InvProductOption$delOrderItemsArgs<ExtArgs>
@@ -2376,7 +2376,7 @@ export type InvProductOptionInclude<ExtArgs extends runtime.Types.Extensions.Int
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
   movements?: boolean | Prisma.InvProductOption$movementsArgs<ExtArgs>
   stockLevels?: boolean | Prisma.InvProductOption$stockLevelsArgs<ExtArgs>
-  locationMappings?: boolean | Prisma.InvProductOption$locationMappingsArgs<ExtArgs>
+  locationMappingItems?: boolean | Prisma.InvProductOption$locationMappingItemsArgs<ExtArgs>
   productionRunItems?: boolean | Prisma.InvProductOption$productionRunItemsArgs<ExtArgs>
   pricingScenarioItems?: boolean | Prisma.InvProductOption$pricingScenarioItemsArgs<ExtArgs>
   delOrderItems?: boolean | Prisma.InvProductOption$delOrderItemsArgs<ExtArgs>
@@ -2400,7 +2400,7 @@ export type $InvProductOptionPayload<ExtArgs extends runtime.Types.Extensions.In
     product: Prisma.$InvProductPayload<ExtArgs>
     movements: Prisma.$InvMovementPayload<ExtArgs>[]
     stockLevels: Prisma.$InvStockLevelPayload<ExtArgs>[]
-    locationMappings: Prisma.$InvLocationProductMapPayload<ExtArgs>[]
+    locationMappingItems: Prisma.$InvLocationProductMapItemPayload<ExtArgs>[]
     productionRunItems: Prisma.$ProductionRunItemPayload<ExtArgs>[]
     pricingScenarioItems: Prisma.$PricingScenarioItemPayload<ExtArgs>[]
     delOrderItems: Prisma.$DelOrderItemPayload<ExtArgs>[]
@@ -2819,7 +2819,7 @@ export interface Prisma__InvProductOptionClient<T, Null = never, ExtArgs extends
   product<T extends Prisma.InvProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductDefaultArgs<ExtArgs>>): Prisma.Prisma__InvProductClient<runtime.Types.Result.GetResult<Prisma.$InvProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   movements<T extends Prisma.InvProductOption$movementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   stockLevels<T extends Prisma.InvProductOption$stockLevelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$stockLevelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvStockLevelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  locationMappings<T extends Prisma.InvProductOption$locationMappingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$locationMappingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvLocationProductMapPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  locationMappingItems<T extends Prisma.InvProductOption$locationMappingItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$locationMappingItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvLocationProductMapItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productionRunItems<T extends Prisma.InvProductOption$productionRunItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$productionRunItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pricingScenarioItems<T extends Prisma.InvProductOption$pricingScenarioItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$pricingScenarioItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   delOrderItems<T extends Prisma.InvProductOption$delOrderItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOption$delOrderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelOrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3312,27 +3312,27 @@ export type InvProductOption$stockLevelsArgs<ExtArgs extends runtime.Types.Exten
 }
 
 /**
- * InvProductOption.locationMappings
+ * InvProductOption.locationMappingItems
  */
-export type InvProductOption$locationMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type InvProductOption$locationMappingItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the InvLocationProductMap
+   * Select specific fields to fetch from the InvLocationProductMapItem
    */
-  select?: Prisma.InvLocationProductMapSelect<ExtArgs> | null
+  select?: Prisma.InvLocationProductMapItemSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the InvLocationProductMap
+   * Omit specific fields from the InvLocationProductMapItem
    */
-  omit?: Prisma.InvLocationProductMapOmit<ExtArgs> | null
+  omit?: Prisma.InvLocationProductMapItemOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.InvLocationProductMapInclude<ExtArgs> | null
-  where?: Prisma.InvLocationProductMapWhereInput
-  orderBy?: Prisma.InvLocationProductMapOrderByWithRelationInput | Prisma.InvLocationProductMapOrderByWithRelationInput[]
-  cursor?: Prisma.InvLocationProductMapWhereUniqueInput
+  include?: Prisma.InvLocationProductMapItemInclude<ExtArgs> | null
+  where?: Prisma.InvLocationProductMapItemWhereInput
+  orderBy?: Prisma.InvLocationProductMapItemOrderByWithRelationInput | Prisma.InvLocationProductMapItemOrderByWithRelationInput[]
+  cursor?: Prisma.InvLocationProductMapItemWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.InvLocationProductMapScalarFieldEnum | Prisma.InvLocationProductMapScalarFieldEnum[]
+  distinct?: Prisma.InvLocationProductMapItemScalarFieldEnum | Prisma.InvLocationProductMapItemScalarFieldEnum[]
 }
 
 /**

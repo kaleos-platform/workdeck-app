@@ -14,19 +14,26 @@ import {
 } from '@/components/ui/table'
 import {
   OptionPickerDialog,
-  type PickedOption,
+  type PickedOptionWithQty,
 } from '@/components/sh/products/listings/option-picker-dialog'
+
+type MappingItem = {
+  id: string
+  optionId: string
+  quantity: number
+  option: {
+    id: string
+    name: string
+    product: { id: string; name: string }
+  }
+}
 
 type MappingRow = {
   id: string
   externalCode: string
   externalName: string | null
   externalOptionName: string | null
-  option: {
-    id: string
-    name: string
-    product: { id: string; name: string; code: string | null }
-  }
+  items: MappingItem[]
 }
 
 type Props = {
@@ -64,9 +71,7 @@ export function LocationMappingTable({ locationId }: Props) {
     try {
       const res = await fetch(
         `/api/sh/inventory/locations/${locationId}/mappings?mappingId=${mappingId}`,
-        {
-          method: 'DELETE',
-        }
+        { method: 'DELETE' }
       )
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '삭제 실패')
@@ -79,7 +84,7 @@ export function LocationMappingTable({ locationId }: Props) {
     }
   }
 
-  async function handleEditPick(picked: PickedOption) {
+  async function handleEditPickMulti(items: PickedOptionWithQty[]) {
     if (!editingRow) return
     const mappingId = editingRow.id
     setPatchingId(mappingId)
@@ -90,7 +95,9 @@ export function LocationMappingTable({ locationId }: Props) {
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ optionId: picked.optionId }),
+          body: JSON.stringify({
+            items: items.map((i) => ({ optionId: i.optionId, quantity: i.quantity })),
+          }),
         }
       )
       const data = await res.json()
@@ -102,6 +109,48 @@ export function LocationMappingTable({ locationId }: Props) {
     } finally {
       setPatchingId(null)
     }
+  }
+
+  // MappingItem[] → PickedOptionWithQty[] 변환 (initialItems용)
+  function mappingItemsToPickedWithQty(items: MappingItem[]): PickedOptionWithQty[] {
+    return items.map((item) => ({
+      optionId: item.optionId,
+      optionName: item.option.name,
+      productId: item.option.product.id,
+      productName: item.option.product.name,
+      sku: null,
+      brandName: null,
+      retailPrice: null,
+      totalStock: 0,
+      quantity: item.quantity,
+    }))
+  }
+
+  function renderOptionCell(items: MappingItem[]) {
+    if (items.length === 0) return <span className="text-muted-foreground">-</span>
+    if (items.length === 1) {
+      const item = items[0]
+      return (
+        <span>
+          {item.option.product.name} / {item.option.name}
+          {item.quantity > 1 && (
+            <span className="ml-1 text-xs text-muted-foreground">× {item.quantity}</span>
+          )}
+        </span>
+      )
+    }
+    return (
+      <div className="space-y-0.5">
+        {items.map((item) => (
+          <div key={item.id} className="text-sm">
+            {item.option.product.name} / {item.option.name}
+            {item.quantity > 1 && (
+              <span className="ml-1 text-xs text-muted-foreground">× {item.quantity}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    )
   }
 
   if (loading) {
@@ -120,6 +169,11 @@ export function LocationMappingTable({ locationId }: Props) {
     )
   }
 
+  // 수정 다이얼로그에서 현재 매핑의 옵션 ID 제외 (자기 자신은 재선택 허용)
+  const editExcludeOptionIds = editingRow
+    ? mappings.filter((m) => m.id !== editingRow.id).flatMap((m) => m.items.map((i) => i.optionId))
+    : []
+
   return (
     <>
       <div className="rounded-md border bg-background">
@@ -127,8 +181,7 @@ export function LocationMappingTable({ locationId }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead>외부 코드</TableHead>
-              <TableHead>시스템 상품명</TableHead>
-              <TableHead>옵션명</TableHead>
+              <TableHead>시스템 상품 / 옵션</TableHead>
               <TableHead>외부 상품명 (참조)</TableHead>
               <TableHead className="text-right">액션</TableHead>
             </TableRow>
@@ -137,8 +190,7 @@ export function LocationMappingTable({ locationId }: Props) {
             {mappings.map((m) => (
               <TableRow key={m.id}>
                 <TableCell className="font-mono text-xs">{m.externalCode}</TableCell>
-                <TableCell>{m.option.product.name}</TableCell>
-                <TableCell className="text-muted-foreground">{m.option.name}</TableCell>
+                <TableCell>{renderOptionCell(m.items)}</TableCell>
                 <TableCell className="text-muted-foreground">
                   {m.externalName ?? '-'}
                   {m.externalOptionName ? ` / ${m.externalOptionName}` : ''}
@@ -184,17 +236,16 @@ export function LocationMappingTable({ locationId }: Props) {
         onOpenChange={(v) => {
           if (!v) setEditingRow(null)
         }}
-        onPick={handleEditPick}
-        mode="two-step"
+        mode="multi-with-qty"
+        onPickMulti={handleEditPickMulti}
         contextLabel="현재 매핑"
         contextValue={
           editingRow
-            ? `${editingRow.externalName ?? editingRow.externalCode} / ${editingRow.externalOptionName ?? '-'}`
+            ? `${editingRow.externalName ?? editingRow.externalCode}${editingRow.externalOptionName ? ` / ${editingRow.externalOptionName}` : ''}`
             : ''
         }
-        excludeOptionIds={
-          editingRow ? mappings.filter((m) => m.id !== editingRow.id).map((m) => m.option.id) : []
-        }
+        excludeOptionIds={editExcludeOptionIds}
+        initialItems={editingRow ? mappingItemsToPickedWithQty(editingRow.items) : undefined}
       />
     </>
   )

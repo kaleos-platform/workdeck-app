@@ -788,7 +788,7 @@ model InvProductOption {
   product              InvProduct                       @relation(fields: [productId], references: [id], onDelete: Cascade)
   movements            InvMovement[]
   stockLevels          InvStockLevel[]
-  locationMappings     InvLocationProductMap[]
+  locationMappingItems InvLocationProductMapItem[]
   productionRunItems   ProductionRunItem[]
   pricingScenarioItems PricingScenarioItem[]
   delOrderItems        DelOrderItem[]
@@ -929,25 +929,38 @@ model InvReconciliation {
   @@index([spaceId])
 }
 
-// 보관 장소별 외부 상품 코드 매핑
+// 보관 장소별 외부 상품 코드 매핑 (1:N — 외부코드 1개 → 내부 옵션 N개)
 model InvLocationProductMap {
   id         String @id @default(cuid())
   spaceId    String
   locationId String
-  optionId   String
 
-  externalCode       String // 보관 장소의 상품 코드/ID
+  externalCode       String  // 보관 장소의 상품 코드/ID
   externalName       String? // 보관 장소의 상품명 (참조용)
   externalOptionName String? // 보관 장소의 옵션명 (참조용)
 
+  items InvLocationProductMapItem[]
+
   space    Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   location InvStorageLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  option   InvProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
   @@unique([locationId, externalCode])
   @@index([spaceId])
+}
+
+// 매핑 아이템 — 외부코드 하나에 여러 내부 옵션 + 수량 비율
+model InvLocationProductMapItem {
+  id       String @id @default(cuid())
+  mapId    String
+  optionId String
+  quantity Int    @default(1)
+
+  map    InvLocationProductMap @relation(fields: [mapId], references: [id], onDelete: Cascade)
+  option InvProductOption      @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([mapId, optionId])
   @@index([optionId])
 }
 

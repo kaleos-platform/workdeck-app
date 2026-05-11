@@ -28,7 +28,6 @@ export type InvLocationProductMapMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   locationId: string | null
-  optionId: string | null
   externalCode: string | null
   externalName: string | null
   externalOptionName: string | null
@@ -39,7 +38,6 @@ export type InvLocationProductMapMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   locationId: string | null
-  optionId: string | null
   externalCode: string | null
   externalName: string | null
   externalOptionName: string | null
@@ -50,7 +48,6 @@ export type InvLocationProductMapCountAggregateOutputType = {
   id: number
   spaceId: number
   locationId: number
-  optionId: number
   externalCode: number
   externalName: number
   externalOptionName: number
@@ -63,7 +60,6 @@ export type InvLocationProductMapMinAggregateInputType = {
   id?: true
   spaceId?: true
   locationId?: true
-  optionId?: true
   externalCode?: true
   externalName?: true
   externalOptionName?: true
@@ -74,7 +70,6 @@ export type InvLocationProductMapMaxAggregateInputType = {
   id?: true
   spaceId?: true
   locationId?: true
-  optionId?: true
   externalCode?: true
   externalName?: true
   externalOptionName?: true
@@ -85,7 +80,6 @@ export type InvLocationProductMapCountAggregateInputType = {
   id?: true
   spaceId?: true
   locationId?: true
-  optionId?: true
   externalCode?: true
   externalName?: true
   externalOptionName?: true
@@ -169,7 +163,6 @@ export type InvLocationProductMapGroupByOutputType = {
   id: string
   spaceId: string
   locationId: string
-  optionId: string
   externalCode: string
   externalName: string | null
   externalOptionName: string | null
@@ -201,28 +194,26 @@ export type InvLocationProductMapWhereInput = {
   id?: Prisma.StringFilter<"InvLocationProductMap"> | string
   spaceId?: Prisma.StringFilter<"InvLocationProductMap"> | string
   locationId?: Prisma.StringFilter<"InvLocationProductMap"> | string
-  optionId?: Prisma.StringFilter<"InvLocationProductMap"> | string
   externalCode?: Prisma.StringFilter<"InvLocationProductMap"> | string
   externalName?: Prisma.StringNullableFilter<"InvLocationProductMap"> | string | null
   externalOptionName?: Prisma.StringNullableFilter<"InvLocationProductMap"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvLocationProductMap"> | Date | string
+  items?: Prisma.InvLocationProductMapItemListRelationFilter
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   location?: Prisma.XOR<Prisma.InvStorageLocationScalarRelationFilter, Prisma.InvStorageLocationWhereInput>
-  option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
 }
 
 export type InvLocationProductMapOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   locationId?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
   externalCode?: Prisma.SortOrder
   externalName?: Prisma.SortOrderInput | Prisma.SortOrder
   externalOptionName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  items?: Prisma.InvLocationProductMapItemOrderByRelationAggregateInput
   space?: Prisma.SpaceOrderByWithRelationInput
   location?: Prisma.InvStorageLocationOrderByWithRelationInput
-  option?: Prisma.InvProductOptionOrderByWithRelationInput
 }
 
 export type InvLocationProductMapWhereUniqueInput = Prisma.AtLeast<{
@@ -233,21 +224,19 @@ export type InvLocationProductMapWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.InvLocationProductMapWhereInput | Prisma.InvLocationProductMapWhereInput[]
   spaceId?: Prisma.StringFilter<"InvLocationProductMap"> | string
   locationId?: Prisma.StringFilter<"InvLocationProductMap"> | string
-  optionId?: Prisma.StringFilter<"InvLocationProductMap"> | string
   externalCode?: Prisma.StringFilter<"InvLocationProductMap"> | string
   externalName?: Prisma.StringNullableFilter<"InvLocationProductMap"> | string | null
   externalOptionName?: Prisma.StringNullableFilter<"InvLocationProductMap"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvLocationProductMap"> | Date | string
+  items?: Prisma.InvLocationProductMapItemListRelationFilter
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   location?: Prisma.XOR<Prisma.InvStorageLocationScalarRelationFilter, Prisma.InvStorageLocationWhereInput>
-  option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
 }, "id" | "locationId_externalCode">
 
 export type InvLocationProductMapOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   locationId?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
   externalCode?: Prisma.SortOrder
   externalName?: Prisma.SortOrderInput | Prisma.SortOrder
   externalOptionName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -264,7 +253,6 @@ export type InvLocationProductMapScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"InvLocationProductMap"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"InvLocationProductMap"> | string
   locationId?: Prisma.StringWithAggregatesFilter<"InvLocationProductMap"> | string
-  optionId?: Prisma.StringWithAggregatesFilter<"InvLocationProductMap"> | string
   externalCode?: Prisma.StringWithAggregatesFilter<"InvLocationProductMap"> | string
   externalName?: Prisma.StringNullableWithAggregatesFilter<"InvLocationProductMap"> | string | null
   externalOptionName?: Prisma.StringNullableWithAggregatesFilter<"InvLocationProductMap"> | string | null
@@ -277,20 +265,20 @@ export type InvLocationProductMapCreateInput = {
   externalName?: string | null
   externalOptionName?: string | null
   createdAt?: Date | string
+  items?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutMapInput
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationMappingsInput
   location: Prisma.InvStorageLocationCreateNestedOneWithoutLocationMappingsInput
-  option: Prisma.InvProductOptionCreateNestedOneWithoutLocationMappingsInput
 }
 
 export type InvLocationProductMapUncheckedCreateInput = {
   id?: string
   spaceId: string
   locationId: string
-  optionId: string
   externalCode: string
   externalName?: string | null
   externalOptionName?: string | null
   createdAt?: Date | string
+  items?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutMapInput
 }
 
 export type InvLocationProductMapUpdateInput = {
@@ -299,27 +287,26 @@ export type InvLocationProductMapUpdateInput = {
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.InvLocationProductMapItemUpdateManyWithoutMapNestedInput
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationMappingsNestedInput
   location?: Prisma.InvStorageLocationUpdateOneRequiredWithoutLocationMappingsNestedInput
-  option?: Prisma.InvProductOptionUpdateOneRequiredWithoutLocationMappingsNestedInput
 }
 
 export type InvLocationProductMapUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   locationId?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   externalCode?: Prisma.StringFieldUpdateOperationsInput | string
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutMapNestedInput
 }
 
 export type InvLocationProductMapCreateManyInput = {
   id?: string
   spaceId: string
   locationId: string
-  optionId: string
   externalCode: string
   externalName?: string | null
   externalOptionName?: string | null
@@ -338,7 +325,6 @@ export type InvLocationProductMapUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   locationId?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   externalCode?: Prisma.StringFieldUpdateOperationsInput | string
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -364,7 +350,6 @@ export type InvLocationProductMapCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   locationId?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
   externalCode?: Prisma.SortOrder
   externalName?: Prisma.SortOrder
   externalOptionName?: Prisma.SortOrder
@@ -375,7 +360,6 @@ export type InvLocationProductMapMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   locationId?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
   externalCode?: Prisma.SortOrder
   externalName?: Prisma.SortOrder
   externalOptionName?: Prisma.SortOrder
@@ -386,11 +370,15 @@ export type InvLocationProductMapMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   locationId?: Prisma.SortOrder
-  optionId?: Prisma.SortOrder
   externalCode?: Prisma.SortOrder
   externalName?: Prisma.SortOrder
   externalOptionName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type InvLocationProductMapScalarRelationFilter = {
+  is?: Prisma.InvLocationProductMapWhereInput
+  isNot?: Prisma.InvLocationProductMapWhereInput
 }
 
 export type InvLocationProductMapCreateNestedManyWithoutSpaceInput = {
@@ -432,48 +420,6 @@ export type InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput = {
   connect?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
   update?: Prisma.InvLocationProductMapUpdateWithWhereUniqueWithoutSpaceInput | Prisma.InvLocationProductMapUpdateWithWhereUniqueWithoutSpaceInput[]
   updateMany?: Prisma.InvLocationProductMapUpdateManyWithWhereWithoutSpaceInput | Prisma.InvLocationProductMapUpdateManyWithWhereWithoutSpaceInput[]
-  deleteMany?: Prisma.InvLocationProductMapScalarWhereInput | Prisma.InvLocationProductMapScalarWhereInput[]
-}
-
-export type InvLocationProductMapCreateNestedManyWithoutOptionInput = {
-  create?: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutOptionInput, Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput> | Prisma.InvLocationProductMapCreateWithoutOptionInput[] | Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput[]
-  connectOrCreate?: Prisma.InvLocationProductMapCreateOrConnectWithoutOptionInput | Prisma.InvLocationProductMapCreateOrConnectWithoutOptionInput[]
-  createMany?: Prisma.InvLocationProductMapCreateManyOptionInputEnvelope
-  connect?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-}
-
-export type InvLocationProductMapUncheckedCreateNestedManyWithoutOptionInput = {
-  create?: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutOptionInput, Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput> | Prisma.InvLocationProductMapCreateWithoutOptionInput[] | Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput[]
-  connectOrCreate?: Prisma.InvLocationProductMapCreateOrConnectWithoutOptionInput | Prisma.InvLocationProductMapCreateOrConnectWithoutOptionInput[]
-  createMany?: Prisma.InvLocationProductMapCreateManyOptionInputEnvelope
-  connect?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-}
-
-export type InvLocationProductMapUpdateManyWithoutOptionNestedInput = {
-  create?: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutOptionInput, Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput> | Prisma.InvLocationProductMapCreateWithoutOptionInput[] | Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput[]
-  connectOrCreate?: Prisma.InvLocationProductMapCreateOrConnectWithoutOptionInput | Prisma.InvLocationProductMapCreateOrConnectWithoutOptionInput[]
-  upsert?: Prisma.InvLocationProductMapUpsertWithWhereUniqueWithoutOptionInput | Prisma.InvLocationProductMapUpsertWithWhereUniqueWithoutOptionInput[]
-  createMany?: Prisma.InvLocationProductMapCreateManyOptionInputEnvelope
-  set?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-  disconnect?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-  delete?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-  connect?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-  update?: Prisma.InvLocationProductMapUpdateWithWhereUniqueWithoutOptionInput | Prisma.InvLocationProductMapUpdateWithWhereUniqueWithoutOptionInput[]
-  updateMany?: Prisma.InvLocationProductMapUpdateManyWithWhereWithoutOptionInput | Prisma.InvLocationProductMapUpdateManyWithWhereWithoutOptionInput[]
-  deleteMany?: Prisma.InvLocationProductMapScalarWhereInput | Prisma.InvLocationProductMapScalarWhereInput[]
-}
-
-export type InvLocationProductMapUncheckedUpdateManyWithoutOptionNestedInput = {
-  create?: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutOptionInput, Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput> | Prisma.InvLocationProductMapCreateWithoutOptionInput[] | Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput[]
-  connectOrCreate?: Prisma.InvLocationProductMapCreateOrConnectWithoutOptionInput | Prisma.InvLocationProductMapCreateOrConnectWithoutOptionInput[]
-  upsert?: Prisma.InvLocationProductMapUpsertWithWhereUniqueWithoutOptionInput | Prisma.InvLocationProductMapUpsertWithWhereUniqueWithoutOptionInput[]
-  createMany?: Prisma.InvLocationProductMapCreateManyOptionInputEnvelope
-  set?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-  disconnect?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-  delete?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-  connect?: Prisma.InvLocationProductMapWhereUniqueInput | Prisma.InvLocationProductMapWhereUniqueInput[]
-  update?: Prisma.InvLocationProductMapUpdateWithWhereUniqueWithoutOptionInput | Prisma.InvLocationProductMapUpdateWithWhereUniqueWithoutOptionInput[]
-  updateMany?: Prisma.InvLocationProductMapUpdateManyWithWhereWithoutOptionInput | Prisma.InvLocationProductMapUpdateManyWithWhereWithoutOptionInput[]
   deleteMany?: Prisma.InvLocationProductMapScalarWhereInput | Prisma.InvLocationProductMapScalarWhereInput[]
 }
 
@@ -519,24 +465,38 @@ export type InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput =
   deleteMany?: Prisma.InvLocationProductMapScalarWhereInput | Prisma.InvLocationProductMapScalarWhereInput[]
 }
 
+export type InvLocationProductMapCreateNestedOneWithoutItemsInput = {
+  create?: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutItemsInput, Prisma.InvLocationProductMapUncheckedCreateWithoutItemsInput>
+  connectOrCreate?: Prisma.InvLocationProductMapCreateOrConnectWithoutItemsInput
+  connect?: Prisma.InvLocationProductMapWhereUniqueInput
+}
+
+export type InvLocationProductMapUpdateOneRequiredWithoutItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutItemsInput, Prisma.InvLocationProductMapUncheckedCreateWithoutItemsInput>
+  connectOrCreate?: Prisma.InvLocationProductMapCreateOrConnectWithoutItemsInput
+  upsert?: Prisma.InvLocationProductMapUpsertWithoutItemsInput
+  connect?: Prisma.InvLocationProductMapWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvLocationProductMapUpdateToOneWithWhereWithoutItemsInput, Prisma.InvLocationProductMapUpdateWithoutItemsInput>, Prisma.InvLocationProductMapUncheckedUpdateWithoutItemsInput>
+}
+
 export type InvLocationProductMapCreateWithoutSpaceInput = {
   id?: string
   externalCode: string
   externalName?: string | null
   externalOptionName?: string | null
   createdAt?: Date | string
+  items?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutMapInput
   location: Prisma.InvStorageLocationCreateNestedOneWithoutLocationMappingsInput
-  option: Prisma.InvProductOptionCreateNestedOneWithoutLocationMappingsInput
 }
 
 export type InvLocationProductMapUncheckedCreateWithoutSpaceInput = {
   id?: string
   locationId: string
-  optionId: string
   externalCode: string
   externalName?: string | null
   externalOptionName?: string | null
   createdAt?: Date | string
+  items?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutMapInput
 }
 
 export type InvLocationProductMapCreateOrConnectWithoutSpaceInput = {
@@ -572,57 +532,10 @@ export type InvLocationProductMapScalarWhereInput = {
   id?: Prisma.StringFilter<"InvLocationProductMap"> | string
   spaceId?: Prisma.StringFilter<"InvLocationProductMap"> | string
   locationId?: Prisma.StringFilter<"InvLocationProductMap"> | string
-  optionId?: Prisma.StringFilter<"InvLocationProductMap"> | string
   externalCode?: Prisma.StringFilter<"InvLocationProductMap"> | string
   externalName?: Prisma.StringNullableFilter<"InvLocationProductMap"> | string | null
   externalOptionName?: Prisma.StringNullableFilter<"InvLocationProductMap"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvLocationProductMap"> | Date | string
-}
-
-export type InvLocationProductMapCreateWithoutOptionInput = {
-  id?: string
-  externalCode: string
-  externalName?: string | null
-  externalOptionName?: string | null
-  createdAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutInvLocationMappingsInput
-  location: Prisma.InvStorageLocationCreateNestedOneWithoutLocationMappingsInput
-}
-
-export type InvLocationProductMapUncheckedCreateWithoutOptionInput = {
-  id?: string
-  spaceId: string
-  locationId: string
-  externalCode: string
-  externalName?: string | null
-  externalOptionName?: string | null
-  createdAt?: Date | string
-}
-
-export type InvLocationProductMapCreateOrConnectWithoutOptionInput = {
-  where: Prisma.InvLocationProductMapWhereUniqueInput
-  create: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutOptionInput, Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput>
-}
-
-export type InvLocationProductMapCreateManyOptionInputEnvelope = {
-  data: Prisma.InvLocationProductMapCreateManyOptionInput | Prisma.InvLocationProductMapCreateManyOptionInput[]
-  skipDuplicates?: boolean
-}
-
-export type InvLocationProductMapUpsertWithWhereUniqueWithoutOptionInput = {
-  where: Prisma.InvLocationProductMapWhereUniqueInput
-  update: Prisma.XOR<Prisma.InvLocationProductMapUpdateWithoutOptionInput, Prisma.InvLocationProductMapUncheckedUpdateWithoutOptionInput>
-  create: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutOptionInput, Prisma.InvLocationProductMapUncheckedCreateWithoutOptionInput>
-}
-
-export type InvLocationProductMapUpdateWithWhereUniqueWithoutOptionInput = {
-  where: Prisma.InvLocationProductMapWhereUniqueInput
-  data: Prisma.XOR<Prisma.InvLocationProductMapUpdateWithoutOptionInput, Prisma.InvLocationProductMapUncheckedUpdateWithoutOptionInput>
-}
-
-export type InvLocationProductMapUpdateManyWithWhereWithoutOptionInput = {
-  where: Prisma.InvLocationProductMapScalarWhereInput
-  data: Prisma.XOR<Prisma.InvLocationProductMapUpdateManyMutationInput, Prisma.InvLocationProductMapUncheckedUpdateManyWithoutOptionInput>
 }
 
 export type InvLocationProductMapCreateWithoutLocationInput = {
@@ -631,18 +544,18 @@ export type InvLocationProductMapCreateWithoutLocationInput = {
   externalName?: string | null
   externalOptionName?: string | null
   createdAt?: Date | string
+  items?: Prisma.InvLocationProductMapItemCreateNestedManyWithoutMapInput
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationMappingsInput
-  option: Prisma.InvProductOptionCreateNestedOneWithoutLocationMappingsInput
 }
 
 export type InvLocationProductMapUncheckedCreateWithoutLocationInput = {
   id?: string
   spaceId: string
-  optionId: string
   externalCode: string
   externalName?: string | null
   externalOptionName?: string | null
   createdAt?: Date | string
+  items?: Prisma.InvLocationProductMapItemUncheckedCreateNestedManyWithoutMapInput
 }
 
 export type InvLocationProductMapCreateOrConnectWithoutLocationInput = {
@@ -671,10 +584,65 @@ export type InvLocationProductMapUpdateManyWithWhereWithoutLocationInput = {
   data: Prisma.XOR<Prisma.InvLocationProductMapUpdateManyMutationInput, Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationInput>
 }
 
+export type InvLocationProductMapCreateWithoutItemsInput = {
+  id?: string
+  externalCode: string
+  externalName?: string | null
+  externalOptionName?: string | null
+  createdAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutInvLocationMappingsInput
+  location: Prisma.InvStorageLocationCreateNestedOneWithoutLocationMappingsInput
+}
+
+export type InvLocationProductMapUncheckedCreateWithoutItemsInput = {
+  id?: string
+  spaceId: string
+  locationId: string
+  externalCode: string
+  externalName?: string | null
+  externalOptionName?: string | null
+  createdAt?: Date | string
+}
+
+export type InvLocationProductMapCreateOrConnectWithoutItemsInput = {
+  where: Prisma.InvLocationProductMapWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutItemsInput, Prisma.InvLocationProductMapUncheckedCreateWithoutItemsInput>
+}
+
+export type InvLocationProductMapUpsertWithoutItemsInput = {
+  update: Prisma.XOR<Prisma.InvLocationProductMapUpdateWithoutItemsInput, Prisma.InvLocationProductMapUncheckedUpdateWithoutItemsInput>
+  create: Prisma.XOR<Prisma.InvLocationProductMapCreateWithoutItemsInput, Prisma.InvLocationProductMapUncheckedCreateWithoutItemsInput>
+  where?: Prisma.InvLocationProductMapWhereInput
+}
+
+export type InvLocationProductMapUpdateToOneWithWhereWithoutItemsInput = {
+  where?: Prisma.InvLocationProductMapWhereInput
+  data: Prisma.XOR<Prisma.InvLocationProductMapUpdateWithoutItemsInput, Prisma.InvLocationProductMapUncheckedUpdateWithoutItemsInput>
+}
+
+export type InvLocationProductMapUpdateWithoutItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationMappingsNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneRequiredWithoutLocationMappingsNestedInput
+}
+
+export type InvLocationProductMapUncheckedUpdateWithoutItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  locationId?: Prisma.StringFieldUpdateOperationsInput | string
+  externalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type InvLocationProductMapCreateManySpaceInput = {
   id?: string
   locationId: string
-  optionId: string
   externalCode: string
   externalName?: string | null
   externalOptionName?: string | null
@@ -687,63 +655,22 @@ export type InvLocationProductMapUpdateWithoutSpaceInput = {
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.InvLocationProductMapItemUpdateManyWithoutMapNestedInput
   location?: Prisma.InvStorageLocationUpdateOneRequiredWithoutLocationMappingsNestedInput
-  option?: Prisma.InvProductOptionUpdateOneRequiredWithoutLocationMappingsNestedInput
 }
 
 export type InvLocationProductMapUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   locationId?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   externalCode?: Prisma.StringFieldUpdateOperationsInput | string
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutMapNestedInput
 }
 
 export type InvLocationProductMapUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  locationId?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
-  externalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type InvLocationProductMapCreateManyOptionInput = {
-  id?: string
-  spaceId: string
-  locationId: string
-  externalCode: string
-  externalName?: string | null
-  externalOptionName?: string | null
-  createdAt?: Date | string
-}
-
-export type InvLocationProductMapUpdateWithoutOptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  externalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationMappingsNestedInput
-  location?: Prisma.InvStorageLocationUpdateOneRequiredWithoutLocationMappingsNestedInput
-}
-
-export type InvLocationProductMapUncheckedUpdateWithoutOptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
-  locationId?: Prisma.StringFieldUpdateOperationsInput | string
-  externalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type InvLocationProductMapUncheckedUpdateManyWithoutOptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   locationId?: Prisma.StringFieldUpdateOperationsInput | string
   externalCode?: Prisma.StringFieldUpdateOperationsInput | string
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -754,7 +681,6 @@ export type InvLocationProductMapUncheckedUpdateManyWithoutOptionInput = {
 export type InvLocationProductMapCreateManyLocationInput = {
   id?: string
   spaceId: string
-  optionId: string
   externalCode: string
   externalName?: string | null
   externalOptionName?: string | null
@@ -767,114 +693,135 @@ export type InvLocationProductMapUpdateWithoutLocationInput = {
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.InvLocationProductMapItemUpdateManyWithoutMapNestedInput
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationMappingsNestedInput
-  option?: Prisma.InvProductOptionUpdateOneRequiredWithoutLocationMappingsNestedInput
 }
 
 export type InvLocationProductMapUncheckedUpdateWithoutLocationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   externalCode?: Prisma.StringFieldUpdateOperationsInput | string
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.InvLocationProductMapItemUncheckedUpdateManyWithoutMapNestedInput
 }
 
 export type InvLocationProductMapUncheckedUpdateManyWithoutLocationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
-  optionId?: Prisma.StringFieldUpdateOperationsInput | string
   externalCode?: Prisma.StringFieldUpdateOperationsInput | string
   externalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalOptionName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type InvLocationProductMapCountOutputType
+ */
+
+export type InvLocationProductMapCountOutputType = {
+  items: number
+}
+
+export type InvLocationProductMapCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  items?: boolean | InvLocationProductMapCountOutputTypeCountItemsArgs
+}
+
+/**
+ * InvLocationProductMapCountOutputType without action
+ */
+export type InvLocationProductMapCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvLocationProductMapCountOutputType
+   */
+  select?: Prisma.InvLocationProductMapCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * InvLocationProductMapCountOutputType without action
+ */
+export type InvLocationProductMapCountOutputTypeCountItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvLocationProductMapItemWhereInput
+}
 
 
 export type InvLocationProductMapSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
   locationId?: boolean
-  optionId?: boolean
   externalCode?: boolean
   externalName?: boolean
   externalOptionName?: boolean
   createdAt?: boolean
+  items?: boolean | Prisma.InvLocationProductMap$itemsArgs<ExtArgs>
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   location?: boolean | Prisma.InvStorageLocationDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.InvLocationProductMapCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invLocationProductMap"]>
 
 export type InvLocationProductMapSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
   locationId?: boolean
-  optionId?: boolean
   externalCode?: boolean
   externalName?: boolean
   externalOptionName?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   location?: boolean | Prisma.InvStorageLocationDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invLocationProductMap"]>
 
 export type InvLocationProductMapSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
   locationId?: boolean
-  optionId?: boolean
   externalCode?: boolean
   externalName?: boolean
   externalOptionName?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   location?: boolean | Prisma.InvStorageLocationDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invLocationProductMap"]>
 
 export type InvLocationProductMapSelectScalar = {
   id?: boolean
   spaceId?: boolean
   locationId?: boolean
-  optionId?: boolean
   externalCode?: boolean
   externalName?: boolean
   externalOptionName?: boolean
   createdAt?: boolean
 }
 
-export type InvLocationProductMapOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "locationId" | "optionId" | "externalCode" | "externalName" | "externalOptionName" | "createdAt", ExtArgs["result"]["invLocationProductMap"]>
+export type InvLocationProductMapOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "locationId" | "externalCode" | "externalName" | "externalOptionName" | "createdAt", ExtArgs["result"]["invLocationProductMap"]>
 export type InvLocationProductMapInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  items?: boolean | Prisma.InvLocationProductMap$itemsArgs<ExtArgs>
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   location?: boolean | Prisma.InvStorageLocationDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.InvLocationProductMapCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InvLocationProductMapIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   location?: boolean | Prisma.InvStorageLocationDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }
 export type InvLocationProductMapIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   location?: boolean | Prisma.InvStorageLocationDefaultArgs<ExtArgs>
-  option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }
 
 export type $InvLocationProductMapPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "InvLocationProductMap"
   objects: {
+    items: Prisma.$InvLocationProductMapItemPayload<ExtArgs>[]
     space: Prisma.$SpacePayload<ExtArgs>
     location: Prisma.$InvStorageLocationPayload<ExtArgs>
-    option: Prisma.$InvProductOptionPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     spaceId: string
     locationId: string
-    optionId: string
     externalCode: string
     externalName: string | null
     externalOptionName: string | null
@@ -1273,9 +1220,9 @@ readonly fields: InvLocationProductMapFieldRefs;
  */
 export interface Prisma__InvLocationProductMapClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  items<T extends Prisma.InvLocationProductMap$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvLocationProductMap$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvLocationProductMapItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   location<T extends Prisma.InvStorageLocationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocationDefaultArgs<ExtArgs>>): Prisma.Prisma__InvStorageLocationClient<runtime.Types.Result.GetResult<Prisma.$InvStorageLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  option<T extends Prisma.InvProductOptionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProductOptionDefaultArgs<ExtArgs>>): Prisma.Prisma__InvProductOptionClient<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1308,7 +1255,6 @@ export interface InvLocationProductMapFieldRefs {
   readonly id: Prisma.FieldRef<"InvLocationProductMap", 'String'>
   readonly spaceId: Prisma.FieldRef<"InvLocationProductMap", 'String'>
   readonly locationId: Prisma.FieldRef<"InvLocationProductMap", 'String'>
-  readonly optionId: Prisma.FieldRef<"InvLocationProductMap", 'String'>
   readonly externalCode: Prisma.FieldRef<"InvLocationProductMap", 'String'>
   readonly externalName: Prisma.FieldRef<"InvLocationProductMap", 'String'>
   readonly externalOptionName: Prisma.FieldRef<"InvLocationProductMap", 'String'>
@@ -1706,6 +1652,30 @@ export type InvLocationProductMapDeleteManyArgs<ExtArgs extends runtime.Types.Ex
    * Limit how many InvLocationProductMaps to delete.
    */
   limit?: number
+}
+
+/**
+ * InvLocationProductMap.items
+ */
+export type InvLocationProductMap$itemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvLocationProductMapItem
+   */
+  select?: Prisma.InvLocationProductMapItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvLocationProductMapItem
+   */
+  omit?: Prisma.InvLocationProductMapItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvLocationProductMapItemInclude<ExtArgs> | null
+  where?: Prisma.InvLocationProductMapItemWhereInput
+  orderBy?: Prisma.InvLocationProductMapItemOrderByWithRelationInput | Prisma.InvLocationProductMapItemOrderByWithRelationInput[]
+  cursor?: Prisma.InvLocationProductMapItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvLocationProductMapItemScalarFieldEnum | Prisma.InvLocationProductMapItemScalarFieldEnum[]
 }
 
 /**

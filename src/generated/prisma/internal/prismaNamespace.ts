@@ -421,6 +421,7 @@ export const ModelName = {
   InvImportHistory: 'InvImportHistory',
   InvReconciliation: 'InvReconciliation',
   InvLocationProductMap: 'InvLocationProductMap',
+  InvLocationProductMapItem: 'InvLocationProductMapItem',
   InvSettings: 'InvSettings',
   DelShippingMethod: 'DelShippingMethod',
   DelShippingMethodLabel: 'DelShippingMethodLabel',
@@ -482,7 +483,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3221,6 +3222,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.InvLocationProductMapCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.InvLocationProductMapCountAggregateOutputType> | number
+        }
+      }
+    }
+    InvLocationProductMapItem: {
+      payload: Prisma.$InvLocationProductMapItemPayload<ExtArgs>
+      fields: Prisma.InvLocationProductMapItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InvLocationProductMapItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InvLocationProductMapItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>
+        }
+        findFirst: {
+          args: Prisma.InvLocationProductMapItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InvLocationProductMapItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>
+        }
+        findMany: {
+          args: Prisma.InvLocationProductMapItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>[]
+        }
+        create: {
+          args: Prisma.InvLocationProductMapItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>
+        }
+        createMany: {
+          args: Prisma.InvLocationProductMapItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InvLocationProductMapItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>[]
+        }
+        delete: {
+          args: Prisma.InvLocationProductMapItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>
+        }
+        update: {
+          args: Prisma.InvLocationProductMapItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.InvLocationProductMapItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InvLocationProductMapItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InvLocationProductMapItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.InvLocationProductMapItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvLocationProductMapItemPayload>
+        }
+        aggregate: {
+          args: Prisma.InvLocationProductMapItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInvLocationProductMapItem>
+        }
+        groupBy: {
+          args: Prisma.InvLocationProductMapItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvLocationProductMapItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InvLocationProductMapItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvLocationProductMapItemCountAggregateOutputType> | number
         }
       }
     }
@@ -7236,7 +7311,6 @@ export const InvLocationProductMapScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   locationId: 'locationId',
-  optionId: 'optionId',
   externalCode: 'externalCode',
   externalName: 'externalName',
   externalOptionName: 'externalOptionName',
@@ -7244,6 +7318,16 @@ export const InvLocationProductMapScalarFieldEnum = {
 } as const
 
 export type InvLocationProductMapScalarFieldEnum = (typeof InvLocationProductMapScalarFieldEnum)[keyof typeof InvLocationProductMapScalarFieldEnum]
+
+
+export const InvLocationProductMapItemScalarFieldEnum = {
+  id: 'id',
+  mapId: 'mapId',
+  optionId: 'optionId',
+  quantity: 'quantity'
+} as const
+
+export type InvLocationProductMapItemScalarFieldEnum = (typeof InvLocationProductMapItemScalarFieldEnum)[keyof typeof InvLocationProductMapItemScalarFieldEnum]
 
 
 export const InvSettingsScalarFieldEnum = {
@@ -8721,6 +8805,7 @@ export type GlobalOmitConfig = {
   invImportHistory?: Prisma.InvImportHistoryOmit
   invReconciliation?: Prisma.InvReconciliationOmit
   invLocationProductMap?: Prisma.InvLocationProductMapOmit
+  invLocationProductMapItem?: Prisma.InvLocationProductMapItemOmit
   invSettings?: Prisma.InvSettingsOmit
   delShippingMethod?: Prisma.DelShippingMethodOmit
   delShippingMethodLabel?: Prisma.DelShippingMethodLabelOmit

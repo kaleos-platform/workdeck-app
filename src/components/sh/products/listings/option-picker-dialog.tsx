@@ -5,6 +5,7 @@ import { ArrowLeft, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,8 @@ export type PickedOption = {
   totalStock: number
 }
 
+export type PickedOptionWithQty = PickedOption & { quantity: number }
+
 type ProductWithOptions = {
   productId: string
   productName: string
@@ -55,27 +58,33 @@ type ProductWithOptions = {
 type Props = {
   open: boolean
   onOpenChange: (v: boolean) => void
-  onPick: (opt: PickedOption) => void
+  // flat/two-step 모드: 단일 선택
+  onPick?: (opt: PickedOption) => void
+  // multi-with-qty 모드: 다중 선택+수량
+  onPickMulti?: (items: PickedOptionWithQty[]) => void
   excludeOptionIds?: string[]
   initialQuery?: string
-  // 'flat' (default): 상품+옵션을 한 리스트로 표시 (기존 동작)
+  // 'flat' (default): 상품+옵션을 한 리스트로 표시
   // 'two-step': 1단계 상품 선택 → 2단계 그 상품의 옵션 선택
-  mode?: 'flat' | 'two-step'
-  // 다이얼로그 상단에 표시할 컨텍스트(예: 매칭 대상 외부 상품명).
-  // 검색창에는 자동 입력하지 않고 사용자에게 "무엇을 매칭하는지"만 보여준다.
+  // 'multi-with-qty': two-step + 다중 체크박스+수량 입력, onPickMulti 사용
+  mode?: 'flat' | 'two-step' | 'multi-with-qty'
   contextLabel?: string
   contextValue?: string
+  // multi-with-qty 수정 시 기존 선택 복원
+  initialItems?: PickedOptionWithQty[]
 }
 
 export function OptionPickerDialog({
   open,
   onOpenChange,
   onPick,
+  onPickMulti,
   excludeOptionIds = [],
   initialQuery = '',
   mode = 'flat',
   contextLabel,
   contextValue,
+  initialItems,
 }: Props) {
   const [search, setSearch] = useState(initialQuery)
   const [debounced, setDebounced] = useState(initialQuery)
@@ -83,13 +92,21 @@ export function OptionPickerDialog({
   const [loading, setLoading] = useState(false)
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
 
+  // multi-with-qty: 누적 선택 items (여러 상품에 걸쳐 유지)
+  const [accumulatedItems, setAccumulatedItems] = useState<PickedOptionWithQty[]>([])
+
   useEffect(() => {
     if (open) {
       setSearch(initialQuery)
       setDebounced(initialQuery)
       setSelectedProductId(null)
+      // initialItems로 복원 또는 초기화
+      setAccumulatedItems(initialItems ? [...initialItems] : [])
+    } else {
+      // 닫힐 때 누적 state 초기화
+      setAccumulatedItems([])
     }
-  }, [open, initialQuery])
+  }, [open, initialQuery, initialItems])
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(search), 300)
@@ -162,27 +179,69 @@ export function OptionPickerDialog({
     [productsVisible, selectedProductId]
   )
 
-  const showProductStep = mode === 'two-step' && !selectedProduct
-  const showOptionStep = mode === 'two-step' && !!selectedProduct
+  const isMultiMode = mode === 'multi-with-qty'
+  const showProductStep = (mode === 'two-step' || isMultiMode) && !selectedProduct
+  const showOptionStep = (mode === 'two-step' || isMultiMode) && !!selectedProduct
+
+  // multi-with-qty: 현재 상품의 옵션에 대한 체크/수량 변경
+  function toggleOptionCheck(opt: PickedOption, checked: boolean) {
+    setAccumulatedItems((prev) => {
+      if (checked) {
+        if (prev.some((i) => i.optionId === opt.optionId)) return prev
+        return [...prev, { ...opt, quantity: 1 }]
+      } else {
+        return prev.filter((i) => i.optionId !== opt.optionId)
+      }
+    })
+  }
+
+  function updateOptionQty(optionId: string, raw: string) {
+    const parsed = parseInt(raw, 10)
+    const qty = isNaN(parsed) || parsed < 1 ? 1 : parsed
+    setAccumulatedItems((prev) =>
+      prev.map((i) => (i.optionId === optionId ? { ...i, quantity: qty } : i))
+    )
+  }
+
+  function handleMultiComplete() {
+    if (accumulatedItems.length === 0) {
+      toast.error('옵션을 하나 이상 선택하세요')
+      return
+    }
+    onPickMulti?.(accumulatedItems)
+    onOpenChange(false)
+  }
+
+  const titleText = useMemo(() => {
+    if (isMultiMode) {
+      if (showProductStep) return '상품 선택'
+      return `옵션 선택 — ${selectedProduct?.productName ?? ''}`
+    }
+    if (mode === 'two-step') {
+      if (showProductStep) return '상품 선택'
+      return `옵션 선택 — ${selectedProduct?.productName ?? ''}`
+    }
+    return '옵션 선택'
+  }, [isMultiMode, mode, showProductStep, selectedProduct])
+
+  const descText = useMemo(() => {
+    if (isMultiMode) {
+      if (showProductStep) return '상품을 선택하세요 (여러 상품 추가 가능)'
+      return '옵션별 체크박스와 수량을 설정하세요'
+    }
+    if (mode === 'two-step') {
+      if (showProductStep) return '상품을 먼저 선택하세요'
+      return '옵션을 선택하세요'
+    }
+    return '상품명·관리코드로 검색해 묶음에 포함할 옵션을 선택하세요'
+  }, [isMultiMode, mode, showProductStep])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[80vh] max-w-2xl">
         <DialogHeader>
-          <DialogTitle>
-            {mode === 'two-step'
-              ? showProductStep
-                ? '상품 선택'
-                : `옵션 선택 — ${selectedProduct?.productName ?? ''}`
-              : '옵션 선택'}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === 'two-step'
-              ? showProductStep
-                ? '상품을 먼저 선택하세요'
-                : '옵션을 선택하세요'
-              : '상품명·관리코드로 검색해 묶음에 포함할 옵션을 선택하세요'}
-          </DialogDescription>
+          <DialogTitle>{titleText}</DialogTitle>
+          <DialogDescription>{descText}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           {contextValue && (
@@ -191,17 +250,25 @@ export function OptionPickerDialog({
               <p className="mt-0.5 font-medium text-amber-900">{contextValue}</p>
             </div>
           )}
+
           {showOptionStep && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="-ml-2 w-fit"
-              onClick={() => setSelectedProductId(null)}
-            >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              상품 다시 선택
-            </Button>
+            <div className="flex items-center justify-between">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="-ml-2 w-fit"
+                onClick={() => setSelectedProductId(null)}
+              >
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                다른 상품 선택
+              </Button>
+              {isMultiMode && accumulatedItems.length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  선택된 옵션 {accumulatedItems.length}개
+                </span>
+              )}
+            </div>
           )}
 
           {!showOptionStep && (
@@ -214,11 +281,18 @@ export function OptionPickerDialog({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={
-                    mode === 'two-step' ? '상품명 / 관리코드' : '상품명 / 관리코드 / SKU'
+                    mode === 'two-step' || isMultiMode
+                      ? '상품명 / 관리코드'
+                      : '상품명 / 관리코드 / SKU'
                   }
                   className="pl-9"
                 />
               </div>
+              {isMultiMode && accumulatedItems.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  선택된 옵션 {accumulatedItems.length}개
+                </p>
+              )}
             </div>
           )}
 
@@ -244,6 +318,15 @@ export function OptionPickerDialog({
                             <p className="font-medium">{p.productName}</p>
                             <p className="text-sm text-muted-foreground">
                               옵션 {p.options.length}개
+                              {isMultiMode &&
+                                (() => {
+                                  const n = p.options.filter((o) =>
+                                    accumulatedItems.some((i) => i.optionId === o.optionId)
+                                  ).length
+                                  return n > 0 ? (
+                                    <span className="ml-2 text-primary">· {n}개 선택됨</span>
+                                  ) : null
+                                })()}
                             </p>
                           </div>
                           <div className="text-right text-xs text-muted-foreground">
@@ -256,7 +339,56 @@ export function OptionPickerDialog({
                   ))}
                 </ul>
               )
+            ) : showOptionStep && isMultiMode ? (
+              // multi-with-qty: 체크박스 + 수량 입력
+              selectedProduct!.options.length === 0 ? (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  선택 가능한 옵션이 없습니다
+                </div>
+              ) : (
+                <ul className="divide-y">
+                  {selectedProduct!.options.map((o) => {
+                    const accumulated = accumulatedItems.find((i) => i.optionId === o.optionId)
+                    const checked = !!accumulated
+                    return (
+                      <li key={o.optionId} className="flex items-center gap-3 px-4 py-3">
+                        <Checkbox
+                          id={`mqo-${o.optionId}`}
+                          checked={checked}
+                          onCheckedChange={(v) => toggleOptionCheck(o, !!v)}
+                        />
+                        <label
+                          htmlFor={`mqo-${o.optionId}`}
+                          className="flex-1 cursor-pointer text-sm font-medium"
+                        >
+                          {o.optionName}
+                          {o.sku && (
+                            <span className="ml-2 text-xs font-normal text-muted-foreground">
+                              SKU {o.sku}
+                            </span>
+                          )}
+                        </label>
+                        {checked && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">수량</span>
+                            <Input
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={accumulated!.quantity}
+                              onChange={(e) => updateOptionQty(o.optionId, e.target.value)}
+                              className="h-7 w-16 text-center text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )
             ) : showOptionStep ? (
+              // two-step 단일 선택
               selectedProduct!.options.length === 0 ? (
                 <div className="p-8 text-center text-sm text-muted-foreground">
                   선택 가능한 옵션이 없습니다
@@ -267,7 +399,7 @@ export function OptionPickerDialog({
                     <li key={o.optionId}>
                       <button
                         type="button"
-                        onClick={() => onPick(o)}
+                        onClick={() => onPick?.(o)}
                         className="w-full px-4 py-3 text-left transition hover:bg-muted/60"
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -293,7 +425,7 @@ export function OptionPickerDialog({
                   <li key={r.optionId}>
                     <button
                       type="button"
-                      onClick={() => onPick(r)}
+                      onClick={() => onPick?.(r)}
                       className="w-full px-4 py-3 text-left transition hover:bg-muted/60"
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -314,9 +446,20 @@ export function OptionPickerDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            닫기
-          </Button>
+          {isMultiMode ? (
+            <>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                닫기
+              </Button>
+              <Button onClick={handleMultiComplete} disabled={accumulatedItems.length === 0}>
+                완료 {accumulatedItems.length > 0 && `(${accumulatedItems.length}개)`}
+              </Button>
+            </>
+          ) : (
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              닫기
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

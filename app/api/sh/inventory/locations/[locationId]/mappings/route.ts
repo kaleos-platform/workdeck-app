@@ -24,9 +24,13 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
     where: { locationId, spaceId: resolved.space.id },
     orderBy: { createdAt: 'desc' },
     include: {
-      option: {
+      items: {
         include: {
-          product: { select: { id: true, name: true, code: true } },
+          option: {
+            include: {
+              product: { select: { id: true, name: true, code: true } },
+            },
+          },
         },
       },
     },
@@ -36,7 +40,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
 }
 
 // POST /api/inv/locations/[locationId]/mappings
-// { optionId, externalCode, externalName?, externalOptionName? }
+// { items: [{optionId, quantity?}], externalCode, externalName?, externalOptionName? }
 export async function POST(req: NextRequest, ctx: RouteContext) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
@@ -46,53 +50,77 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
   if (!location) return errorResponse('위치를 찾을 수 없습니다', 404)
 
   const body = (await req.json().catch(() => ({}))) as {
-    optionId?: string
+    items?: { optionId: string; quantity?: number }[]
     externalCode?: string
     externalName?: string
     externalOptionName?: string
   }
 
-  const optionId = body.optionId?.trim()
   const externalCode = body.externalCode?.trim()
-  if (!optionId) return errorResponse('optionId가 필요합니다', 400)
+  const items = body.items ?? []
   if (!externalCode) return errorResponse('externalCode가 필요합니다', 400)
+  if (items.length === 0) return errorResponse('items가 필요합니다', 400)
 
-  // Verify option belongs to this space
-  const option = await prisma.invProductOption.findFirst({
-    where: { id: optionId, product: { spaceId: resolved.space.id } },
+  // 소유권 검증
+  const validOptions = await prisma.invProductOption.findMany({
+    where: {
+      id: { in: items.map((i) => i.optionId) },
+      product: { spaceId: resolved.space.id },
+    },
     select: { id: true },
   })
-  if (!option) return errorResponse('상품 옵션을 찾을 수 없습니다', 404)
+  const validOptionIds = new Set(validOptions.map((o) => o.id))
+  const validItems = items.filter((i) => validOptionIds.has(i.optionId))
+  if (validItems.length === 0) return errorResponse('유효한 상품 옵션이 없습니다', 404)
 
-  // Check unique constraint on (locationId, externalCode)
+  // Upsert mapping
   const existing = await prisma.invLocationProductMap.findUnique({
-    where: {
-      locationId_externalCode: { locationId, externalCode },
-    },
+    where: { locationId_externalCode: { locationId, externalCode } },
   })
+
+  let mapId: string
   if (existing) {
-    if (existing.optionId !== optionId) {
-      return errorResponse('해당 외부 코드는 다른 옵션에 이미 매핑되어 있습니다', 409)
-    }
-    // Same option — update display fields
-    const updated = await prisma.invLocationProductMap.update({
+    await prisma.invLocationProductMap.update({
       where: { id: existing.id },
       data: {
         externalName: body.externalName ?? existing.externalName,
         externalOptionName: body.externalOptionName ?? existing.externalOptionName,
       },
     })
-    return NextResponse.json({ mapping: updated })
+    mapId = existing.id
+  } else {
+    const created = await prisma.invLocationProductMap.create({
+      data: {
+        spaceId: resolved.space.id,
+        locationId,
+        externalCode,
+        externalName: body.externalName ?? null,
+        externalOptionName: body.externalOptionName ?? null,
+      },
+    })
+    mapId = created.id
   }
 
-  const mapping = await prisma.invLocationProductMap.create({
-    data: {
-      spaceId: resolved.space.id,
-      locationId,
-      optionId,
-      externalCode,
-      externalName: body.externalName ?? null,
-      externalOptionName: body.externalOptionName ?? null,
+  // items 교체
+  await prisma.invLocationProductMapItem.deleteMany({ where: { mapId } })
+  await prisma.invLocationProductMapItem.createMany({
+    data: validItems.map((i) => ({
+      mapId,
+      optionId: i.optionId,
+      quantity: i.quantity ?? 1,
+    })),
+  })
+
+  const mapping = await prisma.invLocationProductMap.findUnique({
+    where: { id: mapId },
+    include: {
+      items: {
+        include: {
+          option: {
+            include: { product: { select: { id: true, name: true, code: true } } },
+          },
+        },
+      },
     },
   })
 
@@ -100,7 +128,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 }
 
 // PATCH /api/inv/locations/[locationId]/mappings?mappingId=xxx
-// body: { optionId: string }
+// body: { items: [{optionId, quantity?}] }
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
@@ -113,32 +141,49 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const mappingId = searchParams.get('mappingId')
   if (!mappingId) return errorResponse('mappingId가 필요합니다', 400)
 
-  const body = (await req.json().catch(() => ({}))) as { optionId?: string }
-  const optionId = body.optionId?.trim()
-  if (!optionId) return errorResponse('optionId가 필요합니다', 400)
+  const body = (await req.json().catch(() => ({}))) as {
+    items?: { optionId: string; quantity?: number }[]
+  }
+  const items = body.items ?? []
+  if (items.length === 0) return errorResponse('items가 필요합니다', 400)
 
-  // 매핑이 이 locationId/spaceId에 속하는지 검증
+  // 매핑 소유권 검증
   const mapping = await prisma.invLocationProductMap.findFirst({
     where: { id: mappingId, locationId, spaceId: resolved.space.id },
     select: { id: true },
   })
   if (!mapping) return errorResponse('매핑을 찾을 수 없습니다', 404)
 
-  // optionId가 이 spaceId의 InvProductOption인지 검증
-  const option = await prisma.invProductOption.findFirst({
-    where: { id: optionId, product: { spaceId: resolved.space.id } },
+  // 소유권 검증
+  const validOptions = await prisma.invProductOption.findMany({
+    where: {
+      id: { in: items.map((i) => i.optionId) },
+      product: { spaceId: resolved.space.id },
+    },
     select: { id: true },
   })
-  if (!option) return errorResponse('상품 옵션을 찾을 수 없습니다', 404)
+  const validOptionIds = new Set(validOptions.map((o) => o.id))
+  const validItems = items.filter((i) => validOptionIds.has(i.optionId))
+  if (validItems.length === 0) return errorResponse('유효한 상품 옵션이 없습니다', 404)
 
-  // optionId만 교체 — externalCode/externalName은 건드리지 않음
-  const updated = await prisma.invLocationProductMap.update({
+  // items 교체
+  await prisma.invLocationProductMapItem.deleteMany({ where: { mapId: mapping.id } })
+  await prisma.invLocationProductMapItem.createMany({
+    data: validItems.map((i) => ({
+      mapId: mapping.id,
+      optionId: i.optionId,
+      quantity: i.quantity ?? 1,
+    })),
+  })
+
+  const updated = await prisma.invLocationProductMap.findUnique({
     where: { id: mapping.id },
-    data: { optionId },
     include: {
-      option: {
+      items: {
         include: {
-          product: { select: { id: true, name: true, code: true } },
+          option: {
+            include: { product: { select: { id: true, name: true, code: true } } },
+          },
         },
       },
     },
