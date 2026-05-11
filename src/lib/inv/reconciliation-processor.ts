@@ -23,23 +23,28 @@ async function calcApplicableCount(entries: MatchEntry[], locationId: string): P
   // matched-diff 항목 수
   const matchedDiffCount = entries.filter((e) => e.status === 'matched-diff').length
 
-  // file-only 항목 중 locationProductMap에 이미 매핑된 externalCode의 items 수
-  const fileOnlyExternalCodes = entries
-    .filter((e) => e.status === 'file-only')
-    .map((e) => e.row.externalCode)
+  // file-only 전체 + 매핑 여부 분류
+  const fileOnlyEntries = entries.filter((e) => e.status === 'file-only')
+  const fileOnlyExternalCodes = fileOnlyEntries
+    .map((e) => (e.status === 'file-only' ? e.row.externalCode : null))
     .filter(Boolean) as string[]
 
   let mappedFileOnlyCount = 0
+  let unmappedFileOnlyCount = 0
   if (fileOnlyExternalCodes.length > 0) {
-    // items 수 기준으로 집계
     const mappings = await prisma.invLocationProductMap.findMany({
       where: { locationId, externalCode: { in: fileOnlyExternalCodes } },
       include: { items: { select: { id: true } } },
     })
+    const mappedCodes = new Set(mappings.map((m) => m.externalCode))
     mappedFileOnlyCount = mappings.reduce((acc, m) => acc + m.items.length, 0)
+    // 매핑되지 않은 file-only 행도 "미처리 잔여"로 카운트해 APPLIED 전이 차단
+    unmappedFileOnlyCount = fileOnlyEntries.filter(
+      (e) => e.status === 'file-only' && !mappedCodes.has(e.row.externalCode)
+    ).length
   }
 
-  return matchedDiffCount + mappedFileOnlyCount
+  return matchedDiffCount + mappedFileOnlyCount + unmappedFileOnlyCount
 }
 
 export async function confirmReconciliation(

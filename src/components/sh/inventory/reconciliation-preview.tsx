@@ -706,23 +706,15 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap items-center gap-1">
-                        {entry.status === 'file-only' && entry.isManualMatched ? (
-                          <Badge className="border-blue-200 bg-blue-100 text-blue-700">
-                            매칭됨
-                          </Badge>
-                        ) : (
-                          entryStatusBadge(entry.status)
-                        )}
-                        {applied && (
-                          <Badge
-                            variant="outline"
-                            className="border-green-400 text-[10px] text-green-600"
-                          >
-                            적용됨
-                          </Badge>
-                        )}
-                      </div>
+                      {applied ? (
+                        <Badge className="border-green-200 bg-green-100 text-green-700">
+                          적용됨
+                        </Badge>
+                      ) : entry.status === 'file-only' && entry.isManualMatched ? (
+                        <Badge className="border-blue-200 bg-blue-100 text-blue-700">매칭됨</Badge>
+                      ) : (
+                        entryStatusBadge(entry.status)
+                      )}
                     </TableCell>
                     <TableCell className="font-medium">{entry.productName}</TableCell>
                     <TableCell className="text-muted-foreground">
