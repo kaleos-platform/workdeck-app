@@ -23,14 +23,30 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { LocationMappingTable } from '@/components/sh/inventory/location-mapping-table'
+
+type LocationType = 'OWN' | 'THIRD_PARTY' | 'STORE'
 
 type LocationRow = {
   id: string
   name: string
+  type: LocationType
   isActive: boolean
   createdAt: string
   _count?: { stockLevels: number }
+}
+
+const LOCATION_TYPE_LABEL: Record<LocationType, string> = {
+  OWN: '자사창고',
+  THIRD_PARTY: '3PL',
+  STORE: '매장',
 }
 
 export function LocationManager() {
@@ -39,6 +55,7 @@ export function LocationManager() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<LocationRow | null>(null)
   const [name, setName] = useState('')
+  const [typeValue, setTypeValue] = useState<LocationType>('OWN')
   const [saving, setSaving] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null)
@@ -63,12 +80,14 @@ export function LocationManager() {
   function openCreate() {
     setEditing(null)
     setName('')
+    setTypeValue('OWN')
     setDialogOpen(true)
   }
 
   function openEdit(loc: LocationRow) {
     setEditing(loc)
     setName(loc.name)
+    setTypeValue(loc.type)
     setDialogOpen(true)
   }
 
@@ -87,7 +106,7 @@ export function LocationManager() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmed }),
+        body: JSON.stringify({ name: trimmed, type: typeValue }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '저장 실패')
@@ -153,6 +172,7 @@ export function LocationManager() {
             <TableRow>
               <TableHead className="w-[40px]"></TableHead>
               <TableHead>위치명</TableHead>
+              <TableHead>유형</TableHead>
               <TableHead>상태</TableHead>
               <TableHead>재고 항목</TableHead>
               <TableHead>생성일</TableHead>
@@ -162,13 +182,13 @@ export function LocationManager() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   <Loader2 className="mx-auto h-4 w-4 animate-spin" />
                 </TableCell>
               </TableRow>
             ) : locations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                   등록된 보관 장소가 없습니다. &quot;새 위치&quot;로 추가하세요.
                 </TableCell>
               </TableRow>
@@ -186,6 +206,9 @@ export function LocationManager() {
                         )}
                       </TableCell>
                       <TableCell className="font-medium">{loc.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{LOCATION_TYPE_LABEL[loc.type]}</Badge>
+                      </TableCell>
                       <TableCell>
                         {loc.isActive ? (
                           <Badge variant="default">활성</Badge>
@@ -227,7 +250,7 @@ export function LocationManager() {
                     </TableRow>
                     {expanded && (
                       <TableRow>
-                        <TableCell colSpan={6} className="bg-muted/30 p-4">
+                        <TableCell colSpan={7} className="bg-muted/30 p-4">
                           <LocationMappingTable locationId={loc.id} />
                         </TableCell>
                       </TableRow>
@@ -257,6 +280,23 @@ export function LocationManager() {
               placeholder="예: 자사창고 1층"
               disabled={saving}
             />
+          </div>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="location-type">유형</Label>
+            <Select
+              value={typeValue}
+              onValueChange={(v) => setTypeValue(v as LocationType)}
+              disabled={saving}
+            >
+              <SelectTrigger id="location-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="OWN">{LOCATION_TYPE_LABEL.OWN}</SelectItem>
+                <SelectItem value="THIRD_PARTY">{LOCATION_TYPE_LABEL.THIRD_PARTY}</SelectItem>
+                <SelectItem value="STORE">{LOCATION_TYPE_LABEL.STORE}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>

@@ -205,6 +205,10 @@ export function ReorderTable() {
             products={productsInTable}
             onSaved={() => fetchData(filter, brandFilter, productIdFilter)}
           />
+          <SafetyStockSettingsDialog
+            rows={rows}
+            onSaved={() => fetchData(filter, brandFilter, productIdFilter)}
+          />
         </div>
       </div>
 
@@ -253,6 +257,9 @@ export function ReorderTable() {
               <TableHead className="text-right" title="상품 단위 공용 설정">
                 리드타임
               </TableHead>
+              <TableHead className="text-right" title="옵션 단위 안전재고">
+                안전재고
+              </TableHead>
               <TableHead className="text-right">발주 필요량</TableHead>
               <TableHead className="text-right">예상 소진일</TableHead>
               <TableHead>상태</TableHead>
@@ -261,13 +268,13 @@ export function ReorderTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={12} className="py-10 text-center text-sm text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={12} className="py-10 text-center text-sm text-muted-foreground">
                   분석할 옵션이 없습니다
                 </TableCell>
               </TableRow>
@@ -298,6 +305,9 @@ export function ReorderTable() {
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground tabular-nums">
                       {row.leadTimeDays}일
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground tabular-nums">
+                      {row.safetyStockQty}
                     </TableCell>
                     <TableCell className="text-right font-semibold tabular-nums">
                       {row.reorderQty > 0 ? row.reorderQty : '-'}
@@ -409,6 +419,114 @@ function LeadTimeSettingsDialog({
                     className="h-8 px-3 text-xs"
                     disabled={!dirty || isSaving}
                     onClick={() => handleSave(p.productId, p.leadTimeDays)}
+                  >
+                    {isSaving ? '...' : '저장'}
+                  </Button>
+                </div>
+              )
+            })
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            닫기
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function SafetyStockSettingsDialog({ rows, onSaved }: { rows: ReorderRow[]; onSaved: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [edit, setEdit] = useState<Record<string, number>>({})
+  const [saving, setSaving] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    if (open) setEdit({})
+  }, [open])
+
+  const handleChange = (optionId: string, value: string) => {
+    const n = Number(value)
+    setEdit((prev) => ({ ...prev, [optionId]: Number.isFinite(n) ? Math.max(0, n) : 0 }))
+  }
+
+  const handleSave = async (optionId: string, currentValue: number) => {
+    const next = edit[optionId]
+    if (next === undefined || next === currentValue) {
+      toast.info('변경사항이 없습니다')
+      return
+    }
+    if (next < 0) {
+      toast.error('안전재고는 0 이상이어야 합니다')
+      return
+    }
+    setSaving((s) => ({ ...s, [optionId]: true }))
+    try {
+      const res = await fetch(`/api/sh/inventory/options/${optionId}/safety-stock`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ safetyStockQty: next }),
+      })
+      if (!res.ok) throw new Error('저장 실패')
+      toast.success('안전재고를 저장했습니다')
+      onSaved()
+    } catch (err) {
+      console.error(err)
+      toast.error('안전재고 저장에 실패했습니다')
+    } finally {
+      setSaving((s) => ({ ...s, [optionId]: false }))
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">
+          안전재고 설정
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>옵션별 안전재고 설정</DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+          {rows.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              설정 가능한 옵션이 없습니다
+            </p>
+          ) : (
+            rows.map((row) => {
+              const value = edit[row.optionId] ?? row.safetyStockQty
+              const dirty = value !== row.safetyStockQty
+              const isSaving = saving[row.optionId] === true
+              return (
+                <div
+                  key={row.optionId}
+                  className="flex items-center gap-3 rounded-md border px-3 py-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium">{row.productName}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {row.optionName} {row.sku ? `· ${row.sku}` : ''}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Input
+                      type="number"
+                      min={0}
+                      className="h-8 w-20 text-right"
+                      value={value}
+                      onChange={(e) => handleChange(row.optionId, e.target.value)}
+                    />
+                    <span>EA</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 px-3 text-xs"
+                    disabled={!dirty || isSaving}
+                    onClick={() => handleSave(row.optionId, row.safetyStockQty)}
                   >
                     {isSaving ? '...' : '저장'}
                   </Button>

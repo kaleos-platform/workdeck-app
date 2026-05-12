@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { InvStorageLocationType } from '@/generated/prisma/client'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type RouteContext = { params: Promise<{ locationId: string }> }
+
+const LOCATION_TYPES: ReadonlySet<InvStorageLocationType> = new Set([
+  InvStorageLocationType.OWN,
+  InvStorageLocationType.THIRD_PARTY,
+  InvStorageLocationType.STORE,
+])
+
+function parseLocationType(v: unknown): InvStorageLocationType | undefined {
+  if (typeof v !== 'string') return undefined
+  return LOCATION_TYPES.has(v as InvStorageLocationType) ? (v as InvStorageLocationType) : undefined
+}
 
 async function loadLocation(spaceId: string, locationId: string) {
   return prisma.invStorageLocation.findFirst({
@@ -30,9 +42,22 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const body = (await req.json().catch(() => ({}))) as {
     name?: string
     isActive?: boolean
+    type?: string
   }
 
-  const data: { name?: string; isActive?: boolean } = {}
+  const data: {
+    name?: string
+    isActive?: boolean
+    type?: InvStorageLocationType
+  } = {}
+
+  if (body.type !== undefined) {
+    const parsed = parseLocationType(body.type)
+    if (!parsed) {
+      return errorResponse('type은 OWN, THIRD_PARTY, STORE 중 하나여야 합니다', 400)
+    }
+    data.type = parsed
+  }
 
   if (typeof body.name === 'string') {
     const name = body.name.trim()

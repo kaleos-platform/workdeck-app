@@ -623,6 +623,7 @@ export const InvProductOptionScalarFieldEnum = {
   sizeLabel: 'sizeLabel',
   setSizeLabel: 'setSizeLabel',
   attributeValues: 'attributeValues',
+  safetyStockQty: 'safetyStockQty',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -634,6 +635,7 @@ export const InvStorageLocationScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
+  type: 'type',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -678,7 +680,6 @@ export const InvReorderConfigScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
   leadTimeDays: 'leadTimeDays',
-  safetyStockQty: 'safetyStockQty',
   analysisWindowDays: 'analysisWindowDays'
 } as const
 

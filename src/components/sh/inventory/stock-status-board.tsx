@@ -1,165 +1,152 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { ProductStockCard } from './product-stock-card'
-
-const ALL = '__all__'
-
-type Location = { id: string; name: string }
-type StockByLocation = { locationId: string; locationName: string; quantity: number }
-type Option = {
-  optionId: string
-  optionName: string
-  sku: string | null
-  stockByLocation: StockByLocation[]
-  totalStock: number
-  outbound7d: number
-}
-type Product = {
-  productId: string
-  productName: string
-  productCode: string | null
-  options: Option[]
-}
-type Group = {
-  groupId: string
-  groupName: string
-  products: Product[]
-}
-type BoardData = {
-  groups: Group[]
-  locations: Location[]
-}
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { toast } from 'sonner'
+import { StockStatusHeader } from './stock-status-header'
+import { StockStatusKpis } from './stock-status-kpis'
+import { StockStatusLocations } from './stock-status-locations'
+import { StockStatusTree } from './stock-status-tree'
+import { StockStatusToolbar } from './stock-status-toolbar'
+import { StockStatusMatrix } from './stock-status-matrix'
+import { StockStatusAlerts } from './stock-status-alerts'
+import type { StockStatusResponse } from './stock-status.types'
 
 export function StockStatusBoard() {
-  const [data, setData] = useState<BoardData | null>(null)
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const brandId = searchParams.get('brandId')
+  const groupId = searchParams.get('groupId')
+  const q = searchParams.get('q') ?? ''
+  const onlyLow = searchParams.get('onlyLow') === '1'
+
+  const [data, setData] = useState<StockStatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeLocation, setActiveLocation] = useState(ALL)
-  const [groupFilter, setGroupFilter] = useState(ALL)
-  const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   const fetchData = useCallback(async () => {
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
     setLoading(true)
     try {
-      const res = await fetch('/api/sh/inventory/stock-status')
-      if (res.ok) setData(await res.json())
+      const params = new URLSearchParams()
+      if (brandId) params.set('brandId', brandId)
+      if (groupId) params.set('groupId', groupId)
+      if (q) params.set('q', q)
+      if (onlyLow) params.set('onlyLow', '1')
+      const qs = params.toString()
+      const res = await fetch(`/api/sh/inventory/stock-status${qs ? `?${qs}` : ''}`, {
+        signal: controller.signal,
+      })
+      if (!res.ok) throw new Error('재고 데이터를 불러오지 못했습니다')
+      const json = (await res.json()) as StockStatusResponse
+      setData(json)
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return
+      console.error(err)
+      toast.error('재고 데이터를 불러오지 못했습니다')
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
-  }, [])
+  }, [brandId, groupId, q, onlyLow])
 
   useEffect(() => {
-    void fetchData()
+    fetchData()
   }, [fetchData])
 
-  // 검색 debounce 300ms
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
+  const updateParams = useCallback(
+    (mut: Record<string, string | null>) => {
+      const next = new URLSearchParams(searchParams.toString())
+      for (const [k, v] of Object.entries(mut)) {
+        if (v === null || v === '') next.delete(k)
+        else next.set(k, v)
+      }
+      const qs = next.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [router, pathname, searchParams]
+  )
+
+  const handleTreeSelect = useCallback(
+    (next: { brandId?: string | null; groupId?: string | null }) => {
+      const target: Record<string, string | null> = {}
+      if (next.brandId !== undefined) target.brandId = next.brandId
+      if (next.groupId !== undefined) target.groupId = next.groupId
+      updateParams(target)
+    },
+    [updateParams]
+  )
+
+  const handleSearchChange = useCallback(
+    (newQ: string) => updateParams({ q: newQ || null }),
+    [updateParams]
+  )
+
+  const handleOnlyLowChange = useCallback(
+    (v: boolean) => updateParams({ onlyLow: v ? '1' : null }),
+    [updateParams]
+  )
+
+  const handleClearFilters = useCallback(
+    () => updateParams({ brandId: null, groupId: null, q: null, onlyLow: null }),
+    [updateParams]
+  )
+
+  const selectedBrandName = useMemo(() => {
+    if (!brandId || !data) return null
+    return data.brands.find((b) => b.id === brandId)?.name ?? null
+  }, [brandId, data])
+
+  const selectedGroupName = useMemo(() => {
+    if (!groupId || !data) return null
+    for (const b of data.brands) {
+      const g = b.groups.find((gg) => gg.id === groupId)
+      if (g) return g.name
     }
-  }, [search])
-
-  // 클라이언트 측 필터링
-  const filteredGroups = (() => {
-    if (!data) return []
-    return data.groups
-      .filter((g) => groupFilter === ALL || g.groupId === groupFilter)
-      .map((g) => ({
-        ...g,
-        products: g.products.filter(
-          (p) =>
-            debouncedSearch === '' ||
-            p.productName.toLowerCase().includes(debouncedSearch.toLowerCase())
-        ),
-      }))
-      .filter((g) => g.products.length > 0)
-  })()
-
-  if (loading && !data) {
-    return <div className="py-12 text-center text-sm text-muted-foreground">불러오는 중...</div>
-  }
-
-  const locations = data?.locations ?? []
-  const groups = data?.groups ?? []
+    return null
+  }, [groupId, data])
 
   return (
-    <div className="space-y-6">
-      {/* 위치 탭 */}
-      <Tabs value={activeLocation} onValueChange={setActiveLocation}>
-        <TabsList className="h-auto flex-wrap gap-1">
-          <TabsTrigger value={ALL}>전체</TabsTrigger>
-          {locations.map((loc) => (
-            <TabsTrigger key={loc.id} value={loc.id}>
-              {loc.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+    <div className="space-y-5">
+      <StockStatusHeader
+        snapshotAt={data?.snapshotAt ?? null}
+        loading={loading}
+        onRefresh={fetchData}
+      />
 
-      {/* 툴바 */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Select value={groupFilter} onValueChange={setGroupFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="전체 그룹" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>전체 그룹</SelectItem>
-            {groups.map((g) => (
-              <SelectItem key={g.groupId} value={g.groupId}>
-                {g.groupName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <StockStatusKpis kpis={data?.kpis ?? null} />
 
-        <Input
-          placeholder="상품명 검색"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <StockStatusLocations locations={data?.locations ?? []} loading={loading && !data} />
+        <StockStatusTree
+          brands={data?.brands ?? []}
+          selectedBrandId={brandId}
+          selectedGroupId={groupId}
+          onSelect={handleTreeSelect}
+          loading={loading && !data}
         />
       </div>
 
-      {/* 그룹 섹션 */}
-      {filteredGroups.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          조건에 맞는 상품이 없습니다
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {filteredGroups.map((group) => (
-            <section key={group.groupId}>
-              <div className="mb-4 flex items-center gap-2">
-                <h2 className="text-lg font-semibold">{group.groupName}</h2>
-                <Badge variant="secondary">{group.products.length}</Badge>
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {group.products.map((product) => (
-                  <ProductStockCard
-                    key={product.productId}
-                    product={product}
-                    activeLocationId={activeLocation}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
+      <StockStatusToolbar
+        q={q}
+        onlyLow={onlyLow}
+        selectedBrandName={selectedBrandName}
+        selectedGroupName={selectedGroupName}
+        onSearchChange={handleSearchChange}
+        onOnlyLowChange={handleOnlyLowChange}
+        onClearFilters={handleClearFilters}
+      />
+
+      <StockStatusMatrix
+        rows={data?.matrix.rows ?? []}
+        locations={data?.locations ?? []}
+        loading={loading && !data}
+      />
+
+      <StockStatusAlerts alerts={data?.alerts ?? []} loading={loading && !data} />
     </div>
   )
 }

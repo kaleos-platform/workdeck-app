@@ -1,0 +1,174 @@
+'use client'
+
+import { useMemo } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import {
+  LOCATION_TYPE_LABEL,
+  STATUS_LABEL,
+  type LocationType,
+  type StockLocation,
+  type StockMatrixRow,
+  type SkuStatus,
+} from './stock-status.types'
+
+type Props = {
+  rows: StockMatrixRow[]
+  locations: StockLocation[]
+  loading: boolean
+}
+
+const KRW = new Intl.NumberFormat('ko-KR')
+const ROW_CAP = 500
+
+const STATUS_BADGE: Record<SkuStatus, string> = {
+  OK: 'border-emerald-300 bg-emerald-50 text-emerald-700',
+  LOW: 'border-amber-300 bg-amber-50 text-amber-700',
+  OUT: 'border-red-300 bg-red-50 text-red-700',
+}
+
+const TYPE_ORDER: LocationType[] = ['OWN', 'THIRD_PARTY', 'STORE']
+
+export function StockStatusMatrix({ rows, locations, loading }: Props) {
+  const groupedLocations = useMemo(() => {
+    const byType = new Map<LocationType, StockLocation[]>()
+    for (const t of TYPE_ORDER) byType.set(t, [])
+    for (const l of locations) {
+      byType.get(l.type)?.push(l)
+    }
+    return TYPE_ORDER.map((t) => ({ type: t, items: byType.get(t) ?? [] })).filter(
+      (g) => g.items.length > 0
+    )
+  }, [locations])
+
+  const flatLocations = useMemo(() => groupedLocations.flatMap((g) => g.items), [groupedLocations])
+
+  const capped = rows.length > ROW_CAP
+  const displayRows = capped ? rows.slice(0, ROW_CAP) : rows
+
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
+        <CardTitle className="text-sm">
+          SKU × 위치 매트릭스
+          <span className="ml-2 text-xs font-normal text-muted-foreground">· 최신 재고</span>
+        </CardTitle>
+        <div className="text-xs text-muted-foreground">
+          {KRW.format(rows.length)}건{capped && ` · 상위 ${ROW_CAP}건만 표시`}
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        {loading ? (
+          <div className="space-y-2 p-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-10 animate-pulse rounded bg-muted" />
+            ))}
+          </div>
+        ) : rows.length === 0 ? (
+          <p className="p-10 text-center text-sm text-muted-foreground">표시할 SKU가 없습니다</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px] border-collapse text-sm">
+              <thead className="sticky top-0 z-20 bg-muted/40">
+                {/* 1행: 위치 그룹(자사/3PL/매장) */}
+                <tr className="border-b">
+                  <th
+                    rowSpan={2}
+                    className="sticky left-0 z-30 min-w-[260px] border-r bg-muted/40 px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                  >
+                    상품 / SKU
+                  </th>
+                  {groupedLocations.map((g) => (
+                    <th
+                      key={g.type}
+                      colSpan={g.items.length}
+                      className="border-b border-l border-border bg-muted/30 px-3 py-1.5 text-center text-[10px] font-semibold tracking-wider text-muted-foreground uppercase"
+                    >
+                      {LOCATION_TYPE_LABEL[g.type]}
+                    </th>
+                  ))}
+                  <th
+                    rowSpan={2}
+                    className="sticky right-0 z-30 min-w-[140px] border-l bg-muted/40 px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                  >
+                    합계
+                  </th>
+                </tr>
+                {/* 2행: 개별 위치명 */}
+                <tr className="border-b">
+                  {flatLocations.map((l) => (
+                    <th
+                      key={l.id}
+                      className="min-w-[90px] border-l px-2 py-1.5 text-center text-[11px] font-medium text-muted-foreground"
+                    >
+                      <div className="truncate" title={l.name}>
+                        {l.name}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {displayRows.map((row) => (
+                  <tr key={row.optionId} className="border-b hover:bg-muted/30">
+                    <td className="sticky left-0 z-10 border-r bg-card px-3 py-2">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{row.productName}</span>
+                        <span className="font-mono text-[11px] text-muted-foreground">
+                          {row.optionName}
+                          {row.sku ? ` · ${row.sku}` : ''}
+                        </span>
+                      </div>
+                    </td>
+                    {flatLocations.map((l) => {
+                      const qty = row.byLocation[l.id]
+                      return (
+                        <td
+                          key={l.id}
+                          className={cn(
+                            'border-l px-2 py-2 text-center font-mono text-sm tabular-nums',
+                            qty === undefined
+                              ? 'text-muted-foreground/50'
+                              : qty === 0
+                                ? 'bg-red-50 text-red-700'
+                                : qty < row.safetyStockQty / Math.max(1, flatLocations.length)
+                                  ? 'bg-amber-50/70 text-amber-700'
+                                  : ''
+                          )}
+                        >
+                          {qty === undefined ? '—' : KRW.format(qty)}
+                        </td>
+                      )
+                    })}
+                    <td className="sticky right-0 z-10 border-l bg-card px-3 py-2 text-right">
+                      <div className="font-mono text-sm font-semibold tabular-nums">
+                        {KRW.format(row.totalQty)}
+                      </div>
+                      <div className="mt-0.5 flex items-center justify-end gap-1.5">
+                        <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+                          {row.turnoverDays === null ? '— 일' : `${row.turnoverDays}일`}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={cn('text-[10px]', STATUS_BADGE[row.status])}
+                        >
+                          {STATUS_LABEL[row.status]}
+                        </Badge>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {capped && (
+          <div className="border-t bg-muted/20 px-4 py-2 text-center text-xs text-muted-foreground">
+            결과가 많습니다. 검색이나 필터로 좁혀주세요.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
