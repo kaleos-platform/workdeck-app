@@ -5,12 +5,12 @@ import { calculateReorder } from '@/lib/inv/reorder-calculator'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
-const DEFAULT_SAFETY_STOCK_QTY = 0
 
 /**
  * 발주 예측 — 옵션 단위 행.
  * - 계산은 옵션 단위(재고/출고)로 수행.
- * - 리드타임/안전재고/분석기간은 상품 단위 config(`InvReorderConfig`)를 공유.
+ * - 안전재고는 옵션 단위(`InvProductOption.safetyStockQty`)에서 읽는다 — 단일 진입점.
+ * - 리드타임/분석기간은 상품 단위 config(`InvReorderConfig`)를 공유.
  * - 필터: productId(드롭다운), brandId(드롭다운).
  */
 export async function GET(req: NextRequest) {
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       internalName: true,
       code: true,
       brand: { select: { id: true, name: true } },
-      options: { select: { id: true, name: true, sku: true } },
+      options: { select: { id: true, name: true, sku: true, safetyStockQty: true } },
       reorderConfig: true,
     },
     orderBy: { name: 'asc' },
@@ -99,12 +99,12 @@ export async function GET(req: NextRequest) {
     const cfg = p.reorderConfig
     const windowDays = cfg?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
     const leadTimeDays = cfg?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
-    const safetyStockQty = cfg?.safetyStockQty ?? DEFAULT_SAFETY_STOCK_QTY
 
     const displayName = p.internalName && p.internalName.trim().length > 0 ? p.internalName : p.name
     return p.options.map((o) => {
       const currentStock = stockByOption.get(o.id) ?? 0
       const totalOutbound = outboundByOption.get(o.id) ?? 0
+      const safetyStockQty = o.safetyStockQty
       const calc = calculateReorder({
         totalOutbound,
         windowDays,

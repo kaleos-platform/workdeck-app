@@ -534,6 +534,23 @@ export type EnumInvProductStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumInvProductStatusFilter<$PrismaModel>
 }
 
+export type EnumInvStorageLocationTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvStorageLocationType | Prisma.EnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvStorageLocationTypeFilter<$PrismaModel> | $Enums.InvStorageLocationType
+}
+
+export type EnumInvStorageLocationTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvStorageLocationType | Prisma.EnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvStorageLocationTypeWithAggregatesFilter<$PrismaModel> | $Enums.InvStorageLocationType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInvStorageLocationTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInvStorageLocationTypeFilter<$PrismaModel>
+}
+
 export type EnumInvMovementTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.InvMovementType | Prisma.EnumInvMovementTypeFieldRefInput<$PrismaModel>
   in?: $Enums.InvMovementType[] | Prisma.ListEnumInvMovementTypeFieldRefInput<$PrismaModel>
@@ -1425,6 +1442,23 @@ export type NestedEnumInvProductStatusWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumInvProductStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumInvProductStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumInvStorageLocationTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvStorageLocationType | Prisma.EnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvStorageLocationTypeFilter<$PrismaModel> | $Enums.InvStorageLocationType
+}
+
+export type NestedEnumInvStorageLocationTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvStorageLocationType | Prisma.EnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvStorageLocationTypeWithAggregatesFilter<$PrismaModel> | $Enums.InvStorageLocationType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInvStorageLocationTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInvStorageLocationTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumInvMovementTypeFilter<$PrismaModel = never> = {

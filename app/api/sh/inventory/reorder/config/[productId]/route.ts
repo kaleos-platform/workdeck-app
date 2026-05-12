@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma'
 
 const DEFAULTS = {
   leadTimeDays: 7,
-  safetyStockQty: 0,
   analysisWindowDays: 90,
 }
 
@@ -31,7 +30,6 @@ export async function GET(
   return NextResponse.json({
     productId,
     leadTimeDays: cfg?.leadTimeDays ?? DEFAULTS.leadTimeDays,
-    safetyStockQty: cfg?.safetyStockQty ?? DEFAULTS.safetyStockQty,
     analysisWindowDays: cfg?.analysisWindowDays ?? DEFAULTS.analysisWindowDays,
     isDefault: !cfg,
   })
@@ -63,14 +61,10 @@ export async function PATCH(
   }
 
   const leadTimeDays = toInt(body.leadTimeDays)
-  const safetyStockQty = toInt(body.safetyStockQty)
   const analysisWindowDays = toInt(body.analysisWindowDays)
 
   if (leadTimeDays !== undefined && leadTimeDays < 0) {
     return errorResponse('leadTimeDays는 0 이상이어야 합니다', 400)
-  }
-  if (safetyStockQty !== undefined && safetyStockQty < 0) {
-    return errorResponse('safetyStockQty는 0 이상이어야 합니다', 400)
   }
   if (analysisWindowDays !== undefined && analysisWindowDays < 1) {
     return errorResponse('analysisWindowDays는 1 이상이어야 합니다', 400)
@@ -80,7 +74,6 @@ export async function PATCH(
 
   const merged = {
     leadTimeDays: leadTimeDays ?? existing?.leadTimeDays ?? DEFAULTS.leadTimeDays,
-    safetyStockQty: safetyStockQty ?? existing?.safetyStockQty ?? DEFAULTS.safetyStockQty,
     analysisWindowDays:
       analysisWindowDays ?? existing?.analysisWindowDays ?? DEFAULTS.analysisWindowDays,
   }
@@ -94,7 +87,6 @@ export async function PATCH(
   return NextResponse.json({
     productId: cfg.productId,
     leadTimeDays: cfg.leadTimeDays,
-    safetyStockQty: cfg.safetyStockQty,
     analysisWindowDays: cfg.analysisWindowDays,
     isDefault: false,
   })

@@ -28,13 +28,11 @@ export type AggregateInvReorderConfig = {
 
 export type InvReorderConfigAvgAggregateOutputType = {
   leadTimeDays: number | null
-  safetyStockQty: number | null
   analysisWindowDays: number | null
 }
 
 export type InvReorderConfigSumAggregateOutputType = {
   leadTimeDays: number | null
-  safetyStockQty: number | null
   analysisWindowDays: number | null
 }
 
@@ -42,7 +40,6 @@ export type InvReorderConfigMinAggregateOutputType = {
   id: string | null
   productId: string | null
   leadTimeDays: number | null
-  safetyStockQty: number | null
   analysisWindowDays: number | null
 }
 
@@ -50,7 +47,6 @@ export type InvReorderConfigMaxAggregateOutputType = {
   id: string | null
   productId: string | null
   leadTimeDays: number | null
-  safetyStockQty: number | null
   analysisWindowDays: number | null
 }
 
@@ -58,7 +54,6 @@ export type InvReorderConfigCountAggregateOutputType = {
   id: number
   productId: number
   leadTimeDays: number
-  safetyStockQty: number
   analysisWindowDays: number
   _all: number
 }
@@ -66,13 +61,11 @@ export type InvReorderConfigCountAggregateOutputType = {
 
 export type InvReorderConfigAvgAggregateInputType = {
   leadTimeDays?: true
-  safetyStockQty?: true
   analysisWindowDays?: true
 }
 
 export type InvReorderConfigSumAggregateInputType = {
   leadTimeDays?: true
-  safetyStockQty?: true
   analysisWindowDays?: true
 }
 
@@ -80,7 +73,6 @@ export type InvReorderConfigMinAggregateInputType = {
   id?: true
   productId?: true
   leadTimeDays?: true
-  safetyStockQty?: true
   analysisWindowDays?: true
 }
 
@@ -88,7 +80,6 @@ export type InvReorderConfigMaxAggregateInputType = {
   id?: true
   productId?: true
   leadTimeDays?: true
-  safetyStockQty?: true
   analysisWindowDays?: true
 }
 
@@ -96,7 +87,6 @@ export type InvReorderConfigCountAggregateInputType = {
   id?: true
   productId?: true
   leadTimeDays?: true
-  safetyStockQty?: true
   analysisWindowDays?: true
   _all?: true
 }
@@ -191,7 +181,6 @@ export type InvReorderConfigGroupByOutputType = {
   id: string
   productId: string
   leadTimeDays: number
-  safetyStockQty: number
   analysisWindowDays: number
   _count: InvReorderConfigCountAggregateOutputType | null
   _avg: InvReorderConfigAvgAggregateOutputType | null
@@ -222,7 +211,6 @@ export type InvReorderConfigWhereInput = {
   id?: Prisma.StringFilter<"InvReorderConfig"> | string
   productId?: Prisma.StringFilter<"InvReorderConfig"> | string
   leadTimeDays?: Prisma.IntFilter<"InvReorderConfig"> | number
-  safetyStockQty?: Prisma.IntFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntFilter<"InvReorderConfig"> | number
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
 }
@@ -231,7 +219,6 @@ export type InvReorderConfigOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
-  safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
   product?: Prisma.InvProductOrderByWithRelationInput
 }
@@ -243,7 +230,6 @@ export type InvReorderConfigWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.InvReorderConfigWhereInput[]
   NOT?: Prisma.InvReorderConfigWhereInput | Prisma.InvReorderConfigWhereInput[]
   leadTimeDays?: Prisma.IntFilter<"InvReorderConfig"> | number
-  safetyStockQty?: Prisma.IntFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntFilter<"InvReorderConfig"> | number
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
 }, "id" | "productId">
@@ -252,7 +238,6 @@ export type InvReorderConfigOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
-  safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
   _count?: Prisma.InvReorderConfigCountOrderByAggregateInput
   _avg?: Prisma.InvReorderConfigAvgOrderByAggregateInput
@@ -268,14 +253,12 @@ export type InvReorderConfigScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"InvReorderConfig"> | string
   productId?: Prisma.StringWithAggregatesFilter<"InvReorderConfig"> | string
   leadTimeDays?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
-  safetyStockQty?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
 }
 
 export type InvReorderConfigCreateInput = {
   id?: string
   leadTimeDays?: number
-  safetyStockQty?: number
   analysisWindowDays?: number
   product: Prisma.InvProductCreateNestedOneWithoutReorderConfigInput
 }
@@ -284,14 +267,12 @@ export type InvReorderConfigUncheckedCreateInput = {
   id?: string
   productId: string
   leadTimeDays?: number
-  safetyStockQty?: number
   analysisWindowDays?: number
 }
 
 export type InvReorderConfigUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
-  safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
   product?: Prisma.InvProductUpdateOneRequiredWithoutReorderConfigNestedInput
 }
@@ -300,7 +281,6 @@ export type InvReorderConfigUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
-  safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -308,14 +288,12 @@ export type InvReorderConfigCreateManyInput = {
   id?: string
   productId: string
   leadTimeDays?: number
-  safetyStockQty?: number
   analysisWindowDays?: number
 }
 
 export type InvReorderConfigUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
-  safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -323,7 +301,6 @@ export type InvReorderConfigUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
-  safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -336,13 +313,11 @@ export type InvReorderConfigCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
-  safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
 }
 
 export type InvReorderConfigAvgOrderByAggregateInput = {
   leadTimeDays?: Prisma.SortOrder
-  safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
 }
 
@@ -350,7 +325,6 @@ export type InvReorderConfigMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
-  safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
 }
 
@@ -358,13 +332,11 @@ export type InvReorderConfigMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
-  safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
 }
 
 export type InvReorderConfigSumOrderByAggregateInput = {
   leadTimeDays?: Prisma.SortOrder
-  safetyStockQty?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
 }
 
@@ -403,14 +375,12 @@ export type InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput = {
 export type InvReorderConfigCreateWithoutProductInput = {
   id?: string
   leadTimeDays?: number
-  safetyStockQty?: number
   analysisWindowDays?: number
 }
 
 export type InvReorderConfigUncheckedCreateWithoutProductInput = {
   id?: string
   leadTimeDays?: number
-  safetyStockQty?: number
   analysisWindowDays?: number
 }
 
@@ -433,14 +403,12 @@ export type InvReorderConfigUpdateToOneWithWhereWithoutProductInput = {
 export type InvReorderConfigUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
-  safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type InvReorderConfigUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
-  safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -450,7 +418,6 @@ export type InvReorderConfigSelect<ExtArgs extends runtime.Types.Extensions.Inte
   id?: boolean
   productId?: boolean
   leadTimeDays?: boolean
-  safetyStockQty?: boolean
   analysisWindowDays?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
@@ -459,7 +426,6 @@ export type InvReorderConfigSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   id?: boolean
   productId?: boolean
   leadTimeDays?: boolean
-  safetyStockQty?: boolean
   analysisWindowDays?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
@@ -468,7 +434,6 @@ export type InvReorderConfigSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   id?: boolean
   productId?: boolean
   leadTimeDays?: boolean
-  safetyStockQty?: boolean
   analysisWindowDays?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
@@ -477,11 +442,10 @@ export type InvReorderConfigSelectScalar = {
   id?: boolean
   productId?: boolean
   leadTimeDays?: boolean
-  safetyStockQty?: boolean
   analysisWindowDays?: boolean
 }
 
-export type InvReorderConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "leadTimeDays" | "safetyStockQty" | "analysisWindowDays", ExtArgs["result"]["invReorderConfig"]>
+export type InvReorderConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "leadTimeDays" | "analysisWindowDays", ExtArgs["result"]["invReorderConfig"]>
 export type InvReorderConfigInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }
@@ -501,7 +465,6 @@ export type $InvReorderConfigPayload<ExtArgs extends runtime.Types.Extensions.In
     id: string
     productId: string
     leadTimeDays: number
-    safetyStockQty: number
     analysisWindowDays: number
   }, ExtArgs["result"]["invReorderConfig"]>
   composites: {}
@@ -930,7 +893,6 @@ export interface InvReorderConfigFieldRefs {
   readonly id: Prisma.FieldRef<"InvReorderConfig", 'String'>
   readonly productId: Prisma.FieldRef<"InvReorderConfig", 'String'>
   readonly leadTimeDays: Prisma.FieldRef<"InvReorderConfig", 'Int'>
-  readonly safetyStockQty: Prisma.FieldRef<"InvReorderConfig", 'Int'>
   readonly analysisWindowDays: Prisma.FieldRef<"InvReorderConfig", 'Int'>
 }
     

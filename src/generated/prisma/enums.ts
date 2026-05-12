@@ -130,6 +130,15 @@ export const InvReconciliationStatus = {
 export type InvReconciliationStatus = (typeof InvReconciliationStatus)[keyof typeof InvReconciliationStatus]
 
 
+export const InvStorageLocationType = {
+  OWN: 'OWN',
+  THIRD_PARTY: 'THIRD_PARTY',
+  STORE: 'STORE'
+} as const
+
+export type InvStorageLocationType = (typeof InvStorageLocationType)[keyof typeof InvStorageLocationType]
+
+
 export const DelBatchStatus = {
   DRAFT: 'DRAFT',
   COMPLETED: 'COMPLETED'
