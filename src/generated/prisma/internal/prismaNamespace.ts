@@ -7212,6 +7212,7 @@ export const InvProductOptionScalarFieldEnum = {
   sizeLabel: 'sizeLabel',
   setSizeLabel: 'setSizeLabel',
   attributeValues: 'attributeValues',
+  safetyStockQty: 'safetyStockQty',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -7223,6 +7224,7 @@ export const InvStorageLocationScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
+  type: 'type',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -7267,7 +7269,6 @@ export const InvReorderConfigScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
   leadTimeDays: 'leadTimeDays',
-  safetyStockQty: 'safetyStockQty',
   analysisWindowDays: 'analysisWindowDays'
 } as const
 
@@ -8321,6 +8322,20 @@ export type EnumInvProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'InvProductStatus[]'
  */
 export type ListEnumInvProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvProductStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'InvStorageLocationType'
+ */
+export type EnumInvStorageLocationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvStorageLocationType'>
+    
+
+
+/**
+ * Reference to a field of type 'InvStorageLocationType[]'
+ */
+export type ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvStorageLocationType[]'>
     
 
 

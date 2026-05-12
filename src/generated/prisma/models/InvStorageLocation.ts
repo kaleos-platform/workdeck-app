@@ -28,6 +28,7 @@ export type InvStorageLocationMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
+  type: $Enums.InvStorageLocationType | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -37,6 +38,7 @@ export type InvStorageLocationMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
+  type: $Enums.InvStorageLocationType | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -46,6 +48,7 @@ export type InvStorageLocationCountAggregateOutputType = {
   id: number
   spaceId: number
   name: number
+  type: number
   isActive: number
   createdAt: number
   updatedAt: number
@@ -57,6 +60,7 @@ export type InvStorageLocationMinAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  type?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -66,6 +70,7 @@ export type InvStorageLocationMaxAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  type?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -75,6 +80,7 @@ export type InvStorageLocationCountAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  type?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -157,6 +163,7 @@ export type InvStorageLocationGroupByOutputType = {
   id: string
   spaceId: string
   name: string
+  type: $Enums.InvStorageLocationType
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -187,6 +194,7 @@ export type InvStorageLocationWhereInput = {
   id?: Prisma.StringFilter<"InvStorageLocation"> | string
   spaceId?: Prisma.StringFilter<"InvStorageLocation"> | string
   name?: Prisma.StringFilter<"InvStorageLocation"> | string
+  type?: Prisma.EnumInvStorageLocationTypeFilter<"InvStorageLocation"> | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
@@ -203,6 +211,7 @@ export type InvStorageLocationOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -222,6 +231,7 @@ export type InvStorageLocationWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.InvStorageLocationWhereInput | Prisma.InvStorageLocationWhereInput[]
   spaceId?: Prisma.StringFilter<"InvStorageLocation"> | string
   name?: Prisma.StringFilter<"InvStorageLocation"> | string
+  type?: Prisma.EnumInvStorageLocationTypeFilter<"InvStorageLocation"> | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
@@ -238,6 +248,7 @@ export type InvStorageLocationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -253,6 +264,7 @@ export type InvStorageLocationScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"InvStorageLocation"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"InvStorageLocation"> | string
   name?: Prisma.StringWithAggregatesFilter<"InvStorageLocation"> | string
+  type?: Prisma.EnumInvStorageLocationTypeWithAggregatesFilter<"InvStorageLocation"> | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolWithAggregatesFilter<"InvStorageLocation"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvStorageLocation"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvStorageLocation"> | Date | string
@@ -261,6 +273,7 @@ export type InvStorageLocationScalarWhereWithAggregatesInput = {
 export type InvStorageLocationCreateInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -277,6 +290,7 @@ export type InvStorageLocationUncheckedCreateInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -291,6 +305,7 @@ export type InvStorageLocationUncheckedCreateInput = {
 export type InvStorageLocationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -307,6 +322,7 @@ export type InvStorageLocationUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -322,6 +338,7 @@ export type InvStorageLocationCreateManyInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -330,6 +347,7 @@ export type InvStorageLocationCreateManyInput = {
 export type InvStorageLocationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -339,6 +357,7 @@ export type InvStorageLocationUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -358,6 +377,7 @@ export type InvStorageLocationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -367,6 +387,7 @@ export type InvStorageLocationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -376,6 +397,7 @@ export type InvStorageLocationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -431,6 +453,10 @@ export type InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput = {
   update?: Prisma.InvStorageLocationUpdateWithWhereUniqueWithoutSpaceInput | Prisma.InvStorageLocationUpdateWithWhereUniqueWithoutSpaceInput[]
   updateMany?: Prisma.InvStorageLocationUpdateManyWithWhereWithoutSpaceInput | Prisma.InvStorageLocationUpdateManyWithWhereWithoutSpaceInput[]
   deleteMany?: Prisma.InvStorageLocationScalarWhereInput | Prisma.InvStorageLocationScalarWhereInput[]
+}
+
+export type EnumInvStorageLocationTypeFieldUpdateOperationsInput = {
+  set?: $Enums.InvStorageLocationType
 }
 
 export type InvStorageLocationCreateNestedOneWithoutMovementsInput = {
@@ -524,6 +550,7 @@ export type InvStorageLocationUpdateOneWithoutSettingsDefaultNestedInput = {
 export type InvStorageLocationCreateWithoutSpaceInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -538,6 +565,7 @@ export type InvStorageLocationCreateWithoutSpaceInput = {
 export type InvStorageLocationUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -582,6 +610,7 @@ export type InvStorageLocationScalarWhereInput = {
   id?: Prisma.StringFilter<"InvStorageLocation"> | string
   spaceId?: Prisma.StringFilter<"InvStorageLocation"> | string
   name?: Prisma.StringFilter<"InvStorageLocation"> | string
+  type?: Prisma.EnumInvStorageLocationTypeFilter<"InvStorageLocation"> | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
@@ -590,6 +619,7 @@ export type InvStorageLocationScalarWhereInput = {
 export type InvStorageLocationCreateWithoutMovementsInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -605,6 +635,7 @@ export type InvStorageLocationUncheckedCreateWithoutMovementsInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -623,6 +654,7 @@ export type InvStorageLocationCreateOrConnectWithoutMovementsInput = {
 export type InvStorageLocationCreateWithoutIncomingTransfersInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -638,6 +670,7 @@ export type InvStorageLocationUncheckedCreateWithoutIncomingTransfersInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -667,6 +700,7 @@ export type InvStorageLocationUpdateToOneWithWhereWithoutMovementsInput = {
 export type InvStorageLocationUpdateWithoutMovementsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -682,6 +716,7 @@ export type InvStorageLocationUncheckedUpdateWithoutMovementsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -706,6 +741,7 @@ export type InvStorageLocationUpdateToOneWithWhereWithoutIncomingTransfersInput 
 export type InvStorageLocationUpdateWithoutIncomingTransfersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -721,6 +757,7 @@ export type InvStorageLocationUncheckedUpdateWithoutIncomingTransfersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -734,6 +771,7 @@ export type InvStorageLocationUncheckedUpdateWithoutIncomingTransfersInput = {
 export type InvStorageLocationCreateWithoutStockLevelsInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -749,6 +787,7 @@ export type InvStorageLocationUncheckedCreateWithoutStockLevelsInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -778,6 +817,7 @@ export type InvStorageLocationUpdateToOneWithWhereWithoutStockLevelsInput = {
 export type InvStorageLocationUpdateWithoutStockLevelsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -793,6 +833,7 @@ export type InvStorageLocationUncheckedUpdateWithoutStockLevelsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -806,6 +847,7 @@ export type InvStorageLocationUncheckedUpdateWithoutStockLevelsInput = {
 export type InvStorageLocationCreateWithoutReconciliationsInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -821,6 +863,7 @@ export type InvStorageLocationUncheckedCreateWithoutReconciliationsInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -850,6 +893,7 @@ export type InvStorageLocationUpdateToOneWithWhereWithoutReconciliationsInput = 
 export type InvStorageLocationUpdateWithoutReconciliationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -865,6 +909,7 @@ export type InvStorageLocationUncheckedUpdateWithoutReconciliationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -878,6 +923,7 @@ export type InvStorageLocationUncheckedUpdateWithoutReconciliationsInput = {
 export type InvStorageLocationCreateWithoutLocationMappingsInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -893,6 +939,7 @@ export type InvStorageLocationUncheckedCreateWithoutLocationMappingsInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -922,6 +969,7 @@ export type InvStorageLocationUpdateToOneWithWhereWithoutLocationMappingsInput =
 export type InvStorageLocationUpdateWithoutLocationMappingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -937,6 +985,7 @@ export type InvStorageLocationUncheckedUpdateWithoutLocationMappingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -950,6 +999,7 @@ export type InvStorageLocationUncheckedUpdateWithoutLocationMappingsInput = {
 export type InvStorageLocationCreateWithoutSettingsDefaultInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -965,6 +1015,7 @@ export type InvStorageLocationUncheckedCreateWithoutSettingsDefaultInput = {
   id?: string
   spaceId: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -994,6 +1045,7 @@ export type InvStorageLocationUpdateToOneWithWhereWithoutSettingsDefaultInput = 
 export type InvStorageLocationUpdateWithoutSettingsDefaultInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1009,6 +1061,7 @@ export type InvStorageLocationUncheckedUpdateWithoutSettingsDefaultInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1022,6 +1075,7 @@ export type InvStorageLocationUncheckedUpdateWithoutSettingsDefaultInput = {
 export type InvStorageLocationCreateManySpaceInput = {
   id?: string
   name: string
+  type?: $Enums.InvStorageLocationType
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1030,6 +1084,7 @@ export type InvStorageLocationCreateManySpaceInput = {
 export type InvStorageLocationUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1044,6 +1099,7 @@ export type InvStorageLocationUpdateWithoutSpaceInput = {
 export type InvStorageLocationUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1058,6 +1114,7 @@ export type InvStorageLocationUncheckedUpdateWithoutSpaceInput = {
 export type InvStorageLocationUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1143,6 +1200,7 @@ export type InvStorageLocationSelect<ExtArgs extends runtime.Types.Extensions.In
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  type?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1160,6 +1218,7 @@ export type InvStorageLocationSelectCreateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  type?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1170,6 +1229,7 @@ export type InvStorageLocationSelectUpdateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  type?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1180,12 +1240,13 @@ export type InvStorageLocationSelectScalar = {
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  type?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvStorageLocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["invStorageLocation"]>
+export type InvStorageLocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "type" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["invStorageLocation"]>
 export type InvStorageLocationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   stockLevels?: boolean | Prisma.InvStorageLocation$stockLevelsArgs<ExtArgs>
@@ -1218,6 +1279,7 @@ export type $InvStorageLocationPayload<ExtArgs extends runtime.Types.Extensions.
     id: string
     spaceId: string
     name: string
+    type: $Enums.InvStorageLocationType
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1654,6 +1716,7 @@ export interface InvStorageLocationFieldRefs {
   readonly id: Prisma.FieldRef<"InvStorageLocation", 'String'>
   readonly spaceId: Prisma.FieldRef<"InvStorageLocation", 'String'>
   readonly name: Prisma.FieldRef<"InvStorageLocation", 'String'>
+  readonly type: Prisma.FieldRef<"InvStorageLocation", 'InvStorageLocationType'>
   readonly isActive: Prisma.FieldRef<"InvStorageLocation", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"InvStorageLocation", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvStorageLocation", 'DateTime'>

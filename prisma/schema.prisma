@@ -718,6 +718,12 @@ enum InvReconciliationStatus {
   CANCELLED
 }
 
+enum InvStorageLocationType {
+  OWN
+  THIRD_PARTY
+  STORE
+}
+
 // 상품 그룹 (카테고리)
 model InvProductGroup {
   id      String @id @default(cuid())
@@ -785,6 +791,9 @@ model InvProductOption {
   setSizeLabel    String?
   attributeValues Json? // 예: {"사이즈":"S","색상":"파랑"}
 
+  // 안전재고 (옵션 단위 단일 진입점) — 재고 상태 판정에 사용
+  safetyStockQty Int @default(0)
+
   product              InvProduct                       @relation(fields: [productId], references: [id], onDelete: Cascade)
   movements            InvMovement[]
   stockLevels          InvStockLevel[]
@@ -806,10 +815,11 @@ model InvProductOption {
 
 // 보관 장소
 model InvStorageLocation {
-  id       String  @id @default(cuid())
+  id       String                 @id @default(cuid())
   spaceId  String
   name     String
-  isActive Boolean @default(true)
+  type     InvStorageLocationType @default(OWN)
+  isActive Boolean                @default(true)
 
   space             Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   stockLevels       InvStockLevel[]
@@ -823,6 +833,7 @@ model InvStorageLocation {
   updatedAt DateTime @updatedAt
 
   @@index([spaceId])
+  @@index([spaceId, type])
 }
 
 // 재고 이동 원장 (불변 레코드)
@@ -875,12 +886,12 @@ model InvStockLevel {
   @@index([spaceId])
 }
 
-// 상품별 발주 예측 설정 — 한 상품의 모든 옵션이 동일한 리드타임/안전재고를 공유
+// 상품별 발주 예측 설정 — 한 상품의 모든 옵션이 동일한 리드타임/분석기간을 공유.
+// 안전재고는 옵션 단위(InvProductOption.safetyStockQty)에서 관리한다.
 model InvReorderConfig {
   id                 String @id @default(cuid())
   productId          String @unique
   leadTimeDays       Int    @default(7)
-  safetyStockQty     Int    @default(0)
   analysisWindowDays Int    @default(90)
 
   product InvProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
