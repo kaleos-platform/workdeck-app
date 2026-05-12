@@ -485,17 +485,9 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
     })
   }
 
-  // 다른 외부코드 간 옵션 중복 허용:
-  // - 서버에서 이미 자동 매칭된 optionId는 제외 (entries 내 optionId)
-  // - 현재 편집 중인 externalCode의 manualMap은 picker가 initialItems로 받으므로 별도 제외 불필요
-  // - 다른 externalCode의 manualMap optionId는 중복 허용 (제외하지 않음)
-  const getExcludeOptionIds = useCallback((): string[] => {
-    const ids = new Set<string>()
-    for (const e of entries) {
-      if ('optionId' in e && e.optionId) ids.add(e.optionId)
-    }
-    return [...ids]
-  }, [entries])
+  // 재고 대조에서는 옵션 중복 항상 허용 — 한 옵션이 여러 외부코드(채널 상품 묶음)에 등장 가능.
+  // 같은 외부코드 내 중복은 OptionPickerDialog의 multi-with-qty 토글이 자연스럽게 막음.
+  const excludeOptionIds: string[] = []
 
   async function handleConfirm() {
     if (!recon) return
@@ -840,7 +832,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         }}
         mode="multi-with-qty"
         onPickMulti={handlePickedMulti}
-        excludeOptionIds={getExcludeOptionIds()}
+        excludeOptionIds={excludeOptionIds}
         contextLabel="매칭 대상 (파일)"
         contextValue={pickerContext}
         initialItems={
@@ -861,7 +853,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
         }}
         mode="multi-with-qty"
         onPickMulti={handleEditMatcherPickMulti}
-        excludeOptionIds={getExcludeOptionIds()}
+        excludeOptionIds={excludeOptionIds}
         contextLabel="현재 매칭"
         contextValue={
           editMatcherEntry ? `${editMatcherEntry.productName} / ${editMatcherEntry.optionName}` : ''
