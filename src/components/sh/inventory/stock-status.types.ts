@@ -54,6 +54,7 @@ export type StockMatrixRow = {
   optionName: string
   productId: string
   productName: string
+  productInternalName: string | null
   productCode: string | null
   brandId: string | null
   brandName: string | null

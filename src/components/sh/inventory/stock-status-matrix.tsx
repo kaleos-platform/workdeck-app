@@ -1,13 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import {
   LOCATION_TYPE_LABEL,
   STATUS_LABEL,
-  type LocationType,
   type StockLocation,
   type StockMatrixRow,
   type SkuStatus,
@@ -28,22 +26,7 @@ const STATUS_BADGE: Record<SkuStatus, string> = {
   OUT: 'border-red-300 bg-red-50 text-red-700',
 }
 
-const TYPE_ORDER: LocationType[] = ['OWN', 'THIRD_PARTY', 'STORE']
-
 export function StockStatusMatrix({ rows, locations, loading }: Props) {
-  const groupedLocations = useMemo(() => {
-    const byType = new Map<LocationType, StockLocation[]>()
-    for (const t of TYPE_ORDER) byType.set(t, [])
-    for (const l of locations) {
-      byType.get(l.type)?.push(l)
-    }
-    return TYPE_ORDER.map((t) => ({ type: t, items: byType.get(t) ?? [] })).filter(
-      (g) => g.items.length > 0
-    )
-  }, [locations])
-
-  const flatLocations = useMemo(() => groupedLocations.flatMap((g) => g.items), [groupedLocations])
-
   const capped = rows.length > ROW_CAP
   const displayRows = capped ? rows.slice(0, ROW_CAP) : rows
 
@@ -71,57 +54,46 @@ export function StockStatusMatrix({ rows, locations, loading }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] border-collapse text-sm">
               <thead className="sticky top-0 z-20 bg-muted/40">
-                {/* 1행: 위치 그룹(자사/3PL/매장) */}
                 <tr className="border-b">
-                  <th
-                    rowSpan={2}
-                    className="sticky left-0 z-30 min-w-[260px] border-r bg-muted/40 px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                  >
-                    상품 / SKU
+                  <th className="sticky left-0 z-30 min-w-[200px] border-r bg-muted/40 px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    상품명
                   </th>
-                  {groupedLocations.map((g) => (
-                    <th
-                      key={g.type}
-                      colSpan={g.items.length}
-                      className="border-b border-l border-border bg-muted/30 px-3 py-1.5 text-center text-[10px] font-semibold tracking-wider text-muted-foreground uppercase"
-                    >
-                      {LOCATION_TYPE_LABEL[g.type]}
-                    </th>
-                  ))}
-                  <th
-                    rowSpan={2}
-                    className="sticky right-0 z-30 min-w-[140px] border-l bg-muted/40 px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                  >
-                    합계
+                  <th className="sticky left-[200px] z-30 min-w-[180px] border-r bg-muted/40 px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    옵션
                   </th>
-                </tr>
-                {/* 2행: 개별 위치명 */}
-                <tr className="border-b">
-                  {flatLocations.map((l) => (
+                  {locations.map((l) => (
                     <th
                       key={l.id}
-                      className="min-w-[90px] border-l px-2 py-1.5 text-center text-[11px] font-medium text-muted-foreground"
+                      className="min-w-[100px] border-l px-2 py-2 text-center text-[11px] font-medium text-muted-foreground"
                     >
-                      <div className="truncate" title={l.name}>
+                      <div className="truncate font-semibold text-foreground" title={l.name}>
                         {l.name}
+                      </div>
+                      <div className="text-[10px] font-normal text-muted-foreground">
+                        {LOCATION_TYPE_LABEL[l.type]}
                       </div>
                     </th>
                   ))}
+                  <th className="sticky right-0 z-30 min-w-[140px] border-l bg-muted/40 px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    합계
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {displayRows.map((row) => (
                   <tr key={row.optionId} className="border-b hover:bg-muted/30">
                     <td className="sticky left-0 z-10 border-r bg-card px-3 py-2">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{row.productName}</span>
-                        <span className="font-mono text-[11px] text-muted-foreground">
-                          {row.optionName}
-                          {row.sku ? ` · ${row.sku}` : ''}
-                        </span>
-                      </div>
+                      <div className="text-sm font-medium">{row.productName}</div>
+                      {row.productInternalName && row.productInternalName !== row.productName && (
+                        <div className="text-[11px] text-muted-foreground">
+                          {row.productInternalName}
+                        </div>
+                      )}
                     </td>
-                    {flatLocations.map((l) => {
+                    <td className="sticky left-[200px] z-10 border-r bg-card px-3 py-2">
+                      <span className="text-sm">{row.optionName}</span>
+                    </td>
+                    {locations.map((l) => {
                       const qty = row.byLocation[l.id]
                       return (
                         <td
@@ -132,7 +104,7 @@ export function StockStatusMatrix({ rows, locations, loading }: Props) {
                               ? 'text-muted-foreground/50'
                               : qty === 0
                                 ? 'bg-red-50 text-red-700'
-                                : qty < row.safetyStockQty / Math.max(1, flatLocations.length)
+                                : qty < row.safetyStockQty / Math.max(1, locations.length)
                                   ? 'bg-amber-50/70 text-amber-700'
                                   : ''
                           )}
