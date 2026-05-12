@@ -647,7 +647,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
           해당 상태의 항목이 없습니다
         </div>
       ) : (
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -667,7 +667,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                 <TableHead className="w-16 text-right">현재 재고</TableHead>
                 <TableHead className="w-16 text-right">파일</TableHead>
                 <TableHead className="w-16 text-right">차이</TableHead>
-                <TableHead className="w-28">동작</TableHead>
+                <TableHead className="w-32 whitespace-nowrap">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -767,7 +767,7 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                     >
                       {entry.delta !== null ? `${entry.delta > 0 ? '+' : ''}${entry.delta}` : '-'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {canEdit &&
                         (entry.status === 'matched-equal' || entry.status === 'matched-diff') &&
                         entry.mappingId && (
@@ -781,17 +781,15 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
                           </Button>
                         )}
                       {canEdit && entry.status === 'file-only' && entry.externalCode && (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => openPicker(entry)}
-                          >
-                            <Search className="mr-1 h-3 w-3" />
-                            상품 선택
-                          </Button>
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => openPicker(entry)}
+                        >
+                          <Search className="mr-1 h-3 w-3" />
+                          상품 선택
+                        </Button>
                       )}
                     </TableCell>
                   </TableRow>
