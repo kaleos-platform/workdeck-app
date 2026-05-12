@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
         select: {
           id: true,
           name: true,
+          internalName: true,
           code: true,
           brand: { select: { id: true, name: true, logoUrl: true } },
           options: {
@@ -147,6 +148,7 @@ export async function GET(req: NextRequest) {
     optionName: string
     productId: string
     productName: string
+    productInternalName: string | null
     productCode: string | null
     brandId: string | null
     brandName: string | null
@@ -194,6 +196,7 @@ export async function GET(req: NextRequest) {
           optionName: o.name,
           productId: p.id,
           productName: p.name,
+          productInternalName: p.internalName ?? null,
           productCode: p.code ?? null,
           brandId: p.brand?.id ?? null,
           brandName: p.brand?.name ?? null,
@@ -353,8 +356,9 @@ export async function GET(req: NextRequest) {
     filteredRows = filteredRows.filter((r) => r.groupId === groupFilter)
   }
   if (qFilter) {
+    // 상품명 전용 검색 (공식 상품명 + 관리 상품명)
     filteredRows = filteredRows.filter((r) => {
-      const haystacks = [r.sku ?? '', r.optionName, r.productName, r.productCode ?? '']
+      const haystacks = [r.productName, r.productInternalName ?? '']
       return haystacks.some((h) => h.toLowerCase().includes(qFilter))
     })
   }
