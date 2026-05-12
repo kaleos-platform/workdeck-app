@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { StockStatusHeader } from './stock-status-header'
@@ -90,24 +90,21 @@ export function StockStatusBoard() {
     [updateParams]
   )
 
+  // select에서 브랜드 변경 — 브랜드가 바뀌면 groupId 함께 클리어 (해당 브랜드 소속이 아닐 수 있음)
+  const handleBrandChange = useCallback(
+    (newBrandId: string | null) => updateParams({ brandId: newBrandId, groupId: null }),
+    [updateParams]
+  )
+
+  const handleGroupChange = useCallback(
+    (newGroupId: string | null) => updateParams({ groupId: newGroupId }),
+    [updateParams]
+  )
+
   const handleClearFilters = useCallback(
     () => updateParams({ brandId: null, groupId: null, q: null, onlyLow: null }),
     [updateParams]
   )
-
-  const selectedBrandName = useMemo(() => {
-    if (!brandId || !data) return null
-    return data.brands.find((b) => b.id === brandId)?.name ?? null
-  }, [brandId, data])
-
-  const selectedGroupName = useMemo(() => {
-    if (!groupId || !data) return null
-    for (const b of data.brands) {
-      const g = b.groups.find((gg) => gg.id === groupId)
-      if (g) return g.name
-    }
-    return null
-  }, [groupId, data])
 
   return (
     <div className="space-y-5">
@@ -133,10 +130,13 @@ export function StockStatusBoard() {
       <StockStatusToolbar
         q={q}
         onlyLow={onlyLow}
-        selectedBrandName={selectedBrandName}
-        selectedGroupName={selectedGroupName}
+        brands={data?.brands ?? []}
+        selectedBrandId={brandId}
+        selectedGroupId={groupId}
         onSearchChange={handleSearchChange}
         onOnlyLowChange={handleOnlyLowChange}
+        onBrandChange={handleBrandChange}
+        onGroupChange={handleGroupChange}
         onClearFilters={handleClearFilters}
       />
 
