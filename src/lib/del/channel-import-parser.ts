@@ -125,14 +125,25 @@ function readWorkbook(buffer: ArrayBuffer): XLSX.WorkBook {
   if (isSpreadsheetMLXml(buffer)) {
     const text = decodeUtf8(buffer)
     const sanitized = text.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, (_, inner: string) =>
-      inner.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      escapeXmlText(inner)
     )
     return XLSX.read(sanitized, { type: 'string', cellDates: true })
   }
   return XLSX.read(buffer, { type: 'array', cellDates: true })
 }
 
-/** SpreadsheetML 2003 헤더 감지 — 앞 256바이트 안에 XML 선언 + Workbook 네임스페이스가 있으면 매치 */
+/**
+ * CDATA 내부 텍스트를 XML 텍스트 노드로 안전하게 escape한다.
+ * 이미 escape된 entity(&amp; &lt; &gt; &quot; &apos; &#nnn; &#xhhh;)는 그대로 둔다 — 이중 escape 방지.
+ */
+function escapeXmlText(inner: string): string {
+  return inner
+    .replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+/** SpreadsheetML 2003 헤더 감지 — 앞 512바이트(UTF-8 가정)에 XML 선언 + Workbook 네임스페이스가 있으면 매치 */
 function isSpreadsheetMLXml(buffer: ArrayBuffer): boolean {
   const head = decodeUtf8(buffer.slice(0, 512))
   return head.startsWith('<?xml') && head.includes('schemas-microsoft-com:office:spreadsheet')
