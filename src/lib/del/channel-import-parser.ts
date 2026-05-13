@@ -38,6 +38,9 @@ export type FilePreview = {
   activeSheet: string
 }
 
+/** 고정 날짜 옵션 — 컬럼 매핑 대신 모든 행에 동일한 날짜를 사용 */
+export type FixedDate = { fixed: string } // YYYY-MM-DD
+
 /** 컬럼 매핑 정의 — 필드당 컬럼 인덱스 1개 또는 여러 개(여러 개면 파싱 시 공백으로 결합) */
 export type ColumnMapping = {
   recipientName?: number | number[]
@@ -45,7 +48,7 @@ export type ColumnMapping = {
   address?: number | number[]
   postalCode?: number | number[]
   deliveryMessage?: number | number[]
-  orderDate?: number | number[]
+  orderDate?: number | number[] | FixedDate
   orderNumber?: number | number[]
   paymentAmount?: number | number[]
   productName?: number | number[]
@@ -90,6 +93,30 @@ function normalizePostalCode(raw: string): string {
     return digits.padStart(5, '0')
   }
   return raw
+}
+
+/**
+ * 여러 컬럼 인덱스에서 숫자를 추출해 합산한다.
+ * 단일 인덱스면 해당 컬럼의 값만 파싱한다.
+ * 유효한 숫자가 하나도 없으면 undefined 반환.
+ */
+function sumNumeric(
+  idx: number | number[] | undefined,
+  row: unknown[]
+): number | undefined {
+  if (idx === undefined) return undefined
+  const indices = Array.isArray(idx) ? idx : [idx]
+  let total = 0
+  let any = false
+  for (const i of indices) {
+    const raw = row[i] != null ? String(row[i]).replace(/[^0-9.-]/g, '') : ''
+    const n = raw ? Number(raw) : NaN
+    if (!isNaN(n)) {
+      total += n
+      any = true
+    }
+  }
+  return any ? total : undefined
 }
 
 /**
@@ -175,7 +202,6 @@ export function parseWithMapping(
     const recipientName = get(mapping.recipientName)
     const phone = normalizePhone(get(mapping.phone))
     const address = get(mapping.address)
-    const orderDateRaw = get(mapping.orderDate)
 
     const missing: string[] = []
     if (!recipientName) missing.push('받는분')
@@ -186,24 +212,39 @@ export function parseWithMapping(
       continue
     }
 
-    // 날짜 파싱 — cellDates:true로 Date 인스턴스는 이미 위에서 문자열로 변환됨
-    // 텍스트 숫자 셀 폴백: 4~6자리 시리얼 넘버 처리
-    let orderDate = orderDateRaw
-    if (!orderDate) {
-      orderDate = formatDateLocal(new Date())
-    } else if (/^\d{4,6}$/.test(orderDate)) {
-      const serial = Number(orderDate)
-      const parsed = XLSX.SSF.parse_date_code(serial)
-      if (parsed) {
-        orderDate = `${parsed.y}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`
+    // 날짜 파싱:
+    //  - FixedDate({ fixed: 'YYYY-MM-DD' }) 이면 고정 값 사용
+    //  - 그 외에는 컬럼 매핑 경로. cellDates:true로 Date 인스턴스는 위에서 문자열 변환됨.
+    //    텍스트 숫자 셀 폴백은 XLSX.SSF.parse_date_code로 정확히 변환.
+    let orderDate: string
+    const orderDateMapping = mapping.orderDate
+    if (
+      orderDateMapping !== null &&
+      typeof orderDateMapping === 'object' &&
+      !Array.isArray(orderDateMapping) &&
+      'fixed' in orderDateMapping &&
+      /^\d{4}-\d{2}-\d{2}$/.test(orderDateMapping.fixed)
+    ) {
+      orderDate = orderDateMapping.fixed
+    } else {
+      const orderDateRaw = get(orderDateMapping as number | number[] | undefined)
+      if (!orderDateRaw) {
+        orderDate = formatDateLocal(new Date())
+      } else if (/^\d{4,6}$/.test(orderDateRaw)) {
+        const serial = Number(orderDateRaw)
+        const parsed = XLSX.SSF.parse_date_code(serial)
+        orderDate = parsed
+          ? `${parsed.y}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`
+          : orderDateRaw
+      } else {
+        orderDate = orderDateRaw
       }
     }
 
     const rawPostalCode = get(mapping.postalCode)
     const postalCode = rawPostalCode ? normalizePostalCode(rawPostalCode) : undefined
 
-    const paymentStr = get(mapping.paymentAmount)
-    const paymentAmount = paymentStr ? Number(paymentStr.replace(/[^0-9.-]/g, '')) : undefined
+    const paymentAmount = sumNumeric(mapping.paymentAmount, row)
 
     rows.push({
       recipientName,
@@ -213,7 +254,7 @@ export function parseWithMapping(
       deliveryMessage: get(mapping.deliveryMessage) || undefined,
       orderDate,
       orderNumber: get(mapping.orderNumber) || undefined,
-      paymentAmount: paymentAmount && !isNaN(paymentAmount) ? paymentAmount : undefined,
+      paymentAmount,
       productName: get(mapping.productName) || undefined,
       productQuantity:
         mapping.productQuantity !== undefined
