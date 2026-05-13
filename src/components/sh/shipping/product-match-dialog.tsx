@@ -66,13 +66,6 @@ type ChannelProductGroup = {
 
 export type MatchResult =
   | {
-      mode: 'option'
-      optionId: string
-      productName: string
-      optionName: string
-      savedAlias: boolean
-    }
-  | {
       mode: 'listing'
       listingId: string
       searchName: string
@@ -124,8 +117,8 @@ export function ProductMatchDialog({
   channelSet,
   onMatched,
 }: Props) {
-  const defaultTab = channelSet ? 'listing' : 'option'
-  const [tab, setTab] = useState<'listing' | 'option' | 'manual'>(defaultTab)
+  const defaultTab = channelSet ? 'listing' : 'manual'
+  const [tab, setTab] = useState<'listing' | 'manual'>(defaultTab)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [saveAlias, setSaveAlias] = useState(true)
@@ -142,7 +135,7 @@ export function ProductMatchDialog({
     if (open) {
       setSearch('')
       setDebouncedSearch('')
-      setTab(channelSet ? 'listing' : 'option')
+      setTab(channelSet ? 'listing' : 'manual')
       setManualItems([])
       setSelectedChannelProductId(null)
     }
@@ -158,9 +151,9 @@ export function ProductMatchDialog({
     return () => clearTimeout(t)
   }, [search])
 
-  // 옵션 검색 (탭 'option' · 'manual')
+  // 옵션 검색 (탭 'manual')
   useEffect(() => {
-    if (!open || (tab !== 'option' && tab !== 'manual')) return
+    if (!open || tab !== 'manual') return
     const q = debouncedSearch.trim()
     setOptionLoading(true)
     const url = q
@@ -246,39 +239,6 @@ export function ProductMatchDialog({
     () => channelProductGroups.find((g) => g.channelProductId === selectedChannelProductId) ?? null,
     [channelProductGroups, selectedChannelProductId]
   )
-
-  async function pickOption(entry: OptionEntry) {
-    setSubmitting(true)
-    try {
-      const res = await fetch(`/api/sh/shipping/orders/${orderId}/items/${itemId}/match`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'option',
-          optionId: entry.optionId,
-          saveAlias: saveAlias && channelSet,
-        }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data?.message ?? '매칭 실패')
-      }
-      const data = await res.json()
-      toast.success(saveAlias && channelSet ? '매칭 완료 · 별칭으로 저장했습니다' : '매칭 완료')
-      onMatched({
-        mode: 'option',
-        optionId: entry.optionId,
-        productName: entry.productName,
-        optionName: entry.optionName,
-        savedAlias: !!data?.aliasSaved,
-      })
-      onOpenChange(false)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '매칭 실패')
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   function addManualOption(entry: OptionEntry) {
     setManualItems((prev) => {
@@ -424,13 +384,12 @@ export function ProductMatchDialog({
             </div>
           </div>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as 'listing' | 'option' | 'manual')}>
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as 'listing' | 'manual')}>
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="listing" disabled={!channelSet}>
                 <Layers className="mr-1 h-4 w-4" />
                 판매채널 상품
               </TabsTrigger>
-              <TabsTrigger value="option">개별 옵션</TabsTrigger>
               <TabsTrigger value="manual">
                 <Pencil className="mr-1 h-4 w-4" />
                 수동 입력
@@ -525,40 +484,6 @@ export function ProductMatchDialog({
                   )}
                 </div>
               )}
-            </TabsContent>
-
-            <TabsContent value="option" className="mt-3">
-              <div className="max-h-[45vh] space-y-1 overflow-y-auto rounded-md border p-1">
-                {optionLoading ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">검색 중...</p>
-                ) : optionResults.length === 0 ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">
-                    검색 결과가 없습니다
-                  </p>
-                ) : (
-                  optionResults.map((e) => (
-                    <button
-                      key={e.optionId}
-                      type="button"
-                      disabled={submitting}
-                      onClick={() => pickOption(e)}
-                      className="flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate font-medium">
-                          {e.productName}{' '}
-                          <span className="text-muted-foreground">— {e.optionName}</span>
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {e.brandName ? `${e.brandName} · ` : ''}
-                          {e.sku ? `SKU ${e.sku}` : '관리코드 없음'}
-                        </p>
-                      </div>
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    </button>
-                  ))
-                )}
-              </div>
             </TabsContent>
 
             <TabsContent value="manual" className="mt-3 space-y-3">

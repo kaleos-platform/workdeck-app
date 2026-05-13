@@ -815,19 +815,6 @@ export default function ShippingRegistrationPage() {
                 if (r.tempId !== matchTarget.orderId) return r
                 const nextItems = r.items.map((it, idx) => {
                   if (idx !== matchTarget.itemIndex) return it
-                  if (result.mode === 'option') {
-                    return {
-                      ...it,
-                      optionId: result.optionId,
-                      listingId: null,
-                      matched: {
-                        optionId: result.optionId,
-                        productName: result.productName,
-                        optionName: result.optionName,
-                      },
-                      fulfillments: null,
-                    }
-                  }
                   if (result.mode === 'listing') {
                     return {
                       ...it,
