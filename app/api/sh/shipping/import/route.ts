@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
 
   if (!file) return errorResponse('파일이 필요합니다', 400)
   if (!batchId) return errorResponse('batchId가 필요합니다', 400)
+  if (!channelId || channelId.trim() === '') return errorResponse('판매채널을 지정해 주세요', 400)
   if (!mappingJson) return errorResponse('columnMapping이 필요합니다', 400)
 
   // 배송 묶음 확인
