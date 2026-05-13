@@ -1,3 +1,8 @@
+/**
+ * @deprecated 신규 UX 는 `/api/sh/shipping/generate-file/bundle` 사용.
+ * 이 endpoint 는 단일 shippingMethodId 지정용으로 남아 있다 (외부 통합 호환).
+ * UI 에서는 더 이상 호출하지 않는다.
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
