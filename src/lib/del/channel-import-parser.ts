@@ -100,10 +100,7 @@ function normalizePostalCode(raw: string): string {
  * 단일 인덱스면 해당 컬럼의 값만 파싱한다.
  * 유효한 숫자가 하나도 없으면 undefined 반환.
  */
-function sumNumeric(
-  idx: number | number[] | undefined,
-  row: unknown[]
-): number | undefined {
+function sumNumeric(idx: number | number[] | undefined, row: unknown[]): number | undefined {
   if (idx === undefined) return undefined
   const indices = Array.isArray(idx) ? idx : [idx]
   let total = 0
@@ -120,12 +117,50 @@ function sumNumeric(
 }
 
 /**
+ * Workbook을 읽는다. xlsx / xls / csv 외에 SpreadsheetML 2003 (XML이지만 .xls 확장자로
+ * 배포되는 일부 채널 export 포맷)도 처리한다. SheetJS community 빌드의 xlml 파서는 셀 내
+ * `<![CDATA[...]]>`를 처리하지 못하므로, 감지 시 CDATA 영역을 XML escape 후 텍스트로 전달한다.
+ */
+function readWorkbook(buffer: ArrayBuffer): XLSX.WorkBook {
+  if (isSpreadsheetMLXml(buffer)) {
+    const text = decodeUtf8(buffer)
+    const sanitized = text.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, (_, inner: string) =>
+      escapeXmlText(inner)
+    )
+    return XLSX.read(sanitized, { type: 'string', cellDates: true })
+  }
+  return XLSX.read(buffer, { type: 'array', cellDates: true })
+}
+
+/**
+ * CDATA 내부 텍스트를 XML 텍스트 노드로 안전하게 escape한다.
+ * 이미 escape된 entity(&amp; &lt; &gt; &quot; &apos; &#nnn; &#xhhh;)는 그대로 둔다 — 이중 escape 방지.
+ */
+function escapeXmlText(inner: string): string {
+  return inner
+    .replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+/** SpreadsheetML 2003 헤더 감지 — 앞 512바이트(UTF-8 가정)에 XML 선언 + Workbook 네임스페이스가 있으면 매치 */
+function isSpreadsheetMLXml(buffer: ArrayBuffer): boolean {
+  const head = decodeUtf8(buffer.slice(0, 512))
+  return head.startsWith('<?xml') && head.includes('schemas-microsoft-com:office:spreadsheet')
+}
+
+function decodeUtf8(buffer: ArrayBuffer): string {
+  // BOM 자동 처리: TextDecoder의 utf-8 기본 동작이 BOM을 소비함
+  return new TextDecoder('utf-8').decode(buffer)
+}
+
+/**
  * 파일에서 헤더와 샘플 데이터를 추출한다.
  * 시트 이름을 지정하면 해당 시트를 읽고, 지정하지 않으면 첫 번째 시트를 읽는다.
  * sheet_to_json 이 반환하는 희소(sparse) 배열을 정상 배열로 변환한다.
  */
 export function previewFile(buffer: ArrayBuffer, sheetName?: string): FilePreview {
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
+  const wb = readWorkbook(buffer)
   const sheetNames = wb.SheetNames
   const activeSheet = sheetName && sheetNames.includes(sheetName) ? sheetName : sheetNames[0]
   const ws = wb.Sheets[activeSheet]
@@ -173,7 +208,7 @@ export function parseWithMapping(
   buffer: ArrayBuffer,
   mapping: ColumnMapping
 ): { rows: ParsedOrderRow[]; errors: { row: number; message: string }[] } {
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
+  const wb = readWorkbook(buffer)
   const ws = wb.Sheets[wb.SheetNames[0]]
   const jsonRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
 
