@@ -485,11 +485,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
         <h2 className="text-sm font-semibold">
           주문 목록 <span className="font-normal text-muted-foreground">({total}건)</span>
         </h2>
-        <DeliveryFileDialog
-          batchId={batchId}
-          shippingMethods={shippingMethods}
-          disabled={total === 0}
-        />
+        <DeliveryFileDialog batchId={batchId} disabled={total === 0} />
       </div>
 
       {/* 필터 */}
