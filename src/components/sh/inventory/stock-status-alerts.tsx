@@ -19,21 +19,25 @@ export function StockStatusAlerts({ alerts, loading }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        {loading ? (
-          <div className="space-y-2 p-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-12 animate-pulse rounded bg-muted" />
-            ))}
-          </div>
-        ) : alerts.length === 0 ? (
-          <p className="p-6 text-center text-sm text-muted-foreground">현재 활성 알림이 없습니다</p>
-        ) : (
-          <ul className="divide-y">
-            {alerts.map((a, idx) => (
-              <AlertRow key={`${a.optionId}-${idx}`} alert={a} />
-            ))}
-          </ul>
-        )}
+        <div className="max-h-[420px] overflow-y-auto">
+          {loading ? (
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-12 animate-pulse rounded bg-muted" />
+              ))}
+            </div>
+          ) : alerts.length === 0 ? (
+            <p className="p-6 text-center text-sm text-muted-foreground">
+              현재 활성 알림이 없습니다
+            </p>
+          ) : (
+            <ul className="divide-y">
+              {alerts.map((a, idx) => (
+                <AlertRow key={`${a.optionId}-${idx}`} alert={a} />
+              ))}
+            </ul>
+          )}
+        </div>
       </CardContent>
     </Card>
   )
