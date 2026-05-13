@@ -38,6 +38,7 @@ type PreviewData = {
   columnFields: { column: string; field: string | null }[]
   previewOrderCount: number
   totalOrders: number
+  totalRows: number
   splitMode: 'order' | 'option'
 }
 
@@ -244,6 +245,8 @@ export function DeliveryFileDialog({
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span>
                 총 주문 <strong className="text-foreground">{preview.totalOrders}건</strong>
+                {' · '}
+                전체 <strong className="text-foreground">{preview.totalRows}행</strong>
               </span>
               <span>·</span>
               <span>
@@ -299,7 +302,7 @@ export function DeliveryFileDialog({
               </Button>
               <Button onClick={handleGenerate} disabled={generating}>
                 <FileDown className="mr-1 h-4 w-4" />
-                {generating ? '생성 중...' : `전체 ${preview.totalOrders}건 다운로드`}
+                {generating ? '생성 중...' : `전체 ${preview.totalRows}행 다운로드`}
               </Button>
             </>
           ) : (
