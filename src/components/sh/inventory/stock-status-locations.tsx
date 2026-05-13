@@ -23,12 +23,7 @@ export function StockStatusLocations({ locations, loading }: Props) {
   return (
     <Card className="overflow-hidden">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
-          위치별 재고 분포
-          <span className="text-xs font-normal text-muted-foreground">
-            · {locations.length}개 거점
-          </span>
-        </CardTitle>
+        <CardTitle className="text-sm">위치별 재고 분포</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (

@@ -6,10 +6,9 @@ import { toast } from 'sonner'
 import { StockStatusHeader } from './stock-status-header'
 import { StockStatusKpis } from './stock-status-kpis'
 import { StockStatusLocations } from './stock-status-locations'
-import { StockStatusTree } from './stock-status-tree'
+import { StockStatusAlerts } from './stock-status-alerts'
 import { StockStatusToolbar } from './stock-status-toolbar'
 import { StockStatusMatrix } from './stock-status-matrix'
-import { StockStatusAlerts } from './stock-status-alerts'
 import type { StockStatusResponse } from './stock-status.types'
 
 export function StockStatusBoard() {
@@ -70,16 +69,6 @@ export function StockStatusBoard() {
     [router, pathname, searchParams]
   )
 
-  const handleTreeSelect = useCallback(
-    (next: { brandId?: string | null; groupId?: string | null }) => {
-      const target: Record<string, string | null> = {}
-      if (next.brandId !== undefined) target.brandId = next.brandId
-      if (next.groupId !== undefined) target.groupId = next.groupId
-      updateParams(target)
-    },
-    [updateParams]
-  )
-
   const handleSearchChange = useCallback(
     (newQ: string) => updateParams({ q: newQ || null }),
     [updateParams]
@@ -108,23 +97,13 @@ export function StockStatusBoard() {
 
   return (
     <div className="space-y-5">
-      <StockStatusHeader
-        snapshotAt={data?.snapshotAt ?? null}
-        loading={loading}
-        onRefresh={fetchData}
-      />
+      <StockStatusHeader loading={loading} onRefresh={fetchData} />
 
       <StockStatusKpis kpis={data?.kpis ?? null} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <StockStatusLocations locations={data?.locations ?? []} loading={loading && !data} />
-        <StockStatusTree
-          brands={data?.brands ?? []}
-          selectedBrandId={brandId}
-          selectedGroupId={groupId}
-          onSelect={handleTreeSelect}
-          loading={loading && !data}
-        />
+        <StockStatusAlerts alerts={data?.alerts ?? []} loading={loading && !data} />
       </div>
 
       <StockStatusToolbar
@@ -145,8 +124,6 @@ export function StockStatusBoard() {
         locations={data?.locations ?? []}
         loading={loading && !data}
       />
-
-      <StockStatusAlerts alerts={data?.alerts ?? []} loading={loading && !data} />
     </div>
   )
 }
