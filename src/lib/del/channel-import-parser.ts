@@ -4,6 +4,27 @@
  */
 import * as XLSX from 'xlsx'
 
+/**
+ * Date 인스턴스를 로컬 타임존 기준 YYYY-MM-DD 문자열로 변환한다.
+ * toISOString()은 UTC 기준이라 9시간 차이로 날짜가 밀릴 수 있으므로 사용하지 않는다.
+ */
+function formatDateLocal(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/**
+ * 셀 값을 문자열로 정규화한다.
+ * - Date 인스턴스 → formatDateLocal
+ * - 그 외 → String()
+ */
+function cellToString(cell: unknown): string {
+  if (cell instanceof Date) return formatDateLocal(cell)
+  return cell != null ? String(cell) : ''
+}
+
 /** 파일 미리보기 결과 */
 export type FilePreview = {
   headers: string[]
@@ -17,6 +38,9 @@ export type FilePreview = {
   activeSheet: string
 }
 
+/** 고정 날짜 옵션 — 컬럼 매핑 대신 모든 행에 동일한 날짜를 사용 */
+export type FixedDate = { fixed: string } // YYYY-MM-DD
+
 /** 컬럼 매핑 정의 — 필드당 컬럼 인덱스 1개 또는 여러 개(여러 개면 파싱 시 공백으로 결합) */
 export type ColumnMapping = {
   recipientName?: number | number[]
@@ -24,7 +48,7 @@ export type ColumnMapping = {
   address?: number | number[]
   postalCode?: number | number[]
   deliveryMessage?: number | number[]
-  orderDate?: number | number[]
+  orderDate?: number | number[] | FixedDate
   orderNumber?: number | number[]
   paymentAmount?: number | number[]
   productName?: number | number[]
@@ -72,12 +96,36 @@ function normalizePostalCode(raw: string): string {
 }
 
 /**
+ * 여러 컬럼 인덱스에서 숫자를 추출해 합산한다.
+ * 단일 인덱스면 해당 컬럼의 값만 파싱한다.
+ * 유효한 숫자가 하나도 없으면 undefined 반환.
+ */
+function sumNumeric(
+  idx: number | number[] | undefined,
+  row: unknown[]
+): number | undefined {
+  if (idx === undefined) return undefined
+  const indices = Array.isArray(idx) ? idx : [idx]
+  let total = 0
+  let any = false
+  for (const i of indices) {
+    const raw = row[i] != null ? String(row[i]).replace(/[^0-9.-]/g, '') : ''
+    const n = raw ? Number(raw) : NaN
+    if (!isNaN(n)) {
+      total += n
+      any = true
+    }
+  }
+  return any ? total : undefined
+}
+
+/**
  * 파일에서 헤더와 샘플 데이터를 추출한다.
  * 시트 이름을 지정하면 해당 시트를 읽고, 지정하지 않으면 첫 번째 시트를 읽는다.
  * sheet_to_json 이 반환하는 희소(sparse) 배열을 정상 배열로 변환한다.
  */
 export function previewFile(buffer: ArrayBuffer, sheetName?: string): FilePreview {
-  const wb = XLSX.read(buffer, { type: 'array' })
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
   const sheetNames = wb.SheetNames
   const activeSheet = sheetName && sheetNames.includes(sheetName) ? sheetName : sheetNames[0]
   const ws = wb.Sheets[activeSheet]
@@ -93,7 +141,7 @@ export function previewFile(buffer: ArrayBuffer, sheetName?: string): FilePrevie
   const headers = Array.from({ length: maxColumns }, (_, i) => String(headerRow[i] ?? '').trim())
   const sampleRows = dataRowsRaw
     .slice(0, 5)
-    .map((row) => Array.from({ length: maxColumns }, (_, i) => String(row[i] ?? '')))
+    .map((row) => Array.from({ length: maxColumns }, (_, i) => cellToString(row[i])))
 
   const columnHasData: boolean[] = Array.from({ length: maxColumns }, () => false)
   for (const row of dataRowsRaw) {
@@ -125,7 +173,7 @@ export function parseWithMapping(
   buffer: ArrayBuffer,
   mapping: ColumnMapping
 ): { rows: ParsedOrderRow[]; errors: { row: number; message: string }[] } {
-  const wb = XLSX.read(buffer, { type: 'array' })
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
   const ws = wb.Sheets[wb.SheetNames[0]]
   const jsonRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
 
@@ -136,8 +184,11 @@ export function parseWithMapping(
   const errors: { row: number; message: string }[] = []
 
   for (let i = 0; i < dataRows.length; i++) {
-    const row = dataRows[i]
+    const rawRow = dataRows[i]
     const rowNum = i + 2 // Excel 행 번호 (1-based + header)
+
+    // Date 인스턴스를 YYYY-MM-DD 문자열로 정규화
+    const row = rawRow.map((cell: unknown) => (cell instanceof Date ? formatDateLocal(cell) : cell))
 
     const get = (idx: number | number[] | undefined): string => {
       if (idx === undefined) return ''
@@ -151,7 +202,6 @@ export function parseWithMapping(
     const recipientName = get(mapping.recipientName)
     const phone = normalizePhone(get(mapping.phone))
     const address = get(mapping.address)
-    const orderDateRaw = get(mapping.orderDate)
 
     const missing: string[] = []
     if (!recipientName) missing.push('받는분')
@@ -162,23 +212,39 @@ export function parseWithMapping(
       continue
     }
 
-    // 날짜 파싱 (4~5자리 Excel 시리얼 넘버 지원)
-    let orderDate = orderDateRaw
-    if (!orderDate) {
-      orderDate = new Date().toISOString().split('T')[0]
-    } else if (/^\d{4,5}$/.test(orderDate)) {
-      const serial = Number(orderDate)
-      if (serial > 1000) {
-        const excelDate = new Date((serial - 25569) * 86400000)
-        orderDate = excelDate.toISOString().split('T')[0]
+    // 날짜 파싱:
+    //  - FixedDate({ fixed: 'YYYY-MM-DD' }) 이면 고정 값 사용
+    //  - 그 외에는 컬럼 매핑 경로. cellDates:true로 Date 인스턴스는 위에서 문자열 변환됨.
+    //    텍스트 숫자 셀 폴백은 XLSX.SSF.parse_date_code로 정확히 변환.
+    let orderDate: string
+    const orderDateMapping = mapping.orderDate
+    if (
+      orderDateMapping !== null &&
+      typeof orderDateMapping === 'object' &&
+      !Array.isArray(orderDateMapping) &&
+      'fixed' in orderDateMapping &&
+      /^\d{4}-\d{2}-\d{2}$/.test(orderDateMapping.fixed)
+    ) {
+      orderDate = orderDateMapping.fixed
+    } else {
+      const orderDateRaw = get(orderDateMapping as number | number[] | undefined)
+      if (!orderDateRaw) {
+        orderDate = formatDateLocal(new Date())
+      } else if (/^\d{4,6}$/.test(orderDateRaw)) {
+        const serial = Number(orderDateRaw)
+        const parsed = XLSX.SSF.parse_date_code(serial)
+        orderDate = parsed
+          ? `${parsed.y}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`
+          : orderDateRaw
+      } else {
+        orderDate = orderDateRaw
       }
     }
 
     const rawPostalCode = get(mapping.postalCode)
     const postalCode = rawPostalCode ? normalizePostalCode(rawPostalCode) : undefined
 
-    const paymentStr = get(mapping.paymentAmount)
-    const paymentAmount = paymentStr ? Number(paymentStr.replace(/[^0-9.-]/g, '')) : undefined
+    const paymentAmount = sumNumeric(mapping.paymentAmount, row)
 
     rows.push({
       recipientName,
@@ -188,7 +254,7 @@ export function parseWithMapping(
       deliveryMessage: get(mapping.deliveryMessage) || undefined,
       orderDate,
       orderNumber: get(mapping.orderNumber) || undefined,
-      paymentAmount: paymentAmount && !isNaN(paymentAmount) ? paymentAmount : undefined,
+      paymentAmount,
       productName: get(mapping.productName) || undefined,
       productQuantity:
         mapping.productQuantity !== undefined

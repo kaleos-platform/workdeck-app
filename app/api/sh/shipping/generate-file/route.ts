@@ -1,8 +1,50 @@
+/**
+ * @deprecated 신규 UX 는 `/api/sh/shipping/generate-file/bundle` 사용.
+ * 이 endpoint 는 단일 shippingMethodId 지정용으로 남아 있다 (외부 통합 호환).
+ * UI 에서는 더 이상 호출하지 않는다.
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { buildDeliveryRows, generateDeliveryFile } from '@/lib/del/delivery-file-generator'
 import type { DelFieldMapping, DelFormatColumn } from '@/lib/del/format-templates'
+
+/**
+ * option 모드 전체 행 수 계산.
+ * route.ts의 ordersForGenerator 변환 로직과 동일:
+ *  - items가 없는 주문 → 1행
+ *  - fulfillment가 있는 item → fulfillment 수만큼 행
+ *  - fulfillment가 없는 item → 1행
+ */
+async function computeOptionRowCount(
+  batchId: string,
+  shippingMethodId: string,
+  spaceId: string
+): Promise<number> {
+  const scope = { batchId, shippingMethodId, spaceId }
+  const [emptyOrderCount, fulfillmentCount, noFulfillmentItemCount] = await Promise.all([
+    // items가 0개인 주문 수 (각 1행)
+    prisma.delOrder.count({
+      where: { ...scope, items: { none: {} } },
+    }),
+    // fulfillment가 있는 item들의 fulfillment 총 개수
+    prisma.delOrderItemFulfillment.count({
+      where: {
+        orderItem: {
+          order: { ...scope },
+        },
+      },
+    }),
+    // fulfillment가 없는 item 수 (각 1행)
+    prisma.delOrderItem.count({
+      where: {
+        order: { ...scope },
+        fulfillments: { none: {} },
+      },
+    }),
+  ])
+  return emptyOrderCount + fulfillmentCount + noFulfillmentItemCount
+}
 
 const PREVIEW_LIMIT = 10
 
@@ -162,12 +204,17 @@ export async function POST(req: NextRequest) {
     const totalOrders = await prisma.delOrder.count({
       where: { batchId, shippingMethodId, spaceId: resolved.space.id },
     })
+    const totalRows =
+      splitMode === 'order'
+        ? totalOrders
+        : await computeOptionRowCount(batchId, shippingMethodId, resolved.space.id)
     return NextResponse.json({
       headers,
       rows,
       columnFields: formatConfig.map((col) => ({ column: col.column, field: col.field ?? null })),
       previewOrderCount: orders.length,
       totalOrders,
+      totalRows,
       splitMode,
     })
   }
