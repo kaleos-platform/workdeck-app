@@ -9,6 +9,7 @@ import {
   Copy,
   Info,
   Save,
+  Settings2,
   Trash2,
   Upload,
   X,
@@ -41,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
 // ---------- 상수 ----------
@@ -114,6 +116,7 @@ type Draft = {
   fileBase64?: string
   preview: Preview
   mapping: Record<string, number[]>
+  orderDateFixed: string | null
 }
 
 // ---------- 프리셋 타입 ----------
@@ -187,6 +190,23 @@ function mappingToPresetEntries(
   return entries
 }
 
+// 헤더 목록과 프리셋 목록을 비교해 가장 적합한 프리셋을 찾는다
+function findBestPreset(presets: Preset[], headers: string[]): Preset | null {
+  const headerSet = new Set(headers.map((h) => h.trim()).filter(Boolean))
+  let exact: Preset | null = null
+  let best: { preset: Preset; matched: number } | null = null
+  for (const p of presets) {
+    const need = new Set(p.mapping.map((m) => m.headerName))
+    let matched = 0
+    for (const h of need) if (headerSet.has(h)) matched++
+    if (matched === need.size && headerSet.size >= need.size && !exact) exact = p
+    if (!best || matched > best.matched) best = { preset: p, matched }
+  }
+  if (exact) return exact
+  if (best && best.matched / best.preset.mapping.length >= 0.7) return best.preset
+  return null
+}
+
 // ---------- 유틸 ----------
 
 function draftKey(batchId: string) {
@@ -226,9 +246,23 @@ function autoMap(preview: Preview): Record<string, number[]> {
   return result
 }
 
+// 어제 날짜를 로컬 타임존 기준 YYYY-MM-DD 로 반환
+function yesterdayLocal(): string {
+  const d = new Date(Date.now() - 86400000)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
 async function saveDraft(
   batchId: string,
-  state: { file: File | null; preview: Preview; mapping: Record<string, number[]> }
+  state: {
+    file: File | null
+    preview: Preview
+    mapping: Record<string, number[]>
+    orderDateFixed: string | null
+  }
 ) {
   if (!batchId) return
   const key = draftKey(batchId)
@@ -237,6 +271,7 @@ async function saveDraft(
       fileName: state.file?.name ?? '',
       preview: state.preview,
       mapping: state.mapping,
+      orderDateFixed: state.orderDateFixed,
     }
     if (state.file) {
       const fileBase64 = await fileToDataUrl(state.file)
@@ -253,6 +288,7 @@ async function saveDraft(
           fileName: state.file?.name ?? '',
           preview: state.preview,
           mapping: state.mapping,
+          orderDateFixed: state.orderDateFixed,
         })
       )
       if (err instanceof DOMException && err.name === 'QuotaExceededError') {
@@ -291,6 +327,9 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     errors: [],
   })
 
+  // 주문일자 고정 날짜 모드 상태
+  const [orderDateFixed, setOrderDateFixed] = useState<string | null>(null)
+
   // 프리셋 관련 상태
   const [presets, setPresets] = useState<Preset[]>([])
   const [presetMismatch, setPresetMismatch] = useState<{
@@ -306,6 +345,8 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
 
   const fileRef = useRef<HTMLInputElement>(null)
   const draftLoadedRef = useRef(false)
+  // 자동 프리셋 적용이 이미 시도됐는지 추적 — 한 번만 실행되도록
+  const autoPresetTriedRef = useRef(false)
 
   // 프리셋 목록 로드
   const loadPresets = useCallback(async () => {
@@ -320,13 +361,12 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     }
   }, [])
 
-  // 프리셋 적용
-  function handleApplyPreset(preset: Preset) {
+  // 프리셋 상태 변경 코어 — toast 없이 상태만 바꿈
+  function applyPresetState(preset: Preset) {
     if (!preview) return
     const result = applyPreset(preset.mapping, preview.headers)
     setMapping(result.mapping)
     setSelectedChannelId(preset.channelId ?? null)
-
     if (result.matched < result.total) {
       setPresetMismatch({
         presetName: preset.name,
@@ -336,6 +376,17 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       })
     } else {
       setPresetMismatch(null)
+    }
+    return result
+  }
+
+  // 프리셋 적용 (수동 — 토스트 포함)
+  function handleApplyPreset(preset: Preset) {
+    const result = applyPresetState(preset)
+    if (!result) return
+    if (result.matched < result.total) {
+      // mismatch toast는 MappingView의 배너가 대신 표시
+    } else {
       const chanSuffix = preset.channel?.name ? ` (판매채널: ${preset.channel.name})` : ''
       toast.success(`프리셋 "${preset.name}" 적용 완료${chanSuffix}`)
     }
@@ -368,12 +419,31 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     }
   }
 
+  // 프리셋 삭제
+  async function handleDeletePreset(preset: Preset) {
+    if (!confirm(`프리셋 "${preset.name}"을 삭제하시겠습니까?`)) return
+    try {
+      const res = await fetch(`/api/sh/shipping/column-mapping-presets/${preset.id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.message ?? '삭제 실패')
+      }
+      toast.success(`프리셋 "${preset.name}" 삭제 완료`)
+      await loadPresets()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '프리셋 삭제 실패')
+    }
+  }
+
   // 다이얼로그 열릴 때 초기 데이터 로드 + draft 복원
   useEffect(() => {
     if (!open || !batchId) return
 
     let cancelled = false
     draftLoadedRef.current = false
+    autoPresetTriedRef.current = false
 
     void (async () => {
       try {
@@ -414,6 +484,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
         const draft: Draft = JSON.parse(raw)
         setPreview(draft.preview)
         setMapping(draft.mapping ?? {})
+        setOrderDateFixed(draft.orderDateFixed ?? null)
         if (draft.fileBase64) {
           setFile(dataUrlToFile(draft.fileBase64, draft.fileName))
           setFileMissing(false)
@@ -426,6 +497,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
         setFile(null)
         setPreview(null)
         setMapping({})
+        setOrderDateFixed(null)
         setFileMissing(false)
       }
     } catch {
@@ -433,6 +505,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       setFile(null)
       setPreview(null)
       setMapping({})
+      setOrderDateFixed(null)
       setFileMissing(false)
     }
     draftLoadedRef.current = true
@@ -442,18 +515,49 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     }
   }, [open, batchId, loadPresets])
 
-  // mapping 변경 시 draft 갱신 (debounce)
+  // presets 로드 후 자동 프리셋 적용 재시도 —
+  // 파일 업로드 시 presets가 아직 없었을 경우를 대비
+  useEffect(() => {
+    if (
+      !preview ||
+      presets.length === 0 ||
+      autoPresetTriedRef.current ||
+      Object.keys(mapping).length > 0
+    )
+      return
+    autoPresetTriedRef.current = true
+    const best = findBestPreset(presets, preview.headers)
+    if (!best) return
+    const result = applyPreset(best.mapping, preview.headers)
+    setMapping(result.mapping)
+    setSelectedChannelId(best.channelId ?? null)
+    if (result.matched < result.total) {
+      setPresetMismatch({
+        presetName: best.name,
+        matched: result.matched,
+        total: result.total,
+        missingHeaders: result.missingHeaders,
+      })
+    } else {
+      setPresetMismatch(null)
+    }
+    toast.success(`프리셋 "${best.name}"이 자동 적용되었습니다`)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presets, preview])
+
+  // mapping / orderDateFixed 변경 시 draft 갱신 (debounce)
   useEffect(() => {
     if (!open || !batchId || !preview || !draftLoadedRef.current) return
     const t = setTimeout(() => {
-      void saveDraft(batchId, { file, preview, mapping })
+      void saveDraft(batchId, { file, preview, mapping, orderDateFixed })
     }, 300)
     return () => clearTimeout(t)
-  }, [open, batchId, file, preview, mapping])
+  }, [open, batchId, file, preview, mapping, orderDateFixed])
 
   async function handleFileUpload(selectedFile: File) {
     setFile(selectedFile)
     setFileMissing(false)
+    autoPresetTriedRef.current = false
     const formData = new FormData()
     formData.append('file', selectedFile)
     try {
@@ -464,11 +568,43 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       if (!res.ok) throw new Error('파일 미리보기 실패')
       const data: Preview = await res.json()
       setPreview(data)
-      const auto = autoMap(data)
-      setMapping(auto)
+
+      // 로드된 presets가 있으면 자동 프리셋 적용 시도, 없으면 autoMap 폴백
+      let newMapping: Record<string, number[]>
+      if (presets.length > 0) {
+        autoPresetTriedRef.current = true
+        const best = findBestPreset(presets, data.headers)
+        if (best) {
+          const result = applyPreset(best.mapping, data.headers)
+          newMapping = result.mapping
+          setSelectedChannelId(best.channelId ?? null)
+          if (result.matched < result.total) {
+            setPresetMismatch({
+              presetName: best.name,
+              matched: result.matched,
+              total: result.total,
+              missingHeaders: result.missingHeaders,
+            })
+          } else {
+            setPresetMismatch(null)
+            toast.success(`프리셋 "${best.name}"이 자동 적용되었습니다`)
+          }
+        } else {
+          newMapping = autoMap(data)
+        }
+      } else {
+        newMapping = autoMap(data)
+      }
+
+      setMapping(newMapping)
 
       // 즉시 저장 (mapping effect debounce 안 탈 수 있으므로)
-      await saveDraft(batchId, { file: selectedFile, preview: data, mapping: auto })
+      await saveDraft(batchId, {
+        file: selectedFile,
+        preview: data,
+        mapping: newMapping,
+        orderDateFixed,
+      })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '파일 처리 실패')
     }
@@ -496,8 +632,10 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     setFile(null)
     setPreview(null)
     setMapping({})
+    setOrderDateFixed(null)
     setFileMissing(false)
     setErrorDialog({ open: false, created: 0, errorCount: 0, errors: [] })
+    autoPresetTriedRef.current = false
     try {
       sessionStorage.removeItem(draftKey(batchId))
     } catch {
@@ -521,6 +659,10 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       toast.error('받는분, 전화, 주소는 필수 매핑입니다')
       return
     }
+    if (!selectedChannelId) {
+      toast.error('판매채널을 지정해 주세요')
+      return
+    }
 
     setImporting(true)
     try {
@@ -528,8 +670,13 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       formData.append('file', file)
       formData.append('batchId', batchId)
       if (shippingMethodId) formData.append('shippingMethodId', shippingMethodId)
-      if (selectedChannelId) formData.append('channelId', selectedChannelId)
-      formData.append('columnMapping', JSON.stringify(mapping))
+      formData.append('channelId', selectedChannelId)
+
+      // 고정 날짜 모드면 orderDate를 { fixed: "YYYY-MM-DD" } 로 변환
+      const finalMapping: Record<string, number[] | { fixed: string }> = orderDateFixed
+        ? { ...mapping, orderDate: { fixed: orderDateFixed } }
+        : { ...mapping }
+      formData.append('columnMapping', JSON.stringify(finalMapping))
 
       const res = await fetch('/api/sh/shipping/import', { method: 'POST', body: formData })
       const data = await res.json()
@@ -647,11 +794,14 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
                 presets={presets}
                 onApplyPreset={handleApplyPreset}
                 onSavePreset={handleSavePreset}
+                onDeletePreset={handleDeletePreset}
                 presetMismatch={presetMismatch}
                 onDismissMismatch={() => setPresetMismatch(null)}
                 channels={channels}
                 selectedChannelId={selectedChannelId}
                 onChangeChannel={setSelectedChannelId}
+                orderDateFixed={orderDateFixed}
+                onOrderDateFixedChange={setOrderDateFixed}
               />
             )}
           </div>
@@ -665,6 +815,9 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
                 {missingRequired && (
                   <span className="text-xs text-destructive">받는분·전화·주소를 매핑해 주세요</span>
                 )}
+                {!selectedChannelId && (
+                  <span className="text-xs text-destructive">판매채널을 지정해 주세요</span>
+                )}
                 {fileMissing && (
                   <span className="text-xs text-destructive">파일을 다시 선택해 주세요</span>
                 )}
@@ -673,7 +826,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
                 </Button>
                 <Button
                   onClick={handleImport}
-                  disabled={importing || missingRequired || fileMissing}
+                  disabled={importing || missingRequired || fileMissing || !selectedChannelId}
                 >
                   {importing ? '가져오는 중...' : `${preview.totalRows}건 가져오기`}
                 </Button>
@@ -759,6 +912,7 @@ type MappingViewProps = {
   presets: Preset[]
   onApplyPreset: (preset: Preset) => void
   onSavePreset: (name: string, channelId: string | null) => Promise<void>
+  onDeletePreset: (preset: Preset) => Promise<void>
   presetMismatch: {
     presetName: string
     matched: number
@@ -769,6 +923,8 @@ type MappingViewProps = {
   channels: Channel[]
   selectedChannelId: string | null
   onChangeChannel: (channelId: string | null) => void
+  orderDateFixed: string | null
+  onOrderDateFixedChange: (v: string | null) => void
 }
 
 function MappingView(p: MappingViewProps) {
@@ -787,17 +943,21 @@ function MappingView(p: MappingViewProps) {
     presets,
     onApplyPreset,
     onSavePreset,
+    onDeletePreset,
     presetMismatch,
     onDismissMismatch,
     channels,
     selectedChannelId,
     onChangeChannel,
+    orderDateFixed,
+    onOrderDateFixedChange,
   } = p
 
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
   const [presetName, setPresetName] = useState('')
   const [dialogChannelId, setDialogChannelId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [manageOpen, setManageOpen] = useState(false)
 
   async function handleSave() {
     if (!presetName.trim()) return
@@ -850,12 +1010,13 @@ function MappingView(p: MappingViewProps) {
         </div>
       )}
 
+      {/* 프리셋 + 채널 영역 */}
       <section className="flex flex-wrap items-center gap-2">
         {presets.length > 0 && (
           <Select
             value=""
             onValueChange={(v) => {
-              const preset = presets.find((p) => p.id === v)
+              const preset = presets.find((pr) => pr.id === v)
               if (preset) onApplyPreset(preset)
             }}
           >
@@ -863,17 +1024,60 @@ function MappingView(p: MappingViewProps) {
               <SelectValue placeholder="저장된 프리셋 적용..." />
             </SelectTrigger>
             <SelectContent>
-              {presets.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  <span>{p.name}</span>
-                  {p.channel?.name ? (
-                    <span className="ml-2 text-xs text-muted-foreground">· {p.channel.name}</span>
+              {presets.map((pr) => (
+                <SelectItem key={pr.id} value={pr.id}>
+                  <span>{pr.name}</span>
+                  {pr.channel?.name ? (
+                    <span className="ml-2 text-xs text-muted-foreground">· {pr.channel.name}</span>
                   ) : null}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         )}
+
+        {/* 프리셋 관리 Popover — 삭제 */}
+        {presets.length > 0 && (
+          <Popover open={manageOpen} onOpenChange={setManageOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground">
+                <Settings2 className="h-3.5 w-3.5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-2" align="start">
+              <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">프리셋 관리</p>
+              <div className="space-y-0.5">
+                {presets.map((pr) => (
+                  <div
+                    key={pr.id}
+                    className="flex items-center justify-between rounded px-2 py-1.5 hover:bg-muted/50"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-xs">{pr.name}</span>
+                      {pr.channel?.name && (
+                        <span className="text-[10px] text-muted-foreground">
+                          {pr.channel.name}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      aria-label={`${pr.name} 삭제`}
+                      className="ml-2 shrink-0 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      onClick={async () => {
+                        await onDeletePreset(pr)
+                        if (presets.length <= 1) setManageOpen(false)
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
         <Button
           variant="outline"
           size="sm"
@@ -888,8 +1092,11 @@ function MappingView(p: MappingViewProps) {
           현재 매핑 저장
         </Button>
 
+        {/* 판매채널 — 필수(*) 표기 */}
         <div className="ml-1 flex items-center gap-1.5">
-          <Label className="text-xs text-muted-foreground">판매채널</Label>
+          <Label className="text-xs text-muted-foreground">
+            판매채널 <span className="text-destructive">*</span>
+          </Label>
           <Select
             value={selectedChannelId ?? NO_CHANNEL}
             onValueChange={(v) => onChangeChannel(v === NO_CHANNEL ? null : v)}
@@ -914,6 +1121,7 @@ function MappingView(p: MappingViewProps) {
         </div>
       </section>
 
+      {/* 프리셋 저장 Dialog */}
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
@@ -972,6 +1180,7 @@ function MappingView(p: MappingViewProps) {
         </DialogContent>
       </Dialog>
 
+      {/* 컬럼 매핑 */}
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
           <div className="flex items-baseline gap-2">
@@ -986,24 +1195,46 @@ function MappingView(p: MappingViewProps) {
           </span>
         </div>
         <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md border bg-border md:grid-cols-2">
-          {FIELDS.map((field) => (
-            <div key={field.value} className="bg-background">
-              <FieldRow
-                field={field}
-                preview={preview}
-                columns={mapping[field.value] ?? []}
-                usedColumnSet={usedColumnSet}
-                emptyColumnSet={emptyColumnSet}
-                hoveredColumnIdx={hoveredColumnIdx}
-                setHoveredColumnIdx={setHoveredColumnIdx}
-                onAdd={(idx) => addColumn(field.value, idx)}
-                onRemove={(idx) => removeColumn(field.value, idx)}
-              />
-            </div>
-          ))}
+          {FIELDS.map((field) => {
+            // 주문일자는 고정 날짜 모드 UI를 별도 렌더링
+            if (field.value === 'orderDate') {
+              return (
+                <div key={field.value} className="bg-background">
+                  <OrderDateRow
+                    preview={preview}
+                    columns={mapping['orderDate'] ?? []}
+                    usedColumnSet={usedColumnSet}
+                    emptyColumnSet={emptyColumnSet}
+                    hoveredColumnIdx={hoveredColumnIdx}
+                    setHoveredColumnIdx={setHoveredColumnIdx}
+                    onAdd={(idx) => addColumn('orderDate', idx)}
+                    onRemove={(idx) => removeColumn('orderDate', idx)}
+                    orderDateFixed={orderDateFixed}
+                    onOrderDateFixedChange={onOrderDateFixedChange}
+                  />
+                </div>
+              )
+            }
+            return (
+              <div key={field.value} className="bg-background">
+                <FieldRow
+                  field={field}
+                  preview={preview}
+                  columns={mapping[field.value] ?? []}
+                  usedColumnSet={usedColumnSet}
+                  emptyColumnSet={emptyColumnSet}
+                  hoveredColumnIdx={hoveredColumnIdx}
+                  setHoveredColumnIdx={setHoveredColumnIdx}
+                  onAdd={(idx) => addColumn(field.value, idx)}
+                  onRemove={(idx) => removeColumn(field.value, idx)}
+                />
+              </div>
+            )
+          })}
         </div>
       </section>
 
+      {/* 샘플 데이터 */}
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
           <Label className="text-sm">샘플 데이터</Label>
@@ -1089,6 +1320,151 @@ function MappingView(p: MappingViewProps) {
           </Table>
         </div>
       </section>
+    </div>
+  )
+}
+
+// ---------- 주문일자 행 (고정 날짜 모드 포함) ----------
+
+type OrderDateRowProps = {
+  preview: Preview
+  columns: number[]
+  usedColumnSet: Set<number>
+  emptyColumnSet: Set<number>
+  hoveredColumnIdx: number | null
+  setHoveredColumnIdx: (v: number | null) => void
+  onAdd: (idx: number) => void
+  onRemove: (idx: number) => void
+  orderDateFixed: string | null
+  onOrderDateFixedChange: (v: string | null) => void
+}
+
+function OrderDateRow({
+  preview,
+  columns,
+  usedColumnSet,
+  emptyColumnSet,
+  hoveredColumnIdx,
+  setHoveredColumnIdx,
+  onAdd,
+  onRemove,
+  orderDateFixed,
+  onOrderDateFixedChange,
+}: OrderDateRowProps) {
+  const isFixed = orderDateFixed !== null
+
+  function handleModeChange(mode: 'column' | 'fixed') {
+    if (mode === 'fixed') {
+      onOrderDateFixedChange(yesterdayLocal())
+    } else {
+      onOrderDateFixedChange(null)
+    }
+  }
+
+  return (
+    <div className="flex items-start gap-3 px-3 py-2">
+      <div className="w-28 shrink-0 pt-1.5 text-sm">
+        <span>주문일자</span>
+      </div>
+      <div className="flex flex-1 flex-col gap-2">
+        {/* 모드 토글 */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleModeChange('column')}
+            className={cn(
+              'rounded px-2 py-0.5 text-xs transition-colors',
+              !isFixed
+                ? 'bg-primary/10 font-medium text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            파일 컬럼
+          </button>
+          <span className="text-xs text-muted-foreground">/</span>
+          <button
+            type="button"
+            onClick={() => handleModeChange('fixed')}
+            className={cn(
+              'rounded px-2 py-0.5 text-xs transition-colors',
+              isFixed
+                ? 'bg-primary/10 font-medium text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            고정 날짜
+          </button>
+        </div>
+
+        {/* 모드별 입력 */}
+        {isFixed ? (
+          <Input
+            type="date"
+            value={orderDateFixed ?? ''}
+            onChange={(e) => onOrderDateFixedChange(e.target.value || null)}
+            className="h-7 w-40 text-xs"
+          />
+        ) : (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {columns.map((colIdx) => (
+              <Badge
+                key={colIdx}
+                variant="secondary"
+                className={cn(
+                  'gap-1 py-0.5 pr-1 pl-2 text-xs font-normal transition-colors',
+                  hoveredColumnIdx === colIdx && 'bg-primary/20 ring-1 ring-primary/40'
+                )}
+                onMouseEnter={() => setHoveredColumnIdx(colIdx)}
+                onMouseLeave={() => setHoveredColumnIdx(null)}
+              >
+                <span>{preview.headers[colIdx] || `컬럼 ${colIdx + 1}`}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemove(colIdx)}
+                  className="rounded-full p-0.5 hover:bg-muted-foreground/20"
+                  aria-label={`${preview.headers[colIdx]} 매핑 제거`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+            <Select
+              value=""
+              onValueChange={(v) => {
+                if (v) onAdd(Number(v))
+              }}
+            >
+              <SelectTrigger className="h-7 w-auto min-w-[9rem] border-dashed text-xs">
+                <SelectValue placeholder={columns.length === 0 ? '+ 파일 컬럼 선택' : '+ 컬럼 추가'} />
+              </SelectTrigger>
+              <SelectContent>
+                {preview.headers
+                  .map((header, idx) => ({ header, idx }))
+                  .filter(({ idx }) => !emptyColumnSet.has(idx))
+                  .map(({ header, idx }) => {
+                    const inThisField = columns.includes(idx)
+                    const inOtherField = !inThisField && usedColumnSet.has(idx)
+                    return (
+                      <SelectItem key={idx} value={String(idx)} disabled={inThisField || inOtherField}>
+                        <span className="flex items-center">
+                          {header || `컬럼 ${idx + 1}`}
+                          {inOtherField && (
+                            <span className="ml-2 text-[10px] text-muted-foreground">
+                              (이미 사용됨)
+                            </span>
+                          )}
+                          {inThisField && (
+                            <span className="ml-2 text-[10px] text-muted-foreground">(매핑됨)</span>
+                          )}
+                        </span>
+                      </SelectItem>
+                    )
+                  })}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -1190,7 +1566,9 @@ function FieldRow({
           </SelectContent>
         </Select>
         {columns.length > 1 && (
-          <span className="ml-1 text-[11px] text-muted-foreground">공백으로 결합</span>
+          <span className="ml-1 text-[11px] text-muted-foreground">
+            {field.value === 'paymentAmount' ? '숫자 합계로 계산' : '공백으로 결합'}
+          </span>
         )}
       </div>
     </div>
