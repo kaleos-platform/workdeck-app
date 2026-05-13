@@ -4,6 +4,27 @@
  */
 import * as XLSX from 'xlsx'
 
+/**
+ * Date 인스턴스를 로컬 타임존 기준 YYYY-MM-DD 문자열로 변환한다.
+ * toISOString()은 UTC 기준이라 9시간 차이로 날짜가 밀릴 수 있으므로 사용하지 않는다.
+ */
+function formatDateLocal(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/**
+ * 셀 값을 문자열로 정규화한다.
+ * - Date 인스턴스 → formatDateLocal
+ * - 그 외 → String()
+ */
+function cellToString(cell: unknown): string {
+  if (cell instanceof Date) return formatDateLocal(cell)
+  return cell != null ? String(cell) : ''
+}
+
 /** 파일 미리보기 결과 */
 export type FilePreview = {
   headers: string[]
@@ -77,7 +98,7 @@ function normalizePostalCode(raw: string): string {
  * sheet_to_json 이 반환하는 희소(sparse) 배열을 정상 배열로 변환한다.
  */
 export function previewFile(buffer: ArrayBuffer, sheetName?: string): FilePreview {
-  const wb = XLSX.read(buffer, { type: 'array' })
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
   const sheetNames = wb.SheetNames
   const activeSheet = sheetName && sheetNames.includes(sheetName) ? sheetName : sheetNames[0]
   const ws = wb.Sheets[activeSheet]
@@ -93,7 +114,7 @@ export function previewFile(buffer: ArrayBuffer, sheetName?: string): FilePrevie
   const headers = Array.from({ length: maxColumns }, (_, i) => String(headerRow[i] ?? '').trim())
   const sampleRows = dataRowsRaw
     .slice(0, 5)
-    .map((row) => Array.from({ length: maxColumns }, (_, i) => String(row[i] ?? '')))
+    .map((row) => Array.from({ length: maxColumns }, (_, i) => cellToString(row[i])))
 
   const columnHasData: boolean[] = Array.from({ length: maxColumns }, () => false)
   for (const row of dataRowsRaw) {
@@ -125,7 +146,7 @@ export function parseWithMapping(
   buffer: ArrayBuffer,
   mapping: ColumnMapping
 ): { rows: ParsedOrderRow[]; errors: { row: number; message: string }[] } {
-  const wb = XLSX.read(buffer, { type: 'array' })
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
   const ws = wb.Sheets[wb.SheetNames[0]]
   const jsonRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
 
@@ -136,8 +157,11 @@ export function parseWithMapping(
   const errors: { row: number; message: string }[] = []
 
   for (let i = 0; i < dataRows.length; i++) {
-    const row = dataRows[i]
+    const rawRow = dataRows[i]
     const rowNum = i + 2 // Excel 행 번호 (1-based + header)
+
+    // Date 인스턴스를 YYYY-MM-DD 문자열로 정규화
+    const row = rawRow.map((cell: unknown) => (cell instanceof Date ? formatDateLocal(cell) : cell))
 
     const get = (idx: number | number[] | undefined): string => {
       if (idx === undefined) return ''
@@ -162,15 +186,16 @@ export function parseWithMapping(
       continue
     }
 
-    // 날짜 파싱 (4~5자리 Excel 시리얼 넘버 지원)
+    // 날짜 파싱 — cellDates:true로 Date 인스턴스는 이미 위에서 문자열로 변환됨
+    // 텍스트 숫자 셀 폴백: 4~6자리 시리얼 넘버 처리
     let orderDate = orderDateRaw
     if (!orderDate) {
-      orderDate = new Date().toISOString().split('T')[0]
-    } else if (/^\d{4,5}$/.test(orderDate)) {
+      orderDate = formatDateLocal(new Date())
+    } else if (/^\d{4,6}$/.test(orderDate)) {
       const serial = Number(orderDate)
-      if (serial > 1000) {
-        const excelDate = new Date((serial - 25569) * 86400000)
-        orderDate = excelDate.toISOString().split('T')[0]
+      const parsed = XLSX.SSF.parse_date_code(serial)
+      if (parsed) {
+        orderDate = `${parsed.y}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`
       }
     }
 
