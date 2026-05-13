@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useCallback } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -70,6 +70,8 @@ type RegistrationTableProps = {
     itemId: string,
     patch: { quantity: number }
   ) => void | Promise<void>
+  // DB에 저장된 행의 셀 변경 시 즉시 서버 PATCH 콜백
+  onRowPatch?: (orderId: string, patch: Record<string, unknown>) => void | Promise<void>
 }
 
 let tempCounter = 0
@@ -111,9 +113,26 @@ export function RegistrationTable({
   onOpenMatch,
   onClearMatch,
   onItemPatch,
+  onRowPatch,
 }: RegistrationTableProps) {
   const selectionEnabled = !!selectedIds && !!onSelectionChange
   const lastClickedIndexRef = useRef<number | null>(null)
+  // onFocus 시 각 셀의 초기값 스냅샷 — key: `${tempId}:${field}`
+  const focusSnapRef = useRef<Map<string, string>>(new Map())
+
+  // DB 행에 대해 변경이 있을 때만 PATCH (onBlur 방식 셀용)
+  const patchIfChanged = useCallback(
+    (tempId: string, field: string, currentValue: string, patch: Record<string, unknown>) => {
+      if (tempId.startsWith('temp-')) return
+      if (!onRowPatch) return
+      const snapKey = `${tempId}:${field}`
+      const snapValue = focusSnapRef.current.get(snapKey)
+      if (snapValue === undefined || snapValue === currentValue) return
+      focusSnapRef.current.delete(snapKey)
+      void onRowPatch(tempId, patch)
+    },
+    [onRowPatch]
+  )
 
   function addRow() {
     onChange([...rows, createEmptyRow()])
@@ -235,9 +254,13 @@ export function RegistrationTable({
                     <TableCell>
                       <Select
                         value={row.shippingMethodId || NO_VALUE}
-                        onValueChange={(v) =>
-                          updateRow(row.tempId, 'shippingMethodId', v === NO_VALUE ? '' : v)
-                        }
+                        onValueChange={(v) => {
+                          const newVal = v === NO_VALUE ? '' : v
+                          updateRow(row.tempId, 'shippingMethodId', newVal)
+                          if (!row.tempId.startsWith('temp-') && onRowPatch) {
+                            void onRowPatch(row.tempId, { shippingMethodId: newVal || null })
+                          }
+                        }}
                       >
                         <SelectTrigger
                           className={cn('h-8 text-xs', missingShipping && REQUIRED_INVALID)}
@@ -257,9 +280,13 @@ export function RegistrationTable({
                     <TableCell>
                       <Select
                         value={row.channelId || NO_VALUE}
-                        onValueChange={(v) =>
-                          updateRow(row.tempId, 'channelId', v === NO_VALUE ? '' : v)
-                        }
+                        onValueChange={(v) => {
+                          const newVal = v === NO_VALUE ? '' : v
+                          updateRow(row.tempId, 'channelId', newVal)
+                          if (!row.tempId.startsWith('temp-') && onRowPatch) {
+                            void onRowPatch(row.tempId, { channelId: newVal || null })
+                          }
+                        }}
                       >
                         <SelectTrigger
                           className={cn('h-8 text-xs', missingChannel && REQUIRED_INVALID)}
@@ -281,9 +308,20 @@ export function RegistrationTable({
                         rows={1}
                         className={CELL_TEXTAREA}
                         value={row.recipientName}
+                        onFocus={() => {
+                          focusSnapRef.current.set(`${row.tempId}:recipientName`, row.recipientName)
+                        }}
                         onChange={(e) =>
                           updateRow(row.tempId, 'recipientName', trimStart(e.target.value))
                         }
+                        onBlur={(e) => {
+                          const current = trimStart(e.target.value)
+                          patchIfChanged(row.tempId, 'recipientName', current, {
+                            recipientName: current,
+                            phone: row.phone,
+                            address: row.address,
+                          })
+                        }}
                         placeholder="이름"
                       />
                     </TableCell>
@@ -292,7 +330,18 @@ export function RegistrationTable({
                         rows={1}
                         className={CELL_TEXTAREA}
                         value={row.phone}
+                        onFocus={() => {
+                          focusSnapRef.current.set(`${row.tempId}:phone`, row.phone)
+                        }}
                         onChange={(e) => updateRow(row.tempId, 'phone', trimStart(e.target.value))}
+                        onBlur={(e) => {
+                          const current = trimStart(e.target.value)
+                          patchIfChanged(row.tempId, 'phone', current, {
+                            recipientName: row.recipientName,
+                            phone: current,
+                            address: row.address,
+                          })
+                        }}
                         placeholder="010-0000-0000"
                       />
                     </TableCell>
@@ -301,9 +350,20 @@ export function RegistrationTable({
                         rows={1}
                         className={CELL_TEXTAREA}
                         value={row.address}
+                        onFocus={() => {
+                          focusSnapRef.current.set(`${row.tempId}:address`, row.address)
+                        }}
                         onChange={(e) =>
                           updateRow(row.tempId, 'address', trimStart(e.target.value))
                         }
+                        onBlur={(e) => {
+                          const current = trimStart(e.target.value)
+                          patchIfChanged(row.tempId, 'address', current, {
+                            recipientName: row.recipientName,
+                            phone: row.phone,
+                            address: current,
+                          })
+                        }}
                         placeholder="주소"
                       />
                     </TableCell>
@@ -312,9 +372,21 @@ export function RegistrationTable({
                         rows={1}
                         className={CELL_TEXTAREA}
                         value={row.deliveryMessage}
+                        onFocus={() => {
+                          focusSnapRef.current.set(
+                            `${row.tempId}:deliveryMessage`,
+                            row.deliveryMessage
+                          )
+                        }}
                         onChange={(e) =>
                           updateRow(row.tempId, 'deliveryMessage', trimStart(e.target.value))
                         }
+                        onBlur={(e) => {
+                          const current = trimStart(e.target.value)
+                          patchIfChanged(row.tempId, 'deliveryMessage', current, {
+                            deliveryMessage: current,
+                          })
+                        }}
                         placeholder="메시지"
                       />
                     </TableCell>
@@ -345,7 +417,13 @@ export function RegistrationTable({
                         className="h-8 text-xs"
                         type="date"
                         value={row.orderDate}
-                        onChange={(e) => updateRow(row.tempId, 'orderDate', e.target.value)}
+                        onChange={(e) => {
+                          const newVal = e.target.value
+                          updateRow(row.tempId, 'orderDate', newVal)
+                          if (!row.tempId.startsWith('temp-') && onRowPatch && newVal) {
+                            void onRowPatch(row.tempId, { orderDate: newVal })
+                          }
+                        }}
                       />
                     </TableCell>
                     <TableCell>
@@ -353,9 +431,18 @@ export function RegistrationTable({
                         rows={1}
                         className={cn(CELL_TEXTAREA, missingOrderNumber && REQUIRED_INVALID)}
                         value={row.orderNumber}
+                        onFocus={() => {
+                          focusSnapRef.current.set(`${row.tempId}:orderNumber`, row.orderNumber)
+                        }}
                         onChange={(e) =>
                           updateRow(row.tempId, 'orderNumber', trimStart(e.target.value))
                         }
+                        onBlur={(e) => {
+                          const current = trimStart(e.target.value)
+                          patchIfChanged(row.tempId, 'orderNumber', current, {
+                            orderNumber: current,
+                          })
+                        }}
                         placeholder={requireOrderNumber ? '주문번호 *' : '주문번호'}
                       />
                     </TableCell>
@@ -367,9 +454,18 @@ export function RegistrationTable({
                         value={
                           row.paymentAmount ? Number(row.paymentAmount).toLocaleString('ko-KR') : ''
                         }
+                        onFocus={() => {
+                          focusSnapRef.current.set(`${row.tempId}:paymentAmount`, row.paymentAmount)
+                        }}
                         onChange={(e) => {
                           const digits = e.target.value.replace(/[^0-9]/g, '')
                           updateRow(row.tempId, 'paymentAmount', digits)
+                        }}
+                        onBlur={(e) => {
+                          const digits = e.target.value.replace(/[^0-9]/g, '')
+                          patchIfChanged(row.tempId, 'paymentAmount', digits, {
+                            paymentAmount: digits ? Number(digits) : null,
+                          })
                         }}
                         placeholder={requirePayment ? '금액 *' : '금액'}
                       />
@@ -379,7 +475,14 @@ export function RegistrationTable({
                         rows={1}
                         className={CELL_TEXTAREA}
                         value={row.memo}
+                        onFocus={() => {
+                          focusSnapRef.current.set(`${row.tempId}:memo`, row.memo)
+                        }}
                         onChange={(e) => updateRow(row.tempId, 'memo', trimStart(e.target.value))}
+                        onBlur={(e) => {
+                          const current = trimStart(e.target.value)
+                          patchIfChanged(row.tempId, 'memo', current, { memo: current })
+                        }}
                         placeholder="메모"
                       />
                     </TableCell>

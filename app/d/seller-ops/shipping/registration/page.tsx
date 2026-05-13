@@ -374,6 +374,24 @@ export default function ShippingRegistrationPage() {
     setRows((prev) => [...prev, ...pastedRows])
   }
 
+  async function handleRowPatch(orderId: string, patch: Record<string, unknown>) {
+    if (orderId.startsWith('temp-')) return
+    try {
+      const res = await fetch(`/api/sh/shipping/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error((data as { message?: string })?.message ?? '저장 실패')
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '저장 실패')
+      setRefreshKey((k) => k + 1)
+    }
+  }
+
   async function handleItemPatch(orderId: string, itemId: string, patch: { quantity: number }) {
     if (orderId.startsWith('temp-')) return // 아직 저장 전이면 로컬만
     try {
@@ -716,6 +734,7 @@ export default function ShippingRegistrationPage() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         onItemPatch={handleItemPatch}
+        onRowPatch={handleRowPatch}
         onOpenMatch={async (row, itemIndex) => {
           const item = row.items[itemIndex]
           if (!item) return
