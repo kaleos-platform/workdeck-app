@@ -1065,8 +1065,9 @@ function MappingView(p: MappingViewProps) {
                       aria-label={`${pr.name} 삭제`}
                       className="ml-2 shrink-0 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       onClick={async () => {
+                        const wasLast = presets.length === 1
                         await onDeletePreset(pr)
-                        if (presets.length <= 1) setManageOpen(false)
+                        if (wasLast) setManageOpen(false)
                       }}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
