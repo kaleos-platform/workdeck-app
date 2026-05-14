@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RegistrationTable, type OrderRow } from '@/components/sh/shipping/registration-table'
+import { type OrderProduct } from '@/components/sh/shipping/order-product-fields'
 import { BulkPasteDialog } from '@/components/sh/shipping/bulk-paste-dialog'
 import { DeliveryFileDialog } from '@/components/sh/shipping/delivery-file-dialog'
 import { ProductMatchDialog, type MatchResult } from '@/components/sh/shipping/product-match-dialog'
@@ -563,6 +564,12 @@ export default function ShippingRegistrationPage() {
   const needsChannelSetup = baseDataLoaded && channels.length === 0
   const needsSetup = needsShippingMethodSetup || needsChannelSetup
 
+  // 상품 옵션 매칭 여부 — 이름이 있는 아이템은 단일 옵션·판매채널 listing·수동 fulfillment 중 하나로 매칭되어야 한다.
+  // 매칭되지 않으면 배송 파일에 옵션 식별 정보가 누락되므로 파일 생성·처리 완료를 차단한다.
+  const isItemMatched = (item: OrderProduct) =>
+    !!item.optionId || !!item.listingId || (item.fulfillments?.length ?? 0) > 0
+  const hasUnmatchedItems = rows.some((r) => r.items.some((it) => it.name && !isItemMatched(it)))
+
   const allRowsValid =
     rows.length > 0 &&
     rows.every((r) => {
@@ -575,14 +582,16 @@ export default function ShippingRegistrationPage() {
       if (channel.requireProducts && r.items.filter((i) => i.name).length === 0) return false
       return true
     })
-  const actionsDisabled = rows.length === 0 || !allRowsValid || needsSetup
+  const actionsDisabled = rows.length === 0 || !allRowsValid || hasUnmatchedItems || needsSetup
   const actionsDisabledReason = needsSetup
     ? '배송 방식·판매 채널 등록이 필요합니다'
     : rows.length === 0
       ? '등록된 주문이 없습니다'
       : !allRowsValid
         ? '모든 행의 배송방식·판매채널과 필수값을 입력해 주세요'
-        : undefined
+        : hasUnmatchedItems
+          ? '매칭되지 않은 상품이 있습니다 — 상품 매칭을 완료해 주세요'
+          : undefined
 
   return (
     <div className="space-y-6">

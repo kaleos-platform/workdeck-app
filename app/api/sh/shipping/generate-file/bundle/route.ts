@@ -125,6 +125,15 @@ export async function POST(req: NextRequest) {
     return errorResponse('배송 방식이 지정되지 않은 주문이 있습니다', 400)
   }
 
+  // 상품 옵션 매칭 미완료 아이템(이름은 있는데 optionId/listingId/fulfillment 모두 없음)이 있으면 차단.
+  // 매칭 누락 시 배송 파일에 옵션 식별 정보가 빠져 3PL/택배사에서 처리 불가.
+  const hasUnmatched = orders.some((o) =>
+    o.items.some((i) => i.name && !i.optionId && !i.listingId && i.fulfillments.length === 0)
+  )
+  if (hasUnmatched) {
+    return errorResponse('상품 매칭이 완료되지 않은 주문이 있습니다', 400)
+  }
+
   // 방식별 그룹핑
   const ordersByMethod = new Map<string, typeof orders>()
   for (const o of orders) {
