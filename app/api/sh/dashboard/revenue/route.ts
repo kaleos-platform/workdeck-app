@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
     >()
 
     for (const order of dateOrders) {
-      if (!order.channelId) continue
+      if (!order.channelId || !order.orderDate) continue
       // KST 기준으로 YYYY-MM-DD 계산 (UTC+9)
       const kstMs = order.orderDate.getTime() + 9 * 60 * 60 * 1000
       const date = new Date(kstMs).toISOString().slice(0, 10)
