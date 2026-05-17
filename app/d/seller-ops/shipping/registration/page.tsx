@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RegistrationTable, type OrderRow } from '@/components/sh/shipping/registration-table'
+import type { OrderProduct } from '@/components/sh/shipping/order-product-fields'
 import { BulkPasteDialog } from '@/components/sh/shipping/bulk-paste-dialog'
 import { DeliveryFileDialog } from '@/components/sh/shipping/delivery-file-dialog'
 import { ProductMatchDialog, type MatchResult } from '@/components/sh/shipping/product-match-dialog'
@@ -49,6 +50,7 @@ type Channel = {
   requireOrderNumber: boolean
   requirePayment: boolean
   requireProducts: boolean
+  requireOrderDate: boolean
 }
 
 export default function ShippingRegistrationPage() {
@@ -247,14 +249,12 @@ export default function ShippingRegistrationPage() {
     if (newRows.length === 0) return empty
 
     const isSavable = (r: (typeof newRows)[number]) =>
-      !!(r.recipientName && r.phone && r.address && r.orderDate)
+      !!(r.recipientName && r.phone && r.address) && r.items.some((i) => i.name && i.quantity >= 1)
     const savableRows = newRows.filter(isSavable)
     const skippedCount = newRows.length - savableRows.length
 
     if (strict && skippedCount > 0) {
-      toast.error(
-        `${skippedCount}건의 주문에 필수 정보가 누락되었습니다 (받는분·전화·주소·주문일자)`
-      )
+      toast.error(`${skippedCount}건의 주문에 필수 정보가 누락되었습니다`)
       return { ok: false, tempToSaved: new Map() }
     }
     if (savableRows.length === 0) {
@@ -275,7 +275,7 @@ export default function ShippingRegistrationPage() {
           address: r.address,
           postalCode: r.postalCode || null,
           deliveryMessage: r.deliveryMessage || null,
-          orderDate: r.orderDate,
+          orderDate: r.orderDate || null,
           orderNumber: r.orderNumber || null,
           paymentAmount: r.paymentAmount ? Number(r.paymentAmount) : null,
           items: r.items.filter((item) => item.name),
@@ -445,6 +445,81 @@ export default function ShippingRegistrationPage() {
     }
   }
 
+  // 상품 입력필드 추가 — 저장 전·후 모두 로컬 빈 행 push.
+  // 저장된 행에서 이름이 입력되어 blur되면 handleItemNameCommit이 POST 호출.
+  function handleItemAdd(rowTempId: string) {
+    setRows((prev) =>
+      prev.map((r) =>
+        r.tempId === rowTempId ? { ...r, items: [...r.items, { name: '', quantity: 1 }] } : r
+      )
+    )
+  }
+
+  // 상품 입력필드 삭제 — 저장된 아이템(itemId 있음)이면 DELETE API 호출.
+  async function handleItemRemove(rowTempId: string, index: number, item: OrderProduct) {
+    const isSaved = !rowTempId.startsWith('temp-')
+    if (isSaved && item.itemId) {
+      try {
+        const res = await fetch(`/api/sh/shipping/orders/${rowTempId}/items/${item.itemId}`, {
+          method: 'DELETE',
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data?.message ?? '상품 삭제 실패')
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '상품 삭제 실패')
+        return
+      }
+    }
+    setRows((prev) =>
+      prev.map((r) =>
+        r.tempId === rowTempId ? { ...r, items: r.items.filter((_, i) => i !== index) } : r
+      )
+    )
+  }
+
+  // 신규 아이템 이름 blur 시 — 저장된 행이고 아직 itemId 없으면 POST로 DB에 생성.
+  async function handleItemNameCommit(
+    rowTempId: string,
+    index: number,
+    name: string,
+    item: OrderProduct
+  ) {
+    const isSaved = !rowTempId.startsWith('temp-')
+    if (!isSaved) return
+    if (item.itemId) return
+    const trimmed = name.trim()
+    if (!trimmed) return
+    try {
+      const res = await fetch(`/api/sh/shipping/orders/${rowTempId}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed, quantity: item.quantity ?? 1 }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.message ?? '상품 추가 실패')
+      }
+      const data = await res.json()
+      if (!data?.item?.id) return
+      setRows((prev) =>
+        prev.map((r) =>
+          r.tempId === rowTempId
+            ? {
+                ...r,
+                items: r.items.map((it, i) =>
+                  i === index ? { ...it, itemId: data.item.id as string } : it
+                ),
+              }
+            : r
+        )
+      )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '상품 추가 실패')
+    }
+  }
+
   async function handleRemoveRow(tempId: string) {
     if (tempId.startsWith('temp-')) {
       setRows((prev) => prev.filter((r) => r.tempId !== tempId))
@@ -568,11 +643,13 @@ export default function ShippingRegistrationPage() {
     rows.every((r) => {
       if (!r.shippingMethodId || !r.channelId) return false
       if (!r.recipientName || !r.phone || !r.address) return false
+      const validItems = r.items.filter((i) => i.name && i.quantity >= 1)
+      if (validItems.length === 0) return false
       const channel = channels.find((c) => c.id === r.channelId)
       if (!channel) return false
       if (channel.requireOrderNumber && !r.orderNumber) return false
       if (channel.requirePayment && !r.paymentAmount) return false
-      if (channel.requireProducts && r.items.filter((i) => i.name).length === 0) return false
+      if (channel.requireOrderDate && !r.orderDate) return false
       return true
     })
   const actionsDisabled = rows.length === 0 || !allRowsValid || needsSetup
@@ -581,7 +658,7 @@ export default function ShippingRegistrationPage() {
     : rows.length === 0
       ? '등록된 주문이 없습니다'
       : !allRowsValid
-        ? '모든 행의 배송방식·판매채널과 필수값을 입력해 주세요'
+        ? '각 행의 필수값을 입력해 주세요 (빨갛게 표시된 항목)'
         : undefined
 
   return (
@@ -731,6 +808,9 @@ export default function ShippingRegistrationPage() {
         onSelectionChange={setSelectedIds}
         onItemPatch={handleItemPatch}
         onRowPatch={handleRowPatch}
+        onItemAdd={handleItemAdd}
+        onItemRemove={handleItemRemove}
+        onItemNameCommit={handleItemNameCommit}
         onOpenMatch={async (row, itemIndex) => {
           const item = row.items[itemIndex]
           if (!item) return
