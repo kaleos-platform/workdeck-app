@@ -52,6 +52,7 @@ type Channel = {
   requireOrderNumber: boolean
   requirePayment: boolean
   requireProducts: boolean
+  requireOrderDate: boolean
 }
 
 type RegistrationTableProps = {
@@ -72,6 +73,17 @@ type RegistrationTableProps = {
   ) => void | Promise<void>
   // DB에 저장된 행의 셀 변경 시 즉시 서버 PATCH 콜백
   onRowPatch?: (orderId: string, patch: Record<string, unknown>) => void | Promise<void>
+  // 상품 입력필드 추가 — 부모가 저장된 행이면 POST API 호출 등 처리
+  onItemAdd?: (rowTempId: string) => void | Promise<void>
+  // 상품 입력필드 삭제 — 부모가 저장된 아이템이면 DELETE API 호출 등 처리
+  onItemRemove?: (rowTempId: string, index: number, item: OrderProduct) => void | Promise<void>
+  // 신규 아이템 이름 blur 커밋 — 저장된 행이면 POST API 호출
+  onItemNameCommit?: (
+    rowTempId: string,
+    index: number,
+    name: string,
+    item: OrderProduct
+  ) => void | Promise<void>
 }
 
 let tempCounter = 0
@@ -114,6 +126,9 @@ export function RegistrationTable({
   onClearMatch,
   onItemPatch,
   onRowPatch,
+  onItemAdd,
+  onItemRemove,
+  onItemNameCommit,
 }: RegistrationTableProps) {
   const selectionEnabled = !!selectedIds && !!onSelectionChange
   const lastClickedIndexRef = useRef<number | null>(null)
@@ -189,12 +204,8 @@ export function RegistrationTable({
                   />
                 </TableHead>
               )}
-              <TableHead className="w-[76px]">
-                배송방식<span className="ml-0.5 text-destructive">*</span>
-              </TableHead>
-              <TableHead className="w-[76px]">
-                판매채널<span className="ml-0.5 text-destructive">*</span>
-              </TableHead>
+              <TableHead className="w-[76px]">배송방식</TableHead>
+              <TableHead className="w-[76px]">판매채널</TableHead>
               <TableHead className="w-[112px]">받는분</TableHead>
               <TableHead className="w-[150px]">전화</TableHead>
               <TableHead className="min-w-[260px]">주소</TableHead>
@@ -223,14 +234,21 @@ export function RegistrationTable({
                 const channel = channels.find((c) => c.id === row.channelId)
                 const requireOrderNumber = channel?.requireOrderNumber ?? false
                 const requirePayment = channel?.requirePayment ?? false
-                const requireProducts = channel?.requireProducts ?? false
+                const requireOrderDate = channel?.requireOrderDate ?? false
 
+                const validItems = row.items.filter((i) => i.name && i.quantity >= 1)
                 const missingShipping = !row.shippingMethodId
                 const missingChannel = !row.channelId
+                const missingRecipient = !row.recipientName
+                const missingPhone = !row.phone
+                const missingAddress = !row.address
+                const missingProducts = validItems.length === 0
+                const missingQuantity = row.items.some(
+                  (i) => i.name && (!i.quantity || i.quantity < 1)
+                )
+                const missingOrderDate = requireOrderDate && !row.orderDate
                 const missingOrderNumber = requireOrderNumber && !row.orderNumber
                 const missingPayment = requirePayment && !row.paymentAmount
-                const missingProducts =
-                  requireProducts && row.items.filter((i) => i.name).length === 0
 
                 return (
                   <TableRow
@@ -265,7 +283,7 @@ export function RegistrationTable({
                         <SelectTrigger
                           className={cn('h-8 text-xs', missingShipping && REQUIRED_INVALID)}
                         >
-                          <SelectValue placeholder="선택 *" />
+                          <SelectValue placeholder="선택" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={NO_VALUE}>선택</SelectItem>
@@ -291,7 +309,7 @@ export function RegistrationTable({
                         <SelectTrigger
                           className={cn('h-8 text-xs', missingChannel && REQUIRED_INVALID)}
                         >
-                          <SelectValue placeholder="선택 *" />
+                          <SelectValue placeholder="선택" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={NO_VALUE}>선택</SelectItem>
@@ -306,7 +324,7 @@ export function RegistrationTable({
                     <TableCell>
                       <Textarea
                         rows={1}
-                        className={CELL_TEXTAREA}
+                        className={cn(CELL_TEXTAREA, missingRecipient && REQUIRED_INVALID)}
                         value={row.recipientName}
                         onFocus={() => {
                           focusSnapRef.current.set(`${row.tempId}:recipientName`, row.recipientName)
@@ -328,7 +346,7 @@ export function RegistrationTable({
                     <TableCell>
                       <Textarea
                         rows={1}
-                        className={CELL_TEXTAREA}
+                        className={cn(CELL_TEXTAREA, missingPhone && REQUIRED_INVALID)}
                         value={row.phone}
                         onFocus={() => {
                           focusSnapRef.current.set(`${row.tempId}:phone`, row.phone)
@@ -348,7 +366,7 @@ export function RegistrationTable({
                     <TableCell>
                       <Textarea
                         rows={1}
-                        className={CELL_TEXTAREA}
+                        className={cn(CELL_TEXTAREA, missingAddress && REQUIRED_INVALID)}
                         value={row.address}
                         onFocus={() => {
                           focusSnapRef.current.set(`${row.tempId}:address`, row.address)
@@ -398,7 +416,17 @@ export function RegistrationTable({
                         matchEnabled={!!row.channelId}
                         onOpenMatch={(idx) => onOpenMatch?.(row, idx)}
                         onClearMatch={onClearMatch ? (idx) => onClearMatch(row, idx) : undefined}
-                        allowAdd={row.tempId.startsWith('temp-')}
+                        onItemAdd={onItemAdd ? () => onItemAdd(row.tempId) : undefined}
+                        onItemRemove={
+                          onItemRemove
+                            ? (idx, item) => onItemRemove(row.tempId, idx, item)
+                            : undefined
+                        }
+                        onItemNameCommit={
+                          onItemNameCommit
+                            ? (idx, name, item) => onItemNameCommit(row.tempId, idx, name, item)
+                            : undefined
+                        }
                       />
                     </TableCell>
                     <TableCell>
@@ -410,11 +438,12 @@ export function RegistrationTable({
                             ? (itemId, patch) => onItemPatch(row.tempId, itemId, patch)
                             : undefined
                         }
+                        invalid={missingQuantity}
                       />
                     </TableCell>
                     <TableCell>
                       <Input
-                        className="h-8 text-xs"
+                        className={cn('h-8 text-xs', missingOrderDate && REQUIRED_INVALID)}
                         type="date"
                         value={row.orderDate}
                         onChange={(e) => {
@@ -443,7 +472,7 @@ export function RegistrationTable({
                             orderNumber: current,
                           })
                         }}
-                        placeholder={requireOrderNumber ? '주문번호 *' : '주문번호'}
+                        placeholder="주문번호"
                       />
                     </TableCell>
                     <TableCell>
@@ -467,7 +496,7 @@ export function RegistrationTable({
                             paymentAmount: digits ? Number(digits) : null,
                           })
                         }}
-                        placeholder={requirePayment ? '금액 *' : '금액'}
+                        placeholder="금액"
                       />
                     </TableCell>
                     <TableCell>

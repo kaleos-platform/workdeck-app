@@ -211,6 +211,9 @@ export function OrderProductNamesCell({
   allowAdd = true,
   allowRemove = true,
   allowNameEdit = true,
+  onItemAdd,
+  onItemRemove,
+  onItemNameCommit,
 }: {
   value: OrderProduct[]
   onChange: (products: OrderProduct[]) => void
@@ -222,13 +225,27 @@ export function OrderProductNamesCell({
   allowAdd?: boolean
   allowRemove?: boolean
   allowNameEdit?: boolean
+  // 부모 위임 콜백 — 있으면 로컬 변경 대신 부모가 처리 (서버 동기화 포함)
+  onItemAdd?: () => void | Promise<void>
+  onItemRemove?: (index: number, item: OrderProduct) => void | Promise<void>
+  onItemNameCommit?: (index: number, name: string, item: OrderProduct) => void | Promise<void>
 }) {
   function addProduct() {
     if (value.length >= maxItems) return
+    if (onItemAdd) {
+      void onItemAdd()
+      return
+    }
     onChange([...value, { name: '', quantity: 1 }])
   }
 
   function removeProduct(index: number) {
+    if (value.length <= 1) return
+    const item = value[index]
+    if (onItemRemove) {
+      void onItemRemove(index, item)
+      return
+    }
     onChange(value.filter((_, i) => i !== index))
   }
 
@@ -247,6 +264,13 @@ export function OrderProductNamesCell({
           : p
       )
     )
+  }
+
+  function commitName(index: number, name: string) {
+    if (!onItemNameCommit) return
+    const item = value[index]
+    if (!item) return
+    void onItemNameCommit(index, name, item)
   }
 
   return (
@@ -268,6 +292,7 @@ export function OrderProductNamesCell({
                 )}
                 value={product.name}
                 onChange={(e) => updateName(i, trimStart(e.target.value))}
+                onBlur={(e) => commitName(i, trimStart(e.target.value))}
                 placeholder={invalid ? '상품명 *' : '상품명'}
               />
               {allowRemove && (
@@ -276,7 +301,8 @@ export function OrderProductNamesCell({
                   size="icon"
                   className="h-7 w-7 flex-shrink-0"
                   onClick={() => removeProduct(i)}
-                  title="삭제"
+                  disabled={value.length <= 1}
+                  title={value.length <= 1 ? '최소 1개 상품 필드는 유지됩니다' : '삭제'}
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -315,12 +341,14 @@ export function OrderProductQtyCell({
   value,
   onChange,
   onItemPatch,
+  invalid = false,
 }: {
   value: OrderProduct[]
   onChange: (products: OrderProduct[]) => void
   // 저장된 DB 아이템의 수량이 바뀌었을 때 서버에 즉시 PATCH.
   // 응답의 최신 fulfillments로 로컬 상태를 업데이트할 수 있도록 상위가 처리.
   onItemPatch?: (itemId: string, patch: { quantity: number }) => void | Promise<void>
+  invalid?: boolean
 }) {
   function commitQty(index: number, qty: number) {
     const cur = value[index]
@@ -335,7 +363,15 @@ export function OrderProductQtyCell({
     <div className="space-y-2">
       {value.map((product, i) => (
         <div key={i} className="space-y-1">
-          <QtyInput value={product.quantity} onCommit={(n) => commitQty(i, n)} />
+          <QtyInput
+            value={product.quantity}
+            onCommit={(n) => commitQty(i, n)}
+            className={cn(
+              invalid &&
+                (!product.quantity || product.quantity < 1) &&
+                'border-destructive/50 ring-2 ring-destructive/50'
+            )}
+          />
           {/* 상품 셀의 매칭 트리/버튼 높이와 맞추기 위한 invisible placeholder.
               가로 폭이 컬럼 min-width를 끌어올리지 않도록 w-0 + 자식 min-w-0/whitespace-nowrap=false로 차단.
               세로 높이는 그대로 유지되어 수량 입력 baseline이 상품 셀 매칭 트리와 정렬된다. */}

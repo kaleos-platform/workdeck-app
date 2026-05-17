@@ -120,3 +120,27 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     },
   })
 }
+
+/**
+ * DELETE /api/sh/shipping/orders/[orderId]/items/[itemId]
+ *
+ * 주문 아이템 삭제. DelOrderItemFulfillment는 cascade로 함께 삭제됨.
+ */
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  const resolved = await resolveDeckContext('seller-hub')
+  if ('error' in resolved) return resolved.error
+
+  const { orderId, itemId } = await params
+
+  const item = await prisma.delOrderItem.findFirst({
+    where: { id: itemId, orderId },
+    select: { id: true, order: { select: { spaceId: true } } },
+  })
+  if (!item || item.order.spaceId !== resolved.space.id) {
+    return errorResponse('주문 아이템을 찾을 수 없습니다', 404)
+  }
+
+  await prisma.delOrderItem.delete({ where: { id: itemId } })
+
+  return NextResponse.json({ ok: true })
+}
