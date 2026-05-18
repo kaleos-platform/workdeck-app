@@ -129,7 +129,53 @@ function readWorkbook(buffer: ArrayBuffer): XLSX.WorkBook {
     )
     return XLSX.read(sanitized, { type: 'string', cellDates: true })
   }
-  return XLSX.read(buffer, { type: 'array', cellDates: true })
+  // 바이너리 스프레드시트(XLSX zip / 레거시 XLS CFB)는 SheetJS가 자체 인코딩 처리하므로
+  // 바이트 그대로 전달. CSV/텍스트만 인코딩 정규화(UTF-8 / EUC-KR 자동 판별) 후 전달한다.
+  if (isBinarySpreadsheet(buffer)) {
+    return XLSX.read(buffer, { type: 'array', cellDates: true })
+  }
+  return XLSX.read(decodeCsv(buffer), { type: 'string', cellDates: true })
+}
+
+/**
+ * 바이너리 스프레드시트 매직넘버 감지.
+ * - XLSX(zip): 50 4B 03 04 ("PK\x03\x04")
+ * - 레거시 XLS(CFB/OLE2): D0 CF 11 E0 A1 B1 1A E1
+ * 텍스트 디코더/UTF-8 probe가 바이너리에서 오작동하지 않도록 분기 가드.
+ */
+function isBinarySpreadsheet(buffer: ArrayBuffer): boolean {
+  const b = new Uint8Array(buffer.slice(0, 8))
+  if (b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b && b[2] === 0x03 && b[3] === 0x04) {
+    return true // PK\x03\x04 (zip → xlsx)
+  }
+  const cfb = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]
+  return b.length >= 8 && cfb.every((v, i) => b[i] === v)
+}
+
+/**
+ * CSV/텍스트 버퍼를 인코딩 판별 후 문자열로 디코딩한다.
+ * 한국 쇼핑몰 CSV는 UTF-8 또는 EUC-KR/CP949 가 혼재하므로 자동 판별한다.
+ *  1. UTF-8 BOM(EF BB BF) → utf-8 (기본 디코더가 BOM 소비)
+ *  2. UTF-16 BOM(FF FE / FE FF) → utf-16le / utf-16be
+ *  3. utf-8 fatal 검증 통과 → utf-8 (BOM 없는 UTF-8, ASCII-only CP949 포함)
+ *  4. 실패(throw) → euc-kr (Node WHATWG euc-kr = CP949 디코더)
+ */
+function decodeCsv(buffer: ArrayBuffer): string {
+  const head = new Uint8Array(buffer.slice(0, 3))
+  if (head[0] === 0xef && head[1] === 0xbb && head[2] === 0xbf) {
+    return new TextDecoder('utf-8').decode(buffer)
+  }
+  if (head[0] === 0xff && head[1] === 0xfe) {
+    return new TextDecoder('utf-16le').decode(buffer)
+  }
+  if (head[0] === 0xfe && head[1] === 0xff) {
+    return new TextDecoder('utf-16be').decode(buffer)
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
+  } catch {
+    return new TextDecoder('euc-kr').decode(buffer)
+  }
 }
 
 /**
