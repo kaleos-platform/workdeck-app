@@ -295,14 +295,13 @@ export function OrderProductNamesCell({
                 onBlur={(e) => commitName(i, trimStart(e.target.value))}
                 placeholder={invalid ? '상품명 *' : '상품명'}
               />
-              {allowRemove && (
+              {allowRemove && value.length > 1 && (
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 flex-shrink-0"
                   onClick={() => removeProduct(i)}
-                  disabled={value.length <= 1}
-                  title={value.length <= 1 ? '최소 1개 상품 필드는 유지됩니다' : '삭제'}
+                  title="삭제"
                 >
                   <X className="h-3 w-3" />
                 </Button>
