@@ -133,13 +133,16 @@ export function ProductMatchDialog({
 
   useEffect(() => {
     if (open) {
-      setSearch('')
-      setDebouncedSearch('')
+      // 원본 상품명을 초기 검색어로 시드 — 신규(미학습) 상품도 관련 후보가 바로 좁혀진다.
+      // debounce 우회로 즉시 1차 조회. 사용자가 지우거나 수정하면 기존 흐름 그대로.
+      const seed = rawName ?? ''
+      setSearch(seed)
+      setDebouncedSearch(seed)
       setTab(channelSet ? 'listing' : 'manual')
       setManualItems([])
       setSelectedChannelProductId(null)
     }
-  }, [open, channelSet])
+  }, [open, channelSet, rawName])
 
   // 검색어 / 채널 변경 시 그룹 단계로 복귀
   useEffect(() => {
