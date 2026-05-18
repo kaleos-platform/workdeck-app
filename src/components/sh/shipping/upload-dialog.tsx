@@ -313,7 +313,6 @@ type Props = {
 }
 
 export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props) {
-  const [shippingMethodId, setShippingMethodId] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<Preview | null>(null)
   const [mapping, setMapping] = useState<Record<string, number[]>>({})
@@ -444,19 +443,6 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     let cancelled = false
     draftLoadedRef.current = false
     autoPresetTriedRef.current = false
-
-    void (async () => {
-      try {
-        const res = await fetch('/api/sh/shipping/shipping-methods?isActive=true')
-        const data = await res.json()
-        if (!cancelled) {
-          const first = (data.methods ?? [])[0]?.id
-          if (first) setShippingMethodId(first)
-        }
-      } catch {
-        // 조용히 실패
-      }
-    })()
 
     void (async () => {
       try {
@@ -669,7 +655,6 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       const formData = new FormData()
       formData.append('file', file)
       formData.append('batchId', batchId)
-      if (shippingMethodId) formData.append('shippingMethodId', shippingMethodId)
       formData.append('channelId', selectedChannelId)
 
       // 고정 날짜 모드면 orderDate를 { fixed: "YYYY-MM-DD" } 로 변환
@@ -1055,9 +1040,7 @@ function MappingView(p: MappingViewProps) {
                     <div className="min-w-0 flex-1">
                       <span className="block truncate text-xs">{pr.name}</span>
                       {pr.channel?.name && (
-                        <span className="text-[10px] text-muted-foreground">
-                          {pr.channel.name}
-                        </span>
+                        <span className="text-[10px] text-muted-foreground">{pr.channel.name}</span>
                       )}
                     </div>
                     <button
@@ -1436,7 +1419,9 @@ function OrderDateRow({
               }}
             >
               <SelectTrigger className="h-7 w-auto min-w-[9rem] border-dashed text-xs">
-                <SelectValue placeholder={columns.length === 0 ? '+ 파일 컬럼 선택' : '+ 컬럼 추가'} />
+                <SelectValue
+                  placeholder={columns.length === 0 ? '+ 파일 컬럼 선택' : '+ 컬럼 추가'}
+                />
               </SelectTrigger>
               <SelectContent>
                 {preview.headers
@@ -1446,7 +1431,11 @@ function OrderDateRow({
                     const inThisField = columns.includes(idx)
                     const inOtherField = !inThisField && usedColumnSet.has(idx)
                     return (
-                      <SelectItem key={idx} value={String(idx)} disabled={inThisField || inOtherField}>
+                      <SelectItem
+                        key={idx}
+                        value={String(idx)}
+                        disabled={inThisField || inOtherField}
+                      >
                         <span className="flex items-center">
                           {header || `컬럼 ${idx + 1}`}
                           {inOtherField && (
