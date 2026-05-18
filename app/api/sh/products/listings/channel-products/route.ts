@@ -85,7 +85,21 @@ export async function GET(req: NextRequest) {
   if (productId) {
     cpWhere.listings = { some: { items: { some: { option: { productId } } } } }
   }
-  if (search) {
+  // 토큰화: 공백 분리, 2글자 미만·순수 숫자/단위 토큰 제거 (노이즈 차단).
+  // 긴 원본 상품명("프렌치 스트라이프 순면 반팔 잠옷 세트 1장 그린 M")을 그대로
+  // contains 하면 매칭되지 않으므로, 토큰 OR 로 후보를 넓힌 뒤 히트 수로 정렬한다.
+  const searchTokens = search
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2 && !/^\d+(장|개|p|ea)?$/i.test(t))
+
+  if (searchTokens.length > 0) {
+    cpWhere.OR = searchTokens.flatMap((t) => [
+      { baseSearchName: { contains: t, mode: 'insensitive' as const } },
+      { baseManagementName: { contains: t, mode: 'insensitive' as const } },
+    ])
+  } else if (search) {
+    // 토큰이 모두 걸러진 짧은 검색어 — 원문 contains 로 조회
     cpWhere.OR = [
       { baseSearchName: { contains: search, mode: 'insensitive' } },
       { baseManagementName: { contains: search, mode: 'insensitive' } },
@@ -263,6 +277,17 @@ export async function GET(req: NextRequest) {
     statusFilter === 'all'
       ? groups
       : groups.filter((g) => g.statusCounts[statusFilter as keyof typeof g.statusCounts] > 0)
+
+  // 토큰 검색 시: 일치 토큰 수로 정렬해 정답을 상단에 노출.
+  // 토큰 OR 은 노이즈 후보를 포함하므로 순위로 보정한다 (제거하지 않고 하단 배치).
+  if (searchTokens.length > 0) {
+    const lowered = searchTokens.map((t) => t.toLowerCase())
+    const scoreOf = (g: (typeof filteredGroups)[number]) => {
+      const hay = `${g.baseSearchName ?? ''} ${g.baseManagementName ?? ''}`.toLowerCase()
+      return lowered.reduce((n, t) => (hay.includes(t) ? n + 1 : n), 0)
+    }
+    filteredGroups.sort((a, b) => scoreOf(b) - scoreOf(a))
+  }
 
   return NextResponse.json({ groups: filteredGroups })
 }
