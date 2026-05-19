@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 type RouteContext = { params: Promise<{ channelId: string }> }
 
 export async function PATCH(req: NextRequest, context: RouteContext) {
-  const resolved = await resolveDeckContext('inventory-mgmt')
+  const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
 
   const { channelId } = await context.params
