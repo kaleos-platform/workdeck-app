@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 
 type Location = { id: string; name: string; isActive: boolean }
 
@@ -39,6 +40,8 @@ export function ReconciliationUpload({ onUploaded }: Props) {
   const [snapshotDate, setSnapshotDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [file, setFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  // null = 조회 전, true/false = 쿠팡 광고 Deck 활성 여부
+  const [coupangActive, setCoupangActive] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -46,6 +49,14 @@ export function ReconciliationUpload({ onUploaded }: Props) {
       .then((r) => r.json())
       .then((data) => setLocations(data.locations ?? []))
       .catch(() => toast.error('보관 장소 조회 실패'))
+
+    fetch('/api/spaces')
+      .then((r) => r.json())
+      .then((data) => {
+        const decks: { id: string }[] = data?.space?.activeDecks ?? []
+        setCoupangActive(decks.some((d) => d.id === COUPANG_ADS_DECK_ID))
+      })
+      .catch(() => setCoupangActive(false))
   }, [open])
 
   function handleSuccess(data: { id: string; totalItems: number; matchedItems: number }) {
@@ -82,6 +93,9 @@ export function ReconciliationUpload({ onUploaded }: Props) {
   }
 
   async function handleIntegrationSubmit() {
+    if (coupangActive === false) {
+      return toast.error('쿠팡 광고 관리자 Deck을 먼저 연동해 주세요')
+    }
     if (!locationId) return toast.error('보관 장소를 선택해 주세요')
 
     setSubmitting(true)
@@ -164,13 +178,26 @@ export function ReconciliationUpload({ onUploaded }: Props) {
 
             <TabsContent value="integration" className="space-y-2 pt-2">
               <Label>연동 소스</Label>
-              <div className="rounded-md border p-3 text-sm">
-                <p className="font-medium">쿠팡 로켓그로스 재고</p>
-                <p className="text-xs text-muted-foreground">
-                  쿠팡 광고 관리자에서 수집된 최신 재고 스냅샷을 불러와 대조합니다. 기준일을 비우면
-                  가장 최근 스냅샷을 사용합니다.
-                </p>
-              </div>
+              {coupangActive === false ? (
+                <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900/50 dark:bg-amber-950/30">
+                  <p className="font-medium text-amber-900 dark:text-amber-200">
+                    쿠팡 광고 관리자 미사용 중
+                  </p>
+                  <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
+                    이 연동을 사용하려면 먼저 <strong>쿠팡 광고 관리자</strong> Deck을 연동해야
+                    합니다. 공간 설정에서 쿠팡 광고 관리자를 추가한 뒤 재고를 수집하면 이곳에서
+                    불러올 수 있습니다.
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-md border p-3 text-sm">
+                  <p className="font-medium">쿠팡 로켓그로스 재고</p>
+                  <p className="text-xs text-muted-foreground">
+                    쿠팡 광고 관리자에서 수집된 최신 재고 스냅샷을 불러와 대조합니다. 기준일을
+                    비우면 가장 최근 스냅샷을 사용합니다.
+                  </p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
@@ -181,7 +208,7 @@ export function ReconciliationUpload({ onUploaded }: Props) {
           </Button>
           <Button
             onClick={mode === 'file' ? handleFileSubmit : handleIntegrationSubmit}
-            disabled={submitting}
+            disabled={submitting || (mode === 'integration' && coupangActive === false)}
           >
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {mode === 'file' ? '업로드 및 분석' : '불러와서 대조'}
