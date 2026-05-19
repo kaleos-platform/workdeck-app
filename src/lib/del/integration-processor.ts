@@ -14,13 +14,11 @@ export async function pushToInventoryDeck(
   dateTo: Date,
   locationId: string
 ): Promise<IntegrationResult> {
-  // 1. Verify inventory deck is active
-  const invDeck = await prisma.deckInstance.findUnique({
-    where: { spaceId_deckAppId: { spaceId, deckAppId: 'inventory-mgmt' } },
-  })
-  if (!invDeck?.isActive) throw new Error('통합 재고 관리 덱이 활성화되지 않았습니다')
+  // 재고 기능은 seller-hub Deck으로 통합됨. 별도 inventory-mgmt Deck 활성
+  // 게이트는 제거(통합 이전 잔재). 호출부(push API)가 이미 seller-hub 컨텍스트를
+  // 검증하며, 아래 모든 처리는 spaceId 기반이라 별도 게이트가 불필요하다.
 
-  // 2. Get COMPLETED orders in date range with items and channel info
+  // 1. Get COMPLETED orders in date range with items and channel info
   const orders = await prisma.delOrder.findMany({
     where: {
       spaceId,
@@ -44,7 +42,7 @@ export async function pushToInventoryDeck(
     errors: [],
   }
 
-  // 3. For each order, create inventory movements
+  // 2. For each order, create inventory movements
   for (const order of orders) {
     if (!order.items.length) {
       result.skippedOrders++
@@ -95,7 +93,7 @@ export async function pushToInventoryDeck(
     }
   }
 
-  // 4. Record integration history
+  // 3. Record integration history
   await prisma.delIntegrationHistory.create({
     data: {
       spaceId,

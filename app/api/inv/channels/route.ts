@@ -4,7 +4,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
-  const resolved = await resolveDeckContext('inventory-mgmt')
+  const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
 
   const isActiveParam = req.nextUrl.searchParams.get('isActive')
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('inventory-mgmt')
+  const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))
