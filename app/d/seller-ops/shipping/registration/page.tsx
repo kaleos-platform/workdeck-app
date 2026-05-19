@@ -4,7 +4,7 @@
  * 배송 등록 페이지 — delivery-mgmt와 동일한 로직, seller-hub URL 기반
  * Phase 2에서 del → sh 컴포넌트 이전 후 이 파일을 정리한다
  */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
@@ -85,6 +85,9 @@ export default function ShippingRegistrationPage() {
     itemIndex: number
   } | null>(null)
   const [uploadOpen, setUploadOpen] = useState(false)
+  // 저장된 행 신규 아이템의 itemId 생성 POST 중복 방지: key=`${orderId}:${index}` → Promise<id|null>
+  // blur(handleItemNameCommit)와 클릭(onOpenMatch)이 같은 Promise를 공유 → POST 1회
+  const inflightItemPost = useRef<Map<string, Promise<string | null>>>(new Map())
 
   useEffect(() => {
     const raw = searchParams.get('imported')
@@ -479,6 +482,70 @@ export default function ShippingRegistrationPage() {
     )
   }
 
+  /**
+   * 저장된 행의 신규 아이템(itemId 미부여)을 DB에 생성하고 itemId를 반환한다.
+   * blur(handleItemNameCommit)와 매칭 클릭(onOpenMatch)이 동시에 호출해도
+   * key별 in-flight Promise를 공유해 POST가 1회만 발생한다.
+   * 반환: 생성/기존 itemId, 또는 가드 미충족·실패 시 null.
+   */
+  async function ensureSavedItemId(
+    rowTempId: string,
+    index: number,
+    name: string,
+    item: OrderProduct
+  ): Promise<string | null> {
+    if (rowTempId.startsWith('temp-')) return null // 미저장 행은 saveNewRows 경로
+    if (item.itemId) return item.itemId
+    const trimmed = name.trim()
+    if (!trimmed) return null
+
+    const key = `${rowTempId}:${index}`
+    const existing = inflightItemPost.current.get(key)
+    if (existing) return existing
+
+    const promise = (async (): Promise<string | null> => {
+      try {
+        const res = await fetch(`/api/sh/shipping/orders/${rowTempId}/items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: trimmed, quantity: item.quantity ?? 1 }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data?.message ?? '상품 추가 실패')
+        }
+        const data = await res.json()
+        const newId = data?.item?.id as string | undefined
+        if (!newId) return null
+        // POST 진행 중 다른 아이템 추가/삭제로 index가 밀릴 수 있으므로
+        // array index 대신 "itemId 없고 이름이 일치하는 아이템"으로 식별해 반영.
+        setRows((prev) =>
+          prev.map((r) => {
+            if (r.tempId !== rowTempId) return r
+            let applied = false
+            return {
+              ...r,
+              items: r.items.map((it) => {
+                if (applied || it.itemId || it.name.trim() !== trimmed) return it
+                applied = true
+                return { ...it, itemId: newId }
+              }),
+            }
+          })
+        )
+        return newId
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '상품 추가 실패')
+        return null
+      } finally {
+        inflightItemPost.current.delete(key)
+      }
+    })()
+
+    inflightItemPost.current.set(key, promise)
+    return promise
+  }
+
   // 신규 아이템 이름 blur 시 — 저장된 행이고 아직 itemId 없으면 POST로 DB에 생성.
   async function handleItemNameCommit(
     rowTempId: string,
@@ -486,38 +553,7 @@ export default function ShippingRegistrationPage() {
     name: string,
     item: OrderProduct
   ) {
-    const isSaved = !rowTempId.startsWith('temp-')
-    if (!isSaved) return
-    if (item.itemId) return
-    const trimmed = name.trim()
-    if (!trimmed) return
-    try {
-      const res = await fetch(`/api/sh/shipping/orders/${rowTempId}/items`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmed, quantity: item.quantity ?? 1 }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data?.message ?? '상품 추가 실패')
-      }
-      const data = await res.json()
-      if (!data?.item?.id) return
-      setRows((prev) =>
-        prev.map((r) =>
-          r.tempId === rowTempId
-            ? {
-                ...r,
-                items: r.items.map((it, i) =>
-                  i === index ? { ...it, itemId: data.item.id as string } : it
-                ),
-              }
-            : r
-        )
-      )
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '상품 추가 실패')
-    }
+    await ensureSavedItemId(rowTempId, index, name, item)
   }
 
   async function handleRemoveRow(tempId: string) {
@@ -826,26 +862,40 @@ export default function ShippingRegistrationPage() {
           let orderId = row.tempId
           let itemId = item.itemId ?? null
 
-          // 미저장 행이면 먼저 자동 저장 — 반환된 tempToSaved 맵에서 새 id를 바로 사용
           if (!itemId) {
-            const saveResult = await saveNewRows()
-            if (!saveResult.ok) return
-            const saved = saveResult.tempToSaved.get(row.tempId)
-            if (!saved) {
-              // 필수 필드 누락 등으로 이 행이 저장되지 않음
-              toast.error('받는분·전화·주소·주문일자를 먼저 입력해 주세요')
-              return
+            const isSavedRow = !row.tempId.startsWith('temp-')
+            if (isSavedRow) {
+              // 저장된 행의 신규 아이템: blur POST와 동일/공유 Promise로 itemId 확보
+              if (!item.name?.trim()) {
+                toast.error('상품명을 먼저 입력해 주세요')
+                return
+              }
+              const newItemId = await ensureSavedItemId(row.tempId, itemIndex, item.name, item)
+              if (!newItemId) return // 네트워크 오류 등 — ensure가 이미 toast
+              orderId = row.tempId
+              itemId = newItemId
+            } else {
+              // 미저장 temp- 행이면 먼저 자동 저장 — tempToSaved 맵에서 새 id를 사용
+              const saveResult = await saveNewRows()
+              if (!saveResult.ok) return
+              const saved = saveResult.tempToSaved.get(row.tempId)
+              if (!saved) {
+                // 필수 필드 누락 등으로 이 행이 저장되지 않음
+                toast.error('받는분·전화·주소·주문일자를 먼저 입력해 주세요')
+                return
+              }
+              // savableRow.items에서 name 있는 items 순서로 itemIds가 왔으므로
+              // 현재 item이 그 중 몇 번째 '이름 있는' 아이템인지 계산
+              const nameIndex =
+                row.items.slice(0, itemIndex + 1).filter((it) => !!it.name).length - 1
+              const savedItemId = nameIndex >= 0 ? saved.itemIds[nameIndex] : null
+              if (!savedItemId) {
+                toast.error('상품명이 비어 있어 저장되지 않았습니다')
+                return
+              }
+              orderId = saved.orderId
+              itemId = savedItemId
             }
-            // savableRow.items에서 name 있는 items 순서로 itemIds가 왔으므로
-            // 현재 item이 그 중 몇 번째 '이름 있는' 아이템인지 계산
-            const nameIndex = row.items.slice(0, itemIndex + 1).filter((it) => !!it.name).length - 1
-            const savedItemId = nameIndex >= 0 ? saved.itemIds[nameIndex] : null
-            if (!savedItemId) {
-              toast.error('상품명이 비어 있어 저장되지 않았습니다')
-              return
-            }
-            orderId = saved.orderId
-            itemId = savedItemId
           }
 
           setMatchTarget({

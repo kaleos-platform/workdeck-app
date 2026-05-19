@@ -616,7 +616,7 @@ export function ProductMatchDialog({
               disabled={!channelSet}
             />
             <span className={channelSet ? undefined : 'text-muted-foreground'}>
-              이 채널의 별칭으로 저장 — 다음부터 자동 매칭
+              이 채널의 매칭 상품으로 저장하고 다음부터 자동 매칭
             </span>
           </label>
           {!channelSet && (
