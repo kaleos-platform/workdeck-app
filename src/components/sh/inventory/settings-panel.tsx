@@ -4,6 +4,12 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
+import {
+  SELLER_HUB_LOCATIONS_PATH,
+  SELLER_HUB_MOVEMENTS_PATH,
+  SELLER_HUB_CHANNELS_PATH,
+} from '@/lib/deck-routes'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -178,7 +184,7 @@ export function SettingsPanel() {
               <div className="flex-1">
                 <p className="font-medium">위치 관리에서 보관 장소를 만드세요</p>
                 <Button asChild variant="link" size="sm" className="h-auto p-0">
-                  <Link href="/d/inventory-mgmt/locations">위치 관리로 이동 →</Link>
+                  <Link href={SELLER_HUB_LOCATIONS_PATH}>위치 관리로 이동 →</Link>
                 </Button>
               </div>
             </li>
@@ -191,7 +197,7 @@ export function SettingsPanel() {
                   입출고 관리에서 첫 입고를 등록하세요 (상품/옵션 자동 생성)
                 </p>
                 <Button asChild variant="link" size="sm" className="h-auto p-0">
-                  <Link href="/d/inventory-mgmt/movements">입출고 관리로 이동 →</Link>
+                  <Link href={SELLER_HUB_MOVEMENTS_PATH}>입출고 관리로 이동 →</Link>
                 </Button>
               </div>
             </li>
@@ -202,7 +208,7 @@ export function SettingsPanel() {
               <div className="flex-1">
                 <p className="font-medium">판매 채널 관리에서 출고용 채널을 등록하세요</p>
                 <Button asChild variant="link" size="sm" className="h-auto p-0">
-                  <Link href="/d/inventory-mgmt/channels">판매 채널 관리로 이동 →</Link>
+                  <Link href={SELLER_HUB_CHANNELS_PATH}>판매 채널 관리로 이동 →</Link>
                 </Button>
               </div>
             </li>
