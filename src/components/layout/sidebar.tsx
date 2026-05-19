@@ -50,7 +50,7 @@ import {
   SELLER_HUB_SHIPPING_REGISTRATION_PATH,
   SELLER_HUB_SHIPPING_ORDERS_PATH,
   SELLER_HUB_SHIPPING_METHODS_PATH,
-  SELLER_HUB_SHIPPING_INTEGRATION_PATH,
+  SELLER_HUB_SETTINGS_INTEGRATION_PATH,
   SELLER_HUB_CHANNELS_PATH,
   SALES_CONTENT_BASE_PATH,
   SALES_CONTENT_HOME_PATH,
@@ -107,13 +107,13 @@ const SELLER_HUB_SHIPPING_ITEMS: SidebarItem[] = [
   { label: '배송 등록', href: SELLER_HUB_SHIPPING_REGISTRATION_PATH },
   { label: '배송 데이터', href: SELLER_HUB_SHIPPING_ORDERS_PATH },
   { label: '배송 방식', href: SELLER_HUB_SHIPPING_METHODS_PATH },
-  { label: '데이터 연동', href: SELLER_HUB_SHIPPING_INTEGRATION_PATH },
 ]
 
-// "설정" 섹션 — 채널 관리 + 일반 설정을 한 곳으로 통합
+// "설정" 섹션 — 채널 관리 + 데이터 연동 + 일반 설정을 한 곳으로 통합
 const SELLER_HUB_SETTINGS_ITEMS: SidebarItem[] = [
   { label: '채널 관리', href: SELLER_HUB_CHANNELS_PATH },
   { label: '브랜드', href: SELLER_HUB_BRANDS_PATH },
+  { label: '데이터 연동', href: SELLER_HUB_SETTINGS_INTEGRATION_PATH },
   { label: '일반 설정', href: SELLER_HUB_SETTINGS_PATH },
 ]
 

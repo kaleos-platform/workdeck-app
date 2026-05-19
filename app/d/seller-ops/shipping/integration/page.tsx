@@ -1,15 +1,6 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { SELLER_HUB_SETTINGS_INTEGRATION_PATH } from '@/lib/deck-routes'
 
-import { IntegrationPanel } from '@/components/sh/shipping/integration-panel'
-
-export default function ShippingIntegrationPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">데이터 연동</h1>
-        <p className="text-sm text-muted-foreground">채널별 주문 데이터 연동 설정을 관리합니다</p>
-      </div>
-      <IntegrationPanel />
-    </div>
-  )
+export default function ShippingIntegrationRedirectPage() {
+  redirect(SELLER_HUB_SETTINGS_INTEGRATION_PATH)
 }
