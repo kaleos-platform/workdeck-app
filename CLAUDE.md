@@ -16,6 +16,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 응답 언어 (MUST)
+
+사용자에게 보이는 모든 응답은 **한국어**로 작성한다. 코드, 코드 주석, 식별자, 커밋 메시지 컨벤션 등 기술적 산출물은 기존 프로젝트 스타일을 따른다.
+
 ## 개발 명령어
 
 ```bash

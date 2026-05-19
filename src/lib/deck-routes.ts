@@ -48,6 +48,10 @@ export const SELLER_HUB_REORDER_PATH = `${SELLER_HUB_BASE_PATH}/inventory/reorde
 export const SELLER_HUB_SHIPPING_REGISTRATION_PATH = `${SELLER_HUB_BASE_PATH}/shipping/registration`
 export const SELLER_HUB_SHIPPING_ORDERS_PATH = `${SELLER_HUB_BASE_PATH}/shipping/orders`
 export const SELLER_HUB_SHIPPING_METHODS_PATH = `${SELLER_HUB_BASE_PATH}/shipping/methods`
+
+// 설정 섹션 — 데이터 연동 (다른 Deck·외부 데이터 연동 설정 허브)
+export const SELLER_HUB_SETTINGS_INTEGRATION_PATH = `${SELLER_HUB_BASE_PATH}/settings/integration`
+/** @deprecated `SELLER_HUB_SETTINGS_INTEGRATION_PATH` 사용. 구 URL 리다이렉트 호환용으로만 유지. */
 export const SELLER_HUB_SHIPPING_INTEGRATION_PATH = `${SELLER_HUB_BASE_PATH}/shipping/integration`
 
 // 채널 섹션
