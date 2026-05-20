@@ -89,6 +89,24 @@ export function InventoryAnalysisPanel() {
     minute: '2-digit',
   })
 
+  // Stale 감지 — snapshotDate가 KST 자정 기준 2일 이상 오래되면 경고 배너 표시
+  const snapshotKstMidnight = new Date(
+    new Date(data.snapshotDate).toLocaleString('en-US', { timeZone: 'Asia/Seoul' })
+  )
+  snapshotKstMidnight.setHours(0, 0, 0, 0)
+  const todayKstMidnight = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+  todayKstMidnight.setHours(0, 0, 0, 0)
+  const staleAgeDays = Math.floor(
+    (todayKstMidnight.getTime() - snapshotKstMidnight.getTime()) / 86_400_000
+  )
+  const isStale = staleAgeDays >= 2
+  const snapshotLabel = new Date(data.snapshotDate).toLocaleDateString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -124,6 +142,15 @@ export function InventoryAnalysisPanel() {
           </div>
         </div>
       </CardHeader>
+
+      {isStale && (
+        <CardContent className="pt-0 pb-3">
+          <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            ⚠️ 기준 데이터가 {staleAgeDays}일 전({snapshotLabel})입니다. 워커의 재고 수집 상태를
+            확인하세요.
+          </div>
+        </CardContent>
+      )}
 
       {totalIssues > 0 && (
         <CardContent className="space-y-2 pt-0">
@@ -224,7 +251,10 @@ function AnalysisSection({
           </Badge>
         </div>
         <ChevronDown
-          className={cn('h-4 w-4 text-muted-foreground transition-transform', expanded && 'rotate-180')}
+          className={cn(
+            'h-4 w-4 text-muted-foreground transition-transform',
+            expanded && 'rotate-180'
+          )}
         />
       </button>
       {expanded && <div className="border-t px-4 py-3">{children}</div>}
@@ -240,11 +270,11 @@ function ShortageTable({ items }: { items: StockShortageItem[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-xs text-muted-foreground">
-            <th className="pb-2 pr-4">상품명</th>
-            <th className="pb-2 pr-4">옵션명</th>
-            <th className="pb-2 pr-4 text-right">재고</th>
-            <th className="pb-2 pr-4 text-right">판매(30일)</th>
-            <th className="pb-2 pr-4 text-right">입고예정</th>
+            <th className="pr-4 pb-2">상품명</th>
+            <th className="pr-4 pb-2">옵션명</th>
+            <th className="pr-4 pb-2 text-right">재고</th>
+            <th className="pr-4 pb-2 text-right">판매(30일)</th>
+            <th className="pr-4 pb-2 text-right">입고예정</th>
             <th className="pb-2 text-right font-semibold text-red-600">필요입고</th>
           </tr>
         </thead>
@@ -277,10 +307,10 @@ function ReturnRateTable({ items }: { items: ReturnRateItem[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-xs text-muted-foreground">
-            <th className="pb-2 pr-4">상품명</th>
-            <th className="pb-2 pr-4">옵션명</th>
-            <th className="pb-2 pr-4 text-right">반품수</th>
-            <th className="pb-2 pr-4 text-right">판매수</th>
+            <th className="pr-4 pb-2">상품명</th>
+            <th className="pr-4 pb-2">옵션명</th>
+            <th className="pr-4 pb-2 text-right">반품수</th>
+            <th className="pr-4 pb-2 text-right">판매수</th>
             <th className="pb-2 text-right font-semibold text-yellow-600">반품율</th>
           </tr>
         </thead>
@@ -312,10 +342,10 @@ function StorageFeeTable({ items }: { items: StorageFeeItem[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-xs text-muted-foreground">
-            <th className="pb-2 pr-4">상품명</th>
-            <th className="pb-2 pr-4">옵션명</th>
-            <th className="pb-2 pr-4 text-right">보관료</th>
-            <th className="pb-2 pr-4 text-right">매출(30일)</th>
+            <th className="pr-4 pb-2">상품명</th>
+            <th className="pr-4 pb-2">옵션명</th>
+            <th className="pr-4 pb-2 text-right">보관료</th>
+            <th className="pr-4 pb-2 text-right">매출(30일)</th>
             <th className="pb-2 text-right font-semibold text-orange-600">보관료율</th>
           </tr>
         </thead>
@@ -349,8 +379,8 @@ function WinnerStatusTable({ items }: { items: WinnerStatusItem[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-xs text-muted-foreground">
-            <th className="pb-2 pr-4">상품명</th>
-            <th className="pb-2 pr-4">옵션명</th>
+            <th className="pr-4 pb-2">상품명</th>
+            <th className="pr-4 pb-2">옵션명</th>
             <th className="pb-2 text-right font-semibold text-blue-600">재고</th>
           </tr>
         </thead>

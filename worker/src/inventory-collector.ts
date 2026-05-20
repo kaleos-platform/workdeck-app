@@ -17,6 +17,8 @@ import { chromium, type BrowserContext, type Page } from 'playwright'
 
 export interface InventoryCollectorResult {
   inventoryHealth: { filePath: string; fileName: string } | null
+  /** 재고 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
+  inventoryHealthError?: string
 }
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
@@ -54,7 +56,7 @@ async function isWingLoggedIn(page: Page): Promise<boolean> {
 /** Wing 로그인 수행 */
 async function performWingLogin(
   page: Page,
-  credentials: { loginId: string; password: string },
+  credentials: { loginId: string; password: string }
 ): Promise<void> {
   console.log('[inventory] Wing 로그인 시도...')
   await page.goto(`${WING_URL}/login`, {
@@ -102,7 +104,7 @@ async function clickAndDownload(
   page: Page,
   downloadDir: string,
   btnLocator: ReturnType<Page['locator']>,
-  fallbackName: string,
+  fallbackName: string
 ): Promise<{ filePath: string; fileName: string }> {
   const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT })
   downloadPromise.catch(() => {})
@@ -147,7 +149,9 @@ async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
     await page.waitForTimeout(1000)
   }
 
-  const inventoryMenu = page.locator('a:has-text("재고현황"), button:has-text("재고현황"), text=재고현황').first()
+  const inventoryMenu = page
+    .locator('a:has-text("재고현황"), button:has-text("재고현황"), text=재고현황')
+    .first()
   if (await inventoryMenu.isVisible({ timeout: 5000 }).catch(() => false)) {
     await inventoryMenu.click({ force: true })
   } else {
@@ -166,7 +170,7 @@ async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
 /** 재고현황 엑셀 다운로드 */
 async function downloadInventoryHealth(
   page: Page,
-  downloadDir: string,
+  downloadDir: string
 ): Promise<{ filePath: string; fileName: string }> {
   await navigateToRocketGrowthInventory(page)
 
@@ -190,7 +194,11 @@ async function downloadInventoryHealth(
     requestBtn = page.locator('.backdrop div:has-text("엑셀 다운로드 요청")').first()
   }
   if (!(await requestBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-    requestBtn = page.locator('div[role="menuitem"]:has-text("엑셀 다운로드 요청"), li:has-text("엑셀 다운로드 요청")').first()
+    requestBtn = page
+      .locator(
+        'div[role="menuitem"]:has-text("엑셀 다운로드 요청"), li:has-text("엑셀 다운로드 요청")'
+      )
+      .first()
   }
 
   if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
@@ -204,7 +212,7 @@ async function downloadInventoryHealth(
     page,
     downloadDir,
     requestBtn,
-    `inventory_health_${Date.now()}.xlsx`,
+    `inventory_health_${Date.now()}.xlsx`
   )
 
   console.log(`[inventory]   → 재고현황 저장: ${result.fileName}`)
@@ -224,7 +232,7 @@ export async function collectInventoryData(
     downloadDir?: string
     browserDataDir?: string
     headless?: boolean
-  } = {},
+  } = {}
 ): Promise<InventoryCollectorResult> {
   const {
     downloadDir = path.resolve('.downloads'),
@@ -245,7 +253,7 @@ export async function collectInventoryData(
       viewport: { width: 1400, height: 900 },
       userAgent:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    },
+    }
   )
 
   const page = context.pages()[0] || (await context.newPage())
@@ -260,19 +268,19 @@ export async function collectInventoryData(
     }
 
     let inventoryHealth: { filePath: string; fileName: string } | null = null
+    let inventoryHealthError: string | undefined
 
     // 재고현황 다운로드
     try {
       inventoryHealth = await downloadInventoryHealth(page, downloadDir)
     } catch (err) {
-      console.error(
-        '[inventory] 재고현황 다운로드 실패:',
-        err instanceof Error ? err.message : err,
-      )
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[inventory] 재고현황 다운로드 실패:', msg)
       await saveScreenshot(page, 'inventory-health-error')
+      inventoryHealthError = msg
     }
 
-    return { inventoryHealth }
+    return { inventoryHealth, inventoryHealthError }
   } catch (error) {
     await saveScreenshot(page, 'inventory-error')
     throw error
