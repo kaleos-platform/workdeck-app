@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { X, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -222,9 +222,7 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loadingDetail, setLoadingDetail] = useState(false)
-
-  // 옵션 추가 시 어느 상품 컨텍스트에서 피커를 열었는지 (null = 새 상품 추가)
-  const pickerContextRef = useRef<string | null>(null)
+  const [loadingRunNo, setLoadingRunNo] = useState(false)
 
   // ── 폼 초기화
   function resetForm() {
@@ -306,27 +304,53 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
     } else {
       // 신규 모드
       resetForm()
+      // 차수 번호 자동 채번
+      let cancelled = false
+      const loadNextRunNo = async () => {
+        setLoadingRunNo(true)
+        try {
+          const res = await fetch('/api/sh/production-runs/next-run-no')
+          if (!res.ok) throw new Error('차수 번호 자동 생성 실패')
+          const data: { runNo: string } = await res.json()
+          if (!cancelled) setRunNo(data.runNo)
+        } catch (err) {
+          if (!cancelled) {
+            toast.error(err instanceof Error ? err.message : '차수 번호 자동 생성 실패')
+          }
+        } finally {
+          if (!cancelled) setLoadingRunNo(false)
+        }
+      }
+      loadNextRunNo()
+      return () => {
+        cancelled = true
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, runId])
 
-  // ── 옵션 피커에서 픽업
-  function handlePick(opt: PickedOption) {
-    // 이미 추가된 옵션이면 무시
-    if (optionItems.some((it) => it.optionId === opt.optionId)) return
-    setOptionItems((prev) => [
-      ...prev,
-      {
-        optionId: opt.optionId,
-        optionName: opt.optionName,
-        sku: opt.sku,
-        productId: opt.productId,
-        productName: opt.productName,
-        brandName: opt.brandName,
-        totalStock: opt.totalStock,
-        quantity: 1,
-      },
-    ])
+  // ── 옵션 피커에서 상품 단위 픽업 (해당 상품의 전체 옵션 교체)
+  function handlePickProduct(productId: string, opts: PickedOption[]) {
+    setOptionItems((prev) => {
+      const existing = new Map(
+        prev.filter((it) => it.productId === productId).map((it) => [it.optionId, it])
+      )
+      const others = prev.filter((it) => it.productId !== productId)
+      const incoming: OptionItem[] = opts.map((opt) => {
+        const prevItem = existing.get(opt.optionId)
+        return {
+          optionId: opt.optionId,
+          optionName: opt.optionName,
+          sku: opt.sku,
+          productId: opt.productId,
+          productName: opt.productName,
+          brandName: opt.brandName,
+          totalStock: opt.totalStock,
+          quantity: prevItem ? prevItem.quantity : 1,
+        }
+      })
+      return [...others, ...incoming]
+    })
   }
 
   function removeOption(optionId: string) {
@@ -472,9 +496,6 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
     }, new Map<string, { productId: string; productName: string; brandName: string | null; options: OptionItem[] }>())
   ).map(([, v]) => v)
 
-  // 이미 추가된 optionId 목록 (피커 exclude)
-  const excludeOptionIds = optionItems.map((it) => it.optionId)
-
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -501,7 +522,8 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                       id="runNo"
                       value={runNo}
                       onChange={(e) => setRunNo(e.target.value)}
-                      placeholder="예: 2024-001"
+                      placeholder={loadingRunNo ? '자동 생성 중...' : '예: 2024-001'}
+                      disabled={loadingRunNo}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -537,10 +559,7 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      pickerContextRef.current = null
-                      setPickerOpen(true)
-                    }}
+                    onClick={() => setPickerOpen(true)}
                   >
                     <Plus className="mr-1 h-4 w-4" />
                     상품 추가
@@ -549,7 +568,7 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
 
                 {productGroups.length === 0 ? (
                   <p className="rounded-md border border-dashed py-6 text-center text-sm text-muted-foreground">
-                    옵션을 추가하세요
+                    상품을 추가하세요
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -626,21 +645,6 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                             </div>
                           ))}
                         </div>
-
-                        {/* 같은 상품의 다른 옵션 추가 */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="mt-1.5 h-7 text-xs text-muted-foreground"
-                          onClick={() => {
-                            pickerContextRef.current = g.productId
-                            setPickerOpen(true)
-                          }}
-                        >
-                          <Plus className="mr-1 h-3 w-3" />
-                          다른 옵션 추가
-                        </Button>
                       </div>
                     ))}
                   </div>
@@ -821,18 +825,12 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
         </DialogContent>
       </Dialog>
 
-      {/* 옵션 피커 (다이얼로그 위에 중첩) */}
+      {/* 상품 피커 (다이얼로그 위에 중첩) */}
       <OptionPickerDialog
         open={pickerOpen}
         onOpenChange={setPickerOpen}
-        onPick={handlePick}
-        excludeOptionIds={excludeOptionIds}
-        initialQuery={
-          pickerContextRef.current != null
-            ? (productGroups.find((g) => g.productId === pickerContextRef.current)?.productName ??
-              '')
-            : ''
-        }
+        mode="product-with-all-options"
+        onPickProduct={handlePickProduct}
       />
     </>
   )
