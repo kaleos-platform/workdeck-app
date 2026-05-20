@@ -1,7 +1,9 @@
 // @deprecated Phase 3에서 제거. 내부적으로 공용 Channel 테이블 사용.
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveAnyDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+
+const ALLOWED_DECKS = ['seller-hub', 'delivery-mgmt']
 
 type DelChannelType = 'OUTBOUND' | 'TRANSFER'
 type Params = { params: Promise<{ channelId: string }> }
@@ -12,7 +14,7 @@ function isSalesToDelType(isSalesChannel: boolean): DelChannelType {
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('delivery-mgmt')
+  const resolved = await resolveAnyDeckContext(ALLOWED_DECKS)
   if ('error' in resolved) return resolved.error
 
   const { channelId } = await params
@@ -72,7 +74,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('delivery-mgmt')
+  const resolved = await resolveAnyDeckContext(ALLOWED_DECKS)
   if ('error' in resolved) return resolved.error
 
   const { channelId } = await params

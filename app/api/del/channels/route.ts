@@ -1,7 +1,10 @@
 // @deprecated Phase 3에서 제거. 내부적으로 공용 Channel 테이블 사용.
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveAnyDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+
+// seller-hub 통합 이후에도 레거시 delivery-mgmt 워크스페이스를 지원하려 두 Deck 중 하나라도 활성이면 통과.
+const ALLOWED_DECKS = ['seller-hub', 'delivery-mgmt']
 
 type DelChannelType = 'OUTBOUND' | 'TRANSFER'
 
@@ -11,7 +14,7 @@ function isSalesToDelType(isSalesChannel: boolean): DelChannelType {
 }
 
 export async function GET(req: NextRequest) {
-  const resolved = await resolveDeckContext('delivery-mgmt')
+  const resolved = await resolveAnyDeckContext(ALLOWED_DECKS)
   if ('error' in resolved) return resolved.error
 
   const isActiveParam = req.nextUrl.searchParams.get('isActive')
@@ -42,7 +45,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('delivery-mgmt')
+  const resolved = await resolveAnyDeckContext(ALLOWED_DECKS)
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))
