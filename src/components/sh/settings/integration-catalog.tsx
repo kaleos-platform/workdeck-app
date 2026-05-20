@@ -1,13 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Boxes, Truck } from 'lucide-react'
+import { ArrowRight, Boxes } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { SELLER_HUB_RECONCILIATION_PATH, SELLER_HUB_SHIPPING_ORDERS_PATH } from '@/lib/deck-routes'
+import { SELLER_HUB_RECONCILIATION_PATH } from '@/lib/deck-routes'
 
 type CatalogItem = {
-  icon: typeof Truck
+  icon: typeof Boxes
   source: string
   target: string
   description: string
@@ -17,14 +17,6 @@ type CatalogItem = {
 
 // 현재 구현된 연동 카탈로그. 새 연동 추가 시 이 배열에 항목을 더한다.
 const CATALOG: CatalogItem[] = [
-  {
-    icon: Truck,
-    source: '배송 데이터 (배송 관리)',
-    target: '통합 재고 관리',
-    description: '완료된 배송 주문을 재고 출고·이관 이동으로 변환해 통합 재고에 반영합니다.',
-    status: '활성',
-    href: SELLER_HUB_SHIPPING_ORDERS_PATH,
-  },
   {
     icon: Boxes,
     source: '쿠팡 로켓그로스 재고 (쿠팡 광고)',
