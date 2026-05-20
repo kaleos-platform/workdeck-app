@@ -62,12 +62,15 @@ type Props = {
   onPick?: (opt: PickedOption) => void
   // multi-with-qty 모드: 다중 선택+수량
   onPickMulti?: (items: PickedOptionWithQty[]) => void
+  // product-with-all-options 모드: 상품 1개를 고르면 그 상품의 모든 옵션을 한 번에 전달
+  onPickProduct?: (productId: string, opts: PickedOption[]) => void
   excludeOptionIds?: string[]
   initialQuery?: string
   // 'flat' (default): 상품+옵션을 한 리스트로 표시
   // 'two-step': 1단계 상품 선택 → 2단계 그 상품의 옵션 선택
   // 'multi-with-qty': two-step + 다중 체크박스+수량 입력, onPickMulti 사용
-  mode?: 'flat' | 'two-step' | 'multi-with-qty'
+  // 'product-with-all-options': 상품 목록만 표시, 클릭 시 그 상품의 전체 옵션 일괄 전달
+  mode?: 'flat' | 'two-step' | 'multi-with-qty' | 'product-with-all-options'
   contextLabel?: string
   contextValue?: string
   // multi-with-qty 수정 시 기존 선택 복원
@@ -79,6 +82,7 @@ export function OptionPickerDialog({
   onOpenChange,
   onPick,
   onPickMulti,
+  onPickProduct,
   excludeOptionIds = [],
   initialQuery = '',
   mode = 'flat',
@@ -169,10 +173,13 @@ export function OptionPickerDialog({
   )
 
   const productsVisible = useMemo(() => {
+    if (mode === 'product-with-all-options') {
+      return products.filter((p) => p.options.length > 0)
+    }
     return products
       .map((p) => ({ ...p, options: p.options.filter((o) => !excluded.has(o.optionId)) }))
       .filter((p) => p.options.length > 0)
-  }, [products, excluded])
+  }, [products, excluded, mode])
 
   const selectedProduct = useMemo(
     () => productsVisible.find((p) => p.productId === selectedProductId) ?? null,
@@ -180,7 +187,9 @@ export function OptionPickerDialog({
   )
 
   const isMultiMode = mode === 'multi-with-qty'
-  const showProductStep = (mode === 'two-step' || isMultiMode) && !selectedProduct
+  const isProductAllMode = mode === 'product-with-all-options'
+  const showProductStep =
+    (mode === 'two-step' || isMultiMode || isProductAllMode) && !selectedProduct
   const showOptionStep = (mode === 'two-step' || isMultiMode) && !!selectedProduct
 
   // multi-with-qty: 현재 상품의 옵션에 대한 체크/수량 변경
@@ -213,6 +222,7 @@ export function OptionPickerDialog({
   }
 
   const titleText = useMemo(() => {
+    if (isProductAllMode) return '상품 선택'
     if (isMultiMode) {
       if (showProductStep) return '상품 선택'
       return `옵션 선택 — ${selectedProduct?.productName ?? ''}`
@@ -222,9 +232,10 @@ export function OptionPickerDialog({
       return `옵션 선택 — ${selectedProduct?.productName ?? ''}`
     }
     return '옵션 선택'
-  }, [isMultiMode, mode, showProductStep, selectedProduct])
+  }, [isProductAllMode, isMultiMode, mode, showProductStep, selectedProduct])
 
   const descText = useMemo(() => {
+    if (isProductAllMode) return '상품을 선택하면 해당 상품의 모든 옵션이 추가됩니다'
     if (isMultiMode) {
       if (showProductStep) return '상품을 선택하세요 (여러 상품 추가 가능)'
       return '옵션별 체크박스와 수량을 설정하세요'
@@ -234,7 +245,7 @@ export function OptionPickerDialog({
       return '옵션을 선택하세요'
     }
     return '상품명·관리코드로 검색해 묶음에 포함할 옵션을 선택하세요'
-  }, [isMultiMode, mode, showProductStep])
+  }, [isProductAllMode, isMultiMode, mode, showProductStep])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -310,7 +321,14 @@ export function OptionPickerDialog({
                     <li key={p.productId}>
                       <button
                         type="button"
-                        onClick={() => setSelectedProductId(p.productId)}
+                        onClick={() => {
+                          if (isProductAllMode) {
+                            onPickProduct?.(p.productId, p.options)
+                            onOpenChange(false)
+                            return
+                          }
+                          setSelectedProductId(p.productId)
+                        }}
                         className="w-full px-4 py-3 text-left transition hover:bg-muted/60"
                       >
                         <div className="flex items-start justify-between gap-3">
