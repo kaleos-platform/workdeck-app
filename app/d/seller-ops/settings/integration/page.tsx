@@ -1,6 +1,5 @@
 'use client'
 
-import { IntegrationPanel } from '@/components/sh/settings/integration-panel'
 import { IntegrationCatalog } from '@/components/sh/settings/integration-catalog'
 
 export default function SettingsIntegrationPage() {
@@ -13,7 +12,6 @@ export default function SettingsIntegrationPage() {
         </p>
       </div>
       <IntegrationCatalog />
-      <IntegrationPanel />
     </div>
   )
 }
