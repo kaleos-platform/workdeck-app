@@ -14,7 +14,7 @@
 | `WORKER_API_KEY`                           | ✅       | `.env.local` + 워커 env | 웹앱 ↔ 워커 인증 키 (32+ random hex 권장)                                      |
 | `ENCRYPTION_KEY`                           | ✅       | `.env.local`            | AES-256-CBC 키 (64-char hex). ChannelCredential 암복호화에 사용                |
 | `NEXT_PUBLIC_APP_URL`                      | (운영)   | `.env.local`            | `/c/{slug}` CTA 링크 origin. 미설정 시 dev=localhost, prod=DEFAULT_APP_ORIGIN  |
-| `OPENROUTER_API_KEY`                       | (선택)   | `.env.local`            | 기존 쿠팡 광고 분석 (sales-content 와 무관)                                    |
+| `GEMINI_API_KEY` / `AI_*_MODEL`            | ✅(쿠팡) | 워커 env                | 쿠팡 광고 분석 워커 — 1·2차 Gemini, 3차 로컬 Ollama. sales-content 와 무관     |
 | `CLAUDE_CODE_ACP_ENDPOINT`                 | (Unit 3) | `.env.local`            | Bridge ACP 엔드포인트(미구현 시 Ollama fallback)                               |
 | `OLLAMA_ENDPOINT` / `OLLAMA_MODEL`         | (Unit 3) | `.env.local`            | 로컬 Ollama (ACP fallback)                                                     |
 | `GOOGLE_AI_API_KEY` / `GEMINI_IMAGE_MODEL` | (Unit 7) | `.env.local`            | Gemini 이미지 생성                                                             |
