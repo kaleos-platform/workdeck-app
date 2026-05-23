@@ -1316,7 +1316,6 @@ model ProductionRun {
   spaceId     String
   brandId     String? // 대표 브랜드 (선택). 없으면 multi-brand
   runNo       String // Space 단위 unique 차수 번호 (전체 범위)
-  orderedAt   DateTime // 발주일
   dueAt       DateTime? // 납기일 (선택)
   completedAt DateTime? // 완료일 (선택, 레거시 — stockedInAt 과 동기화)
   orderedConfirmedAt DateTime? // 발주완료 전환 시점
@@ -1337,7 +1336,7 @@ model ProductionRun {
   updatedAt DateTime @updatedAt
 
   @@unique([spaceId, runNo])
-  @@index([spaceId, orderedAt])
+  @@index([spaceId, orderedConfirmedAt])
   @@index([spaceId, status])
   @@index([brandId])
 }

@@ -39,7 +39,6 @@ export type ProductionRunMinAggregateOutputType = {
   spaceId: string | null
   brandId: string | null
   runNo: string | null
-  orderedAt: Date | null
   dueAt: Date | null
   completedAt: Date | null
   orderedConfirmedAt: Date | null
@@ -58,7 +57,6 @@ export type ProductionRunMaxAggregateOutputType = {
   spaceId: string | null
   brandId: string | null
   runNo: string | null
-  orderedAt: Date | null
   dueAt: Date | null
   completedAt: Date | null
   orderedConfirmedAt: Date | null
@@ -77,7 +75,6 @@ export type ProductionRunCountAggregateOutputType = {
   spaceId: number
   brandId: number
   runNo: number
-  orderedAt: number
   dueAt: number
   completedAt: number
   orderedConfirmedAt: number
@@ -106,7 +103,6 @@ export type ProductionRunMinAggregateInputType = {
   spaceId?: true
   brandId?: true
   runNo?: true
-  orderedAt?: true
   dueAt?: true
   completedAt?: true
   orderedConfirmedAt?: true
@@ -125,7 +121,6 @@ export type ProductionRunMaxAggregateInputType = {
   spaceId?: true
   brandId?: true
   runNo?: true
-  orderedAt?: true
   dueAt?: true
   completedAt?: true
   orderedConfirmedAt?: true
@@ -144,7 +139,6 @@ export type ProductionRunCountAggregateInputType = {
   spaceId?: true
   brandId?: true
   runNo?: true
-  orderedAt?: true
   dueAt?: true
   completedAt?: true
   orderedConfirmedAt?: true
@@ -250,7 +244,6 @@ export type ProductionRunGroupByOutputType = {
   spaceId: string
   brandId: string | null
   runNo: string
-  orderedAt: Date
   dueAt: Date | null
   completedAt: Date | null
   orderedConfirmedAt: Date | null
@@ -292,7 +285,6 @@ export type ProductionRunWhereInput = {
   spaceId?: Prisma.StringFilter<"ProductionRun"> | string
   brandId?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
   runNo?: Prisma.StringFilter<"ProductionRun"> | string
-  orderedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
   dueAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
   orderedConfirmedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
@@ -316,7 +308,6 @@ export type ProductionRunOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   runNo?: Prisma.SortOrder
-  orderedAt?: Prisma.SortOrder
   dueAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   orderedConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -344,7 +335,6 @@ export type ProductionRunWhereUniqueInput = Prisma.AtLeast<{
   spaceId?: Prisma.StringFilter<"ProductionRun"> | string
   brandId?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
   runNo?: Prisma.StringFilter<"ProductionRun"> | string
-  orderedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
   dueAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
   orderedConfirmedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
@@ -368,7 +358,6 @@ export type ProductionRunOrderByWithAggregationInput = {
   spaceId?: Prisma.SortOrder
   brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   runNo?: Prisma.SortOrder
-  orderedAt?: Prisma.SortOrder
   dueAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   orderedConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -395,7 +384,6 @@ export type ProductionRunScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"ProductionRun"> | string
   brandId?: Prisma.StringNullableWithAggregatesFilter<"ProductionRun"> | string | null
   runNo?: Prisma.StringWithAggregatesFilter<"ProductionRun"> | string
-  orderedAt?: Prisma.DateTimeWithAggregatesFilter<"ProductionRun"> | Date | string
   dueAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ProductionRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ProductionRun"> | Date | string | null
   orderedConfirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ProductionRun"> | Date | string | null
@@ -412,7 +400,6 @@ export type ProductionRunScalarWhereWithAggregatesInput = {
 export type ProductionRunCreateInput = {
   id?: string
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -435,7 +422,6 @@ export type ProductionRunUncheckedCreateInput = {
   spaceId: string
   brandId?: string | null
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -454,7 +440,6 @@ export type ProductionRunUncheckedCreateInput = {
 export type ProductionRunUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -477,7 +462,6 @@ export type ProductionRunUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -498,7 +482,6 @@ export type ProductionRunCreateManyInput = {
   spaceId: string
   brandId?: string | null
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -515,7 +498,6 @@ export type ProductionRunCreateManyInput = {
 export type ProductionRunUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -533,7 +515,6 @@ export type ProductionRunUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -567,7 +548,6 @@ export type ProductionRunCountOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   brandId?: Prisma.SortOrder
   runNo?: Prisma.SortOrder
-  orderedAt?: Prisma.SortOrder
   dueAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   orderedConfirmedAt?: Prisma.SortOrder
@@ -590,7 +570,6 @@ export type ProductionRunMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   brandId?: Prisma.SortOrder
   runNo?: Prisma.SortOrder
-  orderedAt?: Prisma.SortOrder
   dueAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   orderedConfirmedAt?: Prisma.SortOrder
@@ -609,7 +588,6 @@ export type ProductionRunMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   brandId?: Prisma.SortOrder
   runNo?: Prisma.SortOrder
-  orderedAt?: Prisma.SortOrder
   dueAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   orderedConfirmedAt?: Prisma.SortOrder
@@ -797,7 +775,6 @@ export type ProductionRunUpdateOneRequiredWithoutCostsNestedInput = {
 export type ProductionRunCreateWithoutSpaceInput = {
   id?: string
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -818,7 +795,6 @@ export type ProductionRunUncheckedCreateWithoutSpaceInput = {
   id?: string
   brandId?: string | null
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -868,7 +844,6 @@ export type ProductionRunScalarWhereInput = {
   spaceId?: Prisma.StringFilter<"ProductionRun"> | string
   brandId?: Prisma.StringNullableFilter<"ProductionRun"> | string | null
   runNo?: Prisma.StringFilter<"ProductionRun"> | string
-  orderedAt?: Prisma.DateTimeFilter<"ProductionRun"> | Date | string
   dueAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
   orderedConfirmedAt?: Prisma.DateTimeNullableFilter<"ProductionRun"> | Date | string | null
@@ -885,7 +860,6 @@ export type ProductionRunScalarWhereInput = {
 export type ProductionRunCreateWithoutStockInLocationInput = {
   id?: string
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -907,7 +881,6 @@ export type ProductionRunUncheckedCreateWithoutStockInLocationInput = {
   spaceId: string
   brandId?: string | null
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -951,7 +924,6 @@ export type ProductionRunUpdateManyWithWhereWithoutStockInLocationInput = {
 export type ProductionRunCreateWithoutBrandInput = {
   id?: string
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -972,7 +944,6 @@ export type ProductionRunUncheckedCreateWithoutBrandInput = {
   id?: string
   spaceId: string
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -1017,7 +988,6 @@ export type ProductionRunUpdateManyWithWhereWithoutBrandInput = {
 export type ProductionRunCreateWithoutItemsInput = {
   id?: string
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -1039,7 +1009,6 @@ export type ProductionRunUncheckedCreateWithoutItemsInput = {
   spaceId: string
   brandId?: string | null
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -1073,7 +1042,6 @@ export type ProductionRunUpdateToOneWithWhereWithoutItemsInput = {
 export type ProductionRunUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1095,7 +1063,6 @@ export type ProductionRunUncheckedUpdateWithoutItemsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1113,7 +1080,6 @@ export type ProductionRunUncheckedUpdateWithoutItemsInput = {
 export type ProductionRunCreateWithoutCostsInput = {
   id?: string
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -1135,7 +1101,6 @@ export type ProductionRunUncheckedCreateWithoutCostsInput = {
   spaceId: string
   brandId?: string | null
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -1169,7 +1134,6 @@ export type ProductionRunUpdateToOneWithWhereWithoutCostsInput = {
 export type ProductionRunUpdateWithoutCostsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1191,7 +1155,6 @@ export type ProductionRunUncheckedUpdateWithoutCostsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1210,7 +1173,6 @@ export type ProductionRunCreateManySpaceInput = {
   id?: string
   brandId?: string | null
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -1227,7 +1189,6 @@ export type ProductionRunCreateManySpaceInput = {
 export type ProductionRunUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1248,7 +1209,6 @@ export type ProductionRunUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1268,7 +1228,6 @@ export type ProductionRunUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1287,7 +1246,6 @@ export type ProductionRunCreateManyStockInLocationInput = {
   spaceId: string
   brandId?: string | null
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -1303,7 +1261,6 @@ export type ProductionRunCreateManyStockInLocationInput = {
 export type ProductionRunUpdateWithoutStockInLocationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1325,7 +1282,6 @@ export type ProductionRunUncheckedUpdateWithoutStockInLocationInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1345,7 +1301,6 @@ export type ProductionRunUncheckedUpdateManyWithoutStockInLocationInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1362,7 +1317,6 @@ export type ProductionRunCreateManyBrandInput = {
   id?: string
   spaceId: string
   runNo: string
-  orderedAt: Date | string
   dueAt?: Date | string | null
   completedAt?: Date | string | null
   orderedConfirmedAt?: Date | string | null
@@ -1379,7 +1333,6 @@ export type ProductionRunCreateManyBrandInput = {
 export type ProductionRunUpdateWithoutBrandInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1400,7 +1353,6 @@ export type ProductionRunUncheckedUpdateWithoutBrandInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1420,7 +1372,6 @@ export type ProductionRunUncheckedUpdateManyWithoutBrandInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   runNo?: Prisma.StringFieldUpdateOperationsInput | string
-  orderedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1479,7 +1430,6 @@ export type ProductionRunSelect<ExtArgs extends runtime.Types.Extensions.Interna
   spaceId?: boolean
   brandId?: boolean
   runNo?: boolean
-  orderedAt?: boolean
   dueAt?: boolean
   completedAt?: boolean
   orderedConfirmedAt?: boolean
@@ -1504,7 +1454,6 @@ export type ProductionRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   spaceId?: boolean
   brandId?: boolean
   runNo?: boolean
-  orderedAt?: boolean
   dueAt?: boolean
   completedAt?: boolean
   orderedConfirmedAt?: boolean
@@ -1526,7 +1475,6 @@ export type ProductionRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   spaceId?: boolean
   brandId?: boolean
   runNo?: boolean
-  orderedAt?: boolean
   dueAt?: boolean
   completedAt?: boolean
   orderedConfirmedAt?: boolean
@@ -1548,7 +1496,6 @@ export type ProductionRunSelectScalar = {
   spaceId?: boolean
   brandId?: boolean
   runNo?: boolean
-  orderedAt?: boolean
   dueAt?: boolean
   completedAt?: boolean
   orderedConfirmedAt?: boolean
@@ -1562,7 +1509,7 @@ export type ProductionRunSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductionRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "brandId" | "runNo" | "orderedAt" | "dueAt" | "completedAt" | "orderedConfirmedAt" | "stockedInAt" | "stockInLocationId" | "status" | "totalCost" | "costMode" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["productionRun"]>
+export type ProductionRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "brandId" | "runNo" | "dueAt" | "completedAt" | "orderedConfirmedAt" | "stockedInAt" | "stockInLocationId" | "status" | "totalCost" | "costMode" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["productionRun"]>
 export type ProductionRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.ProductionRun$brandArgs<ExtArgs>
@@ -1596,7 +1543,6 @@ export type $ProductionRunPayload<ExtArgs extends runtime.Types.Extensions.Inter
     spaceId: string
     brandId: string | null
     runNo: string
-    orderedAt: Date
     dueAt: Date | null
     completedAt: Date | null
     orderedConfirmedAt: Date | null
@@ -2040,7 +1986,6 @@ export interface ProductionRunFieldRefs {
   readonly spaceId: Prisma.FieldRef<"ProductionRun", 'String'>
   readonly brandId: Prisma.FieldRef<"ProductionRun", 'String'>
   readonly runNo: Prisma.FieldRef<"ProductionRun", 'String'>
-  readonly orderedAt: Prisma.FieldRef<"ProductionRun", 'DateTime'>
   readonly dueAt: Prisma.FieldRef<"ProductionRun", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"ProductionRun", 'DateTime'>
   readonly orderedConfirmedAt: Prisma.FieldRef<"ProductionRun", 'DateTime'>

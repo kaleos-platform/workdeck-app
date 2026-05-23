@@ -74,7 +74,6 @@ type RunDetail = {
     id: string
     runNo: string
     status: RunStatus
-    orderedAt: string
     orderedConfirmedAt: string | null
     stockedInAt: string | null
     createdAt: string
@@ -233,7 +232,6 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
 
   // ── 기본 정보
   const [runNo, setRunNo] = useState('')
-  const [orderedAt, setOrderedAt] = useState('')
   const [memo, setMemo] = useState('')
 
   // ── 단계별 상태/일자 (편집 모드 전용)
@@ -259,7 +257,6 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
   // ── 폼 초기화
   function resetForm() {
     setRunNo('')
-    setOrderedAt(new Date().toISOString().slice(0, 10))
     setMemo('')
     setStatus('PLANNED')
     setOrderedConfirmedAt('')
@@ -288,7 +285,6 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
           const r = data.run
 
           setRunNo(r.runNo)
-          setOrderedAt(toDateInput(r.orderedAt))
           setMemo(r.memo ?? '')
           setStatus(r.status)
           setOrderedConfirmedAt(r.orderedConfirmedAt ? toDateInput(r.orderedConfirmedAt) : '')
@@ -465,10 +461,6 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
       toast.error('차수 번호를 입력하세요')
       return
     }
-    if (!orderedAt) {
-      toast.error('발주일을 입력하세요')
-      return
-    }
     if (optionItems.length === 0) {
       toast.error('1개 이상의 옵션을 추가하세요')
       return
@@ -519,7 +511,6 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
     // body 구성
     const body: Record<string, unknown> = {
       runNo: runNo.trim(),
-      orderedAt,
       costMode,
       memo: memo.trim() || undefined,
       items: validItems.map((it) => ({ optionId: it.optionId, quantity: it.quantity })),
@@ -610,30 +601,17 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
               {/* ── 섹션 1: 기본 정보 ─────────────────────────────────── */}
               <section className="space-y-4">
                 <h3 className="text-sm font-semibold text-foreground">기본 정보</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="runNo">
-                      차수 번호 <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="runNo"
-                      value={runNo}
-                      onChange={(e) => setRunNo(e.target.value)}
-                      placeholder={loadingRunNo ? '자동 생성 중...' : '예: 2024-001'}
-                      disabled={loadingRunNo}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="orderedAt">
-                      발주일 <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="orderedAt"
-                      type="date"
-                      value={orderedAt}
-                      onChange={(e) => setOrderedAt(e.target.value)}
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="runNo">
+                    차수 번호 <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="runNo"
+                    value={runNo}
+                    onChange={(e) => setRunNo(e.target.value)}
+                    placeholder={loadingRunNo ? '자동 생성 중...' : '예: 2024-001'}
+                    disabled={loadingRunNo}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="memo">메모</Label>
@@ -676,7 +654,7 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                         </Select>
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor="orderedConfirmedAt">발주완료 일자</Label>
+                        <Label htmlFor="orderedConfirmedAt">발주일</Label>
                         <Input
                           id="orderedConfirmedAt"
                           type="date"

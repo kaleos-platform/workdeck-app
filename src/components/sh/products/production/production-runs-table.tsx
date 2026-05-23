@@ -66,7 +66,6 @@ type RunRow = {
   runNo: string
   status: ProductionRunStatus
   brand: { id: string; name: string } | null
-  orderedAt: string
   dueAt: string | null
   completedAt: string | null
   orderedConfirmedAt: string | null
