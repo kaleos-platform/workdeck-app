@@ -172,7 +172,10 @@ export function ReconciliationUpload({ onUploaded }: Props) {
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
               <p className="text-xs text-muted-foreground">
-                쿠팡 재고 health / 3PL 현재고 / (제품코드+수량) 엑셀 지원
+                쿠팡 재고 health / 3PL 현재고 / 재고 현황 내보내기 / (제품코드+수량) 엑셀 지원
+              </p>
+              <p className="text-xs text-muted-foreground">
+                재고 현황 화면에서 다운로드한 엑셀 파일도 업로드할 수 있습니다.
               </p>
             </TabsContent>
 

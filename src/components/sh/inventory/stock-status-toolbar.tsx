@@ -11,18 +11,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { StockBrand } from './stock-status.types'
+import type { StockBrand, StockLocation } from './stock-status.types'
 
 type Props = {
   q: string
   onlyLow: boolean
   brands: StockBrand[]
+  locations: StockLocation[]
   selectedBrandId: string | null
   selectedGroupId: string | null
+  selectedLocationId: string | null
   onSearchChange: (q: string) => void
   onOnlyLowChange: (v: boolean) => void
   onBrandChange: (brandId: string | null) => void
   onGroupChange: (groupId: string | null) => void
+  onLocationChange: (locationId: string | null) => void
   onClearFilters: () => void
 }
 
@@ -39,12 +42,15 @@ function ToolbarInner({
   q,
   onlyLow,
   brands,
+  locations,
   selectedBrandId,
   selectedGroupId,
+  selectedLocationId,
   onSearchChange,
   onOnlyLowChange,
   onBrandChange,
   onGroupChange,
+  onLocationChange,
   onClearFilters,
 }: Props & { initialQ: string }) {
   const [local, setLocal] = useState(initialQ)
@@ -79,8 +85,15 @@ function ToolbarInner({
   const brandSelectValue =
     selectedBrandId === null ? ALL : selectedBrandId === '' ? NONE : selectedBrandId
   const groupSelectValue = selectedGroupId ?? ALL
+  const locationSelectValue = selectedLocationId ?? ALL
 
-  const hasFilters = !!(selectedBrandId !== null || selectedGroupId !== null || onlyLow || q)
+  const hasFilters = !!(
+    selectedBrandId !== null ||
+    selectedGroupId !== null ||
+    selectedLocationId !== null ||
+    onlyLow ||
+    q
+  )
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -120,6 +133,23 @@ function ToolbarInner({
           {groupOptions.map((g) => (
             <SelectItem key={g.id} value={g.id}>
               {g.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select
+        value={locationSelectValue}
+        onValueChange={(v) => onLocationChange(v === ALL ? null : v)}
+      >
+        <SelectTrigger className="h-9 w-44" aria-label="위치 필터">
+          <SelectValue placeholder="전체 위치" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL}>전체 위치</SelectItem>
+          {locations.map((l) => (
+            <SelectItem key={l.id} value={l.id}>
+              {l.name}
             </SelectItem>
           ))}
         </SelectContent>

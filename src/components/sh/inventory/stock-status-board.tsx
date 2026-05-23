@@ -18,6 +18,7 @@ export function StockStatusBoard() {
 
   const brandId = searchParams.get('brandId')
   const groupId = searchParams.get('groupId')
+  const locationId = searchParams.get('locationId')
   const q = searchParams.get('q') ?? ''
   const onlyLow = searchParams.get('onlyLow') === '1'
 
@@ -90,10 +91,27 @@ export function StockStatusBoard() {
     [updateParams]
   )
 
-  const handleClearFilters = useCallback(
-    () => updateParams({ brandId: null, groupId: null, q: null, onlyLow: null }),
+  const handleLocationChange = useCallback(
+    (newLocationId: string | null) => updateParams({ locationId: newLocationId }),
     [updateParams]
   )
+
+  const handleClearFilters = useCallback(
+    () =>
+      updateParams({
+        brandId: null,
+        groupId: null,
+        locationId: null,
+        q: null,
+        onlyLow: null,
+      }),
+    [updateParams]
+  )
+
+  const allRows = data?.matrix.rows ?? []
+  const visibleRows = locationId
+    ? allRows.filter((r) => r.byLocation[locationId] !== undefined)
+    : allRows
 
   return (
     <div className="space-y-5">
@@ -110,19 +128,23 @@ export function StockStatusBoard() {
         q={q}
         onlyLow={onlyLow}
         brands={data?.brands ?? []}
+        locations={data?.locations ?? []}
         selectedBrandId={brandId}
         selectedGroupId={groupId}
+        selectedLocationId={locationId}
         onSearchChange={handleSearchChange}
         onOnlyLowChange={handleOnlyLowChange}
         onBrandChange={handleBrandChange}
         onGroupChange={handleGroupChange}
+        onLocationChange={handleLocationChange}
         onClearFilters={handleClearFilters}
       />
 
       <StockStatusMatrix
-        rows={data?.matrix.rows ?? []}
+        rows={visibleRows}
         locations={data?.locations ?? []}
         loading={loading && !data}
+        selectedLocationId={locationId}
       />
     </div>
   )
