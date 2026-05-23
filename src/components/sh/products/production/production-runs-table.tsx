@@ -69,6 +69,8 @@ type RunRow = {
   orderedAt: string
   dueAt: string | null
   completedAt: string | null
+  orderedConfirmedAt: string | null
+  stockedInAt: string | null
   totalCost: number | null
   costMode: 'TOTAL' | 'BREAKDOWN'
   memo: string | null
@@ -368,6 +370,7 @@ export function ProductionRunsTable() {
               <TableHead className="w-[110px]">차수 번호</TableHead>
               <TableHead className="w-[80px]">상태</TableHead>
               <TableHead className="w-[90px]">발주일</TableHead>
+              <TableHead className="w-[90px]">입고일</TableHead>
               <TableHead className="w-[90px]">납기일</TableHead>
               <TableHead className="w-[90px]">브랜드</TableHead>
               <TableHead>포함 상품</TableHead>
@@ -379,13 +382,13 @@ export function ProductionRunsTable() {
           <TableBody>
             {loading && runs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={10} className="py-12 text-center text-sm text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : runs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="py-12 text-center">
+                <TableCell colSpan={10} className="py-12 text-center">
                   <p className="text-sm text-muted-foreground">등록된 차수가 없습니다</p>
                   <Button
                     variant="outline"
@@ -430,7 +433,10 @@ export function ProductionRunsTable() {
                     />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {fmtDate(run.orderedAt)}
+                    {run.orderedConfirmedAt ? fmtDate(run.orderedConfirmedAt) : '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {run.stockedInAt ? fmtDate(run.stockedInAt) : '-'}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {run.dueAt ? fmtDate(run.dueAt) : '-'}
