@@ -10,11 +10,13 @@ import {
   type StockMatrixRow,
   type SkuStatus,
 } from './stock-status.types'
+import { StockStatusExportButton } from './stock-status-export'
 
 type Props = {
   rows: StockMatrixRow[]
   locations: StockLocation[]
   loading: boolean
+  selectedLocationId?: string | null
 }
 
 const KRW = new Intl.NumberFormat('ko-KR')
@@ -26,9 +28,12 @@ const STATUS_BADGE: Record<SkuStatus, string> = {
   OUT: 'border-red-300 bg-red-50 text-red-700',
 }
 
-export function StockStatusMatrix({ rows, locations, loading }: Props) {
+export function StockStatusMatrix({ rows, locations, loading, selectedLocationId }: Props) {
   const capped = rows.length > ROW_CAP
   const displayRows = capped ? rows.slice(0, ROW_CAP) : rows
+  const visibleLocations = selectedLocationId
+    ? locations.filter((l) => l.id === selectedLocationId)
+    : locations
 
   return (
     <Card className="overflow-hidden">
@@ -37,8 +42,15 @@ export function StockStatusMatrix({ rows, locations, loading }: Props) {
           SKU × 위치 매트릭스
           <span className="ml-2 text-xs font-normal text-muted-foreground">· 최신 재고</span>
         </CardTitle>
-        <div className="text-xs text-muted-foreground">
-          {KRW.format(rows.length)}건{capped && ` · 상위 ${ROW_CAP}건만 표시`}
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-muted-foreground">
+            {KRW.format(rows.length)}건{capped && ` · 상위 ${ROW_CAP}건만 표시`}
+          </div>
+          <StockStatusExportButton
+            rows={rows}
+            locations={locations}
+            selectedLocationId={selectedLocationId ?? null}
+          />
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -61,7 +73,7 @@ export function StockStatusMatrix({ rows, locations, loading }: Props) {
                   <th className="sticky left-[200px] z-30 min-w-[180px] border-r bg-muted/40 px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     옵션
                   </th>
-                  {locations.map((l) => (
+                  {visibleLocations.map((l) => (
                     <th
                       key={l.id}
                       className="min-w-[100px] border-l px-2 py-2 text-center text-[11px] font-medium text-muted-foreground"
@@ -93,7 +105,7 @@ export function StockStatusMatrix({ rows, locations, loading }: Props) {
                     <td className="sticky left-[200px] z-10 border-r bg-card px-3 py-2">
                       <span className="text-sm">{row.optionName}</span>
                     </td>
-                    {locations.map((l) => {
+                    {visibleLocations.map((l) => {
                       const qty = row.byLocation[l.id]
                       return (
                         <td
@@ -104,7 +116,7 @@ export function StockStatusMatrix({ rows, locations, loading }: Props) {
                               ? 'text-muted-foreground/50'
                               : qty === 0
                                 ? 'bg-red-50 text-red-700'
-                                : qty < row.safetyStockQty / Math.max(1, locations.length)
+                                : qty < row.safetyStockQty / Math.max(1, visibleLocations.length)
                                   ? 'bg-amber-50/70 text-amber-700'
                                   : ''
                           )}
