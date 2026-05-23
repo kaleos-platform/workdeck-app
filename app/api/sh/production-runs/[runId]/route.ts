@@ -133,6 +133,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
   }
 
+  // orderedConfirmedAt / stockedInAt 처리 (PATCH 메타데이터 수정 — 재고 입고 트리거 X)
+  let resolvedOrderedConfirmedAt: Date | null | undefined = undefined
+  if ('orderedConfirmedAt' in body) {
+    resolvedOrderedConfirmedAt = input.orderedConfirmedAt
+      ? new Date(input.orderedConfirmedAt)
+      : null
+  }
+  let resolvedStockedInAt: Date | null | undefined = undefined
+  if ('stockedInAt' in body) {
+    resolvedStockedInAt = input.stockedInAt ? new Date(input.stockedInAt) : null
+  }
+
   // completedAt 처리:
   //   - key 없음 + status → STOCKED_IN: 자동 today
   //   - key 있고 null: 명시적 clear
@@ -147,6 +159,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   } else if (statusChangingToStockedIn) {
     // 자동 today (UTC 자정)
     resolvedCompletedAt = new Date(new Date().toISOString().slice(0, 10))
+  } else if (resolvedStockedInAt !== undefined) {
+    // stockedInAt 명시 수정 시 completedAt 도 동기화 (레거시 호환)
+    resolvedCompletedAt = resolvedStockedInAt
   }
 
   // costMode 결정 (변경 또는 기존값 유지)
@@ -208,6 +223,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           brandId: resolvedBrandId === undefined ? undefined : resolvedBrandId,
           dueAt: 'dueAt' in body ? (input.dueAt ? new Date(input.dueAt) : null) : undefined,
           completedAt: resolvedCompletedAt === undefined ? undefined : resolvedCompletedAt,
+          orderedConfirmedAt:
+            resolvedOrderedConfirmedAt === undefined ? undefined : resolvedOrderedConfirmedAt,
+          stockedInAt: resolvedStockedInAt === undefined ? undefined : resolvedStockedInAt,
         },
       })
 
