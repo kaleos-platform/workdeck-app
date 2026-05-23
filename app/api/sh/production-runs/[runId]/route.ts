@@ -51,6 +51,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
       orderedAt: run.orderedAt.toISOString(),
       dueAt: run.dueAt ? run.dueAt.toISOString() : null,
       completedAt: run.completedAt ? run.completedAt.toISOString() : null,
+      orderedConfirmedAt: run.orderedConfirmedAt ? run.orderedConfirmedAt.toISOString() : null,
+      stockedInAt: run.stockedInAt ? run.stockedInAt.toISOString() : null,
+      stockInLocationId: run.stockInLocationId,
       totalCost: run.totalCost != null ? Number(run.totalCost) : null,
       costMode: run.costMode,
       memo: run.memo,
@@ -131,14 +134,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   // completedAt 처리:
-  //   - key 없음 + status → COMPLETED: 자동 today
+  //   - key 없음 + status → STOCKED_IN: 자동 today
   //   - key 있고 null: 명시적 clear
   //   - key 있고 날짜: 그대로 사용
+  // 주의: 재고 입고를 동반하는 STOCKED_IN 전환은 /transition 엔드포인트에서 처리.
+  //       PATCH 로 status='STOCKED_IN' 을 직접 보내는 경로는 일반적으로 사용하지 않음.
   let resolvedCompletedAt: Date | null | undefined = undefined // undefined = 변경 없음
-  const statusChangingToCompleted = input.status === 'COMPLETED' && existing.status !== 'COMPLETED'
+  const statusChangingToStockedIn =
+    input.status === 'STOCKED_IN' && existing.status !== 'STOCKED_IN'
   if ('completedAt' in body) {
     resolvedCompletedAt = input.completedAt ? new Date(input.completedAt) : null
-  } else if (statusChangingToCompleted) {
+  } else if (statusChangingToStockedIn) {
     // 자동 today (UTC 자정)
     resolvedCompletedAt = new Date(new Date().toISOString().slice(0, 10))
   }
@@ -147,10 +153,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const effectiveCostMode = input.costMode ?? existing.costMode
   const modeChanged = input.costMode !== undefined && input.costMode !== existing.costMode
 
-  // costs 변경 로직:
-  //   - BREAKDOWN 모드이고 input.costs가 있으면 → amount 재계산 + totalCost 캐시
-  //   - BREAKDOWN 모드로 전환 시 input.costs 없으면 → costs 빈 배열로 초기화
-  //   - TOTAL 모드로 전환 시 → 기존 costs 행 삭제 (DB 정합성 유지)
+  // costs 변경 로직 (두 모드 공통):
+  //   - input.costs가 있거나 모드 전환 시 → costs 교체
+  //   - BREAKDOWN: totalCost = costs amount 합 (서버 계산)
+  //   - TOTAL: totalCost = input.totalCost (클라이언트 합산값)
   //   - 모드 유지 + input.costs 없으면 → costs 변경 없음
   let costsData:
     | Array<{
@@ -167,35 +173,25 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     | undefined = undefined
   let computedTotalCost: number | undefined | null = undefined // undefined = 변경 없음
 
-  if (effectiveCostMode === 'BREAKDOWN') {
-    if (input.costs !== undefined || modeChanged) {
-      // costs payload가 있거나 BREAKDOWN으로 모드 전환 시 costs 교체
-      const costsInput = input.costs ?? []
-      costsData = costsInput.map((c) => {
-        const amount = (c.spec ?? 1) * c.quantity * c.unitPrice
-        return {
-          itemName: c.itemName,
-          description: c.description,
-          spec: c.spec,
-          quantity: c.quantity,
-          unitPrice: c.unitPrice,
-          amount,
-          note: c.note,
-          sortOrder: c.sortOrder ?? 0,
-          category: c.category ?? 'OTHER',
-        }
-      })
+  if (input.costs !== undefined || modeChanged) {
+    const costsInput = input.costs ?? []
+    costsData = costsInput.map((c, i) => ({
+      itemName: c.itemName,
+      description: c.description,
+      spec: c.spec,
+      quantity: c.quantity,
+      unitPrice: c.unitPrice,
+      amount: (c.spec ?? 1) * c.quantity * c.unitPrice,
+      note: c.note,
+      sortOrder: c.sortOrder ?? i,
+      category: c.category ?? 'OTHER',
+    }))
+    if (effectiveCostMode === 'BREAKDOWN') {
       computedTotalCost = costsData.reduce((s, c) => s + c.amount, 0)
     }
-  } else {
-    // TOTAL 모드
-    if (modeChanged) {
-      // BREAKDOWN → TOTAL 전환: costs 행 삭제 표시
-      costsData = []
-    }
-    if (input.totalCost !== undefined) {
-      computedTotalCost = input.totalCost
-    }
+  }
+  if (effectiveCostMode === 'TOTAL' && input.totalCost !== undefined) {
+    computedTotalCost = input.totalCost
   }
 
   try {
