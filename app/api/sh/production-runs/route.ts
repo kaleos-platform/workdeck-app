@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
   const [runs, total] = await Promise.all([
     prisma.productionRun.findMany({
       where,
-      orderBy: { orderedAt: 'desc' },
+      orderBy: [{ orderedConfirmedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
@@ -102,7 +102,6 @@ export async function GET(req: NextRequest) {
       runNo: run.runNo,
       status: run.status,
       brand: run.brand ? { id: run.brand.id, name: run.brand.name } : null,
-      orderedAt: run.orderedAt.toISOString(),
       dueAt: run.dueAt ? run.dueAt.toISOString() : null,
       completedAt: run.completedAt ? run.completedAt.toISOString() : null,
       orderedConfirmedAt: run.orderedConfirmedAt ? run.orderedConfirmedAt.toISOString() : null,
@@ -207,7 +206,6 @@ export async function POST(req: NextRequest) {
         data: {
           spaceId: resolved.space.id,
           runNo: input.runNo,
-          orderedAt: new Date(input.orderedAt),
           costMode: input.costMode,
           totalCost: finalTotalCost ?? null,
           memo: input.memo ?? null,

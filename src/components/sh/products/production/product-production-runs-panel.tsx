@@ -19,7 +19,7 @@ import { ProductionRunFormDialog } from './production-run-form-dialog'
 type ProductionRunForProduct = {
   id: string
   runNo: string
-  orderedAt: string
+  orderedConfirmedAt: string | null
   totalCost: number | null
   costMode: 'TOTAL' | 'BREAKDOWN'
   totalQuantity: number
@@ -121,7 +121,9 @@ export function ProductProductionRunsPanel({ productId }: Props) {
                   <TableRow key={r.id} className="hover:bg-muted/40">
                     <TableCell className="font-mono text-sm">{r.runNo}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(r.orderedAt).toLocaleDateString('ko-KR')}
+                      {r.orderedConfirmedAt
+                        ? new Date(r.orderedConfirmedAt).toLocaleDateString('ko-KR')
+                        : '-'}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{myComposition}</TableCell>
                     <TableCell className="text-right tabular-nums">

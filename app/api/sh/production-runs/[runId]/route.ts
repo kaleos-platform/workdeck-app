@@ -48,7 +48,6 @@ export async function GET(_req: NextRequest, { params }: Params) {
       runNo: run.runNo,
       status: run.status,
       brand: run.brand ? { id: run.brand.id, name: run.brand.name } : null,
-      orderedAt: run.orderedAt.toISOString(),
       dueAt: run.dueAt ? run.dueAt.toISOString() : null,
       completedAt: run.completedAt ? run.completedAt.toISOString() : null,
       orderedConfirmedAt: run.orderedConfirmedAt ? run.orderedConfirmedAt.toISOString() : null,
@@ -215,7 +214,6 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         where: { id: runId },
         data: {
           runNo: input.runNo,
-          orderedAt: input.orderedAt ? new Date(input.orderedAt) : undefined,
           costMode: input.costMode,
           totalCost: computedTotalCost === undefined ? undefined : computedTotalCost,
           memo: input.memo === undefined ? undefined : (input.memo ?? null),
