@@ -480,20 +480,17 @@ export function MovementHistory() {
                 return (
                   <TableRow key={r.id} data-state={checked ? 'selected' : undefined}>
                     <TableCell
-                      className="w-10"
+                      className={external ? 'w-10' : 'w-10 cursor-pointer'}
                       onClick={(e) => {
                         if (external) return
-                        e.stopPropagation()
                         toggleRow(r.id, selectableIndex, e.shiftKey)
                       }}
                     >
                       <Checkbox
                         checked={checked}
                         disabled={external}
-                        onCheckedChange={() => {
-                          if (external) return
-                          toggleRow(r.id, selectableIndex, false)
-                        }}
+                        tabIndex={-1}
+                        className="pointer-events-none"
                         aria-label={`${r.id} 선택`}
                       />
                     </TableCell>
