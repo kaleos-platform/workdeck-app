@@ -156,7 +156,7 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
           {target !== 'PLANNED' && (
             <div className="space-y-1.5">
               <Label htmlFor="transitionDate">
-                {isStockIn ? '입고 일자' : '발주 확정 일자'}
+                {isStockIn ? '입고 일자' : '발주일'}
                 <span className="ml-0.5 text-destructive">*</span>
               </Label>
               <Input

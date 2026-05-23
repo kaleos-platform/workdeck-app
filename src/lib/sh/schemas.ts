@@ -365,7 +365,6 @@ export type ProductionRunItemInput = z.infer<typeof productionRunItemSchema>
 
 export const productionRunSchema = z.object({
   runNo: z.string().trim().min(1).max(100),
-  orderedAt: z.string().min(1), // YYYY-MM-DD
   costMode: z.enum(['TOTAL', 'BREAKDOWN']).default('TOTAL'),
   totalCost: z.coerce.number().min(0).max(99_999_999_999).optional(),
   memo: z

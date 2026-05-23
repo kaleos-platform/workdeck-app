@@ -951,7 +951,6 @@ export const ProductionRunScalarFieldEnum = {
   spaceId: 'spaceId',
   brandId: 'brandId',
   runNo: 'runNo',
-  orderedAt: 'orderedAt',
   dueAt: 'dueAt',
   completedAt: 'completedAt',
   orderedConfirmedAt: 'orderedConfirmedAt',

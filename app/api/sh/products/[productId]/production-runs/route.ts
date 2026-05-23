@@ -39,7 +39,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   const [runs, total] = await Promise.all([
     prisma.productionRun.findMany({
       where,
-      orderBy: { orderedAt: 'desc' },
+      orderBy: [{ orderedConfirmedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
@@ -103,9 +103,10 @@ export async function GET(req: NextRequest, { params }: Params) {
       runNo: run.runNo,
       status: run.status,
       brand: run.brand ? { id: run.brand.id, name: run.brand.name } : null,
-      orderedAt: run.orderedAt.toISOString(),
       dueAt: run.dueAt ? run.dueAt.toISOString() : null,
       completedAt: run.completedAt ? run.completedAt.toISOString() : null,
+      orderedConfirmedAt: run.orderedConfirmedAt ? run.orderedConfirmedAt.toISOString() : null,
+      stockedInAt: run.stockedInAt ? run.stockedInAt.toISOString() : null,
       totalCost: totalCostNum,
       costMode: run.costMode,
       memo: run.memo,
