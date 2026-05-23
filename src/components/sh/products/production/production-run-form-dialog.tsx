@@ -17,6 +17,13 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   OptionPickerDialog,
   type PickedOption,
 } from '@/components/sh/products/listings/option-picker-dialog'
@@ -53,12 +60,23 @@ type TotalCostItem = {
   amount: string
 }
 
+type RunStatus = 'PLANNED' | 'ORDERED' | 'STOCKED_IN'
+
+const STATUS_LABEL: Record<RunStatus, string> = {
+  PLANNED: '계획중',
+  ORDERED: '발주완료',
+  STOCKED_IN: '입고완료',
+}
+
 // detail API 응답 형태
 type RunDetail = {
   run: {
     id: string
     runNo: string
+    status: RunStatus
     orderedAt: string
+    orderedConfirmedAt: string | null
+    stockedInAt: string | null
     totalCost: number | null
     costMode: CostMode
     memo: string | null
@@ -217,6 +235,11 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
   const [orderedAt, setOrderedAt] = useState('')
   const [memo, setMemo] = useState('')
 
+  // ── 단계별 상태/일자 (편집 모드 전용)
+  const [status, setStatus] = useState<RunStatus>('PLANNED')
+  const [orderedConfirmedAt, setOrderedConfirmedAt] = useState('')
+  const [stockedInAt, setStockedInAt] = useState('')
+
   // ── 옵션 목록 (productId 기준 그룹핑)
   const [optionItems, setOptionItems] = useState<OptionItem[]>([])
 
@@ -236,6 +259,9 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
     setRunNo('')
     setOrderedAt(new Date().toISOString().slice(0, 10))
     setMemo('')
+    setStatus('PLANNED')
+    setOrderedConfirmedAt('')
+    setStockedInAt('')
     setOptionItems([])
     setCostMode('TOTAL')
     setTotalCostItems([newTotalCostItem()])
@@ -261,6 +287,9 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
           setRunNo(r.runNo)
           setOrderedAt(toDateInput(r.orderedAt))
           setMemo(r.memo ?? '')
+          setStatus(r.status)
+          setOrderedConfirmedAt(r.orderedConfirmedAt ? toDateInput(r.orderedConfirmedAt) : '')
+          setStockedInAt(r.stockedInAt ? toDateInput(r.stockedInAt) : '')
 
           // items → OptionItem[]
           setOptionItems(
@@ -492,6 +521,13 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
       items: validItems.map((it) => ({ optionId: it.optionId, quantity: it.quantity })),
     }
 
+    // 편집 모드: 단계별 상태/일자 (재고 입고는 트리거하지 않음 — 메타데이터만)
+    if (isEdit) {
+      body.status = status
+      body.orderedConfirmedAt = orderedConfirmedAt || null
+      body.stockedInAt = stockedInAt || null
+    }
+
     if (costMode === 'TOTAL') {
       body.totalCost = totalCostSum
       body.costs = totalCostItems.map((r, i) => ({
@@ -606,6 +642,50 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                     className="resize-none"
                   />
                 </div>
+
+                {isEdit && (
+                  <div className="space-y-2 rounded-md border border-dashed p-3">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="text-xs font-semibold text-foreground">진행 단계</h4>
+                      <span className="text-xs text-muted-foreground">
+                        상태 변경만 — 재고 입고는 목록의 상태 메뉴에서 처리하세요
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="status">상태</Label>
+                        <Select value={status} onValueChange={(v) => setStatus(v as RunStatus)}>
+                          <SelectTrigger id="status">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PLANNED">{STATUS_LABEL.PLANNED}</SelectItem>
+                            <SelectItem value="ORDERED">{STATUS_LABEL.ORDERED}</SelectItem>
+                            <SelectItem value="STOCKED_IN">{STATUS_LABEL.STOCKED_IN}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="orderedConfirmedAt">발주완료 일자</Label>
+                        <Input
+                          id="orderedConfirmedAt"
+                          type="date"
+                          value={orderedConfirmedAt}
+                          onChange={(e) => setOrderedConfirmedAt(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="stockedInAt">입고완료 일자</Label>
+                        <Input
+                          id="stockedInAt"
+                          type="date"
+                          value={stockedInAt}
+                          onChange={(e) => setStockedInAt(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </section>
 
               {/* ── 섹션 2: 발주 상품·옵션 ───────────────────────────── */}

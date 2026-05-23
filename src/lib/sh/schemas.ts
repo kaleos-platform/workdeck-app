@@ -426,6 +426,9 @@ export const productionRunPatchSchema = productionRunSchema.partial().extend({
     )
     .max(50)
     .optional(),
+  // 단계별 일자 — 사용자가 수정 가능. 빈 문자열은 null 로 치환, undefined 는 변경 없음.
+  orderedConfirmedAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
+  stockedInAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
 })
 export type ProductionRunPatchInput = z.infer<typeof productionRunPatchSchema>
 
