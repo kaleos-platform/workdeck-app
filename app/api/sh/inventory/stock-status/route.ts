@@ -55,6 +55,22 @@ export async function GET(req: NextRequest) {
     orderBy: [{ type: 'asc' }, { name: 'asc' }],
   })
 
+  // 옵션 × 위치 → externalCode 매핑 (재고 현황 export 시 사용)
+  const mapItems = await prisma.invLocationProductMapItem.findMany({
+    where: { map: { spaceId } },
+    select: {
+      optionId: true,
+      map: { select: { locationId: true, externalCode: true } },
+    },
+  })
+  const externalCodeByOptionLocation = new Map<string, Map<string, string>>()
+  for (const it of mapItems) {
+    const inner = externalCodeByOptionLocation.get(it.optionId) ?? new Map<string, string>()
+    // 같은 옵션 × 위치 매핑이 여러 개면 첫 번째 유지
+    if (!inner.has(it.map.locationId)) inner.set(it.map.locationId, it.map.externalCode)
+    externalCodeByOptionLocation.set(it.optionId, inner)
+  }
+
   // 최근 7일 OUTBOUND 집계 (legacy outbound7d 호환용)
   const outbound7dAgg = await prisma.invMovement.groupBy({
     by: ['optionId'],
@@ -160,6 +176,7 @@ export async function GET(req: NextRequest) {
     totalQty: number
     totalValue: number
     byLocation: Record<string, number>
+    externalCodeByLocation: Record<string, string>
     status: StatusLabel
     turnoverDays: number | null
   }
@@ -190,6 +207,11 @@ export async function GET(req: NextRequest) {
         const costPrice = decimalToNumber(o.costPrice)
         const totalValue = costPrice !== null ? Math.round(costPrice * totalQty) : 0
         const out30d = outbound30dByOption.get(o.id) ?? 0
+        const externalCodeByLocation: Record<string, string> = {}
+        const optionMap = externalCodeByOptionLocation.get(o.id)
+        if (optionMap) {
+          for (const [locId, code] of optionMap) externalCodeByLocation[locId] = code
+        }
         allRows.push({
           optionId: o.id,
           sku: o.sku ?? null,
@@ -208,6 +230,7 @@ export async function GET(req: NextRequest) {
           totalQty,
           totalValue,
           byLocation,
+          externalCodeByLocation,
           status: statusForSku(totalQty, o.safetyStockQty),
           turnoverDays: turnoverDays(totalQty, out30d, TURNOVER_WINDOW_DAYS),
         })

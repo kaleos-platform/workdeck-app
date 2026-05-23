@@ -8,7 +8,11 @@ export type ParsedRow = {
   quantity: number
 }
 
-export type ReconciliationFileFormat = 'coupang_health' | 'threepl_current' | 'generic'
+export type ReconciliationFileFormat =
+  | 'coupang_health'
+  | 'threepl_current'
+  | 'stock_status_export'
+  | 'generic'
 
 export type ParseResult = {
   format: ReconciliationFileFormat
@@ -42,7 +46,9 @@ function mergeHeaders(row0: unknown[], row1: unknown[]): string[] {
   let lastParent = ''
   const len = Math.max(row0.length, row1.length)
   for (let i = 0; i < len; i++) {
-    const parent = String(row0[i] ?? '').trim().replace(/\n/g, ' ')
+    const parent = String(row0[i] ?? '')
+      .trim()
+      .replace(/\n/g, ' ')
     const child = String(row1[i] ?? '').trim()
     if (parent) lastParent = parent
     if (child && child !== lastParent) {
@@ -92,9 +98,7 @@ function parseCoupangHealth(rawData: unknown[][]): ParsedRow[] {
     if (!externalCode) continue
 
     const qty = parseInt_(
-      rec['판매가능재고 (실시간 기준)'] ??
-        rec['판매가능재고'] ??
-        rec['판매가능 재고']
+      rec['판매가능재고 (실시간 기준)'] ?? rec['판매가능재고'] ?? rec['판매가능 재고']
     )
     if (qty == null) continue
 
@@ -130,6 +134,28 @@ function parseThreePlCurrent(rawData: unknown[][]): ParsedRow[] {
   return rows
 }
 
+function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
+  const row0 = (rawData[0] as unknown[]) ?? []
+  const headers = row0.map((v) => String(v ?? '').trim())
+  const dataRows = rawData.slice(1)
+
+  const rows: ParsedRow[] = []
+  for (const raw of dataRows) {
+    const rec = rowToRecord(headers, raw as unknown[])
+    const externalCode = parseStr(rec['externalCode'])
+    if (!externalCode) continue
+    const qty = parseInt_(rec['실재고'])
+    if (qty == null) continue
+    rows.push({
+      externalCode,
+      externalName: parseStr(rec['상품명']),
+      externalOptionName: parseStr(rec['옵션명']),
+      quantity: qty,
+    })
+  }
+  return rows
+}
+
 function parseGeneric(rawData: unknown[][]): ParsedRow[] {
   const row0 = (rawData[0] as unknown[]) ?? []
   const headers = row0.map((v) => String(v ?? '').trim())
@@ -154,10 +180,7 @@ function parseGeneric(rawData: unknown[][]): ParsedRow[] {
 
 // ─── 메인 파서 ─────────────────────────────────────────────
 
-export function parseReconciliationFile(
-  buffer: ArrayBuffer,
-  fileName: string
-): ParseResult {
+export function parseReconciliationFile(buffer: ArrayBuffer, fileName: string): ParseResult {
   const wb = XLSX.read(buffer, { type: 'array' })
   const sheetName = wb.SheetNames[0]
   if (!sheetName) throw new Error('엑셀에 시트가 없습니다')
@@ -203,7 +226,16 @@ export function parseReconciliationFile(
     return { format: 'threepl_current', rows, snapshotDate }
   }
 
-  // 3) 범용: "제품코드"/"상품코드" + "수량"
+  // 3) 재고 현황 내보내기: externalCode + 실재고
+  if (headerStr0.includes('externalCode') && headerStr0.includes('실재고')) {
+    const rows = parseStockStatusExport(rawData as unknown[][])
+    if (rows.length === 0) {
+      throw new Error('재고 현황 내보내기 파일에서 유효한 행을 찾지 못했습니다')
+    }
+    return { format: 'stock_status_export', rows, snapshotDate }
+  }
+
+  // 4) 범용: "제품코드"/"상품코드" + "수량"
   if (
     (headerStr0.includes('제품코드') || headerStr0.includes('상품코드')) &&
     (headerStr0.includes('수량') || headerStr0.includes('재고'))
@@ -216,6 +248,6 @@ export function parseReconciliationFile(
   }
 
   throw new Error(
-    '지원하지 않는 파일 형식입니다. 쿠팡 재고 health, 3PL 현재고조회, 또는 (제품코드, 수량) 컬럼이 포함된 엑셀을 업로드해 주세요.'
+    '지원하지 않는 파일 형식입니다. 쿠팡 재고 health, 3PL 현재고조회, 재고 현황 내보내기, 또는 (제품코드, 수량) 컬럼이 포함된 엑셀을 업로드해 주세요.'
   )
 }
