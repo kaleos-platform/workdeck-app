@@ -146,23 +146,27 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
           <DialogDescription>
             {isStockIn
               ? `옵션 ${run.itemCount}개 · 총 수량 ${run.totalQuantity.toLocaleString('ko-KR')}개를 선택한 보관 위치에 입고합니다.`
-              : '전환 일자를 확인하고 상태를 변경합니다.'}
+              : target === 'PLANNED'
+                ? '계획중 상태로 되돌립니다. 기존 발주완료·입고완료 일자는 이력으로 유지됩니다.'
+                : '전환 일자를 확인하고 상태를 변경합니다.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="transitionDate">
-              {isStockIn ? '입고 일자' : target === 'ORDERED' ? '발주 확정 일자' : '전환 일자'}
-              <span className="ml-0.5 text-destructive">*</span>
-            </Label>
-            <Input
-              id="transitionDate"
-              type="date"
-              value={transitionDate}
-              onChange={(e) => setTransitionDate(e.target.value)}
-            />
-          </div>
+          {target !== 'PLANNED' && (
+            <div className="space-y-1.5">
+              <Label htmlFor="transitionDate">
+                {isStockIn ? '입고 일자' : '발주 확정 일자'}
+                <span className="ml-0.5 text-destructive">*</span>
+              </Label>
+              <Input
+                id="transitionDate"
+                type="date"
+                value={transitionDate}
+                onChange={(e) => setTransitionDate(e.target.value)}
+              />
+            </div>
+          )}
 
           {isStockIn && (
             <div className="space-y-1.5">

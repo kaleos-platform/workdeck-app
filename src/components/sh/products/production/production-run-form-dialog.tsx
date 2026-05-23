@@ -77,6 +77,7 @@ type RunDetail = {
     orderedAt: string
     orderedConfirmedAt: string | null
     stockedInAt: string | null
+    createdAt: string
     totalCost: number | null
     costMode: CostMode
     memo: string | null
@@ -239,6 +240,7 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
   const [status, setStatus] = useState<RunStatus>('PLANNED')
   const [orderedConfirmedAt, setOrderedConfirmedAt] = useState('')
   const [stockedInAt, setStockedInAt] = useState('')
+  const [createdAt, setCreatedAt] = useState('')
 
   // ── 옵션 목록 (productId 기준 그룹핑)
   const [optionItems, setOptionItems] = useState<OptionItem[]>([])
@@ -262,6 +264,7 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
     setStatus('PLANNED')
     setOrderedConfirmedAt('')
     setStockedInAt('')
+    setCreatedAt('')
     setOptionItems([])
     setCostMode('TOTAL')
     setTotalCostItems([newTotalCostItem()])
@@ -290,6 +293,7 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
           setStatus(r.status)
           setOrderedConfirmedAt(r.orderedConfirmedAt ? toDateInput(r.orderedConfirmedAt) : '')
           setStockedInAt(r.stockedInAt ? toDateInput(r.stockedInAt) : '')
+          setCreatedAt(r.createdAt ? toDateInput(r.createdAt) : '')
 
           // items → OptionItem[]
           setOptionItems(
@@ -651,6 +655,12 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                         상태 변경만 — 재고 입고는 목록의 상태 메뉴에서 처리하세요
                       </span>
                     </div>
+                    {createdAt && (
+                      <p className="text-xs text-muted-foreground">
+                        계획중 · 생성일{' '}
+                        <span className="font-medium text-foreground">{createdAt}</span>
+                      </p>
+                    )}
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="status">상태</Label>
