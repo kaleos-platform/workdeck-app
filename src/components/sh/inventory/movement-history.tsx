@@ -111,7 +111,9 @@ function quantityDisplay(row: MovementRow) {
 }
 
 function isExternalRow(r: MovementRow) {
-  return r.referenceId != null || r.importHistoryId != null
+  // importHistoryId 가 있는 행만 외부 잠금(파일 임포트 출처).
+  // referenceId 는 추적용 — 생산 차수 입고 등 내부 출처도 수정/삭제 가능해야 함.
+  return r.importHistoryId != null
 }
 
 // 수정 다이얼로그 상태
