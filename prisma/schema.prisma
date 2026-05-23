@@ -828,6 +828,7 @@ model InvStorageLocation {
   locationMappings  InvLocationProductMap[]
   reconciliations   InvReconciliation[]
   settingsDefault   InvSettings[]           @relation("DefaultLocation")
+  productionRunStockIns ProductionRun[]    @relation("ProductionRunStockInLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1299,8 +1300,7 @@ enum ProductionCostMode {
 enum ProductionRunStatus {
   PLANNED // 계획중
   ORDERED // 발주완료
-  PRODUCING // 생산중
-  COMPLETED // 생산완료
+  STOCKED_IN // 입고완료 (재고 입고까지 완료)
 }
 
 enum ProductionCostCategory {
@@ -1318,16 +1318,20 @@ model ProductionRun {
   runNo       String // Space 단위 unique 차수 번호 (전체 범위)
   orderedAt   DateTime // 발주일
   dueAt       DateTime? // 납기일 (선택)
-  completedAt DateTime? // 완료일 (선택)
+  completedAt DateTime? // 완료일 (선택, 레거시 — stockedInAt 과 동기화)
+  orderedConfirmedAt DateTime? // 발주완료 전환 시점
+  stockedInAt        DateTime? // 입고완료 전환 시점 (재고 INBOUND 반영 일자)
+  stockInLocationId  String?   // 입고완료 시 선택한 보관 위치
   status      ProductionRunStatus @default(PLANNED)
   totalCost   Decimal?            @db.Decimal(18, 2) // 총 생산원가 (TOTAL 모드: 직접 입력값 / BREAKDOWN 모드: costs 합계 캐시)
   costMode    ProductionCostMode  @default(TOTAL)
   memo        String?
 
-  space Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  brand Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  items ProductionRunItem[]
-  costs ProductionRunCost[]
+  space            Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  brand            Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  stockInLocation  InvStorageLocation? @relation("ProductionRunStockInLocation", fields: [stockInLocationId], references: [id], onDelete: SetNull)
+  items            ProductionRunItem[]
+  costs            ProductionRunCost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
