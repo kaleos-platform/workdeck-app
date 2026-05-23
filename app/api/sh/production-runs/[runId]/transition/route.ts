@@ -18,13 +18,20 @@ export async function POST(req: NextRequest, { params }: Params) {
   const existing = await prisma.productionRun.findFirst({
     where: { id: runId, spaceId: resolved.space.id },
     include: {
+      brand: { select: { name: true } },
       items: {
         include: {
           option: {
             select: {
               id: true,
               name: true,
-              product: { select: { status: true } },
+              product: {
+                select: {
+                  status: true,
+                  name: true,
+                  internalName: true,
+                },
+              },
             },
           },
         },
@@ -75,16 +82,19 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     // 옵션별로 INBOUND 처리 (movement-processor 가 자체 트랜잭션)
+    const brandPart = existing.brand?.name ? ` · ${existing.brand.name}` : ''
     const movementResults: Array<{ optionId: string; stockLevelAfter: number }> = []
     try {
       for (const it of existing.items) {
+        const productName = it.option.product.internalName ?? it.option.product.name
+        const reason = `생산 입고 - 차수 ${existing.runNo}${brandPart} · ${productName} / ${it.option.name} · ${it.quantity}개 · 위치 ${location.name} · 입고일 ${input.transitionDate}`
         const result = await processMovement(resolved.space.id, {
           type: 'INBOUND',
           optionId: it.optionId,
           locationId: input.locationId,
           quantity: it.quantity,
           movementDate: input.transitionDate,
-          reason: `생산 입고 ${existing.runNo}`,
+          reason,
           referenceId: existing.id,
         })
         movementResults.push({
