@@ -288,7 +288,7 @@ export type ReorderPlanWhereInput = {
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   items?: Prisma.ReorderPlanItemListRelationFilter
   accuracies?: Prisma.ReorderPlanAccuracyListRelationFilter
-  productionRun?: Prisma.XOR<Prisma.ProductionRunNullableScalarRelationFilter, Prisma.ProductionRunWhereInput> | null
+  productionRuns?: Prisma.ProductionRunListRelationFilter
 }
 
 export type ReorderPlanOrderByWithRelationInput = {
@@ -309,7 +309,7 @@ export type ReorderPlanOrderByWithRelationInput = {
   createdBy?: Prisma.UserOrderByWithRelationInput
   items?: Prisma.ReorderPlanItemOrderByRelationAggregateInput
   accuracies?: Prisma.ReorderPlanAccuracyOrderByRelationAggregateInput
-  productionRun?: Prisma.ProductionRunOrderByWithRelationInput
+  productionRuns?: Prisma.ProductionRunOrderByRelationAggregateInput
 }
 
 export type ReorderPlanWhereUniqueInput = Prisma.AtLeast<{
@@ -334,7 +334,7 @@ export type ReorderPlanWhereUniqueInput = Prisma.AtLeast<{
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   items?: Prisma.ReorderPlanItemListRelationFilter
   accuracies?: Prisma.ReorderPlanAccuracyListRelationFilter
-  productionRun?: Prisma.XOR<Prisma.ProductionRunNullableScalarRelationFilter, Prisma.ProductionRunWhereInput> | null
+  productionRuns?: Prisma.ProductionRunListRelationFilter
 }, "id" | "spaceId_planNo">
 
 export type ReorderPlanOrderByWithAggregationInput = {
@@ -393,7 +393,7 @@ export type ReorderPlanCreateInput = {
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanUncheckedCreateInput = {
@@ -412,7 +412,7 @@ export type ReorderPlanUncheckedCreateInput = {
   updatedAt?: Date | string
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunUncheckedCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanUpdateInput = {
@@ -431,7 +431,7 @@ export type ReorderPlanUpdateInput = {
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanUncheckedUpdateInput = {
@@ -450,7 +450,7 @@ export type ReorderPlanUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUncheckedUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanCreateManyInput = {
@@ -666,20 +666,20 @@ export type ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.ReorderPlanScalarWhereInput | Prisma.ReorderPlanScalarWhereInput[]
 }
 
-export type ReorderPlanCreateNestedOneWithoutProductionRunInput = {
-  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunInput>
-  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutProductionRunInput
+export type ReorderPlanCreateNestedOneWithoutProductionRunsInput = {
+  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunsInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunsInput>
+  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutProductionRunsInput
   connect?: Prisma.ReorderPlanWhereUniqueInput
 }
 
-export type ReorderPlanUpdateOneWithoutProductionRunNestedInput = {
-  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunInput>
-  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutProductionRunInput
-  upsert?: Prisma.ReorderPlanUpsertWithoutProductionRunInput
+export type ReorderPlanUpdateOneWithoutProductionRunsNestedInput = {
+  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunsInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunsInput>
+  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutProductionRunsInput
+  upsert?: Prisma.ReorderPlanUpsertWithoutProductionRunsInput
   disconnect?: Prisma.ReorderPlanWhereInput | boolean
   delete?: Prisma.ReorderPlanWhereInput | boolean
   connect?: Prisma.ReorderPlanWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ReorderPlanUpdateToOneWithWhereWithoutProductionRunInput, Prisma.ReorderPlanUpdateWithoutProductionRunInput>, Prisma.ReorderPlanUncheckedUpdateWithoutProductionRunInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReorderPlanUpdateToOneWithWhereWithoutProductionRunsInput, Prisma.ReorderPlanUpdateWithoutProductionRunsInput>, Prisma.ReorderPlanUncheckedUpdateWithoutProductionRunsInput>
 }
 
 export type EnumReorderPlanStatusFieldUpdateOperationsInput = {
@@ -729,7 +729,7 @@ export type ReorderPlanCreateWithoutCreatedByInput = {
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanUncheckedCreateWithoutCreatedByInput = {
@@ -747,7 +747,7 @@ export type ReorderPlanUncheckedCreateWithoutCreatedByInput = {
   updatedAt?: Date | string
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunUncheckedCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanCreateOrConnectWithoutCreatedByInput = {
@@ -810,7 +810,7 @@ export type ReorderPlanCreateWithoutSpaceInput = {
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanUncheckedCreateWithoutSpaceInput = {
@@ -828,7 +828,7 @@ export type ReorderPlanUncheckedCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunUncheckedCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanCreateOrConnectWithoutSpaceInput = {
@@ -857,7 +857,7 @@ export type ReorderPlanUpdateManyWithWhereWithoutSpaceInput = {
   data: Prisma.XOR<Prisma.ReorderPlanUpdateManyMutationInput, Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceInput>
 }
 
-export type ReorderPlanCreateWithoutProductionRunInput = {
+export type ReorderPlanCreateWithoutProductionRunsInput = {
   id?: string
   planNo: string
   status?: $Enums.ReorderPlanStatus
@@ -875,7 +875,7 @@ export type ReorderPlanCreateWithoutProductionRunInput = {
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
 }
 
-export type ReorderPlanUncheckedCreateWithoutProductionRunInput = {
+export type ReorderPlanUncheckedCreateWithoutProductionRunsInput = {
   id?: string
   spaceId: string
   planNo: string
@@ -893,23 +893,23 @@ export type ReorderPlanUncheckedCreateWithoutProductionRunInput = {
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
 }
 
-export type ReorderPlanCreateOrConnectWithoutProductionRunInput = {
+export type ReorderPlanCreateOrConnectWithoutProductionRunsInput = {
   where: Prisma.ReorderPlanWhereUniqueInput
-  create: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunInput>
+  create: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunsInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunsInput>
 }
 
-export type ReorderPlanUpsertWithoutProductionRunInput = {
-  update: Prisma.XOR<Prisma.ReorderPlanUpdateWithoutProductionRunInput, Prisma.ReorderPlanUncheckedUpdateWithoutProductionRunInput>
-  create: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunInput>
+export type ReorderPlanUpsertWithoutProductionRunsInput = {
+  update: Prisma.XOR<Prisma.ReorderPlanUpdateWithoutProductionRunsInput, Prisma.ReorderPlanUncheckedUpdateWithoutProductionRunsInput>
+  create: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunsInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunsInput>
   where?: Prisma.ReorderPlanWhereInput
 }
 
-export type ReorderPlanUpdateToOneWithWhereWithoutProductionRunInput = {
+export type ReorderPlanUpdateToOneWithWhereWithoutProductionRunsInput = {
   where?: Prisma.ReorderPlanWhereInput
-  data: Prisma.XOR<Prisma.ReorderPlanUpdateWithoutProductionRunInput, Prisma.ReorderPlanUncheckedUpdateWithoutProductionRunInput>
+  data: Prisma.XOR<Prisma.ReorderPlanUpdateWithoutProductionRunsInput, Prisma.ReorderPlanUncheckedUpdateWithoutProductionRunsInput>
 }
 
-export type ReorderPlanUpdateWithoutProductionRunInput = {
+export type ReorderPlanUpdateWithoutProductionRunsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   planNo?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
@@ -927,7 +927,7 @@ export type ReorderPlanUpdateWithoutProductionRunInput = {
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
 }
 
-export type ReorderPlanUncheckedUpdateWithoutProductionRunInput = {
+export type ReorderPlanUncheckedUpdateWithoutProductionRunsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   planNo?: Prisma.StringFieldUpdateOperationsInput | string
@@ -960,7 +960,7 @@ export type ReorderPlanCreateWithoutItemsInput = {
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanUncheckedCreateWithoutItemsInput = {
@@ -978,7 +978,7 @@ export type ReorderPlanUncheckedCreateWithoutItemsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunUncheckedCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanCreateOrConnectWithoutItemsInput = {
@@ -1012,7 +1012,7 @@ export type ReorderPlanUpdateWithoutItemsInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanUncheckedUpdateWithoutItemsInput = {
@@ -1030,7 +1030,7 @@ export type ReorderPlanUncheckedUpdateWithoutItemsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUncheckedUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanCreateWithoutAccuraciesInput = {
@@ -1048,7 +1048,7 @@ export type ReorderPlanCreateWithoutAccuraciesInput = {
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanUncheckedCreateWithoutAccuraciesInput = {
@@ -1066,7 +1066,7 @@ export type ReorderPlanUncheckedCreateWithoutAccuraciesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
-  productionRun?: Prisma.ProductionRunUncheckedCreateNestedOneWithoutReorderPlanInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
 
 export type ReorderPlanCreateOrConnectWithoutAccuraciesInput = {
@@ -1100,7 +1100,7 @@ export type ReorderPlanUpdateWithoutAccuraciesInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanUncheckedUpdateWithoutAccuraciesInput = {
@@ -1118,7 +1118,7 @@ export type ReorderPlanUncheckedUpdateWithoutAccuraciesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUncheckedUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanCreateManyCreatedByInput = {
@@ -1151,7 +1151,7 @@ export type ReorderPlanUpdateWithoutCreatedByInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanUncheckedUpdateWithoutCreatedByInput = {
@@ -1169,7 +1169,7 @@ export type ReorderPlanUncheckedUpdateWithoutCreatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUncheckedUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanUncheckedUpdateManyWithoutCreatedByInput = {
@@ -1217,7 +1217,7 @@ export type ReorderPlanUpdateWithoutSpaceInput = {
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanUncheckedUpdateWithoutSpaceInput = {
@@ -1235,7 +1235,7 @@ export type ReorderPlanUncheckedUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
-  productionRun?: Prisma.ProductionRunUncheckedUpdateOneWithoutReorderPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
 
 export type ReorderPlanUncheckedUpdateManyWithoutSpaceInput = {
@@ -1261,11 +1261,13 @@ export type ReorderPlanUncheckedUpdateManyWithoutSpaceInput = {
 export type ReorderPlanCountOutputType = {
   items: number
   accuracies: number
+  productionRuns: number
 }
 
 export type ReorderPlanCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | ReorderPlanCountOutputTypeCountItemsArgs
   accuracies?: boolean | ReorderPlanCountOutputTypeCountAccuraciesArgs
+  productionRuns?: boolean | ReorderPlanCountOutputTypeCountProductionRunsArgs
 }
 
 /**
@@ -1292,6 +1294,13 @@ export type ReorderPlanCountOutputTypeCountAccuraciesArgs<ExtArgs extends runtim
   where?: Prisma.ReorderPlanAccuracyWhereInput
 }
 
+/**
+ * ReorderPlanCountOutputType without action
+ */
+export type ReorderPlanCountOutputTypeCountProductionRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductionRunWhereInput
+}
+
 
 export type ReorderPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1311,7 +1320,7 @@ export type ReorderPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   items?: boolean | Prisma.ReorderPlan$itemsArgs<ExtArgs>
   accuracies?: boolean | Prisma.ReorderPlan$accuraciesArgs<ExtArgs>
-  productionRun?: boolean | Prisma.ReorderPlan$productionRunArgs<ExtArgs>
+  productionRuns?: boolean | Prisma.ReorderPlan$productionRunsArgs<ExtArgs>
   _count?: boolean | Prisma.ReorderPlanCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlan"]>
 
@@ -1373,7 +1382,7 @@ export type ReorderPlanInclude<ExtArgs extends runtime.Types.Extensions.Internal
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   items?: boolean | Prisma.ReorderPlan$itemsArgs<ExtArgs>
   accuracies?: boolean | Prisma.ReorderPlan$accuraciesArgs<ExtArgs>
-  productionRun?: boolean | Prisma.ReorderPlan$productionRunArgs<ExtArgs>
+  productionRuns?: boolean | Prisma.ReorderPlan$productionRunsArgs<ExtArgs>
   _count?: boolean | Prisma.ReorderPlanCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReorderPlanIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1392,7 +1401,7 @@ export type $ReorderPlanPayload<ExtArgs extends runtime.Types.Extensions.Interna
     createdBy: Prisma.$UserPayload<ExtArgs>
     items: Prisma.$ReorderPlanItemPayload<ExtArgs>[]
     accuracies: Prisma.$ReorderPlanAccuracyPayload<ExtArgs>[]
-    productionRun: Prisma.$ProductionRunPayload<ExtArgs> | null
+    productionRuns: Prisma.$ProductionRunPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1806,7 +1815,7 @@ export interface Prisma__ReorderPlanClient<T, Null = never, ExtArgs extends runt
   createdBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   items<T extends Prisma.ReorderPlan$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accuracies<T extends Prisma.ReorderPlan$accuraciesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$accuraciesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanAccuracyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  productionRun<T extends Prisma.ReorderPlan$productionRunArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$productionRunArgs<ExtArgs>>): Prisma.Prisma__ProductionRunClient<runtime.Types.Result.GetResult<Prisma.$ProductionRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  productionRuns<T extends Prisma.ReorderPlan$productionRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$productionRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2293,9 +2302,9 @@ export type ReorderPlan$accuraciesArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
- * ReorderPlan.productionRun
+ * ReorderPlan.productionRuns
  */
-export type ReorderPlan$productionRunArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type ReorderPlan$productionRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the ProductionRun
    */
@@ -2309,6 +2318,11 @@ export type ReorderPlan$productionRunArgs<ExtArgs extends runtime.Types.Extensio
    */
   include?: Prisma.ProductionRunInclude<ExtArgs> | null
   where?: Prisma.ProductionRunWhereInput
+  orderBy?: Prisma.ProductionRunOrderByWithRelationInput | Prisma.ProductionRunOrderByWithRelationInput[]
+  cursor?: Prisma.ProductionRunWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductionRunScalarFieldEnum | Prisma.ProductionRunScalarFieldEnum[]
 }
 
 /**

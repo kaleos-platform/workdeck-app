@@ -315,6 +315,7 @@ export type ReorderPlanAccuracyOrderByWithRelationInput = {
 
 export type ReorderPlanAccuracyWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  planId_optionId?: Prisma.ReorderPlanAccuracyPlanIdOptionIdCompoundUniqueInput
   AND?: Prisma.ReorderPlanAccuracyWhereInput | Prisma.ReorderPlanAccuracyWhereInput[]
   OR?: Prisma.ReorderPlanAccuracyWhereInput[]
   NOT?: Prisma.ReorderPlanAccuracyWhereInput | Prisma.ReorderPlanAccuracyWhereInput[]
@@ -331,7 +332,7 @@ export type ReorderPlanAccuracyWhereUniqueInput = Prisma.AtLeast<{
   overstockDays?: Prisma.IntFilter<"ReorderPlanAccuracy"> | number
   plan?: Prisma.XOR<Prisma.ReorderPlanScalarRelationFilter, Prisma.ReorderPlanWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
-}, "id">
+}, "id" | "planId_optionId">
 
 export type ReorderPlanAccuracyOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -482,6 +483,11 @@ export type ReorderPlanAccuracyListRelationFilter = {
 
 export type ReorderPlanAccuracyOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type ReorderPlanAccuracyPlanIdOptionIdCompoundUniqueInput = {
+  planId: string
+  optionId: string
 }
 
 export type ReorderPlanAccuracyCountOrderByAggregateInput = {

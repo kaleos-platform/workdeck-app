@@ -99,15 +99,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
 
     await prisma.reorderPlanAccuracy.upsert({
       where: {
-        // 복합 인덱스 기반 upsert — planId + optionId unique 보장
-        // schema에 @@unique가 없으므로 findFirst + create/update 패턴 사용
-        id:
-          (
-            await prisma.reorderPlanAccuracy.findFirst({
-              where: { planId, optionId: item.optionId },
-              select: { id: true },
-            })
-          )?.id ?? 'not-found',
+        // @@unique([planId, optionId]) 기반 표준 upsert
+        planId_optionId: { planId, optionId: item.optionId },
       },
       create: {
         planId,

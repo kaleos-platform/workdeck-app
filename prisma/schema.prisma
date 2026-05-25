@@ -2324,7 +2324,7 @@ model ReorderPlanAccuracy {
   plan   ReorderPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
   option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
 
+  @@unique([planId, optionId])
   @@index([planId])
   @@index([optionId])
-  @@index([planId, optionId])
 }
