@@ -19,17 +19,17 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   })
   if (!recon) return errorResponse('대조 기록을 찾을 수 없습니다', 404)
 
-  // 이 대조에 이미 적용된 optionId 목록
+  // 이 대조에 이미 적용된 optionId 목록 (멀티 location 대응 — locationId 별로 distinct)
   const movements = await prisma.invMovement.findMany({
     where: { referenceId: id, type: 'ADJUSTMENT' },
-    select: { optionId: true },
-    distinct: ['optionId'],
+    select: { optionId: true, locationId: true },
   })
-  const appliedOptionIds = movements.map((m) => m.optionId)
+  // 후방 호환: 기존 UI는 optionId 단일 set으로 비교. 멀티 location도 optionId만 노출.
+  const appliedOptionIds = Array.from(new Set(movements.map((m) => m.optionId)))
 
   // matchResults 후처리: file-only 중 InvLocationProductMap에 매핑된 항목은
   // 현재 시스템 재고를 기준으로 matched-equal/matched-diff로 가상 변환 (N entries 분리)
-  // 스냅샷 DB는 수정하지 않음
+  // 스냅샷 DB는 수정하지 않음. entry.locationId 우선, 없으면 recon.locationId fallback.
   const rawEntries = (recon.matchResults ?? []) as MatchEntry[]
   const resolved2 = await resolveFileOnlyEntries(rawEntries, recon.locationId)
 
@@ -47,35 +47,25 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
  */
 async function attachMappingInfo(
   entries: (MatchEntry & { mappingId?: string; mappingItems?: unknown[] })[],
-  locationId: string
+  reconLocationId: string
 ): Promise<(MatchEntry & { mappingId?: string; mappingItems?: unknown[] })[]> {
-  const codes: string[] = []
+  // (locationId, externalCode) 페어 수집 — 멀티 location 대응
+  const pairs: { locationId: string; externalCode: string }[] = []
   for (const e of entries) {
     if ((e.status === 'matched-equal' || e.status === 'matched-diff') && e.row?.externalCode) {
-      codes.push(e.row.externalCode)
+      const locId = (e as MatchEntry & { locationId?: string }).locationId ?? reconLocationId
+      pairs.push({ locationId: locId, externalCode: e.row.externalCode })
     }
   }
-  if (codes.length === 0) return entries
+  if (pairs.length === 0) return entries
 
-  const mappings = await prisma.invLocationProductMap.findMany({
-    where: { locationId, externalCode: { in: codes } },
-    select: {
-      id: true,
-      externalCode: true,
-      items: {
-        select: {
-          optionId: true,
-          quantity: true,
-          option: {
-            select: {
-              name: true,
-              product: { select: { name: true } },
-            },
-          },
-        },
-      },
-    },
-  })
+  // location별로 묶어서 조회
+  const codesByLoc = new Map<string, Set<string>>()
+  for (const p of pairs) {
+    const s = codesByLoc.get(p.locationId) ?? new Set()
+    s.add(p.externalCode)
+    codesByLoc.set(p.locationId, s)
+  }
 
   type MappingInfo = {
     id: string
@@ -86,28 +76,46 @@ async function attachMappingInfo(
       optionName: string
     }[]
   }
+  const infoByKey = new Map<string, MappingInfo>() // `${locId}|${code}`
 
-  const infoByCode = new Map<string, MappingInfo>()
-  for (const m of mappings) {
-    infoByCode.set(m.externalCode, {
-      id: m.id,
-      items: m.items.map((i) => ({
-        optionId: i.optionId,
-        quantity: i.quantity,
-        productName: i.option.product.name,
-        optionName: i.option.name,
-      })),
+  for (const [locId, codeSet] of codesByLoc) {
+    const mappings = await prisma.invLocationProductMap.findMany({
+      where: { locationId: locId, externalCode: { in: Array.from(codeSet) } },
+      select: {
+        id: true,
+        externalCode: true,
+        items: {
+          select: {
+            optionId: true,
+            quantity: true,
+            option: {
+              select: {
+                name: true,
+                product: { select: { name: true } },
+              },
+            },
+          },
+        },
+      },
     })
+    for (const m of mappings) {
+      infoByKey.set(`${locId}|${m.externalCode}`, {
+        id: m.id,
+        items: m.items.map((i) => ({
+          optionId: i.optionId,
+          quantity: i.quantity,
+          productName: i.option.product.name,
+          optionName: i.option.name,
+        })),
+      })
+    }
   }
 
   return entries.map((e) => {
-    if (
-      (e.status === 'matched-equal' || e.status === 'matched-diff') &&
-      e.row?.externalCode &&
-      infoByCode.has(e.row.externalCode)
-    ) {
-      const info = infoByCode.get(e.row.externalCode)!
-      return { ...e, mappingId: info.id, mappingItems: info.items }
+    if ((e.status === 'matched-equal' || e.status === 'matched-diff') && e.row?.externalCode) {
+      const locId = (e as MatchEntry & { locationId?: string }).locationId ?? reconLocationId
+      const info = infoByKey.get(`${locId}|${e.row.externalCode}`)
+      if (info) return { ...e, mappingId: info.id, mappingItems: info.items }
     }
     return e
   })
@@ -120,35 +128,53 @@ async function attachMappingInfo(
  */
 async function resolveFileOnlyEntries(
   entries: MatchEntry[],
-  locationId: string
+  reconLocationId: string
 ): Promise<MatchEntry[]> {
   const fileOnlyEntries = entries.filter((e): e is FileOnlyEntry => e.status === 'file-only')
   if (fileOnlyEntries.length === 0) return entries
 
-  const externalCodes = fileOnlyEntries.map((e) => e.row.externalCode)
+  // (locationId, externalCode) 페어 수집
+  const codesByLoc = new Map<string, Set<string>>()
+  for (const e of fileOnlyEntries) {
+    if (!e.row.externalCode) continue
+    const locId = e.locationId ?? reconLocationId
+    const s = codesByLoc.get(locId) ?? new Set()
+    s.add(e.row.externalCode)
+    codesByLoc.set(locId, s)
+  }
+  if (codesByLoc.size === 0) return entries
 
-  const mappings = await prisma.invLocationProductMap.findMany({
-    where: { locationId, externalCode: { in: externalCodes } },
-    include: {
-      items: {
-        include: {
-          option: { include: { product: { select: { name: true } } } },
+  type MappingFull = {
+    items: {
+      optionId: string
+      quantity: number
+      option: { name: string; product: { name: string } }
+    }[]
+  }
+  const mappingByKey = new Map<string, MappingFull>() // `${locId}|${code}`
+  const stockByKey = new Map<string, number>() // `${locId}|${optionId}`
+
+  for (const [locId, codeSet] of codesByLoc) {
+    const mappings = await prisma.invLocationProductMap.findMany({
+      where: { locationId: locId, externalCode: { in: Array.from(codeSet) } },
+      include: {
+        items: {
+          include: {
+            option: { include: { product: { select: { name: true } } } },
+          },
         },
       },
-    },
-  })
-  if (mappings.length === 0) return entries
-
-  const mappingByCode = new Map<string, (typeof mappings)[number]>()
-  for (const m of mappings) mappingByCode.set(m.externalCode, m)
-
-  // 매핑된 optionId의 현재 시스템 재고 일괄 조회
-  const mappedOptionIds = mappings.flatMap((m) => m.items.map((i) => i.optionId))
-  const stocks = await prisma.invStockLevel.findMany({
-    where: { locationId, optionId: { in: mappedOptionIds } },
-  })
-  const stockByOption = new Map<string, number>()
-  for (const s of stocks) stockByOption.set(s.optionId, s.quantity)
+    })
+    for (const m of mappings) {
+      mappingByKey.set(`${locId}|${m.externalCode}`, { items: m.items })
+    }
+    const optionIds = mappings.flatMap((m) => m.items.map((i) => i.optionId))
+    if (optionIds.length === 0) continue
+    const stocks = await prisma.invStockLevel.findMany({
+      where: { locationId: locId, optionId: { in: optionIds } },
+    })
+    for (const s of stocks) stockByKey.set(`${locId}|${s.optionId}`, s.quantity)
+  }
 
   const result: MatchEntry[] = []
   for (const entry of entries) {
@@ -156,16 +182,19 @@ async function resolveFileOnlyEntries(
       result.push(entry)
       continue
     }
-
-    const mapping = mappingByCode.get(entry.row.externalCode)
+    const locId = entry.locationId ?? reconLocationId
+    if (!entry.row.externalCode) {
+      result.push(entry)
+      continue
+    }
+    const mapping = mappingByKey.get(`${locId}|${entry.row.externalCode}`)
     if (!mapping || mapping.items.length === 0) {
-      result.push(entry) // 매핑 없음 — file-only 유지
+      result.push(entry)
       continue
     }
 
-    // items 수만큼 entry 분리
     for (const item of mapping.items) {
-      const systemQty = stockByOption.get(item.optionId) ?? 0
+      const systemQty = stockByKey.get(`${locId}|${item.optionId}`) ?? 0
       const fileQty = entry.row.quantity * item.quantity
 
       if (fileQty === systemQty) {
@@ -173,6 +202,7 @@ async function resolveFileOnlyEntries(
           status: 'matched-equal' as const,
           row: entry.row,
           optionId: item.optionId,
+          locationId: locId,
           productName: item.option.product.name,
           optionName: item.option.name,
           mapItemQuantity: item.quantity,
@@ -184,6 +214,7 @@ async function resolveFileOnlyEntries(
           status: 'matched-diff' as const,
           row: entry.row,
           optionId: item.optionId,
+          locationId: locId,
           productName: item.option.product.name,
           optionName: item.option.name,
           mapItemQuantity: item.quantity,
@@ -210,7 +241,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
   const { id } = await ctx.params
   const recon = await prisma.invReconciliation.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true, status: true, locationId: true },
+    select: { id: true, status: true, locationId: true, matchResults: true },
   })
   if (!recon) return errorResponse('대조 기록을 찾을 수 없습니다', 404)
 
@@ -220,6 +251,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     manualMappings?: { externalCode: string; items: { optionId: string; quantity?: number }[] }[]
     externalCode?: string
     items?: { optionId: string; quantity?: number }[]
+    locationId?: string
   }
 
   if (body.action === 'confirm') {
@@ -278,7 +310,31 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       return errorResponse('items가 필요합니다', 400)
     }
 
-    // 소유권 검증
+    // 매핑 대상 location 결정: body.locationId > matchResults의 해당 entry.locationId > recon.locationId
+    let mapLocationId: string = body.locationId ?? recon.locationId
+    if (!body.locationId) {
+      const matchEntries = (recon.matchResults ?? []) as MatchEntry[]
+      const hit = matchEntries.find(
+        (e) =>
+          (e.status === 'file-only' ||
+            e.status === 'matched-equal' ||
+            e.status === 'matched-diff') &&
+          e.row?.externalCode === externalCode &&
+          (e as MatchEntry & { locationId?: string }).locationId
+      )
+      if (hit) {
+        const locId = (hit as MatchEntry & { locationId?: string }).locationId
+        if (locId) mapLocationId = locId
+      }
+    }
+    // 소유권 검증 — 해당 space의 location인지 확인
+    const locOk = await prisma.invStorageLocation.findFirst({
+      where: { id: mapLocationId, spaceId: resolved.space.id },
+      select: { id: true },
+    })
+    if (!locOk) return errorResponse('대상 보관 장소를 찾을 수 없습니다', 404)
+
+    // 옵션 소유권 검증
     const validOptions = await prisma.invProductOption.findMany({
       where: {
         id: { in: rawItems.map((i) => i.optionId) },
@@ -292,7 +348,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
     // Upsert mapping
     const existing = await prisma.invLocationProductMap.findUnique({
-      where: { locationId_externalCode: { locationId: recon.locationId, externalCode } },
+      where: { locationId_externalCode: { locationId: mapLocationId, externalCode } },
     })
     let mapId: string
     if (existing) {
@@ -301,7 +357,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       const created = await prisma.invLocationProductMap.create({
         data: {
           spaceId: resolved.space.id,
-          locationId: recon.locationId,
+          locationId: mapLocationId,
           externalCode,
         },
       })
