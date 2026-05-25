@@ -17,6 +17,7 @@ import {
   UploadCloud,
 } from 'lucide-react'
 import { getDaysAgoStrKst, getTodayStrKst } from '@/lib/date-range'
+import { getDeltaColor } from '@/lib/delta-color'
 import { CampaignListWithMetrics } from '@/components/dashboard/campaign-list-with-metrics'
 import { COUPANG_ADS_UPLOAD_PATH } from '@/lib/deck-routes'
 
@@ -46,7 +47,7 @@ type KpiData = {
   }
 }
 
-function WowBadge({ diff, higherIsBetter }: { diff: number | null; higherIsBetter: boolean }) {
+function WowBadge({ diff }: { diff: number | null }) {
   if (diff === null) {
     return (
       <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
@@ -63,11 +64,8 @@ function WowBadge({ diff, higherIsBetter }: { diff: number | null; higherIsBette
       </span>
     )
   }
-  const isGood = diff > 0 === higherIsBetter
   return (
-    <span
-      className={`flex items-center gap-0.5 text-xs ${isGood ? 'text-green-600' : 'text-red-500'}`}
-    >
+    <span className={`flex items-center gap-0.5 text-xs ${getDeltaColor(diff)}`}>
       {diff > 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
       {diff > 0 ? `+${diff}` : diff}% 이전 대비
     </span>
@@ -124,7 +122,6 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
       color: 'text-orange-500',
       wow: kpi?.wow.adCost ?? null,
       prevValue: kpi && kpi.prevAdCost > 0 ? `${kpi.prevAdCost.toLocaleString('ko-KR')}원` : null,
-      higherIsBetter: false,
     },
     {
       title: '평균 ROAS',
@@ -133,7 +130,6 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
       color: 'text-green-600',
       wow: kpi?.wow.roas ?? null,
       prevValue: kpi?.prevRoas != null ? `${kpi.prevRoas.toFixed(1)}%` : null,
-      higherIsBetter: true,
     },
     {
       title: '총 매출액',
@@ -142,7 +138,6 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
       color: 'text-emerald-600',
       wow: kpi?.wow.revenue ?? null,
       prevValue: kpi && kpi.prevRevenue > 0 ? `${kpi.prevRevenue.toLocaleString('ko-KR')}원` : null,
-      higherIsBetter: true,
     },
     {
       title: '평균 CTR',
@@ -151,7 +146,6 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
       color: 'text-blue-600',
       wow: kpi?.wow.ctr ?? null,
       prevValue: kpi?.prevCtr != null ? `${kpi.prevCtr.toFixed(2)}%` : null,
-      higherIsBetter: true,
     },
     {
       title: '평균 CVR',
@@ -160,7 +154,6 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
       color: 'text-purple-600',
       wow: kpi?.wow.cvr ?? null,
       prevValue: kpi?.prevCvr != null ? `${kpi.prevCvr.toFixed(2)}%` : null,
-      higherIsBetter: true,
     },
   ]
 
@@ -240,7 +233,7 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
                   {kpiLoading ? (
                     <span className="text-xs text-muted-foreground">-</span>
                   ) : (
-                    <WowBadge diff={card.wow} higherIsBetter={card.higherIsBetter} />
+                    <WowBadge diff={card.wow} />
                   )}
                 </div>
                 {!kpiLoading && card.prevValue !== null && (

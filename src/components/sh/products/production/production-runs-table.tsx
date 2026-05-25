@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Edit2, Plus, Search, Trash2 } from 'lucide-react'
+import { ChevronDown, Edit2, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -31,17 +31,26 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ProductionRunFormDialog } from './production-run-form-dialog'
+import {
+  ProductionRunTransitionDialog,
+  type TransitionTarget,
+} from './production-run-transition-dialog'
 
 // ─── 상수 ─────────────────────────────────────────────────────────────────────
 
-type ProductionRunStatus = 'PLANNED' | 'ORDERED' | 'PRODUCING' | 'COMPLETED'
+type ProductionRunStatus = 'PLANNED' | 'ORDERED' | 'STOCKED_IN'
 
 const STATUS_LABEL: Record<ProductionRunStatus, string> = {
   PLANNED: '계획중',
   ORDERED: '발주완료',
-  PRODUCING: '생산중',
-  COMPLETED: '생산완료',
+  STOCKED_IN: '입고완료',
 }
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
@@ -57,9 +66,10 @@ type RunRow = {
   runNo: string
   status: ProductionRunStatus
   brand: { id: string; name: string } | null
-  orderedAt: string
   dueAt: string | null
   completedAt: string | null
+  orderedConfirmedAt: string | null
+  stockedInAt: string | null
   totalCost: number | null
   costMode: 'TOTAL' | 'BREAKDOWN'
   memo: string | null
@@ -100,7 +110,7 @@ function fmtDate(iso: string) {
 // ─── 상태 배지 ────────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: ProductionRunStatus }) {
-  if (status === 'COMPLETED') {
+  if (status === 'STOCKED_IN') {
     return (
       <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
         {STATUS_LABEL[status]}
@@ -110,10 +120,44 @@ function StatusBadge({ status }: { status: ProductionRunStatus }) {
   const variantMap: Record<ProductionRunStatus, 'outline' | 'secondary' | 'default'> = {
     PLANNED: 'outline',
     ORDERED: 'secondary',
-    PRODUCING: 'default',
-    COMPLETED: 'default', // fallback (위에서 처리됨)
+    STOCKED_IN: 'default', // fallback (위에서 처리됨)
   }
   return <Badge variant={variantMap[status]}>{STATUS_LABEL[status]}</Badge>
+}
+
+// ─── 상태 전환 메뉴 ──────────────────────────────────────────────────────────
+
+const TRANSITION_TARGETS: ProductionRunStatus[] = ['PLANNED', 'ORDERED', 'STOCKED_IN']
+
+function StatusTransitionMenu({
+  run,
+  onSelect,
+}: {
+  run: RunRow
+  onSelect: (target: ProductionRunStatus) => void
+}) {
+  const others = TRANSITION_TARGETS.filter((t) => t !== run.status)
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 rounded outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={`${run.runNo} 상태 변경`}
+        >
+          <StatusBadge status={run.status} />
+          <ChevronDown className="h-3 w-3 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-32">
+        {others.map((t) => (
+          <DropdownMenuItem key={t} onSelect={() => onSelect(t)}>
+            {STATUS_LABEL[t]}로 변경
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }
 
 // ─── 상품 칩 ─────────────────────────────────────────────────────────────────
@@ -179,6 +223,11 @@ export function ProductionRunsTable() {
   // 삭제 confirm
   const [deleteTarget, setDeleteTarget] = useState<RunRow | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  // 상태 전환 다이얼로그
+  const [transitionRun, setTransitionRun] = useState<RunRow | null>(null)
+  const [transitionTarget, setTransitionTarget] = useState<TransitionTarget | null>(null)
+  const [transitionOpen, setTransitionOpen] = useState(false)
 
   // 브랜드 목록 로드 (최초 1회)
   useEffect(() => {
@@ -280,8 +329,7 @@ export function ProductionRunsTable() {
               <SelectItem value="ALL">전체 상태</SelectItem>
               <SelectItem value="PLANNED">계획중</SelectItem>
               <SelectItem value="ORDERED">발주완료</SelectItem>
-              <SelectItem value="PRODUCING">생산중</SelectItem>
-              <SelectItem value="COMPLETED">생산완료</SelectItem>
+              <SelectItem value="STOCKED_IN">입고완료</SelectItem>
             </SelectContent>
           </Select>
           {/* 브랜드 필터 */}
@@ -321,6 +369,7 @@ export function ProductionRunsTable() {
               <TableHead className="w-[110px]">차수 번호</TableHead>
               <TableHead className="w-[80px]">상태</TableHead>
               <TableHead className="w-[90px]">발주일</TableHead>
+              <TableHead className="w-[90px]">입고일</TableHead>
               <TableHead className="w-[90px]">납기일</TableHead>
               <TableHead className="w-[90px]">브랜드</TableHead>
               <TableHead>포함 상품</TableHead>
@@ -332,13 +381,13 @@ export function ProductionRunsTable() {
           <TableBody>
             {loading && runs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={10} className="py-12 text-center text-sm text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : runs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="py-12 text-center">
+                <TableCell colSpan={10} className="py-12 text-center">
                   <p className="text-sm text-muted-foreground">등록된 차수가 없습니다</p>
                   <Button
                     variant="outline"
@@ -372,11 +421,21 @@ export function ProductionRunsTable() {
                       </p>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <StatusBadge status={run.status} />
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <StatusTransitionMenu
+                      run={run}
+                      onSelect={(target) => {
+                        setTransitionRun(run)
+                        setTransitionTarget(target)
+                        setTransitionOpen(true)
+                      }}
+                    />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {fmtDate(run.orderedAt)}
+                    {run.orderedConfirmedAt ? fmtDate(run.orderedConfirmedAt) : '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {run.stockedInAt ? fmtDate(run.stockedInAt) : '-'}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {run.dueAt ? fmtDate(run.dueAt) : '-'}
@@ -468,6 +527,30 @@ export function ProductionRunsTable() {
           setFormOpen(false)
           loadRuns()
         }}
+      />
+
+      {/* 상태 전환 다이얼로그 */}
+      <ProductionRunTransitionDialog
+        open={transitionOpen}
+        onOpenChange={(v) => {
+          setTransitionOpen(v)
+          if (!v) {
+            setTransitionRun(null)
+            setTransitionTarget(null)
+          }
+        }}
+        target={transitionTarget}
+        run={
+          transitionRun
+            ? {
+                id: transitionRun.id,
+                runNo: transitionRun.runNo,
+                totalQuantity: transitionRun.totalQuantity,
+                itemCount: transitionRun.itemCount,
+              }
+            : null
+        }
+        onSaved={loadRuns}
       />
 
       {/* 삭제 confirm 다이얼로그 */}

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Trash2, Save } from 'lucide-react'
+import { getTodayStrKst } from '@/lib/date-range'
 import type { DailyMemo } from '@/types'
 
 const MAX_CONTENT_LENGTH = 500
@@ -55,7 +56,7 @@ export function MemoDialog({
 
   const remaining = MAX_CONTENT_LENGTH - content.length
   const showWarning = remaining < 50
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStrKst()
 
   async function handleSave() {
     if (!date) {

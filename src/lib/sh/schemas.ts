@@ -365,7 +365,6 @@ export type ProductionRunItemInput = z.infer<typeof productionRunItemSchema>
 
 export const productionRunSchema = z.object({
   runNo: z.string().trim().min(1).max(100),
-  orderedAt: z.string().min(1), // YYYY-MM-DD
   costMode: z.enum(['TOTAL', 'BREAKDOWN']).default('TOTAL'),
   totalCost: z.coerce.number().min(0).max(99_999_999_999).optional(),
   memo: z
@@ -375,7 +374,7 @@ export const productionRunSchema = z.object({
     .optional()
     .transform((v) => (v?.length ? v : undefined)),
   // 생산 상태 — default 없음 (PATCH 시 기존값 보존을 위해)
-  status: z.enum(['PLANNED', 'ORDERED', 'PRODUCING', 'COMPLETED']).optional(),
+  status: z.enum(['PLANNED', 'ORDERED', 'STOCKED_IN']).optional(),
   // 대표 브랜드 — null = 명시적 미지정, undefined = 변경 없음(PATCH)
   brandId: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).nullable()).optional(),
   // 납기일 / 완료일 — YYYY-MM-DD 문자열 또는 null
@@ -426,8 +425,29 @@ export const productionRunPatchSchema = productionRunSchema.partial().extend({
     )
     .max(50)
     .optional(),
+  // 단계별 일자 — 사용자가 수정 가능. 빈 문자열은 null 로 치환, undefined 는 변경 없음.
+  orderedConfirmedAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
+  stockedInAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
 })
 export type ProductionRunPatchInput = z.infer<typeof productionRunPatchSchema>
+
+// 상태 전환 전용 스키마 — POST /api/sh/production-runs/[runId]/transition
+export const productionRunStatusTransitionSchema = z
+  .object({
+    status: z.enum(['PLANNED', 'ORDERED', 'STOCKED_IN']),
+    transitionDate: z.string().min(1), // YYYY-MM-DD
+    locationId: z.string().min(1).optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.status === 'STOCKED_IN' && !v.locationId) {
+      ctx.addIssue({
+        code: 'custom',
+        message: '입고완료 전환 시 보관 위치를 선택하세요',
+        path: ['locationId'],
+      })
+    }
+  })
+export type ProductionRunStatusTransitionInput = z.infer<typeof productionRunStatusTransitionSchema>
 
 // ─── 가격 시뮬레이션 시나리오 ──────────────────────────────────────────────────
 

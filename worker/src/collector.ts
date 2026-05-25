@@ -14,7 +14,8 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { chromium, type BrowserContext, type Page } from 'playwright'
+import type { BrowserContext, Page } from 'playwright'
+import { launchStealthPersistentContext } from './browser.js'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────────
 
@@ -73,11 +74,14 @@ async function saveScreenshot(page: Page, name: string): Promise<void> {
 async function isLoggedIn(page: Page): Promise<boolean> {
   try {
     await page.goto(`${COUPANG_ADS_URL}/marketing/dashboard`, {
-      waitUntil: 'domcontentloaded', timeout: DEFAULT_TIMEOUT,
+      waitUntil: 'domcontentloaded',
+      timeout: DEFAULT_TIMEOUT,
     })
     await page.waitForTimeout(2000)
     return !page.url().includes('login') && !page.url().includes('sso')
-  } catch { return false }
+  } catch {
+    return false
+  }
 }
 
 // ─── 메인 함수 ──────────────────────────────────────────────────────────────────
@@ -103,17 +107,16 @@ export async function collectCoupangReport(
   console.log(`보고서: ${reportType === 'pa' ? '매출 성장' : '신규 구매 고객 확보'}`)
   console.log(`날짜: ${dateFrom} ~ ${dateTo}`)
 
-  const context: BrowserContext = await chromium.launchPersistentContext(
-    path.resolve(browserDataDir),
-    {
-      headless,
-      acceptDownloads: true,
-      locale: 'ko-KR',
-      timezoneId: 'Asia/Seoul',
-      viewport: { width: 1400, height: 900 },
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    }
-  )
+  const context: BrowserContext = await launchStealthPersistentContext({
+    userDataDir: path.resolve(browserDataDir),
+    headless,
+    acceptDownloads: true,
+    locale: 'ko-KR',
+    timezoneId: 'Asia/Seoul',
+    viewport: { width: 1400, height: 900 },
+    userAgent:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  })
 
   const page = context.pages()[0] || (await context.newPage())
 
@@ -129,7 +132,8 @@ export async function collectCoupangReport(
     // ── Step 2: 보고서 페이지 이동 ──
     console.log('\n[2/6] 보고서 페이지 이동...')
     await page.goto(REPORT_URLS[reportType], {
-      waitUntil: 'domcontentloaded', timeout: DEFAULT_TIMEOUT,
+      waitUntil: 'domcontentloaded',
+      timeout: DEFAULT_TIMEOUT,
     })
     await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
     await page.waitForTimeout(3000)
@@ -174,7 +178,8 @@ export async function collectCoupangReport(
 
 async function performLogin(page: Page, credentials: CollectorCredentials): Promise<void> {
   await page.goto(`${COUPANG_ADS_URL}/marketing/dashboard`, {
-    waitUntil: 'domcontentloaded', timeout: DEFAULT_TIMEOUT,
+    waitUntil: 'domcontentloaded',
+    timeout: DEFAULT_TIMEOUT,
   })
   await page.waitForTimeout(2000)
 
@@ -202,7 +207,9 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
   await page.locator('input[type="password"]').first().fill(credentials.password)
 
   // 로그인 버튼
-  const loginBtn = page.locator('button[type="submit"], button:has-text("로그인"), input[type="submit"]').first()
+  const loginBtn = page
+    .locator('button[type="submit"], button:has-text("로그인"), input[type="submit"]')
+    .first()
   await loginBtn.waitFor({ timeout: 10000 })
   await loginBtn.click()
   await page.waitForTimeout(5000)
@@ -218,8 +225,15 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
 
 async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promise<void> {
   // 1. 기간 구분을 "일별"로 설정
-  const dailyRadio = page.locator('.ant-radio-wrapper:has-text("일별"), label:has-text("일별"), span:text-is("일별")')
-  if (await dailyRadio.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+  const dailyRadio = page.locator(
+    '.ant-radio-wrapper:has-text("일별"), label:has-text("일별"), span:text-is("일별")'
+  )
+  if (
+    await dailyRadio
+      .first()
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
+  ) {
     await dailyRadio.first().click()
     await page.waitForTimeout(500)
     console.log('  → 기간 구분: 일별 선택')
@@ -233,7 +247,13 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
   const radioLabels: string[] = []
 
   for (let i = 0; i < radioCount; i++) {
-    const text = (await allRadios.nth(i).textContent().catch(() => ''))?.trim() ?? ''
+    const text =
+      (
+        await allRadios
+          .nth(i)
+          .textContent()
+          .catch(() => '')
+      )?.trim() ?? ''
     radioLabels.push(text)
   }
   console.log(`  → 기간 라디오 옵션 (${radioCount}개): ${radioLabels.join(', ')}`)
@@ -244,7 +264,7 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
 
   for (const label of customLabels) {
     const radio = page.locator(`.ant-radio-wrapper:has-text("${label}")`)
-    if (await radio.count().catch(() => 0) > 0) {
+    if ((await radio.count().catch(() => 0)) > 0) {
       await radio.first().click()
       await page.waitForTimeout(500)
       console.log(`  → 기간 라디오: "${label}" 선택`)
@@ -257,7 +277,7 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
   if (!periodRadioClicked) {
     // "기간 설정" 텍스트가 포함된 모든 요소 클릭 시도
     const periodBtn = page.locator('[class*="date-range"] .ant-radio-wrapper').last()
-    if (await periodBtn.count().catch(() => 0) > 0) {
+    if ((await periodBtn.count().catch(() => 0)) > 0) {
       const lastText = await periodBtn.textContent().catch(() => '')
       if (lastText && !lastText.includes('지난주') && !lastText.includes('지난달')) {
         await periodBtn.click()
@@ -293,7 +313,7 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
   } else {
     // 여전히 disabled → RangePicker 컨테이너 클릭으로 활성화 시도
     const rangePicker = page.locator('.ant-picker-range')
-    if (await rangePicker.count().catch(() => 0) > 0) {
+    if ((await rangePicker.count().catch(() => 0)) > 0) {
       await rangePicker.first().click()
       await page.waitForTimeout(500)
 
@@ -305,10 +325,14 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
         await inputDateRange(page, afterClickInputs, dateFrom, dateTo)
       } else {
         await page.keyboard.press('Escape')
-        throw new Error(`날짜 설정 실패: 활성 input을 찾을 수 없습니다 (dateFrom=${dateFrom}, dateTo=${dateTo})`)
+        throw new Error(
+          `날짜 설정 실패: 활성 input을 찾을 수 없습니다 (dateFrom=${dateFrom}, dateTo=${dateTo})`
+        )
       }
     } else {
-      throw new Error(`날짜 설정 실패: RangePicker를 찾을 수 없습니다 (dateFrom=${dateFrom}, dateTo=${dateTo})`)
+      throw new Error(
+        `날짜 설정 실패: RangePicker를 찾을 수 없습니다 (dateFrom=${dateFrom}, dateTo=${dateTo})`
+      )
     }
   }
 
@@ -321,7 +345,7 @@ async function inputDateRange(
   page: Page,
   enabledInputs: ReturnType<Page['locator']>,
   dateFrom: string,
-  dateTo: string,
+  dateTo: string
 ): Promise<void> {
   // 시작일 입력
   await enabledInputs.nth(0).click()
@@ -340,8 +364,15 @@ async function inputDateRange(
   await page.keyboard.press('Enter')
   await page.waitForTimeout(500)
 
-  const startVal = await enabledInputs.nth(0).getAttribute('value').catch(() => '?')
-  const endVal = await page.locator('.ant-picker-input input').last().getAttribute('value').catch(() => '?')
+  const startVal = await enabledInputs
+    .nth(0)
+    .getAttribute('value')
+    .catch(() => '?')
+  const endVal = await page
+    .locator('.ant-picker-input input')
+    .last()
+    .getAttribute('value')
+    .catch(() => '?')
   console.log(`  → 날짜 입력 완료: ${dateFrom} ~ ${dateTo} (실제값: ${startVal} ~ ${endVal})`)
 }
 
@@ -351,8 +382,16 @@ async function verifyDateInputs(page: Page, dateFrom: string, dateTo: string): P
   const count = await allInputs.count().catch(() => 0)
   if (count < 2) return // 검증 불가 시 패스
 
-  const startVal = (await allInputs.nth(0).getAttribute('value').catch(() => '')) ?? ''
-  const endVal = (await allInputs.nth(count - 1).getAttribute('value').catch(() => '')) ?? ''
+  const startVal =
+    (await allInputs
+      .nth(0)
+      .getAttribute('value')
+      .catch(() => '')) ?? ''
+  const endVal =
+    (await allInputs
+      .nth(count - 1)
+      .getAttribute('value')
+      .catch(() => '')) ?? ''
 
   // 날짜 포맷 정규화 (YYYY-MM-DD 또는 YYYY.MM.DD 등)
   const normalize = (s: string) => s.replace(/[.\-/]/g, '')
@@ -364,7 +403,7 @@ async function verifyDateInputs(page: Page, dateFrom: string, dateTo: string): P
   if (actualFrom && actualTo && (actualFrom !== expectedFrom || actualTo !== expectedTo)) {
     throw new Error(
       `날짜 불일치: 의도=${dateFrom}~${dateTo}, 실제=${startVal}~${endVal}. ` +
-      `잘못된 기간의 데이터가 수집될 수 있어 중단합니다.`
+        `잘못된 기간의 데이터가 수집될 수 있어 중단합니다.`
     )
   }
 }
@@ -373,22 +412,38 @@ async function verifyDateInputs(page: Page, dateFrom: string, dateTo: string): P
 
 async function selectCampaigns(page: Page): Promise<void> {
   // "캠페인을 선택하세요" 버튼 클릭 (ant-dropdown-trigger)
-  const campaignBtn = page.locator('.campaign-picker-dropdown-btn, button:has-text("캠페인을 선택하세요"), .ant-dropdown-trigger:has-text("캠페인")')
+  const campaignBtn = page.locator(
+    '.campaign-picker-dropdown-btn, button:has-text("캠페인을 선택하세요"), .ant-dropdown-trigger:has-text("캠페인")'
+  )
 
-  if (await campaignBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (
+    await campaignBtn
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
+  ) {
     await campaignBtn.first().click()
     await page.waitForTimeout(2000)
     console.log('  → 캠페인 드롭다운 열림')
     await saveScreenshot(page, 'campaign-dropdown-open')
 
     // 드롭다운 내부 체크박스 찾기
-    const checkboxes = page.locator('.ant-dropdown input[type="checkbox"], .ant-checkbox-input, .ant-tree-checkbox')
+    const checkboxes = page.locator(
+      '.ant-dropdown input[type="checkbox"], .ant-checkbox-input, .ant-tree-checkbox'
+    )
     const cbCount = await checkboxes.count()
 
     if (cbCount > 0) {
       // 전체 선택 체크박스가 있으면 사용
-      const selectAllCb = page.locator('.ant-dropdown label:has-text("전체"), .ant-dropdown .ant-checkbox-wrapper:has-text("전체")')
-      if (await selectAllCb.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+      const selectAllCb = page.locator(
+        '.ant-dropdown label:has-text("전체"), .ant-dropdown .ant-checkbox-wrapper:has-text("전체")'
+      )
+      if (
+        await selectAllCb
+          .first()
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
+      ) {
         await selectAllCb.first().click()
         console.log('  → 전체 캠페인 선택')
       } else {
@@ -404,7 +459,9 @@ async function selectCampaigns(page: Page): Promise<void> {
       }
     } else {
       // 드롭다운 메뉴 아이템 클릭
-      const menuItems = page.locator('.ant-dropdown-menu-item, .ant-dropdown li, [class*="campaign-picker"] li')
+      const menuItems = page.locator(
+        '.ant-dropdown-menu-item, .ant-dropdown li, [class*="campaign-picker"] li'
+      )
       const itemCount = await menuItems.count()
       console.log(`  → 드롭다운 아이템: ${itemCount}개`)
       for (let i = 0; i < itemCount; i++) {
@@ -469,8 +526,15 @@ async function configureReportOptions(page: Page): Promise<void> {
   }
 
   // 보고서 구조: "캠페인 > 광고그룹 > 상품 > 키워드" 선택 (가장 상세)
-  const structureOptions = page.locator('.ant-radio-wrapper:has-text("키워드"), label:has-text("키워드")')
-  if (await structureOptions.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+  const structureOptions = page.locator(
+    '.ant-radio-wrapper:has-text("키워드"), label:has-text("키워드")'
+  )
+  if (
+    await structureOptions
+      .first()
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
+  ) {
     await structureOptions.first().click()
     await page.waitForTimeout(500)
     console.log('  → 보고서 구조: 캠페인 > 광고그룹 > 상품 > 키워드')
@@ -534,38 +598,43 @@ async function waitForNewReport(page: Page, dateFrom: string, dateTo: string): P
     }
 
     // dateFrom 텍스트가 있는 요소를 찾아 같은 행의 다운로드 버튼 확인
-    const found = await page.evaluate((args) => {
-      const { df, dt } = args
-      const range = `${df} ~ ${dt}`
+    const found = await page
+      .evaluate(
+        (args) => {
+          const { df, dt } = args
+          const range = `${df} ~ ${dt}`
 
-      // 날짜 범위 텍스트를 포함하는 모든 요소 찾기
-      const allEls = document.querySelectorAll('*')
-      let matchEl: Element | null = null
-      for (const el of allEls) {
-        // 자식 없는 텍스트 노드만 확인 (leaf 요소)
-        if (el.children.length === 0 && el.textContent?.includes(range)) {
-          matchEl = el
-          break
-        }
-      }
-
-      if (!matchEl) return 'not_found'
-
-      const matchRect = matchEl.getBoundingClientRect()
-
-      // 모든 버튼/링크에서 "다운로드" 텍스트를 가진 것 찾기
-      const btns = document.querySelectorAll('button, a')
-      for (const btn of btns) {
-        if (btn.textContent?.trim() === '다운로드') {
-          const btnRect = btn.getBoundingClientRect()
-          if (Math.abs(btnRect.y - matchRect.y) < 40) {
-            return 'ready'
+          // 날짜 범위 텍스트를 포함하는 모든 요소 찾기
+          const allEls = document.querySelectorAll('*')
+          let matchEl: Element | null = null
+          for (const el of allEls) {
+            // 자식 없는 텍스트 노드만 확인 (leaf 요소)
+            if (el.children.length === 0 && el.textContent?.includes(range)) {
+              matchEl = el
+              break
+            }
           }
-        }
-      }
 
-      return 'generating'
-    }, { df: dateFrom, dt: dateTo }).catch(() => 'error')
+          if (!matchEl) return 'not_found'
+
+          const matchRect = matchEl.getBoundingClientRect()
+
+          // 모든 버튼/링크에서 "다운로드" 텍스트를 가진 것 찾기
+          const btns = document.querySelectorAll('button, a')
+          for (const btn of btns) {
+            if (btn.textContent?.trim() === '다운로드') {
+              const btnRect = btn.getBoundingClientRect()
+              if (Math.abs(btnRect.y - matchRect.y) < 40) {
+                return 'ready'
+              }
+            }
+          }
+
+          return 'generating'
+        },
+        { df: dateFrom, dt: dateTo }
+      )
+      .catch(() => 'error')
 
     if (found === 'ready') {
       console.log(`  → 보고서 다운로드 가능! (${(i + 1) * 3}초)`)
@@ -573,7 +642,12 @@ async function waitForNewReport(page: Page, dateFrom: string, dateTo: string): P
     }
 
     if (i % 5 === 0) {
-      const msg = found === 'generating' ? '보고서 생성 중' : found === 'not_found' ? '보고서 대기 중' : '확인 에러'
+      const msg =
+        found === 'generating'
+          ? '보고서 생성 중'
+          : found === 'not_found'
+            ? '보고서 대기 중'
+            : '확인 에러'
       console.log(`  → ${msg}... (${(i + 1) * 3}초)`)
       await saveScreenshot(page, `waiting-${i}`)
     }
@@ -589,36 +663,40 @@ async function downloadReport(
   page: Page,
   downloadDir: string,
   dateFrom: string,
-  dateTo: string,
+  dateTo: string
 ): Promise<CollectorResult> {
   // 우리 날짜 범위 행의 다운로드 버튼 찾기 (Y좌표 매칭)
   const range = `${dateFrom} ~ ${dateTo}`
   let downloadBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').first()
 
   // 날짜 범위와 같은 행에 있는 다운로드 버튼을 찾기 시도
-  const targetBtnIndex = await page.evaluate((r) => {
-    const allEls = document.querySelectorAll('*')
-    let matchY = -1
-    for (const el of allEls) {
-      if (el.children.length === 0 && el.textContent?.includes(r)) {
-        matchY = el.getBoundingClientRect().y
-        break
+  const targetBtnIndex = await page
+    .evaluate((r) => {
+      const allEls = document.querySelectorAll('*')
+      let matchY = -1
+      for (const el of allEls) {
+        if (el.children.length === 0 && el.textContent?.includes(r)) {
+          matchY = el.getBoundingClientRect().y
+          break
+        }
       }
-    }
-    if (matchY < 0) return 0 // fallback: first button
+      if (matchY < 0) return 0 // fallback: first button
 
-    const btns = document.querySelectorAll('button, a')
-    let idx = 0
-    for (const btn of btns) {
-      if (btn.textContent?.trim() === '다운로드') {
-        if (Math.abs(btn.getBoundingClientRect().y - matchY) < 40) return idx
-        idx++
+      const btns = document.querySelectorAll('button, a')
+      let idx = 0
+      for (const btn of btns) {
+        if (btn.textContent?.trim() === '다운로드') {
+          if (Math.abs(btn.getBoundingClientRect().y - matchY) < 40) return idx
+          idx++
+        }
       }
-    }
-    return 0
-  }, range).catch(() => 0)
+      return 0
+    }, range)
+    .catch(() => 0)
 
-  downloadBtn = page.locator('button:has-text("다운로드"), a:has-text("다운로드")').nth(targetBtnIndex)
+  downloadBtn = page
+    .locator('button:has-text("다운로드"), a:has-text("다운로드")')
+    .nth(targetBtnIndex)
   console.log(`  → 다운로드 버튼 인덱스: ${targetBtnIndex}`)
 
   if (!(await downloadBtn.isVisible({ timeout: 10000 }).catch(() => false))) {

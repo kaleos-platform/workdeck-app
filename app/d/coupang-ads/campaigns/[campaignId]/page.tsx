@@ -56,7 +56,8 @@ import { CampaignChart } from '@/components/dashboard/campaign-chart'
 import { DailyMemo } from '@/components/dashboard/daily-memo'
 import { CampaignTargetSection } from '@/components/dashboard/campaign-target-section'
 import { ProductTrendsTable } from '@/components/dashboard/product-trends-table'
-import { getDaysAgoStrKst, isYmdDateString } from '@/lib/date-range'
+import { getDaysAgoStrKst, getTodayStrKst, isYmdDateString } from '@/lib/date-range'
+import { getDeltaColor } from '@/lib/delta-color'
 import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
 import type {
   AdRecord,
@@ -238,7 +239,11 @@ export default function CampaignDetailPage({
   const tab = searchParams.get('tab')
   const isDateRangeReady = isYmdDateString(from) && isYmdDateString(to)
   const activeTab: TabValue =
-    tab === 'keywords' || tab === 'addata' || tab === 'dashboard' || tab === 'products' || tab === 'trends'
+    tab === 'keywords' ||
+    tab === 'addata' ||
+    tab === 'dashboard' ||
+    tab === 'products' ||
+    tab === 'trends'
       ? tab
       : 'dashboard'
 
@@ -1031,7 +1036,6 @@ export default function CampaignDetailPage({
           value: `${kpiData.totalAdCost.toLocaleString('ko-KR')}원`,
           icon: DollarSign,
           color: 'text-orange-500',
-          isPositive: false,
           diff: prevKpiData ? calcDiff(kpiData.totalAdCost, prevKpiData.totalAdCost) : null,
           prevValue: prevKpiData ? `${prevKpiData.totalAdCost.toLocaleString('ko-KR')}원` : null,
         },
@@ -1040,7 +1044,6 @@ export default function CampaignDetailPage({
           value: `${kpiData.totalRevenue.toLocaleString('ko-KR')}원`,
           icon: ShoppingCart,
           color: 'text-emerald-600',
-          isPositive: true,
           diff: prevKpiData ? calcDiff(kpiData.totalRevenue, prevKpiData.totalRevenue) : null,
           prevValue: prevKpiData ? `${prevKpiData.totalRevenue.toLocaleString('ko-KR')}원` : null,
         },
@@ -1049,7 +1052,6 @@ export default function CampaignDetailPage({
           value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(2)}%` : '-',
           icon: TrendingUp,
           color: 'text-green-600',
-          isPositive: true,
           diff:
             kpiData.avgRoas !== null && prevKpiData?.avgRoas != null
               ? calcDiff(kpiData.avgRoas, prevKpiData.avgRoas)
@@ -1061,7 +1063,6 @@ export default function CampaignDetailPage({
           value: kpiData.avgCtr !== null ? `${kpiData.avgCtr.toFixed(2)}%` : '-',
           icon: MousePointerClick,
           color: 'text-blue-600',
-          isPositive: true,
           diff:
             kpiData.avgCtr !== null && prevKpiData?.avgCtr != null
               ? calcDiff(kpiData.avgCtr, prevKpiData.avgCtr)
@@ -1074,7 +1075,6 @@ export default function CampaignDetailPage({
             kpiData.avgEngagementRate !== null ? `${kpiData.avgEngagementRate.toFixed(2)}%` : '-',
           icon: Target,
           color: 'text-purple-600',
-          isPositive: true,
           diff:
             kpiData.avgEngagementRate !== null && prevKpiData?.avgEngagementRate != null
               ? calcDiff(kpiData.avgEngagementRate, prevKpiData.avgEngagementRate)
@@ -1091,7 +1091,6 @@ export default function CampaignDetailPage({
           value: `${kpiData.totalAdCost.toLocaleString('ko-KR')}원`,
           icon: DollarSign,
           color: 'text-orange-500',
-          isPositive: false,
           diff: prevKpiData ? calcDiff(kpiData.totalAdCost, prevKpiData.totalAdCost) : null,
           prevValue: prevKpiData ? `${prevKpiData.totalAdCost.toLocaleString('ko-KR')}원` : null,
         },
@@ -1100,7 +1099,6 @@ export default function CampaignDetailPage({
           value: `${kpiData.totalRevenue.toLocaleString('ko-KR')}원`,
           icon: ShoppingCart,
           color: 'text-emerald-600',
-          isPositive: true,
           diff: prevKpiData ? calcDiff(kpiData.totalRevenue, prevKpiData.totalRevenue) : null,
           prevValue: prevKpiData ? `${prevKpiData.totalRevenue.toLocaleString('ko-KR')}원` : null,
         },
@@ -1109,7 +1107,6 @@ export default function CampaignDetailPage({
           value: kpiData.avgRoas !== null ? `${kpiData.avgRoas.toFixed(2)}%` : '-',
           icon: TrendingUp,
           color: 'text-green-600',
-          isPositive: true,
           diff:
             kpiData.avgRoas !== null && prevKpiData?.avgRoas != null
               ? calcDiff(kpiData.avgRoas, prevKpiData.avgRoas)
@@ -1121,7 +1118,6 @@ export default function CampaignDetailPage({
           value: kpiData.avgCtr !== null ? `${kpiData.avgCtr.toFixed(2)}%` : '-',
           icon: MousePointerClick,
           color: 'text-blue-600',
-          isPositive: true,
           diff:
             kpiData.avgCtr !== null && prevKpiData?.avgCtr != null
               ? calcDiff(kpiData.avgCtr, prevKpiData.avgCtr)
@@ -1133,7 +1129,6 @@ export default function CampaignDetailPage({
           value: kpiData.avgCvr !== null ? `${kpiData.avgCvr.toFixed(2)}%` : '-',
           icon: Target,
           color: 'text-purple-600',
-          isPositive: true,
           diff:
             kpiData.avgCvr !== null && prevKpiData?.avgCvr != null
               ? calcDiff(kpiData.avgCvr, prevKpiData.avgCvr)
@@ -1288,14 +1283,8 @@ export default function CampaignDetailPage({
           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
             {kpiCards.map((card) => {
               const Icon = card.icon
-              const { diff, isPositive, prevValue } = card
-              // 색상 결정: isPositive면 상승=녹, 하락=적 / isPositive=false면 반대
-              const diffColor =
-                diff === null || diff === 0
-                  ? 'text-muted-foreground'
-                  : diff > 0 === isPositive
-                    ? 'text-green-600'
-                    : 'text-red-500'
+              const { diff, prevValue } = card
+              const diffColor = getDeltaColor(diff)
               return (
                 <Card key={card.title}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

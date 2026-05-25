@@ -158,8 +158,7 @@ export type ProductionCostMode = (typeof ProductionCostMode)[keyof typeof Produc
 export const ProductionRunStatus = {
   PLANNED: 'PLANNED',
   ORDERED: 'ORDERED',
-  PRODUCING: 'PRODUCING',
-  COMPLETED: 'COMPLETED'
+  STOCKED_IN: 'STOCKED_IN'
 } as const
 
 export type ProductionRunStatus = (typeof ProductionRunStatus)[keyof typeof ProductionRunStatus]

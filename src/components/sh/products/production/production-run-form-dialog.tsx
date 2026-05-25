@@ -17,6 +17,13 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   OptionPickerDialog,
   type PickedOption,
 } from '@/components/sh/products/listings/option-picker-dialog'
@@ -47,12 +54,29 @@ type CostRow = {
   note: string
 }
 
+type TotalCostItem = {
+  _key: string
+  itemName: string
+  amount: string
+}
+
+type RunStatus = 'PLANNED' | 'ORDERED' | 'STOCKED_IN'
+
+const STATUS_LABEL: Record<RunStatus, string> = {
+  PLANNED: '계획중',
+  ORDERED: '발주완료',
+  STOCKED_IN: '입고완료',
+}
+
 // detail API 응답 형태
 type RunDetail = {
   run: {
     id: string
     runNo: string
-    orderedAt: string
+    status: RunStatus
+    orderedConfirmedAt: string | null
+    stockedInAt: string | null
+    createdAt: string
     totalCost: number | null
     costMode: CostMode
     memo: string | null
@@ -94,14 +118,7 @@ function fmtKRW(n: number) {
 
 const MAX_VISIBLE = 3
 
-function TotalCostPreview({
-  totalCostInput,
-  items,
-}: {
-  totalCostInput: string
-  items: OptionItem[]
-}) {
-  const totalCost = parseFloat(totalCostInput) || 0
+function TotalCostPreview({ totalCost, items }: { totalCost: number; items: OptionItem[] }) {
   const totalQty = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
   const hasInput = totalCost > 0 && totalQty > 0
 
@@ -186,6 +203,14 @@ function newCostRow(): CostRow {
   }
 }
 
+function newTotalCostItem(): TotalCostItem {
+  return {
+    _key: crypto.randomUUID(),
+    itemName: '',
+    amount: '',
+  }
+}
+
 // YYYY-MM-DD
 function toDateInput(iso: string) {
   return iso.slice(0, 10)
@@ -207,15 +232,20 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
 
   // ── 기본 정보
   const [runNo, setRunNo] = useState('')
-  const [orderedAt, setOrderedAt] = useState('')
   const [memo, setMemo] = useState('')
+
+  // ── 단계별 상태/일자 (편집 모드 전용)
+  const [status, setStatus] = useState<RunStatus>('PLANNED')
+  const [orderedConfirmedAt, setOrderedConfirmedAt] = useState('')
+  const [stockedInAt, setStockedInAt] = useState('')
+  const [createdAt, setCreatedAt] = useState('')
 
   // ── 옵션 목록 (productId 기준 그룹핑)
   const [optionItems, setOptionItems] = useState<OptionItem[]>([])
 
   // ── 원가 탭
   const [costMode, setCostMode] = useState<CostMode>('TOTAL')
-  const [totalCostInput, setTotalCostInput] = useState('')
+  const [totalCostItems, setTotalCostItems] = useState<TotalCostItem[]>([newTotalCostItem()])
   const [costRows, setCostRows] = useState<CostRow[]>([newCostRow()])
 
   // ── UI 상태
@@ -227,11 +257,14 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
   // ── 폼 초기화
   function resetForm() {
     setRunNo('')
-    setOrderedAt(new Date().toISOString().slice(0, 10))
     setMemo('')
+    setStatus('PLANNED')
+    setOrderedConfirmedAt('')
+    setStockedInAt('')
+    setCreatedAt('')
     setOptionItems([])
     setCostMode('TOTAL')
-    setTotalCostInput('')
+    setTotalCostItems([newTotalCostItem()])
     setCostRows([newCostRow()])
   }
 
@@ -252,8 +285,11 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
           const r = data.run
 
           setRunNo(r.runNo)
-          setOrderedAt(toDateInput(r.orderedAt))
           setMemo(r.memo ?? '')
+          setStatus(r.status)
+          setOrderedConfirmedAt(r.orderedConfirmedAt ? toDateInput(r.orderedConfirmedAt) : '')
+          setStockedInAt(r.stockedInAt ? toDateInput(r.stockedInAt) : '')
+          setCreatedAt(r.createdAt ? toDateInput(r.createdAt) : '')
 
           // items → OptionItem[]
           setOptionItems(
@@ -272,24 +308,40 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
           // costMode
           setCostMode(r.costMode)
 
-          // TOTAL
-          setTotalCostInput(r.totalCost != null ? String(r.totalCost) : '')
-
-          // BREAKDOWN costs
-          if (r.costs.length > 0) {
-            setCostRows(
-              r.costs.map((c) => ({
-                _key: crypto.randomUUID(),
-                itemName: c.itemName,
-                description: c.description ?? '',
-                spec: c.spec != null ? String(c.spec) : '',
-                quantity: String(c.quantity),
-                unitPrice: String(c.unitPrice),
-                note: c.note ?? '',
-              }))
-            )
-          } else {
+          if (r.costMode === 'TOTAL') {
+            if (r.costs.length > 0) {
+              setTotalCostItems(
+                r.costs.map((c) => ({
+                  _key: crypto.randomUUID(),
+                  itemName: c.itemName,
+                  amount: String(c.unitPrice),
+                }))
+              )
+            } else if (r.totalCost != null && r.totalCost > 0) {
+              setTotalCostItems([
+                { _key: crypto.randomUUID(), itemName: '총 원가', amount: String(r.totalCost) },
+              ])
+            } else {
+              setTotalCostItems([newTotalCostItem()])
+            }
             setCostRows([newCostRow()])
+          } else {
+            setTotalCostItems([newTotalCostItem()])
+            if (r.costs.length > 0) {
+              setCostRows(
+                r.costs.map((c) => ({
+                  _key: crypto.randomUUID(),
+                  itemName: c.itemName,
+                  description: c.description ?? '',
+                  spec: c.spec != null ? String(c.spec) : '',
+                  quantity: String(c.quantity),
+                  unitPrice: String(c.unitPrice),
+                  note: c.note ?? '',
+                }))
+              )
+            } else {
+              setCostRows([newCostRow()])
+            }
           }
         } catch (err) {
           toast.error(err instanceof Error ? err.message : '불러오기 실패')
@@ -362,9 +414,23 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
   }
 
   function updateQuantity(optionId: string, val: string) {
+    const next = val === '' ? 0 : Math.max(0, parseInt(val) || 0)
     setOptionItems((prev) =>
-      prev.map((it) => (it.optionId === optionId ? { ...it, quantity: parseInt(val) || 0 } : it))
+      prev.map((it) => (it.optionId === optionId ? { ...it, quantity: next } : it))
     )
+  }
+
+  // ── 총원가 항목 조작
+  function addTotalCostItem() {
+    setTotalCostItems((prev) => [...prev, newTotalCostItem()])
+  }
+
+  function removeTotalCostItem(key: string) {
+    setTotalCostItems((prev) => prev.filter((r) => r._key !== key))
+  }
+
+  function updateTotalCostItem(key: string, field: 'itemName' | 'amount', val: string) {
+    setTotalCostItems((prev) => prev.map((r) => (r._key === key ? { ...r, [field]: val } : r)))
   }
 
   // ── 원가 행 조작
@@ -382,6 +448,11 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
 
   // ── 합계
   const breakdownTotal = costRows.reduce((s, r) => s + calcRowAmount(r), 0)
+  const totalCostSum = totalCostItems.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0)
+
+  // ── 옵션 요약 (총 수량 표시)
+  const positiveOptionCount = optionItems.filter((it) => it.quantity > 0).length
+  const optionTotalQty = optionItems.reduce((s, it) => s + (it.quantity || 0), 0)
 
   // ── 저장
   async function handleSave() {
@@ -390,25 +461,31 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
       toast.error('차수 번호를 입력하세요')
       return
     }
-    if (!orderedAt) {
-      toast.error('발주일을 입력하세요')
-      return
-    }
     if (optionItems.length === 0) {
       toast.error('1개 이상의 옵션을 추가하세요')
       return
     }
-    const invalidQty = optionItems.find((it) => it.quantity <= 0)
-    if (invalidQty) {
-      toast.error(`"${invalidQty.optionName}" 발주 수량을 1 이상으로 입력하세요`)
+    const validItems = optionItems.filter((it) => it.quantity > 0)
+    if (validItems.length === 0) {
+      toast.error('1개 이상의 옵션에 수량을 입력하세요')
       return
     }
 
     if (costMode === 'TOTAL') {
-      const v = parseFloat(totalCostInput)
-      if (isNaN(v) || v < 0) {
-        toast.error('총 원가를 올바르게 입력하세요')
+      if (totalCostItems.length === 0) {
+        toast.error('원가 항목을 1개 이상 추가하세요')
         return
+      }
+      for (const row of totalCostItems) {
+        if (!row.itemName.trim()) {
+          toast.error('원가 항목 이름을 모두 입력하세요')
+          return
+        }
+        const amt = parseFloat(row.amount)
+        if (!row.amount || isNaN(amt) || amt < 0) {
+          toast.error(`"${row.itemName}" 금액을 올바르게 입력하세요`)
+          return
+        }
       }
     } else {
       if (costRows.length === 0) {
@@ -434,15 +511,26 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
     // body 구성
     const body: Record<string, unknown> = {
       runNo: runNo.trim(),
-      orderedAt,
       costMode,
       memo: memo.trim() || undefined,
-      items: optionItems.map((it) => ({ optionId: it.optionId, quantity: it.quantity })),
+      items: validItems.map((it) => ({ optionId: it.optionId, quantity: it.quantity })),
+    }
+
+    // 편집 모드: 단계별 상태/일자 (재고 입고는 트리거하지 않음 — 메타데이터만)
+    if (isEdit) {
+      body.status = status
+      body.orderedConfirmedAt = orderedConfirmedAt || null
+      body.stockedInAt = stockedInAt || null
     }
 
     if (costMode === 'TOTAL') {
-      body.totalCost = parseFloat(totalCostInput)
-      body.costs = []
+      body.totalCost = totalCostSum
+      body.costs = totalCostItems.map((r, i) => ({
+        itemName: r.itemName.trim(),
+        quantity: 1,
+        unitPrice: parseFloat(r.amount),
+        sortOrder: i,
+      }))
     } else {
       // BREAKDOWN: totalCost는 서버가 계산 — 미전송
       body.costs = costRows.map((r, i) => ({
@@ -513,30 +601,17 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
               {/* ── 섹션 1: 기본 정보 ─────────────────────────────────── */}
               <section className="space-y-4">
                 <h3 className="text-sm font-semibold text-foreground">기본 정보</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="runNo">
-                      차수 번호 <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="runNo"
-                      value={runNo}
-                      onChange={(e) => setRunNo(e.target.value)}
-                      placeholder={loadingRunNo ? '자동 생성 중...' : '예: 2024-001'}
-                      disabled={loadingRunNo}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="orderedAt">
-                      발주일 <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="orderedAt"
-                      type="date"
-                      value={orderedAt}
-                      onChange={(e) => setOrderedAt(e.target.value)}
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="runNo">
+                    차수 번호 <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="runNo"
+                    value={runNo}
+                    onChange={(e) => setRunNo(e.target.value)}
+                    placeholder={loadingRunNo ? '자동 생성 중...' : '예: 2024-001'}
+                    disabled={loadingRunNo}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="memo">메모</Label>
@@ -549,12 +624,73 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                     className="resize-none"
                   />
                 </div>
+
+                {isEdit && (
+                  <div className="space-y-2 rounded-md border border-dashed p-3">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="text-xs font-semibold text-foreground">진행 단계</h4>
+                      <span className="text-xs text-muted-foreground">
+                        상태 변경만 — 재고 입고는 목록의 상태 메뉴에서 처리하세요
+                      </span>
+                    </div>
+                    {createdAt && (
+                      <p className="text-xs text-muted-foreground">
+                        계획중 · 생성일{' '}
+                        <span className="font-medium text-foreground">{createdAt}</span>
+                      </p>
+                    )}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="status">상태</Label>
+                        <Select value={status} onValueChange={(v) => setStatus(v as RunStatus)}>
+                          <SelectTrigger id="status">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PLANNED">{STATUS_LABEL.PLANNED}</SelectItem>
+                            <SelectItem value="ORDERED">{STATUS_LABEL.ORDERED}</SelectItem>
+                            <SelectItem value="STOCKED_IN">{STATUS_LABEL.STOCKED_IN}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="orderedConfirmedAt">발주일</Label>
+                        <Input
+                          id="orderedConfirmedAt"
+                          type="date"
+                          value={orderedConfirmedAt}
+                          onChange={(e) => setOrderedConfirmedAt(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="stockedInAt">입고완료 일자</Label>
+                        <Input
+                          id="stockedInAt"
+                          type="date"
+                          value={stockedInAt}
+                          onChange={(e) => setStockedInAt(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </section>
 
               {/* ── 섹션 2: 발주 상품·옵션 ───────────────────────────── */}
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">발주 상품 · 옵션</h3>
+                  <div className="flex items-baseline gap-2">
+                    <h3 className="text-sm font-semibold text-foreground">발주 상품 · 옵션</h3>
+                    {positiveOptionCount > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        총 {positiveOptionCount}개 옵션 · 합계{' '}
+                        <span className="font-semibold text-foreground">
+                          {optionTotalQty.toLocaleString('ko-KR')}
+                        </span>
+                        개
+                      </span>
+                    )}
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
@@ -626,8 +762,8 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
                                 <Input
                                   id={`qty-${opt.optionId}`}
                                   type="number"
-                                  min={1}
-                                  value={opt.quantity || ''}
+                                  min={0}
+                                  value={String(opt.quantity)}
                                   onChange={(e) => updateQuantity(opt.optionId, e.target.value)}
                                   className="h-7 w-20 text-right text-sm"
                                 />
@@ -666,21 +802,79 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
 
                   {/* TOTAL 탭 */}
                   <TabsContent value="TOTAL" className="mt-4 space-y-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="totalCost">총 원가 (₩)</Label>
-                      <Input
-                        id="totalCost"
-                        type="number"
-                        min={0}
-                        value={totalCostInput}
-                        onChange={(e) => setTotalCostInput(e.target.value)}
-                        placeholder="0"
-                        className="max-w-xs"
-                      />
+                    {totalCostItems.length === 0 ? (
+                      <p className="rounded-md border border-dashed py-4 text-center text-sm text-muted-foreground">
+                        원가 항목을 추가하세요
+                      </p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b text-xs text-muted-foreground">
+                              <th className="pr-2 pb-1.5 text-left font-medium">항목명 *</th>
+                              <th className="w-40 pr-2 pb-1.5 text-right font-medium">
+                                금액 (₩) *
+                              </th>
+                              <th className="w-7 pb-1.5" />
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {totalCostItems.map((row) => (
+                              <tr key={row._key}>
+                                <td className="py-1.5 pr-2">
+                                  <Input
+                                    value={row.itemName}
+                                    onChange={(e) =>
+                                      updateTotalCostItem(row._key, 'itemName', e.target.value)
+                                    }
+                                    placeholder="예: 원단, 부자재, 가공비"
+                                    className="h-7 text-sm"
+                                  />
+                                </td>
+                                <td className="py-1.5 pr-2">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    value={row.amount}
+                                    onChange={(e) =>
+                                      updateTotalCostItem(row._key, 'amount', e.target.value)
+                                    }
+                                    placeholder="0"
+                                    className="h-7 text-right text-sm"
+                                  />
+                                </td>
+                                <td className="py-1.5">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                    onClick={() => removeTotalCostItem(row._key)}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <Button type="button" variant="outline" size="sm" onClick={addTotalCostItem}>
+                        <Plus className="mr-1 h-3.5 w-3.5" />
+                        항목 추가
+                      </Button>
+                      {totalCostItems.length > 0 && (
+                        <p className="text-sm font-medium">
+                          총 원가 <span className="text-base">{fmtKRW(totalCostSum)}</span>
+                        </p>
+                      )}
                     </div>
 
                     {/* ── 옵션별 평균 단가 미리보기 ── */}
-                    <TotalCostPreview totalCostInput={totalCostInput} items={optionItems} />
+                    <TotalCostPreview totalCost={totalCostSum} items={optionItems} />
                   </TabsContent>
 
                   {/* BREAKDOWN 탭 */}
