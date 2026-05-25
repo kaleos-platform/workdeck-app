@@ -1363,8 +1363,8 @@ model ProductionRun {
   costMode    ProductionCostMode  @default(TOTAL)
   memo        String?
 
-  // 발주 계획 연계 (ReorderPlan.finalize 시 자동 생성)
-  reorderPlanId String? @unique
+  // 발주 계획 연계 (ReorderPlan.finalize 시 brandId별 분할 생성 가능 → 1:N)
+  reorderPlanId String?
 
   space            Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   brand            Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
@@ -1380,6 +1380,7 @@ model ProductionRun {
   @@index([spaceId, orderedConfirmedAt])
   @@index([spaceId, status])
   @@index([brandId])
+  @@index([reorderPlanId])
 }
 
 model ProductionRunItem {
@@ -2258,7 +2259,7 @@ model ReorderPlan {
 
   items         ReorderPlanItem[]
   accuracies    ReorderPlanAccuracy[]
-  productionRun ProductionRun? // 확정 시 생성되는 ProductionRun (1:1)
+  productionRuns ProductionRun[] // 확정 시 brandId별 분할 생성 가능 (1:N)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
