@@ -18,6 +18,8 @@ import { launchStealthPersistentContext } from './browser.js'
 
 export interface InventoryCollectorResult {
   inventoryHealth: { filePath: string; fileName: string } | null
+  /** 재고 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
+  inventoryHealthError?: string
 }
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
@@ -282,16 +284,19 @@ export async function collectInventoryData(
     }
 
     let inventoryHealth: { filePath: string; fileName: string } | null = null
+    let inventoryHealthError: string | undefined
 
     // 재고현황 다운로드
     try {
       inventoryHealth = await downloadInventoryHealth(page, downloadDir)
     } catch (err) {
-      console.error('[inventory] 재고현황 다운로드 실패:', err instanceof Error ? err.message : err)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[inventory] 재고현황 다운로드 실패:', msg)
       await saveScreenshot(page, 'inventory-health-error')
+      inventoryHealthError = msg
     }
 
-    return { inventoryHealth }
+    return { inventoryHealth, inventoryHealthError }
   } catch (error) {
     await saveScreenshot(page, 'inventory-error')
     throw error
