@@ -19,30 +19,50 @@ export type ConfirmResult = { adjustedCount: number; status: string }
  * 적용 가능한 총 항목 수를 산출한다.
  * matched-diff entry 수 + file-only 중 InvLocationProductMap에 매핑된 items 수
  */
-async function calcApplicableCount(entries: MatchEntry[], locationId: string): Promise<number> {
+async function calcApplicableCount(
+  entries: MatchEntry[],
+  reconLocationId: string
+): Promise<number> {
   // matched-diff 항목 수
   const matchedDiffCount = entries.filter((e) => e.status === 'matched-diff').length
 
-  // file-only 전체 + 매핑 여부 분류
-  const fileOnlyEntries = entries.filter((e) => e.status === 'file-only')
-  const fileOnlyExternalCodes = fileOnlyEntries
-    .map((e) => (e.status === 'file-only' ? e.row.externalCode : null))
-    .filter(Boolean) as string[]
+  // file-only 전체 + 매핑 여부 분류 — 위치별 그룹핑(멀티 location 대응)
+  const fileOnlyEntries = entries.filter(
+    (e): e is Extract<MatchEntry, { status: 'file-only' }> => e.status === 'file-only'
+  )
+  if (fileOnlyEntries.length === 0) return matchedDiffCount
+
+  // locationId별로 externalCode 그룹핑
+  const codesByLocId = new Map<string, string[]>()
+  for (const e of fileOnlyEntries) {
+    const code = e.row.externalCode
+    if (!code) continue
+    const locId = e.locationId ?? reconLocationId
+    const arr = codesByLocId.get(locId) ?? []
+    arr.push(code)
+    codesByLocId.set(locId, arr)
+  }
 
   let mappedFileOnlyCount = 0
-  let unmappedFileOnlyCount = 0
-  if (fileOnlyExternalCodes.length > 0) {
+  const mappedKeys = new Set<string>() // `${locId}|${code}`
+  for (const [locId, codes] of codesByLocId) {
+    if (codes.length === 0) continue
     const mappings = await prisma.invLocationProductMap.findMany({
-      where: { locationId, externalCode: { in: fileOnlyExternalCodes } },
+      where: { locationId: locId, externalCode: { in: codes } },
       include: { items: { select: { id: true } } },
     })
-    const mappedCodes = new Set(mappings.map((m) => m.externalCode))
-    mappedFileOnlyCount = mappings.reduce((acc, m) => acc + m.items.length, 0)
-    // 매핑되지 않은 file-only 행도 "미처리 잔여"로 카운트해 APPLIED 전이 차단
-    unmappedFileOnlyCount = fileOnlyEntries.filter(
-      (e) => e.status === 'file-only' && !mappedCodes.has(e.row.externalCode)
-    ).length
+    for (const m of mappings) {
+      mappedFileOnlyCount += m.items.length
+      mappedKeys.add(`${locId}|${m.externalCode}`)
+    }
   }
+
+  const unmappedFileOnlyCount = fileOnlyEntries.filter((e) => {
+    const code = e.row.externalCode
+    if (!code) return true // externalCode 없는 file-only는 매핑 불가 → 미처리 잔여
+    const locId = e.locationId ?? reconLocationId
+    return !mappedKeys.has(`${locId}|${code}`)
+  }).length
 
   return matchedDiffCount + mappedFileOnlyCount + unmappedFileOnlyCount
 }
@@ -64,11 +84,12 @@ export async function confirmReconciliation(
   }
 
   const entries = (recon.matchResults as unknown as MatchEntry[]) ?? []
-  const { locationId, snapshotDate, fileName } = recon
+  const { locationId: reconLocationId, snapshotDate, fileName } = recon
 
   // 1) 수동 매핑 upsert + 해당 file-only 항목을 adjustment 후보로 변환
   const extraAdjustments: {
     optionId: string
+    locationId: string
     fileQuantity: number
   }[] = []
 
@@ -81,6 +102,9 @@ export async function confirmReconciliation(
     )
     if (!entry || entry.status !== 'file-only') continue
 
+    // entry 자체의 locationId 우선 (멀티 location 파일 대응)
+    const entryLocationId = entry.locationId ?? reconLocationId
+
     // 각 item의 optionId 소유권 검증 (한 번에 조회)
     const validOptions = await prisma.invProductOption.findMany({
       where: {
@@ -91,9 +115,11 @@ export async function confirmReconciliation(
     })
     const validOptionIds = new Set(validOptions.map((o) => o.id))
 
-    // Upsert mapping (externalCode 단위)
+    // Upsert mapping (externalCode 단위) — entry의 locationId 사용
     const existingMap = await prisma.invLocationProductMap.findUnique({
-      where: { locationId_externalCode: { locationId, externalCode: mm.externalCode } },
+      where: {
+        locationId_externalCode: { locationId: entryLocationId, externalCode: mm.externalCode },
+      },
     })
 
     let mapId: string
@@ -111,7 +137,7 @@ export async function confirmReconciliation(
       const created = await prisma.invLocationProductMap.create({
         data: {
           spaceId,
-          locationId,
+          locationId: entryLocationId,
           externalCode: mm.externalCode,
           externalName: entry.row.externalName ?? null,
           externalOptionName: entry.row.externalOptionName ?? null,
@@ -140,20 +166,22 @@ export async function confirmReconciliation(
       for (const item of validItems) {
         extraAdjustments.push({
           optionId: item.optionId,
+          locationId: entryLocationId,
           fileQuantity: entry.row.quantity * (item.quantity ?? 1),
         })
       }
     }
   }
 
-  // 2) matched-diff 중 선택된 항목 adjustment
+  // 2) matched-diff 중 선택된 항목 adjustment — entry.locationId 우선
   const selected = new Set(options.selectedOptionIds)
-  const diffAdjustments: { optionId: string; fileQuantity: number }[] = []
+  const diffAdjustments: { optionId: string; locationId: string; fileQuantity: number }[] = []
   for (const e of entries) {
     if (e.status !== 'matched-diff') continue
     if (!selected.has(e.optionId)) continue
     diffAdjustments.push({
       optionId: e.optionId,
+      locationId: e.locationId ?? reconLocationId,
       fileQuantity: e.fileQuantity,
     })
   }
@@ -167,7 +195,7 @@ export async function confirmReconciliation(
       await processMovement(spaceId, {
         type: 'ADJUSTMENT',
         optionId: adj.optionId,
-        locationId,
+        locationId: adj.locationId,
         quantity: adj.fileQuantity,
         movementDate,
         reason: `파일 대조 조정 (${snapshotStr} 기준, 파일: ${fileName})`,
@@ -179,15 +207,16 @@ export async function confirmReconciliation(
   }
 
   // 3) 누적 적용 항목 수 — DB에서 직접 집계 (retry 시 drift 방지)
+  // 멀티 location 대응: optionId+locationId 조합으로 distinct
   const appliedMovements = await prisma.invMovement.findMany({
     where: { referenceId: reconciliationId, type: 'ADJUSTMENT' },
-    select: { optionId: true },
-    distinct: ['optionId'],
+    select: { optionId: true, locationId: true },
   })
-  const cumulativeApplied = appliedMovements.length
+  const appliedKeys = new Set(appliedMovements.map((m) => `${m.locationId}|${m.optionId}`))
+  const cumulativeApplied = appliedKeys.size
 
   // 4) 적용 가능 총수 산출
-  const applicableTotal = await calcApplicableCount(entries, locationId)
+  const applicableTotal = await calcApplicableCount(entries, reconLocationId)
 
   // 5) 상태 결정: 한 번이라도 confirm 호출 → 최소 PARTIAL
   //    누적 적용 == 적용 가능 총수이면 APPLIED
