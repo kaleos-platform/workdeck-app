@@ -85,6 +85,8 @@ function formatItems(items: Array<{ label: string }>, maxItems: number): string 
 export async function notifyInventoryAnalysis(params: {
   analysedAt: Date
   snapshotDate: Date
+  /** snapshotDate 기준 KST 자정 경과일. 2 이상이면 stale 경고 라벨 표시. */
+  ageDays?: number
   results: InventoryAnalysisResults
   shortageCount: number
   returnRateCount: number
@@ -104,8 +106,13 @@ export async function notifyInventoryAnalysis(params: {
     ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/inventory`
     : 'https://app.workdeck.work/d/coupang-ads/inventory'
 
+  const isStale = (params.ageDays ?? 0) >= 2
+  const headerText = isStale
+    ? `:clipboard: 쿠팡 재고 분석 완료 (⚠️ ${params.ageDays}일 전 데이터)`
+    : ':clipboard: 쿠팡 재고 분석 완료'
+
   const blocks: Block[] = [
-    header(':clipboard: 쿠팡 재고 분석 완료'),
+    header(headerText),
     divider(),
     {
       type: 'section',
