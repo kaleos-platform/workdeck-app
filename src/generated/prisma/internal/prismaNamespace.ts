@@ -407,6 +407,7 @@ export const ModelName = {
   AnalysisSchedule: 'AnalysisSchedule',
   BusinessAgent: 'BusinessAgent',
   AgentLog: 'AgentLog',
+  WorkerHeartbeat: 'WorkerHeartbeat',
   InventoryUpload: 'InventoryUpload',
   InventoryRecord: 'InventoryRecord',
   InventoryExcludedProduct: 'InventoryExcludedProduct',
@@ -483,7 +484,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2186,6 +2187,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AgentLogCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AgentLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    WorkerHeartbeat: {
+      payload: Prisma.$WorkerHeartbeatPayload<ExtArgs>
+      fields: Prisma.WorkerHeartbeatFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WorkerHeartbeatFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WorkerHeartbeatFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        findFirst: {
+          args: Prisma.WorkerHeartbeatFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WorkerHeartbeatFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        findMany: {
+          args: Prisma.WorkerHeartbeatFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>[]
+        }
+        create: {
+          args: Prisma.WorkerHeartbeatCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        createMany: {
+          args: Prisma.WorkerHeartbeatCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WorkerHeartbeatCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>[]
+        }
+        delete: {
+          args: Prisma.WorkerHeartbeatDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        update: {
+          args: Prisma.WorkerHeartbeatUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        deleteMany: {
+          args: Prisma.WorkerHeartbeatDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WorkerHeartbeatUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WorkerHeartbeatUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>[]
+        }
+        upsert: {
+          args: Prisma.WorkerHeartbeatUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        aggregate: {
+          args: Prisma.WorkerHeartbeatAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWorkerHeartbeat>
+        }
+        groupBy: {
+          args: Prisma.WorkerHeartbeatGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkerHeartbeatGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WorkerHeartbeatCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkerHeartbeatCountAggregateOutputType> | number
         }
       }
     }
@@ -7079,6 +7154,18 @@ export const AgentLogScalarFieldEnum = {
 export type AgentLogScalarFieldEnum = (typeof AgentLogScalarFieldEnum)[keyof typeof AgentLogScalarFieldEnum]
 
 
+export const WorkerHeartbeatScalarFieldEnum = {
+  id: 'id',
+  service: 'service',
+  lastPingAt: 'lastPingAt',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkerHeartbeatScalarFieldEnum = (typeof WorkerHeartbeatScalarFieldEnum)[keyof typeof WorkerHeartbeatScalarFieldEnum]
+
+
 export const InventoryUploadScalarFieldEnum = {
   id: 'id',
   fileName: 'fileName',
@@ -8810,6 +8897,7 @@ export type GlobalOmitConfig = {
   analysisSchedule?: Prisma.AnalysisScheduleOmit
   businessAgent?: Prisma.BusinessAgentOmit
   agentLog?: Prisma.AgentLogOmit
+  workerHeartbeat?: Prisma.WorkerHeartbeatOmit
   inventoryUpload?: Prisma.InventoryUploadOmit
   inventoryRecord?: Prisma.InventoryRecordOmit
   inventoryExcludedProduct?: Prisma.InventoryExcludedProductOmit

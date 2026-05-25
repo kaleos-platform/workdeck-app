@@ -155,6 +155,11 @@ export type BusinessAgent = Prisma.BusinessAgentModel
  */
 export type AgentLog = Prisma.AgentLogModel
 /**
+ * Model WorkerHeartbeat
+ * 
+ */
+export type WorkerHeartbeat = Prisma.WorkerHeartbeatModel
+/**
  * Model InventoryUpload
  * 
  */
