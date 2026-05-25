@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
@@ -86,14 +87,15 @@ export async function PATCH(
   })
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
 
-  let body: { name?: string; code?: string | null; groupId?: string }
+  let body: { name?: string; code?: string | null; groupId?: string; reorderRoundUnit?: number }
   try {
     body = await req.json()
   } catch {
     return errorResponse('잘못된 요청 본문입니다', 400)
   }
 
-  const data: { name?: string; code?: string | null; groupId?: string } = {}
+  const data: { name?: string; code?: string | null; groupId?: string; reorderRoundUnit?: number } =
+    {}
 
   if (body.name !== undefined) {
     const trimmed = body.name.trim()
@@ -129,6 +131,17 @@ export async function PATCH(
     data.groupId = group.id
   }
 
+  if (body.reorderRoundUnit !== undefined) {
+    // 발주 라운딩 단위: 1, 10, 100만 허용
+    const parsed = z
+      .number()
+      .int()
+      .refine((v) => [1, 10, 100].includes(v))
+      .safeParse(body.reorderRoundUnit)
+    if (!parsed.success) return errorResponse('reorderRoundUnit은 1, 10, 100만 허용됩니다', 400)
+    data.reorderRoundUnit = parsed.data
+  }
+
   if (Object.keys(data).length === 0) {
     return errorResponse('변경할 필드가 없습니다', 400)
   }
@@ -136,7 +149,14 @@ export async function PATCH(
   const updated = await prisma.invProduct.update({
     where: { id: productId },
     data,
-    select: { id: true, name: true, code: true, groupId: true, updatedAt: true },
+    select: {
+      id: true,
+      name: true,
+      code: true,
+      groupId: true,
+      reorderRoundUnit: true,
+      updatedAt: true,
+    },
   })
 
   return NextResponse.json(updated)

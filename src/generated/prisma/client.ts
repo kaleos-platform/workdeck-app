@@ -464,3 +464,18 @@ export type IdeationProduct = Prisma.IdeationProductModel
  * 
  */
 export type ImprovementRule = Prisma.ImprovementRuleModel
+/**
+ * Model ReorderPlan
+ * 
+ */
+export type ReorderPlan = Prisma.ReorderPlanModel
+/**
+ * Model ReorderPlanItem
+ * 
+ */
+export type ReorderPlanItem = Prisma.ReorderPlanItemModel
+/**
+ * Model ReorderPlanAccuracy
+ * 
+ */
+export type ReorderPlanAccuracy = Prisma.ReorderPlanAccuracyModel
