@@ -122,45 +122,52 @@ export function ColdStartInterviewDialog({ planId, coldStartItems, onCompleted }
           </p>
 
           <div className="max-h-[55vh] space-y-6 overflow-y-auto pr-1">
-            {coldStartItems.map((item) => (
-              <div key={item.optionId} className="space-y-3 rounded-md border px-4 py-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium">{item.productName}</p>
-                    <p className="text-xs text-muted-foreground">{item.optionName}</p>
+            {coldStartItems.map((item) => {
+              // 번스타인 API가 inputsSnapshot.questions 를 채우면 LLM 생성 질문 사용,
+              // 그 전까지는 기본 질문 목록으로 폴백
+              const questions =
+                (item.inputsSnapshot?.questions as InterviewQuestion[] | undefined) ??
+                DEFAULT_QUESTIONS
+              return (
+                <div key={item.optionId} className="space-y-3 rounded-md border px-4 py-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium">{item.productName}</p>
+                      <p className="text-xs text-muted-foreground">{item.optionName}</p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 border-amber-300 bg-amber-50 text-amber-700"
+                    >
+                      데이터 부족
+                    </Badge>
                   </div>
-                  <Badge
+
+                  {questions.map((q) => (
+                    <div key={q.key} className="space-y-1">
+                      <label className="text-xs font-medium text-foreground">{q.label}</label>
+                      <Textarea
+                        rows={2}
+                        placeholder={q.placeholder}
+                        className="resize-none text-sm"
+                        value={answers[item.optionId]?.[q.key] ?? ''}
+                        onChange={(e) => handleAnswer(item.optionId, q.key, e.target.value)}
+                      />
+                    </div>
+                  ))}
+
+                  <Button
+                    size="sm"
                     variant="outline"
-                    className="shrink-0 border-amber-300 bg-amber-50 text-amber-700"
+                    className="ml-auto block"
+                    disabled={submitting[item.optionId]}
+                    onClick={() => handleSubmit(item.optionId)}
                   >
-                    데이터 부족
-                  </Badge>
+                    {submitting[item.optionId] ? '저장 중...' : '이 옵션 저장'}
+                  </Button>
                 </div>
-
-                {DEFAULT_QUESTIONS.map((q) => (
-                  <div key={q.key} className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">{q.label}</label>
-                    <Textarea
-                      rows={2}
-                      placeholder={q.placeholder}
-                      className="resize-none text-sm"
-                      value={answers[item.optionId]?.[q.key] ?? ''}
-                      onChange={(e) => handleAnswer(item.optionId, q.key, e.target.value)}
-                    />
-                  </div>
-                ))}
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="ml-auto block"
-                  disabled={submitting[item.optionId]}
-                  onClick={() => handleSubmit(item.optionId)}
-                >
-                  {submitting[item.optionId] ? '저장 중...' : '이 옵션 저장'}
-                </Button>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <DialogFooter>

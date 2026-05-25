@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { PlusIcon } from 'lucide-react'
 import {
@@ -63,6 +64,7 @@ type PlanListResponse = {
 }
 
 export default function ReorderPlansPage() {
+  const router = useRouter()
   const [plans, setPlans] = useState<ReorderPlanSummary[]>([])
   const [latestAccuracy, setLatestAccuracy] = useState<PlanListResponse['latestAccuracy']>()
   const [loading, setLoading] = useState(true)
@@ -96,7 +98,7 @@ export default function ReorderPlansPage() {
       if (!res.ok) throw new Error('생성 실패')
       const data = (await res.json()) as { planId: string }
       toast.success('발주 계획 초안이 생성되었습니다')
-      window.location.href = `/d/seller-ops/inventory/reorder/plans/${data.planId}`
+      router.push(`/d/seller-ops/inventory/reorder/plans/${data.planId}`)
     } catch (err) {
       console.error(err)
       toast.error('발주 계획 생성에 실패했습니다')
