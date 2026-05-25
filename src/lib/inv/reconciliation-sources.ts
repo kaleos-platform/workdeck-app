@@ -20,8 +20,25 @@ export async function getCoupangInventoryRows(
   opts: { snapshotDate?: Date } = {}
 ): Promise<ParseResult> {
   // 1. 사용할 스냅샷 결정 — 지정값 우선, 없으면 최신 INVENTORY_HEALTH 업로드
-  let targetDate: Date | undefined = opts.snapshotDate
-  if (!targetDate) {
+  // InventoryUpload.snapshotDate 는 워커 업로드 시점의 정확한 timestamp(예: 2026-05-22T14:58:01.626Z).
+  // 클라이언트가 보낸 snapshotDate 는 사용자가 고른 KST 자정 (예: 2026-05-23T00:00:00Z) 이라 timestamp 가 완전히 다르다.
+  // 따라서 지정값이 있으면 "해당 KST 일자에 수집된 가장 최근 업로드"를 찾아 그 정확한 timestamp 를 record 조회 키로 사용한다.
+  let targetDate: Date | undefined
+  if (opts.snapshotDate) {
+    // KST 일자 [00:00, 24:00) 범위 = UTC [전날 15:00, 당일 15:00)
+    const startUtc = new Date(opts.snapshotDate.getTime() - 9 * 3600 * 1000)
+    const endUtc = new Date(startUtc.getTime() + 24 * 3600 * 1000)
+    const onDay = await prisma.inventoryUpload.findFirst({
+      where: {
+        workspaceId,
+        fileType: 'INVENTORY_HEALTH',
+        snapshotDate: { gte: startUtc, lt: endUtc },
+      },
+      orderBy: { snapshotDate: 'desc' },
+      select: { snapshotDate: true },
+    })
+    targetDate = onDay?.snapshotDate
+  } else {
     const latest = await prisma.inventoryUpload.findFirst({
       where: { workspaceId, fileType: 'INVENTORY_HEALTH' },
       orderBy: { snapshotDate: 'desc' },
@@ -31,7 +48,6 @@ export async function getCoupangInventoryRows(
   }
 
   if (!targetDate) {
-    // 수집된 쿠팡 재고 스냅샷이 전혀 없음
     return { format: 'coupang_health', rows: [], snapshotDate: undefined }
   }
 
