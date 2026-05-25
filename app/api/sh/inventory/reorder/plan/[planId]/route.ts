@@ -77,6 +77,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       userNote: item.userNote,
       biasAdjustFactor: Number(item.biasAdjustFactor),
       confidenceScore: item.confidenceScore ? Number(item.confidenceScore) : null,
+      inputsSnapshot: item.inputsSnapshot,
     })),
     accuracies: plan.accuracies.map((a) => ({
       ...a,
