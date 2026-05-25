@@ -66,6 +66,7 @@ export type StockMatrixRow = {
   totalQty: number
   totalValue: number
   byLocation: Record<string, number>
+  externalCodeByLocation: Record<string, string>
   status: SkuStatus
   turnoverDays: number | null
 }

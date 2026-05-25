@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Table,
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -31,6 +32,11 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Pencil, Trash2 } from 'lucide-react'
+import {
+  FloatingActionBar,
+  floatingActionButtonDestructiveClass,
+} from '@/components/ui/floating-action-bar'
+import { applyRangeSelection } from '@/lib/range-selection'
 
 type MovementType = 'INBOUND' | 'OUTBOUND' | 'RETURN' | 'TRANSFER' | 'ADJUSTMENT'
 
@@ -111,7 +117,9 @@ function quantityDisplay(row: MovementRow) {
 }
 
 function isExternalRow(r: MovementRow) {
-  return r.referenceId != null || r.importHistoryId != null
+  // importHistoryId 가 있는 행만 외부 잠금(파일 임포트 출처).
+  // referenceId 는 추적용 — 생산 차수 입고 등 내부 출처도 수정/삭제 가능해야 함.
+  return r.importHistoryId != null
 }
 
 // 수정 다이얼로그 상태
@@ -152,6 +160,11 @@ export function MovementHistory() {
 
   // 수정 다이얼로그
   const [edit, setEdit] = useState<EditState>(EDIT_INIT)
+
+  // 다중 선택 (importHistoryId 없는 행만 선택 가능)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+  const lastClickedIndexRef = useRef<number | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -196,12 +209,77 @@ export function MovementHistory() {
     fetchData()
   }, [fetchData])
 
+  // 페이지/필터 변경 시 선택 초기화
+  useEffect(() => {
+    setSelected(new Set())
+    lastClickedIndexRef.current = null
+  }, [page, typeFilter, locationFilter, from, to])
+
   function resetFilters() {
     setTypeFilter('all')
     setLocationFilter('all')
     setFrom('')
     setTo('')
     setPage(1)
+  }
+
+  // 다중 선택 — 외부 출처(importHistoryId) 행은 선택 불가
+  const selectableRows = rows.filter((r) => !isExternalRow(r))
+  const selectableIds = selectableRows.map((r) => r.id)
+  const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.has(id))
+  const someSelected = !allSelected && selectableIds.some((id) => selected.has(id))
+
+  function toggleAll(checked: boolean) {
+    if (checked) {
+      setSelected(new Set(selectableIds))
+    } else {
+      setSelected(new Set())
+    }
+    lastClickedIndexRef.current = null
+  }
+
+  function toggleRow(id: string, index: number, shiftKey: boolean) {
+    setSelected((prev) =>
+      applyRangeSelection(prev, selectableIds, id, index, shiftKey, lastClickedIndexRef.current)
+    )
+    lastClickedIndexRef.current = index
+  }
+
+  async function handleBulkDelete() {
+    if (selected.size === 0) return
+    const count = selected.size
+    if (
+      !window.confirm(
+        `선택한 ${count}건의 이동 기록을 삭제하면 재고가 자동 역산됩니다. 진행하시겠습니까?`
+      )
+    ) {
+      return
+    }
+    setBulkDeleting(true)
+    try {
+      const results = await Promise.all(
+        Array.from(selected).map(async (id) => {
+          const res = await fetch(`/api/sh/inventory/movements/${id}`, { method: 'DELETE' })
+          return { id, ok: res.ok }
+        })
+      )
+      const okCount = results.filter((r) => r.ok).length
+      const failCount = results.length - okCount
+      if (failCount === 0) {
+        toast.success(`${okCount}건의 이동 기록이 삭제되었습니다.`)
+      } else if (okCount === 0) {
+        toast.error(`${failCount}건 모두 삭제에 실패했습니다.`)
+      } else {
+        toast.warning(`${okCount}건 삭제 완료, ${failCount}건 실패`)
+      }
+      setSelected(new Set())
+      lastClickedIndexRef.current = null
+      fetchData()
+    } catch {
+      toast.error('일괄 삭제 중 오류가 발생했습니다.')
+    } finally {
+      setBulkDeleting(false)
+    }
   }
 
   // 삭제
@@ -284,7 +362,7 @@ export function MovementHistory() {
   }
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const colSpan = 8 // 날짜·타입·상품/옵션·수량·위치·채널·사유·동작
+  const colSpan = 9 // 체크박스·날짜·타입·상품/옵션·수량·위치·채널·사유·동작
 
   return (
     <div className="space-y-4">
@@ -363,6 +441,14 @@ export function MovementHistory() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                  onCheckedChange={(v) => toggleAll(v === true)}
+                  disabled={selectableIds.length === 0}
+                  aria-label="전체 선택"
+                />
+              </TableHead>
               <TableHead>날짜</TableHead>
               <TableHead>타입</TableHead>
               <TableHead className="min-w-[220px]">상품 / 옵션</TableHead>
@@ -389,8 +475,25 @@ export function MovementHistory() {
             ) : (
               rows.map((r) => {
                 const external = isExternalRow(r)
+                const selectableIndex = selectableIds.indexOf(r.id)
+                const checked = selected.has(r.id)
                 return (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} data-state={checked ? 'selected' : undefined}>
+                    <TableCell
+                      className={external ? 'w-10' : 'w-10 cursor-pointer'}
+                      onClick={(e) => {
+                        if (external) return
+                        toggleRow(r.id, selectableIndex, e.shiftKey)
+                      }}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        disabled={external}
+                        tabIndex={-1}
+                        className="pointer-events-none"
+                        aria-label={`${r.id} 선택`}
+                      />
+                    </TableCell>
                     <TableCell className="text-sm whitespace-nowrap">
                       {formatDate(r.movementDate)}
                     </TableCell>
@@ -448,7 +551,7 @@ export function MovementHistory() {
                           }
                           onClick={() => openEdit(r)}
                         >
-                          <Pencil className="h-3.5 w-3.5" />
+                          <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -462,7 +565,7 @@ export function MovementHistory() {
                           className="hover:text-red-600"
                           onClick={() => handleDelete(r)}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -579,6 +682,30 @@ export function MovementHistory() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <FloatingActionBar
+        open={selected.size > 0}
+        onClear={() => {
+          setSelected(new Set())
+          lastClickedIndexRef.current = null
+        }}
+        clearDisabled={bulkDeleting}
+        actions={
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={floatingActionButtonDestructiveClass}
+            onClick={handleBulkDelete}
+            disabled={bulkDeleting}
+          >
+            <Trash2 className="mr-1 h-4 w-4" />
+            {bulkDeleting ? '삭제 중...' : '삭제'}
+          </Button>
+        }
+      >
+        <span className="text-sm font-semibold">{selected.size}건 선택</span>
+      </FloatingActionBar>
     </div>
   )
 }

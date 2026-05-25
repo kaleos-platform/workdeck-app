@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
 import { getDaysAgoStrKst } from '@/lib/date-range'
+import { getDeltaColor } from '@/lib/delta-color'
 import { getCoupangAdsCampaignPath } from '@/lib/deck-routes'
 
 type CampaignMetrics = {
@@ -51,16 +52,10 @@ function getRoasStatus(value: number | null) {
   return { label: '손해 위험', textColor: 'text-red-600', bgColor: 'bg-red-50' }
 }
 
-function DiffBadge({ diff, isPositive }: { diff: number | null; isPositive: boolean }) {
+function DiffBadge({ diff }: { diff: number | null }) {
   if (diff === null) return null
-  const color =
-    diff === 0
-      ? 'text-muted-foreground'
-      : diff > 0 === isPositive
-        ? 'text-green-600'
-        : 'text-red-500'
   return (
-    <div className={`flex items-center justify-end gap-0.5 text-xs ${color}`}>
+    <div className={`flex items-center justify-end gap-0.5 text-xs ${getDeltaColor(diff)}`}>
       {diff > 0 ? (
         <ArrowUp className="h-3 w-3" />
       ) : diff < 0 ? (
@@ -231,21 +226,21 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
                             <p className="text-sm font-medium">
                               {metrics.totalAdCost.toLocaleString('ko-KR')}원
                             </p>
-                            <DiffBadge diff={adCostDiff} isPositive={false} />
+                            <DiffBadge diff={adCostDiff} />
                           </div>
                           <div className="min-w-[64px] text-right">
                             <p className="text-xs text-muted-foreground">평균 ROAS</p>
                             <p className="text-sm font-medium">
                               {metrics.avgRoas !== null ? `${metrics.avgRoas.toFixed(2)}%` : '-'}
                             </p>
-                            <DiffBadge diff={roasDiff} isPositive={true} />
+                            <DiffBadge diff={roasDiff} />
                           </div>
                           <div className="min-w-[80px] text-right">
                             <p className="text-xs text-muted-foreground">총 매출액</p>
                             <p className="text-sm font-medium">
                               {metrics.totalRevenue.toLocaleString('ko-KR')}원
                             </p>
-                            <DiffBadge diff={revenueDiff} isPositive={true} />
+                            <DiffBadge diff={revenueDiff} />
                           </div>
                         </div>
                       </Link>

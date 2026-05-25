@@ -20,7 +20,7 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
   const { id } = await ctx.params
   const movement = await findMovement(resolved.space.id, id)
   if (!movement) return errorResponse('이동 기록을 찾을 수 없습니다', 404)
-  if (movement.referenceId || movement.importHistoryId) {
+  if (movement.importHistoryId) {
     return errorResponse(EXTERNAL_SOURCE_MSG, 400)
   }
 
@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const { id } = await ctx.params
   const movement = await findMovement(resolved.space.id, id)
   if (!movement) return errorResponse('이동 기록을 찾을 수 없습니다', 404)
-  if (movement.referenceId || movement.importHistoryId) {
+  if (movement.importHistoryId) {
     return errorResponse(EXTERNAL_SOURCE_MSG, 400)
   }
 

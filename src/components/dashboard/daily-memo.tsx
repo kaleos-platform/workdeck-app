@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table'
 import { Plus, StickyNote } from 'lucide-react'
 import { MemoDialog } from './memo-dialog'
+import { getTodayStrKst } from '@/lib/date-range'
 import type { DailyMemo as DailyMemoType } from '@/types'
 
 interface DailyMemoProps {
@@ -68,9 +69,9 @@ export function DailyMemo({
     onMemosChange?.(newMemos)
   }
 
-  // "메모 추가" 버튼 — 오늘 날짜, 신규 모드
+  // "메모 추가" 버튼 — 오늘 날짜(KST), 신규 모드
   function openAddDialog() {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getTodayStrKst()
     setDialogState({
       open: true,
       date: today,
@@ -111,23 +112,15 @@ export function DailyMemo({
     updateMemos(memos.filter((m) => m.date !== deleteDate))
   }
 
-  // 기간 내 메모만 표시 (from/to 필터)
-  const filteredMemos = memos
-    .filter((m) => {
-      if (from && m.date < from) return false
-      if (to && m.date > to) return false
-      return true
-    })
-    .sort((a, b) => b.date.localeCompare(a.date))
+  // 메모 내역은 기간 필터와 무관하게 항상 전체 표시
+  const filteredMemos = [...memos].sort((a, b) => b.date.localeCompare(a.date))
 
   return (
     <div className="space-y-3">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          {filteredMemos.length > 0
-            ? `${filteredMemos.length}개의 메모${from || to ? ' (기간 내)' : ''}`
-            : '메모가 없습니다'}
+          {filteredMemos.length > 0 ? `${filteredMemos.length}개의 메모` : '메모가 없습니다'}
         </p>
         <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={openAddDialog}>
           <Plus className="h-3.5 w-3.5" />

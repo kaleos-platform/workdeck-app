@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
   const [runs, total] = await Promise.all([
     prisma.productionRun.findMany({
       where,
-      orderBy: { orderedAt: 'desc' },
+      orderBy: [{ orderedConfirmedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
@@ -102,9 +102,11 @@ export async function GET(req: NextRequest) {
       runNo: run.runNo,
       status: run.status,
       brand: run.brand ? { id: run.brand.id, name: run.brand.name } : null,
-      orderedAt: run.orderedAt.toISOString(),
       dueAt: run.dueAt ? run.dueAt.toISOString() : null,
       completedAt: run.completedAt ? run.completedAt.toISOString() : null,
+      orderedConfirmedAt: run.orderedConfirmedAt ? run.orderedConfirmedAt.toISOString() : null,
+      stockedInAt: run.stockedInAt ? run.stockedInAt.toISOString() : null,
+      stockInLocationId: run.stockInLocationId,
       totalCost: totalCostNum,
       costMode: run.costMode,
       memo: run.memo,
@@ -171,9 +173,10 @@ export async function POST(req: NextRequest) {
     resolvedBrandId = brandIds.size === 1 ? Array.from(brandIds)[0] : null
   }
 
-  // BREAKDOWN 모드: amount 서버 계산 + totalCost 캐시
-  // TOTAL 모드: body.totalCost 그대로 저장 + costs 빈 배열
-  let costsData: Array<{
+  // 두 모드 공통: costs 행 amount 계산
+  // BREAKDOWN: totalCost = costs amount 합
+  // TOTAL: totalCost = body.totalCost (클라이언트 합산값) — costs 행도 함께 저장
+  const costsData: Array<{
     itemName: string
     description?: string
     spec?: number
@@ -183,29 +186,19 @@ export async function POST(req: NextRequest) {
     note?: string
     sortOrder: number
     category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'OTHER'
-  }> = []
-  let finalTotalCost: number | undefined = undefined
-
-  if (input.costMode === 'BREAKDOWN') {
-    costsData = (input.costs ?? []).map((c) => {
-      const amount = (c.spec ?? 1) * c.quantity * c.unitPrice
-      return {
-        itemName: c.itemName,
-        description: c.description,
-        spec: c.spec,
-        quantity: c.quantity,
-        unitPrice: c.unitPrice,
-        amount,
-        note: c.note,
-        sortOrder: c.sortOrder ?? 0,
-        category: c.category,
-      }
-    })
-    finalTotalCost = costsData.reduce((s, c) => s + c.amount, 0)
-  } else {
-    // TOTAL 모드
-    finalTotalCost = input.totalCost
-  }
+  }> = (input.costs ?? []).map((c, i) => ({
+    itemName: c.itemName,
+    description: c.description,
+    spec: c.spec,
+    quantity: c.quantity,
+    unitPrice: c.unitPrice,
+    amount: (c.spec ?? 1) * c.quantity * c.unitPrice,
+    note: c.note,
+    sortOrder: c.sortOrder ?? i,
+    category: c.category,
+  }))
+  const finalTotalCost: number | undefined =
+    input.costMode === 'BREAKDOWN' ? costsData.reduce((s, c) => s + c.amount, 0) : input.totalCost
 
   try {
     const created = await prisma.$transaction(async (tx) => {
@@ -213,7 +206,6 @@ export async function POST(req: NextRequest) {
         data: {
           spaceId: resolved.space.id,
           runNo: input.runNo,
-          orderedAt: new Date(input.orderedAt),
           costMode: input.costMode,
           totalCost: finalTotalCost ?? null,
           memo: input.memo ?? null,
@@ -232,7 +224,7 @@ export async function POST(req: NextRequest) {
         })),
       })
 
-      if (input.costMode === 'BREAKDOWN' && costsData.length > 0) {
+      if (costsData.length > 0) {
         await tx.productionRunCost.createMany({
           data: costsData.map((c) => ({ ...c, runId: run.id })),
         })
