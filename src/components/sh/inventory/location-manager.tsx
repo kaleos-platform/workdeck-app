@@ -31,6 +31,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { LocationMappingTable } from '@/components/sh/inventory/location-mapping-table'
+import {
+  EXTERNAL_SOURCES,
+  EXTERNAL_SOURCE_LABEL,
+  type ExternalSource,
+} from '@/lib/inv/external-sources'
 
 type LocationType = 'OWN' | 'THIRD_PARTY' | 'STORE'
 
@@ -39,9 +44,12 @@ type LocationRow = {
   name: string
   type: LocationType
   isActive: boolean
+  externalSource: ExternalSource | null
   createdAt: string
   _count?: { stockLevels: number }
 }
+
+const EXTERNAL_SOURCE_NONE = '__none__'
 
 const LOCATION_TYPE_LABEL: Record<LocationType, string> = {
   OWN: '자사창고',
@@ -56,6 +64,7 @@ export function LocationManager() {
   const [editing, setEditing] = useState<LocationRow | null>(null)
   const [name, setName] = useState('')
   const [typeValue, setTypeValue] = useState<LocationType>('OWN')
+  const [externalSourceValue, setExternalSourceValue] = useState<string>(EXTERNAL_SOURCE_NONE)
   const [saving, setSaving] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null)
@@ -81,6 +90,7 @@ export function LocationManager() {
     setEditing(null)
     setName('')
     setTypeValue('OWN')
+    setExternalSourceValue(EXTERNAL_SOURCE_NONE)
     setDialogOpen(true)
   }
 
@@ -88,6 +98,7 @@ export function LocationManager() {
     setEditing(loc)
     setName(loc.name)
     setTypeValue(loc.type)
+    setExternalSourceValue(loc.externalSource ?? EXTERNAL_SOURCE_NONE)
     setDialogOpen(true)
   }
 
@@ -103,10 +114,12 @@ export function LocationManager() {
         ? `/api/sh/inventory/locations/${editing.id}`
         : '/api/sh/inventory/locations'
       const method = editing ? 'PATCH' : 'POST'
+      const externalSource =
+        externalSourceValue === EXTERNAL_SOURCE_NONE ? null : externalSourceValue
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmed, type: typeValue }),
+        body: JSON.stringify({ name: trimmed, type: typeValue, externalSource }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '저장 실패')
@@ -205,7 +218,16 @@ export function LocationManager() {
                           <ChevronRight className="h-4 w-4" />
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">{loc.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {loc.name}
+                          {loc.externalSource && (
+                            <Badge variant="secondary" className="text-xs">
+                              {EXTERNAL_SOURCE_LABEL[loc.externalSource]}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">{LOCATION_TYPE_LABEL[loc.type]}</Badge>
                       </TableCell>
@@ -297,6 +319,35 @@ export function LocationManager() {
                 <SelectItem value="STORE">{LOCATION_TYPE_LABEL.STORE}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="location-external-source">연결된 소스 (선택)</Label>
+            <Select
+              value={externalSourceValue}
+              onValueChange={setExternalSourceValue}
+              disabled={saving}
+            >
+              <SelectTrigger id="location-external-source">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={EXTERNAL_SOURCE_NONE}>없음</SelectItem>
+                {EXTERNAL_SOURCES.map((src) => {
+                  const usedBy = locations.find(
+                    (l) => l.externalSource === src && l.id !== editing?.id
+                  )
+                  return (
+                    <SelectItem key={src} value={src} disabled={!!usedBy}>
+                      {EXTERNAL_SOURCE_LABEL[src]}
+                      {usedBy ? ` (이미 '${usedBy.name}' 위치에 연결됨)` : ''}
+                    </SelectItem>
+                  )
+                })}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              연결된 소스를 지정하면 재고 조정의 데이터 연동에서 이 위치로 자동 분배됩니다.
+            </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>

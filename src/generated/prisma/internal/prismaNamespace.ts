@@ -7226,6 +7226,8 @@ export const InvStorageLocationScalarFieldEnum = {
   name: 'name',
   type: 'type',
   isActive: 'isActive',
+  externalSource: 'externalSource',
+  externalIntegrationKey: 'externalIntegrationKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

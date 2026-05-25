@@ -305,11 +305,9 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
 // ───────────────────────── 데이터 연동 ─────────────────────────
 export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
   const [open, setOpen] = useState(false)
-  const [locationId, setLocationId] = useState('')
   const [snapshotDate, setSnapshotDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [submitting, setSubmitting] = useState(false)
   const [coupangActive, setCoupangActive] = useState<boolean | null>(null)
-  const locations = useLocations(open)
 
   useEffect(() => {
     if (!open) return
@@ -326,7 +324,6 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
     if (coupangActive === false) {
       return toast.error('쿠팡 광고 관리자 Deck을 먼저 연동해 주세요')
     }
-    if (!locationId) return toast.error('보관 장소를 선택해 주세요')
 
     setSubmitting(true)
     try {
@@ -335,7 +332,7 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           source: 'coupang',
-          locationId,
+          // locationId 미전송 — 서버가 externalSource='coupang_rocket_growth' 위치로 자동 매핑
           ...(snapshotDate ? { snapshotDate } : {}),
         }),
       })
@@ -366,22 +363,6 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
 
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label>보관 장소</Label>
-            <Select value={locationId} onValueChange={setLocationId}>
-              <SelectTrigger>
-                <SelectValue placeholder="보관 장소 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((l) => (
-                  <SelectItem key={l.id} value={l.id}>
-                    {l.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <Label>기준일 (snapshotDate)</Label>
             <Input
               type="date"
@@ -407,8 +388,9 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
               <div className="rounded-md border p-3 text-sm">
                 <p className="font-medium">쿠팡 로켓그로스 재고</p>
                 <p className="text-xs text-muted-foreground">
-                  쿠팡 광고 관리자에서 수집된 최신 재고 스냅샷을 불러와 대조합니다. 기준일을 비우면
-                  가장 최근 스냅샷을 사용합니다.
+                  쿠팡 광고 관리자에서 수집된 최신 재고 스냅샷을 불러와, 위치 관리에서 &lsquo;쿠팡
+                  로켓그로스&rsquo; 소스가 연결된 보관 장소로 자동 분배합니다. 기준일을 비우면 가장
+                  최근 스냅샷을 사용합니다.
                 </p>
               </div>
             )}

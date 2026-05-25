@@ -821,6 +821,11 @@ model InvStorageLocation {
   type     InvStorageLocationType @default(OWN)
   isActive Boolean                @default(true)
 
+  // 외부 데이터 소스 자동 연결 (예: 쿠팡 로켓그로스 자동 분배 대상 위치)
+  // 값 예: 'coupang_rocket_growth'. 한 space 안에서 동일 source는 1개 위치만 가능.
+  externalSource         String?
+  externalIntegrationKey String?
+
   space             Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   stockLevels       InvStockLevel[]
   movements         InvMovement[]           @relation("MovementLocation")
@@ -833,6 +838,7 @@ model InvStorageLocation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([spaceId, externalSource])
   @@index([spaceId])
   @@index([spaceId, type])
 }
