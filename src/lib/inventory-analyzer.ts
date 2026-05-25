@@ -321,6 +321,7 @@ export async function runAndSaveInventoryAnalysis(params: {
       slackDelivered = await notifyInventoryAnalysis({
         analysedAt: analysis.analysedAt,
         snapshotDate: output.snapshotDate,
+        ageDays,
         results: output.results,
         shortageCount: output.shortageCount,
         returnRateCount: output.returnRateCount,

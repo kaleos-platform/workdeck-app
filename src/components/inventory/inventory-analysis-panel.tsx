@@ -5,6 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   AlertTriangle,
   ChevronDown,
   RotateCcw,
@@ -38,6 +46,7 @@ export function InventoryAnalysisPanel() {
   const [loading, setLoading] = useState(true)
   const [reanalyzing, setReanalyzing] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  const [staleConfirmOpen, setStaleConfirmOpen] = useState(false)
 
   const fetchAnalysis = useCallback(() => {
     fetch('/api/inventory/analysis')
@@ -51,7 +60,7 @@ export function InventoryAnalysisPanel() {
     fetchAnalysis()
   }, [fetchAnalysis])
 
-  const handleReanalyze = async () => {
+  const runReanalyze = async () => {
     setReanalyzing(true)
     try {
       const res = await fetch('/api/inventory/analysis', { method: 'POST' })
@@ -63,6 +72,11 @@ export function InventoryAnalysisPanel() {
     } finally {
       setReanalyzing(false)
     }
+  }
+
+  const confirmStaleReanalyze = () => {
+    setStaleConfirmOpen(false)
+    void runReanalyze()
   }
 
   const toggleSection = (key: string) => {
@@ -128,7 +142,7 @@ export function InventoryAnalysisPanel() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleReanalyze}
+              onClick={() => (isStale ? setStaleConfirmOpen(true) : void runReanalyze())}
               disabled={reanalyzing}
               className="h-7 text-xs"
             >
@@ -211,6 +225,26 @@ export function InventoryAnalysisPanel() {
           )}
         </CardContent>
       )}
+
+      <Dialog open={staleConfirmOpen} onOpenChange={setStaleConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>오래된 기준 데이터로 재분석</DialogTitle>
+            <DialogDescription>
+              기준 데이터가 {staleAgeDays}일 전({snapshotLabel})입니다. 이대로 재분석하면 Slack에도
+              오래된 기준일로 발송됩니다. 진행할까요?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStaleConfirmOpen(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={confirmStaleReanalyze}>
+              오래된 데이터로 진행
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

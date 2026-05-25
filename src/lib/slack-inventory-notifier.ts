@@ -85,6 +85,8 @@ function formatItems(items: Array<{ label: string }>, maxItems: number): string 
 export async function notifyInventoryAnalysis(params: {
   analysedAt: Date
   snapshotDate: Date
+  /** snapshotDate 기준 KST 자정 경과일. 2 이상이면 stale 경고 라벨 표시. */
+  ageDays?: number
   results: InventoryAnalysisResults
   shortageCount: number
   returnRateCount: number
@@ -104,8 +106,13 @@ export async function notifyInventoryAnalysis(params: {
     ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/inventory`
     : 'https://app.workdeck.work/d/coupang-ads/inventory'
 
+  const isStale = (params.ageDays ?? 0) >= 2
+  const headerText = isStale
+    ? `:clipboard: 쿠팡 재고 분석 완료 (⚠️ ${params.ageDays}일 전 데이터)`
+    : ':clipboard: 쿠팡 재고 분석 완료'
+
   const blocks: Block[] = [
-    header(':clipboard: 쿠팡 재고 분석 완료'),
+    header(headerText),
     divider(),
     {
       type: 'section',
@@ -216,4 +223,35 @@ export async function notifyInventoryStaleData(params: {
   ]
 
   return postMessage(blocks, `쿠팡 재고 분석 스킵 — 데이터가 ${params.ageDays}일 전입니다`)
+}
+
+// ─── 워커 다운 알림 ────────────────────────────────────────────────────────
+
+/**
+ * 워커 heartbeat가 임계치를 넘기면 운영자에게 즉시 알린다.
+ * dedupe는 호출측(cron)에서 관리.
+ */
+export async function notifyWorkerDown(params: {
+  service: string
+  lastPingAt: Date | null
+  thresholdMinutes: number
+}): Promise<boolean> {
+  const lastPingText = params.lastPingAt
+    ? `${params.lastPingAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} (${Math.floor(
+        (Date.now() - params.lastPingAt.getTime()) / 60_000
+      )}분 전)`
+    : '기록 없음'
+
+  const blocks: Block[] = [
+    header(':rotating_light: 워커 프로세스 다운 의심'),
+    divider(),
+    section(`*서비스*\n\`${params.service}\``),
+    section(`*마지막 heartbeat*\n${lastPingText}`),
+    section(
+      `heartbeat가 ${params.thresholdMinutes}분 이상 끊겼습니다. 워커 호스트를 점검하세요.\n` +
+        '```\npm2 status workdeck-worker\npm2 logs workdeck-worker --lines 200\npm2 restart workdeck-worker\n```'
+    ),
+  ]
+
+  return postMessage(blocks, `워커 다운 의심: ${params.service}`)
 }
