@@ -11,12 +11,15 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { chromium, type BrowserContext, type Page } from 'playwright'
+import type { BrowserContext, Page } from 'playwright'
+import { launchStealthPersistentContext } from './browser.js'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────────
 
 export interface InventoryCollectorResult {
   inventoryHealth: { filePath: string; fileName: string } | null
+  /** 재고 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
+  inventoryHealthError?: string
 }
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
@@ -54,7 +57,7 @@ async function isWingLoggedIn(page: Page): Promise<boolean> {
 /** Wing 로그인 수행 */
 async function performWingLogin(
   page: Page,
-  credentials: { loginId: string; password: string },
+  credentials: { loginId: string; password: string }
 ): Promise<void> {
   console.log('[inventory] Wing 로그인 시도...')
   await page.goto(`${WING_URL}/login`, {
@@ -102,7 +105,7 @@ async function clickAndDownload(
   page: Page,
   downloadDir: string,
   btnLocator: ReturnType<Page['locator']>,
-  fallbackName: string,
+  fallbackName: string
 ): Promise<{ filePath: string; fileName: string }> {
   const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT })
   downloadPromise.catch(() => {})
@@ -116,6 +119,30 @@ async function clickAndDownload(
   return { filePath, fileName }
 }
 
+/** 페이지에 떠 있는 공지/프로모션 모달을 모두 닫는다 */
+async function dismissModals(page: Page): Promise<void> {
+  const dismissCandidates = [
+    'button:has-text("닫기")',
+    'button:has-text("오늘 하루 보지 않기")',
+    'button:has-text("나중에")',
+    'button:has-text("다음에")',
+    'button[aria-label="닫기"]',
+    'button[aria-label="Close"]',
+    '[data-wuic-partial="close"]',
+    // 일반적인 모달 우상단 X 버튼
+    '.modal-close',
+    '.dialog-close',
+    '[class*="close"][role="button"]',
+  ]
+  for (const sel of dismissCandidates) {
+    const btn = page.locator(sel).first()
+    if (await btn.isVisible({ timeout: 800 }).catch(() => false)) {
+      await btn.click({ force: true }).catch(() => {})
+      await page.waitForTimeout(400)
+    }
+  }
+}
+
 /** 사이드바 기준으로 로켓그로스 > 재고현황 진입 */
 async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
   console.log('[inventory] Wing 재고현황 페이지 진입...')
@@ -127,19 +154,7 @@ async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
   await page.waitForTimeout(2000)
 
-  const dismissCandidates = [
-    'button:has-text("닫기")',
-    'button:has-text("오늘 하루 보지 않기")',
-    'button[aria-label="닫기"]',
-    '[data-wuic-partial="close"]',
-  ]
-  for (const sel of dismissCandidates) {
-    const btn = page.locator(sel).first()
-    if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await btn.click({ force: true }).catch(() => {})
-      await page.waitForTimeout(500)
-    }
-  }
+  await dismissModals(page)
 
   const rocketGrowth = page.locator('text=로켓그로스').first()
   if (await rocketGrowth.isVisible({ timeout: 5000 }).catch(() => false)) {
@@ -147,7 +162,9 @@ async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
     await page.waitForTimeout(1000)
   }
 
-  const inventoryMenu = page.locator('a:has-text("재고현황"), button:has-text("재고현황"), text=재고현황').first()
+  const inventoryMenu = page
+    .locator('a:has-text("재고현황"), button:has-text("재고현황"), text=재고현황')
+    .first()
   if (await inventoryMenu.isVisible({ timeout: 5000 }).catch(() => false)) {
     await inventoryMenu.click({ force: true })
   } else {
@@ -160,13 +177,18 @@ async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
 
   await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
   await page.waitForTimeout(3000)
+
+  // 재고현황 페이지에서 프로모션 모달이 또 뜰 수 있음 — 한 번 더 닫기
+  await dismissModals(page)
+  await page.waitForTimeout(500)
+
   await saveScreenshot(page, 'inventory-health-page')
 }
 
 /** 재고현황 엑셀 다운로드 */
 async function downloadInventoryHealth(
   page: Page,
-  downloadDir: string,
+  downloadDir: string
 ): Promise<{ filePath: string; fileName: string }> {
   await navigateToRocketGrowthInventory(page)
 
@@ -190,7 +212,11 @@ async function downloadInventoryHealth(
     requestBtn = page.locator('.backdrop div:has-text("엑셀 다운로드 요청")').first()
   }
   if (!(await requestBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-    requestBtn = page.locator('div[role="menuitem"]:has-text("엑셀 다운로드 요청"), li:has-text("엑셀 다운로드 요청")').first()
+    requestBtn = page
+      .locator(
+        'div[role="menuitem"]:has-text("엑셀 다운로드 요청"), li:has-text("엑셀 다운로드 요청")'
+      )
+      .first()
   }
 
   if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
@@ -204,7 +230,7 @@ async function downloadInventoryHealth(
     page,
     downloadDir,
     requestBtn,
-    `inventory_health_${Date.now()}.xlsx`,
+    `inventory_health_${Date.now()}.xlsx`
   )
 
   console.log(`[inventory]   → 재고현황 저장: ${result.fileName}`)
@@ -224,7 +250,7 @@ export async function collectInventoryData(
     downloadDir?: string
     browserDataDir?: string
     headless?: boolean
-  } = {},
+  } = {}
 ): Promise<InventoryCollectorResult> {
   const {
     downloadDir = path.resolve('.downloads'),
@@ -235,18 +261,16 @@ export async function collectInventoryData(
   if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true })
 
   console.log('[inventory] 브라우저 실행 (Wing 재고 수집)')
-  const context: BrowserContext = await chromium.launchPersistentContext(
-    path.resolve(browserDataDir),
-    {
-      headless,
-      acceptDownloads: true,
-      locale: 'ko-KR',
-      timezoneId: 'Asia/Seoul',
-      viewport: { width: 1400, height: 900 },
-      userAgent:
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    },
-  )
+  const context: BrowserContext = await launchStealthPersistentContext({
+    userDataDir: path.resolve(browserDataDir),
+    headless,
+    acceptDownloads: true,
+    locale: 'ko-KR',
+    timezoneId: 'Asia/Seoul',
+    viewport: { width: 1400, height: 900 },
+    userAgent:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  })
 
   const page = context.pages()[0] || (await context.newPage())
 
@@ -260,19 +284,19 @@ export async function collectInventoryData(
     }
 
     let inventoryHealth: { filePath: string; fileName: string } | null = null
+    let inventoryHealthError: string | undefined
 
     // 재고현황 다운로드
     try {
       inventoryHealth = await downloadInventoryHealth(page, downloadDir)
     } catch (err) {
-      console.error(
-        '[inventory] 재고현황 다운로드 실패:',
-        err instanceof Error ? err.message : err,
-      )
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[inventory] 재고현황 다운로드 실패:', msg)
       await saveScreenshot(page, 'inventory-health-error')
+      inventoryHealthError = msg
     }
 
-    return { inventoryHealth }
+    return { inventoryHealth, inventoryHealthError }
   } catch (error) {
     await saveScreenshot(page, 'inventory-error')
     throw error

@@ -201,13 +201,102 @@ export async function analyzeInventory(params: {
 
 // ─── 분석 실행 + 저장 ────────────────────────────────────────────────────────────
 
+/**
+ * snapshot 데이터를 KST 자정 기준 N일 이상 오래된 것으로 간주할지 여부.
+ * 워커가 매일 새벽 수집하므로 2일 이상이면 stale.
+ */
+const STALE_THRESHOLD_DAYS = 2
+
+function kstMidnight(d: Date): Date {
+  const kst = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+  kst.setHours(0, 0, 0, 0)
+  return kst
+}
+
+function daysBetween(a: Date, b: Date): number {
+  return Math.floor((a.getTime() - b.getTime()) / 86_400_000)
+}
+
+export type RunAndSaveResult =
+  | {
+      status: 'ok'
+      analysisId: string
+      slackAttempted: boolean
+      slackDelivered: boolean
+    }
+  | {
+      status: 'skipped_stale'
+      snapshotDate: Date
+      ageDays: number
+      slackAttempted: boolean
+      slackDelivered: boolean
+    }
+
 export async function runAndSaveInventoryAnalysis(params: {
   workspaceId: string
   triggeredBy: string
   sendSlack?: boolean
-}): Promise<{ analysisId: string; slackAttempted: boolean; slackDelivered: boolean } | null> {
+  /** 수동 트리거(UI '재분석' 버튼)는 stale이어도 실행을 허용. 기본 false. */
+  allowStale?: boolean
+}): Promise<RunAndSaveResult | null> {
   const output = await analyzeInventory({ workspaceId: params.workspaceId })
   if (!output) return null
+
+  // ── Stale 가드 ──
+  const ageDays = daysBetween(kstMidnight(new Date()), kstMidnight(output.snapshotDate))
+  const isStale = ageDays >= STALE_THRESHOLD_DAYS
+
+  if (isStale && !params.allowStale) {
+    // 분석 결과 row를 저장하지 않고 stale 알림만 dedupe해서 1회 전송.
+    let slackAttempted = false
+    let slackDelivered = false
+
+    // DB marker dedupe — 같은 snapshotDate에 'stale-skip' marker가 이미 있으면 Slack 발송 생략
+    const existingMarker = await prisma.inventoryAnalysis.findFirst({
+      where: {
+        workspaceId: params.workspaceId,
+        snapshotDate: output.snapshotDate,
+        triggeredBy: 'stale-skip',
+      },
+      select: { id: true },
+    })
+
+    if (params.sendSlack && !existingMarker) {
+      slackAttempted = true
+      try {
+        const { notifyInventoryStaleData } = await import('@/lib/slack-inventory-notifier')
+        slackDelivered = await notifyInventoryStaleData({
+          snapshotDate: output.snapshotDate,
+          ageDays,
+        })
+      } catch (err) {
+        console.error('[inventory-analyzer] Slack stale 알림 실패:', err)
+        slackDelivered = false
+      }
+
+      // dedupe marker 생성 (결과 없이 0건)
+      await prisma.inventoryAnalysis.create({
+        data: {
+          workspaceId: params.workspaceId,
+          snapshotDate: output.snapshotDate,
+          triggeredBy: 'stale-skip',
+          results: {} as object,
+          shortageCount: 0,
+          returnRateCount: 0,
+          storageFeeCount: 0,
+          winnerIssueCount: 0,
+        },
+      })
+    }
+
+    return {
+      status: 'skipped_stale',
+      snapshotDate: output.snapshotDate,
+      ageDays,
+      slackAttempted,
+      slackDelivered,
+    }
+  }
 
   const analysis = await prisma.inventoryAnalysis.create({
     data: {
@@ -244,5 +333,5 @@ export async function runAndSaveInventoryAnalysis(params: {
     }
   }
 
-  return { analysisId: analysis.id, slackAttempted, slackDelivered }
+  return { status: 'ok', analysisId: analysis.id, slackAttempted, slackDelivered }
 }

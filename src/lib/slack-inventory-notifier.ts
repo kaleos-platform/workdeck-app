@@ -20,7 +20,7 @@ type Block = {
 async function postMessage(blocks: Block[], text: string): Promise<boolean> {
   if (!SLACK_BOT_TOKEN || !SLACK_CHANNEL_ID) {
     console.log(
-      `[slack-inventory] env 미설정 — token: ${SLACK_BOT_TOKEN ? 'set' : 'missing'}, channel: ${SLACK_CHANNEL_ID ? 'set' : 'missing'}`,
+      `[slack-inventory] env 미설정 — token: ${SLACK_BOT_TOKEN ? 'set' : 'missing'}, channel: ${SLACK_CHANNEL_ID ? 'set' : 'missing'}`
     )
     return false
   }
@@ -71,10 +71,7 @@ function formatDate(d: Date): string {
   return d.toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })
 }
 
-function formatItems(
-  items: Array<{ label: string }>,
-  maxItems: number,
-): string {
+function formatItems(items: Array<{ label: string }>, maxItems: number): string {
   const shown = items.slice(0, maxItems)
   const lines = shown.map((item) => `• ${item.label}`)
   if (items.length > maxItems) {
@@ -131,9 +128,9 @@ export async function notifyInventoryAnalysis(params: {
           results.stockShortage.map((item) => ({
             label: `${item.productName}${item.optionName ? ` (${item.optionName})` : ''} — 추가입고 필요: ${item.requiredRestockQty.toLocaleString('ko-KR')}개`,
           })),
-          MAX_ITEMS,
-        ),
-      ),
+          MAX_ITEMS
+        )
+      )
     )
   }
 
@@ -147,9 +144,9 @@ export async function notifyInventoryAnalysis(params: {
           results.returnRate.map((item) => ({
             label: `${item.productName}${item.optionName ? ` (${item.optionName})` : ''} — 반품율: ${item.returnRatePct}%`,
           })),
-          MAX_ITEMS,
-        ),
-      ),
+          MAX_ITEMS
+        )
+      )
     )
   }
 
@@ -162,16 +159,14 @@ export async function notifyInventoryAnalysis(params: {
         formatItems(
           results.storageFee.map((item) => {
             const ratioText =
-              item.storageFeeRatioPct != null
-                ? `매출대비 ${item.storageFeeRatioPct}%`
-                : '매출 없음'
+              item.storageFeeRatioPct != null ? `매출대비 ${item.storageFeeRatioPct}%` : '매출 없음'
             return {
               label: `${item.productName}${item.optionName ? ` (${item.optionName})` : ''} — 보관료: ${item.storageFee.toLocaleString('ko-KR')}원 (${ratioText})`,
             }
           }),
-          MAX_ITEMS,
-        ),
-      ),
+          MAX_ITEMS
+        )
+      )
     )
   }
 
@@ -185,9 +180,9 @@ export async function notifyInventoryAnalysis(params: {
           results.winnerStatus.map((item) => ({
             label: `${item.productName}${item.optionName ? ` (${item.optionName})` : ''} — 재고: ${item.availableStock.toLocaleString('ko-KR')}개`,
           })),
-          MAX_ITEMS,
-        ),
-      ),
+          MAX_ITEMS
+        )
+      )
     )
   }
 
@@ -195,4 +190,30 @@ export async function notifyInventoryAnalysis(params: {
   blocks.push(context(`전체 결과는 <${inventoryUrl}|재고 관리 페이지>에서 확인하세요`))
 
   return postMessage(blocks, `쿠팡 재고 분석 완료: ${totalIssues}건의 이슈 발견`)
+}
+
+// ─── Stale 데이터 알림 ──────────────────────────────────────────────────────
+
+/**
+ * 재고 분석에 사용할 데이터가 오래되어(STALE_THRESHOLD_DAYS 이상) 분석을 스킵했음을 알린다.
+ * 같은 snapshotDate에 대해 dedupe marker가 호출측에서 관리된다.
+ */
+export async function notifyInventoryStaleData(params: {
+  snapshotDate: Date
+  ageDays: number
+}): Promise<boolean> {
+  const inventoryUrl = process.env.WORKDECK_APP_URL
+    ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/inventory`
+    : 'https://app.workdeck.work/d/coupang-ads/inventory'
+
+  const blocks: Block[] = [
+    header(':warning: 쿠팡 재고 분석 스킵 — 데이터 노후'),
+    divider(),
+    section(`*기준 데이터 날짜*\n${formatDate(params.snapshotDate)} (${params.ageDays}일 전)`),
+    section('신선한 데이터가 없어 분석을 건너뜁니다.\n워커의 재고 수집 상태를 확인하세요.'),
+    divider(),
+    context(`<${inventoryUrl}|재고 관리 페이지>에서 마지막 상태를 확인하세요`),
+  ]
+
+  return postMessage(blocks, `쿠팡 재고 분석 스킵 — 데이터가 ${params.ageDays}일 전입니다`)
 }
