@@ -13,5 +13,11 @@
     "app/api/sh/shipping/import/route.ts": {
       "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/inventory-stale-check",
+      "schedule": "0 1 * * *"
+    }
+  ]
 }
