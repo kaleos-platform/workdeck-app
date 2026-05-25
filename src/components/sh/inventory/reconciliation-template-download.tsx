@@ -6,15 +6,12 @@ import { Download, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 
-const HEADERS = ['브랜드', '상품명', '옵션명', '위치명', 'externalCode', '현재재고', '실재고']
+const HEADERS = ['브랜드', '상품명', '옵션명', '위치명', '실재고']
 
 type TemplateRow = {
   brandName: string
   productName: string
   optionName: string
-  locationName: string
-  externalCode: string
-  currentQty: number
 }
 
 function todayYMD() {
@@ -37,21 +34,13 @@ export function ReconciliationTemplateDownload() {
 
       const rows: TemplateRow[] = data.rows ?? []
       if (rows.length === 0) {
-        toast.error('내보낼 옵션/위치가 없습니다')
+        toast.error('내보낼 옵션이 없습니다')
         return
       }
 
       const aoa: (string | number)[][] = [HEADERS]
       for (const r of rows) {
-        aoa.push([
-          r.brandName,
-          r.productName,
-          r.optionName,
-          r.locationName,
-          r.externalCode,
-          r.currentQty,
-          '',
-        ])
+        aoa.push([r.brandName, r.productName, r.optionName, '', ''])
       }
 
       const ws = XLSX.utils.aoa_to_sheet(aoa)
