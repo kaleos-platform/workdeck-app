@@ -611,6 +611,19 @@ model AgentLog {
   @@index([agentId, createdAt(sort: Desc)])
 }
 
+// ─── 워커 헬스체크 ────────────────────────────────────────────
+
+// 워커 프로세스 heartbeat — 서비스별 마지막 핑 시각.
+// cron이 이 값을 보고 워커 다운을 감지하여 Slack 알림한다.
+model WorkerHeartbeat {
+  id         String   @id @default(cuid())
+  service    String   @unique // 예: "inventory-collector"
+  lastPingAt DateTime
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 // ─── 재고 관리 ────────────────────────────────────────────────
 
 // 재고 엑셀 업로드 이력
