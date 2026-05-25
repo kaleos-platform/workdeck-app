@@ -99,7 +99,7 @@ const SELLER_HUB_INVENTORY_ITEMS: SidebarItem[] = [
   { label: '재고 현황', href: SELLER_HUB_STOCK_STATUS_PATH },
   { label: '입출고 관리', href: SELLER_HUB_MOVEMENTS_PATH },
   { label: '위치 관리', href: SELLER_HUB_LOCATIONS_PATH },
-  { label: '재고 대조', href: SELLER_HUB_RECONCILIATION_PATH },
+  { label: '재고 조정', href: SELLER_HUB_RECONCILIATION_PATH },
   { label: '발주 예측', href: SELLER_HUB_REORDER_PATH },
 ]
 
