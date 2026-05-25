@@ -74,6 +74,7 @@ export const ModelName = {
   AnalysisSchedule: 'AnalysisSchedule',
   BusinessAgent: 'BusinessAgent',
   AgentLog: 'AgentLog',
+  WorkerHeartbeat: 'WorkerHeartbeat',
   InventoryUpload: 'InventoryUpload',
   InventoryRecord: 'InventoryRecord',
   InventoryExcludedProduct: 'InventoryExcludedProduct',
@@ -488,6 +489,18 @@ export const AgentLogScalarFieldEnum = {
 } as const
 
 export type AgentLogScalarFieldEnum = (typeof AgentLogScalarFieldEnum)[keyof typeof AgentLogScalarFieldEnum]
+
+
+export const WorkerHeartbeatScalarFieldEnum = {
+  id: 'id',
+  service: 'service',
+  lastPingAt: 'lastPingAt',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkerHeartbeatScalarFieldEnum = (typeof WorkerHeartbeatScalarFieldEnum)[keyof typeof WorkerHeartbeatScalarFieldEnum]
 
 
 export const InventoryUploadScalarFieldEnum = {

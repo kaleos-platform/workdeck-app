@@ -10,6 +10,7 @@ import { checkAndRunCollection } from './collection-scheduler.js'
 import { checkAndRunAnalysis } from './analysis-scheduler.js'
 import { startManualPoller } from './manual-poller.js'
 import { startAnalysisPoller } from './analysis-poller.js'
+import { startWorkerHeartbeat } from './heartbeat.js'
 
 console.log('=== Workdeck Worker 시작 ===')
 console.log(`API URL: ${process.env.WORKDECK_API_URL}`)
@@ -50,5 +51,8 @@ startManualPoller()
 
 // 분석 폴링 시작
 startAnalysisPoller()
+
+// Heartbeat — Vercel cron이 다운 감지에 사용
+startWorkerHeartbeat()
 
 console.log('크론 스케줄러 + 수동 수집 폴링 대기 중...\n')
