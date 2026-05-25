@@ -144,7 +144,9 @@ function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
   const dataRows = rawData.slice(1)
 
   const rows: ParsedRow[] = []
-  for (const raw of dataRows) {
+  const missingLocationRows: number[] = []
+  for (let i = 0; i < dataRows.length; i++) {
+    const raw = dataRows[i]
     const rec = rowToRecord(headers, raw as unknown[])
     const realQty = parseInt_(rec['실재고'])
     // 실재고 빈값 → 사용자가 미입력 = 변동 없음으로 간주, 스킵
@@ -159,8 +161,17 @@ function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
     const externalLocationName = parseStr(rec['위치명'])
     const externalBrandName = parseStr(rec['브랜드'])
 
-    // 매칭 가능한 키가 하나라도 있어야 함 (externalCode 또는 이름)
-    if (!externalCode && !(externalName && externalLocationName)) continue
+    // 매칭 가능한 키 검증
+    // - externalCode 있으면 OK
+    // - 없으면 상품명 + 위치명 필요 (위치명 누락 행은 따로 모아서 에러)
+    if (!externalCode) {
+      if (!externalLocationName) {
+        // 엑셀 행 번호 = 헤더(1) + 데이터 인덱스(0-based) + 1
+        missingLocationRows.push(i + 2)
+        continue
+      }
+      if (!externalName) continue
+    }
 
     rows.push({
       externalCode,
@@ -170,6 +181,12 @@ function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
       externalLocationName,
       quantity: realQty,
     })
+  }
+
+  if (missingLocationRows.length > 0) {
+    const preview = missingLocationRows.slice(0, 5).join(', ')
+    const more = missingLocationRows.length > 5 ? ` 외 ${missingLocationRows.length - 5}건` : ''
+    throw new Error(`실재고가 입력됐지만 위치명이 비어있는 행이 있습니다 (행 ${preview}${more})`)
   }
   return rows
 }
