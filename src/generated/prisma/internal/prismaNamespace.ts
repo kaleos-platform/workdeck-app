@@ -467,7 +467,10 @@ export const ModelName = {
   ContentAsset: 'ContentAsset',
   Ideation: 'Ideation',
   IdeationProduct: 'IdeationProduct',
-  ImprovementRule: 'ImprovementRule'
+  ImprovementRule: 'ImprovementRule',
+  ReorderPlan: 'ReorderPlan',
+  ReorderPlanItem: 'ReorderPlanItem',
+  ReorderPlanAccuracy: 'ReorderPlanAccuracy'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -483,7 +486,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanItem" | "reorderPlanAccuracy"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -6703,6 +6706,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReorderPlan: {
+      payload: Prisma.$ReorderPlanPayload<ExtArgs>
+      fields: Prisma.ReorderPlanFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReorderPlanFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReorderPlanFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>
+        }
+        findFirst: {
+          args: Prisma.ReorderPlanFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReorderPlanFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>
+        }
+        findMany: {
+          args: Prisma.ReorderPlanFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>[]
+        }
+        create: {
+          args: Prisma.ReorderPlanCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>
+        }
+        createMany: {
+          args: Prisma.ReorderPlanCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReorderPlanCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>[]
+        }
+        delete: {
+          args: Prisma.ReorderPlanDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>
+        }
+        update: {
+          args: Prisma.ReorderPlanUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReorderPlanDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReorderPlanUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReorderPlanUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReorderPlanUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanPayload>
+        }
+        aggregate: {
+          args: Prisma.ReorderPlanAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReorderPlan>
+        }
+        groupBy: {
+          args: Prisma.ReorderPlanGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReorderPlanGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReorderPlanCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReorderPlanCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReorderPlanItem: {
+      payload: Prisma.$ReorderPlanItemPayload<ExtArgs>
+      fields: Prisma.ReorderPlanItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReorderPlanItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReorderPlanItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>
+        }
+        findFirst: {
+          args: Prisma.ReorderPlanItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReorderPlanItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>
+        }
+        findMany: {
+          args: Prisma.ReorderPlanItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>[]
+        }
+        create: {
+          args: Prisma.ReorderPlanItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>
+        }
+        createMany: {
+          args: Prisma.ReorderPlanItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReorderPlanItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>[]
+        }
+        delete: {
+          args: Prisma.ReorderPlanItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>
+        }
+        update: {
+          args: Prisma.ReorderPlanItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReorderPlanItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReorderPlanItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReorderPlanItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReorderPlanItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanItemPayload>
+        }
+        aggregate: {
+          args: Prisma.ReorderPlanItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReorderPlanItem>
+        }
+        groupBy: {
+          args: Prisma.ReorderPlanItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReorderPlanItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReorderPlanItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReorderPlanItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReorderPlanAccuracy: {
+      payload: Prisma.$ReorderPlanAccuracyPayload<ExtArgs>
+      fields: Prisma.ReorderPlanAccuracyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReorderPlanAccuracyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReorderPlanAccuracyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>
+        }
+        findFirst: {
+          args: Prisma.ReorderPlanAccuracyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReorderPlanAccuracyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>
+        }
+        findMany: {
+          args: Prisma.ReorderPlanAccuracyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>[]
+        }
+        create: {
+          args: Prisma.ReorderPlanAccuracyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>
+        }
+        createMany: {
+          args: Prisma.ReorderPlanAccuracyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReorderPlanAccuracyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>[]
+        }
+        delete: {
+          args: Prisma.ReorderPlanAccuracyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>
+        }
+        update: {
+          args: Prisma.ReorderPlanAccuracyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReorderPlanAccuracyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReorderPlanAccuracyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReorderPlanAccuracyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReorderPlanAccuracyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanAccuracyPayload>
+        }
+        aggregate: {
+          args: Prisma.ReorderPlanAccuracyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReorderPlanAccuracy>
+        }
+        groupBy: {
+          args: Prisma.ReorderPlanAccuracyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReorderPlanAccuracyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReorderPlanAccuracyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReorderPlanAccuracyCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -7195,6 +7420,7 @@ export const InvProductScalarFieldEnum = {
   msrp: 'msrp',
   description: 'description',
   optionAttributes: 'optionAttributes',
+  reorderRoundUnit: 'reorderRoundUnit',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -7551,6 +7777,7 @@ export const ProductionRunScalarFieldEnum = {
   totalCost: 'totalCost',
   costMode: 'costMode',
   memo: 'memo',
+  reorderPlanId: 'reorderPlanId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -8070,6 +8297,67 @@ export const ImprovementRuleScalarFieldEnum = {
 } as const
 
 export type ImprovementRuleScalarFieldEnum = (typeof ImprovementRuleScalarFieldEnum)[keyof typeof ImprovementRuleScalarFieldEnum]
+
+
+export const ReorderPlanScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  planNo: 'planNo',
+  status: 'status',
+  windowDays: 'windowDays',
+  createdById: 'createdById',
+  finalizedAt: 'finalizedAt',
+  biasAdjustApplied: 'biasAdjustApplied',
+  totalSuggestedQty: 'totalSuggestedQty',
+  totalFinalQty: 'totalFinalQty',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReorderPlanScalarFieldEnum = (typeof ReorderPlanScalarFieldEnum)[keyof typeof ReorderPlanScalarFieldEnum]
+
+
+export const ReorderPlanItemScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  optionId: 'optionId',
+  productId: 'productId',
+  currentStock: 'currentStock',
+  dailyAvgForecast: 'dailyAvgForecast',
+  forecastModel: 'forecastModel',
+  leadTimeDays: 'leadTimeDays',
+  safetyStockQty: 'safetyStockQty',
+  suggestedQty: 'suggestedQty',
+  roundedSuggestedQty: 'roundedSuggestedQty',
+  finalQty: 'finalQty',
+  roundUnit: 'roundUnit',
+  rationale: 'rationale',
+  userNote: 'userNote',
+  biasAdjustFactor: 'biasAdjustFactor',
+  confidenceScore: 'confidenceScore',
+  inputsSnapshot: 'inputsSnapshot'
+} as const
+
+export type ReorderPlanItemScalarFieldEnum = (typeof ReorderPlanItemScalarFieldEnum)[keyof typeof ReorderPlanItemScalarFieldEnum]
+
+
+export const ReorderPlanAccuracyScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  optionId: 'optionId',
+  evaluatedAt: 'evaluatedAt',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  actualOutbound: 'actualOutbound',
+  forecastOutbound: 'forecastOutbound',
+  wape: 'wape',
+  bias: 'bias',
+  stockoutDays: 'stockoutDays',
+  overstockDays: 'overstockDays'
+} as const
+
+export type ReorderPlanAccuracyScalarFieldEnum = (typeof ReorderPlanAccuracyScalarFieldEnum)[keyof typeof ReorderPlanAccuracyScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -8692,6 +8980,34 @@ export type EnumRuleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prism
 export type ListEnumRuleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RuleStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'ReorderPlanStatus'
+ */
+export type EnumReorderPlanStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderPlanStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderPlanStatus[]'
+ */
+export type ListEnumReorderPlanStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderPlanStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderForecastModel'
+ */
+export type EnumReorderForecastModelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderForecastModel'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderForecastModel[]'
+ */
+export type ListEnumReorderForecastModelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderForecastModel[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -8871,6 +9187,9 @@ export type GlobalOmitConfig = {
   ideation?: Prisma.IdeationOmit
   ideationProduct?: Prisma.IdeationProductOmit
   improvementRule?: Prisma.ImprovementRuleOmit
+  reorderPlan?: Prisma.ReorderPlanOmit
+  reorderPlanItem?: Prisma.ReorderPlanItemOmit
+  reorderPlanAccuracy?: Prisma.ReorderPlanAccuracyOmit
 }
 
 /* Types for Logging */

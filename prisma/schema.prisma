@@ -68,6 +68,25 @@ enum SpaceMemberRole {
   MEMBER
 }
 
+// ─── 발주 예측 열거형 ─────────────────────────────────────────────────────────
+
+// 발주 계획 상태
+enum ReorderPlanStatus {
+  DRAFT     // 초안 — 수량 조정 가능
+  FINALIZED // 확정 — ProductionRun 생성 완료
+  CONSUMED  // 소진 — 입고 완료 후 적중률 계산 완료
+}
+
+// 발주 예측 모델 종류
+enum ReorderForecastModel {
+  SMA     // 단순 이동평균
+  WMA     // 가중 이동평균
+  HW      // Holt-Winters (계절성)
+  CROSTON // Croston/SBA (간헐적 수요)
+  BAYES   // Bayesian Poisson-Gamma (콜드스타트)
+  MANUAL  // 사용자 직접 입력
+}
+
 // ─── 셀러 허브 열거형 ─────────────────────────────────────────────────────────
 
 // 프로모션 유형
@@ -104,6 +123,9 @@ model User {
 
   // Workdeck OS: 공간 멤버십
   spaceMemberships SpaceMember[]
+
+  // 발주 계획 (작성자)
+  reorderPlans ReorderPlan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -358,6 +380,9 @@ model Space {
   channelProducts         ChannelProduct[]
   productionRuns          ProductionRun[]
   pricingScenarios        PricingScenario[]
+
+  // 발주 계획
+  reorderPlans ReorderPlan[]
 
   // 온보딩 카드 닫힘 시각 (사용자가 명시적으로 X 클릭 시 기록)
   onboardingDismissedAt DateTime?
@@ -762,11 +787,15 @@ model InvProduct {
   description        String?
   optionAttributes   Json? // 예: [{name:"사이즈",values:["S","M","L"]}]
 
+  // 발주 라운딩 단위 (10 = 10단위 라운딩, 100 = 100단위 등)
+  reorderRoundUnit Int @default(10)
+
   space            Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   group            InvProductGroup           @relation(fields: [groupId], references: [id], onDelete: Restrict)
   brand            Brand?                    @relation(fields: [brandId], references: [id], onDelete: SetNull)
   options          InvProductOption[]
   reorderConfig    InvReorderConfig?
+  reorderPlanItems ReorderPlanItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -806,6 +835,8 @@ model InvProductOption {
   shippingLabels       DelShippingMethodLabel[]
   listingItems         ProductListingItem[]
   fulfillments         DelOrderItemFulfillment[]
+  reorderPlanItems     ReorderPlanItem[]
+  reorderAccuracies    ReorderPlanAccuracy[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1332,9 +1363,13 @@ model ProductionRun {
   costMode    ProductionCostMode  @default(TOTAL)
   memo        String?
 
+  // 발주 계획 연계 (ReorderPlan.finalize 시 자동 생성)
+  reorderPlanId String? @unique
+
   space            Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   brand            Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
   stockInLocation  InvStorageLocation? @relation("ProductionRunStockInLocation", fields: [stockInLocationId], references: [id], onDelete: SetNull)
+  reorderPlan      ReorderPlan?        @relation(fields: [reorderPlanId], references: [id], onDelete: SetNull)
   items            ProductionRunItem[]
   costs            ProductionRunCost[]
 
@@ -2198,4 +2233,97 @@ model ImprovementRule {
 
   @@index([spaceId, status])
   @@index([spaceId, scope, status])
+}
+
+// ─── 발주 예측 모델 ───────────────────────────────────────────────────────────
+
+// 발주 계획 헤더 — 한 번의 발주 예측 작업 단위
+model ReorderPlan {
+  id          String            @id @default(cuid())
+  spaceId     String
+  planNo      String            // Space 단위 unique 계획 번호
+  status      ReorderPlanStatus @default(DRAFT)
+  windowDays  Int               // 예측 분석 기간 (일)
+  createdById String
+
+  finalizedAt       DateTime? // 확정 전환 시점
+  biasAdjustApplied Json?     // 적용된 bias 보정 계수 맵 { optionId: factor }
+
+  totalSuggestedQty Int     // 전체 옵션 제안 수량 합계
+  totalFinalQty     Int     // 전체 옵션 최종 확정 수량 합계
+  memo              String?
+
+  space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy User  @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  items         ReorderPlanItem[]
+  accuracies    ReorderPlanAccuracy[]
+  productionRun ProductionRun? // 확정 시 생성되는 ProductionRun (1:1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, planNo])
+  @@index([spaceId, status])
+  @@index([createdById])
+}
+
+// 발주 계획 옵션별 라인 — 옵션 1개의 예측 결과 및 최종 수량
+model ReorderPlanItem {
+  id        String @id @default(cuid())
+  planId    String
+  optionId  String
+  productId String
+
+  currentStock      Int                  // 현재 재고 수량
+  dailyAvgForecast  Decimal              @db.Decimal(18, 4) // 일평균 예측 소진량
+  forecastModel     ReorderForecastModel // 사용된 예측 모델
+  leadTimeDays      Int                  // 리드타임 (일)
+  safetyStockQty    Int                  // 안전재고 수량
+  suggestedQty      Int                  // 공식 계산 제안 수량
+  roundedSuggestedQty Int               // 라운딩 적용 후 제안 수량
+  finalQty          Int                  // 사용자 확정 수량
+  roundUnit         Int                  // 라운딩 단위 (10 or 100 등)
+
+  rationale   String? @db.Text // LLM 생성 근거 텍스트
+  userNote    String? @db.Text // 사용자 입력 메모
+
+  biasAdjustFactor  Decimal  @db.Decimal(6, 4) // 적용된 bias 보정 계수 (1.0 = 보정 없음)
+  confidenceScore   Decimal? @db.Decimal(6, 4) // 예측 신뢰도 (0~1, null = 미산출)
+  inputsSnapshot    Json     // 예측 재현 가능 입력값 스냅샷
+
+  plan    ReorderPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  option  InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
+  product InvProduct       @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([planId, optionId])
+  @@index([planId])
+  @@index([optionId])
+}
+
+// 발주 계획 적중률 결과 — 입고 후 실제 소진 vs 예측 비교
+model ReorderPlanAccuracy {
+  id       String @id @default(cuid())
+  planId   String
+  optionId String
+
+  evaluatedAt     DateTime // 적중률 계산 시점
+  periodStart     DateTime // 평가 기간 시작 (stockedInAt)
+  periodEnd       DateTime // 평가 기간 종료 (stockedInAt + leadTimeDays)
+
+  actualOutbound   Int     // 실제 출고 수량
+  forecastOutbound Decimal @db.Decimal(18, 4) // 예측 출고 수량 (dailyAvgForecast × leadTimeDays)
+
+  wape  Decimal @db.Decimal(10, 4) // WAPE (Weighted Absolute Percentage Error)
+  bias  Decimal @db.Decimal(10, 4) // Bias% = (forecast - actual) / actual (양수 = 과예측)
+
+  stockoutDays  Int // 재고 소진 일수 (일별 잔량 시뮬레이션)
+  overstockDays Int // 과잉재고 일수
+
+  plan   ReorderPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@index([planId])
+  @@index([optionId])
+  @@index([planId, optionId])
 }

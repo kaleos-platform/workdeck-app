@@ -28,10 +28,12 @@ export type AggregateInvProduct = {
 
 export type InvProductAvgAggregateOutputType = {
   msrp: runtime.Decimal | null
+  reorderRoundUnit: number | null
 }
 
 export type InvProductSumAggregateOutputType = {
   msrp: runtime.Decimal | null
+  reorderRoundUnit: number | null
 }
 
 export type InvProductMinAggregateOutputType = {
@@ -49,6 +51,7 @@ export type InvProductMinAggregateOutputType = {
   manufactureDate: Date | null
   msrp: runtime.Decimal | null
   description: string | null
+  reorderRoundUnit: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -68,6 +71,7 @@ export type InvProductMaxAggregateOutputType = {
   manufactureDate: Date | null
   msrp: runtime.Decimal | null
   description: string | null
+  reorderRoundUnit: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -90,6 +94,7 @@ export type InvProductCountAggregateOutputType = {
   msrp: number
   description: number
   optionAttributes: number
+  reorderRoundUnit: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -98,10 +103,12 @@ export type InvProductCountAggregateOutputType = {
 
 export type InvProductAvgAggregateInputType = {
   msrp?: true
+  reorderRoundUnit?: true
 }
 
 export type InvProductSumAggregateInputType = {
   msrp?: true
+  reorderRoundUnit?: true
 }
 
 export type InvProductMinAggregateInputType = {
@@ -119,6 +126,7 @@ export type InvProductMinAggregateInputType = {
   manufactureDate?: true
   msrp?: true
   description?: true
+  reorderRoundUnit?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -138,6 +146,7 @@ export type InvProductMaxAggregateInputType = {
   manufactureDate?: true
   msrp?: true
   description?: true
+  reorderRoundUnit?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -160,6 +169,7 @@ export type InvProductCountAggregateInputType = {
   msrp?: true
   description?: true
   optionAttributes?: true
+  reorderRoundUnit?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -269,6 +279,7 @@ export type InvProductGroupByOutputType = {
   msrp: runtime.Decimal | null
   description: string | null
   optionAttributes: runtime.JsonValue | null
+  reorderRoundUnit: number
   createdAt: Date
   updatedAt: Date
   _count: InvProductCountAggregateOutputType | null
@@ -314,6 +325,7 @@ export type InvProductWhereInput = {
   msrp?: Prisma.DecimalNullableFilter<"InvProduct"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
+  reorderRoundUnit?: Prisma.IntFilter<"InvProduct"> | number
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -321,6 +333,7 @@ export type InvProductWhereInput = {
   brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
   options?: Prisma.InvProductOptionListRelationFilter
   reorderConfig?: Prisma.XOR<Prisma.InvReorderConfigNullableScalarRelationFilter, Prisma.InvReorderConfigWhereInput> | null
+  reorderPlanItems?: Prisma.ReorderPlanItemListRelationFilter
 }
 
 export type InvProductOrderByWithRelationInput = {
@@ -341,6 +354,7 @@ export type InvProductOrderByWithRelationInput = {
   msrp?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   optionAttributes?: Prisma.SortOrderInput | Prisma.SortOrder
+  reorderRoundUnit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -348,6 +362,7 @@ export type InvProductOrderByWithRelationInput = {
   brand?: Prisma.BrandOrderByWithRelationInput
   options?: Prisma.InvProductOptionOrderByRelationAggregateInput
   reorderConfig?: Prisma.InvReorderConfigOrderByWithRelationInput
+  reorderPlanItems?: Prisma.ReorderPlanItemOrderByRelationAggregateInput
 }
 
 export type InvProductWhereUniqueInput = Prisma.AtLeast<{
@@ -372,6 +387,7 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   msrp?: Prisma.DecimalNullableFilter<"InvProduct"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
+  reorderRoundUnit?: Prisma.IntFilter<"InvProduct"> | number
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -379,6 +395,7 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
   options?: Prisma.InvProductOptionListRelationFilter
   reorderConfig?: Prisma.XOR<Prisma.InvReorderConfigNullableScalarRelationFilter, Prisma.InvReorderConfigWhereInput> | null
+  reorderPlanItems?: Prisma.ReorderPlanItemListRelationFilter
 }, "id" | "spaceId_code">
 
 export type InvProductOrderByWithAggregationInput = {
@@ -399,6 +416,7 @@ export type InvProductOrderByWithAggregationInput = {
   msrp?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   optionAttributes?: Prisma.SortOrderInput | Prisma.SortOrder
+  reorderRoundUnit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InvProductCountOrderByAggregateInput
@@ -429,6 +447,7 @@ export type InvProductScalarWhereWithAggregatesInput = {
   msrp?: Prisma.DecimalNullableWithAggregatesFilter<"InvProduct"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
   optionAttributes?: Prisma.JsonNullableWithAggregatesFilter<"InvProduct">
+  reorderRoundUnit?: Prisma.IntWithAggregatesFilter<"InvProduct"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvProduct"> | Date | string
 }
@@ -448,6 +467,7 @@ export type InvProductCreateInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -455,6 +475,7 @@ export type InvProductCreateInput = {
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateInput = {
@@ -475,10 +496,12 @@ export type InvProductUncheckedCreateInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUpdateInput = {
@@ -496,6 +519,7 @@ export type InvProductUpdateInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -503,6 +527,7 @@ export type InvProductUpdateInput = {
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateInput = {
@@ -523,10 +548,12 @@ export type InvProductUncheckedUpdateInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateManyInput = {
@@ -547,6 +574,7 @@ export type InvProductCreateManyInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -566,6 +594,7 @@ export type InvProductUpdateManyMutationInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -588,6 +617,7 @@ export type InvProductUncheckedUpdateManyInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -625,12 +655,14 @@ export type InvProductCountOrderByAggregateInput = {
   msrp?: Prisma.SortOrder
   description?: Prisma.SortOrder
   optionAttributes?: Prisma.SortOrder
+  reorderRoundUnit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type InvProductAvgOrderByAggregateInput = {
   msrp?: Prisma.SortOrder
+  reorderRoundUnit?: Prisma.SortOrder
 }
 
 export type InvProductMaxOrderByAggregateInput = {
@@ -648,6 +680,7 @@ export type InvProductMaxOrderByAggregateInput = {
   manufactureDate?: Prisma.SortOrder
   msrp?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  reorderRoundUnit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -667,12 +700,14 @@ export type InvProductMinOrderByAggregateInput = {
   manufactureDate?: Prisma.SortOrder
   msrp?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  reorderRoundUnit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type InvProductSumOrderByAggregateInput = {
   msrp?: Prisma.SortOrder
+  reorderRoundUnit?: Prisma.SortOrder
 }
 
 export type InvProductScalarRelationFilter = {
@@ -838,6 +873,20 @@ export type InvProductUncheckedUpdateManyWithoutBrandNestedInput = {
   deleteMany?: Prisma.InvProductScalarWhereInput | Prisma.InvProductScalarWhereInput[]
 }
 
+export type InvProductCreateNestedOneWithoutReorderPlanItemsInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutReorderPlanItemsInput, Prisma.InvProductUncheckedCreateWithoutReorderPlanItemsInput>
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutReorderPlanItemsInput
+  connect?: Prisma.InvProductWhereUniqueInput
+}
+
+export type InvProductUpdateOneRequiredWithoutReorderPlanItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutReorderPlanItemsInput, Prisma.InvProductUncheckedCreateWithoutReorderPlanItemsInput>
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutReorderPlanItemsInput
+  upsert?: Prisma.InvProductUpsertWithoutReorderPlanItemsInput
+  connect?: Prisma.InvProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductUpdateToOneWithWhereWithoutReorderPlanItemsInput, Prisma.InvProductUpdateWithoutReorderPlanItemsInput>, Prisma.InvProductUncheckedUpdateWithoutReorderPlanItemsInput>
+}
+
 export type InvProductCreateWithoutSpaceInput = {
   id?: string
   name: string
@@ -853,12 +902,14 @@ export type InvProductCreateWithoutSpaceInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutSpaceInput = {
@@ -878,10 +929,12 @@ export type InvProductUncheckedCreateWithoutSpaceInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutSpaceInput = {
@@ -931,6 +984,7 @@ export type InvProductScalarWhereInput = {
   msrp?: Prisma.DecimalNullableFilter<"InvProduct"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
+  reorderRoundUnit?: Prisma.IntFilter<"InvProduct"> | number
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
 }
@@ -950,12 +1004,14 @@ export type InvProductCreateWithoutGroupInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutGroupInput = {
@@ -975,10 +1031,12 @@ export type InvProductUncheckedCreateWithoutGroupInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutGroupInput = {
@@ -1022,12 +1080,14 @@ export type InvProductCreateWithoutOptionsInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
   group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutOptionsInput = {
@@ -1048,9 +1108,11 @@ export type InvProductUncheckedCreateWithoutOptionsInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutOptionsInput = {
@@ -1084,12 +1146,14 @@ export type InvProductUpdateWithoutOptionsInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
   group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutOptionsInput = {
@@ -1110,9 +1174,11 @@ export type InvProductUncheckedUpdateWithoutOptionsInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutReorderConfigInput = {
@@ -1130,12 +1196,14 @@ export type InvProductCreateWithoutReorderConfigInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
   group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutReorderConfigInput = {
@@ -1156,9 +1224,11 @@ export type InvProductUncheckedCreateWithoutReorderConfigInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutReorderConfigInput = {
@@ -1192,12 +1262,14 @@ export type InvProductUpdateWithoutReorderConfigInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
   group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutReorderConfigInput = {
@@ -1218,9 +1290,11 @@ export type InvProductUncheckedUpdateWithoutReorderConfigInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutBrandInput = {
@@ -1238,12 +1312,14 @@ export type InvProductCreateWithoutBrandInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
   group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
   options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutBrandInput = {
@@ -1263,10 +1339,12 @@ export type InvProductUncheckedCreateWithoutBrandInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutBrandInput = {
@@ -1295,6 +1373,122 @@ export type InvProductUpdateManyWithWhereWithoutBrandInput = {
   data: Prisma.XOR<Prisma.InvProductUpdateManyMutationInput, Prisma.InvProductUncheckedUpdateManyWithoutBrandInput>
 }
 
+export type InvProductCreateWithoutReorderPlanItemsInput = {
+  id?: string
+  name: string
+  code?: string | null
+  status?: $Enums.InvProductStatus
+  internalName?: string | null
+  nameEn?: string | null
+  manufacturer?: string | null
+  manufactureCountry?: string | null
+  manufactureDate?: Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
+  group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
+  brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
+  options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
+  reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+}
+
+export type InvProductUncheckedCreateWithoutReorderPlanItemsInput = {
+  id?: string
+  spaceId: string
+  name: string
+  code?: string | null
+  groupId: string
+  status?: $Enums.InvProductStatus
+  brandId?: string | null
+  internalName?: string | null
+  nameEn?: string | null
+  manufacturer?: string | null
+  manufactureCountry?: string | null
+  manufactureDate?: Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
+  reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+}
+
+export type InvProductCreateOrConnectWithoutReorderPlanItemsInput = {
+  where: Prisma.InvProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvProductCreateWithoutReorderPlanItemsInput, Prisma.InvProductUncheckedCreateWithoutReorderPlanItemsInput>
+}
+
+export type InvProductUpsertWithoutReorderPlanItemsInput = {
+  update: Prisma.XOR<Prisma.InvProductUpdateWithoutReorderPlanItemsInput, Prisma.InvProductUncheckedUpdateWithoutReorderPlanItemsInput>
+  create: Prisma.XOR<Prisma.InvProductCreateWithoutReorderPlanItemsInput, Prisma.InvProductUncheckedCreateWithoutReorderPlanItemsInput>
+  where?: Prisma.InvProductWhereInput
+}
+
+export type InvProductUpdateToOneWithWhereWithoutReorderPlanItemsInput = {
+  where?: Prisma.InvProductWhereInput
+  data: Prisma.XOR<Prisma.InvProductUpdateWithoutReorderPlanItemsInput, Prisma.InvProductUncheckedUpdateWithoutReorderPlanItemsInput>
+}
+
+export type InvProductUpdateWithoutReorderPlanItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
+  internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
+  brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
+  options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
+  reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+}
+
+export type InvProductUncheckedUpdateWithoutReorderPlanItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
+  reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+}
+
 export type InvProductCreateManySpaceInput = {
   id?: string
   name: string
@@ -1312,6 +1506,7 @@ export type InvProductCreateManySpaceInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1331,12 +1526,14 @@ export type InvProductUpdateWithoutSpaceInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutSpaceInput = {
@@ -1356,10 +1553,12 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
@@ -1379,6 +1578,7 @@ export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1400,6 +1600,7 @@ export type InvProductCreateManyGroupInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1419,12 +1620,14 @@ export type InvProductUpdateWithoutGroupInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
   brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutGroupInput = {
@@ -1444,10 +1647,12 @@ export type InvProductUncheckedUpdateWithoutGroupInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutGroupInput = {
@@ -1467,6 +1672,7 @@ export type InvProductUncheckedUpdateManyWithoutGroupInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1488,6 +1694,7 @@ export type InvProductCreateManyBrandInput = {
   msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1507,12 +1714,14 @@ export type InvProductUpdateWithoutBrandInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
   group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
   options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutBrandInput = {
@@ -1532,10 +1741,12 @@ export type InvProductUncheckedUpdateWithoutBrandInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutBrandInput = {
@@ -1555,6 +1766,7 @@ export type InvProductUncheckedUpdateManyWithoutBrandInput = {
   msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1566,10 +1778,12 @@ export type InvProductUncheckedUpdateManyWithoutBrandInput = {
 
 export type InvProductCountOutputType = {
   options: number
+  reorderPlanItems: number
 }
 
 export type InvProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   options?: boolean | InvProductCountOutputTypeCountOptionsArgs
+  reorderPlanItems?: boolean | InvProductCountOutputTypeCountReorderPlanItemsArgs
 }
 
 /**
@@ -1587,6 +1801,13 @@ export type InvProductCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
  */
 export type InvProductCountOutputTypeCountOptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.InvProductOptionWhereInput
+}
+
+/**
+ * InvProductCountOutputType without action
+ */
+export type InvProductCountOutputTypeCountReorderPlanItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReorderPlanItemWhereInput
 }
 
 
@@ -1608,6 +1829,7 @@ export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   msrp?: boolean
   description?: boolean
   optionAttributes?: boolean
+  reorderRoundUnit?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1615,6 +1837,7 @@ export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
   options?: boolean | Prisma.InvProduct$optionsArgs<ExtArgs>
   reorderConfig?: boolean | Prisma.InvProduct$reorderConfigArgs<ExtArgs>
+  reorderPlanItems?: boolean | Prisma.InvProduct$reorderPlanItemsArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invProduct"]>
 
@@ -1636,6 +1859,7 @@ export type InvProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   msrp?: boolean
   description?: boolean
   optionAttributes?: boolean
+  reorderRoundUnit?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1661,6 +1885,7 @@ export type InvProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   msrp?: boolean
   description?: boolean
   optionAttributes?: boolean
+  reorderRoundUnit?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1686,17 +1911,19 @@ export type InvProductSelectScalar = {
   msrp?: boolean
   description?: boolean
   optionAttributes?: boolean
+  reorderRoundUnit?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "status" | "brandId" | "internalName" | "nameEn" | "manufacturer" | "manufactureCountry" | "manufactureDate" | "features" | "certifications" | "msrp" | "description" | "optionAttributes" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
+export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "status" | "brandId" | "internalName" | "nameEn" | "manufacturer" | "manufactureCountry" | "manufactureDate" | "features" | "certifications" | "msrp" | "description" | "optionAttributes" | "reorderRoundUnit" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
 export type InvProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.InvProduct$brandArgs<ExtArgs>
   options?: boolean | Prisma.InvProduct$optionsArgs<ExtArgs>
   reorderConfig?: boolean | Prisma.InvProduct$reorderConfigArgs<ExtArgs>
+  reorderPlanItems?: boolean | Prisma.InvProduct$reorderPlanItemsArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InvProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1718,6 +1945,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     brand: Prisma.$BrandPayload<ExtArgs> | null
     options: Prisma.$InvProductOptionPayload<ExtArgs>[]
     reorderConfig: Prisma.$InvReorderConfigPayload<ExtArgs> | null
+    reorderPlanItems: Prisma.$ReorderPlanItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1737,6 +1965,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     msrp: runtime.Decimal | null
     description: string | null
     optionAttributes: runtime.JsonValue | null
+    reorderRoundUnit: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["invProduct"]>
@@ -2138,6 +2367,7 @@ export interface Prisma__InvProductClient<T, Null = never, ExtArgs extends runti
   brand<T extends Prisma.InvProduct$brandArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$brandArgs<ExtArgs>>): Prisma.Prisma__BrandClient<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   options<T extends Prisma.InvProduct$optionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$optionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvProductOptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reorderConfig<T extends Prisma.InvProduct$reorderConfigArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$reorderConfigArgs<ExtArgs>>): Prisma.Prisma__InvReorderConfigClient<runtime.Types.Result.GetResult<Prisma.$InvReorderConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  reorderPlanItems<T extends Prisma.InvProduct$reorderPlanItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$reorderPlanItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2184,6 +2414,7 @@ export interface InvProductFieldRefs {
   readonly msrp: Prisma.FieldRef<"InvProduct", 'Decimal'>
   readonly description: Prisma.FieldRef<"InvProduct", 'String'>
   readonly optionAttributes: Prisma.FieldRef<"InvProduct", 'Json'>
+  readonly reorderRoundUnit: Prisma.FieldRef<"InvProduct", 'Int'>
   readonly createdAt: Prisma.FieldRef<"InvProduct", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvProduct", 'DateTime'>
 }
@@ -2641,6 +2872,30 @@ export type InvProduct$reorderConfigArgs<ExtArgs extends runtime.Types.Extension
    */
   include?: Prisma.InvReorderConfigInclude<ExtArgs> | null
   where?: Prisma.InvReorderConfigWhereInput
+}
+
+/**
+ * InvProduct.reorderPlanItems
+ */
+export type InvProduct$reorderPlanItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReorderPlanItem
+   */
+  select?: Prisma.ReorderPlanItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReorderPlanItem
+   */
+  omit?: Prisma.ReorderPlanItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReorderPlanItemInclude<ExtArgs> | null
+  where?: Prisma.ReorderPlanItemWhereInput
+  orderBy?: Prisma.ReorderPlanItemOrderByWithRelationInput | Prisma.ReorderPlanItemOrderByWithRelationInput[]
+  cursor?: Prisma.ReorderPlanItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReorderPlanItemScalarFieldEnum | Prisma.ReorderPlanItemScalarFieldEnum[]
 }
 
 /**
