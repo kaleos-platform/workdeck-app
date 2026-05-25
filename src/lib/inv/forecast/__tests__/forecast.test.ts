@@ -20,12 +20,30 @@ function makeHistory(n: number, qty: number): DailyOutbound[] {
   })
 }
 
-/** 간헐적 수요 패턴 생성 (every-k-days 에만 qty 발생) */
+/** 간헐적 수요 패턴 생성 (every-k-days 에만 고정 qty 발생) — Croston 수치 검증용 */
 function makeIntermittent(n: number, everyK: number, qty: number): DailyOutbound[] {
   return Array.from({ length: n }, (_, i) => {
     const d = new Date('2024-01-01')
     d.setDate(d.getDate() + i)
     return { date: d.toISOString().slice(0, 10), qty: i % everyK === 0 ? qty : 0 }
+  })
+}
+
+/**
+ * INTERMITTENT 분류 테스트 전용 픽스처 (ADI>1.32 && CV²>0.49 충족)
+ *
+ * qty를 고정값으로 주면 CV²=0 → FAST로 분류된다.
+ * 발생 시 qty를 [10, 50, 100] 사이클로 변동시켜 CV²≈1.1 을 확보한다.
+ */
+function makeIntermittentVariable(n: number, everyK: number): DailyOutbound[] {
+  return Array.from({ length: n }, (_, i) => {
+    const d = new Date('2024-01-01')
+    d.setDate(d.getDate() + i)
+    if (i % everyK !== 0) return { date: d.toISOString().slice(0, 10), qty: 0 }
+    const cycleIdx = Math.floor(i / everyK) % 3
+    // [5, 50, 100] 사이클 → CV²≈0.56 (> 0.49 임계값 충족)
+    const qty = cycleIdx === 0 ? 5 : cycleIdx === 1 ? 50 : 100
+    return { date: d.toISOString().slice(0, 10), qty }
   })
 }
 
@@ -52,8 +70,8 @@ describe('classifier', () => {
   })
 
   it('ADI>1.32 && CV²>0.49 → INTERMITTENT', () => {
-    // 3일마다 발생 → ADI≈3, 고변동
-    const h = makeIntermittent(90, 3, 50)
+    // 3일마다 발생 → ADI≈3, qty 변동(10/50/100) → CV²≈1.1 → INTERMITTENT
+    const h = makeIntermittentVariable(90, 3)
     const r = classify(h)
     expect(r.profile).toBe('INTERMITTENT')
     expect(r.adi).toBeGreaterThan(1.32)
@@ -194,7 +212,7 @@ describe('forecastOption 라우팅', () => {
   })
 
   it('INTERMITTENT → CROSTON 모델', () => {
-    const h = makeIntermittent(60, 3, 20)
+    const h = makeIntermittentVariable(60, 3)
     const r = forecastOption({ history: h, leadTimeDays: 14 })
     expect(r.model).toBe('CROSTON')
   })
