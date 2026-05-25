@@ -81,6 +81,27 @@ export const SpaceMemberRole = {
 export type SpaceMemberRole = (typeof SpaceMemberRole)[keyof typeof SpaceMemberRole]
 
 
+export const ReorderPlanStatus = {
+  DRAFT: 'DRAFT',
+  FINALIZED: 'FINALIZED',
+  CONSUMED: 'CONSUMED'
+} as const
+
+export type ReorderPlanStatus = (typeof ReorderPlanStatus)[keyof typeof ReorderPlanStatus]
+
+
+export const ReorderForecastModel = {
+  SMA: 'SMA',
+  WMA: 'WMA',
+  HW: 'HW',
+  CROSTON: 'CROSTON',
+  BAYES: 'BAYES',
+  MANUAL: 'MANUAL'
+} as const
+
+export type ReorderForecastModel = (typeof ReorderForecastModel)[keyof typeof ReorderForecastModel]
+
+
 export const PromotionType = {
   NONE: 'NONE',
   FLAT: 'FLAT',

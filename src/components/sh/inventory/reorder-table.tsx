@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { PlusIcon } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -86,10 +88,12 @@ function formatDepletion(d: number | null) {
 }
 
 export function ReorderTable() {
+  const router = useRouter()
   const [rows, setRows] = useState<ReorderRow[]>([])
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState<Filter>('all')
   const [windowDays, setWindowDays] = useState(90)
+  const [creating, setCreating] = useState(false)
 
   const [brands, setBrands] = useState<Brand[]>([])
   const [productOptions, setProductOptions] = useState<ProductOption[]>([])
@@ -145,6 +149,22 @@ export function ReorderTable() {
     const urgent = rows.filter((r) => r.isUrgent).length
     return { total: rows.length, needed, urgent }
   }, [rows])
+
+  const handleCreatePlan = async () => {
+    setCreating(true)
+    try {
+      const res = await fetch('/api/sh/inventory/reorder/plan', { method: 'POST' })
+      if (!res.ok) throw new Error('생성 실패')
+      const data = (await res.json()) as { planId: string }
+      toast.success('발주 계획 초안이 생성되었습니다')
+      router.push(`/d/seller-ops/inventory/reorder/plans/${data.planId}`)
+    } catch (err) {
+      console.error(err)
+      toast.error('발주 계획 생성에 실패했습니다')
+    } finally {
+      setCreating(false)
+    }
+  }
 
   // 리드타임 다이얼로그에서 쓸 상품 목록 (테이블 rows에서 중복 제거)
   const productsInTable = useMemo(() => {
@@ -209,6 +229,11 @@ export function ReorderTable() {
             rows={rows}
             onSaved={() => fetchData(filter, brandFilter, productIdFilter)}
           />
+          <RoundUnitSettingsDialog products={productsInTable} />
+          <Button size="sm" onClick={handleCreatePlan} disabled={creating} className="gap-1.5">
+            <PlusIcon className="h-3.5 w-3.5" />
+            {creating ? '생성 중...' : '발주 계획 생성'}
+          </Button>
         </div>
       </div>
 
@@ -421,6 +446,94 @@ function LeadTimeSettingsDialog({
                     onClick={() => handleSave(p.productId, p.leadTimeDays)}
                   >
                     {isSaving ? '...' : '저장'}
+                  </Button>
+                </div>
+              )
+            })
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            닫기
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// reorderRoundUnit 설정 다이얼로그
+// TODO: 번스타인 — PATCH /api/sh/inventory/products/[productId]/round-unit 구현 후 저장 연결
+function RoundUnitSettingsDialog({
+  products,
+}: {
+  products: Array<{ productId: string; productName: string; leadTimeDays: number }>
+}) {
+  const [open, setOpen] = useState(false)
+  // 편집 상태: productId → roundUnit(10|100|1)
+  const [edit, setEdit] = useState<Record<string, number>>({})
+
+  const handleOpenChange = (next: boolean) => {
+    if (next) setEdit({})
+    setOpen(next)
+  }
+
+  const handleChange = (productId: string, value: string) => {
+    const n = Number(value)
+    setEdit((prev) => ({ ...prev, [productId]: Number.isFinite(n) ? n : 10 }))
+  }
+
+  const handleSave = (_productId: string) => {
+    // TODO: 번스타인 API 추가 대기 — PATCH /api/sh/inventory/products/[productId]
+    // body: { reorderRoundUnit: edit[productId] }
+    toast.info('라운딩 단위 저장 API는 준비 중입니다 (번스타인 구현 예정)')
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">
+          라운딩 단위 설정
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>상품별 발주 라운딩 단위 설정</DialogTitle>
+        </DialogHeader>
+        <p className="text-xs text-muted-foreground">
+          발주 수량을 어떤 단위로 올림할지 설정합니다. (예: 10단위 → 제안 37개 → 40개)
+        </p>
+        <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+          {products.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              설정 가능한 상품이 없습니다
+            </p>
+          ) : (
+            products.map((p) => {
+              const value = edit[p.productId] ?? 10
+              return (
+                <div
+                  key={p.productId}
+                  className="flex items-center gap-3 rounded-md border px-3 py-2"
+                >
+                  <div className="min-w-0 flex-1 truncate text-sm font-medium">{p.productName}</div>
+                  <Select value={String(value)} onValueChange={(v) => handleChange(p.productId, v)}>
+                    <SelectTrigger className="h-8 w-28">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1단위</SelectItem>
+                      <SelectItem value="10">10단위</SelectItem>
+                      <SelectItem value="100">100단위</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 px-3 text-xs"
+                    onClick={() => handleSave(p.productId)}
+                  >
+                    저장
                   </Button>
                 </div>
               )

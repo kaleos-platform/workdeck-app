@@ -192,6 +192,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceNullableScalarRelationFilter, Prisma.WorkspaceWhereInput> | null
   spaceMemberships?: Prisma.SpaceMemberListRelationFilter
+  reorderPlans?: Prisma.ReorderPlanListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -203,6 +204,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
   spaceMemberships?: Prisma.SpaceMemberOrderByRelationAggregateInput
+  reorderPlans?: Prisma.ReorderPlanOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -217,6 +219,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceNullableScalarRelationFilter, Prisma.WorkspaceWhereInput> | null
   spaceMemberships?: Prisma.SpaceMemberListRelationFilter
+  reorderPlans?: Prisma.ReorderPlanListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -252,6 +255,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -263,6 +267,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUpdateInput = {
@@ -274,6 +279,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -285,6 +291,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -386,6 +393,20 @@ export type UserUpdateOneRequiredWithoutSpaceMembershipsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSpaceMembershipsInput, Prisma.UserUpdateWithoutSpaceMembershipsInput>, Prisma.UserUncheckedUpdateWithoutSpaceMembershipsInput>
 }
 
+export type UserCreateNestedOneWithoutReorderPlansInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReorderPlansInput, Prisma.UserUncheckedCreateWithoutReorderPlansInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReorderPlansInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutReorderPlansNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReorderPlansInput, Prisma.UserUncheckedCreateWithoutReorderPlansInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReorderPlansInput
+  upsert?: Prisma.UserUpsertWithoutReorderPlansInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReorderPlansInput, Prisma.UserUpdateWithoutReorderPlansInput>, Prisma.UserUncheckedUpdateWithoutReorderPlansInput>
+}
+
 export type UserCreateWithoutWorkspaceInput = {
   id: string
   email: string
@@ -394,6 +415,7 @@ export type UserCreateWithoutWorkspaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutWorkspaceInput = {
@@ -404,6 +426,7 @@ export type UserUncheckedCreateWithoutWorkspaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutWorkspaceInput = {
@@ -430,6 +453,7 @@ export type UserUpdateWithoutWorkspaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkspaceInput = {
@@ -440,6 +464,7 @@ export type UserUncheckedUpdateWithoutWorkspaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutSpaceMembershipsInput = {
@@ -450,6 +475,7 @@ export type UserCreateWithoutSpaceMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutSpaceMembershipsInput = {
@@ -460,6 +486,7 @@ export type UserUncheckedCreateWithoutSpaceMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutSpaceMembershipsInput = {
@@ -486,6 +513,7 @@ export type UserUpdateWithoutSpaceMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSpaceMembershipsInput = {
@@ -496,6 +524,67 @@ export type UserUncheckedUpdateWithoutSpaceMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserCreateWithoutReorderPlansInput = {
+  id: string
+  email: string
+  name?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
+  spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutReorderPlansInput = {
+  id: string
+  email: string
+  name?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+  spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutReorderPlansInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReorderPlansInput, Prisma.UserUncheckedCreateWithoutReorderPlansInput>
+}
+
+export type UserUpsertWithoutReorderPlansInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReorderPlansInput, Prisma.UserUncheckedUpdateWithoutReorderPlansInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReorderPlansInput, Prisma.UserUncheckedCreateWithoutReorderPlansInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReorderPlansInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReorderPlansInput, Prisma.UserUncheckedUpdateWithoutReorderPlansInput>
+}
+
+export type UserUpdateWithoutReorderPlansInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
+  spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReorderPlansInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+  spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -505,10 +594,12 @@ export type UserUncheckedUpdateWithoutSpaceMembershipsInput = {
 
 export type UserCountOutputType = {
   spaceMemberships: number
+  reorderPlans: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   spaceMemberships?: boolean | UserCountOutputTypeCountSpaceMembershipsArgs
+  reorderPlans?: boolean | UserCountOutputTypeCountReorderPlansArgs
 }
 
 /**
@@ -528,6 +619,13 @@ export type UserCountOutputTypeCountSpaceMembershipsArgs<ExtArgs extends runtime
   where?: Prisma.SpaceMemberWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReorderPlansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReorderPlanWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -538,6 +636,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   workspace?: boolean | Prisma.User$workspaceArgs<ExtArgs>
   spaceMemberships?: boolean | Prisma.User$spaceMembershipsArgs<ExtArgs>
+  reorderPlans?: boolean | Prisma.User$reorderPlansArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -572,6 +671,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.User$workspaceArgs<ExtArgs>
   spaceMemberships?: boolean | Prisma.User$spaceMembershipsArgs<ExtArgs>
+  reorderPlans?: boolean | Prisma.User$reorderPlansArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -582,6 +682,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     workspace: Prisma.$WorkspacePayload<ExtArgs> | null
     spaceMemberships: Prisma.$SpaceMemberPayload<ExtArgs>[]
+    reorderPlans: Prisma.$ReorderPlanPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -986,6 +1087,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   workspace<T extends Prisma.User$workspaceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$workspaceArgs<ExtArgs>>): Prisma.Prisma__WorkspaceClient<runtime.Types.Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   spaceMemberships<T extends Prisma.User$spaceMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$spaceMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reorderPlans<T extends Prisma.User$reorderPlansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reorderPlansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1449,6 +1551,30 @@ export type User$spaceMembershipsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.SpaceMemberScalarFieldEnum | Prisma.SpaceMemberScalarFieldEnum[]
+}
+
+/**
+ * User.reorderPlans
+ */
+export type User$reorderPlansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReorderPlan
+   */
+  select?: Prisma.ReorderPlanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReorderPlan
+   */
+  omit?: Prisma.ReorderPlanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReorderPlanInclude<ExtArgs> | null
+  where?: Prisma.ReorderPlanWhereInput
+  orderBy?: Prisma.ReorderPlanOrderByWithRelationInput | Prisma.ReorderPlanOrderByWithRelationInput[]
+  cursor?: Prisma.ReorderPlanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReorderPlanScalarFieldEnum | Prisma.ReorderPlanScalarFieldEnum[]
 }
 
 /**

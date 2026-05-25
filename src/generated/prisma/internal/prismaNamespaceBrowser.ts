@@ -135,7 +135,10 @@ export const ModelName = {
   ContentAsset: 'ContentAsset',
   Ideation: 'Ideation',
   IdeationProduct: 'IdeationProduct',
-  ImprovementRule: 'ImprovementRule'
+  ImprovementRule: 'ImprovementRule',
+  ReorderPlan: 'ReorderPlan',
+  ReorderPlanItem: 'ReorderPlanItem',
+  ReorderPlanAccuracy: 'ReorderPlanAccuracy'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -619,6 +622,7 @@ export const InvProductScalarFieldEnum = {
   msrp: 'msrp',
   description: 'description',
   optionAttributes: 'optionAttributes',
+  reorderRoundUnit: 'reorderRoundUnit',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -975,6 +979,7 @@ export const ProductionRunScalarFieldEnum = {
   totalCost: 'totalCost',
   costMode: 'costMode',
   memo: 'memo',
+  reorderPlanId: 'reorderPlanId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1494,6 +1499,67 @@ export const ImprovementRuleScalarFieldEnum = {
 } as const
 
 export type ImprovementRuleScalarFieldEnum = (typeof ImprovementRuleScalarFieldEnum)[keyof typeof ImprovementRuleScalarFieldEnum]
+
+
+export const ReorderPlanScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  planNo: 'planNo',
+  status: 'status',
+  windowDays: 'windowDays',
+  createdById: 'createdById',
+  finalizedAt: 'finalizedAt',
+  biasAdjustApplied: 'biasAdjustApplied',
+  totalSuggestedQty: 'totalSuggestedQty',
+  totalFinalQty: 'totalFinalQty',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReorderPlanScalarFieldEnum = (typeof ReorderPlanScalarFieldEnum)[keyof typeof ReorderPlanScalarFieldEnum]
+
+
+export const ReorderPlanItemScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  optionId: 'optionId',
+  productId: 'productId',
+  currentStock: 'currentStock',
+  dailyAvgForecast: 'dailyAvgForecast',
+  forecastModel: 'forecastModel',
+  leadTimeDays: 'leadTimeDays',
+  safetyStockQty: 'safetyStockQty',
+  suggestedQty: 'suggestedQty',
+  roundedSuggestedQty: 'roundedSuggestedQty',
+  finalQty: 'finalQty',
+  roundUnit: 'roundUnit',
+  rationale: 'rationale',
+  userNote: 'userNote',
+  biasAdjustFactor: 'biasAdjustFactor',
+  confidenceScore: 'confidenceScore',
+  inputsSnapshot: 'inputsSnapshot'
+} as const
+
+export type ReorderPlanItemScalarFieldEnum = (typeof ReorderPlanItemScalarFieldEnum)[keyof typeof ReorderPlanItemScalarFieldEnum]
+
+
+export const ReorderPlanAccuracyScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  optionId: 'optionId',
+  evaluatedAt: 'evaluatedAt',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  actualOutbound: 'actualOutbound',
+  forecastOutbound: 'forecastOutbound',
+  wape: 'wape',
+  bias: 'bias',
+  stockoutDays: 'stockoutDays',
+  overstockDays: 'overstockDays'
+} as const
+
+export type ReorderPlanAccuracyScalarFieldEnum = (typeof ReorderPlanAccuracyScalarFieldEnum)[keyof typeof ReorderPlanAccuracyScalarFieldEnum]
 
 
 export const SortOrder = {
