@@ -75,14 +75,35 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.source === 'coupang') {
-      if (!locationId) return errorResponse('locationId 가 필요합니다', 400)
+      // locationId 미지정 시 externalSource로 자동 매핑된 위치를 사용
+      if (!locationId) {
+        const mapped = await prisma.invStorageLocation.findFirst({
+          where: {
+            spaceId: resolved.space.id,
+            externalSource: 'coupang_rocket_growth',
+            isActive: true,
+          },
+          select: { id: true },
+        })
+        if (!mapped) {
+          return errorResponse(
+            "쿠팡 로켓그로스 위치가 등록되지 않았습니다. 위치 관리에서 '연결된 소스 = 쿠팡 로켓그로스' 위치를 추가해 주세요.",
+            400
+          )
+        }
+        locationId = mapped.id
+      }
+
       // Workspace ↔ Space 직접 연결이 없으므로 현재 유저의 쿠팡 Workspace 경유
       const workspace = await prisma.workspace.findUnique({
         where: { ownerId: resolved.user.id },
         select: { id: true },
       })
       if (!workspace) {
-        return errorResponse('연결된 쿠팡 워크스페이스를 찾을 수 없습니다', 404)
+        return errorResponse(
+          '쿠팡 광고 관리자에 연결된 워크스페이스가 없습니다. 쿠팡 광고 관리자 Deck에서 크레덴셜을 등록한 뒤 다시 시도해 주세요.',
+          404
+        )
       }
 
       try {
@@ -95,7 +116,10 @@ export async function POST(req: NextRequest) {
       }
 
       if (parsed.rows.length === 0) {
-        return errorResponse('연동할 쿠팡 재고 데이터가 없습니다', 400)
+        return errorResponse(
+          '연동할 쿠팡 재고 스냅샷이 없습니다. 쿠팡 광고 관리자 Deck에서 재고 수집이 한 번 이상 실행됐는지 확인해 주세요.',
+          400
+        )
       }
 
       const sd = parsed.snapshotDate

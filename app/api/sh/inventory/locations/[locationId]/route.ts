@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { InvStorageLocationType } from '@/generated/prisma/client'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { isExternalSource, EXTERNAL_SOURCE_LABEL } from '@/lib/inv/external-sources'
 
 type RouteContext = { params: Promise<{ locationId: string }> }
 
@@ -43,12 +44,14 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     name?: string
     isActive?: boolean
     type?: string
+    externalSource?: string | null
   }
 
   const data: {
     name?: string
     isActive?: boolean
     type?: InvStorageLocationType
+    externalSource?: string | null
   } = {}
 
   if (body.type !== undefined) {
@@ -83,6 +86,33 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
       }
     }
     data.isActive = body.isActive
+  }
+
+  if (body.externalSource !== undefined) {
+    if (body.externalSource === null || body.externalSource === '') {
+      data.externalSource = null
+    } else {
+      if (!isExternalSource(body.externalSource)) {
+        return errorResponse('지원하지 않는 연결 소스입니다', 400)
+      }
+      if (body.externalSource !== location.externalSource) {
+        const dup = await prisma.invStorageLocation.findFirst({
+          where: {
+            spaceId: resolved.space.id,
+            externalSource: body.externalSource,
+            NOT: { id: locationId },
+          },
+          select: { id: true, name: true },
+        })
+        if (dup) {
+          return errorResponse(
+            `이미 '${dup.name}' 위치가 ${EXTERNAL_SOURCE_LABEL[body.externalSource]} 소스에 연결되어 있습니다`,
+            409
+          )
+        }
+      }
+      data.externalSource = body.externalSource
+    }
   }
 
   if (Object.keys(data).length === 0) {
