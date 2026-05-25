@@ -68,13 +68,14 @@ export function ReconciliationUpload({ onUploaded }: Props) {
 
   async function handleFileSubmit() {
     if (!file) return toast.error('파일을 선택해 주세요')
-    if (!locationId) return toast.error('보관 장소를 선택해 주세요')
 
     setSubmitting(true)
     try {
       const fd = new FormData()
       fd.append('file', file)
-      fd.append('locationId', locationId)
+      // 재고 현황 export 포맷이면 서버가 파일의 위치명으로 자동 분배(locationId 무시).
+      // 그 외 포맷에서는 locationId 누락 시 서버가 400 응답.
+      if (locationId) fd.append('locationId', locationId)
       if (snapshotDate) fd.append('snapshotDate', snapshotDate)
 
       const res = await fetch('/api/sh/inventory/reconciliation', {
@@ -148,6 +149,10 @@ export function ReconciliationUpload({ onUploaded }: Props) {
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              재고 현황에서 다운로드한 엑셀은 파일의 위치명으로 자동 분배되므로 선택하지 않아도
+              됩니다.
+            </p>
           </div>
           <div className="space-y-2">
             <Label>기준일 (snapshotDate)</Label>

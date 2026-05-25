@@ -2,9 +2,13 @@
 import * as XLSX from 'xlsx'
 
 export type ParsedRow = {
-  externalCode: string
+  // stock-status export는 externalCode가 비어있을 수 있어 옵셔널.
+  // 다른 포맷(coupang_health/threepl_current/generic)은 항상 채워서 푸시.
+  externalCode?: string
   externalName?: string
   externalOptionName?: string
+  externalBrandName?: string
+  externalLocationName?: string
   quantity: number
 }
 
@@ -142,15 +146,29 @@ function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
   const rows: ParsedRow[] = []
   for (const raw of dataRows) {
     const rec = rowToRecord(headers, raw as unknown[])
+    const realQty = parseInt_(rec['실재고'])
+    // 실재고 빈값 → 사용자가 미입력 = 변동 없음으로 간주, 스킵
+    if (realQty == null) continue
+    const currentQty = parseInt_(rec['현재재고'])
+    // 변동 없는 행 스킵
+    if (currentQty != null && realQty === currentQty) continue
+
     const externalCode = parseStr(rec['externalCode'])
-    if (!externalCode) continue
-    const qty = parseInt_(rec['실재고'])
-    if (qty == null) continue
+    const externalName = parseStr(rec['상품명'])
+    const externalOptionName = parseStr(rec['옵션명'])
+    const externalLocationName = parseStr(rec['위치명'])
+    const externalBrandName = parseStr(rec['브랜드'])
+
+    // 매칭 가능한 키가 하나라도 있어야 함 (externalCode 또는 이름)
+    if (!externalCode && !(externalName && externalLocationName)) continue
+
     rows.push({
       externalCode,
-      externalName: parseStr(rec['상품명']),
-      externalOptionName: parseStr(rec['옵션명']),
-      quantity: qty,
+      externalName,
+      externalOptionName,
+      externalBrandName,
+      externalLocationName,
+      quantity: realQty,
     })
   }
   return rows
@@ -226,11 +244,16 @@ export function parseReconciliationFile(buffer: ArrayBuffer, fileName: string): 
     return { format: 'threepl_current', rows, snapshotDate }
   }
 
-  // 3) 재고 현황 내보내기: externalCode + 실재고
-  if (headerStr0.includes('externalCode') && headerStr0.includes('실재고')) {
+  // 3) 재고 현황 내보내기: 실재고 + (externalCode 또는 위치명)
+  if (
+    headerStr0.includes('실재고') &&
+    (headerStr0.includes('externalCode') || headerStr0.includes('위치명'))
+  ) {
     const rows = parseStockStatusExport(rawData as unknown[][])
     if (rows.length === 0) {
-      throw new Error('재고 현황 내보내기 파일에서 유효한 행을 찾지 못했습니다')
+      throw new Error(
+        '재고 현황 내보내기 파일에서 변경된 행을 찾지 못했습니다. 실재고 값을 입력했는지 확인해 주세요.'
+      )
     }
     return { format: 'stock_status_export', rows, snapshotDate }
   }

@@ -12,19 +12,7 @@ type Props = {
   selectedLocationId: string | null
 }
 
-const HEADERS = [
-  '브랜드',
-  '카테고리',
-  '상품명',
-  '옵션명',
-  'SKU',
-  '제품코드',
-  'externalCode',
-  '위치명',
-  '위치ID',
-  '현재재고',
-  '실재고',
-]
+const HEADERS = ['브랜드', '상품명', '옵션명', '위치명', 'externalCode', '현재재고', '실재고']
 
 function todayYMD() {
   const d = new Date()
@@ -58,16 +46,12 @@ export function StockStatusExportButton({ rows, locations, selectedLocationId }:
         if (!externalCode) missingMappingCount += 1
         data.push([
           row.brandName ?? '',
-          row.groupName,
           row.productInternalName ?? row.productName,
           row.optionName,
-          row.sku ?? '',
-          row.productCode ?? '',
-          externalCode,
           loc.name,
-          loc.id,
+          externalCode,
           qty,
-          qty,
+          '',
         ])
       }
     }
