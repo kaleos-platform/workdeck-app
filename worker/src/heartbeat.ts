@@ -5,13 +5,13 @@
  */
 
 const BASE_URL = process.env.WORKDECK_API_URL || 'http://localhost:3000'
-const API_KEY = process.env.WORKDECK_API_KEY || ''
+const API_KEY = process.env.WORKER_API_KEY || ''
 const SERVICE = 'inventory-collector'
 const HEARTBEAT_INTERVAL_MS = 60_000 // 1분
 
 export function startWorkerHeartbeat() {
   if (!API_KEY) {
-    console.warn('[heartbeat] WORKDECK_API_KEY 미설정 — heartbeat 비활성화')
+    console.warn('[heartbeat] WORKER_API_KEY 미설정 — heartbeat 비활성화')
     return
   }
 
