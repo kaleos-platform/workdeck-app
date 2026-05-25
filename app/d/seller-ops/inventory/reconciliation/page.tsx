@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ReconciliationUpload } from '@/components/sh/inventory/reconciliation-upload'
+import {
+  ReconciliationFileUploadButton,
+  ReconciliationIntegrationButton,
+} from '@/components/sh/inventory/reconciliation-upload'
 import { ReconciliationHistory } from '@/components/sh/inventory/reconciliation-history'
 import { ReconciliationPreview } from '@/components/sh/inventory/reconciliation-preview'
 
@@ -23,12 +26,16 @@ export default function ReconciliationPage() {
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">재고 일괄 조정</h1>
+          <h1 className="text-2xl font-bold tracking-tight">재고 조정</h1>
           <p className="text-sm text-muted-foreground">
-            실제 재고 파일을 업로드하여 시스템 재고와 대조하고, 차이를 일괄 반영합니다
+            실제 재고 파일을 업로드하거나 외부 데이터를 불러와 시스템 재고와 대조하고, 차이를 일괄
+            반영합니다
           </p>
         </div>
-        <ReconciliationUpload onUploaded={handleUploaded} />
+        <div className="flex gap-2">
+          <ReconciliationFileUploadButton onUploaded={handleUploaded} />
+          <ReconciliationIntegrationButton onUploaded={handleUploaded} />
+        </div>
       </div>
 
       <div className="flex gap-4">
