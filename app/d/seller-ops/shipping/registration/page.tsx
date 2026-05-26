@@ -88,6 +88,14 @@ export default function ShippingRegistrationPage() {
   // 저장된 행 신규 아이템의 itemId 생성 POST 중복 방지: key=`${orderId}:${index}` → Promise<id|null>
   // blur(handleItemNameCommit)와 클릭(onOpenMatch)이 같은 Promise를 공유 → POST 1회
   const inflightItemPost = useRef<Map<string, Promise<string | null>>>(new Map())
+  // 기존 itemId의 이름 PATCH inflight — 매칭 후 refetch가 PATCH보다 먼저 도착해 편집이 유실되지 않도록 await 보장.
+  // 키별 directed queue: 진행 중 PATCH가 있을 때 새 편집이 들어오면 pending에 최신값을 저장하고,
+  // 완료 후 last-sent와 다르면 추가 PATCH를 발행하여 마지막 편집값이 반드시 DB에 반영되게 한다.
+  const inflightItemNamePatch = useRef<
+    Map<string, { promise: Promise<void>; pending: string | null }>
+  >(new Map())
+  // 서버가 확정한 마지막 name — pre-edit baseline 비교 및 PATCH 실패 시 롤백 기준값.
+  const itemDbName = useRef<Map<string, string>>(new Map())
 
   useEffect(() => {
     const raw = searchParams.get('imported')
@@ -203,6 +211,8 @@ export default function ShippingRegistrationPage() {
                       optionName: '판매채널 상품 묶음',
                     }
                   : null
+              // 서버가 확정한 마지막 name을 baseline으로 기억 — PATCH 비교/롤백 기준.
+              itemDbName.current.set(it.id, it.name)
               return {
                 itemId: it.id,
                 name: it.name,
@@ -517,6 +527,8 @@ export default function ShippingRegistrationPage() {
         const data = await res.json()
         const newId = data?.item?.id as string | undefined
         if (!newId) return null
+        // baseline 등록 — 새로 생성된 아이템의 DB 확정 이름.
+        itemDbName.current.set(newId, trimmed)
         // POST 진행 중 다른 아이템 추가/삭제로 index가 밀릴 수 있으므로
         // array index 대신 "itemId 없고 이름이 일치하는 아이템"으로 식별해 반영.
         setRows((prev) =>
@@ -546,14 +558,92 @@ export default function ShippingRegistrationPage() {
     return promise
   }
 
-  // 신규 아이템 이름 blur 시 — 저장된 행이고 아직 itemId 없으면 POST로 DB에 생성.
+  // 아이템 이름 blur 시 — DB에 영속.
+  //  - 미저장 행(temp-)은 saveNewRows 경로에서 처리 → no-op
+  //  - 저장된 행 + itemId 없음 → POST로 DB에 생성 (ensureSavedItemId)
+  //  - 저장된 행 + itemId 있음 → 마지막 DB 확정값(baseline)과 다르면 PATCH (last-write-wins 큐)
   async function handleItemNameCommit(
     rowTempId: string,
     index: number,
     name: string,
     item: OrderProduct
   ) {
-    await ensureSavedItemId(rowTempId, index, name, item)
+    if (rowTempId.startsWith('temp-')) return
+    if (!item.itemId) {
+      await ensureSavedItemId(rowTempId, index, name, item)
+      return
+    }
+    const itemId = item.itemId
+    const trimmed = name.trim()
+    if (!trimmed) return
+    const baseline = itemDbName.current.get(itemId) ?? item.name
+    if (trimmed === baseline.trim()) return
+
+    const key = `${rowTempId}:${itemId}`
+    const slot = inflightItemNamePatch.current.get(key)
+    if (slot) {
+      // 진행 중 PATCH가 있으면 최신 값을 pending에 저장 — 완료 후 자동 재발행됨.
+      slot.pending = trimmed
+      return
+    }
+
+    const runPatch = async (target: string): Promise<void> => {
+      try {
+        const res = await fetch(`/api/sh/shipping/orders/${rowTempId}/items/${itemId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: target }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data?.message ?? '상품명 저장 실패')
+        }
+        const data = await res.json().catch(() => ({}))
+        const echoed = (data?.item?.name as string | undefined) ?? target
+        itemDbName.current.set(itemId, echoed)
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '상품명 저장 실패')
+        // 실패 시 UI 롤백 — 마지막 DB 확정값으로 복원.
+        const restore = itemDbName.current.get(itemId)
+        if (restore !== undefined) {
+          setRows((prev) =>
+            prev.map((r) => {
+              if (r.tempId !== rowTempId) return r
+              return {
+                ...r,
+                items: r.items.map((p) => (p.itemId === itemId ? { ...p, name: restore } : p)),
+              }
+            })
+          )
+        }
+        throw err
+      }
+    }
+
+    const promise = (async () => {
+      let target = trimmed
+      // last-write-wins: 발행 후 pending이 추가됐으면 다시 발행.
+      while (true) {
+        try {
+          await runPatch(target)
+        } catch {
+          // 실패는 toast로 알림. 큐는 비우고 종료.
+          break
+        }
+        const current = inflightItemNamePatch.current.get(key)
+        const next = current?.pending ?? null
+        if (next === null || next === target) break
+        target = next
+        if (current) current.pending = null
+      }
+    })()
+
+    inflightItemNamePatch.current.set(key, { promise, pending: null })
+    try {
+      await promise
+    } finally {
+      inflightItemNamePatch.current.delete(key)
+    }
   }
 
   async function handleRemoveRow(tempId: string) {
@@ -962,7 +1052,12 @@ export default function ShippingRegistrationPage() {
           channelId={matchTarget.channelId ?? null}
           channelName={channels.find((c) => c.id === matchTarget.channelId)?.name ?? null}
           channelSet={!!matchTarget.channelId}
-          onMatched={(result: MatchResult) => {
+          onMatched={async (result: MatchResult) => {
+            // 진행 중인 name PATCH가 있으면 refetch 전에 완료 — 편집한 상품명이 서버 응답에 반영되도록.
+            const pending = Array.from(inflightItemNamePatch.current.values()).map((s) => s.promise)
+            if (pending.length > 0) {
+              await Promise.all(pending)
+            }
             setRows((prev) =>
               prev.map((r) => {
                 if (r.tempId !== matchTarget.orderId) return r
