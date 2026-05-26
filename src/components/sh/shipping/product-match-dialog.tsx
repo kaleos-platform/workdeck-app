@@ -102,7 +102,7 @@ type Props = {
   channelId?: string | null
   channelName?: string | null
   channelSet: boolean
-  onMatched: (result: MatchResult) => void
+  onMatched: (result: MatchResult) => void | Promise<void>
 }
 
 export function ProductMatchDialog({
@@ -299,7 +299,7 @@ export function ProductMatchDialog({
       toast.success(
         `수동 입력 완료 · 출고 옵션 ${manualItems.length}종 총 ${totalQuantity}개${aliasSaved ? ' · 별칭으로 저장' : ''}`
       )
-      onMatched({
+      await onMatched({
         mode: 'manual',
         fulfillmentCount: manualItems.length,
         totalQuantity,
@@ -341,7 +341,7 @@ export function ProductMatchDialog({
           ? '판매채널 상품 매칭 완료 · 별칭으로 저장했습니다'
           : '판매채널 상품 매칭 완료'
       )
-      onMatched({
+      await onMatched({
         mode: 'listing',
         listingId: entry.listingId,
         searchName: entry.searchName,

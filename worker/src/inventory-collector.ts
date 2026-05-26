@@ -120,7 +120,8 @@ async function clickAndDownload(
 }
 
 /** 페이지에 떠 있는 공지/프로모션 모달을 모두 닫는다 */
-async function dismissModals(page: Page): Promise<void> {
+async function dismissModals(page: Page): Promise<boolean> {
+  let dismissed = false
   const dismissCandidates = [
     'button:has-text("닫기")',
     'button:has-text("오늘 하루 보지 않기")',
@@ -138,9 +139,42 @@ async function dismissModals(page: Page): Promise<void> {
     const btn = page.locator(sel).first()
     if (await btn.isVisible({ timeout: 800 }).catch(() => false)) {
       await btn.click({ force: true }).catch(() => {})
+      dismissed = true
       await page.waitForTimeout(400)
     }
   }
+
+  // 쿠팡 Wing 재고현황 신규 가이드 모달: X 아이콘이 button이 아닌 div/span으로 렌더링된다.
+  const guideTitle = page.locator('text=더 고도화된 재고현황').first()
+  if (await guideTitle.isVisible({ timeout: 800 }).catch(() => false)) {
+    const modalBox = await guideTitle
+      .evaluate((node) => {
+        let el: HTMLElement | null = node instanceof HTMLElement ? node : node.parentElement
+        while (el) {
+          const rect = el.getBoundingClientRect()
+          if (rect.width >= 320 && rect.height >= 220) {
+            return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+          }
+          el = el.parentElement
+        }
+        return null
+      })
+      .catch(() => null)
+
+    if (modalBox) {
+      await page.mouse.click(modalBox.x + modalBox.width - 24, modalBox.y + 24).catch(() => {})
+      await page.waitForTimeout(500)
+    }
+
+    if (await guideTitle.isVisible({ timeout: 500 }).catch(() => false)) {
+      await page.keyboard.press('Escape').catch(() => {})
+      await page.waitForTimeout(500)
+    }
+
+    dismissed = true
+  }
+
+  return dismissed
 }
 
 /** 사이드바 기준으로 로켓그로스 > 재고현황 진입 */
@@ -205,9 +239,20 @@ async function downloadInventoryHealth(
   console.log('[inventory]   → 재고현황 엑셀 다운로드 메뉴 열기')
   await downloadBtn.click({ force: true })
   await page.waitForTimeout(1000)
-  await saveScreenshot(page, 'inventory-health-menu-open')
 
+  // 버튼 클릭 타이밍에 신규 가이드 모달이 늦게 뜨면 드롭다운이 열리지 않는다.
+  // 모달을 닫은 뒤 다운로드 버튼을 한 번만 다시 클릭한다.
   let requestBtn = page.locator('text=엑셀 다운로드 요청').first()
+  if (await dismissModals(page)) {
+    await page.waitForTimeout(500)
+    const isMenuAlreadyOpen = await requestBtn.isVisible({ timeout: 1000 }).catch(() => false)
+    if (!isMenuAlreadyOpen) {
+      await downloadBtn.click({ force: true })
+      await page.waitForTimeout(1000)
+    }
+  }
+
+  await saveScreenshot(page, 'inventory-health-menu-open')
   if (!(await requestBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
     requestBtn = page.locator('.backdrop div:has-text("엑셀 다운로드 요청")').first()
   }

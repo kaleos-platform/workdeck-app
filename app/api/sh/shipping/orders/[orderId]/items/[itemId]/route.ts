@@ -7,12 +7,14 @@ type Params = { params: Promise<{ orderId: string; itemId: string }> }
 /**
  * PATCH /api/sh/shipping/orders/[orderId]/items/[itemId]
  *
- * body: { quantity?: number }
+ * body: { quantity?: number, name?: string }
  *
  * 수량 변경 시 fulfillments 자동 재계산:
  *  - listing 매칭: listing.items 재조회 후 `composition × newQty`로 재생성
  *  - 단일 옵션 매칭: fulfillments 없음 — item.quantity만 업데이트
  *  - 수동 입력: 기존 fulfillment의 perSet(= oldQty / oldItemQty)을 유지하고 newQty로 스케일
+ *
+ * name은 사용자 편집값(원문 상품명)으로, 매칭 메타와 독립. 변경 시 단순 update.
  */
 export async function PATCH(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -22,6 +24,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const body = await req.json().catch(() => ({}))
   const rawQty = body?.quantity
+  const rawName = body?.name
 
   const item = await prisma.delOrderItem.findFirst({
     where: { id: itemId, orderId },
@@ -46,15 +49,31 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (Number.isFinite(n)) newQty = Math.max(1, Math.floor(n))
   }
 
-  if (newQty === oldQty) {
+  let nextName: string | null = null
+  if (typeof rawName === 'string') {
+    const trimmed = rawName.trim()
+    if (trimmed.length > 0 && trimmed !== item.name) {
+      nextName = trimmed
+    }
+  }
+
+  const qtyChanged = newQty !== oldQty
+  if (!qtyChanged && nextName === null) {
     return NextResponse.json({ ok: true, noChange: true })
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.delOrderItem.update({
-      where: { id: itemId },
-      data: { quantity: newQty },
-    })
+    if (qtyChanged || nextName !== null) {
+      await tx.delOrderItem.update({
+        where: { id: itemId },
+        data: {
+          ...(qtyChanged ? { quantity: newQty } : {}),
+          ...(nextName !== null ? { name: nextName } : {}),
+        },
+      })
+    }
+
+    if (!qtyChanged) return
 
     if (item.listingId && item.listing) {
       // listing 매칭 — composition 기반으로 재생성
@@ -103,6 +122,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     ok: true,
     item: {
       id: fresh!.id,
+      name: fresh!.name,
       quantity: fresh!.quantity,
       fulfillments: fresh!.fulfillments.map((f) => {
         const prod = f.option.product

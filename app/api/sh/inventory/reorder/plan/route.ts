@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
   })
 
   if (products.length === 0) {
-    return errorResponse('예측 대상 상품이 없습니다', 404)
+    return errorResponse('예측 대상 상품이 없습니다', 422)
   }
 
   const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
