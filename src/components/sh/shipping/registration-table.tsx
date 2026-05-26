@@ -211,7 +211,7 @@ export function RegistrationTable({
               <TableHead className="min-w-[260px]">주소</TableHead>
               <TableHead className="w-[100px]">배송메시지</TableHead>
               <TableHead className="min-w-[220px]">상품</TableHead>
-              <TableHead className="w-[36px]">수량</TableHead>
+              <TableHead className="w-[64px]">수량</TableHead>
               <TableHead className="w-[120px]">주문일자</TableHead>
               <TableHead className="w-[120px]">주문번호</TableHead>
               <TableHead className="w-[124px]">결제금액</TableHead>
