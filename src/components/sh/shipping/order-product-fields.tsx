@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import { MAX_ITEMS_PER_ORDER } from '@/lib/sh/shipping-constants'
 
 export type MatchedOption = {
   optionId: string
@@ -203,7 +204,7 @@ function MatchSummary({
 export function OrderProductNamesCell({
   value,
   onChange,
-  maxItems = 10,
+  maxItems = MAX_ITEMS_PER_ORDER,
   invalid = false,
   onOpenMatch,
   onClearMatch,
