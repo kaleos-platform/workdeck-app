@@ -214,7 +214,7 @@ export function RegistrationTable({
               <TableHead className="w-[64px]">수량</TableHead>
               <TableHead className="w-[120px]">주문일자</TableHead>
               <TableHead className="w-[120px]">주문번호</TableHead>
-              <TableHead className="w-[124px]">결제금액</TableHead>
+              <TableHead className="w-[92px]">결제금액</TableHead>
               <TableHead className="w-[140px]">메모</TableHead>
               <TableHead className="w-10" />
             </TableRow>
