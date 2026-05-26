@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { previewFile } from '@/lib/del/channel-import-parser'
+import { decryptXlsxBuffer, isEncryptedXlsx, WrongPasswordError } from '@/lib/sh/xlsx-encryption'
 
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -17,7 +18,28 @@ export async function POST(req: NextRequest) {
     return errorResponse('xlsx, xls, csv 파일만 지원합니다', 400)
   }
 
-  const buffer = await file.arrayBuffer()
+  let buffer = await file.arrayBuffer()
+  const password = (formData.get('password') as string | null) ?? ''
+
+  if (isEncryptedXlsx(buffer)) {
+    if (!password) {
+      return NextResponse.json(
+        { error: '비밀번호로 보호된 파일입니다', code: 'ENCRYPTED_FILE_PASSWORD_REQUIRED' },
+        { status: 422 }
+      )
+    }
+    try {
+      buffer = await decryptXlsxBuffer(buffer, password)
+    } catch (err) {
+      if (err instanceof WrongPasswordError) {
+        return NextResponse.json(
+          { error: '비밀번호가 올바르지 않습니다', code: 'WRONG_PASSWORD' },
+          { status: 422 }
+        )
+      }
+      return errorResponse('암호화된 파일을 복호화하지 못했습니다', 400)
+    }
+  }
 
   try {
     const preview = previewFile(buffer)
