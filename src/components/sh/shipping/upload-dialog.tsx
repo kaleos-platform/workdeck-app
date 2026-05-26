@@ -341,6 +341,14 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
   // 채널 관련
   const [channels, setChannels] = useState<Channel[]>([])
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
+  // 암호 보호된 xlsx 처리 — 비밀번호는 다이얼로그가 열려 있는 동안만 메모리에 보관.
+  // preview / import 두 단계 모두 같은 password를 사용해야 하므로 state로 유지.
+  const [filePassword, setFilePassword] = useState('')
+  const [passwordPrompt, setPasswordPrompt] = useState<{
+    file: File
+    error?: string
+  } | null>(null)
+  const [passwordInput, setPasswordInput] = useState('')
 
   const fileRef = useRef<HTMLInputElement>(null)
   const draftLoadedRef = useRef(false)
@@ -540,20 +548,41 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     return () => clearTimeout(t)
   }, [open, batchId, file, preview, mapping, orderDateFixed])
 
-  async function handleFileUpload(selectedFile: File) {
+  async function handleFileUpload(selectedFile: File, password = '') {
     setFile(selectedFile)
     setFileMissing(false)
     autoPresetTriedRef.current = false
     const formData = new FormData()
     formData.append('file', selectedFile)
+    if (password) formData.append('password', password)
     try {
       const res = await fetch('/api/sh/shipping/import/preview', {
         method: 'POST',
         body: formData,
       })
+      if (res.status === 422) {
+        const body = await res.json().catch(() => ({}))
+        if (body?.code === 'ENCRYPTED_FILE_PASSWORD_REQUIRED') {
+          // 첫 진입 — 비밀번호 모달 표시
+          setPasswordPrompt({ file: selectedFile })
+          setPasswordInput('')
+          setFilePassword('')
+          return
+        }
+        if (body?.code === 'WRONG_PASSWORD') {
+          // 재시도 — 같은 모달에 오류 표시
+          setPasswordPrompt({ file: selectedFile, error: '비밀번호가 올바르지 않습니다' })
+          setPasswordInput('')
+          setFilePassword('')
+          return
+        }
+        throw new Error(body?.error ?? '파일 미리보기 실패')
+      }
       if (!res.ok) throw new Error('파일 미리보기 실패')
       const data: Preview = await res.json()
       setPreview(data)
+      // 복호화 성공 — 이후 import 요청에도 같은 비밀번호 사용
+      setFilePassword(password)
 
       // 로드된 presets가 있으면 자동 프리셋 적용 시도, 없으면 autoMap 폴백
       let newMapping: Record<string, number[]>
@@ -621,6 +650,9 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     setOrderDateFixed(null)
     setFileMissing(false)
     setErrorDialog({ open: false, created: 0, errorCount: 0, errors: [] })
+    setFilePassword('')
+    setPasswordPrompt(null)
+    setPasswordInput('')
     autoPresetTriedRef.current = false
     try {
       sessionStorage.removeItem(draftKey(batchId))
@@ -656,6 +688,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       formData.append('file', file)
       formData.append('batchId', batchId)
       formData.append('channelId', selectedChannelId)
+      if (filePassword) formData.append('password', filePassword)
 
       // 고정 날짜 모드면 orderDate를 { fixed: "YYYY-MM-DD" } 로 변환
       const finalMapping: Record<string, number[] | { fixed: string }> = orderDateFixed
@@ -841,6 +874,70 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
           clearAll()
         }}
       />
+
+      <Dialog
+        open={passwordPrompt !== null}
+        onOpenChange={(v) => {
+          if (!v) {
+            setPasswordPrompt(null)
+            setPasswordInput('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>비밀번호로 보호된 파일</DialogTitle>
+            <DialogDescription>
+              선택한 파일이 비밀번호로 보호되어 있습니다. 파일 열기 비밀번호를 입력해 주세요.
+              <br />
+              <span className="text-xs text-muted-foreground">
+                비밀번호는 업로드 처리에만 사용되며 저장되지 않습니다.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (!passwordPrompt || !passwordInput) return
+              const target = passwordPrompt.file
+              setPasswordPrompt(null)
+              void handleFileUpload(target, passwordInput)
+              setPasswordInput('')
+            }}
+            className="space-y-3"
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="xlsx-password">비밀번호</Label>
+              <Input
+                id="xlsx-password"
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                autoFocus
+                autoComplete="off"
+              />
+              {passwordPrompt?.error && (
+                <p className="text-xs text-destructive">{passwordPrompt.error}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setPasswordPrompt(null)
+                  setPasswordInput('')
+                }}
+              >
+                취소
+              </Button>
+              <Button type="submit" disabled={!passwordInput}>
+                확인
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

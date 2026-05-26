@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { parseWithMapping, type ColumnMapping } from '@/lib/del/channel-import-parser'
 import { encryptOrderPii } from '@/lib/del/encryption'
 import { buildAliasLookup, normalizeAlias } from '@/lib/sh/product-matching'
+import { decryptXlsxBuffer, isEncryptedXlsx, WrongPasswordError } from '@/lib/sh/xlsx-encryption'
 
 /**
  * 에러 메시지를 사용자 친화적인 한글로 변환
@@ -62,7 +63,28 @@ export async function POST(req: NextRequest) {
     return errorResponse('columnMapping JSON이 유효하지 않습니다', 400)
   }
 
-  const buffer = await file.arrayBuffer()
+  let buffer = await file.arrayBuffer()
+  const password = (formData.get('password') as string | null) ?? ''
+
+  if (isEncryptedXlsx(buffer)) {
+    if (!password) {
+      return NextResponse.json(
+        { error: '비밀번호로 보호된 파일입니다', code: 'ENCRYPTED_FILE_PASSWORD_REQUIRED' },
+        { status: 422 }
+      )
+    }
+    try {
+      buffer = await decryptXlsxBuffer(buffer, password)
+    } catch (err) {
+      if (err instanceof WrongPasswordError) {
+        return NextResponse.json(
+          { error: '비밀번호가 올바르지 않습니다', code: 'WRONG_PASSWORD' },
+          { status: 422 }
+        )
+      }
+      return errorResponse('암호화된 파일을 복호화하지 못했습니다', 400)
+    }
+  }
 
   let rows: import('@/lib/del/channel-import-parser').ParsedOrderRow[]
   let parseErrors: { row: number; message: string }[]
