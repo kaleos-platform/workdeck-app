@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { encryptOrderPii } from '@/lib/del/encryption'
+import { MAX_ITEMS_PER_ORDER } from '@/lib/sh/shipping-constants'
 
 type Params = { params: Promise<{ orderId: string }> }
 
@@ -51,11 +52,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (Array.isArray(body?.items)) {
     await prisma.delOrderItem.deleteMany({ where: { orderId } })
     await prisma.delOrderItem.createMany({
-      data: body.items.slice(0, 10).map((item: { name: string; quantity: number }) => ({
-        orderId,
-        name: item.name,
-        quantity: item.quantity,
-      })),
+      data: body.items
+        .slice(0, MAX_ITEMS_PER_ORDER)
+        .map((item: { name: string; quantity: number }) => ({
+          orderId,
+          name: item.name,
+          quantity: item.quantity,
+        })),
     })
   }
 

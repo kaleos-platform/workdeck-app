@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { encryptOrderPii } from '@/lib/del/encryption'
+import { MAX_ITEMS_PER_ORDER } from '@/lib/sh/shipping-constants'
 
 type OrderInput = {
   shippingMethodId?: string | null
@@ -17,8 +18,6 @@ type OrderInput = {
   paymentAmount?: number | null
   items?: { name: string; quantity: number; optionId?: string | null }[]
 }
-
-const MAX_ITEMS_PER_ORDER = 10
 
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
