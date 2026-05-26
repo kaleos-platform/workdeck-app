@@ -311,6 +311,7 @@ export async function POST(req: NextRequest) {
         confidenceScore: item.forecastResult.confidence,
         inputsSnapshot: JSON.parse(
           JSON.stringify({
+            profile: item.forecastResult.debug.profile ?? null,
             forecastDebug: item.forecastResult.debug,
             biasAdjustFactor: item.biasAdjustFactor,
             windowDays: windowDaysByOption.get(item.optionId) ?? DEFAULT_WINDOW_DAYS,
