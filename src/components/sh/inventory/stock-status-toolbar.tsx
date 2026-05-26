@@ -32,13 +32,7 @@ type Props = {
 const ALL = '__all__'
 const NONE = '__none__' // 브랜드 없음
 
-export function StockStatusToolbar(props: Props) {
-  // q prop이 외부에서 바뀌면 input을 재마운트해 동기화 (setState in effect 회피)
-  return <ToolbarInner key={props.q} initialQ={props.q} {...props} />
-}
-
-function ToolbarInner({
-  initialQ,
+export function StockStatusToolbar({
   q,
   onlyLow,
   brands,
@@ -52,8 +46,15 @@ function ToolbarInner({
   onGroupChange,
   onLocationChange,
   onClearFilters,
-}: Props & { initialQ: string }) {
-  const [local, setLocal] = useState(initialQ)
+}: Props) {
+  // 외부 q 동기화 — React 공식 권장: useState 비교 후 setState 패턴
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [prevQ, setPrevQ] = useState(q)
+  const [local, setLocal] = useState(q)
+  if (q !== prevQ) {
+    setPrevQ(q)
+    setLocal(q)
+  }
 
   // debounce 300ms — local이 currentQ와 다를 때만 push
   useEffect(() => {
