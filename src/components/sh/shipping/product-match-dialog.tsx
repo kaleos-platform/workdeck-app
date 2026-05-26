@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -124,6 +124,10 @@ export function ProductMatchDialog({
   const [saveAlias, setSaveAlias] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
+  // 다이얼로그 오픈 시 input을 비우면서도 debouncedSearch는 rawName으로 시드한다.
+  // useEffect[search]가 첫 실행 때 search=''로 debouncedSearch를 덮어쓰지 않도록 1회 스킵.
+  const skipNextDebounce = useRef(false)
+
   const [optionResults, setOptionResults] = useState<OptionEntry[]>([])
   const [channelProductGroups, setChannelProductGroups] = useState<ChannelProductGroup[]>([])
   const [selectedChannelProductId, setSelectedChannelProductId] = useState<string | null>(null)
@@ -133,11 +137,13 @@ export function ProductMatchDialog({
 
   useEffect(() => {
     if (open) {
-      // 원본 상품명을 초기 검색어로 시드 — 신규(미학습) 상품도 관련 후보가 바로 좁혀진다.
-      // debounce 우회로 즉시 1차 조회. 사용자가 지우거나 수정하면 기존 흐름 그대로.
+      // input은 비워두되, 서버 조회는 원본 상품명으로 1차 시드 — 추천 결과가 즉시 노출되면서도
+      // 사용자가 새 검색어를 매번 지우지 않아도 되도록 한다.
       const seed = rawName ?? ''
-      setSearch(seed)
+      setSearch('')
       setDebouncedSearch(seed)
+      // debounce effect가 search=''로 debouncedSearch를 덮어쓰지 않도록 1회 skip.
+      skipNextDebounce.current = true
       setTab(channelSet ? 'listing' : 'manual')
       setManualItems([])
       setSelectedChannelProductId(null)
@@ -150,6 +156,10 @@ export function ProductMatchDialog({
   }, [debouncedSearch, channelId])
 
   useEffect(() => {
+    if (skipNextDebounce.current) {
+      skipNextDebounce.current = false
+      return
+    }
     const t = setTimeout(() => setDebouncedSearch(search), 300)
     return () => clearTimeout(t)
   }, [search])
