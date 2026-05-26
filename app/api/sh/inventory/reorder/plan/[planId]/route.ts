@@ -47,23 +47,58 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
     return errorResponse('발주 계획을 찾을 수 없습니다', 404)
   }
 
+  // productInfo: 상품 단위로 그룹핑하여 옵션 배열 형태로 재구성
+  const productInfoMap = new Map<
+    string,
+    {
+      productId: string
+      productName: string
+      productCode: string | null
+      brandName: string | null
+      options: Array<{ optionId: string; optionName: string; sku: string | null }>
+    }
+  >()
+
+  for (const item of plan.items) {
+    const pid = item.product.id
+    if (!productInfoMap.has(pid)) {
+      productInfoMap.set(pid, {
+        productId: pid,
+        productName: item.product.name ?? item.product.internalName ?? '',
+        productCode: item.product.code ?? null,
+        brandName: item.product.brand?.name ?? null,
+        options: [],
+      })
+    }
+    const entry = productInfoMap.get(pid)!
+    if (!entry.options.find((o) => o.optionId === item.option.id)) {
+      entry.options.push({
+        optionId: item.option.id,
+        optionName: item.option.name,
+        sku: item.option.sku ?? null,
+      })
+    }
+  }
+
   return NextResponse.json({
-    id: plan.id,
-    planNo: plan.planNo,
-    status: plan.status,
-    windowDays: plan.windowDays,
-    totalSuggestedQty: plan.totalSuggestedQty,
-    totalFinalQty: plan.totalFinalQty,
-    memo: plan.memo,
-    finalizedAt: plan.finalizedAt,
-    createdAt: plan.createdAt,
-    updatedAt: plan.updatedAt,
+    plan: {
+      id: plan.id,
+      planNo: plan.planNo,
+      status: plan.status,
+      windowDays: plan.windowDays,
+      finalizedAt: plan.finalizedAt,
+      biasAdjustApplied: plan.biasAdjustApplied,
+      totalSuggestedQty: plan.totalSuggestedQty,
+      totalFinalQty: plan.totalFinalQty,
+      memo: plan.memo,
+      createdAt: plan.createdAt,
+      updatedAt: plan.updatedAt,
+    },
     items: plan.items.map((item) => ({
       id: item.id,
+      planId: item.planId,
       optionId: item.optionId,
       productId: item.productId,
-      option: item.option,
-      product: item.product,
       currentStock: item.currentStock,
       dailyAvgForecast: Number(item.dailyAvgForecast),
       forecastModel: item.forecastModel,
@@ -79,6 +114,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       confidenceScore: item.confidenceScore ? Number(item.confidenceScore) : null,
       inputsSnapshot: item.inputsSnapshot,
     })),
+    productInfo: Array.from(productInfoMap.values()),
     accuracies: plan.accuracies.map((a) => ({
       ...a,
       wape: Number(a.wape),
