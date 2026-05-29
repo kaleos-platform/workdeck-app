@@ -37,17 +37,31 @@ export type HealthDistribution = {
 // 상태 판정
 // ────────────────────────────────────────────────────────────
 
+/**
+ * 옵션별 safetyStockQty 미설정(0) 시 사용하는 기본 부족 임계값.
+ * 재고 ≤ LOW_STOCK_THRESHOLD → 부족(LOW), 재고 ≤ 0 → 결품(OUT).
+ */
+export const LOW_STOCK_THRESHOLD = 10
+
 /** 셀(SKU × 위치) 단위 상태 판정 */
 export function statusForCell(available: number, safetyAtCell: number): StatusLabel {
   if (available <= 0) return 'OUT'
-  if (safetyAtCell > 0 && available < safetyAtCell) return 'LOW'
+  if (safetyAtCell > 0) {
+    if (available < safetyAtCell) return 'LOW'
+  } else if (available <= LOW_STOCK_THRESHOLD) {
+    return 'LOW'
+  }
   return 'OK'
 }
 
 /** SKU 단위 종합 상태 판정 (Σ available, Σ safety) */
 export function statusForSku(totalAvailable: number, totalSafetyStock: number): StatusLabel {
   if (totalAvailable <= 0) return 'OUT'
-  if (totalSafetyStock > 0 && totalAvailable < totalSafetyStock) return 'LOW'
+  if (totalSafetyStock > 0) {
+    if (totalAvailable < totalSafetyStock) return 'LOW'
+  } else if (totalAvailable <= LOW_STOCK_THRESHOLD) {
+    return 'LOW'
+  }
   return 'OK'
 }
 
