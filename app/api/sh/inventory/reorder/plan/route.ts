@@ -16,6 +16,7 @@ import { forecastOption, buildDailySeries, computeBiasAdjust } from '@/lib/inv/f
 import { generateTextWithFallback } from '@/lib/ai/providers'
 import { roundUp } from '@/lib/inv/round'
 import { mapWithConcurrency } from '@/lib/concurrency'
+import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
@@ -186,9 +187,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 4) 직전 FINALIZED 계획의 bias 로드 ───────────────────────────────────
-  const lastFinalized = await prisma.reorderPlan.findFirst({
-    where: { spaceId, status: 'FINALIZED' },
+  // ── 4) 직전 입고분 자동 정산(lazy) + 정산된 계획의 bias 로드 ──────────────
+  // cron 대신 발주 계획 생성 시점에 입고 완료된 FINALIZED 계획을 즉시 정산한다.
+  // 정산 실패는 무시하고 진행 → bias가 없으면 computeBiasAdjust(null)=1.0 폴백.
+  try {
+    await settleEligiblePlans(spaceId)
+  } catch {
+    // 정산 실패가 발주 계획 생성을 막지 않도록 무시
+  }
+
+  // accuracy가 채워진(=정산된) 가장 최근 계획의 bias를 사용.
+  // 정산 후 status가 CONSUMED로 바뀌므로 status 무관하게 accuracy 존재 여부로 조회.
+  const lastSettled = await prisma.reorderPlan.findFirst({
+    where: { spaceId, accuracies: { some: {} } },
     orderBy: { finalizedAt: 'desc' },
     select: {
       accuracies: {
@@ -197,8 +208,8 @@ export async function POST(req: NextRequest) {
     },
   })
   const biasByOption = new Map<string, number>()
-  if (lastFinalized) {
-    for (const acc of lastFinalized.accuracies) {
+  if (lastSettled) {
+    for (const acc of lastSettled.accuracies) {
       biasByOption.set(acc.optionId, Number(acc.bias))
     }
   }
