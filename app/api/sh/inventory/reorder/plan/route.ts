@@ -41,6 +41,27 @@ async function generatePlanNo(
   return `${dateStr}-${String(count + 1).padStart(3, '0')}`
 }
 
+// LLM 동시 호출 상한 (rate limit 방어)
+const LLM_CONCURRENCY = 5
+
+// 입력 배열을 limit개씩 동시 처리하며 입력 순서를 보존해 결과 반환
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length)
+  let cursor = 0
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const idx = cursor++
+      results[idx] = await fn(items[idx], idx)
+    }
+  })
+  await Promise.all(workers)
+  return results
+}
+
 // ─── LLM rationale 생성 ────────────────────────────────────────────────────────
 
 async function generateRationale(params: {
@@ -254,18 +275,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 6) LLM rationale 생성 (병렬) ─────────────────────────────────────────
-  const rationaleResults = await Promise.all(
-    itemInputs.map((item) =>
-      generateRationale({
-        model: item.forecastResult.model,
-        dailyAvg: item.forecastResult.dailyAvg,
-        leadTime: item.leadTimeDays,
-        safetyStock: item.safetyStockQty,
-        currentStock: item.currentStock,
-        profile: String(item.forecastResult.debug.profile ?? ''),
-      })
-    )
+  // ── 6) LLM rationale 생성 (concurrency 제한) ─────────────────────────────
+  // 옵션 수가 많을 때 LLM 동시 호출이 rate limit을 유발하므로 5건씩 제한
+  const rationaleResults = await mapWithConcurrency(itemInputs, LLM_CONCURRENCY, (item) =>
+    generateRationale({
+      model: item.forecastResult.model,
+      dailyAvg: item.forecastResult.dailyAvg,
+      leadTime: item.leadTimeDays,
+      safetyStock: item.safetyStockQty,
+      currentStock: item.currentStock,
+      profile: String(item.forecastResult.debug.profile ?? ''),
+    })
   )
 
   // ── 7) 트랜잭션 저장 (P2002 충돌 시 1회 재시도) ───────────────────────────
