@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import {
   healthRatioByCell,
   healthRatioBySku,
+  LOW_STOCK_THRESHOLD,
   statusForSku,
   turnoverDays,
   type CellFact,
@@ -394,26 +395,31 @@ export async function GET(req: NextRequest) {
   // ───────────────────────────────────────────────────────────────────
   const alertRows = allRows
     .filter((r) => r.status !== 'OK')
-    .map((r) => ({
-      optionId: r.optionId,
-      sku: r.sku,
-      productName: r.productName,
-      severity: r.status === 'OUT' ? 'OUT' : 'LOW',
-      qty: r.totalQty,
-      safetyStockQty: r.safetyStockQty,
-      message:
-        r.status === 'OUT'
-          ? '재고 없음 (결품)'
-          : `안전재고 미달 — 현재 ${r.totalQty} / 안전 ${r.safetyStockQty}`,
-      occurredAt: new Date().toISOString(),
-    }))
+    .map((r) => {
+      const effectiveSafety = r.safetyStockQty > 0 ? r.safetyStockQty : LOW_STOCK_THRESHOLD
+      return {
+        optionId: r.optionId,
+        sku: r.sku,
+        productName: r.productName,
+        severity: r.status === 'OUT' ? 'OUT' : 'LOW',
+        qty: r.totalQty,
+        safetyStockQty: r.safetyStockQty,
+        effectiveSafety,
+        message:
+          r.status === 'OUT'
+            ? '재고 없음 (결품)'
+            : `안전재고 미달 — 현재 ${r.totalQty} / 안전 ${effectiveSafety}`,
+        occurredAt: new Date().toISOString(),
+      }
+    })
     .sort((a, b) => {
       if (a.severity !== b.severity) return a.severity === 'OUT' ? -1 : 1
-      const aShort = Math.max(0, a.safetyStockQty - a.qty)
-      const bShort = Math.max(0, b.safetyStockQty - b.qty)
+      const aShort = Math.max(0, a.effectiveSafety - a.qty)
+      const bShort = Math.max(0, b.effectiveSafety - b.qty)
       return bShort - aShort
     })
     .slice(0, 20)
+    .map(({ effectiveSafety: _e, ...rest }) => rest)
 
   // ───────────────────────────────────────────────────────────────────
   // 8. 응답

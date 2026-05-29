@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { LOW_STOCK_THRESHOLD } from '@/lib/inv/metrics'
 import {
   LOCATION_TYPE_LABEL,
   STATUS_LABEL,
@@ -107,6 +108,8 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                     </td>
                     {visibleLocations.map((l) => {
                       const qty = row.byLocation[l.id]
+                      const effectiveSafety =
+                        row.safetyStockQty > 0 ? row.safetyStockQty : LOW_STOCK_THRESHOLD
                       return (
                         <td
                           key={l.id}
@@ -116,7 +119,7 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                               ? 'text-muted-foreground/50'
                               : qty === 0
                                 ? 'bg-red-50 text-red-700'
-                                : qty < row.safetyStockQty / Math.max(1, visibleLocations.length)
+                                : qty < effectiveSafety / Math.max(1, visibleLocations.length)
                                   ? 'bg-amber-50/70 text-amber-700'
                                   : ''
                           )}
