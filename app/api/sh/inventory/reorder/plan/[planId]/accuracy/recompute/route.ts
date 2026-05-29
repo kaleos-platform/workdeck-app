@@ -8,6 +8,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { computeAccuracy } from '@/lib/inv/forecast/accuracy'
+import { mapWithConcurrency } from '@/lib/concurrency'
+
+// DB 동시 작업 상한 (connection pool 보호)
+const ACCURACY_CONCURRENCY = 5
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ planId: string }> }) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -68,17 +72,12 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
   }
 
   const evaluatedAt = new Date()
-  const results: Array<{
-    optionId: string
-    wape: number
-    bias: number
-    stockoutDays: number
-    overstockDays: number
-  }> = []
 
-  for (const item of plan.items) {
+  // 옵션별 적중률 계산 + upsert를 동시 처리 (각 옵션 독립, distinct row → 충돌 없음)
+  // $transaction으로 감싸지 않음: interactive tx는 동시 쿼리 미지원
+  const computed = await mapWithConcurrency(plan.items, ACCURACY_CONCURRENCY, async (item) => {
     const stockedInAt = optionStockedInMap.get(item.optionId)
-    if (!stockedInAt) continue
+    if (!stockedInAt) return null
 
     const finalQty = optionFinalQtyMap.get(item.optionId) ?? item.finalQty
     const dailyAvgForecast = Number(item.dailyAvgForecast)
@@ -128,14 +127,16 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
       },
     })
 
-    results.push({
+    return {
       optionId: item.optionId,
       wape: accuracy.wape,
       bias: accuracy.bias,
       stockoutDays: accuracy.stockoutDays,
       overstockDays: accuracy.overstockDays,
-    })
-  }
+    }
+  })
+
+  const results = computed.filter((r): r is NonNullable<typeof r> => r !== null)
 
   // 계획 상태 CONSUMED로 전환
   await prisma.reorderPlan.update({
