@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  Trash2,
-  TrendingUp,
-  Pause,
-  DollarSign,
-  ArrowRight,
-} from 'lucide-react'
+import { Trash2, TrendingUp, Pause, DollarSign, ArrowRight, HelpCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -39,6 +33,19 @@ const TYPE_CONFIG: Record<
   },
 }
 
+// 미등록 type (LLM drift·레거시 데이터)에서도 크래시 없이 표시하기 위한 폴백
+const FALLBACK_TYPE_CONFIG = {
+  icon: HelpCircle,
+  label: '기타 제안',
+  className: 'text-muted-foreground',
+} as const
+
+const FALLBACK_PRIORITY_CONFIG = {
+  label: '미정',
+  variant: 'outline' as const,
+  className: '',
+}
+
 const PRIORITY_CONFIG: Record<
   SuggestionPriority,
   { label: string; variant: 'destructive' | 'secondary' | 'outline'; className: string }
@@ -51,7 +58,8 @@ const PRIORITY_CONFIG: Record<
   MEDIUM: {
     label: '보통',
     variant: 'outline',
-    className: 'border-yellow-400 bg-yellow-50 text-yellow-700 dark:border-yellow-500/50 dark:bg-yellow-900/20 dark:text-yellow-400',
+    className:
+      'border-yellow-400 bg-yellow-50 text-yellow-700 dark:border-yellow-500/50 dark:bg-yellow-900/20 dark:text-yellow-400',
   },
   LOW: {
     label: '낮음',
@@ -69,15 +77,12 @@ export function CampaignSuggestions({ suggestions, campaignNames }: CampaignSugg
   if (!suggestions || suggestions.length === 0) return null
 
   // Group suggestions by campaignId
-  const grouped = suggestions.reduce<Record<string, Suggestion[]>>(
-    (acc, suggestion) => {
-      const key = suggestion.campaignId || 'unknown'
-      if (!acc[key]) acc[key] = []
-      acc[key].push(suggestion)
-      return acc
-    },
-    {}
-  )
+  const grouped = suggestions.reduce<Record<string, Suggestion[]>>((acc, suggestion) => {
+    const key = suggestion.campaignId || 'unknown'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(suggestion)
+    return acc
+  }, {})
 
   const campaignIds = Object.keys(grouped)
 
@@ -87,17 +92,13 @@ export function CampaignSuggestions({ suggestions, campaignNames }: CampaignSugg
         const items = grouped[campaignId]
         // Use the first suggestion's target as a fallback campaign name
         const campaignLabel =
-          campaignId !== 'unknown'
-            ? campaignNames?.[campaignId] || campaignId
-            : '미분류 캠페인'
+          campaignId !== 'unknown' ? campaignNames?.[campaignId] || campaignId : '미분류 캠페인'
 
         return (
           <Card key={campaignId}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold">
-                  {campaignLabel}
-                </CardTitle>
+                <CardTitle className="text-sm font-semibold">{campaignLabel}</CardTitle>
                 <Badge variant="secondary" className="text-xs">
                   {items.length}건
                 </Badge>
@@ -105,8 +106,9 @@ export function CampaignSuggestions({ suggestions, campaignNames }: CampaignSugg
             </CardHeader>
             <CardContent className="space-y-3">
               {items.map((suggestion, i) => {
-                const typeConfig = TYPE_CONFIG[suggestion.type]
-                const priorityConfig = PRIORITY_CONFIG[suggestion.priority]
+                const typeConfig = TYPE_CONFIG[suggestion.type] ?? FALLBACK_TYPE_CONFIG
+                const priorityConfig =
+                  PRIORITY_CONFIG[suggestion.priority] ?? FALLBACK_PRIORITY_CONFIG
                 const Icon = typeConfig.icon
 
                 return (
@@ -126,9 +128,7 @@ export function CampaignSuggestions({ suggestions, campaignNames }: CampaignSugg
                       {/* Content */}
                       <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-medium">
-                            {suggestion.target}
-                          </span>
+                          <span className="text-sm font-medium">{suggestion.target}</span>
                           <Badge
                             variant={priorityConfig.variant}
                             className={cn('text-[10px]', priorityConfig.className)}
@@ -136,7 +136,9 @@ export function CampaignSuggestions({ suggestions, campaignNames }: CampaignSugg
                             {priorityConfig.label}
                           </Badge>
                           <Badge variant="outline" className="text-[10px]">
-                            {typeConfig.label}
+                            {typeConfig === FALLBACK_TYPE_CONFIG
+                              ? `${typeConfig.label} (${suggestion.type})`
+                              : typeConfig.label}
                           </Badge>
                         </div>
 
@@ -151,23 +153,22 @@ export function CampaignSuggestions({ suggestions, campaignNames }: CampaignSugg
                         )}
 
                         {/* Current → Suggested value */}
-                        {suggestion.currentValue != null &&
-                          suggestion.suggestedValue != null && (
-                            <div className="flex items-center gap-2 text-xs">
-                              <span className="rounded bg-muted px-1.5 py-0.5 font-mono">
-                                {suggestion.currentValue.toLocaleString()}
+                        {suggestion.currentValue != null && suggestion.suggestedValue != null && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="rounded bg-muted px-1.5 py-0.5 font-mono">
+                              {suggestion.currentValue.toLocaleString()}
+                            </span>
+                            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                            <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono font-medium text-primary">
+                              {suggestion.suggestedValue.toLocaleString()}
+                            </span>
+                            {suggestion.estimatedImpact && (
+                              <span className="text-muted-foreground">
+                                ({suggestion.estimatedImpact})
                               </span>
-                              <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                              <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono font-medium text-primary">
-                                {suggestion.suggestedValue.toLocaleString()}
-                              </span>
-                              {suggestion.estimatedImpact && (
-                                <span className="text-muted-foreground">
-                                  ({suggestion.estimatedImpact})
-                                </span>
-                              )}
-                            </div>
-                          )}
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
