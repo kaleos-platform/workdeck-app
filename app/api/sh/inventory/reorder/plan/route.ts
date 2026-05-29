@@ -14,6 +14,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { forecastOption, buildDailySeries, computeBiasAdjust } from '@/lib/inv/forecast'
 import { generateTextWithFallback } from '@/lib/ai/providers'
+import { roundUp } from '@/lib/inv/round'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
@@ -97,11 +98,6 @@ async function generateRationale(params: {
 }
 
 // ─── 수량 라운딩 ──────────────────────────────────────────────────────────────
-
-function roundUp(qty: number, unit: number): number {
-  if (unit <= 1) return Math.ceil(qty)
-  return Math.ceil(qty / unit) * unit
-}
 
 // ─── POST 핸들러 ──────────────────────────────────────────────────────────────
 
