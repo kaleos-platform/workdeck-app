@@ -5,7 +5,12 @@ import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
 import type { AnalysisType } from '@/generated/prisma/client'
 
-const VALID_TYPES: AnalysisType[] = ['DAILY_REVIEW', 'KEYWORD_AUDIT', 'BUDGET_OPTIMIZATION', 'CAMPAIGN_SCORING']
+const VALID_TYPES: AnalysisType[] = [
+  'DAILY_REVIEW',
+  'KEYWORD_AUDIT',
+  'BUDGET_OPTIMIZATION',
+  'CAMPAIGN_SCORING',
+]
 
 export async function POST(request: NextRequest) {
   // Worker 인증 또는 사용자 세션 인증
@@ -14,6 +19,7 @@ export async function POST(request: NextRequest) {
   const isWorker = Boolean(workerKey && expectedKey && workerKey === expectedKey)
 
   let workspaceId: string
+  let bodyData: Record<string, unknown> | undefined
 
   if (isWorker) {
     // Worker: body에서 workspaceId 읽기
@@ -24,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
     workspaceId = parsed.workspaceId
     // body를 다시 사용할 수 있도록 저장
-    var bodyData = parsed
+    bodyData = parsed
   } else {
     const resolved = await resolveWorkspace()
     if ('error' in resolved) return resolved.error
@@ -34,7 +40,13 @@ export async function POST(request: NextRequest) {
   const workspace = { id: workspaceId }
 
   // 요청 바디 파싱
-  let body: { from?: string; to?: string; reportType?: string; workspaceId?: string; triggeredBy?: string }
+  let body: {
+    from?: string
+    to?: string
+    reportType?: string
+    workspaceId?: string
+    triggeredBy?: string
+  }
   if (isWorker) {
     body = bodyData!
   } else {
