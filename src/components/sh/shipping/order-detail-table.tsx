@@ -148,7 +148,8 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
 
   // 필터
   const [channelFilter, setChannelFilter] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState('') // 입력값 (즉시)
+  const [debouncedQuery, setDebouncedQuery] = useState('') // 서버 검색용 (debounce)
 
   // 인라인 PII 복호화 상태
   const [decryptedRows, setDecryptedRows] = useState<Record<string, DecryptedPii>>({})
@@ -174,10 +175,21 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
       setPage(1)
       setChannelFilter('all')
       setSearchQuery('')
+      setDebouncedQuery('')
       setDecryptedRows({})
       prevBatchId.current = batchId
     }
   }, [batchId])
+
+  // 검색어 debounce 300ms — 서버 검색 키스트로크 폭주 + 한글 IME 조합 보호
+  useEffect(() => {
+    if (searchQuery === debouncedQuery) return
+    const t = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+      setPage(1)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [searchQuery, debouncedQuery])
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
@@ -186,6 +198,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
         page: String(page),
         pageSize: String(PAGE_SIZE),
       })
+      if (debouncedQuery) params.set('q', debouncedQuery)
       const res = await fetch(`/api/sh/shipping/batches/${batchId}/orders?${params}`)
       if (!res.ok) throw new Error('주문 목록 조회 실패')
       const json = await res.json()
@@ -196,7 +209,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     } finally {
       setLoading(false)
     }
-  }, [batchId, page])
+  }, [batchId, page, debouncedQuery])
 
   useEffect(() => {
     fetchOrders()
@@ -211,19 +224,16 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     return Array.from(map, ([id, name]) => ({ id, name }))
   }, [orders])
 
-  // 클라이언트 필터링
+  // 클라이언트 필터링 — 검색(q)은 서버 처리, 여기선 채널 필터만
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
       if (channelFilter !== 'all' && o.channel?.id !== channelFilter) return false
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase()
-        if (!o.orderNumber?.toLowerCase().includes(q)) return false
-      }
       return true
     })
-  }, [orders, channelFilter, searchQuery])
+  }, [orders, channelFilter])
 
-  const totalPages = Math.ceil(total / PAGE_SIZE)
+  // 검색(q) 시 서버가 전량 반환 — 페이지네이션 비활성
+  const totalPages = debouncedQuery ? 1 : Math.ceil(total / PAGE_SIZE)
 
   // 인라인 PII 복호화
   const handleDecryptInline = async (orderId: string) => {
@@ -368,10 +378,10 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
           </SelectContent>
         </Select>
         <Input
-          placeholder="주문번호 검색"
+          placeholder="주문번호·받는분·전화·주소·상품 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-[200px]"
+          className="max-w-[280px]"
         />
       </div>
 
