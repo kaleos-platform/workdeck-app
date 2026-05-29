@@ -13,6 +13,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { generateTextWithFallback } from '@/lib/ai/providers'
 import { forecastBayesian } from '@/lib/inv/forecast/bayesian'
+import { roundUp } from '@/lib/inv/round'
 
 const AnswerSchema = z.object({
   answers: z
@@ -202,9 +203,4 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pla
   })
 
   return NextResponse.json({ mode: 'updated', updates })
-}
-
-function roundUp(qty: number, unit: number): number {
-  if (unit <= 1) return Math.ceil(qty)
-  return Math.ceil(qty / unit) * unit
 }
