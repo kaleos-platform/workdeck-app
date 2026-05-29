@@ -15,6 +15,7 @@ import { prisma } from '@/lib/prisma'
 import { forecastOption, buildDailySeries, computeBiasAdjust } from '@/lib/inv/forecast'
 import { generateTextWithFallback } from '@/lib/ai/providers'
 import { roundUp } from '@/lib/inv/round'
+import { mapWithConcurrency } from '@/lib/concurrency'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
@@ -44,24 +45,6 @@ async function generatePlanNo(
 
 // LLM 동시 호출 상한 (rate limit 방어)
 const LLM_CONCURRENCY = 5
-
-// 입력 배열을 limit개씩 동시 처리하며 입력 순서를 보존해 결과 반환
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T, index: number) => Promise<R>
-): Promise<R[]> {
-  const results = new Array<R>(items.length)
-  let cursor = 0
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (cursor < items.length) {
-      const idx = cursor++
-      results[idx] = await fn(items[idx], idx)
-    }
-  })
-  await Promise.all(workers)
-  return results
-}
 
 // ─── LLM rationale 생성 ────────────────────────────────────────────────────────
 
