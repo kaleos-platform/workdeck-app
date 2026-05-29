@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
   const phoneSearchable = qDigits.length >= MIN_PHONE_DIGITS
 
   // 후보 = 이 space의 COMPLETED 묶음 주문 전량 (필요 필드만 select — 데이터 최소화)
+  // items는 압축 표시용 name/quantity만 — option/listing/fulfillments 매칭정보는 미포함.
   const candidates = await prisma.delOrder.findMany({
     where: { spaceId: resolved.space.id, batch: { status: 'COMPLETED' } },
     orderBy: { orderDate: 'desc' },
@@ -49,6 +50,9 @@ export async function GET(req: NextRequest) {
       orderNumber: true,
       orderDate: true,
       paymentAmount: true,
+      postalCode: true,
+      deliveryMessage: true,
+      memo: true,
       recipientNameEnc: true,
       recipientNameIv: true,
       phoneEnc: true,
@@ -56,6 +60,8 @@ export async function GET(req: NextRequest) {
       addressEnc: true,
       addressIv: true,
       channel: { select: { id: true, name: true } },
+      shippingMethod: { select: { id: true, name: true } },
+      items: { select: { name: true, quantity: true } },
     },
   })
 
@@ -82,7 +88,12 @@ export async function GET(req: NextRequest) {
     orderNumber: string | null
     orderDate: Date
     paymentAmount: unknown
+    postalCode: string | null
+    deliveryMessage: string | null
+    memo: string | null
     channel: { id: string; name: string } | null
+    shippingMethod: { id: string; name: string } | null
+    items: Array<{ name: string; quantity: number }>
   }> = []
 
   for (const o of candidates) {
@@ -120,7 +131,12 @@ export async function GET(req: NextRequest) {
       orderNumber: o.orderNumber,
       orderDate: o.orderDate,
       paymentAmount: o.paymentAmount,
+      postalCode: o.postalCode,
+      deliveryMessage: o.deliveryMessage,
+      memo: o.memo,
       channel: o.channel,
+      shippingMethod: o.shippingMethod,
+      items: o.items,
     })
   }
 
