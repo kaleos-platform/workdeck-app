@@ -1,8 +1,134 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { encryptOrderPii } from '@/lib/del/encryption'
+import { encryptOrderPii, decryptPii } from '@/lib/del/encryption'
+import { maskName, maskPhone, maskAddress } from '@/lib/del/pii-masker'
 import { MAX_ITEMS_PER_ORDER } from '@/lib/sh/shipping-constants'
+
+// 검색 입력 제약 — oracle 마찰 완화
+const MIN_QUERY_LENGTH = 2
+const MAX_QUERY_LENGTH = 100
+const MIN_PHONE_DIGITS = 4
+const DEFAULT_LIMIT = 50
+const MAX_LIMIT = 200
+
+/**
+ * GET /api/sh/shipping/orders?q=<검색어>&limit=<n>
+ *
+ * 전체 데이터(묶음 무관, COMPLETED만)를 받는분·주문번호·전화·주소로 검색한다.
+ * 받는분/전화/주소는 암호화 PII(row별 IV, 비결정적)라 DB 검색이 불가능하므로
+ * COMPLETED 주문 전량을 fetch한 뒤 메모리에서 복호화-후-필터한다. (prod 79건 규모)
+ * 결과는 항상 마스킹하며, 평문은 응답에 포함하지 않는다.
+ */
+export async function GET(req: NextRequest) {
+  const resolved = await resolveDeckContext('seller-hub')
+  if ('error' in resolved) return resolved.error
+
+  const rawQ = (req.nextUrl.searchParams.get('q') ?? '').trim()
+  const q = rawQ.slice(0, MAX_QUERY_LENGTH)
+  // 최소 검색 길이 미달 — 전체 덤프 방지
+  if (q.length < MIN_QUERY_LENGTH) {
+    return NextResponse.json({ data: [], total: 0, hasMore: false })
+  }
+
+  const limit = Math.min(
+    MAX_LIMIT,
+    Math.max(1, Number(req.nextUrl.searchParams.get('limit')) || DEFAULT_LIMIT)
+  )
+
+  const qLower = q.toLowerCase()
+  const qDigits = q.replace(/\D/g, '')
+  const phoneSearchable = qDigits.length >= MIN_PHONE_DIGITS
+
+  // 후보 = 이 space의 COMPLETED 묶음 주문 전량 (필요 필드만 select — 데이터 최소화)
+  const candidates = await prisma.delOrder.findMany({
+    where: { spaceId: resolved.space.id, batch: { status: 'COMPLETED' } },
+    orderBy: { orderDate: 'desc' },
+    select: {
+      id: true,
+      orderNumber: true,
+      orderDate: true,
+      paymentAmount: true,
+      recipientNameEnc: true,
+      recipientNameIv: true,
+      phoneEnc: true,
+      phoneIv: true,
+      addressEnc: true,
+      addressIv: true,
+      channel: { select: { id: true, name: true } },
+    },
+  })
+
+  // 키 설정 오류(ENCRYPTION_KEY 미설정/길이 오류)는 빈 결과로 숨기지 않고 500.
+  // decryptPii가 키 문제일 때 throw하는 것을 첫 후보에서 사전 검증한다.
+  if (candidates.length > 0) {
+    const first = candidates[0]
+    try {
+      decryptPii(first.recipientNameEnc, first.recipientNameIv)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : ''
+      // ENCRYPTION_KEY 관련 오류면 운영 장애 → 500. (row 손상은 아래 루프에서 개별 처리)
+      if (message.includes('ENCRYPTION_KEY') || message.includes('암호화 키')) {
+        return errorResponse('검색 처리 중 오류가 발생했습니다', 500)
+      }
+    }
+  }
+
+  const matched: Array<{
+    id: string
+    recipientName: string
+    phone: string
+    address: string
+    orderNumber: string | null
+    orderDate: Date
+    paymentAmount: unknown
+    channel: { id: string; name: string } | null
+  }> = []
+
+  for (const o of candidates) {
+    let name = ''
+    let phoneVal = ''
+    let addr = ''
+    let piiOk = true
+    try {
+      name = decryptPii(o.recipientNameEnc, o.recipientNameIv)
+      phoneVal = decryptPii(o.phoneEnc, o.phoneIv)
+      addr = decryptPii(o.addressEnc, o.addressIv)
+    } catch {
+      // 개별 row 복호화 실패(데이터 손상) — PII 매칭만 제외하고 orderNumber 매칭은 유지.
+      piiOk = false
+    }
+
+    const orderNumberMatch = !!o.orderNumber && o.orderNumber.toLowerCase().includes(qLower)
+    let piiMatch = false
+    if (piiOk) {
+      const phoneDigits = phoneVal.replace(/\D/g, '')
+      piiMatch =
+        name.toLowerCase().includes(qLower) ||
+        addr.toLowerCase().includes(qLower) ||
+        (phoneSearchable && phoneDigits.includes(qDigits))
+    }
+
+    if (!orderNumberMatch && !piiMatch) continue
+
+    matched.push({
+      id: o.id,
+      // 결과는 항상 마스킹. 복호화 실패 row는 플레이스홀더.
+      recipientName: piiOk ? maskName(name) : '[복호화 오류]',
+      phone: piiOk ? maskPhone(phoneVal) : '[복호화 오류]',
+      address: piiOk ? maskAddress(addr) : '[복호화 오류]',
+      orderNumber: o.orderNumber,
+      orderDate: o.orderDate,
+      paymentAmount: o.paymentAmount,
+      channel: o.channel,
+    })
+  }
+
+  const total = matched.length
+  const data = matched.slice(0, limit)
+
+  return NextResponse.json({ data, total, hasMore: total > limit })
+}
 
 type OrderInput = {
   shippingMethodId?: string | null
