@@ -7,6 +7,7 @@ import { OrderSearchBar } from '@/components/sh/shipping/order-search-bar'
 import { OrderSearchResults } from '@/components/sh/shipping/order-search-results'
 
 type ShippingMethod = { id: string; name: string; defaultSplitMode?: 'order' | 'option' }
+type Channel = { id: string; name: string }
 
 // 검색 발동 최소 길이 — API의 MIN_QUERY_LENGTH와 일치
 const MIN_QUERY_LENGTH = 2
@@ -14,12 +15,17 @@ const MIN_QUERY_LENGTH = 2
 export default function ShippingOrdersPage() {
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([])
+  const [channels, setChannels] = useState<Channel[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetch('/api/sh/shipping/shipping-methods?isActive=true')
       .then((r) => r.json())
       .then((data) => setShippingMethods(data.methods ?? []))
+      .catch(() => {})
+    fetch('/api/del/channels?isActive=true')
+      .then((r) => r.json())
+      .then((data) => setChannels(data.channels ?? []))
       .catch(() => {})
   }, [])
 
@@ -32,7 +38,11 @@ export default function ShippingOrdersPage() {
       <OrderSearchBar value={searchQuery} onChange={setSearchQuery} />
 
       {isSearching ? (
-        <OrderSearchResults query={searchQuery.trim()} />
+        <OrderSearchResults
+          query={searchQuery.trim()}
+          shippingMethods={shippingMethods}
+          channels={channels}
+        />
       ) : (
         <>
           <div className="rounded-lg border bg-card p-3">

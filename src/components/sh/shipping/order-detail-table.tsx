@@ -2,11 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -14,13 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -37,6 +28,7 @@ import {
   type OrderProduct,
 } from '@/components/sh/shipping/order-product-fields'
 import { ProductMatchDialog } from '@/components/sh/shipping/product-match-dialog'
+import { OrderEditDialog } from '@/components/sh/shipping/order-edit-dialog'
 
 interface OrderItemOption {
   id: string
@@ -147,7 +139,6 @@ interface OrderDetailTableProps {
 }
 
 const PAGE_SIZE = 50
-const NO_VALUE = '__none__'
 
 export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableProps) {
   const [orders, setOrders] = useState<Order[]>([])
@@ -163,30 +154,8 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
   const [decryptedRows, setDecryptedRows] = useState<Record<string, DecryptedPii>>({})
   const [decryptingId, setDecryptingId] = useState<string | null>(null)
 
-  // 수정 다이얼로그
-  const [editDialog, setEditDialog] = useState<{
-    open: boolean
-    order: Order | null
-    pii: DecryptedPii | null
-    loading: boolean
-    saving: boolean
-  }>({ open: false, order: null, pii: null, loading: false, saving: false })
-
-  // 수정 폼 상태
-  const [editForm, setEditForm] = useState({
-    recipientName: '',
-    phone: '',
-    address: '',
-    postalCode: '',
-    deliveryMessage: '',
-    orderDate: '',
-    orderNumber: '',
-    paymentAmount: '',
-    memo: '',
-    shippingMethodId: '',
-    channelId: '',
-    items: [{ name: '', quantity: 1 }] as { name: string; quantity: number }[],
-  })
+  // 수정 다이얼로그 — PII 복호화/폼 상태는 OrderEditDialog 내부에서 관리
+  const [editOrder, setEditOrder] = useState<Order | null>(null)
 
   // 매칭 다이얼로그 상태
   const [matchTarget, setMatchTarget] = useState<{
@@ -304,81 +273,18 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
   }
 
   // 수정 다이얼로그 열기
-  const openEditDialog = async (order: Order) => {
-    setEditDialog({ open: true, order, pii: null, loading: true, saving: false })
-    try {
-      const res = await fetch(`/api/sh/shipping/orders/${order.id}/decrypt`, { method: 'POST' })
-      if (!res.ok) throw new Error('복호화 실패')
-      const pii: DecryptedPii = await res.json()
-      setEditForm({
-        recipientName: pii.recipientName,
-        phone: pii.phone,
-        address: pii.address,
-        postalCode: order.postalCode ?? '',
-        deliveryMessage: order.deliveryMessage ?? '',
-        orderDate: order.orderDate?.split('T')[0] ?? '',
-        orderNumber: order.orderNumber ?? '',
-        paymentAmount: order.paymentAmount != null ? String(order.paymentAmount) : '',
-        memo: order.memo ?? '',
-        shippingMethodId: order.shippingMethod?.id ?? '',
-        channelId: order.channel?.id ?? '',
-        items:
-          order.items.length > 0
-            ? order.items.map((i) => ({ name: i.name, quantity: i.quantity }))
-            : [{ name: '', quantity: 1 }],
-      })
-      setEditDialog({ open: true, order, pii, loading: false, saving: false })
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '복호화 실패')
-      setEditDialog({ open: false, order: null, pii: null, loading: false, saving: false })
-    }
+  const openEditDialog = (order: Order) => {
+    setEditOrder(order)
   }
 
-  // 수정 저장
-  const handleSaveEdit = async () => {
-    if (!editDialog.order) return
-    if (!editForm.recipientName || !editForm.phone || !editForm.address) {
-      toast.error('받는분, 전화, 주소는 필수입니다')
-      return
-    }
-
-    setEditDialog((prev) => ({ ...prev, saving: true }))
-    try {
-      const res = await fetch(`/api/sh/shipping/orders/${editDialog.order.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipientName: editForm.recipientName,
-          phone: editForm.phone,
-          address: editForm.address,
-          postalCode: editForm.postalCode || null,
-          deliveryMessage: editForm.deliveryMessage || null,
-          orderDate: editForm.orderDate,
-          orderNumber: editForm.orderNumber || null,
-          paymentAmount: editForm.paymentAmount ? Number(editForm.paymentAmount) : null,
-          memo: editForm.memo || null,
-          shippingMethodId: editForm.shippingMethodId || undefined,
-          channelId: editForm.channelId || null,
-          items: editForm.items.filter((i) => i.name),
-        }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data?.message ?? '수정 실패')
-      }
-      toast.success('주문이 수정되었습니다')
-      setEditDialog({ open: false, order: null, pii: null, loading: false, saving: false })
-      // 복호화 캐시 제거 (마스킹 데이터가 바뀌므로)
-      setDecryptedRows((prev) => {
-        const next = { ...prev }
-        delete next[editDialog.order!.id]
-        return next
-      })
-      fetchOrders()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '수정 실패')
-      setEditDialog((prev) => ({ ...prev, saving: false }))
-    }
+  // 수정/삭제 후 — 복호화 캐시 무효화 + 재조회
+  const handleEditSaved = (orderId: string) => {
+    setDecryptedRows((prev) => {
+      const next = { ...prev }
+      delete next[orderId]
+      return next
+    })
+    fetchOrders()
   }
 
   // 수량 즉시 반영
@@ -421,27 +327,6 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     []
   )
 
-  // 삭제
-  const handleDelete = async () => {
-    if (!editDialog.order) return
-    if (!confirm('이 주문을 삭제하시겠습니까?')) return
-
-    try {
-      const res = await fetch(`/api/sh/shipping/orders/${editDialog.order.id}`, {
-        method: 'DELETE',
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data?.message ?? '삭제 실패')
-      }
-      toast.success('주문이 삭제되었습니다')
-      setEditDialog({ open: false, order: null, pii: null, loading: false, saving: false })
-      fetchOrders()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '삭제 실패')
-    }
-  }
-
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr)
     return d.toLocaleDateString('ko-KR', {
@@ -456,27 +341,6 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     const num = Number(amount)
     if (isNaN(num)) return amount
     return num.toLocaleString('ko-KR') + '원'
-  }
-
-  // 상품 항목 추가/제거 (수정 폼)
-  const addEditItem = () => {
-    if (editForm.items.length >= 10) return
-    setEditForm((prev) => ({
-      ...prev,
-      items: [...prev.items, { name: '', quantity: 1 }],
-    }))
-  }
-  const removeEditItem = (idx: number) => {
-    setEditForm((prev) => ({
-      ...prev,
-      items: prev.items.filter((_, i) => i !== idx),
-    }))
-  }
-  const updateEditItem = (idx: number, field: 'name' | 'quantity', value: string | number) => {
-    setEditForm((prev) => ({
-      ...prev,
-      items: prev.items.map((item, i) => (i === idx ? { ...item, [field]: value } : item)),
-    }))
   }
 
   return (
@@ -706,219 +570,31 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
         </div>
       )}
 
-      {/* 수정 다이얼로그 */}
-      <Dialog
-        open={editDialog.open}
-        onOpenChange={(open) => {
-          if (!open)
-            setEditDialog({ open: false, order: null, pii: null, loading: false, saving: false })
-        }}
-      >
-        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>주문 수정</DialogTitle>
-          </DialogHeader>
-          {editDialog.loading ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">복호화 중...</div>
-          ) : (
-            <div className="space-y-4">
-              {/* PII 필드 */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">받는분 *</Label>
-                  <Input
-                    className="h-8 text-sm"
-                    value={editForm.recipientName}
-                    onChange={(e) => setEditForm((f) => ({ ...f, recipientName: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">전화 *</Label>
-                  <Input
-                    className="h-8 text-sm"
-                    value={editForm.phone}
-                    onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">주소 *</Label>
-                <Input
-                  className="h-8 text-sm"
-                  value={editForm.address}
-                  onChange={(e) => setEditForm((f) => ({ ...f, address: e.target.value }))}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">우편번호</Label>
-                  <Input
-                    className="h-8 text-sm"
-                    value={editForm.postalCode}
-                    onChange={(e) => setEditForm((f) => ({ ...f, postalCode: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">주문일자</Label>
-                  <Input
-                    className="h-8 text-sm"
-                    type="date"
-                    value={editForm.orderDate}
-                    onChange={(e) => setEditForm((f) => ({ ...f, orderDate: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">배송메시지</Label>
-                <Input
-                  className="h-8 text-sm"
-                  value={editForm.deliveryMessage}
-                  onChange={(e) => setEditForm((f) => ({ ...f, deliveryMessage: e.target.value }))}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">주문번호</Label>
-                  <Input
-                    className="h-8 text-sm"
-                    value={editForm.orderNumber}
-                    onChange={(e) => setEditForm((f) => ({ ...f, orderNumber: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">결제금액</Label>
-                  <Input
-                    className="h-8 text-sm"
-                    type="number"
-                    value={editForm.paymentAmount}
-                    onChange={(e) => setEditForm((f) => ({ ...f, paymentAmount: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">배송방식</Label>
-                  <Select
-                    value={editForm.shippingMethodId || NO_VALUE}
-                    onValueChange={(v) =>
-                      setEditForm((f) => ({ ...f, shippingMethodId: v === NO_VALUE ? '' : v }))
-                    }
-                  >
-                    <SelectTrigger className="h-8 text-sm">
-                      <SelectValue placeholder="선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={NO_VALUE}>선택</SelectItem>
-                      {shippingMethods.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">판매채널</Label>
-                  <Select
-                    value={editForm.channelId || NO_VALUE}
-                    onValueChange={(v) =>
-                      setEditForm((f) => ({ ...f, channelId: v === NO_VALUE ? '' : v }))
-                    }
-                  >
-                    <SelectTrigger className="h-8 text-sm">
-                      <SelectValue placeholder="선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={NO_VALUE}>없음</SelectItem>
-                      {channels.map((ch) => (
-                        <SelectItem key={ch.id} value={ch.id}>
-                          {ch.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">메모</Label>
-                <Textarea
-                  className="h-16 text-sm"
-                  value={editForm.memo}
-                  onChange={(e) => setEditForm((f) => ({ ...f, memo: e.target.value }))}
-                />
-              </div>
-
-              {/* 상품 */}
-              <div className="space-y-2">
-                <Label className="text-xs">상품</Label>
-                {editForm.items.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Input
-                      className="h-8 flex-1 text-sm"
-                      placeholder="상품명"
-                      value={item.name}
-                      onChange={(e) => updateEditItem(idx, 'name', e.target.value)}
-                    />
-                    <Input
-                      className="h-8 w-20 text-sm"
-                      type="number"
-                      min={1}
-                      placeholder="수량"
-                      value={item.quantity}
-                      onChange={(e) => updateEditItem(idx, 'quantity', Number(e.target.value) || 1)}
-                    />
-                    {editForm.items.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => removeEditItem(idx)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                {editForm.items.length < 10 && (
-                  <Button variant="outline" size="sm" className="text-xs" onClick={addEditItem}>
-                    + 상품 추가
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-          <DialogFooter className="flex justify-between sm:justify-between">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              disabled={editDialog.loading || editDialog.saving}
-            >
-              <Trash2 className="mr-1 h-3.5 w-3.5" />
-              삭제
-            </Button>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  setEditDialog({
-                    open: false,
-                    order: null,
-                    pii: null,
-                    loading: false,
-                    saving: false,
-                  })
-                }
-              >
-                취소
-              </Button>
-              <Button onClick={handleSaveEdit} disabled={editDialog.loading || editDialog.saving}>
-                {editDialog.saving ? '저장 중...' : '저장'}
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* 수정 다이얼로그 (공용 컴포넌트) */}
+      {editOrder && (
+        <OrderEditDialog
+          orderId={editOrder.id}
+          open={!!editOrder}
+          onOpenChange={(open) => {
+            if (!open) setEditOrder(null)
+          }}
+          initial={{
+            postalCode: editOrder.postalCode,
+            deliveryMessage: editOrder.deliveryMessage,
+            orderDate: editOrder.orderDate,
+            orderNumber: editOrder.orderNumber,
+            paymentAmount: editOrder.paymentAmount,
+            memo: editOrder.memo,
+            shippingMethodId: editOrder.shippingMethod?.id ?? null,
+            channelId: editOrder.channel?.id ?? null,
+            items: editOrder.items.map((i) => ({ name: i.name, quantity: i.quantity })),
+          }}
+          shippingMethods={shippingMethods}
+          channels={channels}
+          onSaved={handleEditSaved}
+          onDeleted={handleEditSaved}
+        />
+      )}
 
       {/* 상품 옵션 매칭 다이얼로그 */}
       {matchTarget && (
