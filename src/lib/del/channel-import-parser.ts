@@ -58,6 +58,7 @@ export type ColumnMapping = {
 
 /** 파싱된 주문 행 */
 export type ParsedOrderRow = {
+  sourceRowNumber: number
   recipientName: string
   phone: string
   address: string
@@ -114,6 +115,98 @@ function sumNumeric(idx: number | number[] | undefined, row: unknown[]): number 
     }
   }
   return any ? total : undefined
+}
+
+const HEADER_SCAN_LIMIT = 20
+const MIN_HEADER_MATCH_COUNT = 3
+const SHIPPING_HEADER_TOKENS = new Set([
+  '상품주문번호',
+  '주문번호',
+  '배송속성',
+  '풀필먼트사(주문 기준)',
+  '택배사(주문 기준)',
+  '배송방법(구매자 요청)',
+  '배송방법',
+  '택배사',
+  '송장번호',
+  '발송일',
+  '판매채널',
+  '구매자명',
+  '구매자ID',
+  '수취인명',
+  '받는분',
+  '수령인',
+  '주문상태',
+  '주문세부상태',
+  '결제일',
+  '상품번호',
+  '상품명',
+  '옵션정보',
+  '수량',
+  '상품가격',
+  '결제금액',
+  '판매자 상품코드',
+  '수취인연락처1',
+  '수취인연락처2',
+  '전화',
+  '전화번호',
+  '연락처',
+  '통합배송지',
+  '기본배송지',
+  '상세배송지',
+  '받는분주소',
+  '주소',
+  '우편번호',
+  '배송메세지',
+  '배송메시지',
+  '배송요청사항',
+  '배송희망일',
+  '주문일시',
+])
+
+type DataRowWithNumber = {
+  row: unknown[]
+  rowNumber: number
+}
+
+function nonEmptyCellCount(row: unknown[]): number {
+  return Array.from(row).filter((cell) => cell != null && String(cell).trim() !== '').length
+}
+
+function isNonEmptyRow(row: unknown[]): boolean {
+  return nonEmptyCellCount(row) > 0
+}
+
+function scoreHeaderRow(row: unknown[]): number {
+  let score = 0
+  for (const cell of row) {
+    const value = cellToString(cell).trim()
+    if (SHIPPING_HEADER_TOKENS.has(value)) score++
+  }
+  return score
+}
+
+function detectHeaderRowIndex(rows: unknown[][]): number {
+  const scanCount = Math.min(rows.length, HEADER_SCAN_LIMIT)
+  let bestIndex = 0
+  let bestScore = 0
+
+  for (let i = 0; i < scanCount; i++) {
+    const score = scoreHeaderRow(rows[i] ?? [])
+    if (score > bestScore) {
+      bestScore = score
+      bestIndex = i
+    }
+  }
+
+  return bestScore >= MIN_HEADER_MATCH_COUNT ? bestIndex : 0
+}
+
+function getDataRows(rows: unknown[][], headerRowIndex: number): DataRowWithNumber[] {
+  return rows
+    .slice(headerRowIndex + 1)
+    .map((row, i) => ({ row, rowNumber: headerRowIndex + i + 2 }))
+    .filter(({ row }) => isNonEmptyRow(row))
 }
 
 /**
@@ -213,10 +306,9 @@ export function previewFile(buffer: ArrayBuffer, sheetName?: string): FilePrevie
   const jsonRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
 
   // 헤더 행과 모든 데이터 행 중 가장 긴 길이를 컬럼 수 기준으로 사용한다.
-  const headerRow = jsonRows[0] ?? []
-  const dataRowsRaw = jsonRows
-    .slice(1)
-    .filter((row) => Array.from(row).some((cell) => cell != null && String(cell).trim() !== ''))
+  const headerRowIndex = detectHeaderRowIndex(jsonRows)
+  const headerRow = jsonRows[headerRowIndex] ?? []
+  const dataRowsRaw = getDataRows(jsonRows, headerRowIndex).map(({ row }) => row)
   const maxColumns = Math.max(headerRow.length, ...dataRowsRaw.map((row) => row.length), 0)
 
   const headers = Array.from({ length: maxColumns }, (_, i) => String(headerRow[i] ?? '').trim())
@@ -258,15 +350,13 @@ export function parseWithMapping(
   const ws = wb.Sheets[wb.SheetNames[0]]
   const jsonRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
 
-  const dataRows = jsonRows
-    .slice(1)
-    .filter((row: unknown[]) => row.some((cell) => cell != null && String(cell).trim() !== ''))
+  const headerRowIndex = detectHeaderRowIndex(jsonRows)
+  const dataRows = getDataRows(jsonRows, headerRowIndex)
   const rows: ParsedOrderRow[] = []
   const errors: { row: number; message: string }[] = []
 
   for (let i = 0; i < dataRows.length; i++) {
-    const rawRow = dataRows[i]
-    const rowNum = i + 2 // Excel 행 번호 (1-based + header)
+    const { row: rawRow, rowNumber } = dataRows[i]
 
     // Date 인스턴스를 YYYY-MM-DD 문자열로 정규화
     const row = rawRow.map((cell: unknown) => (cell instanceof Date ? formatDateLocal(cell) : cell))
@@ -289,7 +379,7 @@ export function parseWithMapping(
     if (!phone) missing.push('전화')
     if (!address) missing.push('주소')
     if (missing.length > 0) {
-      errors.push({ row: rowNum, message: `필수 필드 누락: ${missing.join(', ')}` })
+      errors.push({ row: rowNumber, message: `필수 필드 누락: ${missing.join(', ')}` })
       continue
     }
 
@@ -328,6 +418,7 @@ export function parseWithMapping(
     const paymentAmount = sumNumeric(mapping.paymentAmount, row)
 
     rows.push({
+      sourceRowNumber: rowNumber,
       recipientName,
       phone,
       address,
