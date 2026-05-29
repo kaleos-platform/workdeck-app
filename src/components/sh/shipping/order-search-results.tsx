@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 
 type SearchOrder = {
@@ -13,6 +15,8 @@ type SearchOrder = {
   paymentAmount: string | null
   channel: { id: string; name: string } | null
 }
+
+type DecryptedPii = { recipientName: string; phone: string; address: string }
 
 type SearchResponse = {
   data: SearchOrder[]
@@ -42,6 +46,32 @@ export function OrderSearchResults({ query }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+  // 인라인 PII 복호화 (order-detail-table 패턴 재사용 — POST /orders/[id]/decrypt)
+  const [decryptedRows, setDecryptedRows] = useState<Record<string, DecryptedPii>>({})
+  const [decryptingId, setDecryptingId] = useState<string | null>(null)
+
+  const handleDecryptInline = async (orderId: string) => {
+    if (decryptedRows[orderId]) {
+      // 이미 복호화됨 → 토글(숨기기)
+      setDecryptedRows((prev) => {
+        const next = { ...prev }
+        delete next[orderId]
+        return next
+      })
+      return
+    }
+    setDecryptingId(orderId)
+    try {
+      const res = await fetch(`/api/sh/shipping/orders/${orderId}/decrypt`, { method: 'POST' })
+      if (!res.ok) throw new Error('복호화 실패')
+      const data: DecryptedPii = await res.json()
+      setDecryptedRows((prev) => ({ ...prev, [orderId]: data }))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '복호화 실패')
+    } finally {
+      setDecryptingId(null)
+    }
+  }
 
   const fetchResults = useCallback(async () => {
     abortRef.current?.abort()
@@ -58,6 +88,7 @@ export function OrderSearchResults({ query }: Props) {
       // stale 응답 가드 — 응답 파싱 중 다음 검색이 시작됐으면 무시
       if (!controller.signal.aborted && abortRef.current === controller) {
         setResult(json)
+        setDecryptedRows({}) // 새 검색 결과 → 복호화 캐시 초기화
       }
     } catch (err) {
       if ((err as Error).name === 'AbortError') return
@@ -126,19 +157,48 @@ export function OrderSearchResults({ query }: Props) {
             </tr>
           </thead>
           <tbody>
-            {orders.map((o) => (
-              <tr key={o.id} className="border-b last:border-0 hover:bg-muted/30">
-                <td className="max-w-[140px] min-w-[90px] truncate px-3 py-2">{o.recipientName}</td>
-                <td className="px-3 py-2">{o.orderNumber ?? '-'}</td>
-                <td className="max-w-[160px] min-w-[130px] truncate px-3 py-2">{o.phone}</td>
-                <td className="max-w-[320px] min-w-[240px] truncate px-3 py-2">{o.address}</td>
-                <td className="px-3 py-2">{o.channel?.name ?? '-'}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatDate(o.orderDate)}</td>
-                <td className="px-3 py-2 text-right whitespace-nowrap">
-                  {formatAmount(o.paymentAmount)}
-                </td>
-              </tr>
-            ))}
+            {orders.map((o) => {
+              const dec = decryptedRows[o.id]
+              const isDecrypting = decryptingId === o.id
+              return (
+                <tr key={o.id} className="border-b last:border-0 hover:bg-muted/30">
+                  <td className="max-w-[160px] min-w-[110px] px-3 py-2">
+                    <div className="flex items-start gap-1">
+                      <span className="truncate" title={dec?.recipientName ?? o.recipientName}>
+                        {dec?.recipientName ?? o.recipientName}
+                      </span>
+                      <button
+                        type="button"
+                        className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                        onClick={() => handleDecryptInline(o.id)}
+                        disabled={isDecrypting}
+                        title={dec ? '개인정보 숨기기' : '개인정보 보기'}
+                      >
+                        {dec ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">{o.orderNumber ?? '-'}</td>
+                  <td
+                    className="max-w-[160px] min-w-[130px] truncate px-3 py-2"
+                    title={dec?.phone ?? o.phone}
+                  >
+                    {dec?.phone ?? o.phone}
+                  </td>
+                  <td
+                    className="max-w-[320px] min-w-[240px] truncate px-3 py-2"
+                    title={dec?.address ?? o.address}
+                  >
+                    {dec?.address ?? o.address}
+                  </td>
+                  <td className="px-3 py-2">{o.channel?.name ?? '-'}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">{formatDate(o.orderDate)}</td>
+                  <td className="px-3 py-2 text-right whitespace-nowrap">
+                    {formatAmount(o.paymentAmount)}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
