@@ -106,9 +106,7 @@ export async function POST(req: NextRequest) {
     rows: import('@/lib/del/channel-import-parser').ParsedOrderRow[]
   }
   const groups = new Map<string, Group>()
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i]
-    const rowNum = i + 2
+  for (const row of rows) {
     const key = [
       row.recipientName,
       row.phone,
@@ -120,7 +118,7 @@ export async function POST(req: NextRequest) {
     if (existing) {
       existing.rows.push(row)
     } else {
-      groups.set(key, { firstRowNum: rowNum, rows: [row] })
+      groups.set(key, { firstRowNum: row.sourceRowNumber, rows: [row] })
     }
   }
 
