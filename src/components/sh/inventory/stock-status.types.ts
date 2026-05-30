@@ -1,23 +1,21 @@
 // Stock Status API 응답 타입 — `/api/sh/inventory/stock-status`
 
 export type LocationType = 'OWN' | 'THIRD_PARTY' | 'STORE'
-export type SkuStatus = 'OK' | 'LOW' | 'OUT'
-export type AlertSeverity = 'OUT' | 'LOW'
+export type SkuStatus = 'OK' | 'LOW' | 'OUT' | 'OVER'
 
 export type HealthDistribution = {
   ok: number
   low: number
   out: number
+  over: number
   total: number
 }
 
 export type StockKpis = {
-  totalBrands: number
   totalSkus: number
   totalQty: number
   totalValue: number
   lowStockCount: number
-  averageTurnoverDays: number | null
 }
 
 export type StockBrandGroup = {
@@ -38,6 +36,12 @@ export type StockBrand = {
   healthRatio: HealthDistribution
 }
 
+export type LocationProductBreakdown = {
+  productId: string
+  productName: string
+  qty: number
+}
+
 export type StockLocation = {
   id: string
   name: string
@@ -45,7 +49,17 @@ export type StockLocation = {
   skuCount: number
   totalQty: number
   totalValue: number
-  healthDistribution: HealthDistribution
+  /** 도넛 드릴다운용 — 필터 무관 전체 기준, qty 내림차순 */
+  productBreakdown: LocationProductBreakdown[]
+}
+
+export type StockProductSummary = {
+  productId: string
+  productName: string
+  optionCount: number
+  lowOptionCount: number
+  outOptionCount: number
+  overOptionCount: number
 }
 
 export type StockMatrixRow = {
@@ -67,28 +81,19 @@ export type StockMatrixRow = {
   totalValue: number
   byLocation: Record<string, number>
   externalCodeByLocation: Record<string, string>
+  incomingQty: number
   status: SkuStatus
-  turnoverDays: number | null
-}
-
-export type StockAlert = {
-  optionId: string
-  sku: string | null
-  productName: string
-  severity: AlertSeverity
-  qty: number
-  safetyStockQty: number
-  message: string
-  occurredAt: string
 }
 
 export type StockStatusResponse = {
   snapshotAt: string
   kpis: StockKpis
+  overallHealth: HealthDistribution
   brands: StockBrand[]
   locations: StockLocation[]
+  products: StockProductSummary[]
   matrix: { rows: StockMatrixRow[] }
-  alerts: StockAlert[]
+  groups: unknown[]
 }
 
 export const LOCATION_TYPE_LABEL: Record<LocationType, string> = {
@@ -101,4 +106,5 @@ export const STATUS_LABEL: Record<SkuStatus, string> = {
   OK: '정상',
   LOW: '부족',
   OUT: '결품',
+  OVER: '과잉',
 }

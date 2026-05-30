@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { LOW_STOCK_THRESHOLD } from '@/lib/inv/metrics'
 import {
   LOCATION_TYPE_LABEL,
   STATUS_LABEL,
@@ -27,6 +26,7 @@ const STATUS_BADGE: Record<SkuStatus, string> = {
   OK: 'border-emerald-300 bg-emerald-50 text-emerald-700',
   LOW: 'border-amber-300 bg-amber-50 text-amber-700',
   OUT: 'border-red-300 bg-red-50 text-red-700',
+  OVER: 'border-indigo-300 bg-indigo-50 text-indigo-700',
 }
 
 export function StockStatusMatrix({ rows, locations, loading, selectedLocationId }: Props) {
@@ -87,6 +87,9 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                       </div>
                     </th>
                   ))}
+                  <th className="min-w-[90px] border-l px-2 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    입고예정
+                  </th>
                   <th className="sticky right-0 z-30 min-w-[140px] border-l bg-muted/40 px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     합계
                   </th>
@@ -108,8 +111,8 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                     </td>
                     {visibleLocations.map((l) => {
                       const qty = row.byLocation[l.id]
-                      const effectiveSafety =
-                        row.safetyStockQty > 0 ? row.safetyStockQty : LOW_STOCK_THRESHOLD
+                      // 셀 단위 출고량 데이터가 없어 위치별 부족 판정 불가.
+                      // 상태(부족/과잉)는 합계 컬럼의 배지로만 표시하고, 셀은 결품(0)만 강조.
                       return (
                         <td
                           key={l.id}
@@ -119,23 +122,27 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                               ? 'text-muted-foreground/50'
                               : qty === 0
                                 ? 'bg-red-50 text-red-700'
-                                : qty < effectiveSafety / Math.max(1, visibleLocations.length)
-                                  ? 'bg-amber-50/70 text-amber-700'
-                                  : ''
+                                : ''
                           )}
                         >
                           {qty === undefined ? '—' : KRW.format(qty)}
                         </td>
                       )
                     })}
+                    {/* 입고예정 컬럼 */}
+                    <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
+                      {row.incomingQty > 0 ? (
+                        <span className="text-blue-600">{KRW.format(row.incomingQty)}</span>
+                      ) : (
+                        <span className="text-muted-foreground/50">—</span>
+                      )}
+                    </td>
+                    {/* 합계 + 상태 */}
                     <td className="sticky right-0 z-10 border-l bg-card px-3 py-2 text-right">
                       <div className="font-mono text-sm font-semibold tabular-nums">
                         {KRW.format(row.totalQty)}
                       </div>
                       <div className="mt-0.5 flex items-center justify-end gap-1.5">
-                        <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
-                          {row.turnoverDays === null ? '— 일' : `${row.turnoverDays}일`}
-                        </span>
                         <Badge
                           variant="outline"
                           className={cn('text-[10px]', STATUS_BADGE[row.status])}

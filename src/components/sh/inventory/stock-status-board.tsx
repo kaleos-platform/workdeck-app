@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { StockStatusHeader } from './stock-status-header'
 import { StockStatusKpis } from './stock-status-kpis'
 import { StockStatusLocations } from './stock-status-locations'
-import { StockStatusAlerts } from './stock-status-alerts'
+import { StockStatusProducts } from './stock-status-products'
 import { StockStatusToolbar } from './stock-status-toolbar'
 import { StockStatusMatrix } from './stock-status-matrix'
 import type { StockStatusResponse } from './stock-status.types'
@@ -80,7 +80,7 @@ export function StockStatusBoard() {
     [updateParams]
   )
 
-  // select에서 브랜드 변경 — 브랜드가 바뀌면 groupId 함께 클리어 (해당 브랜드 소속이 아닐 수 있음)
+  // 브랜드 변경 시 groupId도 함께 클리어 (다른 브랜드 소속일 수 있음)
   const handleBrandChange = useCallback(
     (newBrandId: string | null) => updateParams({ brandId: newBrandId, groupId: null }),
     [updateParams]
@@ -108,6 +108,12 @@ export function StockStatusBoard() {
     [updateParams]
   )
 
+  // 상품명으로 매트릭스 필터 (q 파라미터 재사용)
+  const handleProductSelect = useCallback(
+    (productName: string) => updateParams({ q: productName }),
+    [updateParams]
+  )
+
   const allRows = data?.matrix.rows ?? []
   const visibleRows = locationId
     ? allRows.filter((r) => r.byLocation[locationId] !== undefined)
@@ -117,12 +123,22 @@ export function StockStatusBoard() {
     <div className="space-y-5">
       <StockStatusHeader loading={loading} onRefresh={fetchData} />
 
-      <StockStatusKpis kpis={data?.kpis ?? null} />
-
+      {/* KPI(좌) + 위치 분포 도넛(우) 나란히 배치 */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <StockStatusLocations locations={data?.locations ?? []} loading={loading && !data} />
-        <StockStatusAlerts alerts={data?.alerts ?? []} loading={loading && !data} />
+        <StockStatusKpis kpis={data?.kpis ?? null} />
+        <StockStatusLocations
+          locations={data?.locations ?? []}
+          loading={loading && !data}
+          onViewLocationDetail={(locId) => handleLocationChange(locId)}
+        />
       </div>
+
+      {/* 상품별 재고 요약 */}
+      <StockStatusProducts
+        products={data?.products ?? []}
+        loading={loading && !data}
+        onSelectProduct={handleProductSelect}
+      />
 
       <StockStatusToolbar
         q={q}
