@@ -45,11 +45,13 @@ type BundlePreview = {
 type DeliveryFileDialogProps = {
   batchId: string
   disabled?: boolean
+  /** 파일 생성·다운로드 성공 후 호출 (다이얼로그가 닫힌 뒤 실행) */
+  onGenerated?: () => void
 }
 
 const SAMPLE_LIMIT = 5
 
-export function DeliveryFileDialog({ batchId, disabled }: DeliveryFileDialogProps) {
+export function DeliveryFileDialog({ batchId, disabled, onGenerated }: DeliveryFileDialogProps) {
   const [open, setOpen] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -122,6 +124,7 @@ export function DeliveryFileDialog({ batchId, disabled }: DeliveryFileDialogProp
 
       toast.success('배송 파일이 다운로드되었습니다')
       setOpen(false)
+      onGenerated?.()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '파일 생성 실패')
     } finally {
@@ -144,8 +147,8 @@ export function DeliveryFileDialog({ batchId, disabled }: DeliveryFileDialogProp
         <DialogHeader>
           <DialogTitle>배송 파일 미리보기</DialogTitle>
           <DialogDescription>
-            배치 안 주문의 배송 방식별로 파일이 자동 분할됩니다. 단일 방식이면 .xlsx, 2개
-            이상이면 .zip 으로 다운로드됩니다.
+            배치 안 주문의 배송 방식별로 파일이 자동 분할됩니다. 단일 방식이면 .xlsx, 2개 이상이면
+            .zip 으로 다운로드됩니다.
           </DialogDescription>
         </DialogHeader>
 
@@ -163,8 +166,7 @@ export function DeliveryFileDialog({ batchId, disabled }: DeliveryFileDialogProp
               </span>
               <span>·</span>
               <span>
-                배송 방식{' '}
-                <strong className="text-foreground">{preview.methodCount}개</strong>
+                배송 방식 <strong className="text-foreground">{preview.methodCount}개</strong>
               </span>
               <span>·</span>
               <span>
@@ -181,11 +183,7 @@ export function DeliveryFileDialog({ batchId, disabled }: DeliveryFileDialogProp
         )}
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={generating}
-          >
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={generating}>
             <ChevronLeft className="mr-1 h-4 w-4" />
             취소
           </Button>
@@ -210,7 +208,9 @@ function MethodPreviewCard({ method }: { method: MethodPreview }) {
         <Package className="h-3.5 w-3.5 text-muted-foreground" />
         <strong className="text-sm">{method.methodName}</strong>
         <span className="text-muted-foreground">·</span>
-        <span>{method.totalOrders}주문 → {method.totalRows}행</span>
+        <span>
+          {method.totalOrders}주문 → {method.totalRows}행
+        </span>
         <span className="text-muted-foreground">·</span>
         <span>{method.splitMode === 'option' ? '옵션당 1행' : '주문당 1행'}</span>
       </div>

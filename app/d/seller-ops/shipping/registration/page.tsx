@@ -800,7 +800,11 @@ export default function ShippingRegistrationPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">배송 등록</h1>
         <div className="flex items-center gap-2">
-          <DeliveryFileDialog batchId={activeBatchId} disabled={actionsDisabled} />
+          <DeliveryFileDialog
+            batchId={activeBatchId}
+            disabled={actionsDisabled}
+            onGenerated={handleComplete}
+          />
           <Button
             variant="default"
             size="sm"
