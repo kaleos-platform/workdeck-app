@@ -24,16 +24,10 @@ export function StockStatusKpis({ kpis }: Props) {
   }> = kpis
     ? [
         {
-          label: '총 브랜드',
-          value: KRW.format(kpis.totalBrands),
-          unit: '개',
-          meta: `${KRW.format(kpis.totalSkus)} SKU 등록`,
-        },
-        {
           label: '총 재고 수량',
           value: KRW.format(kpis.totalQty),
           unit: 'EA',
-          meta: '전체 위치 합산',
+          meta: `${KRW.format(kpis.totalSkus)} SKU 전체 위치 합산`,
         },
         {
           label: '총 재고 가치',
@@ -44,22 +38,16 @@ export function StockStatusKpis({ kpis }: Props) {
           label: '재고 부족 SKU',
           value: KRW.format(kpis.lowStockCount),
           unit: `/ ${KRW.format(kpis.totalSkus)}`,
-          meta: '안전재고 기준',
-        },
-        {
-          label: '평균 회전일',
-          value: kpis.averageTurnoverDays === null ? '—' : KRW.format(kpis.averageTurnoverDays),
-          unit: kpis.averageTurnoverDays === null ? undefined : '일',
-          meta: '최근 30일 출고 기준',
+          meta: '최근 30일 출고량 기준 (부족·결품)',
         },
       ]
     : []
 
   return (
     <Card className="overflow-hidden p-0">
-      <div className="grid grid-cols-2 divide-x divide-y md:grid-cols-3 md:divide-y-0 lg:grid-cols-5">
+      <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {items.length === 0
-          ? Array.from({ length: 5 }).map((_, i) => <KpiCellSkeleton key={i} />)
+          ? Array.from({ length: 3 }).map((_, i) => <KpiCellSkeleton key={i} />)
           : items.map((item) => (
               <KpiCell
                 key={item.label}
