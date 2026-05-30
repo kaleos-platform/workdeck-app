@@ -3,19 +3,14 @@ import { Prisma } from '@/generated/prisma/client'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import {
-  healthRatioByCell,
   healthRatioBySku,
-  LOW_STOCK_THRESHOLD,
   statusForSku,
-  turnoverDays,
-  type CellFact,
   type HealthDistribution,
   type SkuFact,
   type StatusLabel,
 } from '@/lib/inv/metrics'
 
 const NO_BRAND_KEY = '__no_brand__'
-const TURNOVER_WINDOW_DAYS = 30
 
 function decimalToNumber(d: Prisma.Decimal | null | undefined): number | null {
   if (d === null || d === undefined) return null
@@ -26,11 +21,11 @@ function decimalToNumber(d: Prisma.Decimal | null | undefined): number | null {
 /**
  * 재고 현황 API
  * 응답:
- *   - kpis: 워크스페이스 집계 (브랜드/SKU/수량/가치/부족 SKU)
+ *   - kpis: 워크스페이스 집계 (SKU/수량/가치/부족 SKU)
  *   - brands: 브랜드 → 그룹 트리 (각 노드 totalQty/totalValue/skuCount)
  *   - locations: 위치별 집계 (type 포함)
- *   - matrix.rows: SKU × 위치 행 (totalQty, byLocation, status)
- *   - alerts: 결품/부족 알림 (severity 정렬, 상위 N)
+ *   - products: 상품 단위 롤업 (optionCount/lowOptionCount/outOptionCount/overOptionCount)
+ *   - matrix.rows: SKU × 위치 행 (totalQty, byLocation, status, incomingQty)
  *   - groups / locations(legacy): 기존 UI 호환용 (PR-2에서 제거 예정)
  *
  * searchParams: brandId, groupId, q, onlyLow — matrix.rows에만 적용
@@ -47,7 +42,8 @@ export async function GET(req: NextRequest) {
   const onlyLow = searchParams.get('onlyLow') === '1' || searchParams.get('onlyLow') === 'true'
 
   const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000)
-  const since30d = new Date(Date.now() - TURNOVER_WINDOW_DAYS * 24 * 3600 * 1000)
+  const since30d = new Date(Date.now() - 30 * 24 * 3600 * 1000)
+  const since90d = new Date(Date.now() - 90 * 24 * 3600 * 1000)
 
   // 위치 목록 (type 포함)
   const locations = await prisma.invStorageLocation.findMany({
@@ -82,15 +78,58 @@ export async function GET(req: NextRequest) {
     outbound7dAgg.map((a) => [a.optionId, Math.abs(a._sum.quantity ?? 0)])
   )
 
-  // 최근 30일 OUTBOUND 집계 (회전일 계산용)
+  // 최근 30일 판매채널 OUTBOUND 집계 (상태 판정: LOW 기준)
   const outbound30dAgg = await prisma.invMovement.groupBy({
     by: ['optionId'],
-    where: { spaceId, type: 'OUTBOUND', movementDate: { gte: since30d } },
+    where: {
+      spaceId,
+      type: 'OUTBOUND',
+      movementDate: { gte: since30d },
+      channelId: { not: null },
+    },
     _sum: { quantity: true },
   })
   const outbound30dByOption = new Map(
     outbound30dAgg.map((a) => [a.optionId, Math.abs(a._sum.quantity ?? 0)])
   )
+
+  // 최근 90일 판매채널 OUTBOUND 집계 (상태 판정: OVER 기준)
+  const outbound90dAgg = await prisma.invMovement.groupBy({
+    by: ['optionId'],
+    where: {
+      spaceId,
+      type: 'OUTBOUND',
+      movementDate: { gte: since90d },
+      channelId: { not: null },
+    },
+    _sum: { quantity: true },
+  })
+  const outbound90dByOption = new Map(
+    outbound90dAgg.map((a) => [a.optionId, Math.abs(a._sum.quantity ?? 0)])
+  )
+
+  // 입고예정 집계 (PLANNED/ORDERED 상태의 ProductionRun 미입고분)
+  // groupBy에서 relation 필터 미지원 → findMany + items include 방식으로 집계
+  const pendingRuns = await prisma.productionRun.findMany({
+    where: {
+      spaceId,
+      status: { in: ['PLANNED', 'ORDERED'] },
+    },
+    select: {
+      items: {
+        select: { optionId: true, quantity: true },
+      },
+    },
+  })
+  const incomingByOption = new Map<string, number>()
+  for (const run of pendingRuns) {
+    for (const item of run.items) {
+      incomingByOption.set(
+        item.optionId,
+        (incomingByOption.get(item.optionId) ?? 0) + item.quantity
+      )
+    }
+  }
 
   // 그룹 → 상품 → 옵션 + 재고 + 브랜드 트리 조회
   const groups = await prisma.invProductGroup.findMany({
@@ -176,15 +215,11 @@ export async function GET(req: NextRequest) {
     safetyStockQty: number
     totalQty: number
     totalValue: number
+    incomingQty: number
     byLocation: Record<string, number>
     externalCodeByLocation: Record<string, string>
     status: StatusLabel
-    turnoverDays: number | null
   }
-
-  // 셀 단위 fact 수집 (위치 분포 카드의 healthDistribution용)
-  const cellFactsByLocation = new Map<string, CellFact[]>()
-  for (const l of locations) cellFactsByLocation.set(l.id, [])
 
   const allRows: MatrixRow[] = []
   for (const g of groups) {
@@ -192,22 +227,14 @@ export async function GET(req: NextRequest) {
       for (const o of p.options) {
         const byLocation: Record<string, number> = {}
         let totalQty = 0
-        // 옵션 단위 안전재고를 보유 위치 수로 균등 분배해 셀별 임계 추정
-        const numLocations = o.stockLevels.length
-        const safetyAtCell = numLocations > 0 ? Math.ceil(o.safetyStockQty / numLocations) : 0
         for (const sl of o.stockLevels) {
           byLocation[sl.locationId] = sl.quantity
           totalQty += sl.quantity
-          cellFactsByLocation.get(sl.locationId)?.push({
-            optionId: o.id,
-            locationId: sl.locationId,
-            available: sl.quantity,
-            safetyAtCell,
-          })
         }
         const costPrice = decimalToNumber(o.costPrice)
         const totalValue = costPrice !== null ? Math.round(costPrice * totalQty) : 0
         const out30d = outbound30dByOption.get(o.id) ?? 0
+        const out90d = outbound90dByOption.get(o.id) ?? 0
         const externalCodeByLocation: Record<string, string> = {}
         const optionMap = externalCodeByOptionLocation.get(o.id)
         if (optionMap) {
@@ -230,10 +257,10 @@ export async function GET(req: NextRequest) {
           safetyStockQty: o.safetyStockQty,
           totalQty,
           totalValue,
+          incomingQty: incomingByOption.get(o.id) ?? 0,
           byLocation,
           externalCodeByLocation,
-          status: statusForSku(totalQty, o.safetyStockQty),
-          turnoverDays: turnoverDays(totalQty, out30d, TURNOVER_WINDOW_DAYS),
+          status: statusForSku(totalQty, out30d, out90d),
         })
       }
     }
@@ -244,16 +271,15 @@ export async function GET(req: NextRequest) {
   // ───────────────────────────────────────────────────────────────────
   let totalQty = 0
   let totalValue = 0
-  const brandIdSet = new Set<string>()
   const skuFacts: SkuFact[] = []
   for (const r of allRows) {
     totalQty += r.totalQty
     totalValue += r.totalValue
-    if (r.brandId) brandIdSet.add(r.brandId)
     skuFacts.push({
       optionId: r.optionId,
-      totalAvailable: r.totalQty,
-      totalSafetyStock: r.safetyStockQty,
+      stock: r.totalQty,
+      out30d: outbound30dByOption.get(r.optionId) ?? 0,
+      out90d: outbound90dByOption.get(r.optionId) ?? 0,
     })
   }
   const overallHealth = healthRatioBySku(skuFacts)
@@ -305,8 +331,9 @@ export async function GET(req: NextRequest) {
     gAgg.totalValue += r.totalValue
     gAgg.skuFacts.push({
       optionId: r.optionId,
-      totalAvailable: r.totalQty,
-      totalSafetyStock: r.safetyStockQty,
+      stock: r.totalQty,
+      out30d: outbound30dByOption.get(r.optionId) ?? 0,
+      out90d: outbound90dByOption.get(r.optionId) ?? 0,
     })
   }
 
@@ -342,10 +369,13 @@ export async function GET(req: NextRequest) {
   })
 
   // ───────────────────────────────────────────────────────────────────
-  // 5. 위치별 집계
+  // 5. 위치별 집계 (healthDistribution 제거 — Phase2에서 도넛 차트로 대체)
   // ───────────────────────────────────────────────────────────────────
   const locationAgg = new Map<string, { skuCount: number; totalQty: number; totalValue: number }>()
   for (const l of locations) locationAgg.set(l.id, { skuCount: 0, totalQty: 0, totalValue: 0 })
+  // 위치별 상품 수량 집계 (도넛 드릴다운용 — 필터 무관 전체 기준)
+  const productByLocation = new Map<string, Map<string, { name: string; qty: number }>>()
+  for (const l of locations) productByLocation.set(l.id, new Map())
   for (const r of allRows) {
     for (const [locId, qty] of Object.entries(r.byLocation)) {
       const agg = locationAgg.get(locId)
@@ -353,20 +383,68 @@ export async function GET(req: NextRequest) {
       agg.skuCount += 1
       agg.totalQty += qty
       agg.totalValue += r.costPrice !== null ? Math.round(r.costPrice * qty) : 0
+      const pm = productByLocation.get(locId)!
+      const entry = pm.get(r.productId)
+      if (entry) entry.qty += qty
+      else pm.set(r.productId, { name: r.productName, qty })
     }
   }
-  const locationsResp = locations.map((l) => ({
-    id: l.id,
-    name: l.name,
-    type: l.type,
-    skuCount: locationAgg.get(l.id)?.skuCount ?? 0,
-    totalQty: locationAgg.get(l.id)?.totalQty ?? 0,
-    totalValue: locationAgg.get(l.id)?.totalValue ?? 0,
-    healthDistribution: healthRatioByCell(cellFactsByLocation.get(l.id) ?? []),
-  }))
+  const locationsResp = locations.map((l) => {
+    const pm = productByLocation.get(l.id) ?? new Map()
+    const productBreakdown = Array.from(pm.entries())
+      .map(([productId, v]) => ({ productId, productName: v.name, qty: v.qty }))
+      .filter((p) => p.qty > 0)
+      .sort((a, b) => b.qty - a.qty)
+    return {
+      id: l.id,
+      name: l.name,
+      type: l.type,
+      skuCount: locationAgg.get(l.id)?.skuCount ?? 0,
+      totalQty: locationAgg.get(l.id)?.totalQty ?? 0,
+      totalValue: locationAgg.get(l.id)?.totalValue ?? 0,
+      productBreakdown,
+    }
+  })
 
   // ───────────────────────────────────────────────────────────────────
-  // 6. matrix.rows 필터링 (searchParams)
+  // 6. 상품 단위 롤업 (allRows를 productId로 집계)
+  // ───────────────────────────────────────────────────────────────────
+  type ProductRollup = {
+    productId: string
+    productName: string
+    optionCount: number
+    okOptionCount: number
+    lowOptionCount: number
+    outOptionCount: number
+    overOptionCount: number
+  }
+
+  const productRollupMap = new Map<string, ProductRollup>()
+  for (const r of allRows) {
+    if (!productRollupMap.has(r.productId)) {
+      productRollupMap.set(r.productId, {
+        productId: r.productId,
+        productName: r.productName,
+        optionCount: 0,
+        okOptionCount: 0,
+        lowOptionCount: 0,
+        outOptionCount: 0,
+        overOptionCount: 0,
+      })
+    }
+    const rollup = productRollupMap.get(r.productId)!
+    rollup.optionCount += 1
+    if (r.status === 'LOW') rollup.lowOptionCount += 1
+    else if (r.status === 'OUT') rollup.outOptionCount += 1
+    else if (r.status === 'OVER') rollup.overOptionCount += 1
+    else rollup.okOptionCount += 1 // 결품·부족·과잉 아닌 = 정상(OK)
+  }
+  const products = Array.from(productRollupMap.values()).sort((a, b) =>
+    a.productName.localeCompare(b.productName, 'ko')
+  )
+
+  // ───────────────────────────────────────────────────────────────────
+  // 7. matrix.rows 필터링 (searchParams)
   // ───────────────────────────────────────────────────────────────────
   let filteredRows = allRows
   if (brandFilter && brandFilter !== 'all') {
@@ -387,65 +465,26 @@ export async function GET(req: NextRequest) {
     })
   }
   if (onlyLow) {
-    filteredRows = filteredRows.filter((r) => r.status !== 'OK')
+    // 토글 라벨이 "부족·결품만" — 과잉(OVER)은 제외
+    filteredRows = filteredRows.filter((r) => r.status === 'LOW' || r.status === 'OUT')
   }
-
-  // ───────────────────────────────────────────────────────────────────
-  // 7. alerts — 결품/부족 옵션 상위 20개 (severity 우선, 부족분 큰 순)
-  // ───────────────────────────────────────────────────────────────────
-  const alertRows = allRows
-    .filter((r) => r.status !== 'OK')
-    .map((r) => {
-      const effectiveSafety = r.safetyStockQty > 0 ? r.safetyStockQty : LOW_STOCK_THRESHOLD
-      return {
-        optionId: r.optionId,
-        sku: r.sku,
-        productName: r.productName,
-        severity: r.status === 'OUT' ? 'OUT' : 'LOW',
-        qty: r.totalQty,
-        safetyStockQty: r.safetyStockQty,
-        effectiveSafety,
-        message:
-          r.status === 'OUT'
-            ? '재고 없음 (결품)'
-            : `안전재고 미달 — 현재 ${r.totalQty} / 안전 ${effectiveSafety}`,
-        occurredAt: new Date().toISOString(),
-      }
-    })
-    .sort((a, b) => {
-      if (a.severity !== b.severity) return a.severity === 'OUT' ? -1 : 1
-      const aShort = Math.max(0, a.effectiveSafety - a.qty)
-      const bShort = Math.max(0, b.effectiveSafety - b.qty)
-      return bShort - aShort
-    })
-    .slice(0, 20)
-    .map(({ effectiveSafety: _e, ...rest }) => rest)
 
   // ───────────────────────────────────────────────────────────────────
   // 8. 응답
   // ───────────────────────────────────────────────────────────────────
-  // 평균 회전일 — null이 아닌 row만 평균
-  const turnoverValues = allRows.map((r) => r.turnoverDays).filter((v): v is number => v !== null)
-  const averageTurnoverDays =
-    turnoverValues.length > 0
-      ? Math.round((turnoverValues.reduce((s, v) => s + v, 0) / turnoverValues.length) * 10) / 10
-      : null
-
   return NextResponse.json({
     snapshotAt: new Date().toISOString(),
     kpis: {
-      totalBrands: brandIdSet.size,
       totalSkus: allRows.length,
       totalQty,
       totalValue,
       lowStockCount,
-      averageTurnoverDays,
     },
     overallHealth,
     brands,
     locations: locationsResp,
+    products,
     matrix: { rows: filteredRows },
-    alerts: alertRows,
     // legacy (PR-2에서 제거)
     groups: legacyShaped,
   })
