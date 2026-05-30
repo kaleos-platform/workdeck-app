@@ -57,6 +57,7 @@ export type StockProductSummary = {
   productId: string
   productName: string
   optionCount: number
+  okOptionCount: number
   lowOptionCount: number
   outOptionCount: number
   overOptionCount: number

@@ -82,7 +82,8 @@ export function StockStatusProducts({ products, loading, onSelectProduct }: Prop
                     <TermTooltip text="최근 90일 출고량보다 재고가 많은 옵션 수" />
                   </th>
                   <th className="px-3 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    전체
+                    정상
+                    <TermTooltip text="결품·부족·과잉이 아닌 옵션 수" />
                   </th>
                 </tr>
               </thead>
@@ -106,9 +107,7 @@ export function StockStatusProducts({ products, loading, onSelectProduct }: Prop
                       <OptionCountBadge count={p.overOptionCount} variant="over" />
                     </td>
                     <td className="px-3 py-2.5 text-center">
-                      <span className="font-mono text-xs text-muted-foreground tabular-nums">
-                        {KRW.format(p.optionCount)}
-                      </span>
+                      <OptionCountBadge count={p.okOptionCount} variant="ok" />
                     </td>
                   </tr>
                 ))}
@@ -121,12 +120,13 @@ export function StockStatusProducts({ products, loading, onSelectProduct }: Prop
   )
 }
 
-type BadgeVariant = 'out' | 'low' | 'over'
+type BadgeVariant = 'out' | 'low' | 'over' | 'ok'
 
 const BADGE_CLASSES: Record<BadgeVariant, string> = {
   out: 'border-red-300 bg-red-50 text-red-700',
   low: 'border-amber-300 bg-amber-50 text-amber-700',
   over: 'border-indigo-300 bg-indigo-50 text-indigo-700',
+  ok: 'border-emerald-300 bg-emerald-50 text-emerald-700',
 }
 
 function OptionCountBadge({ count, variant }: { count: number; variant: BadgeVariant }) {

@@ -413,6 +413,7 @@ export async function GET(req: NextRequest) {
     productId: string
     productName: string
     optionCount: number
+    okOptionCount: number
     lowOptionCount: number
     outOptionCount: number
     overOptionCount: number
@@ -425,6 +426,7 @@ export async function GET(req: NextRequest) {
         productId: r.productId,
         productName: r.productName,
         optionCount: 0,
+        okOptionCount: 0,
         lowOptionCount: 0,
         outOptionCount: 0,
         overOptionCount: 0,
@@ -435,6 +437,7 @@ export async function GET(req: NextRequest) {
     if (r.status === 'LOW') rollup.lowOptionCount += 1
     else if (r.status === 'OUT') rollup.outOptionCount += 1
     else if (r.status === 'OVER') rollup.overOptionCount += 1
+    else rollup.okOptionCount += 1 // 결품·부족·과잉 아닌 = 정상(OK)
   }
   const products = Array.from(productRollupMap.values()).sort((a, b) =>
     a.productName.localeCompare(b.productName, 'ko')
