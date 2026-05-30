@@ -64,7 +64,7 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
         ) : rows.length === 0 ? (
           <p className="p-10 text-center text-sm text-muted-foreground">표시할 SKU가 없습니다</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="max-h-[65vh] overflow-auto">
             <table className="w-full min-w-[800px] border-collapse text-sm">
               <thead className="sticky top-0 z-20 bg-muted/40">
                 <tr className="border-b">
