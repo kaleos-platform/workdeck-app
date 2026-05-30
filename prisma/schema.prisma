@@ -1047,6 +1047,14 @@ enum DelBatchStatus {
   COMPLETED
 }
 
+// 배치 출처 — 수동 등록 vs 과거 이력 이전(import).
+// IMPORT 묶음은 재고를 차감하지 않는 과거 이력이며,
+// 미래에 "완료→OUTBOUND 자동생성" 연동이 추가되어도 재처리 대상에서 제외해야 한다.
+enum DelBatchSource {
+  MANUAL
+  IMPORT
+}
+
 // 배송 방식 (택배사 + 파일 포맷)
 model DelShippingMethod {
   id               String  @id @default(cuid())
@@ -1093,6 +1101,7 @@ model DelBatch {
   id      String         @id @default(cuid())
   spaceId String
   status  DelBatchStatus @default(DRAFT)
+  source  DelBatchSource @default(MANUAL)
   label   String?
 
   space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -1103,6 +1112,7 @@ model DelBatch {
 
   @@index([spaceId])
   @@index([spaceId, status])
+  @@index([spaceId, source])
 }
 
 // 개별 주문 (배송 등록 행 1개)
