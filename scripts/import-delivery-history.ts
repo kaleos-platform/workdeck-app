@@ -262,6 +262,7 @@ async function main() {
               reason: IMPORT_REASON,
               referenceId: REF_PREFIX + order.hash,
               importHistoryId: history.id,
+              delBatchId: batch.id,
             })),
           })
         }

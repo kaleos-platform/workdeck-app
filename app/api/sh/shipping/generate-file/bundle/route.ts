@@ -71,6 +71,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const batchId = typeof body?.batchId === 'string' ? body.batchId : ''
   const preview = body?.preview === true
+  // 선택 주문만 생성 (생략·빈 배열이면 묶음 전체). 화면 다중선택 → 부분 배송파일.
+  const selectedOrderIds: string[] = Array.isArray(body?.selectedOrderIds)
+    ? body.selectedOrderIds.filter((v: unknown): v is string => typeof v === 'string')
+    : []
 
   if (!batchId) {
     return errorResponse('batchId가 필요합니다', 400)
@@ -88,7 +92,11 @@ export async function POST(req: NextRequest) {
   // 배치 안의 모든 주문 (preview 여도 그룹 통계가 필요하므로 전체 조회)
   // 단 preview 일 때는 각 방식 sample 만 사용하므로 추후 슬라이스
   const orders = await prisma.delOrder.findMany({
-    where: { batchId, spaceId: resolved.space.id },
+    where: {
+      batchId,
+      spaceId: resolved.space.id,
+      ...(selectedOrderIds.length > 0 ? { id: { in: selectedOrderIds } } : {}),
+    },
     include: {
       items: {
         include: {
@@ -117,7 +125,12 @@ export async function POST(req: NextRequest) {
   })
 
   if (orders.length === 0) {
-    return errorResponse('배송 묶음에 주문이 없습니다', 400)
+    return errorResponse(
+      selectedOrderIds.length > 0
+        ? '선택한 주문을 찾을 수 없습니다'
+        : '배송 묶음에 주문이 없습니다',
+      400
+    )
   }
 
   // 배송 방식 미지정 주문이 있으면 차단
