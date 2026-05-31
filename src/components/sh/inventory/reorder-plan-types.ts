@@ -52,6 +52,7 @@ export type ProductInfo = {
     optionId: string
     optionName: string
     sku: string | null
+    optionDeleted?: boolean
   }>
 }
 

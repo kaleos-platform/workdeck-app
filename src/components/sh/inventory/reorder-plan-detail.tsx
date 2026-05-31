@@ -85,11 +85,19 @@ function StatusBadge({ status }: { status: ReorderPlan['status'] }) {
 // 상품/옵션 정보 빠른 조회용 맵 빌드
 function buildInfoMap(productInfo: ProductInfo[]) {
   const productMap = new Map<string, ProductInfo>()
-  const optionMap = new Map<string, { optionName: string; sku: string | null; productId: string }>()
+  const optionMap = new Map<
+    string,
+    { optionName: string; sku: string | null; productId: string; optionDeleted?: boolean }
+  >()
   for (const p of productInfo) {
     productMap.set(p.productId, p)
     for (const o of p.options) {
-      optionMap.set(o.optionId, { optionName: o.optionName, sku: o.sku, productId: p.productId })
+      optionMap.set(o.optionId, {
+        optionName: o.optionName,
+        sku: o.sku,
+        productId: p.productId,
+        optionDeleted: o.optionDeleted,
+      })
     }
   }
   return { productMap, optionMap }
@@ -414,7 +422,14 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                       {isFirst ? (prod?.productName ?? '-') : ''}
                     </TableCell>
                     <TableCell className="text-sm">
-                      <div>{opt?.optionName ?? '-'}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span>{opt?.optionName ?? '-'}</span>
+                        {opt?.optionDeleted && (
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            삭제됨
+                          </Badge>
+                        )}
+                      </div>
                       {prod?.brandName && isFirst && (
                         <div className="text-xs text-muted-foreground">{prod.brandName}</div>
                       )}

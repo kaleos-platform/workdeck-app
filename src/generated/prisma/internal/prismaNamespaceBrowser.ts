@@ -641,6 +641,7 @@ export const InvProductOptionScalarFieldEnum = {
   setSizeLabel: 'setSizeLabel',
   attributeValues: 'attributeValues',
   safetyStockQty: 'safetyStockQty',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -677,6 +678,7 @@ export const InvMovementScalarFieldEnum = {
   reason: 'reason',
   referenceId: 'referenceId',
   importHistoryId: 'importHistoryId',
+  delBatchId: 'delBatchId',
   createdAt: 'createdAt'
 } as const
 
@@ -804,6 +806,7 @@ export const DelBatchScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   status: 'status',
+  source: 'source',
   label: 'label',
   createdAt: 'createdAt',
   completedAt: 'completedAt'

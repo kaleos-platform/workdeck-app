@@ -28,6 +28,7 @@ export type DelBatchMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   status: $Enums.DelBatchStatus | null
+  source: $Enums.DelBatchSource | null
   label: string | null
   createdAt: Date | null
   completedAt: Date | null
@@ -37,6 +38,7 @@ export type DelBatchMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   status: $Enums.DelBatchStatus | null
+  source: $Enums.DelBatchSource | null
   label: string | null
   createdAt: Date | null
   completedAt: Date | null
@@ -46,6 +48,7 @@ export type DelBatchCountAggregateOutputType = {
   id: number
   spaceId: number
   status: number
+  source: number
   label: number
   createdAt: number
   completedAt: number
@@ -57,6 +60,7 @@ export type DelBatchMinAggregateInputType = {
   id?: true
   spaceId?: true
   status?: true
+  source?: true
   label?: true
   createdAt?: true
   completedAt?: true
@@ -66,6 +70,7 @@ export type DelBatchMaxAggregateInputType = {
   id?: true
   spaceId?: true
   status?: true
+  source?: true
   label?: true
   createdAt?: true
   completedAt?: true
@@ -75,6 +80,7 @@ export type DelBatchCountAggregateInputType = {
   id?: true
   spaceId?: true
   status?: true
+  source?: true
   label?: true
   createdAt?: true
   completedAt?: true
@@ -157,6 +163,7 @@ export type DelBatchGroupByOutputType = {
   id: string
   spaceId: string
   status: $Enums.DelBatchStatus
+  source: $Enums.DelBatchSource
   label: string | null
   createdAt: Date
   completedAt: Date | null
@@ -187,22 +194,26 @@ export type DelBatchWhereInput = {
   id?: Prisma.StringFilter<"DelBatch"> | string
   spaceId?: Prisma.StringFilter<"DelBatch"> | string
   status?: Prisma.EnumDelBatchStatusFilter<"DelBatch"> | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFilter<"DelBatch"> | $Enums.DelBatchSource
   label?: Prisma.StringNullableFilter<"DelBatch"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DelBatch"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"DelBatch"> | Date | string | null
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   orders?: Prisma.DelOrderListRelationFilter
+  movements?: Prisma.InvMovementListRelationFilter
 }
 
 export type DelBatchOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   label?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   orders?: Prisma.DelOrderOrderByRelationAggregateInput
+  movements?: Prisma.InvMovementOrderByRelationAggregateInput
 }
 
 export type DelBatchWhereUniqueInput = Prisma.AtLeast<{
@@ -212,17 +223,20 @@ export type DelBatchWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.DelBatchWhereInput | Prisma.DelBatchWhereInput[]
   spaceId?: Prisma.StringFilter<"DelBatch"> | string
   status?: Prisma.EnumDelBatchStatusFilter<"DelBatch"> | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFilter<"DelBatch"> | $Enums.DelBatchSource
   label?: Prisma.StringNullableFilter<"DelBatch"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DelBatch"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"DelBatch"> | Date | string | null
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   orders?: Prisma.DelOrderListRelationFilter
+  movements?: Prisma.InvMovementListRelationFilter
 }, "id">
 
 export type DelBatchOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   label?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -238,6 +252,7 @@ export type DelBatchScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"DelBatch"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"DelBatch"> | string
   status?: Prisma.EnumDelBatchStatusWithAggregatesFilter<"DelBatch"> | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceWithAggregatesFilter<"DelBatch"> | $Enums.DelBatchSource
   label?: Prisma.StringNullableWithAggregatesFilter<"DelBatch"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DelBatch"> | Date | string
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DelBatch"> | Date | string | null
@@ -246,47 +261,56 @@ export type DelBatchScalarWhereWithAggregatesInput = {
 export type DelBatchCreateInput = {
   id?: string
   status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
   label?: string | null
   createdAt?: Date | string
   completedAt?: Date | string | null
   space: Prisma.SpaceCreateNestedOneWithoutDelBatchesInput
   orders?: Prisma.DelOrderCreateNestedManyWithoutBatchInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutDelBatchInput
 }
 
 export type DelBatchUncheckedCreateInput = {
   id?: string
   spaceId: string
   status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
   label?: string | null
   createdAt?: Date | string
   completedAt?: Date | string | null
   orders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutBatchInput
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutDelBatchInput
 }
 
 export type DelBatchUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelBatchesNestedInput
   orders?: Prisma.DelOrderUpdateManyWithoutBatchNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutDelBatchNestedInput
 }
 
 export type DelBatchUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.DelOrderUncheckedUpdateManyWithoutBatchNestedInput
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutDelBatchNestedInput
 }
 
 export type DelBatchCreateManyInput = {
   id?: string
   spaceId: string
   status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
   label?: string | null
   createdAt?: Date | string
   completedAt?: Date | string | null
@@ -295,6 +319,7 @@ export type DelBatchCreateManyInput = {
 export type DelBatchUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -304,6 +329,7 @@ export type DelBatchUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -319,10 +345,16 @@ export type DelBatchOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type DelBatchNullableScalarRelationFilter = {
+  is?: Prisma.DelBatchWhereInput | null
+  isNot?: Prisma.DelBatchWhereInput | null
+}
+
 export type DelBatchCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   label?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -332,6 +364,7 @@ export type DelBatchMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   label?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -341,6 +374,7 @@ export type DelBatchMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   label?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -393,8 +427,28 @@ export type DelBatchUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.DelBatchScalarWhereInput | Prisma.DelBatchScalarWhereInput[]
 }
 
+export type DelBatchCreateNestedOneWithoutMovementsInput = {
+  create?: Prisma.XOR<Prisma.DelBatchCreateWithoutMovementsInput, Prisma.DelBatchUncheckedCreateWithoutMovementsInput>
+  connectOrCreate?: Prisma.DelBatchCreateOrConnectWithoutMovementsInput
+  connect?: Prisma.DelBatchWhereUniqueInput
+}
+
+export type DelBatchUpdateOneWithoutMovementsNestedInput = {
+  create?: Prisma.XOR<Prisma.DelBatchCreateWithoutMovementsInput, Prisma.DelBatchUncheckedCreateWithoutMovementsInput>
+  connectOrCreate?: Prisma.DelBatchCreateOrConnectWithoutMovementsInput
+  upsert?: Prisma.DelBatchUpsertWithoutMovementsInput
+  disconnect?: Prisma.DelBatchWhereInput | boolean
+  delete?: Prisma.DelBatchWhereInput | boolean
+  connect?: Prisma.DelBatchWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DelBatchUpdateToOneWithWhereWithoutMovementsInput, Prisma.DelBatchUpdateWithoutMovementsInput>, Prisma.DelBatchUncheckedUpdateWithoutMovementsInput>
+}
+
 export type EnumDelBatchStatusFieldUpdateOperationsInput = {
   set?: $Enums.DelBatchStatus
+}
+
+export type EnumDelBatchSourceFieldUpdateOperationsInput = {
+  set?: $Enums.DelBatchSource
 }
 
 export type DelBatchCreateNestedOneWithoutOrdersInput = {
@@ -414,19 +468,23 @@ export type DelBatchUpdateOneRequiredWithoutOrdersNestedInput = {
 export type DelBatchCreateWithoutSpaceInput = {
   id?: string
   status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
   label?: string | null
   createdAt?: Date | string
   completedAt?: Date | string | null
   orders?: Prisma.DelOrderCreateNestedManyWithoutBatchInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutDelBatchInput
 }
 
 export type DelBatchUncheckedCreateWithoutSpaceInput = {
   id?: string
   status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
   label?: string | null
   createdAt?: Date | string
   completedAt?: Date | string | null
   orders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutBatchInput
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutDelBatchInput
 }
 
 export type DelBatchCreateOrConnectWithoutSpaceInput = {
@@ -462,27 +520,92 @@ export type DelBatchScalarWhereInput = {
   id?: Prisma.StringFilter<"DelBatch"> | string
   spaceId?: Prisma.StringFilter<"DelBatch"> | string
   status?: Prisma.EnumDelBatchStatusFilter<"DelBatch"> | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFilter<"DelBatch"> | $Enums.DelBatchSource
   label?: Prisma.StringNullableFilter<"DelBatch"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DelBatch"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"DelBatch"> | Date | string | null
 }
 
-export type DelBatchCreateWithoutOrdersInput = {
+export type DelBatchCreateWithoutMovementsInput = {
   id?: string
   status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
   label?: string | null
   createdAt?: Date | string
   completedAt?: Date | string | null
   space: Prisma.SpaceCreateNestedOneWithoutDelBatchesInput
+  orders?: Prisma.DelOrderCreateNestedManyWithoutBatchInput
+}
+
+export type DelBatchUncheckedCreateWithoutMovementsInput = {
+  id?: string
+  spaceId: string
+  status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
+  label?: string | null
+  createdAt?: Date | string
+  completedAt?: Date | string | null
+  orders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutBatchInput
+}
+
+export type DelBatchCreateOrConnectWithoutMovementsInput = {
+  where: Prisma.DelBatchWhereUniqueInput
+  create: Prisma.XOR<Prisma.DelBatchCreateWithoutMovementsInput, Prisma.DelBatchUncheckedCreateWithoutMovementsInput>
+}
+
+export type DelBatchUpsertWithoutMovementsInput = {
+  update: Prisma.XOR<Prisma.DelBatchUpdateWithoutMovementsInput, Prisma.DelBatchUncheckedUpdateWithoutMovementsInput>
+  create: Prisma.XOR<Prisma.DelBatchCreateWithoutMovementsInput, Prisma.DelBatchUncheckedCreateWithoutMovementsInput>
+  where?: Prisma.DelBatchWhereInput
+}
+
+export type DelBatchUpdateToOneWithWhereWithoutMovementsInput = {
+  where?: Prisma.DelBatchWhereInput
+  data: Prisma.XOR<Prisma.DelBatchUpdateWithoutMovementsInput, Prisma.DelBatchUncheckedUpdateWithoutMovementsInput>
+}
+
+export type DelBatchUpdateWithoutMovementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
+  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  space?: Prisma.SpaceUpdateOneRequiredWithoutDelBatchesNestedInput
+  orders?: Prisma.DelOrderUpdateManyWithoutBatchNestedInput
+}
+
+export type DelBatchUncheckedUpdateWithoutMovementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
+  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  orders?: Prisma.DelOrderUncheckedUpdateManyWithoutBatchNestedInput
+}
+
+export type DelBatchCreateWithoutOrdersInput = {
+  id?: string
+  status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
+  label?: string | null
+  createdAt?: Date | string
+  completedAt?: Date | string | null
+  space: Prisma.SpaceCreateNestedOneWithoutDelBatchesInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutDelBatchInput
 }
 
 export type DelBatchUncheckedCreateWithoutOrdersInput = {
   id?: string
   spaceId: string
   status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
   label?: string | null
   createdAt?: Date | string
   completedAt?: Date | string | null
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutDelBatchInput
 }
 
 export type DelBatchCreateOrConnectWithoutOrdersInput = {
@@ -504,24 +627,29 @@ export type DelBatchUpdateToOneWithWhereWithoutOrdersInput = {
 export type DelBatchUpdateWithoutOrdersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelBatchesNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutDelBatchNestedInput
 }
 
 export type DelBatchUncheckedUpdateWithoutOrdersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutDelBatchNestedInput
 }
 
 export type DelBatchCreateManySpaceInput = {
   id?: string
   status?: $Enums.DelBatchStatus
+  source?: $Enums.DelBatchSource
   label?: string | null
   createdAt?: Date | string
   completedAt?: Date | string | null
@@ -530,24 +658,29 @@ export type DelBatchCreateManySpaceInput = {
 export type DelBatchUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.DelOrderUpdateManyWithoutBatchNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutDelBatchNestedInput
 }
 
 export type DelBatchUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.DelOrderUncheckedUpdateManyWithoutBatchNestedInput
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutDelBatchNestedInput
 }
 
 export type DelBatchUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDelBatchStatusFieldUpdateOperationsInput | $Enums.DelBatchStatus
+  source?: Prisma.EnumDelBatchSourceFieldUpdateOperationsInput | $Enums.DelBatchSource
   label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -560,10 +693,12 @@ export type DelBatchUncheckedUpdateManyWithoutSpaceInput = {
 
 export type DelBatchCountOutputType = {
   orders: number
+  movements: number
 }
 
 export type DelBatchCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | DelBatchCountOutputTypeCountOrdersArgs
+  movements?: boolean | DelBatchCountOutputTypeCountMovementsArgs
 }
 
 /**
@@ -583,16 +718,25 @@ export type DelBatchCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types
   where?: Prisma.DelOrderWhereInput
 }
 
+/**
+ * DelBatchCountOutputType without action
+ */
+export type DelBatchCountOutputTypeCountMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvMovementWhereInput
+}
+
 
 export type DelBatchSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
   status?: boolean
+  source?: boolean
   label?: boolean
   createdAt?: boolean
   completedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   orders?: boolean | Prisma.DelBatch$ordersArgs<ExtArgs>
+  movements?: boolean | Prisma.DelBatch$movementsArgs<ExtArgs>
   _count?: boolean | Prisma.DelBatchCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["delBatch"]>
 
@@ -600,6 +744,7 @@ export type DelBatchSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   spaceId?: boolean
   status?: boolean
+  source?: boolean
   label?: boolean
   createdAt?: boolean
   completedAt?: boolean
@@ -610,6 +755,7 @@ export type DelBatchSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   spaceId?: boolean
   status?: boolean
+  source?: boolean
   label?: boolean
   createdAt?: boolean
   completedAt?: boolean
@@ -620,15 +766,17 @@ export type DelBatchSelectScalar = {
   id?: boolean
   spaceId?: boolean
   status?: boolean
+  source?: boolean
   label?: boolean
   createdAt?: boolean
   completedAt?: boolean
 }
 
-export type DelBatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "status" | "label" | "createdAt" | "completedAt", ExtArgs["result"]["delBatch"]>
+export type DelBatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "status" | "source" | "label" | "createdAt" | "completedAt", ExtArgs["result"]["delBatch"]>
 export type DelBatchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   orders?: boolean | Prisma.DelBatch$ordersArgs<ExtArgs>
+  movements?: boolean | Prisma.DelBatch$movementsArgs<ExtArgs>
   _count?: boolean | Prisma.DelBatchCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DelBatchIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -643,11 +791,13 @@ export type $DelBatchPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
     orders: Prisma.$DelOrderPayload<ExtArgs>[]
+    movements: Prisma.$InvMovementPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     spaceId: string
     status: $Enums.DelBatchStatus
+    source: $Enums.DelBatchSource
     label: string | null
     createdAt: Date
     completedAt: Date | null
@@ -1047,6 +1197,7 @@ export interface Prisma__DelBatchClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   orders<T extends Prisma.DelBatch$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelBatch$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  movements<T extends Prisma.DelBatch$movementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DelBatch$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1079,6 +1230,7 @@ export interface DelBatchFieldRefs {
   readonly id: Prisma.FieldRef<"DelBatch", 'String'>
   readonly spaceId: Prisma.FieldRef<"DelBatch", 'String'>
   readonly status: Prisma.FieldRef<"DelBatch", 'DelBatchStatus'>
+  readonly source: Prisma.FieldRef<"DelBatch", 'DelBatchSource'>
   readonly label: Prisma.FieldRef<"DelBatch", 'String'>
   readonly createdAt: Prisma.FieldRef<"DelBatch", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"DelBatch", 'DateTime'>
@@ -1499,6 +1651,30 @@ export type DelBatch$ordersArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.DelOrderScalarFieldEnum | Prisma.DelOrderScalarFieldEnum[]
+}
+
+/**
+ * DelBatch.movements
+ */
+export type DelBatch$movementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvMovement
+   */
+  select?: Prisma.InvMovementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvMovement
+   */
+  omit?: Prisma.InvMovementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvMovementInclude<ExtArgs> | null
+  where?: Prisma.InvMovementWhereInput
+  orderBy?: Prisma.InvMovementOrderByWithRelationInput | Prisma.InvMovementOrderByWithRelationInput[]
+  cursor?: Prisma.InvMovementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvMovementScalarFieldEnum | Prisma.InvMovementScalarFieldEnum[]
 }
 
 /**

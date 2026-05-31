@@ -111,29 +111,37 @@ export async function DELETE(
   if (!existing) return errorResponse('옵션을 찾을 수 없습니다', 404)
 
   // 삭제 차단 테이블 존재 여부 병렬 확인 (Restrict FK 관계)
-  const [runItem, scenarioItem, listingItem, fulfillment, reorderItem] = await Promise.all([
-    prisma.productionRunItem.findFirst({ where: { optionId }, select: { id: true } }),
-    prisma.pricingScenarioItem.findFirst({ where: { optionId }, select: { id: true } }),
-    prisma.productListingItem.findFirst({ where: { optionId }, select: { id: true } }),
-    prisma.delOrderItemFulfillment.findFirst({ where: { optionId }, select: { id: true } }),
-    prisma.reorderPlanItem.findFirst({ where: { optionId }, select: { id: true } }),
-  ])
+  // reorderAccuracy는 reorderItem 없이 잔존할 수 있으므로(plan CONSUMED 후 item 편집 등)
+  // 별도로 확인해야 한다. 누락 시 하드삭제 경로로 빠져 FK Restrict 위반 → 500.
+  const [runItem, scenarioItem, listingItem, fulfillment, reorderItem, reorderAccuracy] =
+    await Promise.all([
+      prisma.productionRunItem.findFirst({ where: { optionId }, select: { id: true } }),
+      prisma.pricingScenarioItem.findFirst({ where: { optionId }, select: { id: true } }),
+      prisma.productListingItem.findFirst({ where: { optionId }, select: { id: true } }),
+      prisma.delOrderItemFulfillment.findFirst({ where: { optionId }, select: { id: true } }),
+      prisma.reorderPlanItem.findFirst({ where: { optionId }, select: { id: true } }),
+      prisma.reorderPlanAccuracy.findFirst({ where: { optionId }, select: { id: true } }),
+    ])
 
   const blockers: string[] = []
   if (runItem) blockers.push('생산 차수')
   if (scenarioItem) blockers.push('가격 시뮬레이션')
   if (listingItem) blockers.push('판매채널 상품 구성')
   if (fulfillment) blockers.push('배송주문 이행 기록')
-  if (reorderItem) blockers.push('발주 계획')
+  if (reorderItem || reorderAccuracy) blockers.push('발주 계획')
 
   if (blockers.length > 0) {
-    return errorResponse(
-      `이 옵션은 ${blockers.join(', ')}에서 사용 중이어서 삭제할 수 없습니다. 먼저 해당 데이터를 정리해주세요.`,
-      409
-    )
+    // 생산 차수·발주 등 연결 기록이 있는 옵션은 완전삭제 시 FK Restrict로 막힌다.
+    // 대신 소프트삭제(deletedAt) 처리하여 연결 기록에는 옵션 값이 계속 표시되도록 보존한다.
+    // 목록/피커는 deletedAt: null 필터로 이 옵션을 제외한다.
+    await prisma.invProductOption.update({
+      where: { id: optionId },
+      data: { deletedAt: new Date() },
+    })
+    return NextResponse.json({ ok: true, softDeleted: true })
   }
 
-  // ChannelProductAliasFulfillment 먼저 삭제 후 옵션 삭제 (나머지 Restrict 관계는 위에서 차단됨)
+  // 연결 기록 없음 — 완전삭제 (ChannelProductAliasFulfillment 먼저 삭제)
   await prisma.$transaction([
     prisma.channelProductAliasFulfillment.deleteMany({ where: { optionId } }),
     prisma.invProductOption.delete({ where: { id: optionId } }),

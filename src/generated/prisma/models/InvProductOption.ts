@@ -48,6 +48,7 @@ export type InvProductOptionMinAggregateOutputType = {
   sizeLabel: string | null
   setSizeLabel: string | null
   safetyStockQty: number | null
+  deletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,6 +63,7 @@ export type InvProductOptionMaxAggregateOutputType = {
   sizeLabel: string | null
   setSizeLabel: string | null
   safetyStockQty: number | null
+  deletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -77,6 +79,7 @@ export type InvProductOptionCountAggregateOutputType = {
   setSizeLabel: number
   attributeValues: number
   safetyStockQty: number
+  deletedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -105,6 +108,7 @@ export type InvProductOptionMinAggregateInputType = {
   sizeLabel?: true
   setSizeLabel?: true
   safetyStockQty?: true
+  deletedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -119,6 +123,7 @@ export type InvProductOptionMaxAggregateInputType = {
   sizeLabel?: true
   setSizeLabel?: true
   safetyStockQty?: true
+  deletedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -134,6 +139,7 @@ export type InvProductOptionCountAggregateInputType = {
   setSizeLabel?: true
   attributeValues?: true
   safetyStockQty?: true
+  deletedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -236,6 +242,7 @@ export type InvProductOptionGroupByOutputType = {
   setSizeLabel: string | null
   attributeValues: runtime.JsonValue | null
   safetyStockQty: number
+  deletedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: InvProductOptionCountAggregateOutputType | null
@@ -274,6 +281,7 @@ export type InvProductOptionWhereInput = {
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   attributeValues?: Prisma.JsonNullableFilter<"InvProductOption">
   safetyStockQty?: Prisma.IntFilter<"InvProductOption"> | number
+  deletedAt?: Prisma.DateTimeNullableFilter<"InvProductOption"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
@@ -303,6 +311,7 @@ export type InvProductOptionOrderByWithRelationInput = {
   setSizeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   attributeValues?: Prisma.SortOrderInput | Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   product?: Prisma.InvProductOrderByWithRelationInput
@@ -335,6 +344,7 @@ export type InvProductOptionWhereUniqueInput = Prisma.AtLeast<{
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   attributeValues?: Prisma.JsonNullableFilter<"InvProductOption">
   safetyStockQty?: Prisma.IntFilter<"InvProductOption"> | number
+  deletedAt?: Prisma.DateTimeNullableFilter<"InvProductOption"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
@@ -364,6 +374,7 @@ export type InvProductOptionOrderByWithAggregationInput = {
   setSizeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   attributeValues?: Prisma.SortOrderInput | Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InvProductOptionCountOrderByAggregateInput
@@ -387,6 +398,7 @@ export type InvProductOptionScalarWhereWithAggregatesInput = {
   setSizeLabel?: Prisma.StringNullableWithAggregatesFilter<"InvProductOption"> | string | null
   attributeValues?: Prisma.JsonNullableWithAggregatesFilter<"InvProductOption">
   safetyStockQty?: Prisma.IntWithAggregatesFilter<"InvProductOption"> | number
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"InvProductOption"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvProductOption"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvProductOption"> | Date | string
 }
@@ -401,6 +413,7 @@ export type InvProductOptionCreateInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -430,6 +443,7 @@ export type InvProductOptionUncheckedCreateInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -457,6 +471,7 @@ export type InvProductOptionUpdateInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -486,6 +501,7 @@ export type InvProductOptionUncheckedUpdateInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -514,6 +530,7 @@ export type InvProductOptionCreateManyInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -528,6 +545,7 @@ export type InvProductOptionUpdateManyMutationInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -543,6 +561,7 @@ export type InvProductOptionUncheckedUpdateManyInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -568,6 +587,7 @@ export type InvProductOptionCountOrderByAggregateInput = {
   setSizeLabel?: Prisma.SortOrder
   attributeValues?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -588,6 +608,7 @@ export type InvProductOptionMaxOrderByAggregateInput = {
   sizeLabel?: Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -602,6 +623,7 @@ export type InvProductOptionMinOrderByAggregateInput = {
   sizeLabel?: Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -862,6 +884,7 @@ export type InvProductOptionCreateWithoutProductInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementCreateNestedManyWithoutOptionInput
@@ -889,6 +912,7 @@ export type InvProductOptionUncheckedCreateWithoutProductInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -946,6 +970,7 @@ export type InvProductOptionScalarWhereInput = {
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   attributeValues?: Prisma.JsonNullableFilter<"InvProductOption">
   safetyStockQty?: Prisma.IntFilter<"InvProductOption"> | number
+  deletedAt?: Prisma.DateTimeNullableFilter<"InvProductOption"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
 }
@@ -960,6 +985,7 @@ export type InvProductOptionCreateWithoutMovementsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -988,6 +1014,7 @@ export type InvProductOptionUncheckedCreateWithoutMovementsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutOptionInput
@@ -1030,6 +1057,7 @@ export type InvProductOptionUpdateWithoutMovementsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -1058,6 +1086,7 @@ export type InvProductOptionUncheckedUpdateWithoutMovementsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutOptionNestedInput
@@ -1084,6 +1113,7 @@ export type InvProductOptionCreateWithoutStockLevelsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -1112,6 +1142,7 @@ export type InvProductOptionUncheckedCreateWithoutStockLevelsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -1154,6 +1185,7 @@ export type InvProductOptionUpdateWithoutStockLevelsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -1182,6 +1214,7 @@ export type InvProductOptionUncheckedUpdateWithoutStockLevelsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -1208,6 +1241,7 @@ export type InvProductOptionCreateWithoutLocationMappingItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -1236,6 +1270,7 @@ export type InvProductOptionUncheckedCreateWithoutLocationMappingItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -1278,6 +1313,7 @@ export type InvProductOptionUpdateWithoutLocationMappingItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -1306,6 +1342,7 @@ export type InvProductOptionUncheckedUpdateWithoutLocationMappingItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -1332,6 +1369,7 @@ export type InvProductOptionCreateWithoutShippingLabelsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -1360,6 +1398,7 @@ export type InvProductOptionUncheckedCreateWithoutShippingLabelsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -1402,6 +1441,7 @@ export type InvProductOptionUpdateWithoutShippingLabelsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -1430,6 +1470,7 @@ export type InvProductOptionUncheckedUpdateWithoutShippingLabelsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -1456,6 +1497,7 @@ export type InvProductOptionCreateWithoutDelOrderItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -1484,6 +1526,7 @@ export type InvProductOptionUncheckedCreateWithoutDelOrderItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -1526,6 +1569,7 @@ export type InvProductOptionUpdateWithoutDelOrderItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -1554,6 +1598,7 @@ export type InvProductOptionUncheckedUpdateWithoutDelOrderItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -1580,6 +1625,7 @@ export type InvProductOptionCreateWithoutChannelAliasesInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -1608,6 +1654,7 @@ export type InvProductOptionUncheckedCreateWithoutChannelAliasesInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -1650,6 +1697,7 @@ export type InvProductOptionUpdateWithoutChannelAliasesInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -1678,6 +1726,7 @@ export type InvProductOptionUncheckedUpdateWithoutChannelAliasesInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -1704,6 +1753,7 @@ export type InvProductOptionCreateWithoutAliasFulfillmentsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -1732,6 +1782,7 @@ export type InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -1774,6 +1825,7 @@ export type InvProductOptionUpdateWithoutAliasFulfillmentsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -1802,6 +1854,7 @@ export type InvProductOptionUncheckedUpdateWithoutAliasFulfillmentsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -1828,6 +1881,7 @@ export type InvProductOptionCreateWithoutProductionRunItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -1856,6 +1910,7 @@ export type InvProductOptionUncheckedCreateWithoutProductionRunItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -1898,6 +1953,7 @@ export type InvProductOptionUpdateWithoutProductionRunItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -1926,6 +1982,7 @@ export type InvProductOptionUncheckedUpdateWithoutProductionRunItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -1952,6 +2009,7 @@ export type InvProductOptionCreateWithoutPricingScenarioItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -1980,6 +2038,7 @@ export type InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -2022,6 +2081,7 @@ export type InvProductOptionUpdateWithoutPricingScenarioItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -2050,6 +2110,7 @@ export type InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -2076,6 +2137,7 @@ export type InvProductOptionCreateWithoutListingItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -2104,6 +2166,7 @@ export type InvProductOptionUncheckedCreateWithoutListingItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -2146,6 +2209,7 @@ export type InvProductOptionUpdateWithoutListingItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -2174,6 +2238,7 @@ export type InvProductOptionUncheckedUpdateWithoutListingItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -2200,6 +2265,7 @@ export type InvProductOptionCreateWithoutFulfillmentsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -2228,6 +2294,7 @@ export type InvProductOptionUncheckedCreateWithoutFulfillmentsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -2270,6 +2337,7 @@ export type InvProductOptionUpdateWithoutFulfillmentsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -2298,6 +2366,7 @@ export type InvProductOptionUncheckedUpdateWithoutFulfillmentsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -2324,6 +2393,7 @@ export type InvProductOptionCreateWithoutReorderPlanItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -2352,6 +2422,7 @@ export type InvProductOptionUncheckedCreateWithoutReorderPlanItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -2394,6 +2465,7 @@ export type InvProductOptionUpdateWithoutReorderPlanItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -2422,6 +2494,7 @@ export type InvProductOptionUncheckedUpdateWithoutReorderPlanItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -2448,6 +2521,7 @@ export type InvProductOptionCreateWithoutReorderAccuraciesInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.InvProductCreateNestedOneWithoutOptionsInput
@@ -2476,6 +2550,7 @@ export type InvProductOptionUncheckedCreateWithoutReorderAccuraciesInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutOptionInput
@@ -2518,6 +2593,7 @@ export type InvProductOptionUpdateWithoutReorderAccuraciesInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.InvProductUpdateOneRequiredWithoutOptionsNestedInput
@@ -2546,6 +2622,7 @@ export type InvProductOptionUncheckedUpdateWithoutReorderAccuraciesInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -2572,6 +2649,7 @@ export type InvProductOptionCreateManyProductInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2586,6 +2664,7 @@ export type InvProductOptionUpdateWithoutProductInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUpdateManyWithoutOptionNestedInput
@@ -2613,6 +2692,7 @@ export type InvProductOptionUncheckedUpdateWithoutProductInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutOptionNestedInput
@@ -2640,6 +2720,7 @@ export type InvProductOptionUncheckedUpdateManyWithoutProductInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2794,6 +2875,7 @@ export type InvProductOptionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   setSizeLabel?: boolean
   attributeValues?: boolean
   safetyStockQty?: boolean
+  deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
@@ -2824,6 +2906,7 @@ export type InvProductOptionSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   setSizeLabel?: boolean
   attributeValues?: boolean
   safetyStockQty?: boolean
+  deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
@@ -2840,6 +2923,7 @@ export type InvProductOptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   setSizeLabel?: boolean
   attributeValues?: boolean
   safetyStockQty?: boolean
+  deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
@@ -2856,11 +2940,12 @@ export type InvProductOptionSelectScalar = {
   setSizeLabel?: boolean
   attributeValues?: boolean
   safetyStockQty?: boolean
+  deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvProductOptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "name" | "sku" | "costPrice" | "retailPrice" | "sizeLabel" | "setSizeLabel" | "attributeValues" | "safetyStockQty" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductOption"]>
+export type InvProductOptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "name" | "sku" | "costPrice" | "retailPrice" | "sizeLabel" | "setSizeLabel" | "attributeValues" | "safetyStockQty" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductOption"]>
 export type InvProductOptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
   movements?: boolean | Prisma.InvProductOption$movementsArgs<ExtArgs>
@@ -2914,6 +2999,7 @@ export type $InvProductOptionPayload<ExtArgs extends runtime.Types.Extensions.In
     setSizeLabel: string | null
     attributeValues: runtime.JsonValue | null
     safetyStockQty: number
+    deletedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["invProductOption"]>
@@ -3363,6 +3449,7 @@ export interface InvProductOptionFieldRefs {
   readonly setSizeLabel: Prisma.FieldRef<"InvProductOption", 'String'>
   readonly attributeValues: Prisma.FieldRef<"InvProductOption", 'Json'>
   readonly safetyStockQty: Prisma.FieldRef<"InvProductOption", 'Int'>
+  readonly deletedAt: Prisma.FieldRef<"InvProductOption", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"InvProductOption", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvProductOption", 'DateTime'>
 }

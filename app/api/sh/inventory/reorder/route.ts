@@ -40,7 +40,10 @@ export async function GET(req: NextRequest) {
       internalName: true,
       code: true,
       brand: { select: { id: true, name: true } },
-      options: { select: { id: true, name: true, sku: true, safetyStockQty: true } },
+      options: {
+        where: { deletedAt: null },
+        select: { id: true, name: true, sku: true, safetyStockQty: true },
+      },
       reorderConfig: true,
     },
     orderBy: { name: 'asc' },

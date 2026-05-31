@@ -7526,6 +7526,7 @@ export const InvProductOptionScalarFieldEnum = {
   setSizeLabel: 'setSizeLabel',
   attributeValues: 'attributeValues',
   safetyStockQty: 'safetyStockQty',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -7562,6 +7563,7 @@ export const InvMovementScalarFieldEnum = {
   reason: 'reason',
   referenceId: 'referenceId',
   importHistoryId: 'importHistoryId',
+  delBatchId: 'delBatchId',
   createdAt: 'createdAt'
 } as const
 
@@ -7689,6 +7691,7 @@ export const DelBatchScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   status: 'status',
+  source: 'source',
   label: 'label',
   createdAt: 'createdAt',
   completedAt: 'completedAt'
@@ -8757,6 +8760,20 @@ export type EnumDelBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'DelBatchStatus[]'
  */
 export type ListEnumDelBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelBatchStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DelBatchSource'
+ */
+export type EnumDelBatchSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelBatchSource'>
+    
+
+
+/**
+ * Reference to a field of type 'DelBatchSource[]'
+ */
+export type ListEnumDelBatchSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelBatchSource[]'>
     
 
 

@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
     include: {
       items: {
         include: {
-          option: { select: { id: true, name: true, sku: true } },
+          option: { select: { id: true, name: true, sku: true, deletedAt: true } },
           product: {
             select: {
               id: true,
@@ -55,7 +55,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       productName: string
       productCode: string | null
       brandName: string | null
-      options: Array<{ optionId: string; optionName: string; sku: string | null }>
+      options: Array<{
+        optionId: string
+        optionName: string
+        sku: string | null
+        optionDeleted: boolean
+      }>
     }
   >()
 
@@ -76,6 +81,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
         optionId: item.option.id,
         optionName: item.option.name,
         sku: item.option.sku ?? null,
+        optionDeleted: item.option.deletedAt != null,
       })
     }
   }

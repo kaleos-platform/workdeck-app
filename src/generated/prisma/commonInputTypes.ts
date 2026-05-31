@@ -592,6 +592,13 @@ export type EnumDelBatchStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumDelBatchStatusFilter<$PrismaModel> | $Enums.DelBatchStatus
 }
 
+export type EnumDelBatchSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.DelBatchSource | Prisma.EnumDelBatchSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.DelBatchSource[] | Prisma.ListEnumDelBatchSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DelBatchSource[] | Prisma.ListEnumDelBatchSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel> | $Enums.DelBatchSource
+}
+
 export type EnumDelBatchStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.DelBatchStatus | Prisma.EnumDelBatchStatusFieldRefInput<$PrismaModel>
   in?: $Enums.DelBatchStatus[] | Prisma.ListEnumDelBatchStatusFieldRefInput<$PrismaModel>
@@ -600,6 +607,16 @@ export type EnumDelBatchStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumDelBatchStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumDelBatchStatusFilter<$PrismaModel>
+}
+
+export type EnumDelBatchSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DelBatchSource | Prisma.EnumDelBatchSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.DelBatchSource[] | Prisma.ListEnumDelBatchSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DelBatchSource[] | Prisma.ListEnumDelBatchSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDelBatchSourceWithAggregatesFilter<$PrismaModel> | $Enums.DelBatchSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel>
 }
 
 export type EnumProductionRunStatusFilter<$PrismaModel = never> = {
@@ -1536,6 +1553,13 @@ export type NestedEnumDelBatchStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumDelBatchStatusFilter<$PrismaModel> | $Enums.DelBatchStatus
 }
 
+export type NestedEnumDelBatchSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.DelBatchSource | Prisma.EnumDelBatchSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.DelBatchSource[] | Prisma.ListEnumDelBatchSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DelBatchSource[] | Prisma.ListEnumDelBatchSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel> | $Enums.DelBatchSource
+}
+
 export type NestedEnumDelBatchStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.DelBatchStatus | Prisma.EnumDelBatchStatusFieldRefInput<$PrismaModel>
   in?: $Enums.DelBatchStatus[] | Prisma.ListEnumDelBatchStatusFieldRefInput<$PrismaModel>
@@ -1544,6 +1568,16 @@ export type NestedEnumDelBatchStatusWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumDelBatchStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumDelBatchStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumDelBatchSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DelBatchSource | Prisma.EnumDelBatchSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.DelBatchSource[] | Prisma.ListEnumDelBatchSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DelBatchSource[] | Prisma.ListEnumDelBatchSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDelBatchSourceWithAggregatesFilter<$PrismaModel> | $Enums.DelBatchSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel>
 }
 
 export type NestedEnumProductionRunStatusFilter<$PrismaModel = never> = {

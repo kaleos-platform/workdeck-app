@@ -836,6 +836,10 @@ model InvProductOption {
   // 안전재고 (옵션 단위 단일 진입점) — 재고 상태 판정에 사용
   safetyStockQty Int @default(0)
 
+  // 소프트삭제: 생산 차수·발주 등 연결 기록이 있는 옵션을 삭제할 때 row를 남겨 값을 보존한다.
+  // 연결이 없으면 완전삭제, 있으면 deletedAt만 채운다. 목록/피커는 deletedAt: null로 필터.
+  deletedAt DateTime?
+
   product              InvProduct                       @relation(fields: [productId], references: [id], onDelete: Cascade)
   movements            InvMovement[]
   stockLevels          InvStockLevel[]
@@ -855,6 +859,7 @@ model InvProductOption {
   updatedAt DateTime @updatedAt
 
   @@index([productId])
+  @@index([deletedAt])
 }
 
 // 보관 장소
