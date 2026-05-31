@@ -20,7 +20,7 @@ export async function GET(
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
 
   const options = await prisma.invProductOption.findMany({
-    where: { productId },
+    where: { productId, deletedAt: null },
     orderBy: { name: 'asc' },
   })
 

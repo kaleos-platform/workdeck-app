@@ -12,8 +12,8 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
 
-  // Get all options with product info, paginated
-  const optionWhere = { product: { spaceId } }
+  // Get all options with product info, paginated (소프트삭제 옵션 제외)
+  const optionWhere = { product: { spaceId }, deletedAt: null }
   const [options, total] = await Promise.all([
     prisma.invProductOption.findMany({
       where: optionWhere,

@@ -48,6 +48,7 @@ export type InvMovementMinAggregateOutputType = {
   reason: string | null
   referenceId: string | null
   importHistoryId: string | null
+  delBatchId: string | null
   createdAt: Date | null
 }
 
@@ -65,6 +66,7 @@ export type InvMovementMaxAggregateOutputType = {
   reason: string | null
   referenceId: string | null
   importHistoryId: string | null
+  delBatchId: string | null
   createdAt: Date | null
 }
 
@@ -82,6 +84,7 @@ export type InvMovementCountAggregateOutputType = {
   reason: number
   referenceId: number
   importHistoryId: number
+  delBatchId: number
   createdAt: number
   _all: number
 }
@@ -109,6 +112,7 @@ export type InvMovementMinAggregateInputType = {
   reason?: true
   referenceId?: true
   importHistoryId?: true
+  delBatchId?: true
   createdAt?: true
 }
 
@@ -126,6 +130,7 @@ export type InvMovementMaxAggregateInputType = {
   reason?: true
   referenceId?: true
   importHistoryId?: true
+  delBatchId?: true
   createdAt?: true
 }
 
@@ -143,6 +148,7 @@ export type InvMovementCountAggregateInputType = {
   reason?: true
   referenceId?: true
   importHistoryId?: true
+  delBatchId?: true
   createdAt?: true
   _all?: true
 }
@@ -247,6 +253,7 @@ export type InvMovementGroupByOutputType = {
   reason: string | null
   referenceId: string | null
   importHistoryId: string | null
+  delBatchId: string | null
   createdAt: Date
   _count: InvMovementCountAggregateOutputType | null
   _avg: InvMovementAvgAggregateOutputType | null
@@ -287,6 +294,7 @@ export type InvMovementWhereInput = {
   reason?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   referenceId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   importHistoryId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
+  delBatchId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvMovement"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
@@ -294,6 +302,7 @@ export type InvMovementWhereInput = {
   toLocation?: Prisma.XOR<Prisma.InvStorageLocationNullableScalarRelationFilter, Prisma.InvStorageLocationWhereInput> | null
   channel?: Prisma.XOR<Prisma.ChannelNullableScalarRelationFilter, Prisma.ChannelWhereInput> | null
   importHistory?: Prisma.XOR<Prisma.InvImportHistoryNullableScalarRelationFilter, Prisma.InvImportHistoryWhereInput> | null
+  delBatch?: Prisma.XOR<Prisma.DelBatchNullableScalarRelationFilter, Prisma.DelBatchWhereInput> | null
 }
 
 export type InvMovementOrderByWithRelationInput = {
@@ -310,6 +319,7 @@ export type InvMovementOrderByWithRelationInput = {
   reason?: Prisma.SortOrderInput | Prisma.SortOrder
   referenceId?: Prisma.SortOrderInput | Prisma.SortOrder
   importHistoryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  delBatchId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   option?: Prisma.InvProductOptionOrderByWithRelationInput
@@ -317,6 +327,7 @@ export type InvMovementOrderByWithRelationInput = {
   toLocation?: Prisma.InvStorageLocationOrderByWithRelationInput
   channel?: Prisma.ChannelOrderByWithRelationInput
   importHistory?: Prisma.InvImportHistoryOrderByWithRelationInput
+  delBatch?: Prisma.DelBatchOrderByWithRelationInput
 }
 
 export type InvMovementWhereUniqueInput = Prisma.AtLeast<{
@@ -336,6 +347,7 @@ export type InvMovementWhereUniqueInput = Prisma.AtLeast<{
   reason?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   referenceId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   importHistoryId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
+  delBatchId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvMovement"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
@@ -343,6 +355,7 @@ export type InvMovementWhereUniqueInput = Prisma.AtLeast<{
   toLocation?: Prisma.XOR<Prisma.InvStorageLocationNullableScalarRelationFilter, Prisma.InvStorageLocationWhereInput> | null
   channel?: Prisma.XOR<Prisma.ChannelNullableScalarRelationFilter, Prisma.ChannelWhereInput> | null
   importHistory?: Prisma.XOR<Prisma.InvImportHistoryNullableScalarRelationFilter, Prisma.InvImportHistoryWhereInput> | null
+  delBatch?: Prisma.XOR<Prisma.DelBatchNullableScalarRelationFilter, Prisma.DelBatchWhereInput> | null
 }, "id">
 
 export type InvMovementOrderByWithAggregationInput = {
@@ -359,6 +372,7 @@ export type InvMovementOrderByWithAggregationInput = {
   reason?: Prisma.SortOrderInput | Prisma.SortOrder
   referenceId?: Prisma.SortOrderInput | Prisma.SortOrder
   importHistoryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  delBatchId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.InvMovementCountOrderByAggregateInput
   _avg?: Prisma.InvMovementAvgOrderByAggregateInput
@@ -384,6 +398,7 @@ export type InvMovementScalarWhereWithAggregatesInput = {
   reason?: Prisma.StringNullableWithAggregatesFilter<"InvMovement"> | string | null
   referenceId?: Prisma.StringNullableWithAggregatesFilter<"InvMovement"> | string | null
   importHistoryId?: Prisma.StringNullableWithAggregatesFilter<"InvMovement"> | string | null
+  delBatchId?: Prisma.StringNullableWithAggregatesFilter<"InvMovement"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvMovement"> | Date | string
 }
 
@@ -402,6 +417,7 @@ export type InvMovementCreateInput = {
   toLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutIncomingTransfersInput
   channel?: Prisma.ChannelCreateNestedOneWithoutInvMovementsInput
   importHistory?: Prisma.InvImportHistoryCreateNestedOneWithoutMovementsInput
+  delBatch?: Prisma.DelBatchCreateNestedOneWithoutMovementsInput
 }
 
 export type InvMovementUncheckedCreateInput = {
@@ -418,6 +434,7 @@ export type InvMovementUncheckedCreateInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -436,6 +453,7 @@ export type InvMovementUpdateInput = {
   toLocation?: Prisma.InvStorageLocationUpdateOneWithoutIncomingTransfersNestedInput
   channel?: Prisma.ChannelUpdateOneWithoutInvMovementsNestedInput
   importHistory?: Prisma.InvImportHistoryUpdateOneWithoutMovementsNestedInput
+  delBatch?: Prisma.DelBatchUpdateOneWithoutMovementsNestedInput
 }
 
 export type InvMovementUncheckedUpdateInput = {
@@ -452,6 +470,7 @@ export type InvMovementUncheckedUpdateInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -469,6 +488,7 @@ export type InvMovementCreateManyInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -497,6 +517,7 @@ export type InvMovementUncheckedUpdateManyInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -524,6 +545,7 @@ export type InvMovementCountOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   referenceId?: Prisma.SortOrder
   importHistoryId?: Prisma.SortOrder
+  delBatchId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -545,6 +567,7 @@ export type InvMovementMaxOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   referenceId?: Prisma.SortOrder
   importHistoryId?: Prisma.SortOrder
+  delBatchId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -562,6 +585,7 @@ export type InvMovementMinOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   referenceId?: Prisma.SortOrder
   importHistoryId?: Prisma.SortOrder
+  delBatchId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -783,6 +807,48 @@ export type InvMovementUncheckedUpdateManyWithoutImportHistoryNestedInput = {
   deleteMany?: Prisma.InvMovementScalarWhereInput | Prisma.InvMovementScalarWhereInput[]
 }
 
+export type InvMovementCreateNestedManyWithoutDelBatchInput = {
+  create?: Prisma.XOR<Prisma.InvMovementCreateWithoutDelBatchInput, Prisma.InvMovementUncheckedCreateWithoutDelBatchInput> | Prisma.InvMovementCreateWithoutDelBatchInput[] | Prisma.InvMovementUncheckedCreateWithoutDelBatchInput[]
+  connectOrCreate?: Prisma.InvMovementCreateOrConnectWithoutDelBatchInput | Prisma.InvMovementCreateOrConnectWithoutDelBatchInput[]
+  createMany?: Prisma.InvMovementCreateManyDelBatchInputEnvelope
+  connect?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+}
+
+export type InvMovementUncheckedCreateNestedManyWithoutDelBatchInput = {
+  create?: Prisma.XOR<Prisma.InvMovementCreateWithoutDelBatchInput, Prisma.InvMovementUncheckedCreateWithoutDelBatchInput> | Prisma.InvMovementCreateWithoutDelBatchInput[] | Prisma.InvMovementUncheckedCreateWithoutDelBatchInput[]
+  connectOrCreate?: Prisma.InvMovementCreateOrConnectWithoutDelBatchInput | Prisma.InvMovementCreateOrConnectWithoutDelBatchInput[]
+  createMany?: Prisma.InvMovementCreateManyDelBatchInputEnvelope
+  connect?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+}
+
+export type InvMovementUpdateManyWithoutDelBatchNestedInput = {
+  create?: Prisma.XOR<Prisma.InvMovementCreateWithoutDelBatchInput, Prisma.InvMovementUncheckedCreateWithoutDelBatchInput> | Prisma.InvMovementCreateWithoutDelBatchInput[] | Prisma.InvMovementUncheckedCreateWithoutDelBatchInput[]
+  connectOrCreate?: Prisma.InvMovementCreateOrConnectWithoutDelBatchInput | Prisma.InvMovementCreateOrConnectWithoutDelBatchInput[]
+  upsert?: Prisma.InvMovementUpsertWithWhereUniqueWithoutDelBatchInput | Prisma.InvMovementUpsertWithWhereUniqueWithoutDelBatchInput[]
+  createMany?: Prisma.InvMovementCreateManyDelBatchInputEnvelope
+  set?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+  disconnect?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+  delete?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+  connect?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+  update?: Prisma.InvMovementUpdateWithWhereUniqueWithoutDelBatchInput | Prisma.InvMovementUpdateWithWhereUniqueWithoutDelBatchInput[]
+  updateMany?: Prisma.InvMovementUpdateManyWithWhereWithoutDelBatchInput | Prisma.InvMovementUpdateManyWithWhereWithoutDelBatchInput[]
+  deleteMany?: Prisma.InvMovementScalarWhereInput | Prisma.InvMovementScalarWhereInput[]
+}
+
+export type InvMovementUncheckedUpdateManyWithoutDelBatchNestedInput = {
+  create?: Prisma.XOR<Prisma.InvMovementCreateWithoutDelBatchInput, Prisma.InvMovementUncheckedCreateWithoutDelBatchInput> | Prisma.InvMovementCreateWithoutDelBatchInput[] | Prisma.InvMovementUncheckedCreateWithoutDelBatchInput[]
+  connectOrCreate?: Prisma.InvMovementCreateOrConnectWithoutDelBatchInput | Prisma.InvMovementCreateOrConnectWithoutDelBatchInput[]
+  upsert?: Prisma.InvMovementUpsertWithWhereUniqueWithoutDelBatchInput | Prisma.InvMovementUpsertWithWhereUniqueWithoutDelBatchInput[]
+  createMany?: Prisma.InvMovementCreateManyDelBatchInputEnvelope
+  set?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+  disconnect?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+  delete?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+  connect?: Prisma.InvMovementWhereUniqueInput | Prisma.InvMovementWhereUniqueInput[]
+  update?: Prisma.InvMovementUpdateWithWhereUniqueWithoutDelBatchInput | Prisma.InvMovementUpdateWithWhereUniqueWithoutDelBatchInput[]
+  updateMany?: Prisma.InvMovementUpdateManyWithWhereWithoutDelBatchInput | Prisma.InvMovementUpdateManyWithWhereWithoutDelBatchInput[]
+  deleteMany?: Prisma.InvMovementScalarWhereInput | Prisma.InvMovementScalarWhereInput[]
+}
+
 export type InvMovementCreateNestedManyWithoutChannelInput = {
   create?: Prisma.XOR<Prisma.InvMovementCreateWithoutChannelInput, Prisma.InvMovementUncheckedCreateWithoutChannelInput> | Prisma.InvMovementCreateWithoutChannelInput[] | Prisma.InvMovementUncheckedCreateWithoutChannelInput[]
   connectOrCreate?: Prisma.InvMovementCreateOrConnectWithoutChannelInput | Prisma.InvMovementCreateOrConnectWithoutChannelInput[]
@@ -839,6 +905,7 @@ export type InvMovementCreateWithoutSpaceInput = {
   toLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutIncomingTransfersInput
   channel?: Prisma.ChannelCreateNestedOneWithoutInvMovementsInput
   importHistory?: Prisma.InvImportHistoryCreateNestedOneWithoutMovementsInput
+  delBatch?: Prisma.DelBatchCreateNestedOneWithoutMovementsInput
 }
 
 export type InvMovementUncheckedCreateWithoutSpaceInput = {
@@ -854,6 +921,7 @@ export type InvMovementUncheckedCreateWithoutSpaceInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -900,6 +968,7 @@ export type InvMovementScalarWhereInput = {
   reason?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   referenceId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   importHistoryId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
+  delBatchId?: Prisma.StringNullableFilter<"InvMovement"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvMovement"> | Date | string
 }
 
@@ -917,6 +986,7 @@ export type InvMovementCreateWithoutOptionInput = {
   toLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutIncomingTransfersInput
   channel?: Prisma.ChannelCreateNestedOneWithoutInvMovementsInput
   importHistory?: Prisma.InvImportHistoryCreateNestedOneWithoutMovementsInput
+  delBatch?: Prisma.DelBatchCreateNestedOneWithoutMovementsInput
 }
 
 export type InvMovementUncheckedCreateWithoutOptionInput = {
@@ -932,6 +1002,7 @@ export type InvMovementUncheckedCreateWithoutOptionInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -975,6 +1046,7 @@ export type InvMovementCreateWithoutLocationInput = {
   toLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutIncomingTransfersInput
   channel?: Prisma.ChannelCreateNestedOneWithoutInvMovementsInput
   importHistory?: Prisma.InvImportHistoryCreateNestedOneWithoutMovementsInput
+  delBatch?: Prisma.DelBatchCreateNestedOneWithoutMovementsInput
 }
 
 export type InvMovementUncheckedCreateWithoutLocationInput = {
@@ -990,6 +1062,7 @@ export type InvMovementUncheckedCreateWithoutLocationInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1017,6 +1090,7 @@ export type InvMovementCreateWithoutToLocationInput = {
   location: Prisma.InvStorageLocationCreateNestedOneWithoutMovementsInput
   channel?: Prisma.ChannelCreateNestedOneWithoutInvMovementsInput
   importHistory?: Prisma.InvImportHistoryCreateNestedOneWithoutMovementsInput
+  delBatch?: Prisma.DelBatchCreateNestedOneWithoutMovementsInput
 }
 
 export type InvMovementUncheckedCreateWithoutToLocationInput = {
@@ -1032,6 +1106,7 @@ export type InvMovementUncheckedCreateWithoutToLocationInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1091,6 +1166,7 @@ export type InvMovementCreateWithoutImportHistoryInput = {
   location: Prisma.InvStorageLocationCreateNestedOneWithoutMovementsInput
   toLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutIncomingTransfersInput
   channel?: Prisma.ChannelCreateNestedOneWithoutInvMovementsInput
+  delBatch?: Prisma.DelBatchCreateNestedOneWithoutMovementsInput
 }
 
 export type InvMovementUncheckedCreateWithoutImportHistoryInput = {
@@ -1106,6 +1182,7 @@ export type InvMovementUncheckedCreateWithoutImportHistoryInput = {
   orderDate?: Date | string | null
   reason?: string | null
   referenceId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1135,6 +1212,66 @@ export type InvMovementUpdateManyWithWhereWithoutImportHistoryInput = {
   data: Prisma.XOR<Prisma.InvMovementUpdateManyMutationInput, Prisma.InvMovementUncheckedUpdateManyWithoutImportHistoryInput>
 }
 
+export type InvMovementCreateWithoutDelBatchInput = {
+  id?: string
+  type: $Enums.InvMovementType
+  quantity: number
+  movementDate: Date | string
+  orderDate?: Date | string | null
+  reason?: string | null
+  referenceId?: string | null
+  createdAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutInvMovementsInput
+  option: Prisma.InvProductOptionCreateNestedOneWithoutMovementsInput
+  location: Prisma.InvStorageLocationCreateNestedOneWithoutMovementsInput
+  toLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutIncomingTransfersInput
+  channel?: Prisma.ChannelCreateNestedOneWithoutInvMovementsInput
+  importHistory?: Prisma.InvImportHistoryCreateNestedOneWithoutMovementsInput
+}
+
+export type InvMovementUncheckedCreateWithoutDelBatchInput = {
+  id?: string
+  spaceId: string
+  optionId: string
+  locationId: string
+  toLocationId?: string | null
+  channelId?: string | null
+  type: $Enums.InvMovementType
+  quantity: number
+  movementDate: Date | string
+  orderDate?: Date | string | null
+  reason?: string | null
+  referenceId?: string | null
+  importHistoryId?: string | null
+  createdAt?: Date | string
+}
+
+export type InvMovementCreateOrConnectWithoutDelBatchInput = {
+  where: Prisma.InvMovementWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvMovementCreateWithoutDelBatchInput, Prisma.InvMovementUncheckedCreateWithoutDelBatchInput>
+}
+
+export type InvMovementCreateManyDelBatchInputEnvelope = {
+  data: Prisma.InvMovementCreateManyDelBatchInput | Prisma.InvMovementCreateManyDelBatchInput[]
+  skipDuplicates?: boolean
+}
+
+export type InvMovementUpsertWithWhereUniqueWithoutDelBatchInput = {
+  where: Prisma.InvMovementWhereUniqueInput
+  update: Prisma.XOR<Prisma.InvMovementUpdateWithoutDelBatchInput, Prisma.InvMovementUncheckedUpdateWithoutDelBatchInput>
+  create: Prisma.XOR<Prisma.InvMovementCreateWithoutDelBatchInput, Prisma.InvMovementUncheckedCreateWithoutDelBatchInput>
+}
+
+export type InvMovementUpdateWithWhereUniqueWithoutDelBatchInput = {
+  where: Prisma.InvMovementWhereUniqueInput
+  data: Prisma.XOR<Prisma.InvMovementUpdateWithoutDelBatchInput, Prisma.InvMovementUncheckedUpdateWithoutDelBatchInput>
+}
+
+export type InvMovementUpdateManyWithWhereWithoutDelBatchInput = {
+  where: Prisma.InvMovementScalarWhereInput
+  data: Prisma.XOR<Prisma.InvMovementUpdateManyMutationInput, Prisma.InvMovementUncheckedUpdateManyWithoutDelBatchInput>
+}
+
 export type InvMovementCreateWithoutChannelInput = {
   id?: string
   type: $Enums.InvMovementType
@@ -1149,6 +1286,7 @@ export type InvMovementCreateWithoutChannelInput = {
   location: Prisma.InvStorageLocationCreateNestedOneWithoutMovementsInput
   toLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutIncomingTransfersInput
   importHistory?: Prisma.InvImportHistoryCreateNestedOneWithoutMovementsInput
+  delBatch?: Prisma.DelBatchCreateNestedOneWithoutMovementsInput
 }
 
 export type InvMovementUncheckedCreateWithoutChannelInput = {
@@ -1164,6 +1302,7 @@ export type InvMovementUncheckedCreateWithoutChannelInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1206,6 +1345,7 @@ export type InvMovementCreateManySpaceInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1223,6 +1363,7 @@ export type InvMovementUpdateWithoutSpaceInput = {
   toLocation?: Prisma.InvStorageLocationUpdateOneWithoutIncomingTransfersNestedInput
   channel?: Prisma.ChannelUpdateOneWithoutInvMovementsNestedInput
   importHistory?: Prisma.InvImportHistoryUpdateOneWithoutMovementsNestedInput
+  delBatch?: Prisma.DelBatchUpdateOneWithoutMovementsNestedInput
 }
 
 export type InvMovementUncheckedUpdateWithoutSpaceInput = {
@@ -1238,6 +1379,7 @@ export type InvMovementUncheckedUpdateWithoutSpaceInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1254,6 +1396,7 @@ export type InvMovementUncheckedUpdateManyWithoutSpaceInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1270,6 +1413,7 @@ export type InvMovementCreateManyOptionInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1287,6 +1431,7 @@ export type InvMovementUpdateWithoutOptionInput = {
   toLocation?: Prisma.InvStorageLocationUpdateOneWithoutIncomingTransfersNestedInput
   channel?: Prisma.ChannelUpdateOneWithoutInvMovementsNestedInput
   importHistory?: Prisma.InvImportHistoryUpdateOneWithoutMovementsNestedInput
+  delBatch?: Prisma.DelBatchUpdateOneWithoutMovementsNestedInput
 }
 
 export type InvMovementUncheckedUpdateWithoutOptionInput = {
@@ -1302,6 +1447,7 @@ export type InvMovementUncheckedUpdateWithoutOptionInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1318,6 +1464,7 @@ export type InvMovementUncheckedUpdateManyWithoutOptionInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1334,6 +1481,7 @@ export type InvMovementCreateManyLocationInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1350,6 +1498,7 @@ export type InvMovementCreateManyToLocationInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1367,6 +1516,7 @@ export type InvMovementUpdateWithoutLocationInput = {
   toLocation?: Prisma.InvStorageLocationUpdateOneWithoutIncomingTransfersNestedInput
   channel?: Prisma.ChannelUpdateOneWithoutInvMovementsNestedInput
   importHistory?: Prisma.InvImportHistoryUpdateOneWithoutMovementsNestedInput
+  delBatch?: Prisma.DelBatchUpdateOneWithoutMovementsNestedInput
 }
 
 export type InvMovementUncheckedUpdateWithoutLocationInput = {
@@ -1382,6 +1532,7 @@ export type InvMovementUncheckedUpdateWithoutLocationInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1398,6 +1549,7 @@ export type InvMovementUncheckedUpdateManyWithoutLocationInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1415,6 +1567,7 @@ export type InvMovementUpdateWithoutToLocationInput = {
   location?: Prisma.InvStorageLocationUpdateOneRequiredWithoutMovementsNestedInput
   channel?: Prisma.ChannelUpdateOneWithoutInvMovementsNestedInput
   importHistory?: Prisma.InvImportHistoryUpdateOneWithoutMovementsNestedInput
+  delBatch?: Prisma.DelBatchUpdateOneWithoutMovementsNestedInput
 }
 
 export type InvMovementUncheckedUpdateWithoutToLocationInput = {
@@ -1430,6 +1583,7 @@ export type InvMovementUncheckedUpdateWithoutToLocationInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1446,6 +1600,7 @@ export type InvMovementUncheckedUpdateManyWithoutToLocationInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1462,6 +1617,7 @@ export type InvMovementCreateManyImportHistoryInput = {
   orderDate?: Date | string | null
   reason?: string | null
   referenceId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1479,6 +1635,7 @@ export type InvMovementUpdateWithoutImportHistoryInput = {
   location?: Prisma.InvStorageLocationUpdateOneRequiredWithoutMovementsNestedInput
   toLocation?: Prisma.InvStorageLocationUpdateOneWithoutIncomingTransfersNestedInput
   channel?: Prisma.ChannelUpdateOneWithoutInvMovementsNestedInput
+  delBatch?: Prisma.DelBatchUpdateOneWithoutMovementsNestedInput
 }
 
 export type InvMovementUncheckedUpdateWithoutImportHistoryInput = {
@@ -1494,6 +1651,7 @@ export type InvMovementUncheckedUpdateWithoutImportHistoryInput = {
   orderDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1510,6 +1668,75 @@ export type InvMovementUncheckedUpdateManyWithoutImportHistoryInput = {
   orderDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type InvMovementCreateManyDelBatchInput = {
+  id?: string
+  spaceId: string
+  optionId: string
+  locationId: string
+  toLocationId?: string | null
+  channelId?: string | null
+  type: $Enums.InvMovementType
+  quantity: number
+  movementDate: Date | string
+  orderDate?: Date | string | null
+  reason?: string | null
+  referenceId?: string | null
+  importHistoryId?: string | null
+  createdAt?: Date | string
+}
+
+export type InvMovementUpdateWithoutDelBatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvMovementTypeFieldUpdateOperationsInput | $Enums.InvMovementType
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  movementDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orderDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutInvMovementsNestedInput
+  option?: Prisma.InvProductOptionUpdateOneRequiredWithoutMovementsNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneRequiredWithoutMovementsNestedInput
+  toLocation?: Prisma.InvStorageLocationUpdateOneWithoutIncomingTransfersNestedInput
+  channel?: Prisma.ChannelUpdateOneWithoutInvMovementsNestedInput
+  importHistory?: Prisma.InvImportHistoryUpdateOneWithoutMovementsNestedInput
+}
+
+export type InvMovementUncheckedUpdateWithoutDelBatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
+  locationId?: Prisma.StringFieldUpdateOperationsInput | string
+  toLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumInvMovementTypeFieldUpdateOperationsInput | $Enums.InvMovementType
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  movementDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orderDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type InvMovementUncheckedUpdateManyWithoutDelBatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  optionId?: Prisma.StringFieldUpdateOperationsInput | string
+  locationId?: Prisma.StringFieldUpdateOperationsInput | string
+  toLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumInvMovementTypeFieldUpdateOperationsInput | $Enums.InvMovementType
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  movementDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orderDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1526,6 +1753,7 @@ export type InvMovementCreateManyChannelInput = {
   reason?: string | null
   referenceId?: string | null
   importHistoryId?: string | null
+  delBatchId?: string | null
   createdAt?: Date | string
 }
 
@@ -1543,6 +1771,7 @@ export type InvMovementUpdateWithoutChannelInput = {
   location?: Prisma.InvStorageLocationUpdateOneRequiredWithoutMovementsNestedInput
   toLocation?: Prisma.InvStorageLocationUpdateOneWithoutIncomingTransfersNestedInput
   importHistory?: Prisma.InvImportHistoryUpdateOneWithoutMovementsNestedInput
+  delBatch?: Prisma.DelBatchUpdateOneWithoutMovementsNestedInput
 }
 
 export type InvMovementUncheckedUpdateWithoutChannelInput = {
@@ -1558,6 +1787,7 @@ export type InvMovementUncheckedUpdateWithoutChannelInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1574,6 +1804,7 @@ export type InvMovementUncheckedUpdateManyWithoutChannelInput = {
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importHistoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1593,6 +1824,7 @@ export type InvMovementSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   reason?: boolean
   referenceId?: boolean
   importHistoryId?: boolean
+  delBatchId?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -1600,6 +1832,7 @@ export type InvMovementSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   toLocation?: boolean | Prisma.InvMovement$toLocationArgs<ExtArgs>
   channel?: boolean | Prisma.InvMovement$channelArgs<ExtArgs>
   importHistory?: boolean | Prisma.InvMovement$importHistoryArgs<ExtArgs>
+  delBatch?: boolean | Prisma.InvMovement$delBatchArgs<ExtArgs>
 }, ExtArgs["result"]["invMovement"]>
 
 export type InvMovementSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1616,6 +1849,7 @@ export type InvMovementSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   reason?: boolean
   referenceId?: boolean
   importHistoryId?: boolean
+  delBatchId?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -1623,6 +1857,7 @@ export type InvMovementSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   toLocation?: boolean | Prisma.InvMovement$toLocationArgs<ExtArgs>
   channel?: boolean | Prisma.InvMovement$channelArgs<ExtArgs>
   importHistory?: boolean | Prisma.InvMovement$importHistoryArgs<ExtArgs>
+  delBatch?: boolean | Prisma.InvMovement$delBatchArgs<ExtArgs>
 }, ExtArgs["result"]["invMovement"]>
 
 export type InvMovementSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1639,6 +1874,7 @@ export type InvMovementSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   reason?: boolean
   referenceId?: boolean
   importHistoryId?: boolean
+  delBatchId?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -1646,6 +1882,7 @@ export type InvMovementSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   toLocation?: boolean | Prisma.InvMovement$toLocationArgs<ExtArgs>
   channel?: boolean | Prisma.InvMovement$channelArgs<ExtArgs>
   importHistory?: boolean | Prisma.InvMovement$importHistoryArgs<ExtArgs>
+  delBatch?: boolean | Prisma.InvMovement$delBatchArgs<ExtArgs>
 }, ExtArgs["result"]["invMovement"]>
 
 export type InvMovementSelectScalar = {
@@ -1662,10 +1899,11 @@ export type InvMovementSelectScalar = {
   reason?: boolean
   referenceId?: boolean
   importHistoryId?: boolean
+  delBatchId?: boolean
   createdAt?: boolean
 }
 
-export type InvMovementOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "optionId" | "locationId" | "toLocationId" | "channelId" | "type" | "quantity" | "movementDate" | "orderDate" | "reason" | "referenceId" | "importHistoryId" | "createdAt", ExtArgs["result"]["invMovement"]>
+export type InvMovementOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "optionId" | "locationId" | "toLocationId" | "channelId" | "type" | "quantity" | "movementDate" | "orderDate" | "reason" | "referenceId" | "importHistoryId" | "delBatchId" | "createdAt", ExtArgs["result"]["invMovement"]>
 export type InvMovementInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -1673,6 +1911,7 @@ export type InvMovementInclude<ExtArgs extends runtime.Types.Extensions.Internal
   toLocation?: boolean | Prisma.InvMovement$toLocationArgs<ExtArgs>
   channel?: boolean | Prisma.InvMovement$channelArgs<ExtArgs>
   importHistory?: boolean | Prisma.InvMovement$importHistoryArgs<ExtArgs>
+  delBatch?: boolean | Prisma.InvMovement$delBatchArgs<ExtArgs>
 }
 export type InvMovementIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1681,6 +1920,7 @@ export type InvMovementIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.
   toLocation?: boolean | Prisma.InvMovement$toLocationArgs<ExtArgs>
   channel?: boolean | Prisma.InvMovement$channelArgs<ExtArgs>
   importHistory?: boolean | Prisma.InvMovement$importHistoryArgs<ExtArgs>
+  delBatch?: boolean | Prisma.InvMovement$delBatchArgs<ExtArgs>
 }
 export type InvMovementIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1689,6 +1929,7 @@ export type InvMovementIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.
   toLocation?: boolean | Prisma.InvMovement$toLocationArgs<ExtArgs>
   channel?: boolean | Prisma.InvMovement$channelArgs<ExtArgs>
   importHistory?: boolean | Prisma.InvMovement$importHistoryArgs<ExtArgs>
+  delBatch?: boolean | Prisma.InvMovement$delBatchArgs<ExtArgs>
 }
 
 export type $InvMovementPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1700,6 +1941,7 @@ export type $InvMovementPayload<ExtArgs extends runtime.Types.Extensions.Interna
     toLocation: Prisma.$InvStorageLocationPayload<ExtArgs> | null
     channel: Prisma.$ChannelPayload<ExtArgs> | null
     importHistory: Prisma.$InvImportHistoryPayload<ExtArgs> | null
+    delBatch: Prisma.$DelBatchPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1715,6 +1957,7 @@ export type $InvMovementPayload<ExtArgs extends runtime.Types.Extensions.Interna
     reason: string | null
     referenceId: string | null
     importHistoryId: string | null
+    delBatchId: string | null
     createdAt: Date
   }, ExtArgs["result"]["invMovement"]>
   composites: {}
@@ -2116,6 +2359,7 @@ export interface Prisma__InvMovementClient<T, Null = never, ExtArgs extends runt
   toLocation<T extends Prisma.InvMovement$toLocationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvMovement$toLocationArgs<ExtArgs>>): Prisma.Prisma__InvStorageLocationClient<runtime.Types.Result.GetResult<Prisma.$InvStorageLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   channel<T extends Prisma.InvMovement$channelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvMovement$channelArgs<ExtArgs>>): Prisma.Prisma__ChannelClient<runtime.Types.Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   importHistory<T extends Prisma.InvMovement$importHistoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvMovement$importHistoryArgs<ExtArgs>>): Prisma.Prisma__InvImportHistoryClient<runtime.Types.Result.GetResult<Prisma.$InvImportHistoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  delBatch<T extends Prisma.InvMovement$delBatchArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvMovement$delBatchArgs<ExtArgs>>): Prisma.Prisma__DelBatchClient<runtime.Types.Result.GetResult<Prisma.$DelBatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2158,6 +2402,7 @@ export interface InvMovementFieldRefs {
   readonly reason: Prisma.FieldRef<"InvMovement", 'String'>
   readonly referenceId: Prisma.FieldRef<"InvMovement", 'String'>
   readonly importHistoryId: Prisma.FieldRef<"InvMovement", 'String'>
+  readonly delBatchId: Prisma.FieldRef<"InvMovement", 'String'>
   readonly createdAt: Prisma.FieldRef<"InvMovement", 'DateTime'>
 }
     
@@ -2609,6 +2854,25 @@ export type InvMovement$importHistoryArgs<ExtArgs extends runtime.Types.Extensio
    */
   include?: Prisma.InvImportHistoryInclude<ExtArgs> | null
   where?: Prisma.InvImportHistoryWhereInput
+}
+
+/**
+ * InvMovement.delBatch
+ */
+export type InvMovement$delBatchArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DelBatch
+   */
+  select?: Prisma.DelBatchSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DelBatch
+   */
+  omit?: Prisma.DelBatchOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DelBatchInclude<ExtArgs> | null
+  where?: Prisma.DelBatchWhereInput
 }
 
 /**

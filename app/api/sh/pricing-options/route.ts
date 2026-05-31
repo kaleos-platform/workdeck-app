@@ -16,9 +16,10 @@ export async function GET(req: NextRequest) {
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
   const search = (searchParams.get('search') ?? '').trim()
 
-  // 옵션 where: product.spaceId로 소속 검증
+  // 옵션 where: product.spaceId로 소속 검증, 소프트삭제 옵션 제외
   const where: Record<string, unknown> = {
     product: { spaceId: resolved.space.id },
+    deletedAt: null,
   }
 
   if (search) {

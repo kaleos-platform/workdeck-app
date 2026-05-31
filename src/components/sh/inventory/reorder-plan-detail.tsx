@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -22,9 +23,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { ReorderPlanRationalePopover } from './reorder-plan-rationale-popover'
-import { ColdStartInterviewDialog } from './cold-start-interview-dialog'
 import type {
   ForecastModel,
   PlanDetailResponse,
@@ -32,6 +39,14 @@ import type {
   ReorderPlanItem,
   ProductInfo,
 } from './reorder-plan-types'
+
+// 시즌 계수 선택지 — 서버 AnswerSchema의 seasonFactor(0.1~5)와 정합
+const SEASON_FACTOR_OPTIONS = [
+  { value: '0.5', label: '비수기 (×0.5)' },
+  { value: '1', label: '평상시 (×1.0)' },
+  { value: '1.5', label: '성수기 (×1.5)' },
+  { value: '2', label: '강한 성수기 (×2.0)' },
+]
 
 // 모델 뱃지 색상
 const MODEL_BADGE: Record<ForecastModel, string> = {
@@ -50,6 +65,11 @@ const MODEL_LABEL: Record<ForecastModel, string> = {
   CROSTON: 'Croston',
   BAYES: 'Bayes',
   MANUAL: '수동',
+}
+
+// 콜드스타트(데이터 부족) 판별 — 서버 cold-start API와 동일하게 forecastModel === 'BAYES'
+function isColdStart(item: ReorderPlanItem) {
+  return item.forecastModel === 'BAYES'
 }
 
 function ModelBadge({ model }: { model: ForecastModel }) {
@@ -82,17 +102,22 @@ function StatusBadge({ status }: { status: ReorderPlan['status'] }) {
   )
 }
 
-// 상품/옵션 정보 빠른 조회용 맵 빌드
-function buildInfoMap(productInfo: ProductInfo[]) {
-  const productMap = new Map<string, ProductInfo>()
-  const optionMap = new Map<string, { optionName: string; sku: string | null; productId: string }>()
+// 옵션 정보 빠른 조회용 맵 빌드 (상품 단위 계획이므로 옵션 맵만 필요)
+function buildOptionMap(productInfo: ProductInfo[]) {
+  const optionMap = new Map<
+    string,
+    { optionName: string; sku: string | null; optionDeleted?: boolean }
+  >()
   for (const p of productInfo) {
-    productMap.set(p.productId, p)
     for (const o of p.options) {
-      optionMap.set(o.optionId, { optionName: o.optionName, sku: o.sku, productId: p.productId })
+      optionMap.set(o.optionId, {
+        optionName: o.optionName,
+        sku: o.sku,
+        optionDeleted: o.optionDeleted,
+      })
     }
   }
-  return { productMap, optionMap }
+  return optionMap
 }
 
 // debounce hook
@@ -218,6 +243,15 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
 
+  // 행 선택 (일괄 작업)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  // 일괄 바 입력값
+  const [bulkTarget, setBulkTarget] = useState('')
+  const [bulkSeason, setBulkSeason] = useState('1')
+  const [bulkFinalQty, setBulkFinalQty] = useState('')
+  const [bulkNote, setBulkNote] = useState('')
+  const [bulkBusy, setBulkBusy] = useState(false)
+
   const fetchPlan = useCallback(async () => {
     setLoading(true)
     try {
@@ -241,35 +275,37 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     }
   }, [initialData, fetchPlan])
 
-  const { productMap, optionMap } = useMemo(() => buildInfoMap(productInfo), [productInfo])
-
-  // 같은 productId 연속 첫 행 감지
-  const firstRowByProduct = useMemo(() => {
-    const seen = new Set<string>()
-    return items.map((item) => {
-      if (seen.has(item.productId)) return false
-      seen.add(item.productId)
-      return true
-    })
-  }, [items])
-
-  // COLD_START 옵션 목록
-  const coldStartItems = useMemo(() => {
-    return items
-      .filter((item) => item.inputsSnapshot?.profile === 'COLD_START')
-      .map((item) => {
-        const opt = optionMap.get(item.optionId)
-        const prod = productMap.get(item.productId)
-        return {
-          optionId: item.optionId,
-          inputsSnapshot: item.inputsSnapshot,
-          productName: prod?.productName ?? '',
-          optionName: opt?.optionName ?? '',
-        }
-      })
-  }, [items, optionMap, productMap])
+  const optionMap = useMemo(() => buildOptionMap(productInfo), [productInfo])
+  const brandName = productInfo[0]?.brandName ?? null
 
   const readonly = plan?.status !== 'DRAFT'
+
+  // 콜드스타트(데이터 부족) 옵션 수
+  const coldStartCount = useMemo(() => items.filter(isColdStart).length, [items])
+
+  // 선택 상태 파생
+  const allChecked = items.length > 0 && selected.size === items.length
+  const someChecked = selected.size > 0 && selected.size < items.length
+  const selectedColdStartIds = useMemo(
+    () => items.filter((it) => selected.has(it.id) && isColdStart(it)).map((it) => it.id),
+    [items, selected]
+  )
+
+  const toggleAll = useCallback(
+    (checked: boolean) => {
+      setSelected(checked ? new Set(items.map((it) => it.id)) : new Set())
+    },
+    [items]
+  )
+
+  const toggleOne = useCallback((itemId: string, checked: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(itemId)
+      else next.delete(itemId)
+      return next
+    })
+  }, [])
 
   const handlePatchItem = useCallback(
     async (itemId: string, body: { finalQty?: number; userNote?: string }) => {
@@ -280,7 +316,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           body: JSON.stringify(body),
         })
         if (!res.ok) throw new Error('저장 실패')
-        // 로컬 상태 업데이트
         setItems((prev) => prev.map((it) => (it.id === itemId ? { ...it, ...body } : it)))
       } catch (err) {
         console.error(err)
@@ -299,6 +334,80 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     (itemId: string, userNote: string) => handlePatchItem(itemId, { userNote }),
     [handlePatchItem]
   )
+
+  // ── 일괄: 콜드스타트 적용 ──────────────────────────────────────────────
+  const handleBulkColdStart = async () => {
+    const target = Number(bulkTarget)
+    if (!Number.isFinite(target) || target < 0) {
+      toast.error('목표 일판매량을 0 이상의 숫자로 입력하세요')
+      return
+    }
+    if (selectedColdStartIds.length === 0) {
+      toast.error('데이터 부족(콜드스타트) 옵션을 선택하세요')
+      return
+    }
+    const factor = Number(bulkSeason || '1')
+    // optionId 기준으로 answers 구성
+    const answers = items
+      .filter((it) => selectedColdStartIds.includes(it.id))
+      .map((it) => ({ optionId: it.optionId, targetDailySales: target, seasonFactor: factor }))
+
+    setBulkBusy(true)
+    try {
+      const res = await fetch(`/api/sh/inventory/reorder/plan/${planId}/cold-start-interview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers }),
+      })
+      if (!res.ok) throw new Error('저장 실패')
+      toast.success(`콜드스타트 ${answers.length}개 옵션에 적용했습니다`)
+      setBulkTarget('')
+      setSelected(new Set())
+      await fetchPlan() // 서버가 suggestedQty/finalQty 재계산하므로 재조회 필수
+    } catch (err) {
+      console.error(err)
+      toast.error('콜드스타트 일괄 적용에 실패했습니다')
+    } finally {
+      setBulkBusy(false)
+    }
+  }
+
+  // ── 일괄: finalQty / userNote ──────────────────────────────────────────
+  const handleBulkPatch = async (body: { finalQty?: number; userNote?: string }) => {
+    const itemIds = Array.from(selected)
+    if (itemIds.length === 0) return
+    setBulkBusy(true)
+    try {
+      const res = await fetch(`/api/sh/inventory/reorder/plan/${planId}/items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemIds, ...body }),
+      })
+      if (!res.ok) throw new Error('저장 실패')
+      // 로컬 상태 갱신
+      setItems((prev) => prev.map((it) => (selected.has(it.id) ? { ...it, ...body } : it)))
+      toast.success(`${itemIds.length}개 항목에 적용했습니다`)
+      setSelected(new Set())
+    } catch (err) {
+      console.error(err)
+      toast.error('일괄 적용에 실패했습니다')
+    } finally {
+      setBulkBusy(false)
+    }
+  }
+
+  const handleBulkFinalQty = () => {
+    const n = Number(bulkFinalQty)
+    if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)) {
+      toast.error('최종수량을 0 이상의 정수로 입력하세요')
+      return
+    }
+    handleBulkPatch({ finalQty: n }).then(() => setBulkFinalQty(''))
+  }
+
+  const handleBulkNote = () => {
+    handleBulkPatch({ userNote: bulkNote }).then(() => setBulkNote(''))
+  }
 
   const handleFinalize = async () => {
     setFinalizing(true)
@@ -335,6 +444,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   }
 
   const totalFinalQty = items.reduce((sum, it) => sum + it.finalQty, 0)
+  // 컬럼 수: 체크박스(DRAFT시) + 옵션 + 현재고 + 예측 + 모델 + 리드 + 안전 + 제안 + 라운딩 + 최종 + 메모 + 근거
+  const colCount = (readonly ? 0 : 1) + 11
 
   return (
     <div className="space-y-4">
@@ -344,6 +455,10 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           <div className="flex items-center gap-2">
             <PackageIcon className="h-4 w-4 text-muted-foreground" />
             <span className="text-base font-semibold">{plan.planNo}</span>
+            {plan.productName && (
+              <span className="text-sm text-muted-foreground">· {plan.productName}</span>
+            )}
+            {brandName && <span className="text-xs text-muted-foreground">({brandName})</span>}
             <StatusBadge status={plan.status} />
           </div>
           <p className="text-xs text-muted-foreground">
@@ -351,6 +466,11 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             <span className="font-medium tabular-nums">{plan.totalSuggestedQty}</span>개 · 최종 합계{' '}
             <span className="font-medium tabular-nums">{totalFinalQty}</span>개
           </p>
+          {!readonly && coldStartCount > 0 && (
+            <p className="text-xs text-amber-700">
+              데이터 부족 옵션 {coldStartCount}개 — 행 선택 후 일괄 입력으로 초기 예측을 보정하세요
+            </p>
+          )}
           {plan.finalizedAt && (
             <p className="text-xs text-muted-foreground">
               확정일: {new Date(plan.finalizedAt).toLocaleString('ko-KR')}
@@ -359,13 +479,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          {coldStartItems.length > 0 && (
-            <ColdStartInterviewDialog
-              planId={planId}
-              coldStartItems={coldStartItems}
-              onCompleted={fetchPlan}
-            />
-          )}
           {plan.status === 'DRAFT' && (
             <Button size="sm" onClick={() => setFinalizeOpen(true)} className="gap-1.5">
               <CheckIcon className="h-3.5 w-3.5" />
@@ -375,12 +488,114 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
       </div>
 
+      {/* 일괄 작업 바 — 선택 시 노출 */}
+      {!readonly && selected.size > 0 && (
+        <div className="rounded-md border bg-muted/40">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between border-b px-4 py-2.5">
+            <span className="text-sm font-semibold">{selected.size}개 선택</span>
+            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
+              선택 해제
+            </Button>
+          </div>
+
+          {/* 기본 작업 그룹 — 항상 표시 */}
+          <div className="space-y-2 px-4 py-3">
+            <p className="text-xs font-medium text-muted-foreground">기본</p>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-medium text-muted-foreground">최종수량</label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={1}
+                  inputMode="numeric"
+                  placeholder="수량"
+                  className="h-8 w-24 text-sm"
+                  value={bulkFinalQty}
+                  onChange={(e) => setBulkFinalQty(e.target.value)}
+                />
+              </div>
+              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={handleBulkFinalQty}>
+                최종수량 적용
+              </Button>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-medium text-muted-foreground">메모</label>
+                <Input
+                  type="text"
+                  placeholder="메모 내용"
+                  className="h-8 w-44 text-sm"
+                  value={bulkNote}
+                  onChange={(e) => setBulkNote(e.target.value)}
+                />
+              </div>
+              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={handleBulkNote}>
+                메모 적용
+              </Button>
+            </div>
+          </div>
+
+          {/* 콜드스타트 그룹 — 데이터부족(BAYES) 행 선택 시에만 */}
+          {selectedColdStartIds.length > 0 && (
+            <div className="space-y-2 border-t border-amber-200 bg-amber-50/50 px-4 py-3">
+              <p className="text-xs font-medium text-amber-800">
+                콜드스타트 · 데이터부족 {selectedColdStartIds.length}개 (초기 예측 보정)
+              </p>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-medium text-amber-800">
+                    목표 일판매량 (개/일)
+                  </label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={1}
+                    inputMode="numeric"
+                    placeholder="예: 10"
+                    className="h-8 w-28 text-sm"
+                    value={bulkTarget}
+                    onChange={(e) => setBulkTarget(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-medium text-amber-800">시즌 계수</label>
+                  <Select value={bulkSeason} onValueChange={setBulkSeason}>
+                    <SelectTrigger className="h-8 w-32 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SEASON_FACTOR_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button size="sm" disabled={bulkBusy} onClick={handleBulkColdStart}>
+                  콜드스타트 적용
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 아이템 테이블 */}
       <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>상품</TableHead>
+              {!readonly && (
+                <TableHead className="w-8">
+                  <Checkbox
+                    checked={allChecked ? true : someChecked ? 'indeterminate' : false}
+                    onCheckedChange={(v) => toggleAll(v === true)}
+                    aria-label="전체 선택"
+                  />
+                </TableHead>
+              )}
               <TableHead>옵션</TableHead>
               <TableHead className="text-right">현재고</TableHead>
               <TableHead className="text-right">예측 일판매</TableHead>
@@ -397,28 +612,40 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={colCount}
+                  className="py-10 text-center text-sm text-muted-foreground"
+                >
                   발주 항목이 없습니다
                 </TableCell>
               </TableRow>
             ) : (
-              items.map((item, idx) => {
-                const isFirst = firstRowByProduct[idx]
+              items.map((item) => {
                 const opt = optionMap.get(item.optionId)
-                const prod = productMap.get(item.productId)
-                const isColdStart = item.inputsSnapshot?.profile === 'COLD_START'
+                const cold = isColdStart(item)
+                const checked = selected.has(item.id)
 
                 return (
-                  <TableRow key={item.id} className={isFirst ? 'border-t-2 border-t-muted' : ''}>
-                    <TableCell className="font-medium">
-                      {isFirst ? (prod?.productName ?? '-') : ''}
-                    </TableCell>
+                  <TableRow key={item.id} data-state={checked ? 'selected' : undefined}>
+                    {!readonly && (
+                      <TableCell>
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => toggleOne(item.id, v === true)}
+                          aria-label={`${opt?.optionName ?? ''} 선택`}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell className="text-sm">
-                      <div>{opt?.optionName ?? '-'}</div>
-                      {prod?.brandName && isFirst && (
-                        <div className="text-xs text-muted-foreground">{prod.brandName}</div>
-                      )}
-                      {isColdStart && (
+                      <div className="flex items-center gap-1.5">
+                        <span>{opt?.optionName ?? '-'}</span>
+                        {opt?.optionDeleted && (
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            삭제됨
+                          </Badge>
+                        )}
+                      </div>
+                      {cold && (
                         <Badge
                           variant="outline"
                           className="mt-0.5 border-amber-200 bg-amber-50 text-[10px] text-amber-700"
@@ -448,10 +675,20 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <FinalQtyCell item={item} readonly={readonly} onSaved={handleFinalQtySaved} />
+                      <FinalQtyCell
+                        key={`fq-${item.id}-${item.finalQty}`}
+                        item={item}
+                        readonly={readonly}
+                        onSaved={handleFinalQtySaved}
+                      />
                     </TableCell>
                     <TableCell>
-                      <UserNoteCell item={item} readonly={readonly} onSaved={handleNoteSaved} />
+                      <UserNoteCell
+                        key={`note-${item.id}-${item.userNote ?? ''}`}
+                        item={item}
+                        readonly={readonly}
+                        onSaved={handleNoteSaved}
+                      />
                     </TableCell>
                     <TableCell>
                       <ReorderPlanRationalePopover item={item} />

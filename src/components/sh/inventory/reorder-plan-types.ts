@@ -7,6 +7,7 @@ export type ForecastModel = 'SMA' | 'WMA' | 'HW' | 'CROSTON' | 'BAYES' | 'MANUAL
 export type ReorderPlan = {
   id: string
   planNo: string
+  productName: string | null // 상품 단위 계획명. null = 레거시 전체-계획
   status: ReorderPlanStatus
   windowDays: number
   finalizedAt: string | null
@@ -52,6 +53,7 @@ export type ProductInfo = {
     optionId: string
     optionName: string
     sku: string | null
+    optionDeleted?: boolean
   }>
 }
 
@@ -80,6 +82,7 @@ export type ReorderPlanAccuracy = {
 export type ReorderPlanSummary = {
   id: string
   planNo: string
+  productName: string | null // 상품 단위 계획명. null = 레거시 전체-계획
   status: ReorderPlanStatus
   createdAt: string
   finalizedAt: string | null

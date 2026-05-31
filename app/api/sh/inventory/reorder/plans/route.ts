@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest) {
   const spaceId = resolved.space.id
 
   // 최근 50개 계획 목록
-  const plans = await prisma.reorderPlan.findMany({
+  const plansRaw = await prisma.reorderPlan.findMany({
     where: { spaceId },
     orderBy: { createdAt: 'desc' },
     take: 50,
@@ -24,7 +24,18 @@ export async function GET(_req: NextRequest) {
       totalFinalQty: true,
       finalizedAt: true,
       createdAt: true,
+      productId: true,
+      product: { select: { name: true, internalName: true } },
     },
+  })
+
+  // productName: 상품 단위 계획이면 상품명, 레거시 전체-계획이면 null
+  const plans = plansRaw.map((p) => {
+    const { product, ...rest } = p
+    return {
+      ...rest,
+      productName: product ? (product.name ?? product.internalName ?? null) : null,
+    }
   })
 
   // 가장 최근 CONSUMED 계획의 적중률 정보
