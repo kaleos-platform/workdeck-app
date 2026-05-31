@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
     data: data.map((b) => ({
       id: b.id,
       status: b.status,
+      source: b.source,
       label: b.label,
       orderCount: b._count.orders,
       createdAt: b.createdAt,
