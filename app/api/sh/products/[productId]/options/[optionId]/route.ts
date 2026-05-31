@@ -110,7 +110,34 @@ export async function DELETE(
   })
   if (!existing) return errorResponse('옵션을 찾을 수 없습니다', 404)
 
-  await prisma.invProductOption.delete({ where: { id: optionId } })
+  // 삭제 차단 테이블 존재 여부 병렬 확인 (Restrict FK 관계)
+  const [runItem, scenarioItem, listingItem, fulfillment, reorderItem] = await Promise.all([
+    prisma.productionRunItem.findFirst({ where: { optionId }, select: { id: true } }),
+    prisma.pricingScenarioItem.findFirst({ where: { optionId }, select: { id: true } }),
+    prisma.productListingItem.findFirst({ where: { optionId }, select: { id: true } }),
+    prisma.delOrderItemFulfillment.findFirst({ where: { optionId }, select: { id: true } }),
+    prisma.reorderPlanItem.findFirst({ where: { optionId }, select: { id: true } }),
+  ])
+
+  const blockers: string[] = []
+  if (runItem) blockers.push('생산 차수')
+  if (scenarioItem) blockers.push('가격 시뮬레이션')
+  if (listingItem) blockers.push('판매채널 상품 구성')
+  if (fulfillment) blockers.push('배송주문 이행 기록')
+  if (reorderItem) blockers.push('발주 계획')
+
+  if (blockers.length > 0) {
+    return errorResponse(
+      `이 옵션은 ${blockers.join(', ')}에서 사용 중이어서 삭제할 수 없습니다. 먼저 해당 데이터를 정리해주세요.`,
+      409
+    )
+  }
+
+  // ChannelProductAliasFulfillment 먼저 삭제 후 옵션 삭제 (나머지 Restrict 관계는 위에서 차단됨)
+  await prisma.$transaction([
+    prisma.channelProductAliasFulfillment.deleteMany({ where: { optionId } }),
+    prisma.invProductOption.delete({ where: { id: optionId } }),
+  ])
 
   return new NextResponse(null, { status: 204 })
 }

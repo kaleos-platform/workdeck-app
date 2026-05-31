@@ -98,6 +98,7 @@ export function ProductOptionsTable({
   const [bulkRetail, setBulkRetail] = useState('')
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeSavePromiseRef = useRef<Promise<void> | null>(null)
+  const dirtyIdsRef = useRef<Set<string>>(new Set())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -163,6 +164,9 @@ export function ProductOptionsTable({
     }
     return set
   }, [options, drafts])
+
+  // dirtyIds ref 동기화 (runAutoSave 클로저 캡처 시점 문제 회피)
+  dirtyIdsRef.current = dirtyIds
 
   // dirty/saving 보고
   useEffect(() => {
@@ -241,6 +245,8 @@ export function ProductOptionsTable({
       }
       setAutoSaving(false)
       activeSavePromiseRef.current = null
+      // 저장 중 새 편집이 발생했으면 재스케줄
+      if (dirtyIdsRef.current.size > 0) scheduleAutoSave(200)
     })()
     activeSavePromiseRef.current = promise
     await promise

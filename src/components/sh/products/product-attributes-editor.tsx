@@ -259,15 +259,25 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end gap-2">
-        <Button size="sm" variant="outline" onClick={handleSaveAttributesOnly} disabled={saving}>
-          {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-          속성 저장
-        </Button>
-        <Button size="sm" onClick={handleApplyOptionsClick} disabled={saving}>
-          {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-          옵션 적용
-        </Button>
+      <div className="flex items-end justify-end gap-2">
+        <div className="flex flex-col items-end gap-1">
+          <Button size="sm" variant="outline" onClick={handleSaveAttributesOnly} disabled={saving}>
+            {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+            속성 저장
+          </Button>
+          <span className="text-[11px] text-muted-foreground">
+            속성 이름·값만 저장. 옵션 행 변경 없음.
+          </span>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <Button size="sm" onClick={handleApplyOptionsClick} disabled={saving}>
+            {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+            옵션 적용
+          </Button>
+          <span className="text-[11px] text-muted-foreground">
+            조합으로 옵션 행 동기화. 새 조합 추가·없어진 조합 삭제.
+          </span>
+        </div>
       </div>
 
       <ProductOptionAttributesEditor
@@ -301,7 +311,7 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
                     <span className="font-medium">유지: {diff.kept.length}개</span>
                     <span className="text-muted-foreground">
                       {' '}
-                      (관리코드·원가·소비자가는 입력값으로 갱신)
+                      (기존 관리코드·원가·소비자가 유지 — 변경은 아래 옵션 테이블에서)
                     </span>
                   </li>
                   <li className={destructive ? 'text-destructive' : undefined}>
