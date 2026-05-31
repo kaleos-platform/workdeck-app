@@ -901,8 +901,9 @@ model InvMovement {
   movementDate    DateTime
   orderDate       DateTime? // OUTBOUND 전용
   reason          String? // ADJUSTMENT 시 필수 (앱 레벨 검증)
-  referenceId     String? // 연관 이동 또는 조정 ID
+  referenceId     String? // 연관 이동 또는 조정 ID (import 멱등: import:dh:<contentHash>)
   importHistoryId String?
+  delBatchId      String? // 배송 이력 이전으로 생성된 경우 출처 묶음. 묶음 삭제 시 cascade.
 
   space         Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   option        InvProductOption    @relation(fields: [optionId], references: [id], onDelete: Cascade)
@@ -910,6 +911,7 @@ model InvMovement {
   toLocation    InvStorageLocation? @relation("MovementToLocation", fields: [toLocationId], references: [id], onDelete: SetNull)
   channel       Channel?            @relation(fields: [channelId], references: [id], onDelete: SetNull)
   importHistory InvImportHistory?   @relation(fields: [importHistoryId], references: [id], onDelete: SetNull)
+  delBatch      DelBatch?           @relation(fields: [delBatchId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -917,6 +919,7 @@ model InvMovement {
   @@index([optionId])
   @@index([locationId])
   @@index([spaceId, movementDate])
+  @@index([delBatchId])
 }
 
 // 현재 재고 수준 (옵션 × 장소)
@@ -1047,6 +1050,14 @@ enum DelBatchStatus {
   COMPLETED
 }
 
+// 배치 출처 — 수동 등록 vs 과거 이력 이전(import).
+// IMPORT 묶음은 재고를 차감하지 않는 과거 이력이며,
+// 미래에 "완료→OUTBOUND 자동생성" 연동이 추가되어도 재처리 대상에서 제외해야 한다.
+enum DelBatchSource {
+  MANUAL
+  IMPORT
+}
+
 // 배송 방식 (택배사 + 파일 포맷)
 model DelShippingMethod {
   id               String  @id @default(cuid())
@@ -1093,16 +1104,19 @@ model DelBatch {
   id      String         @id @default(cuid())
   spaceId String
   status  DelBatchStatus @default(DRAFT)
+  source  DelBatchSource @default(MANUAL)
   label   String?
 
-  space  Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  orders DelOrder[]
+  space     Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  orders    DelOrder[]
+  movements InvMovement[] // 이력 이전(IMPORT) 시 생성된 OUTBOUND. 묶음 삭제 시 cascade.
 
   createdAt   DateTime  @default(now())
   completedAt DateTime?
 
   @@index([spaceId])
   @@index([spaceId, status])
+  @@index([spaceId, source])
 }
 
 // 개별 주문 (배송 등록 행 1개)

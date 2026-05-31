@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { AlertTriangle, ArrowRight, CheckCircle, Trash2, Upload } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CheckCircle, FileDown, Trash2, Upload } from 'lucide-react'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -735,6 +735,49 @@ export default function ShippingRegistrationPage() {
     })
   }
 
+  // 선택 주문만 배송 파일 생성 — 저장된(DB) 주문만 가능. 미저장 행은 제외 안내.
+  async function handleBulkGenerateFile() {
+    if (!activeBatchId) return
+    const ids = Array.from(selectedIds)
+    const dbIds = ids.filter((id) => !id.startsWith('temp-'))
+    const tempCount = ids.length - dbIds.length
+    if (dbIds.length === 0) {
+      toast.error(
+        '저장된 주문만 배송 파일로 만들 수 있습니다. 먼저 처리 완료 또는 업로드로 저장하세요'
+      )
+      return
+    }
+    if (tempCount > 0) {
+      toast.warning(`미저장 ${tempCount}건은 제외하고 ${dbIds.length}건만 생성합니다`)
+    }
+    try {
+      const res = await fetch('/api/sh/shipping/generate-file/bundle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ batchId: activeBatchId, selectedOrderIds: dbIds }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.error || data?.message || '배송 파일 생성 실패')
+      }
+      const blob = await res.blob()
+      const disposition = res.headers.get('Content-Disposition') ?? ''
+      const m = disposition.match(/filename="?([^"]+)"?/)
+      const filename = m ? decodeURIComponent(m[1]) : '배송파일'
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success(`선택 ${dbIds.length}건 배송 파일이 다운로드되었습니다`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '배송 파일 생성 실패')
+    }
+  }
+
   async function performBulkDelete(ids: string[]) {
     const tempIds = ids.filter((id) => id.startsWith('temp-'))
     const dbIds = ids.filter((id) => !id.startsWith('temp-'))
@@ -919,6 +962,16 @@ export default function ShippingRegistrationPage() {
               onClick={handleBulkMemo}
             >
               적용
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              onClick={handleBulkGenerateFile}
+            >
+              <FileDown className="mr-1 h-3.5 w-3.5" />
+              선택 배송파일
             </Button>
             <Button
               type="button"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { deleteBatchWithMovements } from '@/lib/sh/batch-delete'
 
 type Params = { params: Promise<{ batchId: string }> }
 
@@ -71,4 +72,28 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const updated = await prisma.delBatch.update({ where: { id: batchId }, data })
   return NextResponse.json({ batch: updated })
+}
+
+// DELETE — 배송 묶음 + 주문 + 연동 InvMovement(이력 이전 OUTBOUND) 함께 삭제.
+// DRAFT/COMPLETED 모두 허용. 실수 방지 확인은 UI(label 타이핑)에서 담당.
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  const resolved = await resolveDeckContext('seller-hub')
+  if ('error' in resolved) return resolved.error
+
+  const { batchId } = await params
+  const batch = await prisma.delBatch.findUnique({
+    where: { id: batchId },
+    select: { spaceId: true },
+  })
+  if (!batch || batch.spaceId !== resolved.space.id) {
+    return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
+  }
+
+  try {
+    const { deletedMovements } = await deleteBatchWithMovements(resolved.space.id, batchId)
+    return NextResponse.json({ success: true, deletedMovements })
+  } catch (err) {
+    console.error('[DELETE /api/sh/shipping/batches/[batchId]] 실패', err)
+    return errorResponse('배송 묶음 삭제에 실패했습니다', 500)
+  }
 }
