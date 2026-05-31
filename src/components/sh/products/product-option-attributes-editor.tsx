@@ -307,6 +307,38 @@ export function ProductOptionAttributesEditor({
     [attributes, onAttributesChange]
   )
 
+  const updateValueName = useCallback(
+    (attrIdx: number, oldValue: string, newValue: string) => {
+      const trimmed = newValue.trim()
+      if (!trimmed || trimmed === oldValue) return
+      if (attributes[attrIdx].values.some((v) => v.value === trimmed)) return
+
+      // validAttrs 내 해당 attr의 위치 (combination 배열 인덱스)
+      const attrPosition = validAttrs.findIndex((a) => a.name === attributes[attrIdx].name)
+      if (attrPosition >= 0) {
+        onCombinationsChange(
+          combinations.map((row) => ({
+            ...row,
+            combination: row.combination.map((val, i) =>
+              i === attrPosition && val === oldValue ? trimmed : val
+            ),
+          }))
+        )
+      }
+      onAttributesChange(
+        attributes.map((a, i) =>
+          i !== attrIdx
+            ? a
+            : {
+                ...a,
+                values: a.values.map((v) => (v.value === oldValue ? { ...v, value: trimmed } : v)),
+              }
+        )
+      )
+    },
+    [attributes, combinations, validAttrs, onAttributesChange, onCombinationsChange]
+  )
+
   const updateCombination = useCallback(
     (rowIdx: number, field: 'sku' | 'costPrice' | 'retailPrice', value: string) => {
       onCombinationsChange(
@@ -463,7 +495,17 @@ export function ProductOptionAttributesEditor({
               <div className="space-y-1">
                 {attr.values.map((v, valueIdx) => (
                   <div key={`${v.value}-${valueIdx}`} className="flex items-center gap-1.5">
-                    <Input value={v.value} readOnly className="h-7 flex-1 bg-background text-xs" />
+                    <Input
+                      defaultValue={v.value}
+                      onBlur={(e) => updateValueName(attrIdx, v.value, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          ;(e.target as HTMLInputElement).blur()
+                        }
+                      }}
+                      className="h-7 flex-1 text-xs"
+                    />
                     <span className="text-[10px] text-muted-foreground">코드</span>
                     <Input
                       value={v.code}

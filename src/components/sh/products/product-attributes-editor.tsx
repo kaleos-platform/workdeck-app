@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangle, Loader2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -41,8 +41,9 @@ type ProductResp = {
 
 /**
  * 상품 상세의 "옵션 속성" 섹션.
- * - 속성 정의를 편집하고 저장 시 조합 diff로 옵션 CRUD를 실행한다.
- * - 저장 버튼은 경고 모달로 확인 후 API 호출.
+ * - 옵션이 이미 있으면 요약 표시 + "옵션 속성 수정" 버튼으로 편집 모드 진입.
+ * - 옵션이 없으면 바로 편집 모드.
+ * - "옵션 적용" 버튼 하나로 optionAttributes PATCH + 옵션 동기화(add/delete) 처리.
  */
 export function ProductAttributesEditor({ productId, onSaved }: Props) {
   const [loading, setLoading] = useState(true)
@@ -51,6 +52,7 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
   const [attributes, setAttributes] = useState<OptionAttribute[]>([])
   const [combinations, setCombinations] = useState<CombinationRow[]>([])
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -74,14 +76,16 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
           return {
             combination,
             sku: o.sku ?? '',
-            skuManual: !!o.sku, // 기존에 값 있으면 수동 보존
+            skuManual: !!o.sku,
             costPrice: o.costPrice != null ? String(o.costPrice) : '',
             retailPrice: o.retailPrice != null ? String(o.retailPrice) : '',
           }
         })
         setCombinations(rows)
+        setIsEditing(false) // 옵션 있으면 접힘
       } else {
         setCombinations([])
+        setIsEditing(true) // 옵션 없으면 바로 편집 모드
       }
     } finally {
       setLoading(false)
@@ -92,8 +96,8 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
     void load()
   }, [load])
 
-  // 속성 정의만 PATCH (옵션 리스트는 건드리지 않음). Space alias 자동 학습 포함.
-  async function handleSaveAttributesOnly() {
+  // "옵션 적용" — optionAttributes PATCH 후 옵션 동기화(add/delete)
+  async function handleApplyOptions() {
     if (!product) return
     const validAttrs = attributes.filter((a) => a.name.trim() && a.values.length > 0)
     if (validAttrs.length === 0) {
@@ -103,6 +107,7 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
 
     setSaving(true)
     try {
+      // 1. optionAttributes PATCH (상품 단위 속성 정의 저장)
       const patchRes = await fetch(`/api/sh/products/${productId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -117,27 +122,8 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         const err = await patchRes.json().catch(() => ({}))
         throw new Error(err?.message ?? '속성 저장 실패')
       }
-      toast.success('속성 정의가 저장되었습니다')
-      await load()
-      onSaved?.()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장 실패')
-    } finally {
-      setSaving(false)
-    }
-  }
 
-  // 현재 입력된 combinations를 기존 옵션 리스트와 동기화 (추가/유지+갱신/삭제)
-  async function handleApplyOptions() {
-    if (!product) return
-    const validAttrs = attributes.filter((a) => a.name.trim() && a.values.length > 0)
-    if (validAttrs.length === 0) {
-      toast.error('최소 1개 속성과 값이 필요합니다')
-      return
-    }
-
-    setSaving(true)
-    try {
+      // 2. 옵션 동기화 (add/delete)
       const existingByCombKey = new Map(
         product.options.map((o) => {
           const av = o.attributeValues ?? {}
@@ -147,8 +133,7 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
       )
       const targetCombKeys = new Set(combinations.map((r) => r.combination.join('|')))
 
-      // 신규 조합만 POST. 기존 조합의 cost/retail/sku는 인라인 테이블에서 별도 관리되므로
-      // [옵션 적용]은 절대 덮어쓰지 않는다 (조합 단위 add/remove만 책임).
+      // 신규 조합만 POST — 기존 조합의 cost/retail/sku는 인라인 테이블에서 관리
       for (const row of combinations) {
         const key = row.combination.join('|')
         if (existingByCombKey.has(key)) continue
@@ -196,6 +181,7 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
         toast.success('옵션 리스트가 동기화되었습니다')
       }
       setConfirmOpen(false)
+      setIsEditing(false)
       await load()
       onSaved?.()
     } catch (err) {
@@ -205,7 +191,6 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
     }
   }
 
-  // 속성/조합 vs 기존 옵션 비교로 추가·유지·삭제 조합 라벨을 뽑는다.
   function computeDiff(): { added: string[]; kept: string[]; removed: string[] } {
     if (!product) return { added: [], kept: [], removed: [] }
     const validAttrs = attributes.filter((a) => a.name.trim() && a.values.length > 0)
@@ -239,7 +224,6 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
   }
 
   function handleApplyOptionsClick() {
-    // 옵션 적용 — 삭제 발생 시에만 모달 확인, 아니면 즉시 동기화.
     const willRemove = computeDiff().removed.length > 0
     if (willRemove) {
       setConfirmOpen(true)
@@ -248,36 +232,49 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
     }
   }
 
+  function handleCancel() {
+    void load()
+  }
+
   if (loading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>
   }
 
+  // 접힘 상태 — 옵션 있고 편집 모드 아닐 때
+  if (!isEditing) {
+    const attrSummary = attributes
+      .map((a) => `${a.name}: ${a.values.map((v) => v.value).join(', ')}`)
+      .join(' / ')
+    return (
+      <div className="flex items-center justify-between rounded-md border px-4 py-3">
+        <p className="text-sm text-muted-foreground">{attrSummary || '속성 정의 없음'}</p>
+        <Button size="sm" variant="outline" onClick={() => setIsEditing(true)} className="shrink-0">
+          <Pencil className="mr-1.5 h-3.5 w-3.5" />
+          옵션 속성 수정
+        </Button>
+      </div>
+    )
+  }
+
+  // 편집 모드
   const diff = computeDiff()
   const destructive = diff.removed.length > 0
   const sample = (arr: string[], n = 3) =>
     arr.length <= n ? arr.join(', ') : `${arr.slice(0, n).join(', ')} …`
+  const hasExistingOptions = (product?.options?.length ?? 0) > 0
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end justify-end gap-2">
-        <div className="flex flex-col items-end gap-1">
-          <Button size="sm" variant="outline" onClick={handleSaveAttributesOnly} disabled={saving}>
-            {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-            속성 저장
+      <div className="flex items-center justify-end gap-2">
+        {hasExistingOptions && (
+          <Button size="sm" variant="ghost" onClick={handleCancel} disabled={saving}>
+            취소
           </Button>
-          <span className="text-[11px] text-muted-foreground">
-            속성 이름·값만 저장. 옵션 행 변경 없음.
-          </span>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <Button size="sm" onClick={handleApplyOptionsClick} disabled={saving}>
-            {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-            옵션 적용
-          </Button>
-          <span className="text-[11px] text-muted-foreground">
-            조합으로 옵션 행 동기화. 새 조합 추가·없어진 조합 삭제.
-          </span>
-        </div>
+        )}
+        <Button size="sm" onClick={handleApplyOptionsClick} disabled={saving}>
+          {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+          옵션 적용
+        </Button>
       </div>
 
       <ProductOptionAttributesEditor
