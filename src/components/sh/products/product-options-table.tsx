@@ -96,6 +96,9 @@ export function ProductOptionsTable({
   const [bulkSaving, setBulkSaving] = useState(false)
   const [bulkCost, setBulkCost] = useState('')
   const [bulkRetail, setBulkRetail] = useState('')
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeSavePromiseRef = useRef<Promise<void> | null>(null)
   const dirtyIdsRef = useRef<Set<string>>(new Set())
@@ -292,8 +295,11 @@ export function ProductOptionsTable({
     return () => window.removeEventListener('beforeunload', handler)
   }, [dirtyIds, autoSaving])
 
-  async function deleteOption(optionId: string) {
-    if (!confirm('이 옵션을 삭제하시겠습니까? 재고 기록도 함께 삭제됩니다.')) return
+  async function confirmDeleteOption() {
+    if (!deleteTarget) return
+    const { id: optionId } = deleteTarget
+    setDeleteConfirmOpen(false)
+    setDeleteTarget(null)
     try {
       const res = await fetch(`/api/sh/products/${productId}/options/${optionId}`, {
         method: 'DELETE',
@@ -415,8 +421,7 @@ export function ProductOptionsTable({
 
   async function bulkDelete() {
     if (selected.size === 0) return
-    if (!confirm(`선택한 ${selected.size}개 옵션을 삭제하시겠습니까? 재고 기록도 함께 삭제됩니다.`))
-      return
+    setBulkDeleteConfirmOpen(false)
     setBulkSaving(true)
     try {
       const results = await Promise.all(
@@ -489,7 +494,7 @@ export function ProductOptionsTable({
               size="sm"
               variant="ghost"
               className={floatingActionButtonDestructiveClass}
-              onClick={bulkDelete}
+              onClick={() => setBulkDeleteConfirmOpen(true)}
               disabled={bulkSaving}
             >
               <Trash2 className="mr-1 h-3.5 w-3.5" />
@@ -633,7 +638,10 @@ export function ProductOptionsTable({
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => deleteOption(opt.id)}
+                        onClick={() => {
+                          setDeleteTarget({ id: opt.id, name: opt.name })
+                          setDeleteConfirmOpen(true)
+                        }}
                         aria-label={`${opt.name} 삭제`}
                       >
                         <X className="h-3 w-3" />
@@ -646,6 +654,54 @@ export function ProductOptionsTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* 개별 삭제 확인 */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              옵션 삭제
+            </DialogTitle>
+            <DialogDescription>
+              <span className="font-medium">{deleteTarget?.name}</span> 옵션을 삭제하시겠습니까?
+              연결된 재고 기록도 함께 삭제됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteOption}>
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 일괄 삭제 확인 */}
+      <Dialog open={bulkDeleteConfirmOpen} onOpenChange={setBulkDeleteConfirmOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              {selected.size}개 옵션 삭제
+            </DialogTitle>
+            <DialogDescription>
+              선택한 {selected.size}개 옵션을 삭제하시겠습니까? 연결된 재고 기록도 함께 삭제됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDeleteConfirmOpen(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={bulkDelete} disabled={bulkSaving}>
+              {bulkSaving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
         <DialogContent className="sm:max-w-sm">

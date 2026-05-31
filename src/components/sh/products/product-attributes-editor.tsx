@@ -133,16 +133,31 @@ export function ProductAttributesEditor({ productId, onSaved }: Props) {
       )
       const targetCombKeys = new Set(combinations.map((r) => r.combination.join('|')))
 
-      // 신규 조합만 POST — 기존 조합의 cost/retail/sku는 인라인 테이블에서 관리
+      // 조합별 처리: 신규 → POST, 기존 유지 → attributeValues/name PATCH
       for (const row of combinations) {
         const key = row.combination.join('|')
-        if (existingByCombKey.has(key)) continue
-
         const attributeValues: Record<string, string> = {}
         validAttrs.forEach((a, i) => {
           attributeValues[a.name] = row.combination[i] ?? ''
         })
         const name = row.combination.join(' / ')
+
+        const existing = existingByCombKey.get(key)
+        if (existing) {
+          // 속성명/값 변경 반영 (name, attributeValues 갱신)
+          const needsPatch =
+            existing.name !== name ||
+            JSON.stringify(existing.attributeValues) !== JSON.stringify(attributeValues)
+          if (needsPatch) {
+            await fetch(`/api/sh/products/${productId}/options/${existing.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, attributeValues }),
+            }).catch(() => null)
+          }
+          continue
+        }
+
         const costPrice = row.costPrice ? parseFloat(row.costPrice) : null
         const retailPrice = row.retailPrice ? parseFloat(row.retailPrice) : null
 
