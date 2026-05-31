@@ -419,12 +419,22 @@ export function ProductOptionsTable({
       return
     setBulkSaving(true)
     try {
-      await Promise.all(
-        Array.from(selected).map((id) =>
-          fetch(`/api/sh/products/${productId}/options/${id}`, { method: 'DELETE' })
-        )
+      const results = await Promise.all(
+        Array.from(selected).map(async (id) => {
+          const res = await fetch(`/api/sh/products/${productId}/options/${id}`, {
+            method: 'DELETE',
+          })
+          if (!res.ok) {
+            const d = await res.json().catch(() => ({}))
+            return { id, error: d?.message ?? '삭제 실패' }
+          }
+          return { id, error: null }
+        })
       )
-      toast.success(`${selected.size}개 옵션 삭제됨`)
+      const failed = results.filter((r) => r.error)
+      const succeeded = results.filter((r) => !r.error)
+      if (succeeded.length > 0) toast.success(`${succeeded.length}개 옵션 삭제됨`)
+      if (failed.length > 0) toast.error(failed[0].error ?? '일부 옵션 삭제 실패')
       await load()
       onChanged?.()
     } catch (err) {

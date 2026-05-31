@@ -494,7 +494,7 @@ export function ProductOptionAttributesEditor({
 
               <div className="space-y-1">
                 {attr.values.map((v, valueIdx) => (
-                  <div key={`${v.value}-${valueIdx}`} className="flex items-center gap-1.5">
+                  <div key={v.value} className="flex items-center gap-1.5">
                     <Input
                       defaultValue={v.value}
                       onBlur={(e) => updateValueName(attrIdx, v.value, e.target.value)}
