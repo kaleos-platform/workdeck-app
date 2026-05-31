@@ -490,21 +490,62 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
 
       {/* 일괄 작업 바 — 선택 시 노출 */}
       {!readonly && selected.size > 0 && (
-        <div className="space-y-3 rounded-md border bg-muted/40 px-4 py-3">
-          <div className="flex items-center justify-between">
+        <div className="rounded-md border bg-muted/40">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between border-b px-4 py-2.5">
             <span className="text-sm font-semibold">{selected.size}개 선택</span>
             <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
               선택 해제
             </Button>
           </div>
 
-          <div className="flex flex-wrap items-end gap-4">
-            {/* 콜드스타트 일괄 (선택에 데이터부족 행 있을 때만) */}
-            {selectedColdStartIds.length > 0 && (
-              <div className="flex flex-wrap items-end gap-2 rounded-md border border-amber-200 bg-amber-50/50 px-3 py-2">
-                <div className="space-y-1">
+          {/* 기본 작업 그룹 — 항상 표시 */}
+          <div className="space-y-2 px-4 py-3">
+            <p className="text-xs font-medium text-muted-foreground">기본</p>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-medium text-muted-foreground">최종수량</label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={1}
+                  inputMode="numeric"
+                  placeholder="수량"
+                  className="h-8 w-24 text-sm"
+                  value={bulkFinalQty}
+                  onChange={(e) => setBulkFinalQty(e.target.value)}
+                />
+              </div>
+              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={handleBulkFinalQty}>
+                최종수량 적용
+              </Button>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-medium text-muted-foreground">메모</label>
+                <Input
+                  type="text"
+                  placeholder="메모 내용"
+                  className="h-8 w-44 text-sm"
+                  value={bulkNote}
+                  onChange={(e) => setBulkNote(e.target.value)}
+                />
+              </div>
+              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={handleBulkNote}>
+                메모 적용
+              </Button>
+            </div>
+          </div>
+
+          {/* 콜드스타트 그룹 — 데이터부족(BAYES) 행 선택 시에만 */}
+          {selectedColdStartIds.length > 0 && (
+            <div className="space-y-2 border-t border-amber-200 bg-amber-50/50 px-4 py-3">
+              <p className="text-xs font-medium text-amber-800">
+                콜드스타트 · 데이터부족 {selectedColdStartIds.length}개 (초기 예측 보정)
+              </p>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-medium text-amber-800">
-                    목표 일판매량 (개/일) · 데이터부족 {selectedColdStartIds.length}개
+                    목표 일판매량 (개/일)
                   </label>
                   <Input
                     type="number"
@@ -517,7 +558,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                     onChange={(e) => setBulkTarget(e.target.value)}
                   />
                 </div>
-                <div className="space-y-1">
+                <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-medium text-amber-800">시즌 계수</label>
                   <Select value={bulkSeason} onValueChange={setBulkSeason}>
                     <SelectTrigger className="h-8 w-32 text-sm">
@@ -536,45 +577,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                   콜드스타트 적용
                 </Button>
               </div>
-            )}
-
-            {/* 최종수량 일괄 */}
-            <div className="flex items-end gap-2">
-              <div className="space-y-1">
-                <label className="text-[11px] font-medium text-muted-foreground">최종수량</label>
-                <Input
-                  type="number"
-                  min={0}
-                  step={1}
-                  inputMode="numeric"
-                  placeholder="수량"
-                  className="h-8 w-24 text-sm"
-                  value={bulkFinalQty}
-                  onChange={(e) => setBulkFinalQty(e.target.value)}
-                />
-              </div>
-              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={handleBulkFinalQty}>
-                최종수량 적용
-              </Button>
             </div>
-
-            {/* 메모 일괄 */}
-            <div className="flex items-end gap-2">
-              <div className="space-y-1">
-                <label className="text-[11px] font-medium text-muted-foreground">메모</label>
-                <Input
-                  type="text"
-                  placeholder="메모 내용"
-                  className="h-8 w-40 text-sm"
-                  value={bulkNote}
-                  onChange={(e) => setBulkNote(e.target.value)}
-                />
-              </div>
-              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={handleBulkNote}>
-                메모 적용
-              </Button>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
