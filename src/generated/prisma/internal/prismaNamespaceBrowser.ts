@@ -1511,6 +1511,7 @@ export const ReorderPlanScalarFieldEnum = {
   status: 'status',
   windowDays: 'windowDays',
   createdById: 'createdById',
+  productId: 'productId',
   finalizedAt: 'finalizedAt',
   biasAdjustApplied: 'biasAdjustApplied',
   totalSuggestedQty: 'totalSuggestedQty',

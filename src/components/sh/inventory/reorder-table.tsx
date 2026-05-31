@@ -87,8 +87,19 @@ function formatDepletion(d: number | null) {
   return `${d.toFixed(1)}일`
 }
 
-export function ReorderTable() {
+/**
+ * ReorderTable
+ * - 기본(전체) 모드: 브랜드/상품 필터 드롭다운 노출. (현재는 단일상품 생성 플로우에서만 사용)
+ * - 단일상품 모드(`productId` 지정): 해당 상품 옵션만 표시, 필터 드롭다운 숨김.
+ *   내장 "발주 계획 생성" 버튼이 해당 productId로 POST 한다.
+ */
+export function ReorderTable({
+  productId,
+}: {
+  productId?: string
+} = {}) {
   const router = useRouter()
+  const singleProduct = productId != null
   const [rows, setRows] = useState<ReorderRow[]>([])
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState<Filter>('all')
@@ -98,17 +109,19 @@ export function ReorderTable() {
   const [brands, setBrands] = useState<Brand[]>([])
   const [productOptions, setProductOptions] = useState<ProductOption[]>([])
   const [brandFilter, setBrandFilter] = useState<string>(ALL)
-  const [productIdFilter, setProductIdFilter] = useState<string>(ALL)
+  const [productIdFilter, setProductIdFilter] = useState<string>(singleProduct ? productId : ALL)
 
-  // 브랜드 / 상품 드롭다운 데이터 — 마운트 시 1회
+  // 브랜드 / 상품 드롭다운 데이터 — 전체 모드에서만 필요
   useEffect(() => {
+    if (singleProduct) return
     fetch('/api/sh/brands')
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setBrands(d?.brands ?? []))
       .catch(() => setBrands([]))
-  }, [])
+  }, [singleProduct])
 
   useEffect(() => {
+    if (singleProduct) return
     fetch('/api/sh/products?pageSize=100')
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
@@ -116,7 +129,7 @@ export function ReorderTable() {
         setProductOptions(list.map((p) => ({ id: p.id, name: p.name })))
       })
       .catch(() => setProductOptions([]))
-  }, [])
+  }, [singleProduct])
 
   const fetchData = useCallback(async (f: Filter, brandId: string, productId: string) => {
     setLoading(true)
@@ -151,9 +164,17 @@ export function ReorderTable() {
   }, [rows])
 
   const handleCreatePlan = async () => {
+    if (!productId) {
+      toast.error('상품을 먼저 선택해주세요')
+      return
+    }
     setCreating(true)
     try {
-      const res = await fetch('/api/sh/inventory/reorder/plan', { method: 'POST' })
+      const res = await fetch('/api/sh/inventory/reorder/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      })
       if (!res.ok) throw new Error('생성 실패')
       const data = (await res.json()) as { planId: string }
       toast.success('발주 계획 초안이 생성되었습니다')
@@ -237,36 +258,38 @@ export function ReorderTable() {
         </div>
       </div>
 
-      {/* 드롭다운 필터 */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Select value={productIdFilter} onValueChange={setProductIdFilter}>
-          <SelectTrigger className="w-56">
-            <SelectValue placeholder="전체 상품" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>전체 상품</SelectItem>
-            {productOptions.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={brandFilter} onValueChange={setBrandFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="전체 브랜드" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>전체 브랜드</SelectItem>
-            <SelectItem value={NO_BRAND}>브랜드 없음</SelectItem>
-            {brands.map((b) => (
-              <SelectItem key={b.id} value={b.id}>
-                {b.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* 드롭다운 필터 — 전체 모드에서만 (단일상품 모드는 productId 고정) */}
+      {!singleProduct && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={productIdFilter} onValueChange={setProductIdFilter}>
+            <SelectTrigger className="w-56">
+              <SelectValue placeholder="전체 상품" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>전체 상품</SelectItem>
+              {productOptions.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={brandFilter} onValueChange={setBrandFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="전체 브랜드" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>전체 브랜드</SelectItem>
+              <SelectItem value={NO_BRAND}>브랜드 없음</SelectItem>
+              {brands.map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  {b.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-md border">
         <Table>

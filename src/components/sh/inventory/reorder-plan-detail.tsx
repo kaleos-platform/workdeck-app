@@ -352,6 +352,9 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           <div className="flex items-center gap-2">
             <PackageIcon className="h-4 w-4 text-muted-foreground" />
             <span className="text-base font-semibold">{plan.planNo}</span>
+            {plan.productName && (
+              <span className="text-sm text-muted-foreground">· {plan.productName}</span>
+            )}
             <StatusBadge status={plan.status} />
           </div>
           <p className="text-xs text-muted-foreground">

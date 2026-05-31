@@ -15,6 +15,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
   const plan = await prisma.reorderPlan.findUnique({
     where: { id: planId },
     include: {
+      product: { select: { name: true, internalName: true } },
       items: {
         include: {
           option: { select: { id: true, name: true, sku: true, deletedAt: true } },
@@ -90,6 +91,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
     plan: {
       id: plan.id,
       planNo: plan.planNo,
+      productName: plan.product ? (plan.product.name ?? plan.product.internalName ?? null) : null,
       status: plan.status,
       windowDays: plan.windowDays,
       finalizedAt: plan.finalizedAt,

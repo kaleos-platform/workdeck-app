@@ -809,6 +809,7 @@ model InvProduct {
   options          InvProductOption[]
   reorderConfig    InvReorderConfig?
   reorderPlanItems ReorderPlanItem[]
+  reorderPlans     ReorderPlan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2278,6 +2279,7 @@ model ReorderPlan {
   status      ReorderPlanStatus @default(DRAFT)
   windowDays  Int               // 예측 분석 기간 (일)
   createdById String
+  productId   String?           // 상품 단위 계획. null = 레거시 전체-계획
 
   finalizedAt       DateTime? // 확정 전환 시점
   biasAdjustApplied Json?     // 적용된 bias 보정 계수 맵 { optionId: factor }
@@ -2288,6 +2290,7 @@ model ReorderPlan {
 
   space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   createdBy User  @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  product   InvProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   items         ReorderPlanItem[]
   accuracies    ReorderPlanAccuracy[]
@@ -2298,6 +2301,7 @@ model ReorderPlan {
 
   @@unique([spaceId, planNo])
   @@index([spaceId, status])
+  @@index([spaceId, productId])
   @@index([createdById])
 }
 

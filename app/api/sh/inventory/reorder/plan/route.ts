@@ -92,19 +92,23 @@ export async function POST(req: NextRequest) {
   const spaceId = resolved.space.id
   const userId = resolved.user.id
 
-  // 요청 바디 (옵션 필터)
-  let body: { productId?: string; brandId?: string; memo?: string } = {}
+  // 요청 바디 — 발주 계획은 상품 단위이므로 productId 필수
+  let body: { productId?: string; memo?: string } = {}
   try {
     body = await req.json()
   } catch {
-    // 빈 바디 허용
+    // 파싱 실패 시 빈 바디 → 아래 productId 검증에서 차단
   }
 
-  // ── 1) 상품/옵션 로드 ──────────────────────────────────────────────────────
-  const productWhere: Record<string, unknown> = { spaceId, status: 'ACTIVE' }
-  if (body.productId) productWhere.id = body.productId
-  if (body.brandId && body.brandId !== 'all') {
-    productWhere.brandId = body.brandId === 'none' ? null : body.brandId
+  if (!body.productId) {
+    return errorResponse('발주 계획은 상품 단위로 생성합니다. 상품을 선택해주세요.', 422)
+  }
+
+  // ── 1) 상품/옵션 로드 (단일 상품) ──────────────────────────────────────────
+  const productWhere: Record<string, unknown> = {
+    spaceId,
+    status: 'ACTIVE',
+    id: body.productId,
   }
 
   const products = await prisma.invProduct.findMany({
@@ -123,7 +127,7 @@ export async function POST(req: NextRequest) {
   })
 
   if (products.length === 0) {
-    return errorResponse('예측 대상 상품이 없습니다', 422)
+    return errorResponse('선택한 상품을 찾을 수 없습니다 (활성 상태가 아니거나 권한 없음)', 422)
   }
 
   const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
@@ -291,6 +295,7 @@ export async function POST(req: NextRequest) {
       data: {
         spaceId,
         planNo,
+        productId: body.productId,
         status: 'DRAFT',
         windowDays: DEFAULT_WINDOW_DAYS,
         createdById: userId,
