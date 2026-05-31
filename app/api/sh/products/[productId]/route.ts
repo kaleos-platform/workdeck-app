@@ -17,6 +17,7 @@ export async function GET(
     include: {
       brand: { select: { id: true, name: true } },
       options: {
+        where: { deletedAt: null },
         orderBy: { name: 'asc' },
       },
     },
