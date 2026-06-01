@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -23,6 +24,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  FloatingActionBar,
+  floatingActionButtonClass,
+  floatingActionInputClass,
+} from '@/components/ui/floating-action-bar'
+import { applyRangeSelection } from '@/lib/range-selection'
 
 type ReorderRow = {
   productId: string
@@ -151,6 +158,11 @@ export function ReorderTable({ productId }: { productId: string }) {
 
   // 선택 옵션 (optionId 키 — refetch 후에도 유지)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const lastClickedIndexRef = useRef<number | null>(null)
+
+  // 일괄 안전재고 입력
+  const [bulkSafetyStock, setBulkSafetyStock] = useState('')
+  const [bulkSaving, setBulkSaving] = useState(false)
 
   // 툴바 설정값
   const [leadTimeInput, setLeadTimeInput] = useState('')
@@ -193,14 +205,23 @@ export function ReorderTable({ productId }: { productId: string }) {
     [rows]
   )
 
-  const toggleOne = useCallback((optionId: string, checked: boolean) => {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (checked) next.add(optionId)
-      else next.delete(optionId)
-      return next
-    })
-  }, [])
+  // shift+click 범위 선택 — 다른 테이블과 공통 idiom (applyRangeSelection)
+  const toggleOne = useCallback(
+    (optionId: string, index: number, shiftKey: boolean) => {
+      setSelected((prev) =>
+        applyRangeSelection(
+          prev,
+          rows.map((r) => r.optionId),
+          optionId,
+          index,
+          shiftKey,
+          lastClickedIndexRef.current
+        )
+      )
+      lastClickedIndexRef.current = index
+    },
+    [rows]
+  )
 
   // ── 리드타임 저장 (reorderQty 변동 → refetch) ──────────────────────────────
   const handleSaveLeadTime = async () => {
@@ -248,11 +269,11 @@ export function ReorderTable({ productId }: { productId: string }) {
     }
   }
 
-  const handleCreatePlan = async () => {
+  // scope 명시 — 'all'은 optionIds 생략(절대 [] 미전송), 'selected'는 선택분만
+  const handleCreatePlan = async (scope: 'all' | 'selected') => {
+    const optionIds = scope === 'selected' ? Array.from(selected) : undefined
     setCreating(true)
     try {
-      // 선택 옵션이 있으면 그것만, 없으면 전체(optionIds 생략)
-      const optionIds = selected.size > 0 ? Array.from(selected) : undefined
       const res = await fetch('/api/sh/inventory/reorder/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -270,7 +291,34 @@ export function ReorderTable({ productId }: { productId: string }) {
     }
   }
 
-  const selectedLabel = selected.size > 0 ? `선택 ${selected.size}건` : '전체'
+  // 선택 옵션 안전재고 일괄 설정 (reorderQty 변동 → refetch + 선택 해제)
+  const handleBulkSafetyStock = async () => {
+    const n = Number(bulkSafetyStock)
+    if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)) {
+      toast.error('안전재고는 0 이상의 정수여야 합니다')
+      return
+    }
+    if (selected.size === 0) return
+    setBulkSaving(true)
+    try {
+      const res = await fetch('/api/sh/inventory/options/safety-stock', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ optionIds: Array.from(selected), safetyStockQty: n }),
+      })
+      if (!res.ok) throw new Error('저장 실패')
+      const data = (await res.json()) as { updatedCount: number }
+      toast.success(`안전재고 ${data.updatedCount}건을 ${n}(으)로 설정했습니다`)
+      setBulkSafetyStock('')
+      setSelected(new Set())
+      await fetchData()
+    } catch (err) {
+      console.error(err)
+      toast.error('안전재고 일괄 설정에 실패했습니다')
+    } finally {
+      setBulkSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -318,11 +366,16 @@ export function ReorderTable({ productId }: { productId: string }) {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted-foreground">
-            기본 {windowDays}일 · 옵션 {rows.length}건 · {selectedLabel}
+            기본 {windowDays}일 · 옵션 {rows.length}건
           </span>
-          <Button size="sm" onClick={handleCreatePlan} disabled={creating} className="gap-1.5">
+          <Button
+            size="sm"
+            onClick={() => handleCreatePlan('all')}
+            disabled={creating || rows.length === 0}
+            className="gap-1.5"
+          >
             <PlusIcon className="h-3.5 w-3.5" />
-            {creating ? '생성 중...' : '발주 계획 시작'}
+            {creating ? '생성 중...' : '전체 발주 계획 시작'}
           </Button>
         </div>
       </div>
@@ -366,7 +419,7 @@ export function ReorderTable({ productId }: { productId: string }) {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => {
+              rows.map((row, idx) => {
                 const checked = selected.has(row.optionId)
                 return (
                   <TableRow
@@ -377,7 +430,8 @@ export function ReorderTable({ productId }: { productId: string }) {
                     <TableCell>
                       <Checkbox
                         checked={checked}
-                        onCheckedChange={(v) => toggleOne(row.optionId, v === true)}
+                        onClick={(e: React.MouseEvent) => toggleOne(row.optionId, idx, e.shiftKey)}
+                        onCheckedChange={() => {}}
                         aria-label={`${row.optionName} 선택`}
                       />
                     </TableCell>
@@ -415,6 +469,48 @@ export function ReorderTable({ productId }: { productId: string }) {
           </TableBody>
         </Table>
       </div>
+
+      {/* 선택 옵션 일괄 작업 바 — 다른 테이블과 공통(FloatingActionBar) */}
+      <FloatingActionBar
+        open={selected.size > 0}
+        onClear={() => setSelected(new Set())}
+        clearDisabled={bulkSaving || creating}
+        actions={
+          <>
+            <div className="flex items-center gap-1.5">
+              <Input
+                type="number"
+                min={0}
+                placeholder="안전재고"
+                className={`${floatingActionInputClass} w-24 text-right tabular-nums`}
+                value={bulkSafetyStock}
+                onChange={(e) => setBulkSafetyStock(e.target.value)}
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                className={floatingActionButtonClass}
+                onClick={handleBulkSafetyStock}
+                disabled={bulkSaving || bulkSafetyStock.trim() === ''}
+              >
+                {bulkSaving ? '저장 중...' : '안전재고 적용'}
+              </Button>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              onClick={() => handleCreatePlan('selected')}
+              disabled={creating}
+            >
+              <PlusIcon className="mr-1 h-3.5 w-3.5" />
+              {creating ? '생성 중...' : '선택 발주 계획 시작'}
+            </Button>
+          </>
+        }
+      >
+        <span className="text-sm font-medium">{selected.size}개 선택</span>
+      </FloatingActionBar>
     </div>
   )
 }
