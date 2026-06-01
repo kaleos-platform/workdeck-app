@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
       name: true,
       internalName: true,
       code: true,
+      reorderRoundUnit: true,
       brand: { select: { id: true, name: true } },
       options: {
         where: { deletedAt: null },
@@ -130,6 +131,7 @@ export async function GET(req: NextRequest) {
         windowDays,
         dailyAvgOutbound: calc.dailyAvgOutbound,
         leadTimeDays,
+        reorderRoundUnit: p.reorderRoundUnit,
         safetyStockQty,
         neededStock: calc.neededStock,
         reorderQty: calc.reorderQty,
