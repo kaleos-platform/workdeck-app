@@ -1017,6 +1017,13 @@ export type EnumReorderForecastModelFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumReorderForecastModelFilter<$PrismaModel> | $Enums.ReorderForecastModel
 }
 
+export type EnumReorderSnapshotSourceNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderSnapshotSource | Prisma.EnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ReorderSnapshotSource[] | Prisma.ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ReorderSnapshotSource[] | Prisma.ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumReorderSnapshotSourceNullableFilter<$PrismaModel> | $Enums.ReorderSnapshotSource | null
+}
+
 export type EnumReorderForecastModelWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ReorderForecastModel | Prisma.EnumReorderForecastModelFieldRefInput<$PrismaModel>
   in?: $Enums.ReorderForecastModel[] | Prisma.ListEnumReorderForecastModelFieldRefInput<$PrismaModel>
@@ -1025,6 +1032,50 @@ export type EnumReorderForecastModelWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumReorderForecastModelFilter<$PrismaModel>
   _max?: Prisma.NestedEnumReorderForecastModelFilter<$PrismaModel>
+}
+
+export type EnumReorderSnapshotSourceNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderSnapshotSource | Prisma.EnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ReorderSnapshotSource[] | Prisma.ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ReorderSnapshotSource[] | Prisma.ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumReorderSnapshotSourceNullableWithAggregatesFilter<$PrismaModel> | $Enums.ReorderSnapshotSource | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReorderSnapshotSourceNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReorderSnapshotSourceNullableFilter<$PrismaModel>
+}
+
+export type EnumReorderAccuracyValidityFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderAccuracyValidity | Prisma.EnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  in?: $Enums.ReorderAccuracyValidity[] | Prisma.ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReorderAccuracyValidity[] | Prisma.ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReorderAccuracyValidityFilter<$PrismaModel> | $Enums.ReorderAccuracyValidity
+}
+
+export type EnumReorderEvaluationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderEvaluationStatus | Prisma.EnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ReorderEvaluationStatus[] | Prisma.ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReorderEvaluationStatus[] | Prisma.ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReorderEvaluationStatusFilter<$PrismaModel> | $Enums.ReorderEvaluationStatus
+}
+
+export type EnumReorderAccuracyValidityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderAccuracyValidity | Prisma.EnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  in?: $Enums.ReorderAccuracyValidity[] | Prisma.ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReorderAccuracyValidity[] | Prisma.ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReorderAccuracyValidityWithAggregatesFilter<$PrismaModel> | $Enums.ReorderAccuracyValidity
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReorderAccuracyValidityFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReorderAccuracyValidityFilter<$PrismaModel>
+}
+
+export type EnumReorderEvaluationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderEvaluationStatus | Prisma.EnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ReorderEvaluationStatus[] | Prisma.ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReorderEvaluationStatus[] | Prisma.ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReorderEvaluationStatusWithAggregatesFilter<$PrismaModel> | $Enums.ReorderEvaluationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReorderEvaluationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReorderEvaluationStatusFilter<$PrismaModel>
 }
 
 export type NestedStringFilter<$PrismaModel = never> = {
@@ -1978,6 +2029,13 @@ export type NestedEnumReorderForecastModelFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumReorderForecastModelFilter<$PrismaModel> | $Enums.ReorderForecastModel
 }
 
+export type NestedEnumReorderSnapshotSourceNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderSnapshotSource | Prisma.EnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ReorderSnapshotSource[] | Prisma.ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ReorderSnapshotSource[] | Prisma.ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumReorderSnapshotSourceNullableFilter<$PrismaModel> | $Enums.ReorderSnapshotSource | null
+}
+
 export type NestedEnumReorderForecastModelWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ReorderForecastModel | Prisma.EnumReorderForecastModelFieldRefInput<$PrismaModel>
   in?: $Enums.ReorderForecastModel[] | Prisma.ListEnumReorderForecastModelFieldRefInput<$PrismaModel>
@@ -1986,6 +2044,50 @@ export type NestedEnumReorderForecastModelWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumReorderForecastModelFilter<$PrismaModel>
   _max?: Prisma.NestedEnumReorderForecastModelFilter<$PrismaModel>
+}
+
+export type NestedEnumReorderSnapshotSourceNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderSnapshotSource | Prisma.EnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ReorderSnapshotSource[] | Prisma.ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ReorderSnapshotSource[] | Prisma.ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumReorderSnapshotSourceNullableWithAggregatesFilter<$PrismaModel> | $Enums.ReorderSnapshotSource | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReorderSnapshotSourceNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReorderSnapshotSourceNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumReorderAccuracyValidityFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderAccuracyValidity | Prisma.EnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  in?: $Enums.ReorderAccuracyValidity[] | Prisma.ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReorderAccuracyValidity[] | Prisma.ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReorderAccuracyValidityFilter<$PrismaModel> | $Enums.ReorderAccuracyValidity
+}
+
+export type NestedEnumReorderEvaluationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderEvaluationStatus | Prisma.EnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ReorderEvaluationStatus[] | Prisma.ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReorderEvaluationStatus[] | Prisma.ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReorderEvaluationStatusFilter<$PrismaModel> | $Enums.ReorderEvaluationStatus
+}
+
+export type NestedEnumReorderAccuracyValidityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderAccuracyValidity | Prisma.EnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  in?: $Enums.ReorderAccuracyValidity[] | Prisma.ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReorderAccuracyValidity[] | Prisma.ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReorderAccuracyValidityWithAggregatesFilter<$PrismaModel> | $Enums.ReorderAccuracyValidity
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReorderAccuracyValidityFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReorderAccuracyValidityFilter<$PrismaModel>
+}
+
+export type NestedEnumReorderEvaluationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReorderEvaluationStatus | Prisma.EnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ReorderEvaluationStatus[] | Prisma.ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReorderEvaluationStatus[] | Prisma.ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReorderEvaluationStatusWithAggregatesFilter<$PrismaModel> | $Enums.ReorderEvaluationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReorderEvaluationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReorderEvaluationStatusFilter<$PrismaModel>
 }
 
 
