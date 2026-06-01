@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { CheckIcon, PackageIcon } from 'lucide-react'
+import { CheckIcon, PackageIcon, Trash2Icon } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -242,6 +242,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const [loading, setLoading] = useState(!initialData)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // 행 선택 (일괄 작업)
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -427,6 +429,22 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     }
   }
 
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/sh/inventory/reorder/plan/${planId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('삭제 실패')
+      toast.success('발주 계획을 삭제했습니다')
+      setDeleteOpen(false)
+      router.push('/d/seller-ops/inventory/reorder')
+    } catch (err) {
+      console.error(err)
+      toast.error('발주 계획 삭제에 실패했습니다')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="py-20 text-center text-sm text-muted-foreground">
@@ -485,6 +503,15 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
               확정
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5 text-muted-foreground hover:text-destructive"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2Icon className="h-3.5 w-3.5" />
+            삭제
+          </Button>
         </div>
       </div>
 
@@ -720,6 +747,38 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             </Button>
             <Button onClick={handleFinalize} disabled={finalizing}>
               {finalizing ? '확정 중...' : '확정'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog open={deleteOpen} onOpenChange={(o) => !o && setDeleteOpen(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>발주 계획 삭제</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{plan.planNo}</span> 계획을
+            삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+          </p>
+          {plan.status !== 'DRAFT' && (
+            <p className="text-xs text-amber-700">
+              확정된 계획입니다. 삭제해도 생성된 생산차수는 보존되며, 계획과의 연결만 해제됩니다.
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={deleting}>
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="gap-1.5"
+            >
+              <Trash2Icon className="h-4 w-4" />
+              {deleting ? '삭제 중...' : '삭제'}
             </Button>
           </DialogFooter>
         </DialogContent>
