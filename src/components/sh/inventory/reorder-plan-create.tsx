@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -32,12 +32,16 @@ type Props = {
 export function ReorderPlanCreate({ autoOpen = true, onCancel }: Props) {
   const [pickerOpen, setPickerOpen] = useState(autoOpen)
   const [picked, setPicked] = useState<PickedProduct | null>(null)
+  // 상품 선택 직후 picker가 onOpenChange(false)를 호출하는데, 이때 picked state는
+  // 아직 반영 전(stale)이라 onCancel이 오발화된다. ref로 선택 사실을 즉시 추적해 회피.
+  const justPickedRef = useRef(false)
 
   const handlePickProduct = (
     productId: string,
     opts: Array<{ productName: string; brandName: string | null }>
   ) => {
     const first = opts[0]
+    justPickedRef.current = true
     setPicked({
       productId,
       productName: first?.productName ?? '',
@@ -49,7 +53,16 @@ export function ReorderPlanCreate({ autoOpen = true, onCancel }: Props) {
   // 팝업 닫힘 처리: 상품 미선택 상태로 닫으면 목록 복귀
   const handlePickerOpenChange = (open: boolean) => {
     setPickerOpen(open)
-    if (!open && !picked) onCancel?.()
+    if (open) {
+      justPickedRef.current = false
+      return
+    }
+    // 방금 상품을 골라서 닫힌 경우엔 복귀시키지 않음
+    if (justPickedRef.current) {
+      justPickedRef.current = false
+      return
+    }
+    if (!picked) onCancel?.()
   }
 
   if (!picked) {
