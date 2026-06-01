@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { CheckIcon, PackageIcon, Trash2Icon } from 'lucide-react'
+import { CheckIcon, PackageIcon, PencilIcon, Trash2Icon } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -171,9 +171,9 @@ function FinalQtyCell({
 
 /**
  * 콜드스타트(BAYES) 행 전용 "예측 일판매" 셀.
- * 보조 경로 — 특정 행만 목표 일판매량/시즌계수를 개별 보정. 패널(전체 적용)이 주.
- * 입력 초기값은 설정값(inputsSnapshot.coldStartInterview)에서 읽음 — dailyAvgForecast(출력) 아님.
- * 외부(refetch) 값 변경은 호출부의 key 리셋으로 동기화.
+ * 예측 숫자를 주 콘텐츠로 표시하고, 보정 버튼으로 다이얼로그를 열어 개별 조정(보조 경로).
+ * 전체 일괄은 헤더 패널이 주. 입력 초기값은 설정값(inputsSnapshot.coldStartInterview)에서
+ * 읽음 — dailyAvgForecast(출력) 아님.
  */
 function ColdStartCell({
   item,
@@ -185,12 +185,16 @@ function ColdStartCell({
   onApply: (optionId: string, targetDailySales: number, seasonFactor: number) => Promise<void>
 }) {
   const saved = item.inputsSnapshot?.coldStartInterview
+  const [open, setOpen] = useState(false)
   const [target, setTarget] = useState(saved ? String(saved.targetDailySales) : '')
   const [season, setSeason] = useState(saved ? String(saved.seasonFactor) : '1')
   const [busy, setBusy] = useState(false)
 
+  // 예측 숫자는 항상 주 콘텐츠로 표시
+  const forecast = <span className="tabular-nums">{item.dailyAvgForecast.toFixed(2)}</span>
+
   if (readonly) {
-    return <span className="tabular-nums">{item.dailyAvgForecast.toFixed(2)}</span>
+    return forecast
   }
 
   const handleApply = async () => {
@@ -202,47 +206,77 @@ function ColdStartCell({
     setBusy(true)
     try {
       await onApply(item.optionId, n, Number(season || '1'))
+      setOpen(false)
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
-      <div className="flex items-center gap-1">
-        <Input
-          type="number"
-          min={0}
-          placeholder="목표"
-          className="h-7 w-16 text-right tabular-nums"
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-        />
-        <Select value={season} onValueChange={setSeason}>
-          <SelectTrigger className="h-7 w-[88px] text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SEASON_FACTOR_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 px-2 text-xs"
-          disabled={busy || target.trim() === ''}
-          onClick={handleApply}
-        >
-          {busy ? '...' : '적용'}
-        </Button>
-      </div>
-      <span className="text-[10px] text-muted-foreground">
-        → 예측 {item.dailyAvgForecast.toFixed(2)}
-      </span>
+    <div className="flex items-center justify-end gap-1.5">
+      {forecast}
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-6 px-1.5 text-[11px] text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+        onClick={() => setOpen(true)}
+        aria-label="콜드스타트 보정"
+      >
+        <PencilIcon className="mr-0.5 h-3 w-3" />
+        보정
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>콜드스타트 보정</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            목표 일판매량과 시즌 계수로 초기 예측을 보정합니다. 현재 예측{' '}
+            <span className="font-medium tabular-nums">{item.dailyAvgForecast.toFixed(2)}</span>
+            개/일.
+          </p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-medium text-muted-foreground">
+                목표 일판매량 (개/일)
+              </label>
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                placeholder="목표 일판매량"
+                className="h-8 w-32 text-sm"
+                value={target}
+                onChange={(e) => setTarget(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-medium text-muted-foreground">시즌 계수</label>
+              <Select value={season} onValueChange={setSeason}>
+                <SelectTrigger className="h-8 w-32 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SEASON_FACTOR_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+              취소
+            </Button>
+            <Button onClick={handleApply} disabled={busy || target.trim() === ''}>
+              {busy ? '적용 중...' : '적용'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -653,7 +687,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                     <TableCell className="text-right">
                       {cold ? (
                         <ColdStartCell
-                          key={`cs-${item.id}-${item.inputsSnapshot?.coldStartInterview?.targetDailySales ?? ''}`}
+                          key={`cs-${item.id}-${item.inputsSnapshot?.coldStartInterview?.targetDailySales ?? ''}-${item.inputsSnapshot?.coldStartInterview?.seasonFactor ?? ''}`}
                           item={item}
                           readonly={readonly}
                           onApply={handleCellApply}
