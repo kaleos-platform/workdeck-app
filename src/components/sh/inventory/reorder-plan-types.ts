@@ -39,6 +39,11 @@ export type ReorderPlanItem = {
   // JSON 스냅샷 — 구조는 번스타인이 확정 예정
   inputsSnapshot: {
     profile?: 'FAST' | 'INTERMITTENT' | 'COLD_START'
+    // 콜드스타트 보정 입력값 (cold-start-interview API가 기록 — 설정값/출력 구분)
+    coldStartInterview?: {
+      targetDailySales: number
+      seasonFactor: number
+    }
     // TODO: 번스타인 응답 형식 확인
     [key: string]: unknown
   } | null
