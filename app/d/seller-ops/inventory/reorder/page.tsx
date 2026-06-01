@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { ArrowLeft, PlusIcon } from 'lucide-react'
+import { ArrowLeft, PlusIcon, Trash2Icon } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -14,6 +14,13 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { ReorderPlanAccuracyCard } from '@/components/sh/inventory/reorder-plan-accuracy-card'
 import { ReorderPlanCreate } from '@/components/sh/inventory/reorder-plan-create'
 import type {
@@ -66,6 +73,8 @@ export default function ReorderPage() {
   const [latestAccuracy, setLatestAccuracy] = useState<PlanListResponse['latestAccuracy']>()
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<ReorderPlanSummary | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const fetchPlans = useCallback(async () => {
     setLoading(true)
@@ -87,6 +96,25 @@ export default function ReorderPage() {
     fetchPlans()
   }, [fetchPlans])
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/sh/inventory/reorder/plan/${deleteTarget.id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) throw new Error('삭제 실패')
+      toast.success('발주 계획을 삭제했습니다')
+      setPlans((prev) => prev.filter((p) => p.id !== deleteTarget.id))
+      setDeleteTarget(null)
+    } catch (err) {
+      console.error(err)
+      toast.error('발주 계획 삭제에 실패했습니다')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   // 생성 모드: 상품 선택 → 예측표 → 계획 생성
   if (creating) {
     return (
@@ -103,7 +131,7 @@ export default function ReorderPage() {
             계획 목록으로
           </Button>
         </div>
-        <ReorderPlanCreate />
+        <ReorderPlanCreate autoOpen onCancel={() => setCreating(false)} />
       </div>
     )
   }
@@ -112,7 +140,7 @@ export default function ReorderPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">발주 예측</h1>
+          <h1 className="text-2xl font-bold tracking-tight">발주 계획</h1>
           <p className="text-sm text-muted-foreground">
             진행한 발주 계획 이력을 확인하고 상품 단위로 새 계획을 생성합니다
           </p>
@@ -144,7 +172,7 @@ export default function ReorderPage() {
               <TableHead className="text-right">최종수량 합계</TableHead>
               <TableHead>생성일</TableHead>
               <TableHead>확정일</TableHead>
-              <TableHead className="w-20"></TableHead>
+              <TableHead className="w-32"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -183,11 +211,22 @@ export default function ReorderPage() {
                     {formatDate(plan.finalizedAt)}
                   </TableCell>
                   <TableCell>
-                    <Button asChild size="sm" variant="ghost">
-                      <Link href={`/d/seller-ops/inventory/reorder/plans/${plan.id}`}>
-                        상세 보기
-                      </Link>
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button asChild size="sm" variant="ghost">
+                        <Link href={`/d/seller-ops/inventory/reorder/plans/${plan.id}`}>
+                          상세 보기
+                        </Link>
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => setDeleteTarget(plan)}
+                        aria-label={`${plan.planNo} 삭제`}
+                      >
+                        <Trash2Icon className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -195,6 +234,38 @@ export default function ReorderPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog open={deleteTarget !== null} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>발주 계획 삭제</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{deleteTarget?.planNo}</span> 계획을
+            삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+          </p>
+          {deleteTarget && deleteTarget.status !== 'DRAFT' && (
+            <p className="text-xs text-amber-700">
+              확정된 계획입니다. 삭제해도 생성된 생산차수는 보존되며, 계획과의 연결만 해제됩니다.
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="gap-1.5"
+            >
+              <Trash2Icon className="h-4 w-4" />
+              {deleting ? '삭제 중...' : '삭제'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
