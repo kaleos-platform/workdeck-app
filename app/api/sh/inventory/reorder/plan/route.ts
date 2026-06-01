@@ -92,8 +92,9 @@ export async function POST(req: NextRequest) {
   const spaceId = resolved.space.id
   const userId = resolved.user.id
 
-  // 요청 바디 — 발주 계획은 상품 단위이므로 productId 필수
-  let body: { productId?: string; memo?: string } = {}
+  // 요청 바디 — 발주 계획은 상품 단위이므로 productId 필수.
+  // selectedOptionIds: 비었거나 미전달이면 전체 옵션, 있으면 해당 옵션만 계획.
+  let body: { productId?: string; memo?: string; optionIds?: string[] } = {}
   try {
     body = await req.json()
   } catch {
@@ -103,6 +104,9 @@ export async function POST(req: NextRequest) {
   if (!body.productId) {
     return errorResponse('발주 계획은 상품 단위로 생성합니다. 상품을 선택해주세요.', 422)
   }
+
+  const selectedOptionIds =
+    Array.isArray(body.optionIds) && body.optionIds.length > 0 ? body.optionIds : null
 
   // ── 1) 상품/옵션 로드 (단일 상품) ──────────────────────────────────────────
   const productWhere: Record<string, unknown> = {
@@ -118,6 +122,8 @@ export async function POST(req: NextRequest) {
       brandId: true,
       reorderRoundUnit: true,
       options: {
+        // 선택 옵션이 지정되면 productId 스코프 내에서 해당 옵션만 (외부 ID 방어)
+        ...(selectedOptionIds ? { where: { id: { in: selectedOptionIds } } } : {}),
         select: { id: true, safetyStockQty: true },
       },
       reorderConfig: {
@@ -128,6 +134,11 @@ export async function POST(req: NextRequest) {
 
   if (products.length === 0) {
     return errorResponse('선택한 상품을 찾을 수 없습니다 (활성 상태가 아니거나 권한 없음)', 422)
+  }
+
+  // 선택 옵션이 지정됐는데 매칭 옵션이 0개 → 빈 계획 방지
+  if (selectedOptionIds && products.every((p) => p.options.length === 0)) {
+    return errorResponse('선택된 옵션이 없습니다', 422)
   }
 
   const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
