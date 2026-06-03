@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { CheckIcon, PackageIcon, PencilIcon, Trash2Icon } from 'lucide-react'
+import { CheckIcon, PackageIcon, PencilIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -37,6 +37,7 @@ import type {
   ReorderPlan,
   ReorderPlanItem,
   ProductInfo,
+  ProductionRunSummary,
 } from './reorder-plan-types'
 
 // 시즌 계수 선택지 — 서버 AnswerSchema의 seasonFactor(0.1~5)와 정합. 패널·셀 공용.
@@ -350,9 +351,16 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const [plan, setPlan] = useState<ReorderPlan | null>(initialData?.plan ?? null)
   const [items, setItems] = useState<ReorderPlanItem[]>(initialData?.items ?? [])
   const [productInfo, setProductInfo] = useState<ProductInfo[]>(initialData?.productInfo ?? [])
+  const [productionRuns, setProductionRuns] = useState<ProductionRunSummary[]>(
+    initialData?.productionRuns ?? []
+  )
   const [loading, setLoading] = useState(!initialData)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
+  const [generateRunOpen, setGenerateRunOpen] = useState(false)
+  const [generatingRun, setGeneratingRun] = useState(false)
+  const [revertOpen, setRevertOpen] = useState(false)
+  const [reverting, setReverting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -370,6 +378,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       setPlan(data.plan)
       setItems(data.items)
       setProductInfo(data.productInfo)
+      setProductionRuns(data.productionRuns ?? [])
     } catch (err) {
       console.error(err)
       toast.error('발주 계획을 불러오지 못했습니다')
@@ -477,6 +486,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     [applyColdStart]
   )
 
+  // "예측 검증 시작" — 예측 동결 + 측정 대상 등록 (생산차수 생성 안 함, 잠금 아님)
   const handleFinalize = async () => {
     setFinalizing(true)
     try {
@@ -484,14 +494,57 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         method: 'POST',
       })
       if (!res.ok) throw new Error('확정 실패')
-      toast.success('발주 계획이 확정되었습니다. 생산차수가 생성됩니다.')
+      toast.success('예측 검증을 시작했습니다. 이후 실판매와 비교해 신뢰도를 측정합니다.')
       setFinalizeOpen(false)
-      router.push('/d/seller-ops/inventory/reorder/plans')
+      await fetchPlan()
     } catch (err) {
       console.error(err)
-      toast.error('발주 계획 확정에 실패했습니다')
+      toast.error('예측 검증 시작에 실패했습니다')
     } finally {
       setFinalizing(false)
+    }
+  }
+
+  // 생산차수 생성 — 미발주 잔여 수량 기준, 반복 가능 (재고 전용)
+  const handleGenerateRun = async () => {
+    setGeneratingRun(true)
+    try {
+      const res = await fetch(`/api/sh/inventory/reorder/plan/${planId}/generate-run`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as { error?: string }
+        throw new Error(err.error ?? '생성 실패')
+      }
+      const data = (await res.json()) as { productionRuns: ProductionRunSummary[] }
+      toast.success(`생산차수 ${data.productionRuns.length}건을 생성했습니다`)
+      setGenerateRunOpen(false)
+      await fetchPlan()
+    } catch (err) {
+      console.error(err)
+      toast.error(err instanceof Error ? err.message : '생산차수 생성에 실패했습니다')
+    } finally {
+      setGeneratingRun(false)
+    }
+  }
+
+  // 초안으로 — 확정 계획을 수정하기 위해 새 DRAFT revision 생성 후 이동
+  const handleRevert = async () => {
+    setReverting(true)
+    try {
+      const res = await fetch(`/api/sh/inventory/reorder/plan/${planId}/revert`, {
+        method: 'POST',
+      })
+      if (!res.ok) throw new Error('되돌리기 실패')
+      const data = (await res.json()) as { planId: string }
+      toast.success('새 초안을 만들었습니다. 수정 후 다시 예측 검증을 시작하세요.')
+      setRevertOpen(false)
+      router.push(`/d/seller-ops/inventory/reorder/plans/${data.planId}`)
+    } catch (err) {
+      console.error(err)
+      toast.error('초안으로 되돌리기에 실패했습니다')
+    } finally {
+      setReverting(false)
     }
   }
 
@@ -556,9 +609,9 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
               보정하세요
             </p>
           )}
-          {plan.finalizedAt && (
+          {plan.confirmedAt && (
             <p className="text-xs text-muted-foreground">
-              확정일: {new Date(plan.finalizedAt).toLocaleString('ko-KR')}
+              예측 검증 시작일: {new Date(plan.confirmedAt).toLocaleString('ko-KR')}
             </p>
           )}
         </div>
@@ -567,9 +620,30 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           {plan.status === 'DRAFT' && (
             <Button size="sm" onClick={() => setFinalizeOpen(true)} className="gap-1.5">
               <CheckIcon className="h-3.5 w-3.5" />
-              확정
+              예측 검증 시작
             </Button>
           )}
+          {plan.status === 'FINALIZED' && !plan.supersededAt && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => setRevertOpen(true)}
+            >
+              <RotateCcwIcon className="h-3.5 w-3.5" />
+              초안으로
+            </Button>
+          )}
+          {/* 생산차수 생성 — 재고 전용, 확정 무관하게 미발주 잔여 있으면 가능 */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => setGenerateRunOpen(true)}
+          >
+            <PackageIcon className="h-3.5 w-3.5" />
+            생산차수 생성
+          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -581,6 +655,35 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           </Button>
         </div>
       </div>
+
+      {/* 생성된 생산차수 목록 (있을 때) */}
+      {productionRuns.length > 0 && (
+        <div className="rounded-md border bg-muted/20 px-4 py-2.5">
+          <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+            생성된 생산차수 {productionRuns.length}건
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {productionRuns.map((run) => (
+              <button
+                key={run.id}
+                type="button"
+                onClick={() => router.push(`/d/seller-ops/products/production/${run.id}`)}
+                className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1 text-xs hover:bg-accent"
+              >
+                <PackageIcon className="h-3 w-3 text-muted-foreground" />
+                <span className="font-medium tabular-nums">{run.runNo}</span>
+                <Badge variant="outline" className="text-[10px]">
+                  {run.status === 'PLANNED'
+                    ? '계획중'
+                    : run.status === 'ORDERED'
+                      ? '발주완료'
+                      : '입고완료'}
+                </Badge>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 콜드스타트 전체 적용 패널 — 데이터부족 옵션 있을 때만 (주 경로) */}
       {!readonly && coldStartCount > 0 && (
@@ -743,11 +846,11 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       <Dialog open={finalizeOpen} onOpenChange={setFinalizeOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>발주 계획 확정</DialogTitle>
+            <DialogTitle>예측 검증 시작</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            확정하면 발주 항목을 기반으로 <strong>생산차수가 자동 생성</strong>됩니다. 계획을
-            확정하시겠습니까?
+            현재 예측값을 <strong>동결</strong>하고 신뢰도 측정 대상으로 등록합니다. 이후 실판매와
+            비교해 예측이 맞았는지 검증합니다. (잠금 아님 — 수정하려면 &lsquo;초안으로&rsquo;)
           </p>
           <p className="text-xs text-muted-foreground">
             최종 수량 합계: <span className="font-semibold tabular-nums">{totalFinalQty}개</span>
@@ -757,7 +860,58 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
               취소
             </Button>
             <Button onClick={handleFinalize} disabled={finalizing}>
-              {finalizing ? '확정 중...' : '확정'}
+              {finalizing ? '시작 중...' : '예측 검증 시작'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 생산차수 생성 확인 다이얼로그 */}
+      <Dialog open={generateRunOpen} onOpenChange={(o) => !o && setGenerateRunOpen(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>생산차수 생성</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            이 계획의 <strong>미발주 잔여 수량</strong>(최종수량 − 기존 생산차수)을 기준으로
+            생산차수를 생성합니다. 브랜드별로 나뉘어 생성될 수 있습니다.
+          </p>
+          {productionRuns.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              이미 {productionRuns.length}건 생성됨 — 남은 잔여분만 추가 생성됩니다.
+            </p>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setGenerateRunOpen(false)}
+              disabled={generatingRun}
+            >
+              취소
+            </Button>
+            <Button onClick={handleGenerateRun} disabled={generatingRun}>
+              {generatingRun ? '생성 중...' : '생산차수 생성'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 초안으로 되돌리기 확인 다이얼로그 */}
+      <Dialog open={revertOpen} onOpenChange={(o) => !o && setRevertOpen(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>초안으로 되돌리기</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            확정 계획은 그대로 보존하고, 수정 가능한 <strong>새 초안</strong>을 만듭니다. 기존
+            신뢰도 측정값은 무효 처리됩니다.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRevertOpen(false)} disabled={reverting}>
+              취소
+            </Button>
+            <Button onClick={handleRevert} disabled={reverting}>
+              {reverting ? '생성 중...' : '새 초안 만들기'}
             </Button>
           </DialogFooter>
         </DialogContent>
