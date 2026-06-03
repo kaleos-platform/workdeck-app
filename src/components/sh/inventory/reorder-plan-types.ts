@@ -76,11 +76,23 @@ export type ProductInfo = {
 }
 
 // GET /api/sh/inventory/reorder/plan/[id] 응답
+// 상세 GET이 반환하는 옵션별 적중률 (ACTIVE만, select 경량 필드)
+export type PlanDetailAccuracy = {
+  optionId: string
+  wape: number
+  bias: number
+  stockoutDays: number
+  overstockDays: number
+  evaluatedAt: string
+  validity: 'ACTIVE' | 'INVALIDATED' | 'SUPERSEDED'
+}
+
 export type PlanDetailResponse = {
   plan: ReorderPlan
   items: ReorderPlanItem[]
   productInfo: ProductInfo[]
   productionRuns?: ProductionRunSummary[]
+  accuracies?: PlanDetailAccuracy[]
 }
 
 export type ReorderPlanAccuracy = {

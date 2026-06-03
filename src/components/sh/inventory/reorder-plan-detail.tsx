@@ -38,9 +38,11 @@ import type {
   ReorderPlanItem,
   ProductInfo,
   ProductionRunSummary,
+  PlanDetailAccuracy,
 } from './reorder-plan-types'
 import type { SafetyStockSuggestion } from '@/lib/inv/forecast/safety-stock-suggestion'
 import { ProductionRunFormDialog } from '@/components/sh/products/production/production-run-form-dialog'
+import { ReorderPlanAccuracyCard } from '@/components/sh/inventory/reorder-plan-accuracy-card'
 
 // 시즌 계수 선택지 — 서버 AnswerSchema의 seasonFactor(0.1~5)와 정합. 패널·셀 공용.
 const SEASON_FACTOR_OPTIONS = [
@@ -356,6 +358,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const [productionRuns, setProductionRuns] = useState<ProductionRunSummary[]>(
     initialData?.productionRuns ?? []
   )
+  const [accuracies, setAccuracies] = useState<PlanDetailAccuracy[]>(initialData?.accuracies ?? [])
   const [loading, setLoading] = useState(!initialData)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
@@ -400,6 +403,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       setItems(data.items)
       setProductInfo(data.productInfo)
       setProductionRuns(data.productionRuns ?? [])
+      setAccuracies(data.accuracies ?? [])
       void fetchSuggestions(data.items.map((it) => it.optionId))
     } catch (err) {
       console.error(err)
@@ -453,6 +457,21 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
 
   // 콜드스타트(데이터 부족) 옵션 수
   const coldStartCount = useMemo(() => items.filter(isColdStart).length, [items])
+
+  // 옵션별 적중률 빠른 조회
+  const accuracyByOption = useMemo(
+    () => new Map(accuracies.map((a) => [a.optionId, a])),
+    [accuracies]
+  )
+
+  // 예측 검증 측정 예정일 = 확정일 + 최대 리드타임 (평가창 종료)
+  const evalDueDate = useMemo(() => {
+    if (!plan?.confirmedAt || items.length === 0) return null
+    const maxLead = Math.max(...items.map((it) => it.leadTimeDays))
+    const due = new Date(plan.confirmedAt)
+    due.setDate(due.getDate() + maxLead)
+    return due
+  }, [plan?.confirmedAt, items])
 
   const handlePatchItem = useCallback(
     async (itemId: string, body: { finalQty?: number; userNote?: string }) => {
@@ -788,6 +807,31 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
       )}
 
+      {/* 예측 검증 결과 — FINALIZED(검증 시작)한 계획만 */}
+      {plan.status === 'FINALIZED' &&
+        (accuracies.length > 0 ? (
+          <ReorderPlanAccuracyCard
+            accuracies={accuracies}
+            planNo={plan.planNo}
+            biasAdjustApplied={plan.biasAdjustApplied}
+            titleLabel="이 계획 예측 검증 결과"
+          />
+        ) : (
+          <div className="rounded-md border border-dashed bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+            예측 검증 측정 대기 중
+            {evalDueDate && (
+              <>
+                {' '}
+                · 예정일{' '}
+                <span className="font-medium text-foreground">
+                  {evalDueDate.toLocaleDateString('ko-KR')}
+                </span>
+              </>
+            )}{' '}
+            — 확정 후 리드타임 기간의 실판매가 누적되면 옵션별 적중률(WAPE/Bias)이 표시됩니다.
+          </div>
+        ))}
+
       {/* 아이템 테이블 */}
       <div className="overflow-x-auto rounded-md border">
         <Table>
@@ -913,7 +957,10 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                       />
                     </TableCell>
                     <TableCell>
-                      <ReorderPlanRationalePopover item={item} />
+                      <ReorderPlanRationalePopover
+                        item={item}
+                        accuracy={accuracyByOption.get(item.optionId)}
+                      />
                     </TableCell>
                   </TableRow>
                 )

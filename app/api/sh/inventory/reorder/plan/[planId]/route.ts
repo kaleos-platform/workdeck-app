@@ -32,6 +32,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
         orderBy: { product: { name: 'asc' } },
       },
       accuracies: {
+        where: { validity: 'ACTIVE' }, // revert로 SUPERSEDED/INVALIDATED된 stale 결과 제외
         select: {
           optionId: true,
           wape: true,
