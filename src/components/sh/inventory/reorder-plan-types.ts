@@ -11,10 +11,23 @@ export type ReorderPlan = {
   status: ReorderPlanStatus
   windowDays: number
   finalizedAt: string | null
+  confirmedAt: string | null // "예측 검증 시작" 시점 = 예측 동결점 = 평가 앵커
+  supersededAt: string | null // revert로 대체된 시점
+  supersededByPlanId: string | null // 대체한 새 계획
+  sourcePlanId: string | null // 이 계획이 revert되어 파생된 원본
   biasAdjustApplied: Record<string, number> | null
   totalSuggestedQty: number
   totalFinalQty: number
   memo: string | null
+  createdAt: string
+}
+
+// 발주 계획에 연결된 생산차수 요약 (재고 흐름 — 신뢰도와 무관)
+export type ProductionRunSummary = {
+  id: string
+  runNo: string
+  status: 'PLANNED' | 'ORDERED' | 'STOCKED_IN'
+  brandId: string | null
   createdAt: string
 }
 
@@ -67,6 +80,7 @@ export type PlanDetailResponse = {
   plan: ReorderPlan
   items: ReorderPlanItem[]
   productInfo: ProductInfo[]
+  productionRuns?: ProductionRunSummary[]
 }
 
 export type ReorderPlanAccuracy = {

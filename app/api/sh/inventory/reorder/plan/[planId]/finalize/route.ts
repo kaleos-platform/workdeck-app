@@ -1,36 +1,16 @@
 // POST /api/sh/inventory/reorder/plan/[planId]/finalize
-// DRAFT → FINALIZED 전환
+// "예측 검증 시작"(UI "확정") — DRAFT → FINALIZED 전환 + 예측 스냅샷 동결.
 //
-// 흐름:
+// 동작:
 //  1) DRAFT 확인
-//  2) finalQty > 0 아이템을 brandId별로 groupBy
-//  3) 브랜드별 ProductionRun(PLANNED) 생성 + ProductionRunItem 채움
-//  4) reorderPlanId 세팅, plan.finalizedAt = now, status = FINALIZED
-//  모두 단일 트랜잭션
+//  2) 옵션별 LIVE 예측값을 confirmed* 필드로 동결(snapshotSource=LIVE) — 신뢰도 측정의 단일 진실원
+//  3) plan.status=FINALIZED, confirmedAt=now
+//  생산차수는 생성하지 않는다(별도 generate-run 액션). 재고와 신뢰도 측정은 분리.
+//  모두 단일 트랜잭션.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-
-// ─── runNo 생성 (yyyyMMdd-NNN, space 전체 범위) ────────────────────────────────
-
-async function generateRunNo(
-  spaceId: string,
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
-): Promise<string> {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const y = today.getFullYear()
-  const mo = String(today.getMonth() + 1).padStart(2, '0')
-  const dy = String(today.getDate()).padStart(2, '0')
-  const dateStr = `${y}${mo}${dy}`
-
-  const count = await tx.productionRun.count({
-    where: { spaceId, createdAt: { gte: today } },
-  })
-
-  return `${dateStr}-${String(count + 1).padStart(3, '0')}`
-}
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ planId: string }> }) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -39,17 +19,19 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
   const spaceId = resolved.space.id
   const { planId } = await params
 
-  // 계획 로드
   const plan = await prisma.reorderPlan.findUnique({
     where: { id: planId },
-    include: {
+    select: {
+      id: true,
+      spaceId: true,
+      status: true,
       items: {
-        where: { finalQty: { gt: 0 } },
         select: {
           id: true,
-          optionId: true,
+          dailyAvgForecast: true,
+          leadTimeDays: true,
+          safetyStockQty: true,
           finalQty: true,
-          product: { select: { brandId: true } },
         },
       },
     },
@@ -59,75 +41,42 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
     return errorResponse('발주 계획을 찾을 수 없습니다', 404)
   }
   if (plan.status !== 'DRAFT') {
-    return errorResponse('DRAFT 상태의 계획만 확정할 수 있습니다', 409)
+    return errorResponse('DRAFT 상태의 계획만 예측 검증을 시작할 수 있습니다', 409)
   }
   if (plan.items.length === 0) {
-    return errorResponse('확정 수량(finalQty > 0)이 있는 아이템이 없습니다', 400)
+    return errorResponse('발주 항목이 없습니다', 400)
   }
 
-  // brandId별 그룹핑 (null brandId는 'NO_BRAND' 키로 그룹)
-  const brandGroups = new Map<string | null, typeof plan.items>()
-  for (const item of plan.items) {
-    const brandId = item.product.brandId ?? null
-    const group = brandGroups.get(brandId) ?? []
-    group.push(item)
-    brandGroups.set(brandId, group)
-  }
+  const confirmedAt = new Date()
 
-  const finalizedAt = new Date()
-
-  const productionRuns = await prisma.$transaction(async (tx) => {
-    const runs: { id: string; runNo: string; brandId: string | null }[] = []
-    let runCounter = 0
-
-    for (const [brandId, items] of brandGroups.entries()) {
-      // runNo 충돌 방지: 같은 트랜잭션 내에서 순번 보장
-      const baseRunNo = await generateRunNo(spaceId, tx)
-      // 같은 날 여러 run이 생성될 때를 위해 counter 오프셋
-      const runNo =
-        runCounter === 0
-          ? baseRunNo
-          : baseRunNo.replace(
-              /-(\d{3})$/,
-              `-${String(parseInt(baseRunNo.match(/-(\d{3})$/)?.[1] ?? '1') + runCounter).padStart(3, '0')}`
-            )
-      runCounter++
-
-      const run = await tx.productionRun.create({
+  await prisma.$transaction(async (tx) => {
+    // 옵션별 LIVE 예측값 동결 — accuracy.ts가 읽는 값과 정확히 일치해야 함(변환 금지)
+    for (const item of plan.items) {
+      await tx.reorderPlanItem.update({
+        where: { id: item.id },
         data: {
-          spaceId,
-          brandId: brandId ?? null,
-          runNo,
-          status: 'PLANNED',
-          reorderPlanId: planId,
-          items: {
-            create: items.map((item) => ({
-              optionId: item.optionId,
-              quantity: item.finalQty,
-            })),
-          },
+          confirmedDailyAvgForecast: item.dailyAvgForecast,
+          confirmedLeadTimeDays: item.leadTimeDays,
+          confirmedSafetyStockQty: item.safetyStockQty,
+          confirmedFinalQty: item.finalQty,
+          snapshotSource: 'LIVE',
         },
-        select: { id: true, runNo: true, brandId: true },
       })
-      runs.push(run)
     }
 
-    // 계획 상태 전환
     await tx.reorderPlan.update({
       where: { id: planId },
       data: {
         status: 'FINALIZED',
-        finalizedAt,
+        confirmedAt,
+        finalizedAt: confirmedAt, // 레거시 호환
       },
     })
-
-    return runs
   })
 
   return NextResponse.json({
     planId,
     status: 'FINALIZED',
-    finalizedAt,
-    productionRuns,
+    confirmedAt,
   })
 }

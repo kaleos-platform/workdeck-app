@@ -17,32 +17,12 @@ import { generateTextWithFallback } from '@/lib/ai/providers'
 import { roundUp } from '@/lib/inv/round'
 import { mapWithConcurrency } from '@/lib/concurrency'
 import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
+import { generatePlanNo } from '@/lib/inv/reorder-seq'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
 
-// ─── planNo 생성 (yyyyMMdd-NNN) ────────────────────────────────────────────────
-
-async function generatePlanNo(
-  spaceId: string,
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
-): Promise<string> {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const y = today.getFullYear()
-  const m = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  const dateStr = `${y}${m}${day}`
-
-  const count = await tx.reorderPlan.count({
-    where: {
-      spaceId,
-      createdAt: { gte: today },
-    },
-  })
-
-  return `${dateStr}-${String(count + 1).padStart(3, '0')}`
-}
+// planNo 생성은 @/lib/inv/reorder-seq 의 generatePlanNo 공유 (revert/generate-run 과 동일)
 
 // LLM 동시 호출 상한 (rate limit 방어)
 const LLM_CONCURRENCY = 5

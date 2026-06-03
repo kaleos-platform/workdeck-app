@@ -39,7 +39,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
           stockoutDays: true,
           overstockDays: true,
           evaluatedAt: true,
+          validity: true,
         },
+      },
+      productionRuns: {
+        select: {
+          id: true,
+          runNo: true,
+          status: true,
+          brandId: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
       },
     },
   })
@@ -95,6 +106,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       status: plan.status,
       windowDays: plan.windowDays,
       finalizedAt: plan.finalizedAt,
+      confirmedAt: plan.confirmedAt,
+      supersededAt: plan.supersededAt,
+      supersededByPlanId: plan.supersededByPlanId,
+      sourcePlanId: plan.sourcePlanId,
       biasAdjustApplied: plan.biasAdjustApplied,
       totalSuggestedQty: plan.totalSuggestedQty,
       totalFinalQty: plan.totalFinalQty,
@@ -127,6 +142,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       ...a,
       wape: Number(a.wape),
       bias: Number(a.bias),
+    })),
+    productionRuns: plan.productionRuns.map((r) => ({
+      id: r.id,
+      runNo: r.runNo,
+      status: r.status,
+      brandId: r.brandId,
+      createdAt: r.createdAt,
     })),
   })
 }
