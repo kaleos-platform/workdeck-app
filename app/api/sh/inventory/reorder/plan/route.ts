@@ -191,17 +191,21 @@ export async function POST(req: NextRequest) {
     // 정산 실패가 발주 계획 생성을 막지 않도록 무시
   }
 
-  // accuracy가 채워진(=정산된) 가장 최근 계획의 bias를 사용.
-  // 정산 후 status가 CONSUMED로 바뀌므로 status 무관하게 accuracy 존재 여부로 조회.
+  // ACTIVE accuracy가 채워진 가장 최근 확정 계획의 bias를 사용.
+  // validity=ACTIVE만 — revert로 SUPERSEDED/INVALIDATED된 측정값은 학습에서 제외.
   const lastSettled = await prisma.reorderPlan.findFirst({
-    where: { spaceId, accuracies: { some: {} } },
-    orderBy: { finalizedAt: 'desc' },
+    where: { spaceId, accuracies: { some: { validity: 'ACTIVE' } } },
+    orderBy: { confirmedAt: 'desc' },
     select: {
+      id: true,
       accuracies: {
+        where: { validity: 'ACTIVE' },
         select: { optionId: true, bias: true },
       },
     },
   })
+  // provenance — 이 계획 예측에 입력된 bias의 출처(어느 정산 계획). 새 계획의 accuracy
+  // settle 시점에 ReorderPlanAccuracy.biasSourcePlanId로 기록됨(향후 settle 경로에서 연결).
   const biasByOption = new Map<string, number>()
   if (lastSettled) {
     for (const acc of lastSettled.accuracies) {

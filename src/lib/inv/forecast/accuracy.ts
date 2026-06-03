@@ -1,6 +1,9 @@
 // 발주 예측 적중률 계산
 //
-// 평가 창: [stockedInAt, stockedInAt + leadTimeDays]
+// 평가 창: [anchorDate, anchorDate + leadTimeDays]
+//   anchorDate = 예측 검증 시작(확정) 시점(confirmedAt) — 순수 예측 검증.
+//   (구 모델은 생산차수 입고일 stockedInAt 기준이었으나, 재고 가용성이 아닌
+//    예측 품질을 측정하기 위해 계획 동결 시점으로 재앵커.)
 // 실제 출고 = 해당 기간 InvMovement OUTBOUND 합계
 // 예측 출고 = dailyAvgForecast × leadTimeDays (bias 보정 전 원본 모델 출력 사용)
 //
@@ -19,9 +22,9 @@ export type AccuracyInput = {
   planId: string
   optionId: string
   planItemId: string
-  stockedInAt: Date // 입고 완료 시점
+  anchorDate: Date // 평가창 시작점 = 예측 검증 시작(confirmedAt)
   leadTimeDays: number // 리드타임 (일)
-  finalQty: number // 입고 수량
+  finalQty: number // 최종 수량 (재고 시뮬레이션 시작값)
   dailyAvgForecast: number // 예측 일평균 (모델 원본, bias 보정 전)
   safetyStockQty: number // 안전재고
 }
@@ -36,10 +39,10 @@ export type AccuracyResult = {
 }
 
 export async function computeAccuracy(input: AccuracyInput): Promise<AccuracyResult> {
-  const { optionId, stockedInAt, leadTimeDays, finalQty, dailyAvgForecast, safetyStockQty } = input
+  const { optionId, anchorDate, leadTimeDays, finalQty, dailyAvgForecast, safetyStockQty } = input
 
-  const periodStart = new Date(stockedInAt)
-  const periodEnd = new Date(stockedInAt)
+  const periodStart = new Date(anchorDate)
+  const periodEnd = new Date(anchorDate)
   periodEnd.setDate(periodEnd.getDate() + leadTimeDays)
 
   // 평가 기간 내 일별 출고 조회

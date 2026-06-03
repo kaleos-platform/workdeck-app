@@ -22,16 +22,15 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
     switch (result.reason) {
       case 'NOT_FOUND':
         return errorResponse('발주 계획을 찾을 수 없습니다', 404)
-      case 'NOT_FINALIZED':
-        return errorResponse('FINALIZED 상태의 계획만 적중률 계산이 가능합니다', 409)
-      case 'NO_STOCKED_IN':
-        return errorResponse('입고 완료(stockedInAt)된 ProductionRun이 없습니다', 400)
+      case 'NOT_CONFIRMED':
+        return errorResponse('예측 검증을 시작한(확정·미대체) 계획만 적중률 계산이 가능합니다', 409)
+      case 'WINDOW_NOT_ELAPSED':
+        return errorResponse('아직 평가 기간(확정 + 리드타임)이 경과한 옵션이 없습니다', 400)
     }
   }
 
   return NextResponse.json({
     planId: result.planId,
-    status: 'CONSUMED',
     evaluatedAt: result.evaluatedAt,
     accuracies: result.accuracies,
   })
