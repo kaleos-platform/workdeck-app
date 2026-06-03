@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { resolveCronOrWorkerAuth } from '@/lib/api-helpers'
 import { runCoupangSalesSyncForDates } from '@/lib/inv/coupang-sales-to-movement'
 
 export const runtime = 'nodejs'
@@ -20,16 +21,11 @@ const WORKER_SERVICE = 'coupang-sales-sync'
  *
  * 백필 모드(콜드스타트): ?from=YYYY-MM-DD&to=YYYY-MM-DD 지정 시 해당 KST 일자 범위를 변환.
  *
- * Vercel cron 인증: `Authorization: Bearer ${CRON_SECRET}`.
+ * 인증: 워커(x-worker-api-key, 1차 — 수집 후 체이닝) 또는 Vercel cron(Bearer CRON_SECRET, 백스톱).
  */
 export async function GET(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET 미설정' }, { status: 401 })
-  }
-  if (request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  }
+  const auth = resolveCronOrWorkerAuth(request)
+  if ('error' in auth) return auth.error
 
   const { searchParams } = request.nextUrl
   const fromStr = searchParams.get('from')

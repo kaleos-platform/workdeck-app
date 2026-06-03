@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { resolveCronOrWorkerAuth } from '@/lib/api-helpers'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
@@ -21,16 +22,11 @@ const WORKER_SERVICE = 'coupang-inventory-sync'
  * - file-only(미매핑) 는 사람 매핑 필요 → 자동 적용하지 않음(로그/표면화).
  * - 멱등 skip-marker: 같은 (spaceId, locationId, snapshotDate) 가 이미 APPLIED/PARTIAL 이면 skip.
  *
- * Vercel cron 인증: `Authorization: Bearer ${CRON_SECRET}`.
+ * 인증: 워커(x-worker-api-key, 1차 — 수집 후 체이닝) 또는 Vercel cron(Bearer CRON_SECRET, 백스톱).
  */
 export async function GET(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET 미설정' }, { status: 401 })
-  }
-  if (request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  }
+  const auth = resolveCronOrWorkerAuth(request)
+  if ('error' in auth) return auth.error
 
   const locations = await prisma.invStorageLocation.findMany({
     where: {

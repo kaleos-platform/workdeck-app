@@ -143,3 +143,19 @@ export function resolveWorkerAuth(request: NextRequest) {
   }
   return { authenticated: true as const }
 }
+
+// 워커(x-worker-api-key) 또는 Vercel cron(Bearer CRON_SECRET) 중 하나로 인증.
+// 수집 후 워커가 체이닝 호출하는 게 1차 경로, Vercel cron 은 워커 다운 시 백스톱.
+// 둘 다 미설정/불일치면 401.
+export function resolveCronOrWorkerAuth(request: NextRequest) {
+  const apiKey = request.headers.get('x-worker-api-key')
+  const workerKey = process.env.WORKER_API_KEY
+  if (workerKey && apiKey && apiKey === workerKey) {
+    return { authenticated: true as const }
+  }
+  const cronSecret = process.env.CRON_SECRET
+  if (cronSecret && request.headers.get('authorization') === `Bearer ${cronSecret}`) {
+    return { authenticated: true as const }
+  }
+  return { error: errorResponse('unauthorized', 401) }
+}

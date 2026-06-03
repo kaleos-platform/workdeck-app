@@ -272,7 +272,41 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     (err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err)
   )
 
+  // ── Step 12: seller-ops 연동 — 재고 대조 + 판매 OUTBOUND 변환 트리거 ──
+  // 수집 직후 호출해야 정확(VENDOR/inventory_health 스냅샷이 방금 적재됨).
+  // inventory-sync(재고 truth) → sales-sync(수요 신호) 순서.
+  await triggerSellerOpsSync().catch((err) =>
+    console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err)
+  )
+
   return result.filePath
+}
+
+/**
+ * seller-ops 연동 트리거 — 수집 후 재고 대조 + 로켓그로스 판매 OUTBOUND 변환.
+ * 워커 인증(x-worker-api-key)으로 cron 라우트를 직접 호출(Vercel cron 백스톱과 dual-auth).
+ * 전 Space 를 쓸어 처리하므로 workspaceId 불필요.
+ */
+async function triggerSellerOpsSync(): Promise<void> {
+  const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
+  const apiKey = process.env.WORKER_API_KEY
+  if (!baseUrl || !apiKey) return
+
+  const headers = { 'x-worker-api-key': apiKey }
+  // 1) 재고 대조(재고 truth 보정) — 절대값 set
+  try {
+    const r = await fetch(`${baseUrl}/api/cron/coupang-inventory-sync`, { headers })
+    console.log(`[orchestrator] 쿠팡 재고 대조 트리거: ${r.status}`)
+  } catch (err) {
+    console.error('[orchestrator] 쿠팡 재고 대조 트리거 실패:', err)
+  }
+  // 2) 판매 OUTBOUND 변환(수요 신호, stock-neutral)
+  try {
+    const r = await fetch(`${baseUrl}/api/cron/coupang-sales-sync`, { headers })
+    console.log(`[orchestrator] 쿠팡 판매 변환 트리거: ${r.status}`)
+  } catch (err) {
+    console.error('[orchestrator] 쿠팡 판매 변환 트리거 실패:', err)
+  }
 }
 
 /** Wing에서 재고 데이터를 수집하고 업로드한다 */
