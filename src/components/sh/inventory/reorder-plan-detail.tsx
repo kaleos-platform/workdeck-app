@@ -39,6 +39,7 @@ import type {
   ProductInfo,
   ProductionRunSummary,
 } from './reorder-plan-types'
+import type { SafetyStockSuggestion } from '@/lib/inv/forecast/safety-stock-suggestion'
 
 // 시즌 계수 선택지 — 서버 AnswerSchema의 seasonFactor(0.1~5)와 정합. 패널·셀 공용.
 const SEASON_FACTOR_OPTIONS = [
@@ -369,6 +370,24 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const [panelSeason, setPanelSeason] = useState('1')
   const [panelBusy, setPanelBusy] = useState(false)
 
+  // 안전재고 제안 (옵션별 — 확정 계획 예측오차 분산 기반)
+  const [suggestions, setSuggestions] = useState<Map<string, SafetyStockSuggestion>>(new Map())
+  const [applyingSuggestion, setApplyingSuggestion] = useState<string | null>(null)
+
+  const fetchSuggestions = useCallback(async (optionIds: string[]) => {
+    if (optionIds.length === 0) return
+    try {
+      const res = await fetch(
+        `/api/sh/inventory/reorder/safety-stock-suggestions?optionIds=${optionIds.join(',')}`
+      )
+      if (!res.ok) return
+      const data = (await res.json()) as { suggestions: SafetyStockSuggestion[] }
+      setSuggestions(new Map(data.suggestions.map((s) => [s.optionId, s])))
+    } catch (err) {
+      console.error(err)
+    }
+  }, [])
+
   const fetchPlan = useCallback(async () => {
     setLoading(true)
     try {
@@ -379,19 +398,51 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       setItems(data.items)
       setProductInfo(data.productInfo)
       setProductionRuns(data.productionRuns ?? [])
+      void fetchSuggestions(data.items.map((it) => it.optionId))
     } catch (err) {
       console.error(err)
       toast.error('발주 계획을 불러오지 못했습니다')
     } finally {
       setLoading(false)
     }
-  }, [planId])
+  }, [planId, fetchSuggestions])
 
   useEffect(() => {
     if (!initialData) {
       fetchPlan()
+    } else {
+      // initialData가 있으면 fetchPlan을 건너뛰므로 제안만 별도 조회
+      void fetchSuggestions(initialData.items.map((it) => it.optionId))
     }
-  }, [initialData, fetchPlan])
+  }, [initialData, fetchPlan, fetchSuggestions])
+
+  // 안전재고 제안 승인 — 옵션 단건 safety-stock PATCH 재사용 후 로컬 반영
+  const handleApplySuggestion = useCallback(async (optionId: string, suggested: number) => {
+    setApplyingSuggestion(optionId)
+    try {
+      const res = await fetch(`/api/sh/inventory/options/${optionId}/safety-stock`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ safetyStockQty: suggested }),
+      })
+      if (!res.ok) throw new Error('저장 실패')
+      toast.success(`안전재고를 ${suggested}(으)로 적용했습니다`)
+      setItems((prev) =>
+        prev.map((it) => (it.optionId === optionId ? { ...it, safetyStockQty: suggested } : it))
+      )
+      // 제안 목록에서 해당 옵션 제거 (적용 완료)
+      setSuggestions((prev) => {
+        const next = new Map(prev)
+        next.delete(optionId)
+        return next
+      })
+    } catch (err) {
+      console.error(err)
+      toast.error('안전재고 적용에 실패했습니다')
+    } finally {
+      setApplyingSuggestion(null)
+    }
+  }, [])
 
   const optionMap = useMemo(() => buildOptionMap(productInfo), [productInfo])
   const brandName = productInfo[0]?.brandName ?? null
@@ -805,8 +856,34 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                     <TableCell className="text-right text-muted-foreground tabular-nums">
                       {item.leadTimeDays}일
                     </TableCell>
-                    <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {item.safetyStockQty}
+                    <TableCell className="text-right tabular-nums">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <span className="text-muted-foreground">{item.safetyStockQty}</span>
+                        {(() => {
+                          const sug = suggestions.get(item.optionId)
+                          if (
+                            !sug ||
+                            sug.insufficient ||
+                            sug.suggestedSafetyStock === null ||
+                            sug.suggestedSafetyStock === item.safetyStockQty
+                          ) {
+                            return null
+                          }
+                          return (
+                            <button
+                              type="button"
+                              disabled={applyingSuggestion === item.optionId}
+                              onClick={() =>
+                                handleApplySuggestion(item.optionId, sug.suggestedSafetyStock!)
+                              }
+                              title={`예측오차 ${sug.sampleCount}건 기반 권장 (현재 ${item.safetyStockQty})`}
+                              className="inline-flex items-center gap-0.5 rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+                            >
+                              →{sug.suggestedSafetyStock} 적용
+                            </button>
+                          )
+                        })()}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{item.suggestedQty}</TableCell>
                     <TableCell className="text-right font-medium tabular-nums">
