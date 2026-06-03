@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import {
-  parseReconciliationFile,
-  type ParseResult,
-  type ParsedRow,
-} from '@/lib/inv/reconciliation-parser'
-import {
-  matchReconciliation,
-  type MatchReconciliationResult,
-} from '@/lib/inv/reconciliation-matcher'
+import { parseReconciliationFile, type ParseResult } from '@/lib/inv/reconciliation-parser'
 import { getCoupangInventoryRows } from '@/lib/inv/reconciliation-sources'
+import { runReconciliationMatch, ReconciliationCoreError } from '@/lib/inv/reconciliation-core'
+import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 
 // GET /api/inv/reconciliation — 히스토리 목록
 export async function GET(req: NextRequest) {
@@ -106,6 +100,25 @@ export async function POST(req: NextRequest) {
         )
       }
 
+      // 자동 동기화 cron이 워크스페이스를 결정적으로 해석할 수 있도록, 로켓그로스
+      // 위치의 externalIntegrationKey 에 페어 workspaceId 를 1회 backfill 한다.
+      if (locationId) {
+        await prisma.invStorageLocation
+          .updateMany({
+            where: {
+              id: locationId,
+              spaceId: resolved.space.id,
+              externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
+              externalIntegrationKey: null,
+            },
+            data: { externalIntegrationKey: workspace.id },
+          })
+          .catch((err) => {
+            // backfill 실패 시 cron 의 자동 동기화가 영구 skip 되므로 최소한 로그.
+            console.warn('[reconciliation POST] externalIntegrationKey backfill 실패', err)
+          })
+      }
+
       try {
         parsed = await getCoupangInventoryRows(workspace.id, {
           snapshotDate: snapshotDateOverride,
@@ -161,117 +174,29 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 공통: location 검증 → 매칭 → PENDING 생성 ──
-  // locationId가 주어진 경우: 단일 location 매칭
-  // 주어지지 않은 경우: 파일 행의 externalLocationName으로 그룹핑하여 위치별 매칭
-  const snapshotDate: Date = snapshotDateOverride ?? parsed.snapshotDate ?? new Date()
-
-  let primaryLocationId: string
-  let matchResult: MatchReconciliationResult
-
-  // stock_status_export 포맷은 행마다 위치명을 담고 있으므로 서버가 항상 멀티 위치 분배로 처리한다.
-  // (클라이언트가 단일 locationId를 보냈더라도 무시.)
-  const useMultiLocation =
-    parsed.format === 'stock_status_export' && parsed.rows.every((r) => !!r.externalLocationName)
-
+  // ── 공통 코어: location 검증 → 매칭 → PENDING 생성 (cron 과 공유) ──
+  let core
   try {
-    if (locationId && !useMultiLocation) {
-      const location = await prisma.invStorageLocation.findFirst({
-        where: { id: locationId, spaceId: resolved.space.id },
-        select: { id: true, isActive: true },
-      })
-      if (!location) return errorResponse('보관 장소를 찾을 수 없습니다', 404)
-      if (!location.isActive) return errorResponse('보관 장소가 비활성화되었습니다', 400)
-
-      primaryLocationId = location.id
-      matchResult = await matchReconciliation(resolved.space.id, location.id, parsed)
-    } else {
-      // 멀티 위치 분배 — 모든 행에 externalLocationName이 있어야 함
-      const rowsWithoutLoc = parsed.rows.filter((r) => !r.externalLocationName)
-      if (rowsWithoutLoc.length > 0) {
-        return errorResponse(
-          '파일 행에 위치명이 없습니다. 보관 장소를 선택하거나 위치명 컬럼을 채워 주세요.',
-          400
-        )
-      }
-
-      const locationNames = Array.from(
-        new Set(parsed.rows.map((r) => r.externalLocationName as string))
-      )
-      const locations = await prisma.invStorageLocation.findMany({
-        where: { spaceId: resolved.space.id, name: { in: locationNames } },
-        select: { id: true, name: true, isActive: true },
-      })
-      const locByName = new Map(locations.map((l) => [l.name, l]))
-
-      const unknownNames = locationNames.filter((n) => !locByName.has(n))
-      if (unknownNames.length > 0) {
-        return errorResponse(
-          `알 수 없는 위치명: ${unknownNames.join(', ')}. 보관 장소 설정을 확인해 주세요.`,
-          400
-        )
-      }
-      const inactiveNames = locationNames.filter((n) => {
-        const l = locByName.get(n)
-        return l && !l.isActive
-      })
-      if (inactiveNames.length > 0) {
-        return errorResponse(`비활성 위치를 포함합니다: ${inactiveNames.join(', ')}`, 400)
-      }
-
-      // 위치별 그룹핑하여 매칭 실행
-      const rowsByLocId = new Map<string, ParsedRow[]>()
-      for (const row of parsed.rows) {
-        const loc = locByName.get(row.externalLocationName as string)!
-        const arr = rowsByLocId.get(loc.id) ?? []
-        arr.push(row)
-        rowsByLocId.set(loc.id, arr)
-      }
-
-      const combinedEntries: MatchReconciliationResult['entries'] = []
-      let totalItems = 0
-      let matchedItems = 0
-      for (const [locId, groupRows] of rowsByLocId) {
-        const partial = await matchReconciliation(resolved.space.id, locId, {
-          ...parsed,
-          rows: groupRows,
-        })
-        combinedEntries.push(...partial.entries)
-        totalItems += partial.totalItems
-        matchedItems += partial.matchedItems
-      }
-      matchResult = { entries: combinedEntries, totalItems, matchedItems }
-
-      // 다중 위치이므로 대표 location은 가장 행이 많은 위치 사용 (DB FK 위해 필수)
-      const firstLocName = parsed.rows[0]?.externalLocationName as string
-      primaryLocationId = locByName.get(firstLocName)!.id
-    }
+    core = await runReconciliationMatch({
+      spaceId: resolved.space.id,
+      parsed,
+      locationId,
+      fileName,
+      snapshotDateOverride,
+    })
   } catch (err) {
+    if (err instanceof ReconciliationCoreError) return errorResponse(err.message, err.status)
     console.error('[reconciliation POST] match 실패', err)
     return errorResponse('매칭 처리에 실패했습니다', 500)
   }
 
-  const created = await prisma.invReconciliation.create({
-    data: {
-      spaceId: resolved.space.id,
-      locationId: primaryLocationId,
-      fileName,
-      snapshotDate,
-      status: 'PENDING',
-      matchResults: JSON.parse(JSON.stringify(matchResult.entries)),
-      totalItems: matchResult.totalItems,
-      matchedItems: matchResult.matchedItems,
-      adjustedItems: 0,
-    },
-  })
-
   return NextResponse.json({
-    id: created.id,
-    fileName: created.fileName,
-    format: parsed.format,
-    snapshotDate: created.snapshotDate,
-    totalItems: created.totalItems,
-    matchedItems: created.matchedItems,
-    matchResults: matchResult.entries,
+    id: core.reconciliationId,
+    fileName,
+    format: core.format,
+    snapshotDate: core.snapshotDate,
+    totalItems: core.matchResult.totalItems,
+    matchedItems: core.matchResult.matchedItems,
+    matchResults: core.matchResult.entries,
   })
 }

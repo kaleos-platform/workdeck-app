@@ -178,6 +178,7 @@ export async function uploadInventory(
   buffer: Buffer,
   fileName: string,
   workspaceId: string,
+  snapshotDate?: string
 ): Promise<{
   success: boolean
   fileType: string
@@ -188,6 +189,9 @@ export async function uploadInventory(
   const formData = new FormData()
   formData.append('file', new Blob([new Uint8Array(buffer)]), fileName)
   formData.append('workspaceId', workspaceId)
+  if (snapshotDate) {
+    formData.append('snapshotDate', snapshotDate)
+  }
 
   const url = `${getBaseUrl()}/api/inventory/upload-worker`
   const response = await fetch(url, {

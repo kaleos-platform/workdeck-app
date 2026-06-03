@@ -11,6 +11,8 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const workspaceId = formData.get('workspaceId') as string | null
+    // 워커가 수집 대상 날짜를 ISO 문자열로 전달하는 경우 사용. 없으면 현재 시각.
+    const snapshotDateStr = formData.get('snapshotDate') as string | null
 
     if (!file || !workspaceId) {
       return errorResponse('file과 workspaceId가 필요합니다', 400)
@@ -22,11 +24,13 @@ export async function POST(request: NextRequest) {
       return errorResponse('파일 크기가 10MB를 초과합니다', 400)
     }
 
+    const snapshotDate = snapshotDateStr ? new Date(snapshotDateStr) : new Date()
+
     const result = await processInventoryUpload({
       workspaceId,
       fileName: file.name,
       buffer,
-      snapshotDate: new Date(),
+      snapshotDate,
     })
 
     if (!result.success) {

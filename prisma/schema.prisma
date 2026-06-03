@@ -698,6 +698,7 @@ model InventoryRecord {
   salesQty30d Int?
 
   // vendor_item_metrics 전용
+  fulfillmentType String? // 판매방식: "로켓그로스" | "판매자배송"
   visitors       Int?
   views          Int?
   cartAdds       Int?

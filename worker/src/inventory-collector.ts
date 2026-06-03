@@ -20,12 +20,17 @@ export interface InventoryCollectorResult {
   inventoryHealth: { filePath: string; fileName: string } | null
   /** 재고 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
   inventoryHealthError?: string
+  /** 판매분석(상품별/VENDOR) 다운로드 결과. 성공이면 파일 경로. */
+  salesVendor?: { filePath: string; fileName: string } | null
+  /** 판매분석 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
+  salesVendorError?: string
 }
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
 
 const WING_URL = 'https://wing.coupang.com'
 const INVENTORY_HEALTH_URL = `${WING_URL}/tenants/rfm-inventory/management/list`
+const SALES_ANALYSIS_URL = `${WING_URL}/tenants/business-insight/sales-analysis`
 const SCREENSHOT_DIR = path.resolve('.screenshots')
 const DEFAULT_TIMEOUT = 30_000
 const DOWNLOAD_TIMEOUT = 120_000
@@ -282,6 +287,199 @@ async function downloadInventoryHealth(
   return result
 }
 
+/**
+ * 판매분석 > 상품별(VENDOR) 엑셀 다운로드
+ *
+ * targetDateKst: 'YYYY-MM-DD' 형식의 KST 날짜 (어제). 기간 필터를 1일로 지정한다.
+ *
+ * 셀렉터 주의:
+ *   - 날짜 입력/선택 UI는 실제 DOM 확인 전까지 추정값이다.
+ *     각 단계마다 saveScreenshot을 남겨 QA 시 확인할 수 있도록 한다.
+ *   - "// TODO: 실제 DOM 확인 필요" 주석이 있는 지점은 운영 전 Playwright 인스펙터로 검증 필요.
+ */
+async function downloadSalesAnalysisVendor(
+  page: Page,
+  downloadDir: string,
+  targetDateKst: string
+): Promise<{ filePath: string; fileName: string }> {
+  console.log(`[inventory] 판매분석(VENDOR) 페이지 진입... (대상 날짜: ${targetDateKst})`)
+
+  await page.goto(SALES_ANALYSIS_URL, {
+    waitUntil: 'domcontentloaded',
+    timeout: DEFAULT_TIMEOUT,
+  })
+  await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
+  await page.waitForTimeout(3000)
+
+  await dismissModals(page)
+  await saveScreenshot(page, 'sales-analysis-loaded')
+
+  // ── 날짜 필터: 시작일 = 종료일 = targetDateKst (1일치) ──────────────────────
+  // TODO: 실제 DOM 확인 필요 — 날짜 입력 필드 셀렉터는 추정값.
+  // Wing 판매분석 날짜 picker는 input[type="text"] 또는 .date-input 계열이 일반적.
+  const dateInputSelectors = [
+    'input[placeholder*="시작일"]',
+    'input[placeholder*="조회시작"]',
+    '.date-picker input:first-child',
+    'input[data-role="startDate"]',
+    // TODO: 실제 DOM 확인 필요 — 위 셀렉터가 모두 실패하면 아래 fallback 시도
+    '.date-range-picker input:first-of-type',
+    'input[type="text"]:first-of-type',
+  ]
+
+  let startInputFilled = false
+  for (const sel of dateInputSelectors) {
+    const el = page.locator(sel).first()
+    if (await el.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await el.click({ clickCount: 3 }).catch(() => {})
+      await el.fill(targetDateKst).catch(() => {})
+      console.log(`[inventory]   → 시작일 입력 (${sel}): ${targetDateKst}`)
+      startInputFilled = true
+      break
+    }
+  }
+
+  if (!startInputFilled) {
+    await saveScreenshot(page, 'sales-analysis-no-start-date-input')
+    console.warn('[inventory]   ⚠ 시작일 입력 필드를 찾지 못했습니다 — TODO: 실제 셀렉터 확인 필요')
+  }
+
+  await page.waitForTimeout(500)
+
+  // 종료일 입력
+  // TODO: 실제 DOM 확인 필요 — 종료일 셀렉터 추정값
+  const endInputSelectors = [
+    'input[placeholder*="종료일"]',
+    'input[placeholder*="조회종료"]',
+    '.date-picker input:last-child',
+    'input[data-role="endDate"]',
+    '.date-range-picker input:last-of-type',
+  ]
+
+  let endInputFilled = false
+  for (const sel of endInputSelectors) {
+    const el = page.locator(sel).first()
+    if (await el.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await el.click({ clickCount: 3 }).catch(() => {})
+      await el.fill(targetDateKst).catch(() => {})
+      console.log(`[inventory]   → 종료일 입력 (${sel}): ${targetDateKst}`)
+      endInputFilled = true
+      break
+    }
+  }
+
+  if (!endInputFilled) {
+    await saveScreenshot(page, 'sales-analysis-no-end-date-input')
+    console.warn('[inventory]   ⚠ 종료일 입력 필드를 찾지 못했습니다 — TODO: 실제 셀렉터 확인 필요')
+  }
+
+  await page.waitForTimeout(500)
+
+  // 조회/검색 버튼 클릭
+  // TODO: 실제 DOM 확인 필요 — 조회 버튼 텍스트/셀렉터 추정값
+  const searchBtnSelectors = [
+    'button:has-text("조회")',
+    'button:has-text("검색")',
+    'button[type="submit"]:has-text("조회")',
+    '.search-btn',
+    '[data-wuic-partial="search"]',
+  ]
+
+  let searchClicked = false
+  for (const sel of searchBtnSelectors) {
+    const btn = page.locator(sel).first()
+    if (await btn.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await btn.click({ force: true })
+      console.log(`[inventory]   → 조회 버튼 클릭 (${sel})`)
+      searchClicked = true
+      break
+    }
+  }
+
+  if (!searchClicked) {
+    // Enter 키 fallback
+    await page.keyboard.press('Enter').catch(() => {})
+    console.warn(
+      '[inventory]   ⚠ 조회 버튼을 찾지 못해 Enter 키로 대체 — TODO: 실제 셀렉터 확인 필요'
+    )
+  }
+
+  await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
+  await page.waitForTimeout(3000)
+  await dismissModals(page)
+  await saveScreenshot(page, 'sales-analysis-after-search')
+
+  // ── 엑셀 다운로드 버튼 ──────────────────────────────────────────────────────
+  // TODO: 실제 DOM 확인 필요 — 상위 "엑셀 다운로드" 버튼 셀렉터
+  let excelMainBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
+  if (!(await excelMainBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    excelMainBtn = page.locator('button:has-text("엑셀 다운로드")').first()
+  }
+
+  if (!(await excelMainBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-excel-btn')
+    throw new Error(
+      '[inventory] 판매분석의 "엑셀 다운로드" 버튼을 찾을 수 없습니다 — TODO: 실제 셀렉터 확인 필요'
+    )
+  }
+
+  console.log('[inventory]   → 판매분석 엑셀 다운로드 메뉴 열기')
+  await excelMainBtn.click({ force: true })
+  await page.waitForTimeout(1000)
+
+  // 모달이 늦게 뜨면 드롭다운이 닫힐 수 있으므로 dismissModals 후 재시도
+  // TODO: 실제 DOM 확인 필요 — "상품별 엑셀 다운로드" 메뉴 항목 텍스트 추정값
+  let vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
+  if (await dismissModals(page)) {
+    await page.waitForTimeout(500)
+    const isMenuOpen = await vendorMenuBtn.isVisible({ timeout: 1000 }).catch(() => false)
+    if (!isMenuOpen) {
+      await excelMainBtn.click({ force: true })
+      await page.waitForTimeout(1000)
+    }
+  }
+
+  await saveScreenshot(page, 'sales-analysis-excel-menu-open')
+
+  // fallback 셀렉터들
+  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    vendorMenuBtn = page.locator('.backdrop div:has-text("상품별 엑셀 다운로드")').first()
+  }
+  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    vendorMenuBtn = page
+      .locator(
+        'div[role="menuitem"]:has-text("상품별 엑셀 다운로드"), li:has-text("상품별 엑셀 다운로드")'
+      )
+      .first()
+  }
+  // TODO: 실제 DOM 확인 필요 — 메뉴 텍스트가 "상품별" 이 아닌 경우 대비 (예: "VENDOR", "아이템별" 등)
+  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    vendorMenuBtn = page
+      .locator('div[role="menuitem"]:has-text("상품"), li:has-text("상품")')
+      .first()
+  }
+
+  if (!(await vendorMenuBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-vendor-menu')
+    throw new Error(
+      '[inventory] 판매분석의 "상품별 엑셀 다운로드" 메뉴를 찾을 수 없습니다 — TODO: 실제 DOM 확인 필요'
+    )
+  }
+
+  const menuText = (await vendorMenuBtn.textContent().catch(() => ''))?.trim()
+  console.log(`[inventory]   → 메뉴 선택: ${menuText}`)
+
+  const result = await clickAndDownload(
+    page,
+    downloadDir,
+    vendorMenuBtn,
+    `sales_vendor_${Date.now()}.xlsx`
+  )
+
+  console.log(`[inventory]   → 판매분석(VENDOR) 저장: ${result.fileName}`)
+  return result
+}
+
 // ─── 메인 함수 ──────────────────────────────────────────────────────────────────
 
 /**
@@ -295,12 +493,15 @@ export async function collectInventoryData(
     downloadDir?: string
     browserDataDir?: string
     headless?: boolean
+    /** 판매분석 수집 대상 날짜 (KST YYYY-MM-DD). 미지정 시 판매분석 수집 생략. */
+    targetDateKst?: string
   } = {}
 ): Promise<InventoryCollectorResult> {
   const {
     downloadDir = path.resolve('.downloads'),
     browserDataDir = process.env.COUPANG_BROWSER_DATA_DIR || '.browser-data',
     headless = process.env.HEADLESS !== 'false',
+    targetDateKst,
   } = options
 
   if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true })
@@ -341,11 +542,130 @@ export async function collectInventoryData(
       inventoryHealthError = msg
     }
 
-    return { inventoryHealth, inventoryHealthError }
+    let salesVendor: { filePath: string; fileName: string } | null = null
+    let salesVendorError: string | undefined
+
+    // 판매분석(VENDOR) 다운로드 — targetDateKst 가 지정된 경우에만 수집
+    if (targetDateKst) {
+      try {
+        salesVendor = await downloadSalesAnalysisVendor(page, downloadDir, targetDateKst)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[inventory] 판매분석(VENDOR) 다운로드 실패:', msg)
+        await saveScreenshot(page, 'sales-vendor-error')
+        salesVendorError = msg
+      }
+    }
+
+    return { inventoryHealth, inventoryHealthError, salesVendor, salesVendorError }
   } catch (error) {
     await saveScreenshot(page, 'inventory-error')
     throw error
   } finally {
     await context.close()
+  }
+}
+
+// ─── 백필 전용 API ─────────────────────────────────────────────────────────────
+
+/**
+ * 백필 루프용 Wing 컨텍스트를 열고 로그인한다.
+ * 반환된 context / page 는 호출자가 관리(닫기)한다.
+ *
+ * 사용 예:
+ *   const { context, page } = await openWingSession(creds, opts)
+ *   try {
+ *     for (const date of dates) {
+ *       await downloadSalesAnalysisVendorOnPage(page, downloadDir, date)
+ *     }
+ *   } finally {
+ *     await context.close()
+ *   }
+ */
+export async function openWingSession(
+  credentials: { loginId: string; password: string },
+  options: {
+    downloadDir?: string
+    browserDataDir?: string
+    headless?: boolean
+  } = {}
+): Promise<{ context: BrowserContext; page: Page; downloadDir: string }> {
+  const {
+    downloadDir = path.resolve('.downloads'),
+    browserDataDir = process.env.COUPANG_BROWSER_DATA_DIR || '.browser-data',
+    headless = process.env.HEADLESS !== 'false',
+  } = options
+
+  if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true })
+
+  const context: BrowserContext = await launchStealthPersistentContext({
+    userDataDir: path.resolve(browserDataDir),
+    headless,
+    acceptDownloads: true,
+    locale: 'ko-KR',
+    timezoneId: 'Asia/Seoul',
+    viewport: { width: 1400, height: 900 },
+    userAgent:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  })
+
+  const page = context.pages()[0] || (await context.newPage())
+
+  if (!(await isWingLoggedIn(page))) {
+    await performWingLogin(page, credentials)
+  } else {
+    console.log('[inventory] 기존 Wing 세션 유지')
+  }
+
+  return { context, page, downloadDir }
+}
+
+/**
+ * 이미 열린 page에서 판매분석 VENDOR 엑셀을 다운로드한다.
+ * 백필 루프에서 컨텍스트를 재사용할 때 사용한다.
+ *
+ * 반환: 성공 시 { filePath, fileName }, 실패 시 { error: string }
+ */
+export async function downloadSalesAnalysisVendorOnPage(
+  page: Page,
+  downloadDir: string,
+  targetDateKst: string
+): Promise<{ filePath: string; fileName: string } | { error: string }> {
+  try {
+    const result = await downloadSalesAnalysisVendor(page, downloadDir, targetDateKst)
+    return result
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    await saveScreenshot(page, `sales-vendor-backfill-error-${targetDateKst}`)
+    return { error: msg }
+  }
+}
+
+/**
+ * 단일 날짜 판매분석 VENDOR 수집 (컨텍스트 자체 관리).
+ * 날짜 하나만 수집할 때 편의 API로 사용한다.
+ * 여러 날짜 루프에는 openWingSession + downloadSalesAnalysisVendorOnPage 를 직접 쓸 것.
+ *
+ * 반환: 성공 시 { filePath, fileName }, 실패 시 { error: string }
+ */
+export async function collectSalesVendorForDate(
+  credentials: { loginId: string; password: string },
+  targetDateKst: string,
+  options: {
+    downloadDir?: string
+    browserDataDir?: string
+    headless?: boolean
+  } = {}
+): Promise<{ filePath: string; fileName: string } | { error: string }> {
+  let context: BrowserContext | undefined
+  try {
+    const session = await openWingSession(credentials, options)
+    context = session.context
+    return await downloadSalesAnalysisVendorOnPage(session.page, session.downloadDir, targetDateKst)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { error: msg }
+  } finally {
+    await context?.close()
   }
 }

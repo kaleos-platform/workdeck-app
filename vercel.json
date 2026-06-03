@@ -22,6 +22,14 @@
     {
       "path": "/api/cron/reorder-settle",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/coupang-inventory-sync",
+      "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/cron/coupang-sales-sync",
+      "schedule": "0 5 * * *"
     }
   ]
 }

@@ -7,7 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "collect": "tsx src/collect-once.ts",
-    "sc": "tsx src/sc/index.ts"
+    "sc": "tsx src/sc/index.ts",
+    "backfill-sales": "tsx src/backfill-sales-vendor.ts"
   },
   "dependencies": {
     "dotenv": "^16.0.0",
