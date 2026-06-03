@@ -1,5 +1,5 @@
-// 발주 계획/생산차수 번호 생성 — Space 단위 일자별 순번 (yyyyMMdd-NNN).
-// plan POST / revert / generate-run 에서 공유.
+// 발주 계획 번호 생성 — Space 단위 일자별 순번 (yyyyMMdd-NNN).
+// plan POST / revert 에서 공유.
 
 import { prisma } from '@/lib/prisma'
 
@@ -25,13 +25,4 @@ export async function generatePlanNo(spaceId: string, tx: Tx): Promise<string> {
     where: { spaceId, createdAt: { gte: today } },
   })
   return `${dateStr(today)}-${String(count + 1).padStart(3, '0')}`
-}
-
-/** 생산차수 번호 — Space 단위 당일 생성 건수 + offset + 1 (같은 tx 내 다건 생성 대비) */
-export async function generateRunNo(spaceId: string, tx: Tx, offset = 0): Promise<string> {
-  const today = todayStart()
-  const count = await tx.productionRun.count({
-    where: { spaceId, createdAt: { gte: today } },
-  })
-  return `${dateStr(today)}-${String(count + offset + 1).padStart(3, '0')}`
 }

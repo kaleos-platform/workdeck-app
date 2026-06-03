@@ -40,6 +40,7 @@ import type {
   ProductionRunSummary,
 } from './reorder-plan-types'
 import type { SafetyStockSuggestion } from '@/lib/inv/forecast/safety-stock-suggestion'
+import { ProductionRunFormDialog } from '@/components/sh/products/production/production-run-form-dialog'
 
 // 시즌 계수 선택지 — 서버 AnswerSchema의 seasonFactor(0.1~5)와 정합. 패널·셀 공용.
 const SEASON_FACTOR_OPTIONS = [
@@ -358,8 +359,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const [loading, setLoading] = useState(!initialData)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
-  const [generateRunOpen, setGenerateRunOpen] = useState(false)
-  const [generatingRun, setGeneratingRun] = useState(false)
+  const [runFormOpen, setRunFormOpen] = useState(false)
   const [revertOpen, setRevertOpen] = useState(false)
   const [reverting, setReverting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -556,28 +556,24 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     }
   }
 
-  // 생산차수 생성 — 미발주 잔여 수량 기준, 반복 가능 (재고 전용)
-  const handleGenerateRun = async () => {
-    setGeneratingRun(true)
-    try {
-      const res = await fetch(`/api/sh/inventory/reorder/plan/${planId}/generate-run`, {
-        method: 'POST',
-      })
-      if (!res.ok) {
-        const err = (await res.json().catch(() => ({}))) as { error?: string }
-        throw new Error(err.error ?? '생성 실패')
-      }
-      const data = (await res.json()) as { productionRuns: ProductionRunSummary[] }
-      toast.success(`생산차수 ${data.productionRuns.length}건을 생성했습니다`)
-      setGenerateRunOpen(false)
-      await fetchPlan()
-    } catch (err) {
-      console.error(err)
-      toast.error(err instanceof Error ? err.message : '생산차수 생성에 실패했습니다')
-    } finally {
-      setGeneratingRun(false)
-    }
-  }
+  // 생산차수 생성 폼 프리필 — 계획 옵션·최종수량 자동 입력 (원가는 폼에서 사용자 입력)
+  const runPrefillItems = useMemo(
+    () =>
+      items.map((it) => {
+        const opt = optionMap.get(it.optionId)
+        const pInfo = productInfo[0]
+        return {
+          optionId: it.optionId,
+          optionName: opt?.optionName ?? '',
+          sku: opt?.sku ?? null,
+          productId: it.productId,
+          productName: pInfo?.productName ?? plan?.productName ?? '',
+          brandName: pInfo?.brandName ?? null,
+          quantity: it.finalQty,
+        }
+      }),
+    [items, optionMap, productInfo, plan?.productName]
+  )
 
   // 초안으로 — 확정 계획을 수정하기 위해 새 DRAFT revision 생성 후 이동
   const handleRevert = async () => {
@@ -690,7 +686,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             size="sm"
             variant="outline"
             className="gap-1.5"
-            onClick={() => setGenerateRunOpen(true)}
+            onClick={() => setRunFormOpen(true)}
           >
             <PackageIcon className="h-3.5 w-3.5" />
             생산차수 생성
@@ -943,35 +939,17 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </DialogContent>
       </Dialog>
 
-      {/* 생산차수 생성 확인 다이얼로그 */}
-      <Dialog open={generateRunOpen} onOpenChange={(o) => !o && setGenerateRunOpen(false)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>생산차수 생성</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            이 계획의 <strong>미발주 잔여 수량</strong>(최종수량 − 기존 생산차수)을 기준으로
-            생산차수를 생성합니다. 브랜드별로 나뉘어 생성될 수 있습니다.
-          </p>
-          {productionRuns.length > 0 && (
-            <p className="text-xs text-muted-foreground">
-              이미 {productionRuns.length}건 생성됨 — 남은 잔여분만 추가 생성됩니다.
-            </p>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setGenerateRunOpen(false)}
-              disabled={generatingRun}
-            >
-              취소
-            </Button>
-            <Button onClick={handleGenerateRun} disabled={generatingRun}>
-              {generatingRun ? '생성 중...' : '생산차수 생성'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* 생산차수 생성 폼 — 계획 옵션·수량 프리필 + 원가 직접 입력 */}
+      <ProductionRunFormDialog
+        open={runFormOpen}
+        onOpenChange={setRunFormOpen}
+        prefillItems={runPrefillItems}
+        reorderPlanId={planId}
+        onSaved={() => {
+          setRunFormOpen(false)
+          void fetchPlan()
+        }}
+      />
 
       {/* 초안으로 되돌리기 확인 다이얼로그 */}
       <Dialog open={revertOpen} onOpenChange={(o) => !o && setRevertOpen(false)}>

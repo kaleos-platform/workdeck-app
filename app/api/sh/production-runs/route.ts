@@ -200,6 +200,15 @@ export async function POST(req: NextRequest) {
   const finalTotalCost: number | undefined =
     input.costMode === 'BREAKDOWN' ? costsData.reduce((s, c) => s + c.amount, 0) : input.totalCost
 
+  // 연계 발주 계획 소속 검증 (다른 space의 planId 주입 방어)
+  if (input.reorderPlanId) {
+    const plan = await prisma.reorderPlan.findFirst({
+      where: { id: input.reorderPlanId, spaceId: resolved.space.id },
+      select: { id: true },
+    })
+    if (!plan) return errorResponse('연계 발주 계획을 찾을 수 없습니다', 400)
+  }
+
   try {
     const created = await prisma.$transaction(async (tx) => {
       const run = await tx.productionRun.create({
@@ -211,6 +220,7 @@ export async function POST(req: NextRequest) {
           memo: input.memo ?? null,
           status: input.status ?? 'PLANNED',
           brandId: resolvedBrandId ?? null,
+          reorderPlanId: input.reorderPlanId ?? null,
           dueAt: input.dueAt ? new Date(input.dueAt) : null,
           completedAt: input.completedAt ? new Date(input.completedAt) : null,
         },
