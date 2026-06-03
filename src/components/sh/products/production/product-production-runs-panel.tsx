@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { SELLER_HUB_PRODUCTION_PATH, getSellerHubProductionRunPath } from '@/lib/deck-routes'
+import { SELLER_HUB_PRODUCTION_PATH } from '@/lib/deck-routes'
 import { ProductionRunFormDialog } from './production-run-form-dialog'
 
 type ProductionRunForProduct = {
@@ -37,6 +37,7 @@ export function ProductProductionRunsPanel({ productId }: Props) {
   const [rows, setRows] = useState<ProductionRunForProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
+  const [editRunId, setEditRunId] = useState<string | null>(null) // null = 신규 추가
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -67,16 +68,29 @@ export function ProductProductionRunsPanel({ productId }: Props) {
           <p className="text-sm text-muted-foreground">
             이 상품은 아직 등록된 생산 차수가 없습니다
           </p>
-          <Button variant="outline" size="sm" className="mt-3" onClick={() => setFormOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => {
+              setEditRunId(null)
+              setFormOpen(true)
+            }}
+          >
             <Plus className="mr-1 h-4 w-4" />
             생산 차수 추가
           </Button>
         </div>
         <ProductionRunFormDialog
           open={formOpen}
-          onOpenChange={setFormOpen}
+          onOpenChange={(o) => {
+            setFormOpen(o)
+            if (!o) setEditRunId(null)
+          }}
+          runId={editRunId ?? undefined}
           onSaved={() => {
             setFormOpen(false)
+            setEditRunId(null)
             load()
           }}
         />
@@ -88,7 +102,14 @@ export function ProductProductionRunsPanel({ productId }: Props) {
     <>
       <div className="space-y-3">
         <div className="flex items-center justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={() => setFormOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setEditRunId(null)
+              setFormOpen(true)
+            }}
+          >
             <Plus className="mr-1 h-4 w-4" />
             생산 차수 추가
           </Button>
@@ -138,13 +159,17 @@ export function ProductProductionRunsPanel({ productId }: Props) {
                         : '-'}
                     </TableCell>
                     <TableCell>
-                      <Link
-                        href={getSellerHubProductionRunPath(r.id)}
-                        aria-label={`${r.runNo} 상세`}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditRunId(r.id)
+                          setFormOpen(true)
+                        }}
+                        aria-label={`${r.runNo} 수정`}
                         className="inline-flex text-muted-foreground hover:text-foreground"
                       >
                         <ChevronRight className="h-4 w-4" />
-                      </Link>
+                      </button>
                     </TableCell>
                   </TableRow>
                 )
@@ -155,9 +180,14 @@ export function ProductProductionRunsPanel({ productId }: Props) {
       </div>
       <ProductionRunFormDialog
         open={formOpen}
-        onOpenChange={setFormOpen}
+        onOpenChange={(o) => {
+          setFormOpen(o)
+          if (!o) setEditRunId(null)
+        }}
+        runId={editRunId ?? undefined}
         onSaved={() => {
           setFormOpen(false)
+          setEditRunId(null)
           load()
         }}
       />

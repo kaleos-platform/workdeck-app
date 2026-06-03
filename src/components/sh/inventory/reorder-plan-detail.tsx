@@ -360,6 +360,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
   const [runFormOpen, setRunFormOpen] = useState(false)
+  // 기존 차수 칩 클릭 시 편집 모드로 열기 (null = 신규 생성)
+  const [editRunId, setEditRunId] = useState<string | null>(null)
   const [revertOpen, setRevertOpen] = useState(false)
   const [reverting, setReverting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -686,7 +688,10 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             size="sm"
             variant="outline"
             className="gap-1.5"
-            onClick={() => setRunFormOpen(true)}
+            onClick={() => {
+              setEditRunId(null)
+              setRunFormOpen(true)
+            }}
           >
             <PackageIcon className="h-3.5 w-3.5" />
             생산차수 생성
@@ -714,7 +719,10 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
               <button
                 key={run.id}
                 type="button"
-                onClick={() => router.push(`/d/seller-ops/products/production/${run.id}`)}
+                onClick={() => {
+                  setEditRunId(run.id)
+                  setRunFormOpen(true)
+                }}
                 className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1 text-xs hover:bg-accent"
               >
                 <PackageIcon className="h-3 w-3 text-muted-foreground" />
@@ -942,11 +950,16 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       {/* 생산차수 생성 폼 — 계획 옵션·수량 프리필 + 원가 직접 입력 */}
       <ProductionRunFormDialog
         open={runFormOpen}
-        onOpenChange={setRunFormOpen}
-        prefillItems={runPrefillItems}
-        reorderPlanId={planId}
+        onOpenChange={(o) => {
+          setRunFormOpen(o)
+          if (!o) setEditRunId(null)
+        }}
+        runId={editRunId ?? undefined}
+        prefillItems={editRunId ? undefined : runPrefillItems}
+        reorderPlanId={editRunId ? undefined : planId}
         onSaved={() => {
           setRunFormOpen(false)
+          setEditRunId(null)
           void fetchPlan()
         }}
       />
