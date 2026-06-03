@@ -1,6 +1,7 @@
 'use client'
 
 import { IntegrationCatalog } from '@/components/sh/settings/integration-catalog'
+import { CredentialForm } from '@/components/settings/credential-form'
 
 export default function SettingsIntegrationPage() {
   return (
@@ -11,6 +12,11 @@ export default function SettingsIntegrationPage() {
           다른 Deck·외부 데이터 연동을 설정하고 관리합니다
         </p>
       </div>
+
+      {/* 쿠팡 계정 연동 — 계정에 존속(1계정 1워크스페이스)되며 쿠팡 광고 관리자와 공유된다.
+          여기서 먼저 설정하면 워크스페이스가 자동 생성되고 쿠팡 광고 Deck 에서도 사용된다. */}
+      <CredentialForm />
+
       <IntegrationCatalog />
     </div>
   )
