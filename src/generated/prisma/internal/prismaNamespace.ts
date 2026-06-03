@@ -7429,6 +7429,7 @@ export const InventoryRecordScalarFieldEnum = {
   revenue30d: 'revenue30d',
   salesQty7d: 'salesQty7d',
   salesQty30d: 'salesQty30d',
+  fulfillmentType: 'fulfillmentType',
   visitors: 'visitors',
   views: 'views',
   cartAdds: 'cartAdds',
