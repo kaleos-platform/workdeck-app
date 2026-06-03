@@ -17,32 +17,12 @@ import { generateTextWithFallback } from '@/lib/ai/providers'
 import { roundUp } from '@/lib/inv/round'
 import { mapWithConcurrency } from '@/lib/concurrency'
 import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
+import { generatePlanNo } from '@/lib/inv/reorder-seq'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
 
-// ─── planNo 생성 (yyyyMMdd-NNN) ────────────────────────────────────────────────
-
-async function generatePlanNo(
-  spaceId: string,
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
-): Promise<string> {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const y = today.getFullYear()
-  const m = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  const dateStr = `${y}${m}${day}`
-
-  const count = await tx.reorderPlan.count({
-    where: {
-      spaceId,
-      createdAt: { gte: today },
-    },
-  })
-
-  return `${dateStr}-${String(count + 1).padStart(3, '0')}`
-}
+// planNo 생성은 @/lib/inv/reorder-seq 의 generatePlanNo 공유 (revert/generate-run 과 동일)
 
 // LLM 동시 호출 상한 (rate limit 방어)
 const LLM_CONCURRENCY = 5
@@ -92,8 +72,9 @@ export async function POST(req: NextRequest) {
   const spaceId = resolved.space.id
   const userId = resolved.user.id
 
-  // 요청 바디 — 발주 계획은 상품 단위이므로 productId 필수
-  let body: { productId?: string; memo?: string } = {}
+  // 요청 바디 — 발주 계획은 상품 단위이므로 productId 필수.
+  // selectedOptionIds: 비었거나 미전달이면 전체 옵션, 있으면 해당 옵션만 계획.
+  let body: { productId?: string; memo?: string; optionIds?: string[] } = {}
   try {
     body = await req.json()
   } catch {
@@ -103,6 +84,9 @@ export async function POST(req: NextRequest) {
   if (!body.productId) {
     return errorResponse('발주 계획은 상품 단위로 생성합니다. 상품을 선택해주세요.', 422)
   }
+
+  const selectedOptionIds =
+    Array.isArray(body.optionIds) && body.optionIds.length > 0 ? body.optionIds : null
 
   // ── 1) 상품/옵션 로드 (단일 상품) ──────────────────────────────────────────
   const productWhere: Record<string, unknown> = {
@@ -118,6 +102,8 @@ export async function POST(req: NextRequest) {
       brandId: true,
       reorderRoundUnit: true,
       options: {
+        // 선택 옵션이 지정되면 productId 스코프 내에서 해당 옵션만 (외부 ID 방어)
+        ...(selectedOptionIds ? { where: { id: { in: selectedOptionIds } } } : {}),
         select: { id: true, safetyStockQty: true },
       },
       reorderConfig: {
@@ -128,6 +114,11 @@ export async function POST(req: NextRequest) {
 
   if (products.length === 0) {
     return errorResponse('선택한 상품을 찾을 수 없습니다 (활성 상태가 아니거나 권한 없음)', 422)
+  }
+
+  // 선택 옵션이 지정됐는데 매칭 옵션이 0개 → 빈 계획 방지
+  if (selectedOptionIds && products.every((p) => p.options.length === 0)) {
+    return errorResponse('선택된 옵션이 없습니다', 422)
   }
 
   const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
@@ -200,17 +191,21 @@ export async function POST(req: NextRequest) {
     // 정산 실패가 발주 계획 생성을 막지 않도록 무시
   }
 
-  // accuracy가 채워진(=정산된) 가장 최근 계획의 bias를 사용.
-  // 정산 후 status가 CONSUMED로 바뀌므로 status 무관하게 accuracy 존재 여부로 조회.
+  // ACTIVE accuracy가 채워진 가장 최근 확정 계획의 bias를 사용.
+  // validity=ACTIVE만 — revert로 SUPERSEDED/INVALIDATED된 측정값은 학습에서 제외.
   const lastSettled = await prisma.reorderPlan.findFirst({
-    where: { spaceId, accuracies: { some: {} } },
-    orderBy: { finalizedAt: 'desc' },
+    where: { spaceId, accuracies: { some: { validity: 'ACTIVE' } } },
+    orderBy: { confirmedAt: 'desc' },
     select: {
+      id: true,
       accuracies: {
+        where: { validity: 'ACTIVE' },
         select: { optionId: true, bias: true },
       },
     },
   })
+  // provenance — 이 계획 예측에 입력된 bias의 출처(어느 정산 계획). 새 계획의 accuracy
+  // settle 시점에 ReorderPlanAccuracy.biasSourcePlanId로 기록됨(향후 settle 경로에서 연결).
   const biasByOption = new Map<string, number>()
   if (lastSettled) {
     for (const acc of lastSettled.accuracies) {

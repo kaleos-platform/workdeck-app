@@ -380,6 +380,8 @@ export const productionRunSchema = z.object({
   // 납기일 / 완료일 — YYYY-MM-DD 문자열 또는 null
   dueAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
   completedAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
+  // 연계 발주 계획 — 발주 계획에서 생산차수 생성 시 링크 (재고 흐름, 신뢰도와 무관)
+  reorderPlanId: z.string().min(1).optional(),
   items: z
     .array(productionRunItemSchema)
     .min(1)

@@ -1,16 +1,19 @@
-// 발주 계획 적중률 정산 코어 로직
+// 발주 계획 적중률 정산 코어 로직 (순수 예측 검증 재앵커)
 //
-// FINALIZED 계획 + 연결 ProductionRun.stockedInAt 기준으로 옵션별 적중률을 계산해
-// ReorderPlanAccuracy upsert + plan.status = CONSUMED 전환.
+// 앵커 = 예측 검증 시작 시점(confirmedAt). 평가창 = [confirmedAt, confirmedAt + leadTimeDays].
+// 생산차수(stockedInAt)와 분리 — 재고 가용성이 아닌 예측 품질을 측정.
 //
-// recompute API 라우트와 plan 생성 시점의 lazy 정산이 공유한다.
-// 결과는 throw 대신 SettleResult로 반환 → 호출부에서 부분 실패를 건너뛰기 쉽게.
+// 예측값은 확정 시점 동결 스냅샷(confirmed* 필드)을 읽는다(dual-read):
+//   snapshotSource=LIVE/BACKFILLED 있으면 confirmed* 사용, 없으면 live item 폴백.
+// 계획이 항상 편집 가능하므로 live 값을 읽으면 사후 수정에 신뢰도가 오염됨.
+//
+// settle는 plan.status를 변경하지 않는다(CONSUMED 폐기). 옵션별 accuracy row만 upsert.
+// recompute API 라우트와 plan 생성 시점 lazy 정산, cron 정산이 공유.
 
 import { prisma } from '@/lib/prisma'
 import { computeAccuracy } from '@/lib/inv/forecast/accuracy'
 import { mapWithConcurrency } from '@/lib/concurrency'
 
-// DB 동시 작업 상한 (connection pool 보호)
 const ACCURACY_CONCURRENCY = 5
 
 export type SettleAccuracyItem = {
@@ -23,79 +26,77 @@ export type SettleAccuracyItem = {
 
 export type SettleResult =
   | { ok: true; planId: string; evaluatedAt: Date; accuracies: SettleAccuracyItem[] }
-  | { ok: false; planId: string; reason: 'NOT_FOUND' | 'NOT_FINALIZED' | 'NO_STOCKED_IN' }
+  | { ok: false; planId: string; reason: 'NOT_FOUND' | 'NOT_CONFIRMED' | 'WINDOW_NOT_ELAPSED' }
 
-// 단일 FINALIZED 계획을 정산. $transaction 미사용(동시 쿼리 trap),
-// 각 옵션은 distinct (planId, optionId) row라 병렬 upsert 안전.
+// 단일 FINALIZED(확정) 계획 정산. 앵커 = confirmedAt.
 export async function settlePlanAccuracy(planId: string, spaceId: string): Promise<SettleResult> {
   const plan = await prisma.reorderPlan.findUnique({
     where: { id: planId },
-    include: {
+    select: {
+      id: true,
+      spaceId: true,
+      status: true,
+      confirmedAt: true,
+      supersededAt: true,
       items: {
         select: {
           id: true,
           optionId: true,
+          // dual-read 소스: 동결 스냅샷 우선, 없으면 live
           leadTimeDays: true,
           finalQty: true,
           dailyAvgForecast: true,
           safetyStockQty: true,
-        },
-      },
-      productionRuns: {
-        select: {
-          id: true,
-          stockedInAt: true,
-          items: { select: { optionId: true, quantity: true } },
+          confirmedLeadTimeDays: true,
+          confirmedFinalQty: true,
+          confirmedDailyAvgForecast: true,
+          confirmedSafetyStockQty: true,
+          snapshotSource: true,
         },
       },
     },
   })
 
   if (!plan || plan.spaceId !== spaceId) return { ok: false, planId, reason: 'NOT_FOUND' }
-  if (plan.status !== 'FINALIZED') return { ok: false, planId, reason: 'NOT_FINALIZED' }
-
-  // optionId → stockedInAt / finalQty 매핑 (연결 ProductionRun 기준, 최신 stockedInAt 우선)
-  const optionStockedInMap = new Map<string, Date>()
-  const optionFinalQtyMap = new Map<string, number>()
-  for (const run of plan.productionRuns) {
-    if (!run.stockedInAt) continue
-    for (const runItem of run.items) {
-      const existing = optionStockedInMap.get(runItem.optionId)
-      if (!existing || run.stockedInAt > existing) {
-        optionStockedInMap.set(runItem.optionId, run.stockedInAt)
-        optionFinalQtyMap.set(runItem.optionId, runItem.quantity)
-      }
-    }
+  // 확정(FINALIZED) + 미대체 + confirmedAt 존재해야 측정 대상
+  if (plan.status !== 'FINALIZED' || plan.supersededAt || !plan.confirmedAt) {
+    return { ok: false, planId, reason: 'NOT_CONFIRMED' }
   }
 
-  if (optionStockedInMap.size === 0) return { ok: false, planId, reason: 'NO_STOCKED_IN' }
-
+  const anchorDate = plan.confirmedAt
+  const now = Date.now()
   const evaluatedAt = new Date()
 
+  // 옵션별 평가창 경과 여부는 옵션 leadTime마다 다름 — 경과한 옵션만 정산
   const computed = await mapWithConcurrency(plan.items, ACCURACY_CONCURRENCY, async (item) => {
-    const stockedInAt = optionStockedInMap.get(item.optionId)
-    if (!stockedInAt) return null
+    // dual-read: 동결 스냅샷 우선
+    const leadTimeDays = item.confirmedLeadTimeDays ?? item.leadTimeDays
+    const finalQty = item.confirmedFinalQty ?? item.finalQty
+    const dailyAvgForecast = Number(item.confirmedDailyAvgForecast ?? item.dailyAvgForecast)
+    const safetyStockQty = item.confirmedSafetyStockQty ?? item.safetyStockQty
 
-    const finalQty = optionFinalQtyMap.get(item.optionId) ?? item.finalQty
-    const dailyAvgForecast = Number(item.dailyAvgForecast)
+    // 평가창 경과 확인: anchor + leadTime <= now
+    const windowEnd = new Date(anchorDate)
+    windowEnd.setDate(windowEnd.getDate() + leadTimeDays)
+    if (windowEnd.getTime() > now) return null // 아직 미경과 — 건너뜀
 
     const accuracy = await computeAccuracy({
       planId,
       optionId: item.optionId,
       planItemId: item.id,
-      stockedInAt,
-      leadTimeDays: item.leadTimeDays,
+      anchorDate,
+      leadTimeDays,
       finalQty,
       dailyAvgForecast,
-      safetyStockQty: item.safetyStockQty,
+      safetyStockQty,
     })
 
-    const periodEnd = new Date(stockedInAt)
-    periodEnd.setDate(periodEnd.getDate() + item.leadTimeDays)
+    const periodEnd = new Date(anchorDate)
+    periodEnd.setDate(periodEnd.getDate() + leadTimeDays)
 
     const accuracyData = {
       evaluatedAt,
-      periodStart: stockedInAt,
+      periodStart: anchorDate,
       periodEnd,
       actualOutbound: accuracy.actualOutbound,
       forecastOutbound: accuracy.forecastOutbound,
@@ -103,6 +104,8 @@ export async function settlePlanAccuracy(planId: string, spaceId: string): Promi
       bias: accuracy.bias,
       stockoutDays: accuracy.stockoutDays,
       overstockDays: accuracy.overstockDays,
+      validity: 'ACTIVE' as const,
+      evaluationStatus: 'MEASURED' as const,
     }
 
     await prisma.reorderPlanAccuracy.upsert({
@@ -122,25 +125,27 @@ export async function settlePlanAccuracy(planId: string, spaceId: string): Promi
 
   const accuracies = computed.filter((r): r is SettleAccuracyItem => r !== null)
 
-  await prisma.reorderPlan.update({
-    where: { id: planId },
-    data: { status: 'CONSUMED' },
-  })
+  if (accuracies.length === 0) {
+    return { ok: false, planId, reason: 'WINDOW_NOT_ELAPSED' }
+  }
 
+  // plan.status 변경하지 않음 (CONSUMED 폐기 — 신뢰도는 측정값이지 종료 상태 아님)
   return { ok: true, planId, evaluatedAt, accuracies }
 }
 
-// space 내 정산 가능한(stockedIn 있는) FINALIZED 계획을 모두 정산.
+// space 내 정산 가능한 계획을 모두 정산.
+// 조건: FINALIZED + 미대체 + confirmedAt 존재. (평가창 경과·미정산 판정은 옵션 단위로 내부 처리)
 // 계획별 실패는 건너뛰고 나머지를 계속 처리 → bias 학습 루프가 멈추지 않도록.
 export async function settleEligiblePlans(spaceId: string): Promise<SettleResult[]> {
   const eligible = await prisma.reorderPlan.findMany({
     where: {
       spaceId,
       status: 'FINALIZED',
-      productionRuns: { some: { stockedInAt: { not: null } } },
+      supersededAt: null,
+      confirmedAt: { not: null },
     },
     select: { id: true },
-    orderBy: { finalizedAt: 'asc' },
+    orderBy: { confirmedAt: 'asc' },
   })
 
   const results: SettleResult[] = []
@@ -148,7 +153,6 @@ export async function settleEligiblePlans(spaceId: string): Promise<SettleResult
     try {
       results.push(await settlePlanAccuracy(id, spaceId))
     } catch {
-      // 단일 계획 정산 실패가 전체(및 발주 계획 생성)를 막지 않도록 무시
       results.push({ ok: false, planId: id, reason: 'NOT_FOUND' })
     }
   }

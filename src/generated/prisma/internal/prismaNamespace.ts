@@ -8398,10 +8398,14 @@ export const ReorderPlanScalarFieldEnum = {
   createdById: 'createdById',
   productId: 'productId',
   finalizedAt: 'finalizedAt',
+  confirmedAt: 'confirmedAt',
   biasAdjustApplied: 'biasAdjustApplied',
   totalSuggestedQty: 'totalSuggestedQty',
   totalFinalQty: 'totalFinalQty',
   memo: 'memo',
+  supersededAt: 'supersededAt',
+  supersededByPlanId: 'supersededByPlanId',
+  sourcePlanId: 'sourcePlanId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -8427,7 +8431,12 @@ export const ReorderPlanItemScalarFieldEnum = {
   userNote: 'userNote',
   biasAdjustFactor: 'biasAdjustFactor',
   confidenceScore: 'confidenceScore',
-  inputsSnapshot: 'inputsSnapshot'
+  inputsSnapshot: 'inputsSnapshot',
+  confirmedDailyAvgForecast: 'confirmedDailyAvgForecast',
+  confirmedLeadTimeDays: 'confirmedLeadTimeDays',
+  confirmedSafetyStockQty: 'confirmedSafetyStockQty',
+  confirmedFinalQty: 'confirmedFinalQty',
+  snapshotSource: 'snapshotSource'
 } as const
 
 export type ReorderPlanItemScalarFieldEnum = (typeof ReorderPlanItemScalarFieldEnum)[keyof typeof ReorderPlanItemScalarFieldEnum]
@@ -8445,7 +8454,10 @@ export const ReorderPlanAccuracyScalarFieldEnum = {
   wape: 'wape',
   bias: 'bias',
   stockoutDays: 'stockoutDays',
-  overstockDays: 'overstockDays'
+  overstockDays: 'overstockDays',
+  validity: 'validity',
+  evaluationStatus: 'evaluationStatus',
+  biasSourcePlanId: 'biasSourcePlanId'
 } as const
 
 export type ReorderPlanAccuracyScalarFieldEnum = (typeof ReorderPlanAccuracyScalarFieldEnum)[keyof typeof ReorderPlanAccuracyScalarFieldEnum]
@@ -9111,6 +9123,48 @@ export type EnumReorderForecastModelFieldRefInput<$PrismaModel> = FieldRefInputT
  * Reference to a field of type 'ReorderForecastModel[]'
  */
 export type ListEnumReorderForecastModelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderForecastModel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderSnapshotSource'
+ */
+export type EnumReorderSnapshotSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderSnapshotSource'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderSnapshotSource[]'
+ */
+export type ListEnumReorderSnapshotSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderSnapshotSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderAccuracyValidity'
+ */
+export type EnumReorderAccuracyValidityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderAccuracyValidity'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderAccuracyValidity[]'
+ */
+export type ListEnumReorderAccuracyValidityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderAccuracyValidity[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderEvaluationStatus'
+ */
+export type EnumReorderEvaluationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderEvaluationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReorderEvaluationStatus[]'
+ */
+export type ListEnumReorderEvaluationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReorderEvaluationStatus[]'>
     
 
 /**

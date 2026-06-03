@@ -4,13 +4,15 @@ import { useState } from 'react'
 import { InfoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import type { ReorderPlanItem } from './reorder-plan-types'
+import type { ReorderPlanItem, PlanDetailAccuracy } from './reorder-plan-types'
 
 type Props = {
   item: Pick<ReorderPlanItem, 'rationale' | 'inputsSnapshot' | 'forecastModel' | 'confidenceScore'>
+  // 옵션별 예측 검증 결과 (정산 완료 시) — 없으면 미표시
+  accuracy?: PlanDetailAccuracy
 }
 
-export function ReorderPlanRationalePopover({ item }: Props) {
+export function ReorderPlanRationalePopover({ item, accuracy }: Props) {
   const [showDebug, setShowDebug] = useState(false)
 
   return (
@@ -26,6 +28,30 @@ export function ReorderPlanRationalePopover({ item }: Props) {
           <p className="text-xs font-semibold text-muted-foreground">예측 근거</p>
           <p className="text-sm leading-relaxed">{item.rationale ?? '근거 정보가 없습니다.'}</p>
         </div>
+
+        {accuracy && (
+          <div className="space-y-1.5 rounded-md border border-emerald-200 bg-emerald-50/50 px-2.5 py-2">
+            <p className="text-xs font-semibold text-emerald-800">예측 검증 결과</p>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">정확도 (WAPE)</span>
+              <span className="font-medium tabular-nums">{(accuracy.wape * 100).toFixed(1)}%</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">편향 (Bias)</span>
+              <span className="font-medium tabular-nums">
+                {accuracy.bias > 0 ? '+' : ''}
+                {(accuracy.bias * 100).toFixed(1)}%{' '}
+                {accuracy.bias > 0 ? '(과예측)' : accuracy.bias < 0 ? '(과소예측)' : ''}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">품절 / 과잉</span>
+              <span className="font-medium tabular-nums">
+                {accuracy.stockoutDays}일 / {accuracy.overstockDays}일
+              </span>
+            </div>
+          </div>
+        )}
 
         {item.confidenceScore !== null && item.confidenceScore !== undefined && (
           <div className="flex items-center justify-between rounded-md bg-muted/40 px-2 py-1.5">

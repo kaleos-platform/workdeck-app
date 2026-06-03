@@ -37,6 +37,10 @@ export type ReorderPlanItemAvgAggregateOutputType = {
   roundUnit: number | null
   biasAdjustFactor: runtime.Decimal | null
   confidenceScore: runtime.Decimal | null
+  confirmedDailyAvgForecast: runtime.Decimal | null
+  confirmedLeadTimeDays: number | null
+  confirmedSafetyStockQty: number | null
+  confirmedFinalQty: number | null
 }
 
 export type ReorderPlanItemSumAggregateOutputType = {
@@ -50,6 +54,10 @@ export type ReorderPlanItemSumAggregateOutputType = {
   roundUnit: number | null
   biasAdjustFactor: runtime.Decimal | null
   confidenceScore: runtime.Decimal | null
+  confirmedDailyAvgForecast: runtime.Decimal | null
+  confirmedLeadTimeDays: number | null
+  confirmedSafetyStockQty: number | null
+  confirmedFinalQty: number | null
 }
 
 export type ReorderPlanItemMinAggregateOutputType = {
@@ -70,6 +78,11 @@ export type ReorderPlanItemMinAggregateOutputType = {
   userNote: string | null
   biasAdjustFactor: runtime.Decimal | null
   confidenceScore: runtime.Decimal | null
+  confirmedDailyAvgForecast: runtime.Decimal | null
+  confirmedLeadTimeDays: number | null
+  confirmedSafetyStockQty: number | null
+  confirmedFinalQty: number | null
+  snapshotSource: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemMaxAggregateOutputType = {
@@ -90,6 +103,11 @@ export type ReorderPlanItemMaxAggregateOutputType = {
   userNote: string | null
   biasAdjustFactor: runtime.Decimal | null
   confidenceScore: runtime.Decimal | null
+  confirmedDailyAvgForecast: runtime.Decimal | null
+  confirmedLeadTimeDays: number | null
+  confirmedSafetyStockQty: number | null
+  confirmedFinalQty: number | null
+  snapshotSource: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCountAggregateOutputType = {
@@ -111,6 +129,11 @@ export type ReorderPlanItemCountAggregateOutputType = {
   biasAdjustFactor: number
   confidenceScore: number
   inputsSnapshot: number
+  confirmedDailyAvgForecast: number
+  confirmedLeadTimeDays: number
+  confirmedSafetyStockQty: number
+  confirmedFinalQty: number
+  snapshotSource: number
   _all: number
 }
 
@@ -126,6 +149,10 @@ export type ReorderPlanItemAvgAggregateInputType = {
   roundUnit?: true
   biasAdjustFactor?: true
   confidenceScore?: true
+  confirmedDailyAvgForecast?: true
+  confirmedLeadTimeDays?: true
+  confirmedSafetyStockQty?: true
+  confirmedFinalQty?: true
 }
 
 export type ReorderPlanItemSumAggregateInputType = {
@@ -139,6 +166,10 @@ export type ReorderPlanItemSumAggregateInputType = {
   roundUnit?: true
   biasAdjustFactor?: true
   confidenceScore?: true
+  confirmedDailyAvgForecast?: true
+  confirmedLeadTimeDays?: true
+  confirmedSafetyStockQty?: true
+  confirmedFinalQty?: true
 }
 
 export type ReorderPlanItemMinAggregateInputType = {
@@ -159,6 +190,11 @@ export type ReorderPlanItemMinAggregateInputType = {
   userNote?: true
   biasAdjustFactor?: true
   confidenceScore?: true
+  confirmedDailyAvgForecast?: true
+  confirmedLeadTimeDays?: true
+  confirmedSafetyStockQty?: true
+  confirmedFinalQty?: true
+  snapshotSource?: true
 }
 
 export type ReorderPlanItemMaxAggregateInputType = {
@@ -179,6 +215,11 @@ export type ReorderPlanItemMaxAggregateInputType = {
   userNote?: true
   biasAdjustFactor?: true
   confidenceScore?: true
+  confirmedDailyAvgForecast?: true
+  confirmedLeadTimeDays?: true
+  confirmedSafetyStockQty?: true
+  confirmedFinalQty?: true
+  snapshotSource?: true
 }
 
 export type ReorderPlanItemCountAggregateInputType = {
@@ -200,6 +241,11 @@ export type ReorderPlanItemCountAggregateInputType = {
   biasAdjustFactor?: true
   confidenceScore?: true
   inputsSnapshot?: true
+  confirmedDailyAvgForecast?: true
+  confirmedLeadTimeDays?: true
+  confirmedSafetyStockQty?: true
+  confirmedFinalQty?: true
+  snapshotSource?: true
   _all?: true
 }
 
@@ -308,6 +354,11 @@ export type ReorderPlanItemGroupByOutputType = {
   biasAdjustFactor: runtime.Decimal
   confidenceScore: runtime.Decimal | null
   inputsSnapshot: runtime.JsonValue
+  confirmedDailyAvgForecast: runtime.Decimal | null
+  confirmedLeadTimeDays: number | null
+  confirmedSafetyStockQty: number | null
+  confirmedFinalQty: number | null
+  snapshotSource: $Enums.ReorderSnapshotSource | null
   _count: ReorderPlanItemCountAggregateOutputType | null
   _avg: ReorderPlanItemAvgAggregateOutputType | null
   _sum: ReorderPlanItemSumAggregateOutputType | null
@@ -352,6 +403,11 @@ export type ReorderPlanItemWhereInput = {
   biasAdjustFactor?: Prisma.DecimalFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonFilter<"ReorderPlanItem">
+  confirmedDailyAvgForecast?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  confirmedSafetyStockQty?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  confirmedFinalQty?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  snapshotSource?: Prisma.EnumReorderSnapshotSourceNullableFilter<"ReorderPlanItem"> | $Enums.ReorderSnapshotSource | null
   plan?: Prisma.XOR<Prisma.ReorderPlanScalarRelationFilter, Prisma.ReorderPlanWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
@@ -376,6 +432,11 @@ export type ReorderPlanItemOrderByWithRelationInput = {
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrderInput | Prisma.SortOrder
   inputsSnapshot?: Prisma.SortOrder
+  confirmedDailyAvgForecast?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmedLeadTimeDays?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmedSafetyStockQty?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmedFinalQty?: Prisma.SortOrderInput | Prisma.SortOrder
+  snapshotSource?: Prisma.SortOrderInput | Prisma.SortOrder
   plan?: Prisma.ReorderPlanOrderByWithRelationInput
   option?: Prisma.InvProductOptionOrderByWithRelationInput
   product?: Prisma.InvProductOrderByWithRelationInput
@@ -404,6 +465,11 @@ export type ReorderPlanItemWhereUniqueInput = Prisma.AtLeast<{
   biasAdjustFactor?: Prisma.DecimalFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonFilter<"ReorderPlanItem">
+  confirmedDailyAvgForecast?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  confirmedSafetyStockQty?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  confirmedFinalQty?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  snapshotSource?: Prisma.EnumReorderSnapshotSourceNullableFilter<"ReorderPlanItem"> | $Enums.ReorderSnapshotSource | null
   plan?: Prisma.XOR<Prisma.ReorderPlanScalarRelationFilter, Prisma.ReorderPlanWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
@@ -428,6 +494,11 @@ export type ReorderPlanItemOrderByWithAggregationInput = {
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrderInput | Prisma.SortOrder
   inputsSnapshot?: Prisma.SortOrder
+  confirmedDailyAvgForecast?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmedLeadTimeDays?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmedSafetyStockQty?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmedFinalQty?: Prisma.SortOrderInput | Prisma.SortOrder
+  snapshotSource?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ReorderPlanItemCountOrderByAggregateInput
   _avg?: Prisma.ReorderPlanItemAvgOrderByAggregateInput
   _max?: Prisma.ReorderPlanItemMaxOrderByAggregateInput
@@ -457,6 +528,11 @@ export type ReorderPlanItemScalarWhereWithAggregatesInput = {
   biasAdjustFactor?: Prisma.DecimalWithAggregatesFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.DecimalNullableWithAggregatesFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonWithAggregatesFilter<"ReorderPlanItem">
+  confirmedDailyAvgForecast?: Prisma.DecimalNullableWithAggregatesFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.IntNullableWithAggregatesFilter<"ReorderPlanItem"> | number | null
+  confirmedSafetyStockQty?: Prisma.IntNullableWithAggregatesFilter<"ReorderPlanItem"> | number | null
+  confirmedFinalQty?: Prisma.IntNullableWithAggregatesFilter<"ReorderPlanItem"> | number | null
+  snapshotSource?: Prisma.EnumReorderSnapshotSourceNullableWithAggregatesFilter<"ReorderPlanItem"> | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCreateInput = {
@@ -475,6 +551,11 @@ export type ReorderPlanItemCreateInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
   plan: Prisma.ReorderPlanCreateNestedOneWithoutItemsInput
   option: Prisma.InvProductOptionCreateNestedOneWithoutReorderPlanItemsInput
   product: Prisma.InvProductCreateNestedOneWithoutReorderPlanItemsInput
@@ -499,6 +580,11 @@ export type ReorderPlanItemUncheckedCreateInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUpdateInput = {
@@ -517,6 +603,11 @@ export type ReorderPlanItemUpdateInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
   plan?: Prisma.ReorderPlanUpdateOneRequiredWithoutItemsNestedInput
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutReorderPlanItemsNestedInput
   product?: Prisma.InvProductUpdateOneRequiredWithoutReorderPlanItemsNestedInput
@@ -541,6 +632,11 @@ export type ReorderPlanItemUncheckedUpdateInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCreateManyInput = {
@@ -562,6 +658,11 @@ export type ReorderPlanItemCreateManyInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUpdateManyMutationInput = {
@@ -580,6 +681,11 @@ export type ReorderPlanItemUpdateManyMutationInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUncheckedUpdateManyInput = {
@@ -601,6 +707,11 @@ export type ReorderPlanItemUncheckedUpdateManyInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemListRelationFilter = {
@@ -637,6 +748,11 @@ export type ReorderPlanItemCountOrderByAggregateInput = {
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrder
   inputsSnapshot?: Prisma.SortOrder
+  confirmedDailyAvgForecast?: Prisma.SortOrder
+  confirmedLeadTimeDays?: Prisma.SortOrder
+  confirmedSafetyStockQty?: Prisma.SortOrder
+  confirmedFinalQty?: Prisma.SortOrder
+  snapshotSource?: Prisma.SortOrder
 }
 
 export type ReorderPlanItemAvgOrderByAggregateInput = {
@@ -650,6 +766,10 @@ export type ReorderPlanItemAvgOrderByAggregateInput = {
   roundUnit?: Prisma.SortOrder
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrder
+  confirmedDailyAvgForecast?: Prisma.SortOrder
+  confirmedLeadTimeDays?: Prisma.SortOrder
+  confirmedSafetyStockQty?: Prisma.SortOrder
+  confirmedFinalQty?: Prisma.SortOrder
 }
 
 export type ReorderPlanItemMaxOrderByAggregateInput = {
@@ -670,6 +790,11 @@ export type ReorderPlanItemMaxOrderByAggregateInput = {
   userNote?: Prisma.SortOrder
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrder
+  confirmedDailyAvgForecast?: Prisma.SortOrder
+  confirmedLeadTimeDays?: Prisma.SortOrder
+  confirmedSafetyStockQty?: Prisma.SortOrder
+  confirmedFinalQty?: Prisma.SortOrder
+  snapshotSource?: Prisma.SortOrder
 }
 
 export type ReorderPlanItemMinOrderByAggregateInput = {
@@ -690,6 +815,11 @@ export type ReorderPlanItemMinOrderByAggregateInput = {
   userNote?: Prisma.SortOrder
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrder
+  confirmedDailyAvgForecast?: Prisma.SortOrder
+  confirmedLeadTimeDays?: Prisma.SortOrder
+  confirmedSafetyStockQty?: Prisma.SortOrder
+  confirmedFinalQty?: Prisma.SortOrder
+  snapshotSource?: Prisma.SortOrder
 }
 
 export type ReorderPlanItemSumOrderByAggregateInput = {
@@ -703,6 +833,10 @@ export type ReorderPlanItemSumOrderByAggregateInput = {
   roundUnit?: Prisma.SortOrder
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrder
+  confirmedDailyAvgForecast?: Prisma.SortOrder
+  confirmedLeadTimeDays?: Prisma.SortOrder
+  confirmedSafetyStockQty?: Prisma.SortOrder
+  confirmedFinalQty?: Prisma.SortOrder
 }
 
 export type ReorderPlanItemCreateNestedManyWithoutProductInput = {
@@ -835,6 +969,10 @@ export type EnumReorderForecastModelFieldUpdateOperationsInput = {
   set?: $Enums.ReorderForecastModel
 }
 
+export type NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput = {
+  set?: $Enums.ReorderSnapshotSource | null
+}
+
 export type ReorderPlanItemCreateWithoutProductInput = {
   id?: string
   currentStock: number
@@ -851,6 +989,11 @@ export type ReorderPlanItemCreateWithoutProductInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
   plan: Prisma.ReorderPlanCreateNestedOneWithoutItemsInput
   option: Prisma.InvProductOptionCreateNestedOneWithoutReorderPlanItemsInput
 }
@@ -873,6 +1016,11 @@ export type ReorderPlanItemUncheckedCreateWithoutProductInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCreateOrConnectWithoutProductInput = {
@@ -923,6 +1071,11 @@ export type ReorderPlanItemScalarWhereInput = {
   biasAdjustFactor?: Prisma.DecimalFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonFilter<"ReorderPlanItem">
+  confirmedDailyAvgForecast?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  confirmedSafetyStockQty?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  confirmedFinalQty?: Prisma.IntNullableFilter<"ReorderPlanItem"> | number | null
+  snapshotSource?: Prisma.EnumReorderSnapshotSourceNullableFilter<"ReorderPlanItem"> | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCreateWithoutOptionInput = {
@@ -941,6 +1094,11 @@ export type ReorderPlanItemCreateWithoutOptionInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
   plan: Prisma.ReorderPlanCreateNestedOneWithoutItemsInput
   product: Prisma.InvProductCreateNestedOneWithoutReorderPlanItemsInput
 }
@@ -963,6 +1121,11 @@ export type ReorderPlanItemUncheckedCreateWithoutOptionInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCreateOrConnectWithoutOptionInput = {
@@ -1007,6 +1170,11 @@ export type ReorderPlanItemCreateWithoutPlanInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
   option: Prisma.InvProductOptionCreateNestedOneWithoutReorderPlanItemsInput
   product: Prisma.InvProductCreateNestedOneWithoutReorderPlanItemsInput
 }
@@ -1029,6 +1197,11 @@ export type ReorderPlanItemUncheckedCreateWithoutPlanInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCreateOrConnectWithoutPlanInput = {
@@ -1075,6 +1248,11 @@ export type ReorderPlanItemCreateManyProductInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUpdateWithoutProductInput = {
@@ -1093,6 +1271,11 @@ export type ReorderPlanItemUpdateWithoutProductInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
   plan?: Prisma.ReorderPlanUpdateOneRequiredWithoutItemsNestedInput
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutReorderPlanItemsNestedInput
 }
@@ -1115,6 +1298,11 @@ export type ReorderPlanItemUncheckedUpdateWithoutProductInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUncheckedUpdateManyWithoutProductInput = {
@@ -1135,6 +1323,11 @@ export type ReorderPlanItemUncheckedUpdateManyWithoutProductInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCreateManyOptionInput = {
@@ -1155,6 +1348,11 @@ export type ReorderPlanItemCreateManyOptionInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUpdateWithoutOptionInput = {
@@ -1173,6 +1371,11 @@ export type ReorderPlanItemUpdateWithoutOptionInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
   plan?: Prisma.ReorderPlanUpdateOneRequiredWithoutItemsNestedInput
   product?: Prisma.InvProductUpdateOneRequiredWithoutReorderPlanItemsNestedInput
 }
@@ -1195,6 +1398,11 @@ export type ReorderPlanItemUncheckedUpdateWithoutOptionInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUncheckedUpdateManyWithoutOptionInput = {
@@ -1215,6 +1423,11 @@ export type ReorderPlanItemUncheckedUpdateManyWithoutOptionInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemCreateManyPlanInput = {
@@ -1235,6 +1448,11 @@ export type ReorderPlanItemCreateManyPlanInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: number | null
+  confirmedSafetyStockQty?: number | null
+  confirmedFinalQty?: number | null
+  snapshotSource?: $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUpdateWithoutPlanInput = {
@@ -1253,6 +1471,11 @@ export type ReorderPlanItemUpdateWithoutPlanInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutReorderPlanItemsNestedInput
   product?: Prisma.InvProductUpdateOneRequiredWithoutReorderPlanItemsNestedInput
 }
@@ -1275,6 +1498,11 @@ export type ReorderPlanItemUncheckedUpdateWithoutPlanInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 export type ReorderPlanItemUncheckedUpdateManyWithoutPlanInput = {
@@ -1295,6 +1523,11 @@ export type ReorderPlanItemUncheckedUpdateManyWithoutPlanInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  confirmedLeadTimeDays?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedSafetyStockQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmedFinalQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotSource?: Prisma.NullableEnumReorderSnapshotSourceFieldUpdateOperationsInput | $Enums.ReorderSnapshotSource | null
 }
 
 
@@ -1318,6 +1551,11 @@ export type ReorderPlanItemSelect<ExtArgs extends runtime.Types.Extensions.Inter
   biasAdjustFactor?: boolean
   confidenceScore?: boolean
   inputsSnapshot?: boolean
+  confirmedDailyAvgForecast?: boolean
+  confirmedLeadTimeDays?: boolean
+  confirmedSafetyStockQty?: boolean
+  confirmedFinalQty?: boolean
+  snapshotSource?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
@@ -1342,6 +1580,11 @@ export type ReorderPlanItemSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   biasAdjustFactor?: boolean
   confidenceScore?: boolean
   inputsSnapshot?: boolean
+  confirmedDailyAvgForecast?: boolean
+  confirmedLeadTimeDays?: boolean
+  confirmedSafetyStockQty?: boolean
+  confirmedFinalQty?: boolean
+  snapshotSource?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
@@ -1366,6 +1609,11 @@ export type ReorderPlanItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   biasAdjustFactor?: boolean
   confidenceScore?: boolean
   inputsSnapshot?: boolean
+  confirmedDailyAvgForecast?: boolean
+  confirmedLeadTimeDays?: boolean
+  confirmedSafetyStockQty?: boolean
+  confirmedFinalQty?: boolean
+  snapshotSource?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
@@ -1390,9 +1638,14 @@ export type ReorderPlanItemSelectScalar = {
   biasAdjustFactor?: boolean
   confidenceScore?: boolean
   inputsSnapshot?: boolean
+  confirmedDailyAvgForecast?: boolean
+  confirmedLeadTimeDays?: boolean
+  confirmedSafetyStockQty?: boolean
+  confirmedFinalQty?: boolean
+  snapshotSource?: boolean
 }
 
-export type ReorderPlanItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "optionId" | "productId" | "currentStock" | "dailyAvgForecast" | "forecastModel" | "leadTimeDays" | "safetyStockQty" | "suggestedQty" | "roundedSuggestedQty" | "finalQty" | "roundUnit" | "rationale" | "userNote" | "biasAdjustFactor" | "confidenceScore" | "inputsSnapshot", ExtArgs["result"]["reorderPlanItem"]>
+export type ReorderPlanItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "optionId" | "productId" | "currentStock" | "dailyAvgForecast" | "forecastModel" | "leadTimeDays" | "safetyStockQty" | "suggestedQty" | "roundedSuggestedQty" | "finalQty" | "roundUnit" | "rationale" | "userNote" | "biasAdjustFactor" | "confidenceScore" | "inputsSnapshot" | "confirmedDailyAvgForecast" | "confirmedLeadTimeDays" | "confirmedSafetyStockQty" | "confirmedFinalQty" | "snapshotSource", ExtArgs["result"]["reorderPlanItem"]>
 export type ReorderPlanItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -1435,6 +1688,11 @@ export type $ReorderPlanItemPayload<ExtArgs extends runtime.Types.Extensions.Int
     biasAdjustFactor: runtime.Decimal
     confidenceScore: runtime.Decimal | null
     inputsSnapshot: runtime.JsonValue
+    confirmedDailyAvgForecast: runtime.Decimal | null
+    confirmedLeadTimeDays: number | null
+    confirmedSafetyStockQty: number | null
+    confirmedFinalQty: number | null
+    snapshotSource: $Enums.ReorderSnapshotSource | null
   }, ExtArgs["result"]["reorderPlanItem"]>
   composites: {}
 }
@@ -1879,6 +2137,11 @@ export interface ReorderPlanItemFieldRefs {
   readonly biasAdjustFactor: Prisma.FieldRef<"ReorderPlanItem", 'Decimal'>
   readonly confidenceScore: Prisma.FieldRef<"ReorderPlanItem", 'Decimal'>
   readonly inputsSnapshot: Prisma.FieldRef<"ReorderPlanItem", 'Json'>
+  readonly confirmedDailyAvgForecast: Prisma.FieldRef<"ReorderPlanItem", 'Decimal'>
+  readonly confirmedLeadTimeDays: Prisma.FieldRef<"ReorderPlanItem", 'Int'>
+  readonly confirmedSafetyStockQty: Prisma.FieldRef<"ReorderPlanItem", 'Int'>
+  readonly confirmedFinalQty: Prisma.FieldRef<"ReorderPlanItem", 'Int'>
+  readonly snapshotSource: Prisma.FieldRef<"ReorderPlanItem", 'ReorderSnapshotSource'>
 }
     
 

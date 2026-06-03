@@ -218,16 +218,38 @@ function toDateInput(iso: string) {
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
+// 발주 계획에서 생산차수 생성 시 옵션·수량 자동 입력용
+export type PrefillItem = {
+  optionId: string
+  optionName: string
+  sku: string | null
+  productId: string
+  productName: string
+  brandName: string | null
+  quantity: number
+}
+
 type Props = {
   open: boolean
   onOpenChange: (v: boolean) => void
   runId?: string
   onSaved: () => void
+  // 신규 모드에서 옵션·수량 프리필 (발주 계획 연계)
+  prefillItems?: PrefillItem[]
+  // 연계 발주 계획 id (POST 시 링크)
+  reorderPlanId?: string
 }
 
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
-export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: Props) {
+export function ProductionRunFormDialog({
+  open,
+  onOpenChange,
+  runId,
+  onSaved,
+  prefillItems,
+  reorderPlanId,
+}: Props) {
   const isEdit = !!runId
 
   // ── 기본 정보
@@ -356,6 +378,21 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
     } else {
       // 신규 모드
       resetForm()
+      // 발주 계획 연계 프리필 — open transition에서만 seed (deps 제외, 편집 중 재seed 방지)
+      if (prefillItems && prefillItems.length > 0) {
+        setOptionItems(
+          prefillItems.map((p) => ({
+            optionId: p.optionId,
+            optionName: p.optionName,
+            sku: p.sku,
+            productId: p.productId,
+            productName: p.productName,
+            brandName: p.brandName,
+            totalStock: 0,
+            quantity: p.quantity,
+          }))
+        )
+      }
       // 차수 번호 자동 채번
       let cancelled = false
       const loadNextRunNo = async () => {
@@ -514,6 +551,8 @@ export function ProductionRunFormDialog({ open, onOpenChange, runId, onSaved }: 
       costMode,
       memo: memo.trim() || undefined,
       items: validItems.map((it) => ({ optionId: it.optionId, quantity: it.quantity })),
+      // 발주 계획 연계 (신규 모드만)
+      ...(!isEdit && reorderPlanId ? { reorderPlanId } : {}),
     }
 
     // 편집 모드: 단계별 상태/일자 (재고 입고는 트리거하지 않음 — 메타데이터만)

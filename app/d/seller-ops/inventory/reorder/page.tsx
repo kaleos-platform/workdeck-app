@@ -103,7 +103,7 @@ export default function ReorderPage() {
             계획 목록으로
           </Button>
         </div>
-        <ReorderPlanCreate />
+        <ReorderPlanCreate autoOpen onCancel={() => setCreating(false)} />
       </div>
     )
   }
@@ -112,7 +112,7 @@ export default function ReorderPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">발주 예측</h1>
+          <h1 className="text-2xl font-bold tracking-tight">발주 계획</h1>
           <p className="text-sm text-muted-foreground">
             진행한 발주 계획 이력을 확인하고 상품 단위로 새 계획을 생성합니다
           </p>

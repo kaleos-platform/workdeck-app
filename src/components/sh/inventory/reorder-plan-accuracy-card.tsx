@@ -3,7 +3,13 @@
 import { TrendingDownIcon, TrendingUpIcon, AlertTriangleIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import type { ReorderPlanAccuracy } from './reorder-plan-types'
+// 집계에 필요한 최소 필드만 — 목록(ReorderPlanAccuracy)·상세(PlanDetailAccuracy) 양쪽 호환
+type AccuracyLike = {
+  wape: number
+  bias: number
+  stockoutDays: number
+  overstockDays: number
+}
 
 type AggregatedAccuracy = {
   wape: number
@@ -16,7 +22,7 @@ type AggregatedAccuracy = {
 }
 
 function aggregateAccuracy(
-  accuracies: ReorderPlanAccuracy[],
+  accuracies: AccuracyLike[],
   planNo: string,
   biasAdjustApplied: Record<string, number> | null
 ): AggregatedAccuracy | null {
@@ -43,12 +49,19 @@ function wapeBadgeVariant(wape: number) {
 }
 
 type Props = {
-  accuracies: ReorderPlanAccuracy[]
+  accuracies: AccuracyLike[]
   planNo: string
   biasAdjustApplied: Record<string, number> | null
+  // 문맥별 제목 — 목록(기본 "직전 계획 적중률") vs 상세("이 계획 예측 검증 결과")
+  titleLabel?: string
 }
 
-export function ReorderPlanAccuracyCard({ accuracies, planNo, biasAdjustApplied }: Props) {
+export function ReorderPlanAccuracyCard({
+  accuracies,
+  planNo,
+  biasAdjustApplied,
+  titleLabel = '직전 계획 적중률',
+}: Props) {
   const agg = aggregateAccuracy(accuracies, planNo, biasAdjustApplied)
   if (!agg) return null
 
@@ -65,7 +78,7 @@ export function ReorderPlanAccuracyCard({ accuracies, planNo, biasAdjustApplied 
       <CardHeader className="pt-4 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-semibold">
           <TrendingDownIcon className="h-4 w-4 text-muted-foreground" />
-          직전 계획 적중률 — {agg.planNo}
+          {titleLabel} — {agg.planNo}
           <span className="text-xs font-normal text-muted-foreground">
             ({agg.optionCount}개 옵션 평균)
           </span>

@@ -90,6 +90,33 @@ export const ReorderPlanStatus = {
 export type ReorderPlanStatus = (typeof ReorderPlanStatus)[keyof typeof ReorderPlanStatus]
 
 
+export const ReorderSnapshotSource = {
+  LIVE: 'LIVE',
+  BACKFILLED: 'BACKFILLED'
+} as const
+
+export type ReorderSnapshotSource = (typeof ReorderSnapshotSource)[keyof typeof ReorderSnapshotSource]
+
+
+export const ReorderAccuracyValidity = {
+  ACTIVE: 'ACTIVE',
+  INVALIDATED: 'INVALIDATED',
+  SUPERSEDED: 'SUPERSEDED'
+} as const
+
+export type ReorderAccuracyValidity = (typeof ReorderAccuracyValidity)[keyof typeof ReorderAccuracyValidity]
+
+
+export const ReorderEvaluationStatus = {
+  PENDING: 'PENDING',
+  ELIGIBLE: 'ELIGIBLE',
+  MEASURED: 'MEASURED',
+  INVALIDATED: 'INVALIDATED'
+} as const
+
+export type ReorderEvaluationStatus = (typeof ReorderEvaluationStatus)[keyof typeof ReorderEvaluationStatus]
+
+
 export const ReorderForecastModel = {
   SMA: 'SMA',
   WMA: 'WMA',

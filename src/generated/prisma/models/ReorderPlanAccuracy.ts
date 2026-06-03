@@ -57,6 +57,9 @@ export type ReorderPlanAccuracyMinAggregateOutputType = {
   bias: runtime.Decimal | null
   stockoutDays: number | null
   overstockDays: number | null
+  validity: $Enums.ReorderAccuracyValidity | null
+  evaluationStatus: $Enums.ReorderEvaluationStatus | null
+  biasSourcePlanId: string | null
 }
 
 export type ReorderPlanAccuracyMaxAggregateOutputType = {
@@ -72,6 +75,9 @@ export type ReorderPlanAccuracyMaxAggregateOutputType = {
   bias: runtime.Decimal | null
   stockoutDays: number | null
   overstockDays: number | null
+  validity: $Enums.ReorderAccuracyValidity | null
+  evaluationStatus: $Enums.ReorderEvaluationStatus | null
+  biasSourcePlanId: string | null
 }
 
 export type ReorderPlanAccuracyCountAggregateOutputType = {
@@ -87,6 +93,9 @@ export type ReorderPlanAccuracyCountAggregateOutputType = {
   bias: number
   stockoutDays: number
   overstockDays: number
+  validity: number
+  evaluationStatus: number
+  biasSourcePlanId: number
   _all: number
 }
 
@@ -122,6 +131,9 @@ export type ReorderPlanAccuracyMinAggregateInputType = {
   bias?: true
   stockoutDays?: true
   overstockDays?: true
+  validity?: true
+  evaluationStatus?: true
+  biasSourcePlanId?: true
 }
 
 export type ReorderPlanAccuracyMaxAggregateInputType = {
@@ -137,6 +149,9 @@ export type ReorderPlanAccuracyMaxAggregateInputType = {
   bias?: true
   stockoutDays?: true
   overstockDays?: true
+  validity?: true
+  evaluationStatus?: true
+  biasSourcePlanId?: true
 }
 
 export type ReorderPlanAccuracyCountAggregateInputType = {
@@ -152,6 +167,9 @@ export type ReorderPlanAccuracyCountAggregateInputType = {
   bias?: true
   stockoutDays?: true
   overstockDays?: true
+  validity?: true
+  evaluationStatus?: true
+  biasSourcePlanId?: true
   _all?: true
 }
 
@@ -254,6 +272,9 @@ export type ReorderPlanAccuracyGroupByOutputType = {
   bias: runtime.Decimal
   stockoutDays: number
   overstockDays: number
+  validity: $Enums.ReorderAccuracyValidity
+  evaluationStatus: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId: string | null
   _count: ReorderPlanAccuracyCountAggregateOutputType | null
   _avg: ReorderPlanAccuracyAvgAggregateOutputType | null
   _sum: ReorderPlanAccuracySumAggregateOutputType | null
@@ -292,6 +313,9 @@ export type ReorderPlanAccuracyWhereInput = {
   bias?: Prisma.DecimalFilter<"ReorderPlanAccuracy"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFilter<"ReorderPlanAccuracy"> | number
   overstockDays?: Prisma.IntFilter<"ReorderPlanAccuracy"> | number
+  validity?: Prisma.EnumReorderAccuracyValidityFilter<"ReorderPlanAccuracy"> | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFilter<"ReorderPlanAccuracy"> | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.StringNullableFilter<"ReorderPlanAccuracy"> | string | null
   plan?: Prisma.XOR<Prisma.ReorderPlanScalarRelationFilter, Prisma.ReorderPlanWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
 }
@@ -309,6 +333,9 @@ export type ReorderPlanAccuracyOrderByWithRelationInput = {
   bias?: Prisma.SortOrder
   stockoutDays?: Prisma.SortOrder
   overstockDays?: Prisma.SortOrder
+  validity?: Prisma.SortOrder
+  evaluationStatus?: Prisma.SortOrder
+  biasSourcePlanId?: Prisma.SortOrderInput | Prisma.SortOrder
   plan?: Prisma.ReorderPlanOrderByWithRelationInput
   option?: Prisma.InvProductOptionOrderByWithRelationInput
 }
@@ -330,6 +357,9 @@ export type ReorderPlanAccuracyWhereUniqueInput = Prisma.AtLeast<{
   bias?: Prisma.DecimalFilter<"ReorderPlanAccuracy"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFilter<"ReorderPlanAccuracy"> | number
   overstockDays?: Prisma.IntFilter<"ReorderPlanAccuracy"> | number
+  validity?: Prisma.EnumReorderAccuracyValidityFilter<"ReorderPlanAccuracy"> | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFilter<"ReorderPlanAccuracy"> | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.StringNullableFilter<"ReorderPlanAccuracy"> | string | null
   plan?: Prisma.XOR<Prisma.ReorderPlanScalarRelationFilter, Prisma.ReorderPlanWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
 }, "id" | "planId_optionId">
@@ -347,6 +377,9 @@ export type ReorderPlanAccuracyOrderByWithAggregationInput = {
   bias?: Prisma.SortOrder
   stockoutDays?: Prisma.SortOrder
   overstockDays?: Prisma.SortOrder
+  validity?: Prisma.SortOrder
+  evaluationStatus?: Prisma.SortOrder
+  biasSourcePlanId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ReorderPlanAccuracyCountOrderByAggregateInput
   _avg?: Prisma.ReorderPlanAccuracyAvgOrderByAggregateInput
   _max?: Prisma.ReorderPlanAccuracyMaxOrderByAggregateInput
@@ -370,6 +403,9 @@ export type ReorderPlanAccuracyScalarWhereWithAggregatesInput = {
   bias?: Prisma.DecimalWithAggregatesFilter<"ReorderPlanAccuracy"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntWithAggregatesFilter<"ReorderPlanAccuracy"> | number
   overstockDays?: Prisma.IntWithAggregatesFilter<"ReorderPlanAccuracy"> | number
+  validity?: Prisma.EnumReorderAccuracyValidityWithAggregatesFilter<"ReorderPlanAccuracy"> | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusWithAggregatesFilter<"ReorderPlanAccuracy"> | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.StringNullableWithAggregatesFilter<"ReorderPlanAccuracy"> | string | null
 }
 
 export type ReorderPlanAccuracyCreateInput = {
@@ -383,6 +419,9 @@ export type ReorderPlanAccuracyCreateInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
   plan: Prisma.ReorderPlanCreateNestedOneWithoutAccuraciesInput
   option: Prisma.InvProductOptionCreateNestedOneWithoutReorderAccuraciesInput
 }
@@ -400,6 +439,9 @@ export type ReorderPlanAccuracyUncheckedCreateInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
 }
 
 export type ReorderPlanAccuracyUpdateInput = {
@@ -413,6 +455,9 @@ export type ReorderPlanAccuracyUpdateInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plan?: Prisma.ReorderPlanUpdateOneRequiredWithoutAccuraciesNestedInput
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutReorderAccuraciesNestedInput
 }
@@ -430,6 +475,9 @@ export type ReorderPlanAccuracyUncheckedUpdateInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ReorderPlanAccuracyCreateManyInput = {
@@ -445,6 +493,9 @@ export type ReorderPlanAccuracyCreateManyInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
 }
 
 export type ReorderPlanAccuracyUpdateManyMutationInput = {
@@ -458,6 +509,9 @@ export type ReorderPlanAccuracyUpdateManyMutationInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ReorderPlanAccuracyUncheckedUpdateManyInput = {
@@ -473,6 +527,9 @@ export type ReorderPlanAccuracyUncheckedUpdateManyInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ReorderPlanAccuracyListRelationFilter = {
@@ -503,6 +560,9 @@ export type ReorderPlanAccuracyCountOrderByAggregateInput = {
   bias?: Prisma.SortOrder
   stockoutDays?: Prisma.SortOrder
   overstockDays?: Prisma.SortOrder
+  validity?: Prisma.SortOrder
+  evaluationStatus?: Prisma.SortOrder
+  biasSourcePlanId?: Prisma.SortOrder
 }
 
 export type ReorderPlanAccuracyAvgOrderByAggregateInput = {
@@ -527,6 +587,9 @@ export type ReorderPlanAccuracyMaxOrderByAggregateInput = {
   bias?: Prisma.SortOrder
   stockoutDays?: Prisma.SortOrder
   overstockDays?: Prisma.SortOrder
+  validity?: Prisma.SortOrder
+  evaluationStatus?: Prisma.SortOrder
+  biasSourcePlanId?: Prisma.SortOrder
 }
 
 export type ReorderPlanAccuracyMinOrderByAggregateInput = {
@@ -542,6 +605,9 @@ export type ReorderPlanAccuracyMinOrderByAggregateInput = {
   bias?: Prisma.SortOrder
   stockoutDays?: Prisma.SortOrder
   overstockDays?: Prisma.SortOrder
+  validity?: Prisma.SortOrder
+  evaluationStatus?: Prisma.SortOrder
+  biasSourcePlanId?: Prisma.SortOrder
 }
 
 export type ReorderPlanAccuracySumOrderByAggregateInput = {
@@ -637,6 +703,14 @@ export type ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput = {
   deleteMany?: Prisma.ReorderPlanAccuracyScalarWhereInput | Prisma.ReorderPlanAccuracyScalarWhereInput[]
 }
 
+export type EnumReorderAccuracyValidityFieldUpdateOperationsInput = {
+  set?: $Enums.ReorderAccuracyValidity
+}
+
+export type EnumReorderEvaluationStatusFieldUpdateOperationsInput = {
+  set?: $Enums.ReorderEvaluationStatus
+}
+
 export type ReorderPlanAccuracyCreateWithoutOptionInput = {
   id?: string
   evaluatedAt: Date | string
@@ -648,6 +722,9 @@ export type ReorderPlanAccuracyCreateWithoutOptionInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
   plan: Prisma.ReorderPlanCreateNestedOneWithoutAccuraciesInput
 }
 
@@ -663,6 +740,9 @@ export type ReorderPlanAccuracyUncheckedCreateWithoutOptionInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
 }
 
 export type ReorderPlanAccuracyCreateOrConnectWithoutOptionInput = {
@@ -707,6 +787,9 @@ export type ReorderPlanAccuracyScalarWhereInput = {
   bias?: Prisma.DecimalFilter<"ReorderPlanAccuracy"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFilter<"ReorderPlanAccuracy"> | number
   overstockDays?: Prisma.IntFilter<"ReorderPlanAccuracy"> | number
+  validity?: Prisma.EnumReorderAccuracyValidityFilter<"ReorderPlanAccuracy"> | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFilter<"ReorderPlanAccuracy"> | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.StringNullableFilter<"ReorderPlanAccuracy"> | string | null
 }
 
 export type ReorderPlanAccuracyCreateWithoutPlanInput = {
@@ -720,6 +803,9 @@ export type ReorderPlanAccuracyCreateWithoutPlanInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
   option: Prisma.InvProductOptionCreateNestedOneWithoutReorderAccuraciesInput
 }
 
@@ -735,6 +821,9 @@ export type ReorderPlanAccuracyUncheckedCreateWithoutPlanInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
 }
 
 export type ReorderPlanAccuracyCreateOrConnectWithoutPlanInput = {
@@ -775,6 +864,9 @@ export type ReorderPlanAccuracyCreateManyOptionInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
 }
 
 export type ReorderPlanAccuracyUpdateWithoutOptionInput = {
@@ -788,6 +880,9 @@ export type ReorderPlanAccuracyUpdateWithoutOptionInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plan?: Prisma.ReorderPlanUpdateOneRequiredWithoutAccuraciesNestedInput
 }
 
@@ -803,6 +898,9 @@ export type ReorderPlanAccuracyUncheckedUpdateWithoutOptionInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ReorderPlanAccuracyUncheckedUpdateManyWithoutOptionInput = {
@@ -817,6 +915,9 @@ export type ReorderPlanAccuracyUncheckedUpdateManyWithoutOptionInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ReorderPlanAccuracyCreateManyPlanInput = {
@@ -831,6 +932,9 @@ export type ReorderPlanAccuracyCreateManyPlanInput = {
   bias: runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays: number
   overstockDays: number
+  validity?: $Enums.ReorderAccuracyValidity
+  evaluationStatus?: $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: string | null
 }
 
 export type ReorderPlanAccuracyUpdateWithoutPlanInput = {
@@ -844,6 +948,9 @@ export type ReorderPlanAccuracyUpdateWithoutPlanInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutReorderAccuraciesNestedInput
 }
 
@@ -859,6 +966,9 @@ export type ReorderPlanAccuracyUncheckedUpdateWithoutPlanInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanInput = {
@@ -873,6 +983,9 @@ export type ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanInput = {
   bias?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   stockoutDays?: Prisma.IntFieldUpdateOperationsInput | number
   overstockDays?: Prisma.IntFieldUpdateOperationsInput | number
+  validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
+  evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
+  biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -890,6 +1003,9 @@ export type ReorderPlanAccuracySelect<ExtArgs extends runtime.Types.Extensions.I
   bias?: boolean
   stockoutDays?: boolean
   overstockDays?: boolean
+  validity?: boolean
+  evaluationStatus?: boolean
+  biasSourcePlanId?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlanAccuracy"]>
@@ -907,6 +1023,9 @@ export type ReorderPlanAccuracySelectCreateManyAndReturn<ExtArgs extends runtime
   bias?: boolean
   stockoutDays?: boolean
   overstockDays?: boolean
+  validity?: boolean
+  evaluationStatus?: boolean
+  biasSourcePlanId?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlanAccuracy"]>
@@ -924,6 +1043,9 @@ export type ReorderPlanAccuracySelectUpdateManyAndReturn<ExtArgs extends runtime
   bias?: boolean
   stockoutDays?: boolean
   overstockDays?: boolean
+  validity?: boolean
+  evaluationStatus?: boolean
+  biasSourcePlanId?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlanAccuracy"]>
@@ -941,9 +1063,12 @@ export type ReorderPlanAccuracySelectScalar = {
   bias?: boolean
   stockoutDays?: boolean
   overstockDays?: boolean
+  validity?: boolean
+  evaluationStatus?: boolean
+  biasSourcePlanId?: boolean
 }
 
-export type ReorderPlanAccuracyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "optionId" | "evaluatedAt" | "periodStart" | "periodEnd" | "actualOutbound" | "forecastOutbound" | "wape" | "bias" | "stockoutDays" | "overstockDays", ExtArgs["result"]["reorderPlanAccuracy"]>
+export type ReorderPlanAccuracyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "optionId" | "evaluatedAt" | "periodStart" | "periodEnd" | "actualOutbound" | "forecastOutbound" | "wape" | "bias" | "stockoutDays" | "overstockDays" | "validity" | "evaluationStatus" | "biasSourcePlanId", ExtArgs["result"]["reorderPlanAccuracy"]>
 export type ReorderPlanAccuracyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -976,6 +1101,9 @@ export type $ReorderPlanAccuracyPayload<ExtArgs extends runtime.Types.Extensions
     bias: runtime.Decimal
     stockoutDays: number
     overstockDays: number
+    validity: $Enums.ReorderAccuracyValidity
+    evaluationStatus: $Enums.ReorderEvaluationStatus
+    biasSourcePlanId: string | null
   }, ExtArgs["result"]["reorderPlanAccuracy"]>
   composites: {}
 }
@@ -1413,6 +1541,9 @@ export interface ReorderPlanAccuracyFieldRefs {
   readonly bias: Prisma.FieldRef<"ReorderPlanAccuracy", 'Decimal'>
   readonly stockoutDays: Prisma.FieldRef<"ReorderPlanAccuracy", 'Int'>
   readonly overstockDays: Prisma.FieldRef<"ReorderPlanAccuracy", 'Int'>
+  readonly validity: Prisma.FieldRef<"ReorderPlanAccuracy", 'ReorderAccuracyValidity'>
+  readonly evaluationStatus: Prisma.FieldRef<"ReorderPlanAccuracy", 'ReorderEvaluationStatus'>
+  readonly biasSourcePlanId: Prisma.FieldRef<"ReorderPlanAccuracy", 'String'>
 }
     
 

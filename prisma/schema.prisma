@@ -72,19 +72,40 @@ enum SpaceMemberRole {
 
 // 발주 계획 상태
 enum ReorderPlanStatus {
-  DRAFT     // 초안 — 수량 조정 가능
-  FINALIZED // 확정 — ProductionRun 생성 완료
-  CONSUMED  // 소진 — 입고 완료 후 적중률 계산 완료
+  DRAFT // 초안 — 자유 편집, 측정 안 함
+  FINALIZED // 예측 검증 시작(UI "확정") — 예측 동결 + 신뢰도 측정 대상. 직접 편집 불가(revert→새 revision)
+  CONSUMED // (폐기 예정) 레거시 — settle가 더는 이 상태로 전환하지 않음. 읽기 호환만 유지
+}
+
+// 확정 스냅샷 출처 — 진짜 확정 시점 값 vs 마이그 backfill 값 구분
+enum ReorderSnapshotSource {
+  LIVE // 확정 액션 시점에 동결된 실제 값
+  BACKFILLED // 마이그레이션이 당시 plan-item 현재값으로 채운 근사값
+}
+
+// 적중률 레코드 유효성 — revert/supersede 시 삭제 대신 무효화 (학습은 ACTIVE만)
+enum ReorderAccuracyValidity {
+  ACTIVE // 유효 — 학습/제안 집계에 사용
+  INVALIDATED // 무효 — 측정 근거 불충분/오류로 제외
+  SUPERSEDED // 대체됨 — 계획이 revert되어 새 revision으로 대체
+}
+
+// 옵션별 평가 진행 상태 (plan 단위 정산 전환을 대체)
+enum ReorderEvaluationStatus {
+  PENDING // 확정 전 또는 평가창 미경과
+  ELIGIBLE // 평가창 경과 — 정산 대기
+  MEASURED // 정산 완료 (accuracy 기록됨)
+  INVALIDATED // revert/supersede로 제외
 }
 
 // 발주 예측 모델 종류
 enum ReorderForecastModel {
-  SMA     // 단순 이동평균
-  WMA     // 가중 이동평균
-  HW      // Holt-Winters (계절성)
+  SMA // 단순 이동평균
+  WMA // 가중 이동평균
+  HW // Holt-Winters (계절성)
   CROSTON // Croston/SBA (간헐적 수요)
-  BAYES   // Bayesian Poisson-Gamma (콜드스타트)
-  MANUAL  // 사용자 직접 입력
+  BAYES // Bayesian Poisson-Gamma (콜드스타트)
+  MANUAL // 사용자 직접 입력
 }
 
 // ─── 셀러 허브 열거형 ─────────────────────────────────────────────────────────
@@ -371,15 +392,15 @@ model Space {
   delShippingMethodLabels DelShippingMethodLabel[]
 
   // 셀러 허브 공용 (Seller Hub)
-  channels                Channel[]
-  channelTypeDefs         ChannelTypeDef[]
-  brands                  Brand[]
-  productPricingSettings  ProductPricingSettings?
-  optionCodeAliases       SpaceOptionCodeAlias[]
-  productListings         ProductListing[]
-  channelProducts         ChannelProduct[]
-  productionRuns          ProductionRun[]
-  pricingScenarios        PricingScenario[]
+  channels               Channel[]
+  channelTypeDefs        ChannelTypeDef[]
+  brands                 Brand[]
+  productPricingSettings ProductPricingSettings?
+  optionCodeAliases      SpaceOptionCodeAlias[]
+  productListings        ProductListing[]
+  channelProducts        ChannelProduct[]
+  productionRuns         ProductionRun[]
+  pricingScenarios       PricingScenario[]
 
   // 발주 계획
   reorderPlans ReorderPlan[]
@@ -803,9 +824,9 @@ model InvProduct {
   // 발주 라운딩 단위 (10 = 10단위 라운딩, 100 = 100단위 등)
   reorderRoundUnit Int @default(10)
 
-  space            Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  group            InvProductGroup           @relation(fields: [groupId], references: [id], onDelete: Restrict)
-  brand            Brand?                    @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  space            Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group            InvProductGroup    @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  brand            Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
   options          InvProductOption[]
   reorderConfig    InvReorderConfig?
   reorderPlanItems ReorderPlanItem[]
@@ -876,14 +897,14 @@ model InvStorageLocation {
   externalSource         String?
   externalIntegrationKey String?
 
-  space             Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  stockLevels       InvStockLevel[]
-  movements         InvMovement[]           @relation("MovementLocation")
-  incomingTransfers InvMovement[]           @relation("MovementToLocation")
-  locationMappings  InvLocationProductMap[]
-  reconciliations   InvReconciliation[]
-  settingsDefault   InvSettings[]           @relation("DefaultLocation")
-  productionRunStockIns ProductionRun[]    @relation("ProductionRunStockInLocation")
+  space                 Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  stockLevels           InvStockLevel[]
+  movements             InvMovement[]           @relation("MovementLocation")
+  incomingTransfers     InvMovement[]           @relation("MovementToLocation")
+  locationMappings      InvLocationProductMap[]
+  reconciliations       InvReconciliation[]
+  settingsDefault       InvSettings[]           @relation("DefaultLocation")
+  productionRunStockIns ProductionRun[]         @relation("ProductionRunStockInLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1006,7 +1027,7 @@ model InvLocationProductMap {
   spaceId    String
   locationId String
 
-  externalCode       String  // 보관 장소의 상품 코드/ID
+  externalCode       String // 보관 장소의 상품 코드/ID
   externalName       String? // 보관 장소의 상품명 (참조용)
   externalOptionName String? // 보관 장소의 옵션명 (참조용)
 
@@ -1323,12 +1344,12 @@ model Channel {
   requireProducts       Boolean  @default(true)
   sortOrder             Int      @default(0) // 사용자 정의 정렬 순서 (오름차순, 동률은 name asc)
 
-  space                   Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  channelTypeDef          ChannelTypeDef?           @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)
+  space                   Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channelTypeDef          ChannelTypeDef?          @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)
   feeRates                ChannelFeeRate[]
   invMovements            InvMovement[]
   delOrders               DelOrder[]
-  columnMappingPresets    DelColumnMappingPreset[]  @relation("PresetChannel")
+  columnMappingPresets    DelColumnMappingPreset[] @relation("PresetChannel")
   productAliases          ChannelProductAlias[]
   productListings         ProductListing[]
   channelProducts         ChannelProduct[]
@@ -1382,29 +1403,29 @@ enum ProductionCostCategory {
 }
 
 model ProductionRun {
-  id          String              @id @default(cuid())
-  spaceId     String
-  brandId     String? // 대표 브랜드 (선택). 없으면 multi-brand
-  runNo       String // Space 단위 unique 차수 번호 (전체 범위)
-  dueAt       DateTime? // 납기일 (선택)
-  completedAt DateTime? // 완료일 (선택, 레거시 — stockedInAt 과 동기화)
+  id                 String              @id @default(cuid())
+  spaceId            String
+  brandId            String? // 대표 브랜드 (선택). 없으면 multi-brand
+  runNo              String // Space 단위 unique 차수 번호 (전체 범위)
+  dueAt              DateTime? // 납기일 (선택)
+  completedAt        DateTime? // 완료일 (선택, 레거시 — stockedInAt 과 동기화)
   orderedConfirmedAt DateTime? // 발주완료 전환 시점
   stockedInAt        DateTime? // 입고완료 전환 시점 (재고 INBOUND 반영 일자)
-  stockInLocationId  String?   // 입고완료 시 선택한 보관 위치
-  status      ProductionRunStatus @default(PLANNED)
-  totalCost   Decimal?            @db.Decimal(18, 2) // 총 생산원가 (TOTAL 모드: 직접 입력값 / BREAKDOWN 모드: costs 합계 캐시)
-  costMode    ProductionCostMode  @default(TOTAL)
-  memo        String?
+  stockInLocationId  String? // 입고완료 시 선택한 보관 위치
+  status             ProductionRunStatus @default(PLANNED)
+  totalCost          Decimal?            @db.Decimal(18, 2) // 총 생산원가 (TOTAL 모드: 직접 입력값 / BREAKDOWN 모드: costs 합계 캐시)
+  costMode           ProductionCostMode  @default(TOTAL)
+  memo               String?
 
   // 발주 계획 연계 (ReorderPlan.finalize 시 brandId별 분할 생성 가능 → 1:N)
   reorderPlanId String?
 
-  space            Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  brand            Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  stockInLocation  InvStorageLocation? @relation("ProductionRunStockInLocation", fields: [stockInLocationId], references: [id], onDelete: SetNull)
-  reorderPlan      ReorderPlan?        @relation(fields: [reorderPlanId], references: [id], onDelete: SetNull)
-  items            ProductionRunItem[]
-  costs            ProductionRunCost[]
+  space           Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  brand           Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  stockInLocation InvStorageLocation? @relation("ProductionRunStockInLocation", fields: [stockInLocationId], references: [id], onDelete: SetNull)
+  reorderPlan     ReorderPlan?        @relation(fields: [reorderPlanId], references: [id], onDelete: SetNull)
+  items           ProductionRunItem[]
+  costs           ProductionRunCost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1655,7 +1676,7 @@ model ChannelProduct {
   baseManagementName String?
   baseInternalCode   String?
   memo               String?
-  keywords           Json   @default("[]") // string[]
+  keywords           Json    @default("[]") // string[]
 
   space    Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channel  Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
@@ -1666,7 +1687,6 @@ model ChannelProduct {
 
   @@index([spaceId, channelId])
 }
-
 
 // ─── Sales Content Deck (정보 세팅) ───────────────────────────────────────────
 
@@ -1712,7 +1732,7 @@ model Persona {
   customFields Json    @default("[]") // [{ key: string, value: string }]
   isActive     Boolean @default(true)
 
-  space     Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space     Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   ideations Ideation[]
   products  ProductPersona[]
 
@@ -1727,7 +1747,7 @@ model BrandProfile {
   spaceId          String  @unique
   companyName      String
   shortDescription String?
-  toneOfVoice      Json?   // string[] (최대 3개)
+  toneOfVoice      Json? // string[] (최대 3개)
   customFields     Json    @default("[]") // [{ key: string, value: string }]
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -1907,7 +1927,7 @@ enum IdeaGeneratedBy {
 // ─── Sales Content Deck (콘텐츠 제작) ────────────────────────────────────────
 
 enum ContentStatus {
-  TODO        // 신규 — 토픽만 선정된 상태 (본문 없음)
+  TODO // 신규 — 토픽만 선정된 상태 (본문 없음)
   DRAFT
   IN_REVIEW
   APPROVED
@@ -1924,30 +1944,30 @@ enum ContentAssetKind {
 // 콘텐츠 1건. doc(Json) 은 TipTap Doc.
 // 페르소나/상품 컨텍스트는 ideationId 로 lookup (denormalize 안 함).
 model Content {
-  id              String        @id @default(cuid())
-  spaceId         String
-  userId          String? // 작성자
-  title           String
-  body            String? // raw markdown / textual representation
-  doc             Json // TipTap doc
-  status          ContentStatus @default(DRAFT)
+  id      String        @id @default(cuid())
+  spaceId String
+  userId  String? // 작성자
+  title   String
+  body    String? // raw markdown / textual representation
+  doc     Json // TipTap doc
+  status  ContentStatus @default(DRAFT)
 
   // SEO
   urlSlug         String?
   targetKeyword   String?
-  relatedKeywords Json          @default("[]") // string[] (메타 태그)
+  relatedKeywords Json    @default("[]") // string[] (메타 태그)
 
   // origin
-  ideationId      String? // Ideation.id (FK 미설정 — 코드 레벨 lookup)
-  ideaIndex       Int? // Ideation.ideas 의 인덱스
+  ideationId String? // Ideation.id (FK 미설정 — 코드 레벨 lookup)
+  ideaIndex  Int? // Ideation.ideas 의 인덱스
 
   // deploy
-  channelId       String? // 기본 배포 채널 (선택)
+  channelId String? // 기본 배포 채널 (선택)
 
   // misc
-  snapshotHash    String? // 변경 감지용
-  publishedAt     DateTime?
-  scheduledAt     DateTime?
+  snapshotHash String? // 변경 감지용
+  publishedAt  DateTime?
+  scheduledAt  DateTime?
 
   space       Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channel     SalesContentChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
@@ -2275,26 +2295,36 @@ model ImprovementRule {
 model ReorderPlan {
   id          String            @id @default(cuid())
   spaceId     String
-  planNo      String            // Space 단위 unique 계획 번호
+  planNo      String // Space 단위 unique 계획 번호
   status      ReorderPlanStatus @default(DRAFT)
-  windowDays  Int               // 예측 분석 기간 (일)
+  windowDays  Int // 예측 분석 기간 (일)
   createdById String
-  productId   String?           // 상품 단위 계획. null = 레거시 전체-계획
+  productId   String? // 상품 단위 계획. null = 레거시 전체-계획
 
-  finalizedAt       DateTime? // 확정 전환 시점
-  biasAdjustApplied Json?     // 적용된 bias 보정 계수 맵 { optionId: factor }
+  finalizedAt       DateTime? // (레거시) 확정 전환 시점 — confirmedAt 으로 대체 중
+  confirmedAt       DateTime? // "예측 검증 시작" 시점 = 예측 동결점 = 신뢰도 평가 앵커
+  biasAdjustApplied Json? // 적용된 bias 보정 계수 맵 { optionId: factor }
 
-  totalSuggestedQty Int     // 전체 옵션 제안 수량 합계
-  totalFinalQty     Int     // 전체 옵션 최종 확정 수량 합계
+  totalSuggestedQty Int // 전체 옵션 제안 수량 합계
+  totalFinalQty     Int // 전체 옵션 최종 확정 수량 합계
   memo              String?
 
-  space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  createdBy User  @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  // revision 계보 — 확정건 수정은 same-row 변경이 아니라 revert→새 DRAFT revision 생성
+  supersededAt       DateTime? // 이 계획이 revert되어 대체된 시점
+  supersededByPlanId String? // 대체한 새 계획 id
+  sourcePlanId       String? // 이 계획이 어느 확정 계획에서 revert되어 파생됐는지
+
+  space     Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy User        @relation(fields: [createdById], references: [id], onDelete: Restrict)
   product   InvProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
-  items         ReorderPlanItem[]
-  accuracies    ReorderPlanAccuracy[]
-  productionRuns ProductionRun[] // 확정 시 brandId별 분할 생성 가능 (1:N)
+  // self-relation: source(확정 원본) ← revisions(파생 초안)
+  sourcePlan ReorderPlan?  @relation("PlanRevision", fields: [sourcePlanId], references: [id], onDelete: SetNull)
+  revisions  ReorderPlan[] @relation("PlanRevision")
+
+  items          ReorderPlanItem[]
+  accuracies     ReorderPlanAccuracy[]
+  productionRuns ProductionRun[] // "생산차수 생성" 액션으로 brandId별 분할 생성 가능 (1:N)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2302,6 +2332,8 @@ model ReorderPlan {
   @@unique([spaceId, planNo])
   @@index([spaceId, status])
   @@index([spaceId, productId])
+  @@index([spaceId, confirmedAt])
+  @@index([sourcePlanId])
   @@index([createdById])
 }
 
@@ -2312,22 +2344,30 @@ model ReorderPlanItem {
   optionId  String
   productId String
 
-  currentStock      Int                  // 현재 재고 수량
-  dailyAvgForecast  Decimal              @db.Decimal(18, 4) // 일평균 예측 소진량
-  forecastModel     ReorderForecastModel // 사용된 예측 모델
-  leadTimeDays      Int                  // 리드타임 (일)
-  safetyStockQty    Int                  // 안전재고 수량
-  suggestedQty      Int                  // 공식 계산 제안 수량
-  roundedSuggestedQty Int               // 라운딩 적용 후 제안 수량
-  finalQty          Int                  // 사용자 확정 수량
-  roundUnit         Int                  // 라운딩 단위 (10 or 100 등)
+  currentStock        Int // 현재 재고 수량
+  dailyAvgForecast    Decimal              @db.Decimal(18, 4) // 일평균 예측 소진량
+  forecastModel       ReorderForecastModel // 사용된 예측 모델
+  leadTimeDays        Int // 리드타임 (일)
+  safetyStockQty      Int // 안전재고 수량
+  suggestedQty        Int // 공식 계산 제안 수량
+  roundedSuggestedQty Int // 라운딩 적용 후 제안 수량
+  finalQty            Int // 사용자 확정 수량
+  roundUnit           Int // 라운딩 단위 (10 or 100 등)
 
-  rationale   String? @db.Text // LLM 생성 근거 텍스트
-  userNote    String? @db.Text // 사용자 입력 메모
+  rationale String? @db.Text // LLM 생성 근거 텍스트
+  userNote  String? @db.Text // 사용자 입력 메모
 
-  biasAdjustFactor  Decimal  @db.Decimal(6, 4) // 적용된 bias 보정 계수 (1.0 = 보정 없음)
-  confidenceScore   Decimal? @db.Decimal(6, 4) // 예측 신뢰도 (0~1, null = 미산출)
-  inputsSnapshot    Json     // 예측 재현 가능 입력값 스냅샷
+  biasAdjustFactor Decimal  @db.Decimal(6, 4) // 적용된 bias 보정 계수 (1.0 = 보정 없음)
+  confidenceScore  Decimal? @db.Decimal(6, 4) // 예측 신뢰도 (0~1, null = 미산출)
+  inputsSnapshot   Json // 예측 재현 가능 입력값 스냅샷 (초안 생성 당시 입력)
+
+  // "예측 검증 시작"(확정) 시점에 동결한 예측 스냅샷 — 신뢰도 측정의 단일 진실원.
+  // null = 미확정. accuracy는 live 값이 아니라 이 동결값을 읽어야 사후 수정에 오염 안 됨.
+  confirmedDailyAvgForecast Decimal?               @db.Decimal(18, 4)
+  confirmedLeadTimeDays     Int?
+  confirmedSafetyStockQty   Int?
+  confirmedFinalQty         Int?
+  snapshotSource            ReorderSnapshotSource? // LIVE(확정 시점) | BACKFILLED(마이그 근사)
 
   plan    ReorderPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
   option  InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
@@ -2344,18 +2384,24 @@ model ReorderPlanAccuracy {
   planId   String
   optionId String
 
-  evaluatedAt     DateTime // 적중률 계산 시점
-  periodStart     DateTime // 평가 기간 시작 (stockedInAt)
-  periodEnd       DateTime // 평가 기간 종료 (stockedInAt + leadTimeDays)
+  evaluatedAt DateTime // 적중률 계산 시점
+  periodStart DateTime // 평가 기간 시작 (stockedInAt)
+  periodEnd   DateTime // 평가 기간 종료 (stockedInAt + leadTimeDays)
 
-  actualOutbound   Int     // 실제 출고 수량
+  actualOutbound   Int // 실제 출고 수량
   forecastOutbound Decimal @db.Decimal(18, 4) // 예측 출고 수량 (dailyAvgForecast × leadTimeDays)
 
-  wape  Decimal @db.Decimal(10, 4) // WAPE (Weighted Absolute Percentage Error)
-  bias  Decimal @db.Decimal(10, 4) // Bias% = (forecast - actual) / actual (양수 = 과예측)
+  wape Decimal @db.Decimal(10, 4) // WAPE (Weighted Absolute Percentage Error)
+  bias Decimal @db.Decimal(10, 4) // Bias% = (forecast - actual) / actual (양수 = 과예측)
 
   stockoutDays  Int // 재고 소진 일수 (일별 잔량 시뮬레이션)
   overstockDays Int // 과잉재고 일수
+
+  // revert/supersede 시 삭제 대신 무효화 — 학습/제안 집계는 ACTIVE만 사용
+  validity         ReorderAccuracyValidity @default(ACTIVE)
+  evaluationStatus ReorderEvaluationStatus @default(MEASURED) // 옵션별 평가 진행 상태
+  // provenance — 이 계획 예측에 입력으로 쓰인 bias 출처(어느 정산 계획에서 학습됐는지)
+  biasSourcePlanId String?
 
   plan   ReorderPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
   option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
@@ -2363,4 +2409,5 @@ model ReorderPlanAccuracy {
   @@unique([planId, optionId])
   @@index([planId])
   @@index([optionId])
+  @@index([validity])
 }

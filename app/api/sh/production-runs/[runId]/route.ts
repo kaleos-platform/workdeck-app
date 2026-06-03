@@ -23,6 +23,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
               id: true,
               name: true,
               sku: true,
+              deletedAt: true,
               product: {
                 select: {
                   id: true,
@@ -60,6 +61,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         id: it.id,
         optionId: it.optionId,
         optionName: it.option.name,
+        optionDeleted: it.option.deletedAt != null,
         sku: it.option.sku,
         productId: it.option.product.id,
         productName: it.option.product.internalName ?? it.option.product.name,

@@ -1513,10 +1513,14 @@ export const ReorderPlanScalarFieldEnum = {
   createdById: 'createdById',
   productId: 'productId',
   finalizedAt: 'finalizedAt',
+  confirmedAt: 'confirmedAt',
   biasAdjustApplied: 'biasAdjustApplied',
   totalSuggestedQty: 'totalSuggestedQty',
   totalFinalQty: 'totalFinalQty',
   memo: 'memo',
+  supersededAt: 'supersededAt',
+  supersededByPlanId: 'supersededByPlanId',
+  sourcePlanId: 'sourcePlanId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1542,7 +1546,12 @@ export const ReorderPlanItemScalarFieldEnum = {
   userNote: 'userNote',
   biasAdjustFactor: 'biasAdjustFactor',
   confidenceScore: 'confidenceScore',
-  inputsSnapshot: 'inputsSnapshot'
+  inputsSnapshot: 'inputsSnapshot',
+  confirmedDailyAvgForecast: 'confirmedDailyAvgForecast',
+  confirmedLeadTimeDays: 'confirmedLeadTimeDays',
+  confirmedSafetyStockQty: 'confirmedSafetyStockQty',
+  confirmedFinalQty: 'confirmedFinalQty',
+  snapshotSource: 'snapshotSource'
 } as const
 
 export type ReorderPlanItemScalarFieldEnum = (typeof ReorderPlanItemScalarFieldEnum)[keyof typeof ReorderPlanItemScalarFieldEnum]
@@ -1560,7 +1569,10 @@ export const ReorderPlanAccuracyScalarFieldEnum = {
   wape: 'wape',
   bias: 'bias',
   stockoutDays: 'stockoutDays',
-  overstockDays: 'overstockDays'
+  overstockDays: 'overstockDays',
+  validity: 'validity',
+  evaluationStatus: 'evaluationStatus',
+  biasSourcePlanId: 'biasSourcePlanId'
 } as const
 
 export type ReorderPlanAccuracyScalarFieldEnum = (typeof ReorderPlanAccuracyScalarFieldEnum)[keyof typeof ReorderPlanAccuracyScalarFieldEnum]

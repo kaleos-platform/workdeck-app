@@ -32,6 +32,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
         orderBy: { product: { name: 'asc' } },
       },
       accuracies: {
+        where: { validity: 'ACTIVE' }, // revert로 SUPERSEDED/INVALIDATED된 stale 결과 제외
         select: {
           optionId: true,
           wape: true,
@@ -39,7 +40,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
           stockoutDays: true,
           overstockDays: true,
           evaluatedAt: true,
+          validity: true,
         },
+      },
+      productionRuns: {
+        select: {
+          id: true,
+          runNo: true,
+          status: true,
+          brandId: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
       },
     },
   })
@@ -95,6 +107,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       status: plan.status,
       windowDays: plan.windowDays,
       finalizedAt: plan.finalizedAt,
+      confirmedAt: plan.confirmedAt,
+      supersededAt: plan.supersededAt,
+      supersededByPlanId: plan.supersededByPlanId,
+      sourcePlanId: plan.sourcePlanId,
       biasAdjustApplied: plan.biasAdjustApplied,
       totalSuggestedQty: plan.totalSuggestedQty,
       totalFinalQty: plan.totalFinalQty,
@@ -128,5 +144,39 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       wape: Number(a.wape),
       bias: Number(a.bias),
     })),
+    productionRuns: plan.productionRuns.map((r) => ({
+      id: r.id,
+      runNo: r.runNo,
+      status: r.status,
+      brandId: r.brandId,
+      createdAt: r.createdAt,
+    })),
   })
+}
+
+// DELETE /api/sh/inventory/reorder/plan/[planId]
+// 발주 계획 삭제 (상태 무관). items/accuracies는 FK Cascade로 함께 삭제되고,
+// 연결된 생산차수(ProductionRun)는 onDelete: SetNull로 보존되며 link만 해제된다.
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ planId: string }> }
+) {
+  const resolved = await resolveDeckContext('seller-hub')
+  if ('error' in resolved) return resolved.error
+
+  const spaceId = resolved.space.id
+  const { planId } = await params
+
+  const plan = await prisma.reorderPlan.findUnique({
+    where: { id: planId },
+    select: { id: true, spaceId: true },
+  })
+
+  if (!plan || plan.spaceId !== spaceId) {
+    return errorResponse('발주 계획을 찾을 수 없습니다', 404)
+  }
+
+  await prisma.reorderPlan.delete({ where: { id: planId } })
+
+  return NextResponse.json({ ok: true })
 }
