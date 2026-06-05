@@ -11,6 +11,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { productDisplayName } from '@/lib/sh/product-display'
+import {
+  attributeValuesOf,
+  buildSimpleCompositionGroups,
+  findMatchingOption,
+} from './composition-builder-utils'
 
 /**
  * 판매채널 상품 구성 빌더.
@@ -32,7 +37,7 @@ type ProductRow = {
   brand?: { id: string; name: string } | null
 }
 
-type AttributeDef = { name: string; values: Array<{ value: string; code?: string }> }
+type AttributeDef = { name: string; values: Array<{ value: string; code?: string } | string> }
 
 type OptionRow = {
   id: string
@@ -317,67 +322,9 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
 
   function commitSimple() {
     if (!product) return
-    const attrs = product.optionAttributes ?? []
-    const qtys = setQuantities.map((q) => Math.max(1, q))
-    const includeQtySuffix = qtys.length > 1
-
-    if (attrs.length === 0) {
-      const defaultOpt = product.options[0]
-      if (!defaultOpt) {
-        toast.error('이 상품에는 선택할 옵션이 없습니다')
-        return
-      }
-      emit(
-        qtys.map((q) => ({
-          suffixParts: includeQtySuffix ? [`${q}개`] : [],
-          items: [
-            {
-              optionId: defaultOpt.id,
-              optionName: defaultOpt.name,
-              sku: defaultOpt.sku,
-              quantity: q,
-              retailPrice: defaultOpt.retailPrice,
-              attributeValues: defaultOpt.attributeValues,
-            },
-          ],
-        }))
-      )
-      return
-    }
-
-    // attrState에 활성화된 속성은 선택된 값만, 미활성 속성은 전체 값을 펼침
-    const combos = attrs.reduce<Array<Record<string, string>>>((acc, attr) => {
-      const state = attrState[attr.name]
-      const selectedVals = state?.enabled ? Object.keys(state.valueQuantities) : []
-      const vals = selectedVals.length > 0 ? selectedVals : attr.values.map((v) => v.value)
-      if (acc.length === 0) return vals.map((v) => ({ [attr.name]: v }))
-      return acc.flatMap((prev) => vals.map((v) => ({ ...prev, [attr.name]: v })))
-    }, [])
-
-    const groups: BuiltGroup[] = []
-    for (const combo of combos) {
-      const opt = findOption(product.options, combo)
-      if (!opt) continue
-      const baseParts = attrs.map((a) => combo[a.name])
-      for (const q of qtys) {
-        groups.push({
-          suffixParts: includeQtySuffix ? [...baseParts, `${q}개`] : baseParts,
-          items: [
-            {
-              optionId: opt.id,
-              optionName: opt.name,
-              sku: opt.sku,
-              quantity: q,
-              retailPrice: opt.retailPrice,
-              attributeValues: opt.attributeValues,
-            },
-          ],
-        })
-      }
-    }
-
+    const groups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
     if (groups.length === 0) {
-      toast.error('생성 가능한 옵션 조합이 없습니다')
+      toast.error('생성 가능한 옵션 조합이 없습니다. 상품 옵션의 속성값을 확인해 주세요')
       return
     }
     emit(groups)
@@ -417,7 +364,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     const unselected: Array<{ name: string; values: string[] }> = []
     for (const attr of attrs) {
       const st = attrState[attr.name]
-      const vals = attr.values.map((v) => v.value)
+      const vals = attributeValuesOf(attr)
       if (st?.enabled) {
         selectedAttrNames.push(attr.name)
       } else {
@@ -486,7 +433,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
 
         for (const sc of selectedCombos) {
           const target = { ...combo, ...sc.values }
-          const opt = findOption(product.options, target)
+          const opt = findMatchingOption(product.options, target)
           if (!opt) continue
           groupItems.push({
             optionId: opt.id,
@@ -1181,7 +1128,7 @@ function SimpleModeSettings({
     for (const a of attrs) {
       const state = attrState[a.name]
       const selected = state?.enabled ? Object.keys(state.valueQuantities) : []
-      const vals = selected.length > 0 ? selected : a.values.map((v) => v.value)
+      const vals = selected.length > 0 ? selected : attributeValuesOf(a)
       const next: Record<string, string>[] = []
       for (const prev of combos) {
         for (const v of vals) next.push({ ...prev, [a.name]: v })
@@ -1190,8 +1137,9 @@ function SimpleModeSettings({
     }
     return combos
   })()
+  const previewGroups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
   const comboCount = effectiveCombos.length
-  const totalListings = comboCount * bundleCount
+  const totalListings = previewGroups.length
 
   const samples = effectiveCombos.slice(0, 3).map((c) =>
     attrs
@@ -1263,20 +1211,20 @@ function SimpleModeSettings({
                   </label>
                   {state.enabled && (
                     <div className="mt-2 flex flex-wrap gap-1.5 pl-6">
-                      {attr.values.map((v) => {
-                        const checked = state.valueQuantities[v.value] !== undefined
+                      {attributeValuesOf(attr).map((value) => {
+                        const checked = state.valueQuantities[value] !== undefined
                         return (
                           <label
-                            key={v.value}
+                            key={value}
                             className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs ${
                               checked ? 'border-primary bg-primary/10' : 'hover:bg-muted'
                             }`}
                           >
                             <Checkbox
                               checked={checked}
-                              onCheckedChange={(c) => onToggleValue(attr.name, v.value, c === true)}
+                              onCheckedChange={(c) => onToggleValue(attr.name, value, c === true)}
                             />
-                            <span>{v.value}</span>
+                            <span>{value}</span>
                           </label>
                         )
                       })}
@@ -1411,17 +1359,17 @@ function BundlesEditor({
                       <div key={attr.name}>
                         <div className="mb-1 text-xs font-medium">{attr.name}</div>
                         <div className="space-y-1 pl-1">
-                          {attr.values.map((v) => {
-                            const checked = v.value in valueMap
+                          {attributeValuesOf(attr).map((value) => {
+                            const checked = value in valueMap
                             return (
-                              <div key={v.value} className="flex items-center gap-2">
+                              <div key={value} className="flex items-center gap-2">
                                 <Checkbox
                                   checked={checked}
                                   onCheckedChange={(on) =>
-                                    onToggleBundleValue(bundle.id, attr.name, v.value, on === true)
+                                    onToggleBundleValue(bundle.id, attr.name, value, on === true)
                                   }
                                 />
-                                <span className="min-w-[80px] text-sm">{v.value}</span>
+                                <span className="min-w-[80px] text-sm">{value}</span>
                                 {checked && (
                                   <>
                                     <span className="text-xs text-muted-foreground">수량</span>
@@ -1429,12 +1377,12 @@ function BundlesEditor({
                                       type="number"
                                       min={1}
                                       max={999}
-                                      value={valueMap[v.value] ?? 1}
+                                      value={valueMap[value] ?? 1}
                                       onChange={(e) =>
                                         onUpdateBundleValueQty(
                                           bundle.id,
                                           attr.name,
-                                          v.value,
+                                          value,
                                           Number(e.target.value || 1)
                                         )
                                       }
@@ -1495,22 +1443,6 @@ function AdvancedPreview({
 
 // ─── 로직 유틸 ───────────────────────────────────────────────────────────────
 
-function findOption(options: OptionRow[], target: Record<string, string>): OptionRow | null {
-  const keys = Object.keys(target)
-  if (keys.length === 0) return options[0] ?? null
-  for (const opt of options) {
-    let match = true
-    for (const k of keys) {
-      if (opt.attributeValues[k] !== target[k]) {
-        match = false
-        break
-      }
-    }
-    if (match) return opt
-  }
-  return null
-}
-
 function bundleSummary(bundle: Bundle): string {
   const parts: string[] = []
   for (const [, valMap] of Object.entries(bundle.valueQuantities)) {
@@ -1543,7 +1475,7 @@ function computeAdvancedPreview(
   const unselectedValues: Array<{ name: string; values: string[] }> = []
   for (const a of attrs) {
     if (!selectedAttrNames.includes(a.name)) {
-      unselectedValues.push({ name: a.name, values: a.values.map((v) => v.value) })
+      unselectedValues.push({ name: a.name, values: attributeValuesOf(a) })
     }
   }
   const unselectedCount = unselectedValues.reduce((n, arr) => n * arr.values.length, 1)
