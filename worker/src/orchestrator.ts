@@ -249,7 +249,11 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   }
   try {
     console.log('\n[orchestrator] 재고 데이터 수집 시작...')
-    inventoryResult = await collectAndUploadInventory(credential)
+    // collectVendorSales 플래그를 credential에서 그대로 전달
+    inventoryResult = await collectAndUploadInventory({
+      ...credential,
+      collectVendorSales: credential.collectVendorSales,
+    })
     console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건`)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
@@ -272,9 +276,9 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     (err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err)
   )
 
-  // ── Step 12: seller-ops 연동 — 재고 대조 + 판매 OUTBOUND 변환 트리거 ──
-  // 수집 직후 호출해야 정확(VENDOR/inventory_health 스냅샷이 방금 적재됨).
-  // inventory-sync(재고 truth) → sales-sync(수요 신호) 순서.
+  // ── Step 12: seller-ops 연동 — 로켓그로스 판매 OUTBOUND 변환 트리거 ──
+  // 수집 직후 호출해야 정확(VENDOR 스냅샷이 방금 적재됨).
+  // 자동 재고 대조(inventory-sync)는 제거됨 — 재고 truth = OUTBOUND 차감 + 사용자 수동 대조.
   await triggerSellerOpsSync().catch((err) =>
     console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err)
   )
@@ -283,8 +287,8 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
 }
 
 /**
- * seller-ops 연동 트리거 — 수집 후 재고 대조 + 로켓그로스 판매 OUTBOUND 변환.
- * 워커 인증(x-worker-api-key)으로 cron 라우트를 직접 호출(Vercel cron 백스톱과 dual-auth).
+ * seller-ops 연동 트리거 — 수집 후 로켓그로스 판매 OUTBOUND 변환(재고 차감).
+ * 워커 인증(x-worker-api-key)으로 sales-sync 라우트를 직접 호출.
  * 전 Space 를 쓸어 처리하므로 workspaceId 불필요.
  */
 async function triggerSellerOpsSync(): Promise<void> {
@@ -293,14 +297,7 @@ async function triggerSellerOpsSync(): Promise<void> {
   if (!baseUrl || !apiKey) return
 
   const headers = { 'x-worker-api-key': apiKey }
-  // 1) 재고 대조(재고 truth 보정) — 절대값 set
-  try {
-    const r = await fetch(`${baseUrl}/api/cron/coupang-inventory-sync`, { headers })
-    console.log(`[orchestrator] 쿠팡 재고 대조 트리거: ${r.status}`)
-  } catch (err) {
-    console.error('[orchestrator] 쿠팡 재고 대조 트리거 실패:', err)
-  }
-  // 2) 판매 OUTBOUND 변환(수요 신호, stock-neutral)
+  // 판매 OUTBOUND 변환(수요 신호 + 재고 차감)
   try {
     const r = await fetch(`${baseUrl}/api/cron/coupang-sales-sync`, { headers })
     console.log(`[orchestrator] 쿠팡 판매 변환 트리거: ${r.status}`)
@@ -315,6 +312,8 @@ async function collectAndUploadInventory(credential: {
   encryptedPassword: string
   passwordIv: string
   workspaceId: string
+  /** false면 판매분석(VENDOR) 수집 생략, inventory_health만 수집 */
+  collectVendorSales?: boolean
 }): Promise<{ healthRows?: number; vendorRows?: number; errors: string[] }> {
   const password =
     credential.passwordIv === 'none'
@@ -331,10 +330,15 @@ async function collectAndUploadInventory(credential: {
   // 이 instant 이 그 범위 [00:00 KST, 24:00 KST) 에 속하면 정확히 매칭된다.
   const yesterdayKstIso = new Date(`${yesterdayKst}T00:00:00+09:00`).toISOString()
 
+  // collectVendorSales=false면 VENDOR 수집 생략 — targetDateKst를 넘기지 않아 판매분석 건너뜀
+  const shouldCollectVendor = credential.collectVendorSales !== false
   const inventoryData = await collectInventoryData(
     { loginId: credential.loginId, password },
-    { targetDateKst: yesterdayKst }
+    shouldCollectVendor ? { targetDateKst: yesterdayKst } : {}
   )
+  if (!shouldCollectVendor) {
+    console.log('[inventory] collectVendorSales=false — 판매분석(VENDOR) 수집 건너뜀')
+  }
 
   const errors: string[] = []
   let healthRows: number | undefined

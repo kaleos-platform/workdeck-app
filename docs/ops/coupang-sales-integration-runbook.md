@@ -6,15 +6,17 @@
 
 ```
 워커(PM2, 매일 node-cron)
-  ├─ inventory_health 수집 → InventoryRecord(재고 truth)
-  └─ 판매분석 VENDOR 1일 수집 → InventoryRecord(VENDOR_ITEM_METRICS)
+  ├─ inventory_health 수집 → InventoryRecord (수동 대조 소스로 보관)
+  └─ 판매분석 VENDOR 1일 수집 → InventoryRecord(VENDOR_ITEM_METRICS)  ※ 토글로 끌 수 있음
        ↓ (수집 직후 워커가 x-worker-api-key 로 체이닝)
-  ├─ POST/GET /api/cron/coupang-inventory-sync → 재고 대조(절대값 set) → InvStockLevel
-  └─ GET /api/cron/coupang-sales-sync → 로켓 판매를 dated OUTBOUND(stock-neutral) → 발주예측 history
+  └─ GET /api/cron/coupang-sales-sync → 로켓 판매를 dated OUTBOUND(**재고 차감**) → 발주예측 + 재고 원장
 ```
 
-- 재고 truth = inventory_health 대조. OUTBOUND = 발주예측 수요 신호(재고 미차감).
-- 판매자배송은 제외(이미 DelBatch→OUTBOUND).
+- **재고 truth = OUTBOUND 차감 + 사용자 수동 대조 보정.** 자동 대조 cron 은 제거됨.
+- 쿠팡 FC 입고(보충)는 워커가 수집하지 않으므로 재고가 하향 drift → 사용자가 수동
+  재고이동(INBOUND) 또는 수동 대조(절대값 set)로 보충. (수동 대조는 데이터 연동 버튼 그대로.)
+- 판매자배송은 제외(이미 DelBatch→OUTBOUND). 로켓 채널은 위치와 동일 externalSource 1:1 페어링.
+- VENDOR 매출(₩)·수량은 채널별 매출 현황의 로켓 채널 행에 합산(주문수 없음 → 수량 표기).
 
 ## (a) ⛔ 운영 투입 전 #1 게이트 — 워커 날짜필터 셀렉터 QA
 
@@ -35,37 +37,28 @@
 
 DAILY_SUMMARY_METRICS(일별 전체합)도 수집해 `sum(VENDOR 판매량) ≈ DAILY[date].판매량` 교차검증 후 OUTBOUND 기록. 셀렉터 드리프트 자동 감지. 현재 미구현 — 셀렉터 신뢰가 1차 방어.
 
-## (b) CRON_SECRET — 선택적 백스톱
+## (b) 인증 — 워커 키 전용 (CRON_SECRET 제거됨)
 
-두 sync는 **워커 체이닝(x-worker-api-key)이 1차 경로**라 CRON_SECRET 없이 동작한다. Vercel cron 엔트리(vercel.json)는 워커 다운 시 백스톱이며, **CRON_SECRET 설정 시에만 동작**한다.
+sales-sync 는 **워커 체이닝(x-worker-api-key) 전용**이다. 본 연동의 Vercel cron 엔트리·CRON_SECRET 백스톱은 제거됐다(워커 heartbeat 모니터링이 다운을 감지). 워커가 다운되면 데이터가 멈추지만 잘못된 데이터는 안 들어간다.
 
-### 백스톱 활성화하려면 (선택)
+### ⚠️ 별개 이슈 — 기존 Vercel cron
 
-```bash
-# 강력한 랜덤 시크릿 생성 후 prod+preview 설정
-openssl rand -hex 32
-vercel env add CRON_SECRET production --scope <scope>
-vercel env add CRON_SECRET preview --scope <scope>
-# 재배포 후 적용
-```
-
-### ⚠️ 별개 이슈 — 기존 Vercel cron dead
-
-`reorder-settle`, `inventory-stale-check`는 CRON_SECRET 부재로 **한 번도 실행된 적 없음**(stale-skip 마커 0, cron heartbeat 없음으로 확인). CRON_SECRET 설정 시 이들도 살아난다. 본 연동과 별개지만 운영팀 판단 필요.
+`reorder-settle`, `inventory-stale-check`는 여전히 CRON_SECRET 에 의존한다(별개 prod 이슈, 본 연동과 무관 — 건드리지 않음).
 
 ## 콜드스타트 백필 (신규 로켓그로스 도입 시)
 
-발주예측이 90일 zero-fill로 과소예측하지 않도록 과거 판매를 시딩:
+발주예측이 90일 zero-fill로 과소예측하지 않도록 과거 판매를 시딩. **데이터 연동 화면에서
+판매 데이터가 없을 때 팝업이 떠 사용자가 일수를 정해 실행**한다(웹 → CoupangBackfillJob 생성 →
+워커 폴링이 VENDOR 수집 후 sales-sync range 변환까지 자동 체이닝).
+
+수동(CLI) 대안:
 
 ```bash
-# 1) VENDOR 적재 (워커 호스트)
-cd worker && npm run backfill-sales 90
-# 2) OUTBOUND 변환 (CRON_SECRET 설정된 경우; 아니면 워커가 다음 수집 시 어제분만 변환)
-curl -H "Authorization: Bearer $CRON_SECRET" \
-  "$WORKDECK_APP_URL/api/cron/coupang-sales-sync?from=2026-03-06&to=2026-06-03"
+cd worker && npm run backfill-sales 90   # VENDOR 적재 후 자동으로 변환 체이닝 안내
 ```
 
-백필 OUTBOUND는 stock-neutral(과거 판매는 이미 현재 재고에 반영됨).
+백필 OUTBOUND 도 재고를 차감한다. 신규 로켓 위치는 보통 기준재고 0 → 과거 판매가 음수 재고를
+만들 수 있고, 사용자가 수동 재고이동(INBOUND)/대조로 기준재고를 맞춘다.
 
 ## 전제 조건 (Space별)
 

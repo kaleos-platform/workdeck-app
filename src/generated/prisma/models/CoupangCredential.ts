@@ -31,6 +31,7 @@ export type CoupangCredentialMinAggregateOutputType = {
   loginPassword: string | null
   encryptionIv: string | null
   isActive: boolean | null
+  collectVendorSales: boolean | null
   lastLoginAt: Date | null
   lastError: string | null
   createdAt: Date | null
@@ -44,6 +45,7 @@ export type CoupangCredentialMaxAggregateOutputType = {
   loginPassword: string | null
   encryptionIv: string | null
   isActive: boolean | null
+  collectVendorSales: boolean | null
   lastLoginAt: Date | null
   lastError: string | null
   createdAt: Date | null
@@ -57,6 +59,7 @@ export type CoupangCredentialCountAggregateOutputType = {
   loginPassword: number
   encryptionIv: number
   isActive: number
+  collectVendorSales: number
   lastLoginAt: number
   lastError: number
   createdAt: number
@@ -72,6 +75,7 @@ export type CoupangCredentialMinAggregateInputType = {
   loginPassword?: true
   encryptionIv?: true
   isActive?: true
+  collectVendorSales?: true
   lastLoginAt?: true
   lastError?: true
   createdAt?: true
@@ -85,6 +89,7 @@ export type CoupangCredentialMaxAggregateInputType = {
   loginPassword?: true
   encryptionIv?: true
   isActive?: true
+  collectVendorSales?: true
   lastLoginAt?: true
   lastError?: true
   createdAt?: true
@@ -98,6 +103,7 @@ export type CoupangCredentialCountAggregateInputType = {
   loginPassword?: true
   encryptionIv?: true
   isActive?: true
+  collectVendorSales?: true
   lastLoginAt?: true
   lastError?: true
   createdAt?: true
@@ -184,6 +190,7 @@ export type CoupangCredentialGroupByOutputType = {
   loginPassword: string
   encryptionIv: string
   isActive: boolean
+  collectVendorSales: boolean
   lastLoginAt: Date | null
   lastError: string | null
   createdAt: Date
@@ -218,6 +225,7 @@ export type CoupangCredentialWhereInput = {
   loginPassword?: Prisma.StringFilter<"CoupangCredential"> | string
   encryptionIv?: Prisma.StringFilter<"CoupangCredential"> | string
   isActive?: Prisma.BoolFilter<"CoupangCredential"> | boolean
+  collectVendorSales?: Prisma.BoolFilter<"CoupangCredential"> | boolean
   lastLoginAt?: Prisma.DateTimeNullableFilter<"CoupangCredential"> | Date | string | null
   lastError?: Prisma.StringNullableFilter<"CoupangCredential"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CoupangCredential"> | Date | string
@@ -232,6 +240,7 @@ export type CoupangCredentialOrderByWithRelationInput = {
   loginPassword?: Prisma.SortOrder
   encryptionIv?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  collectVendorSales?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -249,6 +258,7 @@ export type CoupangCredentialWhereUniqueInput = Prisma.AtLeast<{
   loginPassword?: Prisma.StringFilter<"CoupangCredential"> | string
   encryptionIv?: Prisma.StringFilter<"CoupangCredential"> | string
   isActive?: Prisma.BoolFilter<"CoupangCredential"> | boolean
+  collectVendorSales?: Prisma.BoolFilter<"CoupangCredential"> | boolean
   lastLoginAt?: Prisma.DateTimeNullableFilter<"CoupangCredential"> | Date | string | null
   lastError?: Prisma.StringNullableFilter<"CoupangCredential"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CoupangCredential"> | Date | string
@@ -263,6 +273,7 @@ export type CoupangCredentialOrderByWithAggregationInput = {
   loginPassword?: Prisma.SortOrder
   encryptionIv?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  collectVendorSales?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -282,6 +293,7 @@ export type CoupangCredentialScalarWhereWithAggregatesInput = {
   loginPassword?: Prisma.StringWithAggregatesFilter<"CoupangCredential"> | string
   encryptionIv?: Prisma.StringWithAggregatesFilter<"CoupangCredential"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"CoupangCredential"> | boolean
+  collectVendorSales?: Prisma.BoolWithAggregatesFilter<"CoupangCredential"> | boolean
   lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CoupangCredential"> | Date | string | null
   lastError?: Prisma.StringNullableWithAggregatesFilter<"CoupangCredential"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CoupangCredential"> | Date | string
@@ -294,6 +306,7 @@ export type CoupangCredentialCreateInput = {
   loginPassword: string
   encryptionIv: string
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: Date | string | null
   lastError?: string | null
   createdAt?: Date | string
@@ -308,6 +321,7 @@ export type CoupangCredentialUncheckedCreateInput = {
   loginPassword: string
   encryptionIv: string
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: Date | string | null
   lastError?: string | null
   createdAt?: Date | string
@@ -320,6 +334,7 @@ export type CoupangCredentialUpdateInput = {
   loginPassword?: Prisma.StringFieldUpdateOperationsInput | string
   encryptionIv?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectVendorSales?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -334,6 +349,7 @@ export type CoupangCredentialUncheckedUpdateInput = {
   loginPassword?: Prisma.StringFieldUpdateOperationsInput | string
   encryptionIv?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectVendorSales?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -347,6 +363,7 @@ export type CoupangCredentialCreateManyInput = {
   loginPassword: string
   encryptionIv: string
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: Date | string | null
   lastError?: string | null
   createdAt?: Date | string
@@ -359,6 +376,7 @@ export type CoupangCredentialUpdateManyMutationInput = {
   loginPassword?: Prisma.StringFieldUpdateOperationsInput | string
   encryptionIv?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectVendorSales?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -372,6 +390,7 @@ export type CoupangCredentialUncheckedUpdateManyInput = {
   loginPassword?: Prisma.StringFieldUpdateOperationsInput | string
   encryptionIv?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectVendorSales?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -390,6 +409,7 @@ export type CoupangCredentialCountOrderByAggregateInput = {
   loginPassword?: Prisma.SortOrder
   encryptionIv?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  collectVendorSales?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -403,6 +423,7 @@ export type CoupangCredentialMaxOrderByAggregateInput = {
   loginPassword?: Prisma.SortOrder
   encryptionIv?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  collectVendorSales?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -416,6 +437,7 @@ export type CoupangCredentialMinOrderByAggregateInput = {
   loginPassword?: Prisma.SortOrder
   encryptionIv?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  collectVendorSales?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -460,6 +482,7 @@ export type CoupangCredentialCreateWithoutWorkspaceInput = {
   loginPassword: string
   encryptionIv: string
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: Date | string | null
   lastError?: string | null
   createdAt?: Date | string
@@ -472,6 +495,7 @@ export type CoupangCredentialUncheckedCreateWithoutWorkspaceInput = {
   loginPassword: string
   encryptionIv: string
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: Date | string | null
   lastError?: string | null
   createdAt?: Date | string
@@ -500,6 +524,7 @@ export type CoupangCredentialUpdateWithoutWorkspaceInput = {
   loginPassword?: Prisma.StringFieldUpdateOperationsInput | string
   encryptionIv?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectVendorSales?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -512,6 +537,7 @@ export type CoupangCredentialUncheckedUpdateWithoutWorkspaceInput = {
   loginPassword?: Prisma.StringFieldUpdateOperationsInput | string
   encryptionIv?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectVendorSales?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -527,6 +553,7 @@ export type CoupangCredentialSelect<ExtArgs extends runtime.Types.Extensions.Int
   loginPassword?: boolean
   encryptionIv?: boolean
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: boolean
   lastError?: boolean
   createdAt?: boolean
@@ -541,6 +568,7 @@ export type CoupangCredentialSelectCreateManyAndReturn<ExtArgs extends runtime.T
   loginPassword?: boolean
   encryptionIv?: boolean
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: boolean
   lastError?: boolean
   createdAt?: boolean
@@ -555,6 +583,7 @@ export type CoupangCredentialSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   loginPassword?: boolean
   encryptionIv?: boolean
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: boolean
   lastError?: boolean
   createdAt?: boolean
@@ -569,13 +598,14 @@ export type CoupangCredentialSelectScalar = {
   loginPassword?: boolean
   encryptionIv?: boolean
   isActive?: boolean
+  collectVendorSales?: boolean
   lastLoginAt?: boolean
   lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CoupangCredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "loginId" | "loginPassword" | "encryptionIv" | "isActive" | "lastLoginAt" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["coupangCredential"]>
+export type CoupangCredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "loginId" | "loginPassword" | "encryptionIv" | "isActive" | "collectVendorSales" | "lastLoginAt" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["coupangCredential"]>
 export type CoupangCredentialInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }
@@ -598,6 +628,7 @@ export type $CoupangCredentialPayload<ExtArgs extends runtime.Types.Extensions.I
     loginPassword: string
     encryptionIv: string
     isActive: boolean
+    collectVendorSales: boolean
     lastLoginAt: Date | null
     lastError: string | null
     createdAt: Date
@@ -1032,6 +1063,7 @@ export interface CoupangCredentialFieldRefs {
   readonly loginPassword: Prisma.FieldRef<"CoupangCredential", 'String'>
   readonly encryptionIv: Prisma.FieldRef<"CoupangCredential", 'String'>
   readonly isActive: Prisma.FieldRef<"CoupangCredential", 'Boolean'>
+  readonly collectVendorSales: Prisma.FieldRef<"CoupangCredential", 'Boolean'>
   readonly lastLoginAt: Prisma.FieldRef<"CoupangCredential", 'DateTime'>
   readonly lastError: Prisma.FieldRef<"CoupangCredential", 'String'>
   readonly createdAt: Prisma.FieldRef<"CoupangCredential", 'DateTime'>

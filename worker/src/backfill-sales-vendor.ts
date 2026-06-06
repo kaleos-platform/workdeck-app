@@ -1,11 +1,13 @@
 /**
- * 판매분석 VENDOR 콜드스타트 백필 스크립트
+ * 판매분석 VENDOR 콜드스타트 백필
  *
  * 용도: 발주예측이 신규 로켓그로스에 대해 과거 N일치 VENDOR 데이터가 없어
- *       90일 zero-fill 구간이 생기는 문제를 방지하기 위한 1회용 백필.
+ *       90일 zero-fill 구간이 생기는 문제를 방지하기 위한 백필.
  *
- * 실행: npm run backfill-sales [일수=90]
- *       예) npm run backfill-sales 30  → 어제부터 30일 전까지 수집
+ * CLI 실행: npm run backfill-sales [일수=90]
+ *            예) npm run backfill-sales 30  → 어제부터 30일 전까지 수집
+ *
+ * 프로그래밍 방식: runBackfill(days, creds, workspaceId) 호출
  *
  * 멱등: 같은 (workspaceId, snapshotDate, VENDOR_ITEM_METRICS) 재업로드는
  *       processInventoryUpload 의 덮어쓰기 로직이 처리하므로 재실행 안전.
@@ -36,39 +38,50 @@ function toKstMidnightIso(dateKst: string): string {
   return new Date(`${dateKst}T00:00:00+09:00`).toISOString()
 }
 
-// ─── 메인 ──────────────────────────────────────────────────────────────────────
+// ─── 타입 ──────────────────────────────────────────────────────────────────────
 
-async function main(): Promise<void> {
-  const rawDays = process.argv[2]
-  const totalDays = rawDays ? parseInt(rawDays, 10) : 90
-  if (isNaN(totalDays) || totalDays < 1) {
-    console.error('일수는 1 이상의 정수여야 합니다. 예: npm run backfill-sales 90')
-    process.exit(1)
-  }
+export type BackfillCreds = {
+  loginId: string
+  password: string
+}
 
-  console.log(`\n=== 판매분석 VENDOR 백필 시작 (대상: 어제 ~ ${totalDays}일 전) ===\n`)
+export type BackfillResult = {
+  succeeded: number
+  failed: number
+  totalInserted: number
+  failedDates: string[]
+  /** 백필 범위 oldest KST 날짜 (어제−days+1) */
+  fromDate: string
+  /** 백필 범위 newest KST 날짜 (어제) */
+  toDate: string
+}
 
-  // ── credential 조회 ──
-  // orchestrator 와 동일하게 단일 credential API 사용
-  let credential: Awaited<ReturnType<typeof getCredentials>>
-  try {
-    credential = await getCredentials()
-  } catch (err) {
-    console.error('자격증명 조회 실패:', err instanceof Error ? err.message : err)
-    process.exit(1)
-  }
+export type BackfillProgressCallback = (params: {
+  date: string
+  succeeded: number
+  failed: number
+  total: number
+}) => void
 
-  const password =
-    credential.passwordIv === 'none'
-      ? credential.encryptedPassword
-      : decrypt(credential.encryptedPassword, credential.passwordIv)
+// ─── 재사용 가능한 핵심 함수 ──────────────────────────────────────────────────
 
-  const creds = { loginId: credential.loginId, password }
-  const { workspaceId } = credential
-
-  // ── 대상 날짜 목록 생성: 어제(offset=1) → N일 전(offset=totalDays) ──
+/**
+ * 과거 N일치 VENDOR 판매분석을 Wing에서 수집해 API에 업로드한다.
+ *
+ * @param days       수집할 일수 (1~120)
+ * @param creds      Wing 로그인 자격증명 (복호화된 평문 패스워드)
+ * @param workspaceId 업로드 대상 워크스페이스 ID
+ * @param onProgress  진행 콜백 (선택)
+ */
+export async function runBackfill(
+  days: number,
+  creds: BackfillCreds,
+  workspaceId: string,
+  onProgress?: BackfillProgressCallback
+): Promise<BackfillResult> {
+  // ── 대상 날짜 목록 생성: 어제(offset=1) → N일 전(offset=days) ──
   const dates: string[] = []
-  for (let i = 1; i <= totalDays; i++) {
+  for (let i = 1; i <= days; i++) {
     dates.push(kstDateOffset(i))
   }
 
@@ -85,14 +98,7 @@ async function main(): Promise<void> {
 
   // ── Wing 세션 1개를 열고 날짜 루프 ──
   console.log('[backfill] Wing 세션 시작...')
-  let session: Awaited<ReturnType<typeof openWingSession>>
-  try {
-    session = await openWingSession(creds)
-  } catch (err) {
-    console.error('[backfill] Wing 세션 열기 실패:', err instanceof Error ? err.message : err)
-    process.exit(1)
-  }
-
+  const session = await openWingSession(creds)
   const { context, page, downloadDir } = session
 
   try {
@@ -106,6 +112,7 @@ async function main(): Promise<void> {
         console.error(`[backfill]   ✗ 다운로드 실패 (${dateKst}): ${downloadResult.error}`)
         failed++
         failedDates.push(dateKst)
+        onProgress?.({ date: dateKst, succeeded, failed, total: dates.length })
         // rate-limit 방어 sleep 후 다음 날짜로 계속
         await sleep(3000)
         continue
@@ -145,6 +152,8 @@ async function main(): Promise<void> {
         } catch {}
       }
 
+      onProgress?.({ date: dateKst, succeeded, failed, total: dates.length })
+
       // rate-limit 방어: 날짜 간 2~3초 sleep
       await sleep(2000 + Math.random() * 1000)
     }
@@ -153,28 +162,73 @@ async function main(): Promise<void> {
     console.log('\n[backfill] Wing 세션 종료')
   }
 
+  return {
+    succeeded,
+    failed,
+    totalInserted,
+    failedDates,
+    fromDate: dates[dates.length - 1], // oldest
+    toDate: dates[0], // newest (어제)
+  }
+}
+
+// ─── CLI 진입점 ────────────────────────────────────────────────────────────────
+
+async function main(): Promise<void> {
+  const rawDays = process.argv[2]
+  const totalDays = rawDays ? parseInt(rawDays, 10) : 90
+  if (isNaN(totalDays) || totalDays < 1) {
+    console.error('일수는 1 이상의 정수여야 합니다. 예: npm run backfill-sales 90')
+    process.exit(1)
+  }
+
+  console.log(`\n=== 판매분석 VENDOR 백필 시작 (대상: 어제 ~ ${totalDays}일 전) ===\n`)
+
+  // ── credential 조회 ──
+  let credential: Awaited<ReturnType<typeof getCredentials>>
+  try {
+    credential = await getCredentials()
+  } catch (err) {
+    console.error('자격증명 조회 실패:', err instanceof Error ? err.message : err)
+    process.exit(1)
+  }
+
+  const password =
+    credential.passwordIv === 'none'
+      ? credential.encryptedPassword
+      : decrypt(credential.encryptedPassword, credential.passwordIv)
+
+  const creds: BackfillCreds = { loginId: credential.loginId, password }
+
+  // ── 백필 실행 ──
+  let result: BackfillResult
+  try {
+    result = await runBackfill(totalDays, creds, credential.workspaceId)
+  } catch (err) {
+    console.error('[backfill] 백필 실행 실패:', err instanceof Error ? err.message : err)
+    process.exit(1)
+  }
+
   // ── 최종 요약 ──
   console.log('\n=== 백필 완료 요약 ===')
-  console.log(`  성공: ${succeeded}일 / 총 ${dates.length}일`)
-  console.log(`  실패: ${failed}일`)
-  console.log(`  총 삽입: ${totalInserted}건`)
-  if (failedDates.length > 0) {
-    console.log(`  실패 날짜: ${failedDates.join(', ')}`)
+  console.log(`  성공: ${result.succeeded}일 / 총 ${totalDays}일`)
+  console.log(`  실패: ${result.failed}일`)
+  console.log(`  총 삽입: ${result.totalInserted}건`)
+  if (result.failedDates.length > 0) {
+    console.log(`  실패 날짜: ${result.failedDates.join(', ')}`)
   }
   console.log('====================')
 
   // 이 스크립트는 VENDOR 레코드만 적재한다. 발주예측이 읽는 OUTBOUND 이동으로
-  // 변환하려면 app-side 변환을 1회 실행해야 한다(워커는 prisma 미보유 + cron 인증 분리).
-  // 과거 범위는 stockNeutral(재고 미차감)로 변환된다.
-  const oldest = dates[dates.length - 1]
-  const newest = dates[0]
-  console.log('\n[다음 단계] OUTBOUND 변환 (app-side, CRON_SECRET 필요):')
+  // 변환하려면 app-side 변환을 1회 실행해야 한다(워커는 prisma 미보유).
+  // 변환 엔드포인트는 x-worker-api-key 인증이므로 WORKER_API_KEY 가 필요하다.
+  console.log('\n[다음 단계] OUTBOUND 변환 (app-side, x-worker-api-key 인증):')
   console.log(
-    `  curl -H "Authorization: Bearer $CRON_SECRET" \\\n    "$WORKDECK_APP_URL/api/cron/coupang-sales-sync?from=${oldest}&to=${newest}"`
+    `  curl -H "x-worker-api-key: $WORKER_API_KEY" \\\n    "$WORKDECK_APP_URL/api/cron/coupang-sales-sync?from=${result.fromDate}&to=${result.toDate}"`
   )
   console.log('  (120일 초과 시 범위를 나눠 호출)\n')
 
-  if (failed > 0) {
+  if (result.failed > 0) {
     process.exit(1)
   }
 }

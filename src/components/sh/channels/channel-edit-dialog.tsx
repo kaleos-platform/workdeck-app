@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EXTERNAL_SOURCES, EXTERNAL_SOURCE_LABEL } from '@/lib/inv/external-sources'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -60,6 +61,7 @@ type Channel = {
   requireOrderNumber: boolean
   requirePayment: boolean
   requireProducts: boolean
+  externalSource?: string | null
 }
 
 type Props = {
@@ -67,6 +69,8 @@ type Props = {
   onOpenChange: (open: boolean) => void
   /** null이면 신규 생성 */
   channel: Channel | null
+  /** 전체 채널 목록 — externalSource 중복 disabled 표시용 */
+  channels: Channel[]
   channelTypes: ChannelTypeDef[]
   onSaved: () => void
   onTypesChanged: () => void
@@ -76,6 +80,7 @@ type Props = {
 
 const NO_TYPE = '__none__'
 const NEW_TYPE = '__new__'
+const EXTERNAL_SOURCE_NONE = '__none__'
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
@@ -83,12 +88,14 @@ export function ChannelEditDialog({
   open,
   onOpenChange,
   channel,
+  channels,
   channelTypes,
   onSaved,
   onTypesChanged,
 }: Props) {
   // ── 기본 탭 ──
   const [fTypeDefId, setFTypeDefId] = useState(NO_TYPE)
+  const [fExternalSource, setFExternalSource] = useState<string>(EXTERNAL_SOURCE_NONE)
   const [fName, setFName] = useState('')
   const [fAdminUrl, setFAdminUrl] = useState('')
   const [fUsesMarketing, setFUsesMarketing] = useState(false)
@@ -163,6 +170,7 @@ export function ChannelEditDialog({
       setFApplyAdCost(channel.applyAdCost)
       setFUseSimulation(channel.useSimulation)
       setFIsActive(channel.isActive)
+      setFExternalSource(channel.externalSource ?? EXTERNAL_SOURCE_NONE)
 
       setFVatIncluded(channel.vatIncludedInFee)
       setFPaymentFeeIncluded(channel.paymentFeeIncluded)
@@ -196,6 +204,7 @@ export function ChannelEditDialog({
       setFApplyAdCost(false)
       setFUseSimulation(true)
       setFIsActive(true)
+      setFExternalSource(EXTERNAL_SOURCE_NONE)
 
       setFVatIncluded(true)
       setFPaymentFeeIncluded(true)
@@ -311,6 +320,9 @@ export function ChannelEditDialog({
       } else {
         body.paymentFeePct = null
       }
+
+      // externalSource: '__none__' 선택 시 null(해제), 그 외 값 그대로 전송
+      body.externalSource = fExternalSource === EXTERNAL_SOURCE_NONE ? null : fExternalSource
 
       const res = await fetch(url, {
         method,
@@ -541,6 +553,33 @@ export function ChannelEditDialog({
                     <p className="text-xs text-muted-foreground">비활성 시 신규 주문에 사용 불가</p>
                   </div>
                   <Switch id="ch-active" checked={fIsActive} onCheckedChange={setFIsActive} />
+                </div>
+
+                {/* 연결된 소스 — 외부 데이터 연동 */}
+                <div className="space-y-2">
+                  <Label htmlFor="ch-external-source">연결된 소스 (선택)</Label>
+                  <Select value={fExternalSource} onValueChange={setFExternalSource}>
+                    <SelectTrigger id="ch-external-source">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={EXTERNAL_SOURCE_NONE}>없음</SelectItem>
+                      {EXTERNAL_SOURCES.map((src) => {
+                        const usedBy = channels.find(
+                          (c) => c.externalSource === src && c.id !== channel?.id
+                        )
+                        return (
+                          <SelectItem key={src} value={src} disabled={!!usedBy}>
+                            {EXTERNAL_SOURCE_LABEL[src]}
+                            {usedBy ? ` (이미 '${usedBy.name}' 채널에 연결됨)` : ''}
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    쿠팡 로켓그로스로 지정하면 판매 OUTBOUND·매출이 이 채널에 귀속됩니다.
+                  </p>
                 </div>
               </>
             )}

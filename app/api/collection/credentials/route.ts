@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
         loginPassword: true,
         encryptionIv: true,
         isActive: true,
+        collectVendorSales: true,
       },
     })
 
@@ -66,6 +67,7 @@ export async function GET(request: NextRequest) {
       lastLoginAt: true,
       lastError: true,
       createdAt: true,
+      collectVendorSales: true,
     },
   })
 
@@ -103,7 +105,13 @@ export async function PUT(request: NextRequest) {
     workspace = ensured.workspace
   }
 
-  let body: { loginId?: string; password?: string; loginPassword?: string; encryptionIv?: string }
+  let body: {
+    loginId?: string
+    password?: string
+    loginPassword?: string
+    encryptionIv?: string
+    collectVendorSales?: boolean
+  }
   try {
     body = await request.json()
   } catch {
@@ -133,6 +141,11 @@ export async function PUT(request: NextRequest) {
     encryptionIv = encrypted.iv
   }
 
+  // collectVendorSales: 미지정이면 update 시 기존값 유지, create 시 기본값 true
+  const collectVendorSalesCreate = body.collectVendorSales ?? true
+  const collectVendorSalesUpdate =
+    body.collectVendorSales !== undefined ? { collectVendorSales: body.collectVendorSales } : {}
+
   const credential = await prisma.coupangCredential.upsert({
     where: { workspaceId: workspace.id },
     create: {
@@ -140,6 +153,7 @@ export async function PUT(request: NextRequest) {
       loginId,
       loginPassword,
       encryptionIv,
+      collectVendorSales: collectVendorSalesCreate,
     },
     update: {
       loginId,
@@ -147,11 +161,13 @@ export async function PUT(request: NextRequest) {
       encryptionIv,
       isActive: true,
       lastError: null,
+      ...collectVendorSalesUpdate,
     },
     select: {
       id: true,
       loginId: true,
       isActive: true,
+      collectVendorSales: true,
       createdAt: true,
       updatedAt: true,
     },

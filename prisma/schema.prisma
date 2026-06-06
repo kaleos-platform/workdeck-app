@@ -190,6 +190,7 @@ model Workspace {
   coupangCredential  CoupangCredential?
   collectionSchedule CollectionSchedule?
   collectionRuns     CollectionRun[]
+  coupangBackfillJobs CoupangBackfillJob[]
 
   // 재고 관리
   inventoryUploads          InventoryUpload[]
@@ -484,6 +485,9 @@ model CoupangCredential {
   loginPassword String
   encryptionIv  String
   isActive      Boolean   @default(true)
+  // 판매분석(VENDOR) 수집 허가 — isActive(크레덴셜 유효)와 의미 분리.
+  // false 면 워커가 inventory_health 만 수집하고 VENDOR(로켓그로스 일별 판매)는 건너뛴다.
+  collectVendorSales Boolean @default(true)
   lastLoginAt   DateTime?
   lastError     String?
   workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -501,6 +505,34 @@ model CollectionSchedule {
   workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+}
+
+enum CoupangBackfillStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
+// 콜드스타트 판매분석 백필 잡 — 웹은 Wing 직접 수집 불가하므로 워커가 폴링해 실행.
+// 워커: 과거 days 일 VENDOR 수집 → coupang-sales-sync range 변환(step-2) 체이닝.
+model CoupangBackfillJob {
+  id          String                @id @default(cuid())
+  workspaceId String
+  days        Int // 과거 N일 (어제부터 역순)
+  status      CoupangBackfillStatus @default(PENDING)
+  claimedAt   DateTime?
+  claimedBy   String?
+  completedAt DateTime?
+  collected   Int                   @default(0) // 적재된 일자 수
+  converted   Int                   @default(0) // OUTBOUND 변환된 일자 수
+  error       String?
+  workspace   Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([status, createdAt])
+  @@index([workspaceId, status])
 }
 
 // 수집 실행 이력
@@ -1329,6 +1361,9 @@ model Channel {
   spaceId               String
   channelTypeDefId      String? // 마이그레이션 후 NOT NULL로 강제하기 전까지 nullable
   name                  String
+  // 외부 데이터 소스 (예: 'coupang_rocket_growth'). 재고 위치(InvStorageLocation)와 동일
+  // 패턴 — 위치·채널이 같은 외부 출처를 가리키고, 공간당 소스별 1개만 연결(1:1 페어링).
+  externalSource        String?
   isActive              Boolean  @default(true)
   useSimulation         Boolean  @default(true) // 가격 시뮬레이션 노출/필수입력 결정
   adminUrl              String?
@@ -1361,6 +1396,7 @@ model Channel {
   updatedAt DateTime @updatedAt
 
   @@unique([spaceId, name])
+  @@unique([spaceId, externalSource]) // 외부 소스별 1개 채널만 (NULL 다중 허용)
   @@index([spaceId])
   @@index([channelTypeDefId])
 }

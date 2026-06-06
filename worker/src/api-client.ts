@@ -41,6 +41,8 @@ export type CredentialResponse = {
   loginId: string
   encryptedPassword: string
   passwordIv: string
+  /** 쿠팡 판매분석(VENDOR) 수집 여부 — false면 inventory_health만 수집 */
+  collectVendorSales?: boolean
 }
 
 // ─── API 클라이언트 ──────────────────────────────────────────────────────────────

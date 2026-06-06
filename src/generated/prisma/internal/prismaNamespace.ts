@@ -399,6 +399,7 @@ export const ModelName = {
   DeckInstance: 'DeckInstance',
   CoupangCredential: 'CoupangCredential',
   CollectionSchedule: 'CollectionSchedule',
+  CoupangBackfillJob: 'CoupangBackfillJob',
   CollectionRun: 'CollectionRun',
   AnalysisReport: 'AnalysisReport',
   ExecutionTask: 'ExecutionTask',
@@ -487,7 +488,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanItem" | "reorderPlanAccuracy"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanItem" | "reorderPlanAccuracy"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1598,6 +1599,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CollectionScheduleCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CollectionScheduleCountAggregateOutputType> | number
+        }
+      }
+    }
+    CoupangBackfillJob: {
+      payload: Prisma.$CoupangBackfillJobPayload<ExtArgs>
+      fields: Prisma.CoupangBackfillJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CoupangBackfillJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CoupangBackfillJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>
+        }
+        findFirst: {
+          args: Prisma.CoupangBackfillJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CoupangBackfillJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>
+        }
+        findMany: {
+          args: Prisma.CoupangBackfillJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>[]
+        }
+        create: {
+          args: Prisma.CoupangBackfillJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>
+        }
+        createMany: {
+          args: Prisma.CoupangBackfillJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CoupangBackfillJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>[]
+        }
+        delete: {
+          args: Prisma.CoupangBackfillJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>
+        }
+        update: {
+          args: Prisma.CoupangBackfillJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.CoupangBackfillJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CoupangBackfillJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CoupangBackfillJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.CoupangBackfillJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangBackfillJobPayload>
+        }
+        aggregate: {
+          args: Prisma.CoupangBackfillJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCoupangBackfillJob>
+        }
+        groupBy: {
+          args: Prisma.CoupangBackfillJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoupangBackfillJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CoupangBackfillJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoupangBackfillJobCountAggregateOutputType> | number
         }
       }
     }
@@ -7234,6 +7309,7 @@ export const CoupangCredentialScalarFieldEnum = {
   loginPassword: 'loginPassword',
   encryptionIv: 'encryptionIv',
   isActive: 'isActive',
+  collectVendorSales: 'collectVendorSales',
   lastLoginAt: 'lastLoginAt',
   lastError: 'lastError',
   createdAt: 'createdAt',
@@ -7254,6 +7330,24 @@ export const CollectionScheduleScalarFieldEnum = {
 } as const
 
 export type CollectionScheduleScalarFieldEnum = (typeof CollectionScheduleScalarFieldEnum)[keyof typeof CollectionScheduleScalarFieldEnum]
+
+
+export const CoupangBackfillJobScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  days: 'days',
+  status: 'status',
+  claimedAt: 'claimedAt',
+  claimedBy: 'claimedBy',
+  completedAt: 'completedAt',
+  collected: 'collected',
+  converted: 'converted',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupangBackfillJobScalarFieldEnum = (typeof CoupangBackfillJobScalarFieldEnum)[keyof typeof CoupangBackfillJobScalarFieldEnum]
 
 
 export const CollectionRunScalarFieldEnum = {
@@ -7820,6 +7914,7 @@ export const ChannelScalarFieldEnum = {
   spaceId: 'spaceId',
   channelTypeDefId: 'channelTypeDefId',
   name: 'name',
+  externalSource: 'externalSource',
   isActive: 'isActive',
   useSimulation: 'useSimulation',
   adminUrl: 'adminUrl',
@@ -8624,6 +8719,20 @@ export type ListEnumSpaceMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
+ * Reference to a field of type 'CoupangBackfillStatus'
+ */
+export type EnumCoupangBackfillStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CoupangBackfillStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CoupangBackfillStatus[]'
+ */
+export type ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CoupangBackfillStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'CollectionStatus'
  */
 export type EnumCollectionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CollectionStatus'>
@@ -9278,6 +9387,7 @@ export type GlobalOmitConfig = {
   deckInstance?: Prisma.DeckInstanceOmit
   coupangCredential?: Prisma.CoupangCredentialOmit
   collectionSchedule?: Prisma.CollectionScheduleOmit
+  coupangBackfillJob?: Prisma.CoupangBackfillJobOmit
   collectionRun?: Prisma.CollectionRunOmit
   analysisReport?: Prisma.AnalysisReportOmit
   executionTask?: Prisma.ExecutionTaskOmit

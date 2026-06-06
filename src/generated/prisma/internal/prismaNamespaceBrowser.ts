@@ -66,6 +66,7 @@ export const ModelName = {
   DeckInstance: 'DeckInstance',
   CoupangCredential: 'CoupangCredential',
   CollectionSchedule: 'CollectionSchedule',
+  CoupangBackfillJob: 'CoupangBackfillJob',
   CollectionRun: 'CollectionRun',
   AnalysisReport: 'AnalysisReport',
   ExecutionTask: 'ExecutionTask',
@@ -349,6 +350,7 @@ export const CoupangCredentialScalarFieldEnum = {
   loginPassword: 'loginPassword',
   encryptionIv: 'encryptionIv',
   isActive: 'isActive',
+  collectVendorSales: 'collectVendorSales',
   lastLoginAt: 'lastLoginAt',
   lastError: 'lastError',
   createdAt: 'createdAt',
@@ -369,6 +371,24 @@ export const CollectionScheduleScalarFieldEnum = {
 } as const
 
 export type CollectionScheduleScalarFieldEnum = (typeof CollectionScheduleScalarFieldEnum)[keyof typeof CollectionScheduleScalarFieldEnum]
+
+
+export const CoupangBackfillJobScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  days: 'days',
+  status: 'status',
+  claimedAt: 'claimedAt',
+  claimedBy: 'claimedBy',
+  completedAt: 'completedAt',
+  collected: 'collected',
+  converted: 'converted',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupangBackfillJobScalarFieldEnum = (typeof CoupangBackfillJobScalarFieldEnum)[keyof typeof CoupangBackfillJobScalarFieldEnum]
 
 
 export const CollectionRunScalarFieldEnum = {
@@ -935,6 +955,7 @@ export const ChannelScalarFieldEnum = {
   spaceId: 'spaceId',
   channelTypeDefId: 'channelTypeDefId',
   name: 'name',
+  externalSource: 'externalSource',
   isActive: 'isActive',
   useSimulation: 'useSimulation',
   adminUrl: 'adminUrl',

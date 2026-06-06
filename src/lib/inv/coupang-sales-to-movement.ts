@@ -9,14 +9,15 @@
 // 무중복: 판매자배송 행은 제외한다. 쿠팡 판매자배송 주문은 이미 워크덱 배송(DelBatch)
 // 으로 업로드되어 OUTBOUND 가 생성되므로, 여기서 또 기록하면 이중 계산된다.
 //
-// 재고 의미 (중요): 이 OUTBOUND 는 **항상 재고를 차감하지 않는다(stock-neutral)**.
-// 재고 truth 는 오직 inventory_health 일별 자동 대조(coupang-inventory-sync, 절대값 set)가
-// 책임진다. 같은 워커 실행이 VENDOR 와 inventory_health 스냅샷을 함께 만들고, 대조가
-// 매일 아침 그 스냅샷을 절대값으로 반영하므로, 여기서 또 차감하면 항상 이중 차감이다
-// (차감이 도움 되는 상태가 존재하지 않음). 따라서 dated OUTBOUND 는 발주예측 history
-// 전용 — buildDailySeries / accuracy.ts 가 읽으며 둘 다 stock-equality 를 검사하지 않는다.
+// 재고 의미 (중요): 이 OUTBOUND 는 **재고를 차감한다(perpetual ledger)**.
+// 자동 대조 cron 은 제거됐고, 재고 truth = OUTBOUND 차감 + 사용자 수동 대조 보정이다.
+// 쿠팡 FC 입고(보충)는 워커가 수집하지 않으므로 재고가 하향 drift 하며, 사용자가
+// 수동 재고이동(INBOUND) 또는 수동 대조(절대값 set)로 보정한다.
+// (수동 대조 confirmReconciliation 은 fileQuantity 절대값 set 이라 drift 를 self-correct.)
+// dated OUTBOUND 는 동시에 발주예측 수요 신호이기도 하다(buildDailySeries/accuracy.ts).
 
 import { prisma } from '@/lib/prisma'
+import { lockStockLevel } from '@/lib/inv/movement-processor'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
@@ -64,7 +65,9 @@ export async function syncCoupangSalesMovements(params: {
 }): Promise<SyncCoupangSalesResult> {
   const { spaceId, workspaceId, locationId, channelId, date } = params
 
-  // 1) 해당 일자(KST) 로켓그로스 VENDOR 레코드 (판매량>0)
+  // 1) 해당 일자(KST) 로켓그로스 VENDOR 레코드.
+  // salesQty 0 행도 포함한다 — 전체취소로 0이 된 옵션의 기존 OUTBOUND 를 0으로 정정해
+  // 재고를 복원하기 위함(필터로 빼면 정정이 누락돼 재고가 과차감 상태로 남는다).
   // snapshotDate 가 정확한 timestamp 일 수 있어 동등 비교 대신 KST 일자 범위로 조회.
   const { startUtc, endUtc } = kstDayRange(date)
   const records = await prisma.inventoryRecord.findMany({
@@ -73,7 +76,6 @@ export async function syncCoupangSalesMovements(params: {
       fileType: 'VENDOR_ITEM_METRICS',
       snapshotDate: { gte: startUtc, lt: endUtc },
       fulfillmentType: ROCKET_GROWTH_FULFILLMENT,
-      salesQty30d: { gt: 0 }, // VENDOR 파서가 '판매량'을 salesQty30d 로 매핑
     },
     select: {
       productId: true,
@@ -88,12 +90,12 @@ export async function syncCoupangSalesMovements(params: {
   }
 
   // 2) externalCode → 매핑 일괄 로드 (matcher 와 동일 규칙)
+  // qty 0 도 키에 넣는다(전체취소 정정용). 음수는 방어적으로 0 처리.
   const codeToQty = new Map<string, number>() // externalCode → 판매량
   for (const r of records) {
     const externalCode = r.skuId ?? r.optionId ?? r.productId
     if (!externalCode) continue
-    const qty = r.salesQty30d ?? 0
-    if (qty <= 0) continue
+    const qty = Math.max(0, r.salesQty30d ?? 0)
     codeToQty.set(externalCode, (codeToQty.get(externalCode) ?? 0) + qty)
   }
 
@@ -130,9 +132,10 @@ export async function syncCoupangSalesMovements(params: {
     }
   }
 
-  // 3) 옵션별 OUTBOUND upsert (referenceId 멱등)
+  // 3) 옵션별 OUTBOUND upsert (referenceId 멱등). quantity 0 은 기존 OUTBOUND 정정용
+  //    (전체취소) — upsert 내부에서 기존이 없으면 skip 한다.
   for (const [optionId, quantity] of optionQty) {
-    if (quantity <= 0) continue
+    if (quantity < 0) continue
     const referenceId = coupangSalesReferenceId(date, optionId)
     const outcome = await upsertOutboundMovement({
       spaceId,
@@ -150,14 +153,15 @@ export async function syncCoupangSalesMovements(params: {
 }
 
 /**
- * referenceId 로 식별되는 dated OUTBOUND 이동을 멱등하게 보장한다(stock-neutral).
- * - 없음 → 생성
+ * referenceId 로 식별되는 dated OUTBOUND 이동을 멱등하게 보장한다(**재고 차감**).
+ * - 없음 → 생성 + 재고 차감
  * - 동일 수량 → skip
- * - 수량 변경(취소/정정) → 삭제 후 재생성
+ * - 수량 변경(취소/정정) → 같은 트랜잭션에서 delta(신규−기존)만큼 재고 조정 + 이동 갱신
  *
- * **재고를 차감하지 않는다.** 재고 truth 는 inventory_health 대조(절대값 set)가 책임지고,
- * 이 이동은 발주예측 history 전용이다. (모듈 상단 주석 참고.)
- * 미사용 옵션 OUTBOUND 방지 위해 옵션 ACTIVE/소유권만 검증.
+ * 재고 truth = OUTBOUND 차감 + 수동 대조 보정(모듈 상단 주석 참고). 정정은 delete+recreate
+ * 대신 **delta 한 번에 적용**해 원자성·역산을 보장한다(중간 실패로 인한 재고 누수 방지).
+ * lockStockLevel 로 행 잠금. 음수 재고는 허용(입고 미수집 drift, 수동 보정 전제) — warning.
+ * 미사용 옵션 OUTBOUND 방지 위해 옵션 ACTIVE/소유권 검증.
  */
 async function upsertOutboundMovement(input: {
   spaceId: string
@@ -180,11 +184,43 @@ async function upsertOutboundMovement(input: {
     const existing = await tx.invMovement.findFirst({
       where: { referenceId, type: 'OUTBOUND' },
     })
+    if (existing && existing.quantity === quantity) return 'skipped'
+    // 신규인데 0 이면 만들 OUTBOUND 가 없음(전체취소 정정 대상도 없음).
+    if (!existing && quantity <= 0) return 'skipped'
+
+    // delta 만큼 재고 차감: 신규 OUTBOUND = quantity 차감, 정정 = (quantity − 기존) 차감.
+    // (기존이 이미 차감했으므로 차분만 추가 적용 = 역산+재적용을 한 번에.)
+    // 전체취소(quantity 0)면 delta = −기존수량 → 기존 차감분이 전부 복원된다.
+    const delta = quantity - (existing?.quantity ?? 0)
+
+    await lockStockLevel(tx, optionId, locationId)
+    const stock = await tx.invStockLevel.findUnique({
+      where: { optionId_locationId: { optionId, locationId } },
+    })
+    const before = stock?.quantity ?? 0
+    const after = before - delta
+    if (stock) {
+      await tx.invStockLevel.update({ where: { id: stock.id }, data: { quantity: after } })
+    } else {
+      await tx.invStockLevel.create({ data: { spaceId, optionId, locationId, quantity: after } })
+    }
+    if (after < 0) {
+      console.warn(
+        `[coupang-sales] 재고 음수 (option ${optionId} loc ${locationId}): ${before} → ${after}. 수동 보정 필요.`
+      )
+    }
 
     if (existing) {
-      if (existing.quantity === quantity) return 'skipped'
-      // 수량 변경(정정/취소) → 삭제 후 재생성. 재고 미차감이라 역산 불필요.
-      await tx.invMovement.delete({ where: { id: existing.id } })
+      // 전체취소(0) 면 OUTBOUND 자체를 삭제(0 짜리 잔존 방지). 그 외엔 수량 갱신.
+      if (quantity <= 0) {
+        await tx.invMovement.delete({ where: { id: existing.id } })
+      } else {
+        await tx.invMovement.update({
+          where: { id: existing.id },
+          data: { quantity, movementDate, channelId, locationId },
+        })
+      }
+      return 'updated'
     }
 
     await tx.invMovement.create({
@@ -199,8 +235,7 @@ async function upsertOutboundMovement(input: {
         referenceId,
       },
     })
-
-    return existing ? 'updated' : 'created'
+    return 'created'
   })
 }
 
@@ -293,18 +328,17 @@ export async function runCoupangSalesSyncForDates(dates: Date[]): Promise<SalesS
 }
 
 /**
- * Space 의 쿠팡 판매 귀속 채널 조회. 이름에 "쿠팡" 포함 + 판매채널 타입.
- * 무음 생성하지 않는다 — 없으면 호출자가 skip. (사용자 가시 엔티티)
+ * Space 의 쿠팡 로켓그로스 판매 귀속 채널 조회 — externalSource 로 결정적.
+ * (위치와 동일 패턴: `@@unique([spaceId, externalSource])` 로 공간당 1개 보장.)
+ * 무음 생성하지 않는다 — 없으면 호출자가 skip. 페어링은 연동 시점에 생성.
  */
 async function findCoupangSalesChannel(spaceId: string): Promise<{ id: string } | null> {
   return prisma.channel.findFirst({
     where: {
       spaceId,
       isActive: true,
-      name: { contains: '쿠팡' },
-      channelTypeDef: { isSalesChannel: true },
+      externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
     },
     select: { id: true },
-    orderBy: { sortOrder: 'asc' },
   })
 }

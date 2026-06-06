@@ -216,6 +216,7 @@ export function ChannelRail({
         open={createOpen}
         onOpenChange={setCreateOpen}
         channel={null}
+        channels={[]}
         channelTypes={channelTypes}
         onSaved={() => {
           setCreateOpen(false)

@@ -5,6 +5,7 @@ import { parseReconciliationFile, type ParseResult } from '@/lib/inv/reconciliat
 import { getCoupangInventoryRows } from '@/lib/inv/reconciliation-sources'
 import { runReconciliationMatch, ReconciliationCoreError } from '@/lib/inv/reconciliation-core'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { ensureCoupangSalesChannel } from '@/lib/inv/coupang-channel-pairing'
 
 // GET /api/inv/reconciliation — 히스토리 목록
 export async function GET(req: NextRequest) {
@@ -118,6 +119,11 @@ export async function POST(req: NextRequest) {
             console.warn('[reconciliation POST] externalIntegrationKey backfill 실패', err)
           })
       }
+
+      // 1:1 페어링 — 위치 연동 시 로켓 판매채널이 없으면 자동 생성(판매 OUTBOUND 귀속용).
+      await ensureCoupangSalesChannel(resolved.space.id).catch((err) =>
+        console.warn('[reconciliation POST] 로켓 판매채널 페어링 실패', err)
+      )
 
       try {
         parsed = await getCoupangInventoryRows(workspace.id, {

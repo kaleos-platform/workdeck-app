@@ -45,6 +45,7 @@ export type ChannelMinAggregateOutputType = {
   spaceId: string | null
   channelTypeDefId: string | null
   name: string | null
+  externalSource: string | null
   isActive: boolean | null
   useSimulation: boolean | null
   adminUrl: string | null
@@ -69,6 +70,7 @@ export type ChannelMaxAggregateOutputType = {
   spaceId: string | null
   channelTypeDefId: string | null
   name: string | null
+  externalSource: string | null
   isActive: boolean | null
   useSimulation: boolean | null
   adminUrl: string | null
@@ -93,6 +95,7 @@ export type ChannelCountAggregateOutputType = {
   spaceId: number
   channelTypeDefId: number
   name: number
+  externalSource: number
   isActive: number
   useSimulation: number
   adminUrl: number
@@ -133,6 +136,7 @@ export type ChannelMinAggregateInputType = {
   spaceId?: true
   channelTypeDefId?: true
   name?: true
+  externalSource?: true
   isActive?: true
   useSimulation?: true
   adminUrl?: true
@@ -157,6 +161,7 @@ export type ChannelMaxAggregateInputType = {
   spaceId?: true
   channelTypeDefId?: true
   name?: true
+  externalSource?: true
   isActive?: true
   useSimulation?: true
   adminUrl?: true
@@ -181,6 +186,7 @@ export type ChannelCountAggregateInputType = {
   spaceId?: true
   channelTypeDefId?: true
   name?: true
+  externalSource?: true
   isActive?: true
   useSimulation?: true
   adminUrl?: true
@@ -292,6 +298,7 @@ export type ChannelGroupByOutputType = {
   spaceId: string
   channelTypeDefId: string | null
   name: string
+  externalSource: string | null
   isActive: boolean
   useSimulation: boolean
   adminUrl: string | null
@@ -339,6 +346,7 @@ export type ChannelWhereInput = {
   spaceId?: Prisma.StringFilter<"Channel"> | string
   channelTypeDefId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
+  externalSource?: Prisma.StringNullableFilter<"Channel"> | string | null
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
@@ -374,6 +382,7 @@ export type ChannelOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   channelTypeDefId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
+  externalSource?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -407,12 +416,14 @@ export type ChannelOrderByWithRelationInput = {
 export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   spaceId_name?: Prisma.ChannelSpaceIdNameCompoundUniqueInput
+  spaceId_externalSource?: Prisma.ChannelSpaceIdExternalSourceCompoundUniqueInput
   AND?: Prisma.ChannelWhereInput | Prisma.ChannelWhereInput[]
   OR?: Prisma.ChannelWhereInput[]
   NOT?: Prisma.ChannelWhereInput | Prisma.ChannelWhereInput[]
   spaceId?: Prisma.StringFilter<"Channel"> | string
   channelTypeDefId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
+  externalSource?: Prisma.StringNullableFilter<"Channel"> | string | null
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
@@ -441,13 +452,14 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   channelProducts?: Prisma.ChannelProductListRelationFilter
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
   pricingScenarioChannels?: Prisma.PricingScenarioChannelListRelationFilter
-}, "id" | "spaceId_name">
+}, "id" | "spaceId_name" | "spaceId_externalSource">
 
 export type ChannelOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   channelTypeDefId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
+  externalSource?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -480,6 +492,7 @@ export type ChannelScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"Channel"> | string
   channelTypeDefId?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"Channel"> | string
+  externalSource?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
@@ -502,6 +515,7 @@ export type ChannelScalarWhereWithAggregatesInput = {
 export type ChannelCreateInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -537,6 +551,7 @@ export type ChannelUncheckedCreateInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -568,6 +583,7 @@ export type ChannelUncheckedCreateInput = {
 export type ChannelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -603,6 +619,7 @@ export type ChannelUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -636,6 +653,7 @@ export type ChannelCreateManyInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -658,6 +676,7 @@ export type ChannelCreateManyInput = {
 export type ChannelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -682,6 +701,7 @@ export type ChannelUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -726,11 +746,17 @@ export type ChannelSpaceIdNameCompoundUniqueInput = {
   name: string
 }
 
+export type ChannelSpaceIdExternalSourceCompoundUniqueInput = {
+  spaceId: string
+  externalSource: string
+}
+
 export type ChannelCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   channelTypeDefId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  externalSource?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
@@ -762,6 +788,7 @@ export type ChannelMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   channelTypeDefId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  externalSource?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
@@ -786,6 +813,7 @@ export type ChannelMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   channelTypeDefId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  externalSource?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
@@ -1033,6 +1061,7 @@ export type ChannelUpdateOneRequiredWithoutChannelProductsNestedInput = {
 export type ChannelCreateWithoutSpaceInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1066,6 +1095,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   id?: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1128,6 +1158,7 @@ export type ChannelScalarWhereInput = {
   spaceId?: Prisma.StringFilter<"Channel"> | string
   channelTypeDefId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
+  externalSource?: Prisma.StringNullableFilter<"Channel"> | string | null
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
@@ -1150,6 +1181,7 @@ export type ChannelScalarWhereInput = {
 export type ChannelCreateWithoutInvMovementsInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1184,6 +1216,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1230,6 +1263,7 @@ export type ChannelUpdateToOneWithWhereWithoutInvMovementsInput = {
 export type ChannelUpdateWithoutInvMovementsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1264,6 +1298,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1294,6 +1329,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
 export type ChannelCreateWithoutDelOrdersInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1328,6 +1364,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1374,6 +1411,7 @@ export type ChannelUpdateToOneWithWhereWithoutDelOrdersInput = {
 export type ChannelUpdateWithoutDelOrdersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1408,6 +1446,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1438,6 +1477,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
 export type ChannelCreateWithoutProductAliasesInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1472,6 +1512,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1518,6 +1559,7 @@ export type ChannelUpdateToOneWithWhereWithoutProductAliasesInput = {
 export type ChannelUpdateWithoutProductAliasesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1552,6 +1594,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1582,6 +1625,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
 export type ChannelCreateWithoutColumnMappingPresetsInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1616,6 +1660,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1662,6 +1707,7 @@ export type ChannelUpdateToOneWithWhereWithoutColumnMappingPresetsInput = {
 export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1696,6 +1742,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1726,6 +1773,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
 export type ChannelCreateWithoutChannelTypeDefInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1759,6 +1807,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   id?: string
   spaceId: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1816,6 +1865,7 @@ export type ChannelUpdateManyWithWhereWithoutChannelTypeDefInput = {
 export type ChannelCreateWithoutFeeRatesInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1850,6 +1900,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1896,6 +1947,7 @@ export type ChannelUpdateToOneWithWhereWithoutFeeRatesInput = {
 export type ChannelUpdateWithoutFeeRatesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1930,6 +1982,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1960,6 +2013,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
 export type ChannelCreateWithoutPricingScenariosInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1994,6 +2048,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2040,6 +2095,7 @@ export type ChannelUpdateToOneWithWhereWithoutPricingScenariosInput = {
 export type ChannelUpdateWithoutPricingScenariosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2074,6 +2130,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2104,6 +2161,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
 export type ChannelCreateWithoutPricingScenarioChannelsInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2138,6 +2196,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2184,6 +2243,7 @@ export type ChannelUpdateToOneWithWhereWithoutPricingScenarioChannelsInput = {
 export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2218,6 +2278,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2248,6 +2309,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
 export type ChannelCreateWithoutProductListingsInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2282,6 +2344,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2328,6 +2391,7 @@ export type ChannelUpdateToOneWithWhereWithoutProductListingsInput = {
 export type ChannelUpdateWithoutProductListingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2362,6 +2426,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2392,6 +2457,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
 export type ChannelCreateWithoutChannelProductsInput = {
   id?: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2426,6 +2492,7 @@ export type ChannelUncheckedCreateWithoutChannelProductsInput = {
   spaceId: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2472,6 +2539,7 @@ export type ChannelUpdateToOneWithWhereWithoutChannelProductsInput = {
 export type ChannelUpdateWithoutChannelProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2506,6 +2574,7 @@ export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2537,6 +2606,7 @@ export type ChannelCreateManySpaceInput = {
   id?: string
   channelTypeDefId?: string | null
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2559,6 +2629,7 @@ export type ChannelCreateManySpaceInput = {
 export type ChannelUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2592,6 +2663,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2624,6 +2696,7 @@ export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2647,6 +2720,7 @@ export type ChannelCreateManyChannelTypeDefInput = {
   id?: string
   spaceId: string
   name: string
+  externalSource?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2669,6 +2743,7 @@ export type ChannelCreateManyChannelTypeDefInput = {
 export type ChannelUpdateWithoutChannelTypeDefInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2702,6 +2777,7 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2734,6 +2810,7 @@ export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2861,6 +2938,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   spaceId?: boolean
   channelTypeDefId?: boolean
   name?: boolean
+  externalSource?: boolean
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
@@ -2897,6 +2975,7 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   spaceId?: boolean
   channelTypeDefId?: boolean
   name?: boolean
+  externalSource?: boolean
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
@@ -2923,6 +3002,7 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   spaceId?: boolean
   channelTypeDefId?: boolean
   name?: boolean
+  externalSource?: boolean
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
@@ -2949,6 +3029,7 @@ export type ChannelSelectScalar = {
   spaceId?: boolean
   channelTypeDefId?: boolean
   name?: boolean
+  externalSource?: boolean
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
@@ -2968,7 +3049,7 @@ export type ChannelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "shippingFee" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "shippingFee" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
@@ -3012,6 +3093,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     spaceId: string
     channelTypeDefId: string | null
     name: string
+    externalSource: string | null
     isActive: boolean
     useSimulation: boolean
     adminUrl: string | null
@@ -3467,6 +3549,7 @@ export interface ChannelFieldRefs {
   readonly spaceId: Prisma.FieldRef<"Channel", 'String'>
   readonly channelTypeDefId: Prisma.FieldRef<"Channel", 'String'>
   readonly name: Prisma.FieldRef<"Channel", 'String'>
+  readonly externalSource: Prisma.FieldRef<"Channel", 'String'>
   readonly isActive: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly useSimulation: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly adminUrl: Prisma.FieldRef<"Channel", 'String'>

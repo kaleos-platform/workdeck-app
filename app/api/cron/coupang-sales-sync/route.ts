@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveCronOrWorkerAuth } from '@/lib/api-helpers'
+import { resolveWorkerAuth } from '@/lib/api-helpers'
 import { runCoupangSalesSyncForDates } from '@/lib/inv/coupang-sales-to-movement'
 
 export const runtime = 'nodejs'
@@ -9,22 +9,22 @@ export const maxDuration = 300
 const WORKER_SERVICE = 'coupang-sales-sync'
 
 /**
- * GET /api/cron/coupang-sales-sync — Vercel cron 호출 전용.
+ * GET /api/cron/coupang-sales-sync — 워커 체이닝 호출 전용.
  *
  * 워커가 수집한 어제(KST) 판매분석(VENDOR_ITEM_METRICS) 로켓그로스 판매량을
  * OUTBOUND 이동으로 변환한다. 발주예측이 로켓그로스 수요를 읽을 수 있게 한다.
  *
  * - 판매자배송은 제외(이미 DelBatch→OUTBOUND, 무중복).
- * - referenceId 멱등 — 재실행/정정 안전.
- * - **stock-neutral**: 재고를 차감하지 않는다. dated OUTBOUND 는 발주예측 history 전용이고,
- *   재고 truth 는 coupang-inventory-sync(inventory_health 대조, 절대값 set)가 책임진다.
+ * - referenceId 멱등 — 재실행/정정 안전(정정 시 delta 재고 보정).
+ * - **재고 차감**: OUTBOUND 가 재고를 차감한다(perpetual ledger). 재고 truth =
+ *   OUTBOUND 차감 + 사용자 수동 대조 보정. (자동 대조 cron 은 제거됨.)
  *
  * 백필 모드(콜드스타트): ?from=YYYY-MM-DD&to=YYYY-MM-DD 지정 시 해당 KST 일자 범위를 변환.
  *
- * 인증: 워커(x-worker-api-key, 1차 — 수집 후 체이닝) 또는 Vercel cron(Bearer CRON_SECRET, 백스톱).
+ * 인증: 워커(x-worker-api-key) 전용 — 수집 후 워커가 직접 체이닝 호출.
  */
 export async function GET(request: NextRequest) {
-  const auth = resolveCronOrWorkerAuth(request)
+  const auth = resolveWorkerAuth(request)
   if ('error' in auth) return auth.error
 
   const { searchParams } = request.nextUrl

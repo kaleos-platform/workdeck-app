@@ -156,6 +156,16 @@ export const InvProductStatus = {
 export type InvProductStatus = (typeof InvProductStatus)[keyof typeof InvProductStatus]
 
 
+export const CoupangBackfillStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  DONE: 'DONE',
+  FAILED: 'FAILED'
+} as const
+
+export type CoupangBackfillStatus = (typeof CoupangBackfillStatus)[keyof typeof CoupangBackfillStatus]
+
+
 export const InvMovementType = {
   INBOUND: 'INBOUND',
   OUTBOUND: 'OUTBOUND',
