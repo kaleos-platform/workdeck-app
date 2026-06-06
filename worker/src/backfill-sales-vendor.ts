@@ -15,6 +15,7 @@
 
 import 'dotenv/config'
 import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { getCredentials, uploadInventory } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { openWingSession, downloadSalesAnalysisVendorOnPage } from './inventory-collector.js'
@@ -233,7 +234,13 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err) => {
-  console.error('[backfill] 예상치 못한 오류:', err)
-  process.exit(1)
-})
+// CLI 직접 실행(npm run backfill-sales) 시에만 main() 실행.
+// 모듈 import(backfill-poller 가 runBackfill 재사용) 시 top-level 자동 실행을 막는다.
+// 이 가드가 없으면 import 만으로 잡 없이 90일 백필이 돌아 워커가 crash loop 에 빠진다.
+const isDirectRun = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]
+if (isDirectRun) {
+  main().catch((err) => {
+    console.error('[backfill] 예상치 못한 오류:', err)
+    process.exit(1)
+  })
+}
