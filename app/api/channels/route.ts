@@ -4,6 +4,8 @@ import { resolveAnyDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { channelSchema } from '@/lib/sh/schemas'
 import { normalizeFeeRates } from '@/lib/sh/channel-fee-lookup'
+import { isExternalSource, EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { ensureCoupangLocation } from '@/lib/inv/coupang-channel-pairing'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveAnyDeckContext(['seller-hub', 'coupang-ads'])
@@ -57,6 +59,18 @@ export async function POST(req: NextRequest) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
+  // externalSource: channelSchema에 없어 별도 파싱 (Zod가 unknown key 제거)
+  const rawExternalSource =
+    body !== null && typeof body === 'object' && 'externalSource' in body
+      ? (body as Record<string, unknown>).externalSource
+      : undefined
+  const externalSource =
+    rawExternalSource === null
+      ? null
+      : isExternalSource(rawExternalSource)
+        ? rawExternalSource
+        : undefined
+
   const {
     name,
     channelTypeDefId,
@@ -108,6 +122,7 @@ export async function POST(req: NextRequest) {
           requireOrderNumber,
           requirePayment,
           requireProducts,
+          ...(externalSource !== undefined && { externalSource }),
         },
       })
 
@@ -127,6 +142,20 @@ export async function POST(req: NextRequest) {
         },
       })
     })
+
+    // 로켓그로스 소스 지정 시 페어 위치 보장 (best-effort)
+    if (externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH) {
+      try {
+        const workspace = await prisma.workspace.findFirst({
+          where: { ownerId: resolved.user.id },
+          select: { id: true },
+        })
+        await ensureCoupangLocation(resolved.space.id, workspace?.id)
+      } catch (pairErr) {
+        console.warn('[channels POST] 위치 페어링 실패 (채널은 저장됨)', pairErr)
+      }
+    }
+
     return NextResponse.json({ channel }, { status: 201 })
   } catch (err: unknown) {
     if (
@@ -135,6 +164,15 @@ export async function POST(req: NextRequest) {
       'code' in err &&
       (err as { code: string }).code === 'P2002'
     ) {
+      // meta.target으로 어느 unique 제약인지 구분
+      const rawTarget = (err as { meta?: { target?: unknown } }).meta?.target
+      const target = Array.isArray(rawTarget) ? (rawTarget as string[]) : []
+      if (target.some((t) => typeof t === 'string' && t.includes('externalSource'))) {
+        return errorResponse(
+          '이미 다른 채널이 해당 소스에 연결되어 있습니다. 소스 연결을 해제한 후 다시 시도해 주세요',
+          409
+        )
+      }
       return errorResponse('이미 동일한 채널 이름이 존재합니다', 409)
     }
     throw err

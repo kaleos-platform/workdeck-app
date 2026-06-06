@@ -3,6 +3,8 @@ import { resolveAnyDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { channelSchema } from '@/lib/sh/schemas'
 import { normalizeFeeRates } from '@/lib/sh/channel-fee-lookup'
+import { isExternalSource, EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { ensureCoupangLocation } from '@/lib/inv/coupang-channel-pairing'
 
 export async function GET(
   _req: NextRequest,
@@ -57,6 +59,21 @@ export async function PATCH(
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
+  // externalSource: channelSchema에 없어 별도 파싱 (Zod가 unknown key 제거)
+  // body에 externalSource 키가 있을 때만 처리 (undefined면 필드 미변경)
+  const hasExternalSourceKey = body !== null && typeof body === 'object' && 'externalSource' in body
+  const rawExternalSource = hasExternalSourceKey
+    ? (body as Record<string, unknown>).externalSource
+    : undefined
+  // null → null(해제), valid string → 설정, 그 외 → 무시(undefined)
+  const externalSource: string | null | undefined = !hasExternalSourceKey
+    ? undefined
+    : rawExternalSource === null
+      ? null
+      : isExternalSource(rawExternalSource)
+        ? rawExternalSource
+        : undefined
+
   const {
     name,
     channelTypeDefId,
@@ -109,6 +126,7 @@ export async function PATCH(
           ...(requireOrderNumber !== undefined && { requireOrderNumber }),
           ...(requirePayment !== undefined && { requirePayment }),
           ...(requireProducts !== undefined && { requireProducts }),
+          ...(externalSource !== undefined && { externalSource }),
         },
       })
 
@@ -133,6 +151,20 @@ export async function PATCH(
         },
       })
     })
+
+    // 로켓그로스 소스 지정 시 페어 위치 보장 (best-effort)
+    if (externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH) {
+      try {
+        const workspace = await prisma.workspace.findFirst({
+          where: { ownerId: resolved.user.id },
+          select: { id: true },
+        })
+        await ensureCoupangLocation(resolved.space.id, workspace?.id)
+      } catch (pairErr) {
+        console.warn('[channels PATCH] 위치 페어링 실패 (채널은 저장됨)', pairErr)
+      }
+    }
+
     return NextResponse.json({ channel })
   } catch (err: unknown) {
     if (
@@ -141,6 +173,14 @@ export async function PATCH(
       'code' in err &&
       (err as { code: string }).code === 'P2002'
     ) {
+      const rawTarget = (err as { meta?: { target?: unknown } }).meta?.target
+      const target = Array.isArray(rawTarget) ? (rawTarget as string[]) : []
+      if (target.some((t) => typeof t === 'string' && t.includes('externalSource'))) {
+        return errorResponse(
+          '이미 다른 채널이 해당 소스에 연결되어 있습니다. 소스 연결을 해제한 후 다시 시도해 주세요',
+          409
+        )
+      }
       return errorResponse('이미 동일한 채널 이름이 존재합니다', 409)
     }
     throw err

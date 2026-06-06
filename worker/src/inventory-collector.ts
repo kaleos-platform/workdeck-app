@@ -20,12 +20,17 @@ export interface InventoryCollectorResult {
   inventoryHealth: { filePath: string; fileName: string } | null
   /** 재고 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
   inventoryHealthError?: string
+  /** 판매분석(상품별/VENDOR) 다운로드 결과. 성공이면 파일 경로. */
+  salesVendor?: { filePath: string; fileName: string } | null
+  /** 판매분석 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
+  salesVendorError?: string
 }
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
 
 const WING_URL = 'https://wing.coupang.com'
 const INVENTORY_HEALTH_URL = `${WING_URL}/tenants/rfm-inventory/management/list`
+const SALES_ANALYSIS_URL = `${WING_URL}/tenants/business-insight/sales-analysis`
 const SCREENSHOT_DIR = path.resolve('.screenshots')
 const DEFAULT_TIMEOUT = 30_000
 const DOWNLOAD_TIMEOUT = 120_000
@@ -282,6 +287,170 @@ async function downloadInventoryHealth(
   return result
 }
 
+/**
+ * 판매분석 > 상품별(VENDOR) 엑셀 다운로드
+ *
+ * targetDateKst: 'YYYY-MM-DD' 형식의 KST 날짜 (어제). 기간 필터를 1일로 지정한다.
+ *
+ * 셀렉터 주의:
+ *   - 날짜 입력/선택 UI는 실제 DOM 확인 전까지 추정값이다.
+ *     각 단계마다 saveScreenshot을 남겨 QA 시 확인할 수 있도록 한다.
+ *   - "// TODO: 실제 DOM 확인 필요" 주석이 있는 지점은 운영 전 Playwright 인스펙터로 검증 필요.
+ */
+/**
+ * 판매분석 기간 컨트롤(@vuepic/vue-datepicker)에서 targetDateKst(YYYY-MM-DD) 하루를 선택한다.
+ *
+ * 1) 툴바의 기간 트리거(span, cursor:pointer)를 클릭해 picker 를 연다.
+ * 2) 캘린더에서 대상 날짜 셀([data-test-id="dp-YYYY-MM-DD"])을 시작·종료로 2번 클릭해
+ *    1일 범위를 지정한다. 대상 월이 안 보이면 "이전 달" 화살표로 이동한다.
+ * 3) picker 는 선택 즉시 적용된다(별도 조회 버튼 없음).
+ *
+ * 셀렉터는 2026-06 Wing live DOM 에서 확인. 실패 시 스크린샷을 남기고 throw —
+ * 조용히 기본 기간(최근 7일)으로 export 되어 7배 과대 집계되는 것을 막기 위함이다.
+ */
+async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Promise<void> {
+  // 1) 기간 트리거 열기 — 툴바 내 기간 라벨(텍스트 가변)
+  const trigger = page
+    .locator('._toolbar_ejsky_5 span', {
+      hasText: /최근|일별|직접|\d{4}\./,
+    })
+    .first()
+  if (!(await trigger.isVisible({ timeout: 5000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-period-trigger')
+    throw new Error('[inventory] 판매분석 기간 트리거를 찾지 못했습니다 — DOM 변경 의심')
+  }
+  await trigger.click()
+  await page.waitForTimeout(800)
+
+  const cellSelector = `[data-test-id="dp-${targetDateKst}"]`
+
+  // 2) 대상 날짜 셀이 보일 때까지 "이전 달"로 이동(최대 18개월 = 백필 한도 여유)
+  let cell = page.locator(`${cellSelector}[aria-selected]`).first()
+  for (let i = 0; i < 18; i++) {
+    if (await cell.isVisible({ timeout: 1000 }).catch(() => false)) break
+    const prevMonth = page.locator('[class*="_prev_"]').first()
+    if (!(await prevMonth.isVisible({ timeout: 800 }).catch(() => false))) break
+    await prevMonth.click().catch(() => {})
+    await page.waitForTimeout(300)
+    cell = page.locator(`${cellSelector}[aria-selected]`).first()
+  }
+
+  if (!(await cell.isVisible({ timeout: 2000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-date-cell')
+    throw new Error(
+      `[inventory] 판매분석 캘린더에서 ${targetDateKst} 셀을 찾지 못했습니다 — DOM/월 네비 변경 의심`
+    )
+  }
+
+  // 시작=종료=targetDate → 1일 범위
+  await cell.click()
+  await page.waitForTimeout(300)
+  await cell.click()
+  await page.waitForTimeout(500)
+  console.log(`[inventory]   → 판매분석 기간 1일 선택: ${targetDateKst}`)
+}
+
+async function downloadSalesAnalysisVendor(
+  page: Page,
+  downloadDir: string,
+  targetDateKst: string
+): Promise<{ filePath: string; fileName: string }> {
+  console.log(`[inventory] 판매분석(VENDOR) 페이지 진입... (대상 날짜: ${targetDateKst})`)
+
+  await page.goto(SALES_ANALYSIS_URL, {
+    waitUntil: 'domcontentloaded',
+    timeout: DEFAULT_TIMEOUT,
+  })
+  await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
+  await page.waitForTimeout(3000)
+
+  await dismissModals(page)
+  await saveScreenshot(page, 'sales-analysis-loaded')
+
+  // ── 날짜 필터: 기간 = targetDateKst 1일 ──────────────────────────────────────
+  // Wing 판매분석 기간 컨트롤은 @vuepic/vue-datepicker 다(2026-06 live DOM 확인).
+  //   - 기간 트리거: 툴바(._toolbar_ejsky_5) 내 기간 라벨 span(텍스트 가변: "최근 7일" 등).
+  //   - picker: 프리셋 버튼(오늘/어제/최근 N일) + 2개월 캘린더(셀 [data-test-id="dp-YYYY-MM-DD"]).
+  //   - 선택 즉시 적용(별도 조회 버튼 없음, 하단 "초기화"만).
+  // input fill 방식이 아니므로 캘린더 셀/프리셋 클릭으로 1일 범위를 지정한다.
+  await selectSalesAnalysisOneDay(page, targetDateKst)
+
+  await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
+  await page.waitForTimeout(3000)
+  await dismissModals(page)
+  await saveScreenshot(page, 'sales-analysis-after-search')
+
+  // ── 엑셀 다운로드 버튼 ──────────────────────────────────────────────────────
+  // TODO: 실제 DOM 확인 필요 — 상위 "엑셀 다운로드" 버튼 셀렉터
+  let excelMainBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
+  if (!(await excelMainBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    excelMainBtn = page.locator('button:has-text("엑셀 다운로드")').first()
+  }
+
+  if (!(await excelMainBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-excel-btn')
+    throw new Error(
+      '[inventory] 판매분석의 "엑셀 다운로드" 버튼을 찾을 수 없습니다 — TODO: 실제 셀렉터 확인 필요'
+    )
+  }
+
+  console.log('[inventory]   → 판매분석 엑셀 다운로드 메뉴 열기')
+  await excelMainBtn.click({ force: true })
+  await page.waitForTimeout(1000)
+
+  // 모달이 늦게 뜨면 드롭다운이 닫힐 수 있으므로 dismissModals 후 재시도
+  // TODO: 실제 DOM 확인 필요 — "상품별 엑셀 다운로드" 메뉴 항목 텍스트 추정값
+  let vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
+  if (await dismissModals(page)) {
+    await page.waitForTimeout(500)
+    const isMenuOpen = await vendorMenuBtn.isVisible({ timeout: 1000 }).catch(() => false)
+    if (!isMenuOpen) {
+      await excelMainBtn.click({ force: true })
+      await page.waitForTimeout(1000)
+    }
+  }
+
+  await saveScreenshot(page, 'sales-analysis-excel-menu-open')
+
+  // fallback 셀렉터들
+  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    vendorMenuBtn = page.locator('.backdrop div:has-text("상품별 엑셀 다운로드")').first()
+  }
+  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    vendorMenuBtn = page
+      .locator(
+        'div[role="menuitem"]:has-text("상품별 엑셀 다운로드"), li:has-text("상품별 엑셀 다운로드")'
+      )
+      .first()
+  }
+  // TODO: 실제 DOM 확인 필요 — 메뉴 텍스트가 "상품별" 이 아닌 경우 대비 (예: "VENDOR", "아이템별" 등)
+  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    vendorMenuBtn = page
+      .locator('div[role="menuitem"]:has-text("상품"), li:has-text("상품")')
+      .first()
+  }
+
+  if (!(await vendorMenuBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-vendor-menu')
+    throw new Error(
+      '[inventory] 판매분석의 "상품별 엑셀 다운로드" 메뉴를 찾을 수 없습니다 — TODO: 실제 DOM 확인 필요'
+    )
+  }
+
+  const menuText = (await vendorMenuBtn.textContent().catch(() => ''))?.trim()
+  console.log(`[inventory]   → 메뉴 선택: ${menuText}`)
+
+  const result = await clickAndDownload(
+    page,
+    downloadDir,
+    vendorMenuBtn,
+    `sales_vendor_${Date.now()}.xlsx`
+  )
+
+  console.log(`[inventory]   → 판매분석(VENDOR) 저장: ${result.fileName}`)
+  return result
+}
+
 // ─── 메인 함수 ──────────────────────────────────────────────────────────────────
 
 /**
@@ -295,12 +464,15 @@ export async function collectInventoryData(
     downloadDir?: string
     browserDataDir?: string
     headless?: boolean
+    /** 판매분석 수집 대상 날짜 (KST YYYY-MM-DD). 미지정 시 판매분석 수집 생략. */
+    targetDateKst?: string
   } = {}
 ): Promise<InventoryCollectorResult> {
   const {
     downloadDir = path.resolve('.downloads'),
     browserDataDir = process.env.COUPANG_BROWSER_DATA_DIR || '.browser-data',
     headless = process.env.HEADLESS !== 'false',
+    targetDateKst,
   } = options
 
   if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true })
@@ -341,11 +513,130 @@ export async function collectInventoryData(
       inventoryHealthError = msg
     }
 
-    return { inventoryHealth, inventoryHealthError }
+    let salesVendor: { filePath: string; fileName: string } | null = null
+    let salesVendorError: string | undefined
+
+    // 판매분석(VENDOR) 다운로드 — targetDateKst 가 지정된 경우에만 수집
+    if (targetDateKst) {
+      try {
+        salesVendor = await downloadSalesAnalysisVendor(page, downloadDir, targetDateKst)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[inventory] 판매분석(VENDOR) 다운로드 실패:', msg)
+        await saveScreenshot(page, 'sales-vendor-error')
+        salesVendorError = msg
+      }
+    }
+
+    return { inventoryHealth, inventoryHealthError, salesVendor, salesVendorError }
   } catch (error) {
     await saveScreenshot(page, 'inventory-error')
     throw error
   } finally {
     await context.close()
+  }
+}
+
+// ─── 백필 전용 API ─────────────────────────────────────────────────────────────
+
+/**
+ * 백필 루프용 Wing 컨텍스트를 열고 로그인한다.
+ * 반환된 context / page 는 호출자가 관리(닫기)한다.
+ *
+ * 사용 예:
+ *   const { context, page } = await openWingSession(creds, opts)
+ *   try {
+ *     for (const date of dates) {
+ *       await downloadSalesAnalysisVendorOnPage(page, downloadDir, date)
+ *     }
+ *   } finally {
+ *     await context.close()
+ *   }
+ */
+export async function openWingSession(
+  credentials: { loginId: string; password: string },
+  options: {
+    downloadDir?: string
+    browserDataDir?: string
+    headless?: boolean
+  } = {}
+): Promise<{ context: BrowserContext; page: Page; downloadDir: string }> {
+  const {
+    downloadDir = path.resolve('.downloads'),
+    browserDataDir = process.env.COUPANG_BROWSER_DATA_DIR || '.browser-data',
+    headless = process.env.HEADLESS !== 'false',
+  } = options
+
+  if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true })
+
+  const context: BrowserContext = await launchStealthPersistentContext({
+    userDataDir: path.resolve(browserDataDir),
+    headless,
+    acceptDownloads: true,
+    locale: 'ko-KR',
+    timezoneId: 'Asia/Seoul',
+    viewport: { width: 1400, height: 900 },
+    userAgent:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  })
+
+  const page = context.pages()[0] || (await context.newPage())
+
+  if (!(await isWingLoggedIn(page))) {
+    await performWingLogin(page, credentials)
+  } else {
+    console.log('[inventory] 기존 Wing 세션 유지')
+  }
+
+  return { context, page, downloadDir }
+}
+
+/**
+ * 이미 열린 page에서 판매분석 VENDOR 엑셀을 다운로드한다.
+ * 백필 루프에서 컨텍스트를 재사용할 때 사용한다.
+ *
+ * 반환: 성공 시 { filePath, fileName }, 실패 시 { error: string }
+ */
+export async function downloadSalesAnalysisVendorOnPage(
+  page: Page,
+  downloadDir: string,
+  targetDateKst: string
+): Promise<{ filePath: string; fileName: string } | { error: string }> {
+  try {
+    const result = await downloadSalesAnalysisVendor(page, downloadDir, targetDateKst)
+    return result
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    await saveScreenshot(page, `sales-vendor-backfill-error-${targetDateKst}`)
+    return { error: msg }
+  }
+}
+
+/**
+ * 단일 날짜 판매분석 VENDOR 수집 (컨텍스트 자체 관리).
+ * 날짜 하나만 수집할 때 편의 API로 사용한다.
+ * 여러 날짜 루프에는 openWingSession + downloadSalesAnalysisVendorOnPage 를 직접 쓸 것.
+ *
+ * 반환: 성공 시 { filePath, fileName }, 실패 시 { error: string }
+ */
+export async function collectSalesVendorForDate(
+  credentials: { loginId: string; password: string },
+  targetDateKst: string,
+  options: {
+    downloadDir?: string
+    browserDataDir?: string
+    headless?: boolean
+  } = {}
+): Promise<{ filePath: string; fileName: string } | { error: string }> {
+  let context: BrowserContext | undefined
+  try {
+    const session = await openWingSession(credentials, options)
+    context = session.context
+    return await downloadSalesAnalysisVendorOnPage(session.page, session.downloadDir, targetDateKst)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { error: msg }
+  } finally {
+    await context?.close()
   }
 }

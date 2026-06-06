@@ -18,6 +18,7 @@ type ChannelSummaryRow = {
   totalRevenue: number
   orderCount: number
   avgOrder: number
+  isUnitCount: boolean
   prevMonthRevenue: number
 }
 
@@ -27,6 +28,7 @@ type ApiRevenueRow = {
   totalRevenue: number
   orderCount: number
   avgOrder: number
+  isUnitCount?: boolean
 }
 
 function formatKRW(value: number): string {
@@ -88,15 +90,19 @@ export function ChannelRevenueTable() {
           thisRows.map((r) => {
             const totalRevenue = Number(r.totalRevenue ?? 0)
             const orderCount = Number(r.orderCount ?? 0)
-            const avgOrder =
-              Number(r.avgOrder ?? 0) ||
-              (orderCount > 0 ? Math.round(totalRevenue / orderCount) : 0)
+            const isUnitCount = r.isUnitCount === true
+            // 로켓그로스(isUnitCount)는 orderCount 가 판매 수량이라 객단가를 계산하지 않는다.
+            const avgOrder = isUnitCount
+              ? 0
+              : Number(r.avgOrder ?? 0) ||
+                (orderCount > 0 ? Math.round(totalRevenue / orderCount) : 0)
             return {
               channelId: r.channelId,
               channelName: r.channelName,
               totalRevenue,
               orderCount,
               avgOrder,
+              isUnitCount,
               prevMonthRevenue: prevMap[r.channelId] ?? 0,
             }
           })
@@ -148,9 +154,14 @@ export function ChannelRevenueTable() {
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {row.orderCount.toLocaleString('ko-KR')}
+                    {row.isUnitCount ? '개' : ''}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {formatKRW(row.avgOrder)}
+                    {row.isUnitCount ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : (
+                      formatKRW(row.avgOrder)
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     {renderMoM(row.totalRevenue, row.prevMonthRevenue)}

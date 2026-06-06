@@ -8,12 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { Loader2, CheckCircle2, XCircle, Eye, EyeOff, Pencil, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type CredentialFormValues = {
   loginId: string
   password: string
+  collectVendorSales: boolean
 }
 
 type ConnectionStatus = 'connected' | 'disconnected' | 'testing' | 'unknown'
@@ -29,11 +31,15 @@ export function CredentialForm() {
     register,
     handleSubmit,
     setValue,
+    watch,
     reset,
     formState: { isSubmitting },
   } = useForm<CredentialFormValues>({
-    defaultValues: { loginId: '', password: '' },
+    defaultValues: { loginId: '', password: '', collectVendorSales: true },
   })
+
+  // 판매 데이터 수집 토글 현재값 감시
+  const collectVendorSales = watch('collectVendorSales')
 
   useEffect(() => {
     fetch('/api/collection/credentials')
@@ -41,14 +47,21 @@ export function CredentialForm() {
         if (!res.ok) throw new Error()
         return res.json()
       })
-      .then((data: { credential?: { loginId?: string }; isConnected?: boolean }) => {
-        const loginId = data.credential?.loginId
-        if (loginId) {
-          setSavedLoginId(loginId)
-          setValue('loginId', loginId)
+      .then(
+        (data: {
+          credential?: { loginId?: string; collectVendorSales?: boolean }
+          isConnected?: boolean
+        }) => {
+          const loginId = data.credential?.loginId
+          if (loginId) {
+            setSavedLoginId(loginId)
+            setValue('loginId', loginId)
+          }
+          // 저장된 collectVendorSales 값으로 초기화 (미지정 시 true)
+          setValue('collectVendorSales', data.credential?.collectVendorSales ?? true)
+          setStatus(data.isConnected ? 'connected' : 'disconnected')
         }
-        setStatus(data.isConnected ? 'connected' : 'disconnected')
-      })
+      )
       .catch(() => setStatus('unknown'))
       .finally(() => setIsLoading(false))
   }, [setValue])
@@ -91,11 +104,15 @@ export function CredentialForm() {
         return
       }
 
-      const data = await res.json() as { isConnected?: boolean }
+      const data = (await res.json()) as { isConnected?: boolean }
       setSavedLoginId(values.loginId)
       setIsEditing(false)
       setStatus(data.isConnected ? 'connected' : 'disconnected')
-      reset({ loginId: values.loginId, password: '' })
+      reset({
+        loginId: values.loginId,
+        password: '',
+        collectVendorSales: values.collectVendorSales,
+      })
       toast.success('계정 정보가 저장되었습니다')
     } catch {
       setStatus('disconnected')
@@ -106,7 +123,7 @@ export function CredentialForm() {
   function handleCancelEdit() {
     setIsEditing(false)
     if (savedLoginId) setValue('loginId', savedLoginId)
-    reset({ loginId: savedLoginId ?? '', password: '' })
+    reset({ loginId: savedLoginId ?? '', password: '', collectVendorSales })
   }
 
   return (
@@ -149,11 +166,7 @@ export function CredentialForm() {
                   )}
                   연결 테스트
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
                   <Pencil className="mr-1 h-3.5 w-3.5" />
                   수정
                 </Button>
@@ -166,12 +179,7 @@ export function CredentialForm() {
             {savedLoginId && (
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">계정 정보 수정</p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancelEdit}
-                >
+                <Button type="button" variant="ghost" size="sm" onClick={handleCancelEdit}>
                   <X className="mr-1 h-3.5 w-3.5" />
                   취소
                 </Button>
@@ -207,6 +215,24 @@ export function CredentialForm() {
               </div>
             </div>
 
+            {/* 판매 데이터 수집 토글 */}
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="collectVendorSales" className="text-sm font-medium">
+                  판매 데이터 수집
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  쿠팡 판매분석(로켓그로스 일별 판매) 데이터를 수집합니다. 끄면 재고현황만
+                  수집합니다.
+                </p>
+              </div>
+              <Switch
+                id="collectVendorSales"
+                checked={collectVendorSales}
+                onCheckedChange={(checked) => setValue('collectVendorSales', checked)}
+              />
+            </div>
+
             <Button type="submit" disabled={isSubmitting || status === 'testing'}>
               {status === 'testing' ? (
                 <>
@@ -228,7 +254,9 @@ function StatusBadge({ status }: { status: ConnectionStatus }) {
   switch (status) {
     case 'connected':
       return (
-        <Badge className={cn('bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400')}>
+        <Badge
+          className={cn('bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400')}
+        >
           <CheckCircle2 className="mr-1 h-3 w-3" /> 연결됨
         </Badge>
       )

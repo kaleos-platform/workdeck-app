@@ -27,6 +27,7 @@ export type ParsedInventoryRow = {
   salesQty7d: number | null
   salesQty30d: number | null
   // VENDOR_ITEM_METRICS 전용
+  fulfillmentType: string | null // 판매방식: "로켓그로스" | "판매자배송"
   visitors: number | null
   views: number | null
   cartAdds: number | null
@@ -85,7 +86,9 @@ function mergeHeaders(row0: unknown[], row1: unknown[]): string[] {
   const headers: string[] = []
   let lastParent = ''
   for (let i = 0; i < row0.length; i++) {
-    const parent = String(row0[i] ?? '').trim().replace(/\n/g, ' ')
+    const parent = String(row0[i] ?? '')
+      .trim()
+      .replace(/\n/g, ' ')
     const child = String(row1[i] ?? '').trim()
     if (parent) lastParent = parent
     if (child && child !== lastParent) {
@@ -126,6 +129,7 @@ function parseInventoryHealthRow(row: Record<string, unknown>): ParsedInventoryR
     salesQty7d: parseInt_(row['최근 판매수량_지난 7일']),
     salesQty30d: parseInt_(row['최근 판매수량_지난 30일']),
     // vendor_item_metrics 전용 (null)
+    fulfillmentType: null,
     visitors: null,
     views: null,
     cartAdds: null,
@@ -136,12 +140,26 @@ function parseInventoryHealthRow(row: Record<string, unknown>): ParsedInventoryR
     totalCancelAmt: null,
     totalCancelled: null,
     // 보관기간별 재고
-    stock1to30d: parseInt_(row['보관기간별 판매가능재고 (전일자 기준)_1~30일'] ?? row['보관기간별 판매가능재고_1~30일']),
-    stock31to45d: parseInt_(row['보관기간별 판매가능재고 (전일자 기준)_31~45일'] ?? row['보관기간별 판매가능재고_31~45일']),
-    stock46to60d: parseInt_(row['보관기간별 판매가능재고 (전일자 기준)_46~60일'] ?? row['보관기간별 판매가능재고_46~60일']),
-    stock61to120d: parseInt_(row['보관기간별 판매가능재고 (전일자 기준)_61~120일'] ?? row['보관기간별 판매가능재고_61~120일']),
-    stock121to180d: parseInt_(row['보관기간별 판매가능재고 (전일자 기준)_121~180일'] ?? row['보관기간별 판매가능재고_121~180일']),
-    stock181plusD: parseInt_(row['보관기간별 판매가능재고 (전일자 기준)_181일+'] ?? row['보관기간별 판매가능재고_181일+']),
+    stock1to30d: parseInt_(
+      row['보관기간별 판매가능재고 (전일자 기준)_1~30일'] ?? row['보관기간별 판매가능재고_1~30일']
+    ),
+    stock31to45d: parseInt_(
+      row['보관기간별 판매가능재고 (전일자 기준)_31~45일'] ?? row['보관기간별 판매가능재고_31~45일']
+    ),
+    stock46to60d: parseInt_(
+      row['보관기간별 판매가능재고 (전일자 기준)_46~60일'] ?? row['보관기간별 판매가능재고_46~60일']
+    ),
+    stock61to120d: parseInt_(
+      row['보관기간별 판매가능재고 (전일자 기준)_61~120일'] ??
+        row['보관기간별 판매가능재고_61~120일']
+    ),
+    stock121to180d: parseInt_(
+      row['보관기간별 판매가능재고 (전일자 기준)_121~180일'] ??
+        row['보관기간별 판매가능재고_121~180일']
+    ),
+    stock181plusD: parseInt_(
+      row['보관기간별 판매가능재고 (전일자 기준)_181일+'] ?? row['보관기간별 판매가능재고_181일+']
+    ),
   }
 }
 
@@ -178,6 +196,7 @@ function parseVendorItemRow(row: Record<string, unknown>): ParsedInventoryRow | 
     salesQty7d: null,
     salesQty30d: parseInt_(row['판매량']),
     // vendor_item_metrics 전용
+    fulfillmentType: parseStr(row['판매방식']),
     visitors: parseInt_(row['방문자']),
     views: parseInt_(row['조회']),
     cartAdds: parseInt_(row['장바구니']),

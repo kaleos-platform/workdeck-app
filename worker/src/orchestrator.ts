@@ -244,10 +244,16 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   // 광고 수집기 context.close() 후 브라우저 데이터 디렉토리 잠금 해제 대기
   await new Promise((r) => setTimeout(r, 3000))
 
-  let inventoryResult: { healthRows?: number; errors: string[] } = { errors: [] }
+  let inventoryResult: { healthRows?: number; vendorRows?: number; errors: string[] } = {
+    errors: [],
+  }
   try {
     console.log('\n[orchestrator] 재고 데이터 수집 시작...')
-    inventoryResult = await collectAndUploadInventory(credential)
+    // collectVendorSales 플래그를 credential에서 그대로 전달
+    inventoryResult = await collectAndUploadInventory({
+      ...credential,
+      collectVendorSales: credential.collectVendorSales,
+    })
     console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건`)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
@@ -270,7 +276,34 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     (err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err)
   )
 
+  // ── Step 12: seller-ops 연동 — 로켓그로스 판매 OUTBOUND 변환 트리거 ──
+  // 수집 직후 호출해야 정확(VENDOR 스냅샷이 방금 적재됨).
+  // 자동 재고 대조(inventory-sync)는 제거됨 — 재고 truth = OUTBOUND 차감 + 사용자 수동 대조.
+  await triggerSellerOpsSync().catch((err) =>
+    console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err)
+  )
+
   return result.filePath
+}
+
+/**
+ * seller-ops 연동 트리거 — 수집 후 로켓그로스 판매 OUTBOUND 변환(재고 차감).
+ * 워커 인증(x-worker-api-key)으로 sales-sync 라우트를 직접 호출.
+ * 전 Space 를 쓸어 처리하므로 workspaceId 불필요.
+ */
+async function triggerSellerOpsSync(): Promise<void> {
+  const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
+  const apiKey = process.env.WORKER_API_KEY
+  if (!baseUrl || !apiKey) return
+
+  const headers = { 'x-worker-api-key': apiKey }
+  // 판매 OUTBOUND 변환(수요 신호 + 재고 차감)
+  try {
+    const r = await fetch(`${baseUrl}/api/cron/coupang-sales-sync`, { headers })
+    console.log(`[orchestrator] 쿠팡 판매 변환 트리거: ${r.status}`)
+  } catch (err) {
+    console.error('[orchestrator] 쿠팡 판매 변환 트리거 실패:', err)
+  }
 }
 
 /** Wing에서 재고 데이터를 수집하고 업로드한다 */
@@ -279,16 +312,37 @@ async function collectAndUploadInventory(credential: {
   encryptedPassword: string
   passwordIv: string
   workspaceId: string
-}): Promise<{ healthRows?: number; errors: string[] }> {
+  /** false면 판매분석(VENDOR) 수집 생략, inventory_health만 수집 */
+  collectVendorSales?: boolean
+}): Promise<{ healthRows?: number; vendorRows?: number; errors: string[] }> {
   const password =
     credential.passwordIv === 'none'
       ? credential.encryptedPassword
       : decrypt(credential.encryptedPassword, credential.passwordIv)
 
-  const inventoryData = await collectInventoryData({ loginId: credential.loginId, password })
+  // 어제 KST 날짜 계산 — 판매분석 수집 대상일 및 snapshotDate 기준
+  // kstDayRange(date) 패턴과 동일하게: UTC 기준 +9h 적용 후 YYYY-MM-DD 추출
+  const yesterdayKst = new Date(Date.now() + 9 * 3600 * 1000 - 86400 * 1000)
+    .toISOString()
+    .slice(0, 10)
+  // VENDOR snapshotDate: 어제 KST 자정 instant (UTC 전날 15:00)
+  // coupang-sales-to-movement.ts 의 kstDayRange 가 `${key}T00:00:00+09:00` 범위로 조회하므로
+  // 이 instant 이 그 범위 [00:00 KST, 24:00 KST) 에 속하면 정확히 매칭된다.
+  const yesterdayKstIso = new Date(`${yesterdayKst}T00:00:00+09:00`).toISOString()
+
+  // collectVendorSales=false면 VENDOR 수집 생략 — targetDateKst를 넘기지 않아 판매분석 건너뜀
+  const shouldCollectVendor = credential.collectVendorSales !== false
+  const inventoryData = await collectInventoryData(
+    { loginId: credential.loginId, password },
+    shouldCollectVendor ? { targetDateKst: yesterdayKst } : {}
+  )
+  if (!shouldCollectVendor) {
+    console.log('[inventory] collectVendorSales=false — 판매분석(VENDOR) 수집 건너뜀')
+  }
 
   const errors: string[] = []
   let healthRows: number | undefined
+  let vendorRows: number | undefined
 
   // 재고 건강성 업로드
   if (inventoryData.inventoryHealth) {
@@ -318,7 +372,37 @@ async function collectAndUploadInventory(credential: {
     errors.push('재고 건강성 다운로드: 결과 파일 없음 (원인 미식별)')
   }
 
-  return { healthRows, errors }
+  // 판매분석(VENDOR) 업로드 — snapshotDate = 어제 KST 자정
+  if (inventoryData.salesVendor) {
+    try {
+      const buffer = fs.readFileSync(inventoryData.salesVendor.filePath)
+      const result = await uploadInventory(
+        Buffer.from(buffer),
+        inventoryData.salesVendor.fileName,
+        credential.workspaceId,
+        yesterdayKstIso
+      )
+      vendorRows = result.insertedRows
+      console.log(
+        `[inventory] 판매분석(VENDOR) 업로드: ${result.insertedRows}건 (snapshotDate: ${yesterdayKst})`
+      )
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[inventory] 판매분석(VENDOR) 업로드 실패: ${msg}`)
+      errors.push(`판매분석 VENDOR 업로드: ${msg}`)
+    } finally {
+      // 임시 파일 삭제
+      try {
+        fs.unlinkSync(inventoryData.salesVendor.filePath)
+      } catch {}
+    }
+  } else if (inventoryData.salesVendorError) {
+    errors.push(`판매분석 VENDOR 다운로드: ${inventoryData.salesVendorError}`)
+  } else {
+    errors.push('판매분석 VENDOR 다운로드: 결과 파일 없음 (원인 미식별)')
+  }
+
+  return { healthRows, vendorRows, errors }
 }
 
 /** 재고 분석 트리거 — 재고 수집 완료 후 항상 실행, Slack 발송 포함 */

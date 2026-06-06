@@ -25,6 +25,7 @@ import {
 import { ChannelEditDialog } from './channel-edit-dialog'
 import { ChannelTypeManageDialog } from './channel-type-manage-dialog'
 import { ChannelFeeRatesInline } from './channel-fee-rates-inline'
+import { EXTERNAL_SOURCE_LABEL, isExternalSource } from '@/lib/inv/external-sources'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -57,6 +58,7 @@ type Channel = {
   requireOrderNumber: boolean
   requirePayment: boolean
   requireProducts: boolean
+  externalSource?: string | null
 }
 
 type SidebarFilterKey =
@@ -433,7 +435,16 @@ export function ShChannelManager() {
                         </TableCell>
 
                         {/* 채널명 */}
-                        <TableCell className="font-medium">{ch.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {ch.name}
+                            {ch.externalSource && isExternalSource(ch.externalSource) && (
+                              <Badge variant="secondary" className="text-xs">
+                                {EXTERNAL_SOURCE_LABEL[ch.externalSource]}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
 
                         {/* 유형 */}
                         <TableCell>
@@ -504,6 +515,7 @@ export function ShChannelManager() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         channel={editingChannel}
+        channels={channels}
         channelTypes={channelTypes}
         onSaved={loadData}
         onTypesChanged={loadData}

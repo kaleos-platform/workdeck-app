@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { getUser } from '@/hooks/use-user'
+import { ensureWorkspaceForUser } from '@/lib/workspace'
 import crypto from 'crypto'
 
 // 간단한 AES-256 암호화 (ENCRYPTION_KEY 환경변수 사용)
@@ -34,6 +36,7 @@ export async function GET(request: NextRequest) {
         loginPassword: true,
         encryptionIv: true,
         isActive: true,
+        collectVendorSales: true,
       },
     })
 
@@ -64,6 +67,7 @@ export async function GET(request: NextRequest) {
       lastLoginAt: true,
       lastError: true,
       createdAt: true,
+      collectVendorSales: true,
     },
   })
 
@@ -75,11 +79,39 @@ export async function GET(request: NextRequest) {
 
 // PUT /api/collection/credentials — 쿠팡 자격증명 생성/수정
 export async function PUT(request: NextRequest) {
-  const resolved = await resolveWorkspace()
-  if ('error' in resolved) return resolved.error
-  const { workspace } = resolved
+  // 워크스페이스 해석 — 워커 인증이면 기존 경로, 세션 유저면 없을 때 자동 생성.
+  // (seller-ops 에서 쿠팡 연동을 먼저 설정하는 경우 Workspace 가 아직 없을 수 있음.
+  //  계정당 1 Workspace 라 이렇게 만든 워크스페이스는 coupang-ads 와 공유된다.)
+  const workerKey = request.headers.get('x-worker-api-key')
+  const isWorker = !!(
+    workerKey &&
+    process.env.WORKER_API_KEY &&
+    workerKey === process.env.WORKER_API_KEY
+  )
 
-  let body: { loginId?: string; password?: string; loginPassword?: string; encryptionIv?: string }
+  let workspace: { id: string }
+  if (isWorker) {
+    const resolved = await resolveWorkspace()
+    if ('error' in resolved) return resolved.error
+    workspace = resolved.workspace
+  } else {
+    const user = await getUser()
+    if (!user) return errorResponse('인증이 필요합니다', 401)
+    const ensured = await ensureWorkspaceForUser({
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata?.name ?? null,
+    })
+    workspace = ensured.workspace
+  }
+
+  let body: {
+    loginId?: string
+    password?: string
+    loginPassword?: string
+    encryptionIv?: string
+    collectVendorSales?: boolean
+  }
   try {
     body = await request.json()
   } catch {
@@ -109,6 +141,11 @@ export async function PUT(request: NextRequest) {
     encryptionIv = encrypted.iv
   }
 
+  // collectVendorSales: 미지정이면 update 시 기존값 유지, create 시 기본값 true
+  const collectVendorSalesCreate = body.collectVendorSales ?? true
+  const collectVendorSalesUpdate =
+    body.collectVendorSales !== undefined ? { collectVendorSales: body.collectVendorSales } : {}
+
   const credential = await prisma.coupangCredential.upsert({
     where: { workspaceId: workspace.id },
     create: {
@@ -116,6 +153,7 @@ export async function PUT(request: NextRequest) {
       loginId,
       loginPassword,
       encryptionIv,
+      collectVendorSales: collectVendorSalesCreate,
     },
     update: {
       loginId,
@@ -123,11 +161,13 @@ export async function PUT(request: NextRequest) {
       encryptionIv,
       isActive: true,
       lastError: null,
+      ...collectVendorSalesUpdate,
     },
     select: {
       id: true,
       loginId: true,
       isActive: true,
+      collectVendorSales: true,
       createdAt: true,
       updatedAt: true,
     },

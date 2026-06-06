@@ -115,6 +115,11 @@ export type CoupangCredential = Prisma.CoupangCredentialModel
  */
 export type CollectionSchedule = Prisma.CollectionScheduleModel
 /**
+ * Model CoupangBackfillJob
+ * 
+ */
+export type CoupangBackfillJob = Prisma.CoupangBackfillJobModel
+/**
  * Model CollectionRun
  * 
  */

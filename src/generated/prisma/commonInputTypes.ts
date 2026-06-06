@@ -317,6 +317,23 @@ export type EnumSpaceMemberRoleWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumSpaceMemberRoleFilter<$PrismaModel>
 }
 
+export type EnumCoupangBackfillStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangBackfillStatus | Prisma.EnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangBackfillStatusFilter<$PrismaModel> | $Enums.CoupangBackfillStatus
+}
+
+export type EnumCoupangBackfillStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangBackfillStatus | Prisma.EnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangBackfillStatusWithAggregatesFilter<$PrismaModel> | $Enums.CoupangBackfillStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCoupangBackfillStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCoupangBackfillStatusFilter<$PrismaModel>
+}
+
 export type EnumCollectionStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.CollectionStatus | Prisma.EnumCollectionStatusFieldRefInput<$PrismaModel>
   in?: $Enums.CollectionStatus[] | Prisma.ListEnumCollectionStatusFieldRefInput<$PrismaModel>
@@ -1381,6 +1398,23 @@ export type NestedEnumSpaceMemberRoleWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSpaceMemberRoleFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSpaceMemberRoleFilter<$PrismaModel>
+}
+
+export type NestedEnumCoupangBackfillStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangBackfillStatus | Prisma.EnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangBackfillStatusFilter<$PrismaModel> | $Enums.CoupangBackfillStatus
+}
+
+export type NestedEnumCoupangBackfillStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangBackfillStatus | Prisma.EnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangBackfillStatusWithAggregatesFilter<$PrismaModel> | $Enums.CoupangBackfillStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCoupangBackfillStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCoupangBackfillStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumCollectionStatusFilter<$PrismaModel = never> = {
