@@ -49,6 +49,14 @@ export async function launchStealthPersistentContext(
       '--disable-blink-features=AutomationControlled',
       '--no-sandbox',
       '--disable-setuid-sandbox',
+      // 무인(백그라운드) 실행 시 macOS/Chrome 이 가려진 창의 렌더링을 정지(occlusion
+      // throttling)시키면 page.screenshot 가 compositor 프레임을 못 받아 hang 한다
+      // (2026-06-05 자동수집 실패 원인 — 로그인은 성공, [2/6] 직후 screenshot timeout).
+      // 창이 frontmost 가 아니어도 렌더링을 유지하도록 강제한다.
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      '--disable-background-timer-throttling',
+      '--disable-features=CalculateNativeWinOcclusion',
     ],
   }
 
