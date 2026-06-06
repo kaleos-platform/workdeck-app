@@ -297,6 +297,59 @@ async function downloadInventoryHealth(
  *     각 단계마다 saveScreenshot을 남겨 QA 시 확인할 수 있도록 한다.
  *   - "// TODO: 실제 DOM 확인 필요" 주석이 있는 지점은 운영 전 Playwright 인스펙터로 검증 필요.
  */
+/**
+ * 판매분석 기간 컨트롤(@vuepic/vue-datepicker)에서 targetDateKst(YYYY-MM-DD) 하루를 선택한다.
+ *
+ * 1) 툴바의 기간 트리거(span, cursor:pointer)를 클릭해 picker 를 연다.
+ * 2) 캘린더에서 대상 날짜 셀([data-test-id="dp-YYYY-MM-DD"])을 시작·종료로 2번 클릭해
+ *    1일 범위를 지정한다. 대상 월이 안 보이면 "이전 달" 화살표로 이동한다.
+ * 3) picker 는 선택 즉시 적용된다(별도 조회 버튼 없음).
+ *
+ * 셀렉터는 2026-06 Wing live DOM 에서 확인. 실패 시 스크린샷을 남기고 throw —
+ * 조용히 기본 기간(최근 7일)으로 export 되어 7배 과대 집계되는 것을 막기 위함이다.
+ */
+async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Promise<void> {
+  // 1) 기간 트리거 열기 — 툴바 내 기간 라벨(텍스트 가변)
+  const trigger = page
+    .locator('._toolbar_ejsky_5 span', {
+      hasText: /최근|일별|직접|\d{4}\./,
+    })
+    .first()
+  if (!(await trigger.isVisible({ timeout: 5000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-period-trigger')
+    throw new Error('[inventory] 판매분석 기간 트리거를 찾지 못했습니다 — DOM 변경 의심')
+  }
+  await trigger.click()
+  await page.waitForTimeout(800)
+
+  const cellSelector = `[data-test-id="dp-${targetDateKst}"]`
+
+  // 2) 대상 날짜 셀이 보일 때까지 "이전 달"로 이동(최대 18개월 = 백필 한도 여유)
+  let cell = page.locator(`${cellSelector}[aria-selected]`).first()
+  for (let i = 0; i < 18; i++) {
+    if (await cell.isVisible({ timeout: 1000 }).catch(() => false)) break
+    const prevMonth = page.locator('[class*="_prev_"]').first()
+    if (!(await prevMonth.isVisible({ timeout: 800 }).catch(() => false))) break
+    await prevMonth.click().catch(() => {})
+    await page.waitForTimeout(300)
+    cell = page.locator(`${cellSelector}[aria-selected]`).first()
+  }
+
+  if (!(await cell.isVisible({ timeout: 2000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-date-cell')
+    throw new Error(
+      `[inventory] 판매분석 캘린더에서 ${targetDateKst} 셀을 찾지 못했습니다 — DOM/월 네비 변경 의심`
+    )
+  }
+
+  // 시작=종료=targetDate → 1일 범위
+  await cell.click()
+  await page.waitForTimeout(300)
+  await cell.click()
+  await page.waitForTimeout(500)
+  console.log(`[inventory]   → 판매분석 기간 1일 선택: ${targetDateKst}`)
+}
+
 async function downloadSalesAnalysisVendor(
   page: Page,
   downloadDir: string,
@@ -314,95 +367,13 @@ async function downloadSalesAnalysisVendor(
   await dismissModals(page)
   await saveScreenshot(page, 'sales-analysis-loaded')
 
-  // ── 날짜 필터: 시작일 = 종료일 = targetDateKst (1일치) ──────────────────────
-  // TODO: 실제 DOM 확인 필요 — 날짜 입력 필드 셀렉터는 추정값.
-  // Wing 판매분석 날짜 picker는 input[type="text"] 또는 .date-input 계열이 일반적.
-  const dateInputSelectors = [
-    'input[placeholder*="시작일"]',
-    'input[placeholder*="조회시작"]',
-    '.date-picker input:first-child',
-    'input[data-role="startDate"]',
-    // TODO: 실제 DOM 확인 필요 — 위 셀렉터가 모두 실패하면 아래 fallback 시도
-    '.date-range-picker input:first-of-type',
-    'input[type="text"]:first-of-type',
-  ]
-
-  let startInputFilled = false
-  for (const sel of dateInputSelectors) {
-    const el = page.locator(sel).first()
-    if (await el.isVisible({ timeout: 1500 }).catch(() => false)) {
-      await el.click({ clickCount: 3 }).catch(() => {})
-      await el.fill(targetDateKst).catch(() => {})
-      console.log(`[inventory]   → 시작일 입력 (${sel}): ${targetDateKst}`)
-      startInputFilled = true
-      break
-    }
-  }
-
-  if (!startInputFilled) {
-    await saveScreenshot(page, 'sales-analysis-no-start-date-input')
-    console.warn('[inventory]   ⚠ 시작일 입력 필드를 찾지 못했습니다 — TODO: 실제 셀렉터 확인 필요')
-  }
-
-  await page.waitForTimeout(500)
-
-  // 종료일 입력
-  // TODO: 실제 DOM 확인 필요 — 종료일 셀렉터 추정값
-  const endInputSelectors = [
-    'input[placeholder*="종료일"]',
-    'input[placeholder*="조회종료"]',
-    '.date-picker input:last-child',
-    'input[data-role="endDate"]',
-    '.date-range-picker input:last-of-type',
-  ]
-
-  let endInputFilled = false
-  for (const sel of endInputSelectors) {
-    const el = page.locator(sel).first()
-    if (await el.isVisible({ timeout: 1500 }).catch(() => false)) {
-      await el.click({ clickCount: 3 }).catch(() => {})
-      await el.fill(targetDateKst).catch(() => {})
-      console.log(`[inventory]   → 종료일 입력 (${sel}): ${targetDateKst}`)
-      endInputFilled = true
-      break
-    }
-  }
-
-  if (!endInputFilled) {
-    await saveScreenshot(page, 'sales-analysis-no-end-date-input')
-    console.warn('[inventory]   ⚠ 종료일 입력 필드를 찾지 못했습니다 — TODO: 실제 셀렉터 확인 필요')
-  }
-
-  await page.waitForTimeout(500)
-
-  // 조회/검색 버튼 클릭
-  // TODO: 실제 DOM 확인 필요 — 조회 버튼 텍스트/셀렉터 추정값
-  const searchBtnSelectors = [
-    'button:has-text("조회")',
-    'button:has-text("검색")',
-    'button[type="submit"]:has-text("조회")',
-    '.search-btn',
-    '[data-wuic-partial="search"]',
-  ]
-
-  let searchClicked = false
-  for (const sel of searchBtnSelectors) {
-    const btn = page.locator(sel).first()
-    if (await btn.isVisible({ timeout: 1500 }).catch(() => false)) {
-      await btn.click({ force: true })
-      console.log(`[inventory]   → 조회 버튼 클릭 (${sel})`)
-      searchClicked = true
-      break
-    }
-  }
-
-  if (!searchClicked) {
-    // Enter 키 fallback
-    await page.keyboard.press('Enter').catch(() => {})
-    console.warn(
-      '[inventory]   ⚠ 조회 버튼을 찾지 못해 Enter 키로 대체 — TODO: 실제 셀렉터 확인 필요'
-    )
-  }
+  // ── 날짜 필터: 기간 = targetDateKst 1일 ──────────────────────────────────────
+  // Wing 판매분석 기간 컨트롤은 @vuepic/vue-datepicker 다(2026-06 live DOM 확인).
+  //   - 기간 트리거: 툴바(._toolbar_ejsky_5) 내 기간 라벨 span(텍스트 가변: "최근 7일" 등).
+  //   - picker: 프리셋 버튼(오늘/어제/최근 N일) + 2개월 캘린더(셀 [data-test-id="dp-YYYY-MM-DD"]).
+  //   - 선택 즉시 적용(별도 조회 버튼 없음, 하단 "초기화"만).
+  // input fill 방식이 아니므로 캘린더 셀/프리셋 클릭으로 1일 범위를 지정한다.
+  await selectSalesAnalysisOneDay(page, targetDateKst)
 
   await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
   await page.waitForTimeout(3000)
