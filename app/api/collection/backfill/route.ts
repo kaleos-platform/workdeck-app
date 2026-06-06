@@ -108,3 +108,41 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ job }, { status: 201 })
 }
+
+/**
+ * DELETE /api/collection/backfill
+ * 현재 워크스페이스의 진행 중(PENDING|RUNNING) 백필 잡을 취소한다.
+ * - PENDING: 워커가 아직 claim 안 함 → 즉시 CANCELLED (claim 차단).
+ * - RUNNING: 워커가 날짜 루프 사이 상태를 확인해 조기 종료한다(워커 측 협조 취소).
+ * 진행 중 잡이 없으면 404.
+ */
+export async function DELETE(_request: NextRequest) {
+  const resolved = await resolveWorkspace()
+  if ('error' in resolved) return resolved.error
+  const { workspace } = resolved
+
+  const active = await prisma.coupangBackfillJob.findFirst({
+    where: {
+      workspaceId: workspace.id,
+      status: { in: ['PENDING', 'RUNNING'] },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, status: true },
+  })
+
+  if (!active) {
+    return errorResponse('취소할 진행 중인 백필 잡이 없습니다', 404)
+  }
+
+  const updated = await prisma.coupangBackfillJob.update({
+    where: { id: active.id },
+    data: {
+      status: 'CANCELLED',
+      completedAt: new Date(),
+      error: '사용자 취소',
+    },
+    select: { id: true, status: true },
+  })
+
+  return NextResponse.json({ job: updated })
+}

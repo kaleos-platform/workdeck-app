@@ -512,6 +512,7 @@ enum CoupangBackfillStatus {
   RUNNING
   DONE
   FAILED
+  CANCELLED
 }
 
 // 콜드스타트 판매분석 백필 잡 — 웹은 Wing 직접 수집 불가하므로 워커가 폴링해 실행.

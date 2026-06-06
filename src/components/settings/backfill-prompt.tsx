@@ -20,7 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 type BackfillJob = {
   id: string
-  status: 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED'
+  status: 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED' | 'CANCELLED'
   days: number
   collected: number | null
   converted: number | null
@@ -47,6 +47,7 @@ export function BackfillPrompt() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [daysInput, setDaysInput] = useState(String(DEFAULT_DAYS))
   const [submitting, setSubmitting] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
 
   // 배너 dismiss (세션 내 임시 숨김)
   const [dismissed, setDismissed] = useState(false)
@@ -143,6 +144,37 @@ export function BackfillPrompt() {
     }
   }
 
+  // ── 백필 취소 ──
+
+  async function handleCancel() {
+    setCancelling(true)
+    try {
+      const res = await fetch('/api/collection/backfill', { method: 'DELETE' })
+      const data = await res.json().catch(() => ({}))
+
+      if (res.status === 404) {
+        // 이미 끝났거나 취소된 잡 — 최신 상태로 갱신
+        toast.info('취소할 진행 중인 작업이 없습니다.')
+        await fetchStatus()
+        return
+      }
+      if (!res.ok) {
+        throw new Error(data?.message ?? '취소 실패')
+      }
+
+      toast.success('백필 작업을 취소했습니다.')
+      // 진행 중이던 잡을 CANCELLED 로 즉시 반영 (워커는 RUNNING 시 날짜 루프 사이 종료)
+      setStatus((prev) =>
+        prev?.job ? { ...prev, job: { ...prev.job, status: 'CANCELLED' } } : prev
+      )
+      await fetchStatus()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '취소 실패')
+    } finally {
+      setCancelling(false)
+    }
+  }
+
   // ── 렌더 조건 ──
 
   if (loading || !status) return null
@@ -151,9 +183,10 @@ export function BackfillPrompt() {
   const isActive = job && (job.status === 'PENDING' || job.status === 'RUNNING')
   const isDone = job?.status === 'DONE'
   const isFailed = job?.status === 'FAILED'
+  const isCancelled = job?.status === 'CANCELLED'
 
-  // 배너 노출 조건: 데이터 없음 OR 잡 진행 중/완료/실패
-  const showBanner = !hasVendorData || isActive || isDone || isFailed
+  // 배너 노출 조건: 데이터 없음 OR 잡 진행 중/완료/실패/취소
+  const showBanner = !hasVendorData || isActive || isDone || isFailed || isCancelled
 
   if (!showBanner || dismissed) return null
 
@@ -164,7 +197,7 @@ export function BackfillPrompt() {
       {/* ── 배너 ── */}
       <div className="rounded-lg border bg-muted/40 p-4">
         {/* 콜드스타트 — 데이터 없고 잡 없음 */}
-        {!hasVendorData && !isActive && !isDone && !isFailed && (
+        {!hasVendorData && !isActive && !isDone && !isFailed && !isCancelled && (
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <Database className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
@@ -200,6 +233,22 @@ export function BackfillPrompt() {
                 </p>
               )}
             </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="shrink-0"
+              onClick={handleCancel}
+              disabled={cancelling}
+            >
+              {cancelling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  취소 중...
+                </>
+              ) : (
+                '취소'
+              )}
+            </Button>
           </div>
         )}
 
@@ -232,6 +281,29 @@ export function BackfillPrompt() {
               </Button>
             </AlertDescription>
           </Alert>
+        )}
+
+        {/* 취소됨 */}
+        {isCancelled && (
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">백필 작업이 취소되었습니다</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  수집 {job.collected ?? 0}건까지 진행 후 중단되었습니다. 다시 시작할 수 있습니다.
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <Button size="sm" onClick={() => setDialogOpen(true)}>
+                다시 시작
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setDismissed(true)}>
+                닫기
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 

@@ -160,7 +160,8 @@ export const CoupangBackfillStatus = {
   PENDING: 'PENDING',
   RUNNING: 'RUNNING',
   DONE: 'DONE',
-  FAILED: 'FAILED'
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
 } as const
 
 export type CoupangBackfillStatus = (typeof CoupangBackfillStatus)[keyof typeof CoupangBackfillStatus]
