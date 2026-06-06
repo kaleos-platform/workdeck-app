@@ -46,6 +46,19 @@ type ClaimedBackfillJob = {
   }
 }
 
+/** 잡 상태 조회 — 워커가 RUNNING 중 사용자 취소(CANCELLED)를 감지하는 데 사용. */
+async function fetchJobStatus(jobId: string): Promise<string | null> {
+  try {
+    const url = `${BASE_URL()}/api/collection/backfill/worker?jobId=${encodeURIComponent(jobId)}`
+    const res = await fetch(url, { headers: workerHeaders() })
+    if (!res.ok) return null
+    const data = (await res.json()) as { job?: { status?: string } }
+    return data.job?.status ?? null
+  } catch {
+    return null
+  }
+}
+
 /** PENDING 잡 1건 claim. 없으면 null 반환. */
 async function claimBackfillJob(): Promise<ClaimedBackfillJob | null> {
   const url = `${BASE_URL()}/api/collection/backfill/worker?workerId=${encodeURIComponent(WORKER_ID)}`
@@ -179,12 +192,23 @@ export function startBackfillPoller(): void {
           job.workspaceId,
           ({ date, succeeded, failed, total }) => {
             console.log(`[backfill-poller] 진행 ${succeeded + failed}/${total} — ${date}`)
-          }
+          },
+          // 날짜 루프 사이 잡 상태를 확인해 CANCELLED 면 조기 종료(사용자 취소).
+          async () => (await fetchJobStatus(job.id)) === 'CANCELLED'
         )
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error(`[backfill-poller] runBackfill 실패: ${msg}`)
         await reportBackfillJob({ jobId: job.id, status: 'FAILED', error: msg })
+        return
+      }
+
+      // 사용자 취소로 중단된 경우 — 잡은 이미 CANCELLED(app DELETE)라 보고하지 않는다.
+      // (PATCH 는 RUNNING 이 아니면 409 라 DONE/FAILED 로 덮어쓰지 못함.)
+      if (result.cancelled) {
+        console.log(
+          `[backfill-poller] 잡 취소됨: ${job.id} — 수집 ${result.succeeded}일까지 완료 후 중단`
+        )
         return
       }
 

@@ -73,13 +73,15 @@ export type BackfillProgressCallback = (params: {
  * @param creds      Wing 로그인 자격증명 (복호화된 평문 패스워드)
  * @param workspaceId 업로드 대상 워크스페이스 ID
  * @param onProgress  진행 콜백 (선택)
+ * @param shouldCancel 날짜 루프 사이에 호출되어 true 면 즉시 중단(사용자 취소 감지). 선택.
  */
 export async function runBackfill(
   days: number,
   creds: BackfillCreds,
   workspaceId: string,
-  onProgress?: BackfillProgressCallback
-): Promise<BackfillResult> {
+  onProgress?: BackfillProgressCallback,
+  shouldCancel?: () => Promise<boolean>
+): Promise<BackfillResult & { cancelled?: boolean }> {
   // ── 대상 날짜 목록 생성: 어제(offset=1) → N일 전(offset=days) ──
   const dates: string[] = []
   for (let i = 1; i <= days; i++) {
@@ -95,6 +97,7 @@ export async function runBackfill(
   let succeeded = 0
   let failed = 0
   let totalInserted = 0
+  let cancelled = false
   const failedDates: string[] = []
 
   // ── Wing 세션 1개를 열고 날짜 루프 ──
@@ -104,6 +107,13 @@ export async function runBackfill(
 
   try {
     for (const dateKst of dates) {
+      // 사용자 취소 감지 — 각 날짜 시작 전 확인해 조기 종료(이미 수집한 날짜는 보존).
+      if (shouldCancel && (await shouldCancel().catch(() => false))) {
+        console.log('[backfill] 사용자 취소 감지 — 백필 중단')
+        cancelled = true
+        break
+      }
+
       console.log(`\n[backfill] ── ${dateKst} 수집 중...`)
 
       // 1) 다운로드
@@ -170,6 +180,7 @@ export async function runBackfill(
     failedDates,
     fromDate: dates[dates.length - 1], // oldest
     toDate: dates[0], // newest (어제)
+    cancelled,
   }
 }
 
