@@ -15,6 +15,17 @@ export async function GET(request: NextRequest) {
   const auth = resolveWorkerAuth(request)
   if ('error' in auth) return auth.error
 
+  // ?jobId=<id> 가 주어지면 claim 이 아니라 단순 상태 조회(워커의 취소 감지용).
+  const statusJobId = request.nextUrl.searchParams.get('jobId')
+  if (statusJobId) {
+    const job = await prisma.coupangBackfillJob.findUnique({
+      where: { id: statusJobId },
+      select: { id: true, status: true },
+    })
+    if (!job) return errorResponse('잡을 찾을 수 없습니다', 404)
+    return NextResponse.json({ job })
+  }
+
   const workerId = request.nextUrl.searchParams.get('workerId') ?? `backfill-worker-unknown`
 
   // 1) 가장 오래된 PENDING 잡 찾기
