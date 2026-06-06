@@ -14,6 +14,7 @@ export function getCoupangAdsCampaignPath(campaignId: string): string {
 export const SELLER_HUB_DECK_ID = 'seller-hub'
 export const SELLER_HUB_BASE_PATH = '/d/seller-ops'
 export const SELLER_HUB_HOME_PATH = `${SELLER_HUB_BASE_PATH}/home`
+export const SELLER_HUB_SALES_ANALYTICS_PATH = `${SELLER_HUB_BASE_PATH}/sales-analytics`
 export const SELLER_HUB_SETTINGS_PATH = `${SELLER_HUB_BASE_PATH}/settings`
 
 // 상품 섹션
