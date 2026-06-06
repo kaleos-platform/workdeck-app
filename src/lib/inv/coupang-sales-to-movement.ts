@@ -89,11 +89,43 @@ export async function syncCoupangSalesMovements(params: {
     return { created: 0, updated: 0, skipped: 0, unmapped: 0, unmappedCodes: [] }
   }
 
-  // 2) externalCode → 매핑 일괄 로드 (matcher 와 동일 규칙)
+  // 1.5) optionId → skuId 브릿지 맵.
+  // VENDOR 판매분석 export 에는 SKU 컬럼이 없어 skuId 가 항상 null 이다(라이브 export 확인).
+  // 반면 위치 매핑(InvLocationProductMap.externalCode)과 재고 대조는 skuId(쿠팡 FC SKU) 기준이다.
+  // → VENDOR optionId 를 inventory_health 의 (optionId→skuId) 로 해석해 매핑 키를 맞춘다.
+  // optionId→skuId 는 1:1(검증됨). 날짜 매칭이 아니라 "전 기간 최신 스냅샷" 으로 맵을 만든다
+  //   (과거 백필 날짜엔 그날 inventory_health 가 없을 수 있으므로 — 안정 속성).
+  const vendorOptionIds = Array.from(
+    new Set(records.map((r) => r.optionId).filter((v): v is string => !!v))
+  )
+  const optionToSku = new Map<string, string>()
+  if (vendorOptionIds.length > 0) {
+    const healthRows = await prisma.inventoryRecord.findMany({
+      where: {
+        workspaceId,
+        fileType: 'INVENTORY_HEALTH',
+        optionId: { in: vendorOptionIds },
+        skuId: { not: null },
+      },
+      orderBy: { snapshotDate: 'desc' },
+      select: { optionId: true, skuId: true },
+    })
+    // desc 정렬 → 첫 등장(최신)만 채택
+    for (const h of healthRows) {
+      if (h.optionId && h.skuId && !optionToSku.has(h.optionId)) {
+        optionToSku.set(h.optionId, h.skuId)
+      }
+    }
+  }
+
+  // 2) externalCode → 매핑 일괄 로드 (matcher 와 동일 규칙: skuId 기준).
   // qty 0 도 키에 넣는다(전체취소 정정용). 음수는 방어적으로 0 처리.
-  const codeToQty = new Map<string, number>() // externalCode → 판매량
+  const codeToQty = new Map<string, number>() // externalCode(skuId) → 판매량
   for (const r of records) {
-    const externalCode = r.skuId ?? r.optionId ?? r.productId
+    // skuId 직접 → optionId 브릿지 → productId 순. 브릿지로 못 찾으면 optionId 원본 fallback
+    // (매핑이 optionId 로 돼 있던 레거시 대비). 둘 다 mappingByCode 에서 걸러진다.
+    const externalCode =
+      r.skuId ?? (r.optionId ? optionToSku.get(r.optionId) : null) ?? r.optionId ?? r.productId
     if (!externalCode) continue
     const qty = Math.max(0, r.salesQty30d ?? 0)
     codeToQty.set(externalCode, (codeToQty.get(externalCode) ?? 0) + qty)
