@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  defaultRangeForUnit,
   lastClosedDateKst,
+  last30DaysRange,
   startOfWeekMon,
   startOfMonth,
   endOfMonth,
@@ -24,8 +24,8 @@ type Channel = { id: string; name: string }
 
 const UNITS: SalesUnit[] = ['일', '주', '월']
 
-// ─── 퀵필터 (모두 월 단위) ────────────────────────────────────────────────────
-type QuickFilter = { label: string; unit: SalesUnit; range: () => DateRange }
+// ─── 퀵필터 (기간만 변경 — 표시 단위와 독립) ─────────────────────────────────
+type QuickFilter = { label: string; range: () => DateRange }
 
 /** 최근 N개월: (N-1)개월 전 시작월 1일 ~ 마지막 집계일 */
 function lastNMonthsRange(n: number): DateRange {
@@ -34,9 +34,9 @@ function lastNMonthsRange(n: number): DateRange {
 }
 
 const QUICK_FILTERS: QuickFilter[] = [
+  { label: '최근 30일', range: last30DaysRange },
   {
     label: '이번달',
-    unit: '월',
     range: () => {
       const anchor = lastClosedDateKst()
       return { from: startOfMonth(anchor), to: anchor }
@@ -44,18 +44,16 @@ const QUICK_FILTERS: QuickFilter[] = [
   },
   {
     label: '지난달',
-    unit: '월',
     range: () => {
       const prevMonthEnd = addDaysYmd(startOfMonth(lastClosedDateKst()), -1)
       return { from: startOfMonth(prevMonthEnd), to: endOfMonth(prevMonthEnd) }
     },
   },
-  { label: '최근 3개월', unit: '월', range: () => lastNMonthsRange(3) },
-  { label: '최근 6개월', unit: '월', range: () => lastNMonthsRange(6) },
-  { label: '최근 12개월', unit: '월', range: () => lastNMonthsRange(12) },
+  { label: '최근 3개월', range: () => lastNMonthsRange(3) },
+  { label: '최근 6개월', range: () => lastNMonthsRange(6) },
+  { label: '최근 12개월', range: () => lastNMonthsRange(12) },
   {
     label: '올해',
-    unit: '월',
     range: () => {
       const anchor = lastClosedDateKst()
       const year = anchor.slice(0, 4)
@@ -64,7 +62,6 @@ const QUICK_FILTERS: QuickFilter[] = [
   },
   {
     label: '작년',
-    unit: '월',
     range: () => {
       const year = Number(lastClosedDateKst().slice(0, 4)) - 1
       return { from: `${year}-01-01`, to: `${year}-12-31` }
@@ -80,8 +77,8 @@ function snapRangeToUnit(unit: SalesUnit, range: DateRange): DateRange {
 }
 
 export function SalesAnalyticsPage() {
-  const [unit, setUnit] = useState<SalesUnit>('주')
-  const [range, setRange] = useState<DateRange>(() => defaultRangeForUnit('주'))
+  const [unit, setUnit] = useState<SalesUnit>('일')
+  const [range, setRange] = useState<DateRange>(() => last30DaysRange())
   const [channels, setChannels] = useState<Channel[]>([])
   const [selectedChannelIds, setSelectedChannelIds] = useState<Set<string>>(new Set())
 
@@ -107,12 +104,13 @@ export function SalesAnalyticsPage() {
 
   function changeUnit(next: SalesUnit) {
     setUnit(next)
-    setRange(defaultRangeForUnit(next))
+    // 기간 유지 — 단위와 기간은 독립. from 만 새 단위 경계로 스냅.
+    setRange((r) => snapRangeToUnit(next, r))
   }
 
   function applyQuickFilter(qf: QuickFilter) {
-    setUnit(qf.unit)
-    setRange(qf.range())
+    // 단위는 유지, 기간만 변경. 현재 단위 경계로 from 스냅.
+    setRange(snapRangeToUnit(unit, qf.range()))
   }
 
   function changeDate(key: 'from' | 'to', value: string) {

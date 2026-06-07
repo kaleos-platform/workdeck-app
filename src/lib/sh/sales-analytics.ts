@@ -74,18 +74,24 @@ export function lastClosedDateKst(): string {
   return addDaysYmd(getTodayStrKst(), -1)
 }
 
-// ─── 단위별 기본 기간 (현재 구간, to-date 를 last-closed 로 앵커) ───────────
+/** 최근 30일: 마지막 집계일 포함 30일 (last-closed 앵커) */
+export function last30DaysRange(): DateRange {
+  const to = lastClosedDateKst()
+  return { from: addDaysYmd(to, -29), to }
+}
 
 /**
- * 단위별 기본 현재 구간.
- * - 일: 마지막 집계일 하루
- * - 주: 이번주 월요일 ~ 마지막 집계일(to-date)
- * - 월: 이번달 1일 ~ 마지막 집계일(to-date)
+ * ISO 8601 주차 (연 1~53). 주의 목요일이 속한 해를 기준으로 한다.
+ * 월요일 시작 주 정의와 정합.
  */
-export function defaultRangeForUnit(unit: SalesUnit, anchor = lastClosedDateKst()): DateRange {
-  if (unit === '일') return { from: anchor, to: anchor }
-  if (unit === '주') return { from: startOfWeekMon(anchor), to: anchor }
-  return { from: startOfMonth(anchor), to: anchor }
+export function isoWeekOfYear(ymd: string): number {
+  const [y, m, d] = parseYmd(ymd)
+  const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0))
+  // 해당 주의 목요일로 이동 (일=7 보정 후 4-요일)
+  const dayNum = date.getUTCDay() || 7
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum)
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1, 12, 0, 0))
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
 }
 
 // ─── 증감 비교용 이전 구간 (명시 캘린더 경계, to-date span 정렬) ─────────────
@@ -156,10 +162,10 @@ function bucketKey(date: string, unit: SalesUnit): string {
 function bucketLabel(key: string, unit: SalesUnit): string {
   if (unit === '일') return key.slice(5) // MM-DD
   if (unit === '주') {
-    const [, m, d] = parseYmd(key)
-    // 월 내 몇째 주 (해당 월요일이 속한 달 기준)
-    const weekNo = Math.floor((d - 1) / 7) + 1
-    return `${m}월 ${weekNo}주`
+    // 주 시작(월)~종료(일) + ISO 연 주차: MM/DD~MM/DD (W주차)
+    const start = key.slice(5).replace('-', '/') // MM/DD
+    const end = addDaysYmd(key, 6).slice(5).replace('-', '/')
+    return `${start}~${end} (W${isoWeekOfYear(key)})`
   }
   const [y, m] = key.split('-')
   return `${y}-${m}`
