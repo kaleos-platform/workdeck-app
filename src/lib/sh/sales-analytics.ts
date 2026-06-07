@@ -74,18 +74,24 @@ export function lastClosedDateKst(): string {
   return addDaysYmd(getTodayStrKst(), -1)
 }
 
-// ─── 단위별 기본 기간 (현재 구간, to-date 를 last-closed 로 앵커) ───────────
+/** 최근 30일: 마지막 집계일 포함 30일 (last-closed 앵커) */
+export function last30DaysRange(): DateRange {
+  const to = lastClosedDateKst()
+  return { from: addDaysYmd(to, -29), to }
+}
 
 /**
- * 단위별 기본 현재 구간.
- * - 일: 마지막 집계일 하루
- * - 주: 이번주 월요일 ~ 마지막 집계일(to-date)
- * - 월: 이번달 1일 ~ 마지막 집계일(to-date)
+ * ISO 8601 주차 (연 1~53). 주의 목요일이 속한 해를 기준으로 한다.
+ * 월요일 시작 주 정의와 정합.
  */
-export function defaultRangeForUnit(unit: SalesUnit, anchor = lastClosedDateKst()): DateRange {
-  if (unit === '일') return { from: anchor, to: anchor }
-  if (unit === '주') return { from: startOfWeekMon(anchor), to: anchor }
-  return { from: startOfMonth(anchor), to: anchor }
+export function isoWeekOfYear(ymd: string): number {
+  const [y, m, d] = parseYmd(ymd)
+  const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0))
+  // 해당 주의 목요일로 이동 (일=7 보정 후 4-요일)
+  const dayNum = date.getUTCDay() || 7
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum)
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1, 12, 0, 0))
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
 }
 
 // ─── 증감 비교용 이전 구간 (명시 캘린더 경계, to-date span 정렬) ─────────────
@@ -156,10 +162,10 @@ function bucketKey(date: string, unit: SalesUnit): string {
 function bucketLabel(key: string, unit: SalesUnit): string {
   if (unit === '일') return key.slice(5) // MM-DD
   if (unit === '주') {
-    const [, m, d] = parseYmd(key)
-    // 월 내 몇째 주 (해당 월요일이 속한 달 기준)
-    const weekNo = Math.floor((d - 1) / 7) + 1
-    return `${m}월 ${weekNo}주`
+    // 주 시작(월)~종료(일) + ISO 연 주차: MM/DD~MM/DD (W주차)
+    const start = key.slice(5).replace('-', '/') // MM/DD
+    const end = addDaysYmd(key, 6).slice(5).replace('-', '/')
+    return `${start}~${end} (W${isoWeekOfYear(key)})`
   }
   const [y, m] = key.split('-')
   return `${y}-${m}`
@@ -222,9 +228,6 @@ export const CHANNEL_COLORS = [
   '#4338ca',
 ]
 
-/** "기타" 묶음 가상 채널 id */
-export const OTHER_CHANNEL_ID = '__기타__'
-
 export const formatKRW = (value: number): string =>
   new Intl.NumberFormat('ko-KR', {
     style: 'currency',
@@ -232,20 +235,16 @@ export const formatKRW = (value: number): string =>
     maximumFractionDigits: 0,
   }).format(value)
 
-export type DisplayChannel = { id: string; name: string; color: string; isOther?: boolean }
+export type DisplayChannel = { id: string; name: string; color: string }
 
 /**
- * 버킷 전체 매출 합 기준 채널을 desc 정렬하고, topN 초과는 "기타"로 묶는다.
- * 차트 Bar 순서·테이블 열 순서를 동일하게 맞추는 단일 소스.
- *
- * @param channels 전체 판매채널 (id, name)
- * @param buckets bucketRevenue 결과 (매출 합 산출용)
- * @param topN 개별 표시 채널 수 (초과분 "기타")
+ * 채널을 버킷 전체 매출 합 기준 desc 정렬하고 색상을 부여한다.
+ * "기타" 자동묶음 없음 — 표시 채널은 호출부(유형필터·선택)가 결정한다.
+ * 차트 Bar/Line 순서·테이블 열 순서를 맞추는 단일 소스.
  */
 export function resolveDisplayChannels(
   channels: { id: string; name: string }[],
-  buckets: RevenueBucket[],
-  topN = 8
+  buckets: RevenueBucket[]
 ): DisplayChannel[] {
   const revById = new Map<string, number>()
   for (const b of buckets) {
@@ -254,43 +253,34 @@ export function resolveDisplayChannels(
     }
   }
   const sorted = [...channels].sort((a, b) => (revById.get(b.id) ?? 0) - (revById.get(a.id) ?? 0))
-  const top = sorted.slice(0, topN)
-  const rest = sorted.slice(topN)
-
-  const result: DisplayChannel[] = top.map((c, i) => ({
+  return sorted.map((c, i) => ({
     id: c.id,
     name: c.name,
     color: CHANNEL_COLORS[i % CHANNEL_COLORS.length],
   }))
-  if (rest.length > 0) {
-    result.push({
-      id: OTHER_CHANNEL_ID,
-      name: '기타',
-      color: '#94a3b8',
-      isOther: true,
-    })
-  }
-  return result
 }
 
-/** 버킷 한 칸에서 표시 채널(기타 묶음 포함)의 집계를 얻는다. */
-export function bucketValueFor(
+/** 버킷 한 칸에서 채널의 집계를 얻는다. */
+export function bucketValueFor(bucket: RevenueBucket, channelId: string): ChannelAgg {
+  return bucket.byChannel[channelId] ?? { revenue: 0, orderCount: 0 }
+}
+
+/**
+ * 버킷의 주문/매출 합 — 대상 채널 집합 한정. 로켓(unitCountIds)의 orderCount(수량)는 주문 합에서 제외.
+ * 테이블 합계·차트 라인이 동일 값을 공유.
+ */
+export function bucketTotalsFor(
   bucket: RevenueBucket,
-  display: DisplayChannel,
-  allDisplay: DisplayChannel[]
-): ChannelAgg {
-  if (!display.isOther) {
-    return bucket.byChannel[display.id] ?? { revenue: 0, orderCount: 0 }
-  }
-  // 기타 = 전체 - 개별 표시 채널 합
-  const namedIds = new Set(allDisplay.filter((d) => !d.isOther).map((d) => d.id))
+  channelIds: Iterable<string>,
+  unitCountIds: Set<string>
+): { revenue: number; orderCount: number } {
   let revenue = 0
   let orderCount = 0
-  for (const [chId, agg] of Object.entries(bucket.byChannel)) {
-    if (!namedIds.has(chId)) {
-      revenue += agg.revenue
-      orderCount += agg.orderCount
-    }
+  for (const id of channelIds) {
+    const agg = bucket.byChannel[id]
+    if (!agg) continue
+    revenue += agg.revenue
+    if (!unitCountIds.has(id)) orderCount += agg.orderCount
   }
   return { revenue, orderCount }
 }
