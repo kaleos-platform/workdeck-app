@@ -2,8 +2,9 @@
 
 import { useMemo } from 'react'
 import {
-  BarChart,
+  ComposedChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -15,29 +16,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
+  bucketOrderTotal,
   bucketValueFor,
   formatKRW,
   resolveDisplayChannels,
   type RevenueBucket,
-  type SalesUnit,
 } from '@/lib/sh/sales-analytics'
 
 type Channel = { id: string; name: string }
+type ChannelTotal = { channelId: string; isUnitCount: boolean }
 
 type Props = {
-  unit: SalesUnit
   buckets: RevenueBucket[]
   channels: Channel[]
+  channelTotals: ChannelTotal[]
   selectedChannelIds: Set<string>
   onToggleChannel: (id: string) => void
   loading: boolean
 }
 
-type ChartRow = { label: string; [channelId: string]: string | number }
+type ChartRow = { label: string; [key: string]: string | number }
+
+/** 주문건수 라인 dataKey (채널 id와 충돌 안 나게 prefix) */
+const ORDERS_KEY = '__orders'
 
 export function ChannelRevenueStackedChart({
   buckets,
   channels,
+  channelTotals,
   selectedChannelIds,
   onToggleChannel,
   loading,
@@ -47,16 +53,21 @@ export function ChannelRevenueStackedChart({
     [channels, buckets]
   )
 
-  // 차트 데이터: 버킷 = 행, 표시 채널 = dataKey
+  const unitCountIds = useMemo(
+    () => new Set(channelTotals.filter((c) => c.isUnitCount).map((c) => c.channelId)),
+    [channelTotals]
+  )
+
+  // 차트 데이터: 버킷 = 행, 표시 채널 = Bar dataKey, 주문건수 = Line
   const chartData = useMemo<ChartRow[]>(() => {
     return buckets.map((b) => {
-      const row: ChartRow = { label: b.label }
+      const row: ChartRow = { label: b.label, [ORDERS_KEY]: bucketOrderTotal(b, unitCountIds) }
       for (const dc of displayChannels) {
         row[dc.id] = bucketValueFor(b, dc, displayChannels).revenue
       }
       return row
     })
-  }, [buckets, displayChannels])
+  }, [buckets, displayChannels, unitCountIds])
 
   // 차트에 그릴 채널 = 선택된 것. "기타"는 개별 토글 없으므로 항상 표시.
   const visibleChannels = displayChannels.filter(
@@ -66,6 +77,7 @@ export function ChannelRevenueStackedChart({
   const nameById = useMemo(() => {
     const m = new Map<string, string>()
     displayChannels.forEach((dc) => m.set(dc.id, dc.name))
+    m.set(ORDERS_KEY, '주문건수')
     return m
   }, [displayChannels])
 
@@ -108,10 +120,12 @@ export function ChannelRevenueStackedChart({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+            <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+              {/* 좌축: 매출 (누적 막대) */}
               <YAxis
+                yAxisId="left"
                 tick={{ fontSize: 11 }}
                 tickFormatter={(v) =>
                   v >= 1000000
@@ -121,22 +135,40 @@ export function ChannelRevenueStackedChart({
                       : String(v)
                 }
               />
+              {/* 우축: 주문건수 (라인) */}
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                tick={{ fontSize: 11 }}
+                tickFormatter={(v) => v.toLocaleString('ko-KR')}
+              />
               <Tooltip
                 formatter={
                   ((value: number | string | undefined, name: string | number | undefined) => {
                     const num = typeof value === 'number' ? value : Number(value ?? 0)
-                    return [
-                      formatKRW(num),
-                      nameById.get(String(name ?? '')) ?? String(name ?? ''),
-                    ] as [string, string]
+                    const key = String(name ?? '')
+                    const display = nameById.get(key) ?? key
+                    if (key === ORDERS_KEY) {
+                      return [`${num.toLocaleString('ko-KR')}건`, display] as [string, string]
+                    }
+                    return [formatKRW(num), display] as [string, string]
                   }) as never
                 }
               />
               <Legend formatter={(value) => nameById.get(String(value)) ?? String(value)} />
               {visibleChannels.map((dc) => (
-                <Bar key={dc.id} dataKey={dc.id} stackId="rev" fill={dc.color} />
+                <Bar key={dc.id} yAxisId="left" dataKey={dc.id} stackId="rev" fill={dc.color} />
               ))}
-            </BarChart>
+              {/* 주문건수 라인 (우축) */}
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey={ORDERS_KEY}
+                stroke="#334155"
+                strokeWidth={2}
+                dot={{ r: 2 }}
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         )}
       </CardContent>

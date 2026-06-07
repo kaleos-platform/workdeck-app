@@ -103,9 +103,8 @@ export function SalesAnalyticsPage() {
   const data = useSalesAnalysis(unit, range, allChannelIds)
 
   function changeUnit(next: SalesUnit) {
+    // 단위만 변경, 기간은 완전 유지 (사용자 요구).
     setUnit(next)
-    // 기간 유지 — 단위와 기간은 독립. from 만 새 단위 경계로 스냅.
-    setRange((r) => snapRangeToUnit(next, r))
   }
 
   function applyQuickFilter(qf: QuickFilter) {
@@ -201,9 +200,9 @@ export function SalesAnalyticsPage() {
 
       {/* 차트 */}
       <ChannelRevenueStackedChart
-        unit={unit}
         buckets={data.buckets}
         channels={channels}
+        channelTotals={data.channelTotals}
         selectedChannelIds={selectedChannelIds}
         onToggleChannel={toggleChannel}
         loading={data.loading}

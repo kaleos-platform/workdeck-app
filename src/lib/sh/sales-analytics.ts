@@ -251,7 +251,7 @@ export type DisplayChannel = { id: string; name: string; color: string; isOther?
 export function resolveDisplayChannels(
   channels: { id: string; name: string }[],
   buckets: RevenueBucket[],
-  topN = 8
+  topN = 12
 ): DisplayChannel[] {
   const revById = new Map<string, number>()
   for (const b of buckets) {
@@ -299,4 +299,17 @@ export function bucketValueFor(
     }
   }
   return { revenue, orderCount }
+}
+
+/**
+ * 버킷의 "주문" 합계 — 로켓(isUnitCount) 채널의 수량은 제외.
+ * bucket.total.orderCount 는 로켓 qty 가 섞여 있어 직접 쓰면 오염되므로 채널별 재집계.
+ * 차트 주문 라인 · 테이블 합계 주문수가 동일 값을 공유.
+ */
+export function bucketOrderTotal(bucket: RevenueBucket, unitCountIds: Set<string>): number {
+  let n = 0
+  for (const [chId, agg] of Object.entries(bucket.byChannel)) {
+    if (!unitCountIds.has(chId)) n += agg.orderCount
+  }
+  return n
 }
