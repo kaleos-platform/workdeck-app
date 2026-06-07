@@ -179,13 +179,19 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   await updateCollectionRun(runId, { status: 'DOWNLOADING' })
   console.log('상태: DOWNLOADING')
 
-  // 수동 수집: 최근 7일, 자동 수집: 어제 1일 (KST 기준)
+  // 수동 수집: 최근 7일. 자동 수집: 최근 14일(self-heal).
+  // cron 1회 실패 = 그 날짜 영구 누락이므로(같은 날 재시도 불가), 자동 경로는
+  // dateTo(어제)까지 14일 범위를 받아 누락 일자를 다음 정상 cron 이 메운다.
+  // collector 는 단일 보고서를 범위로 1회 다운로드하고, AdRecord
+  // @@unique + createMany skipDuplicates 로 이미 있는 날은 중복(0 삽입),
+  // 누락된 날만 삽입된다 — 비용은 거의 동일.
   function kstDate(offsetDays: number): string {
     const kst = new Date(Date.now() + 9 * 60 * 60 * 1000)
     kst.setDate(kst.getDate() + offsetDays)
     return kst.toISOString().split('T')[0]
   }
-  const dateFrom = isManual ? kstDate(-7) : kstDate(-1)
+  const AD_LOOKBACK_DAYS = 14
+  const dateFrom = isManual ? kstDate(-7) : kstDate(-AD_LOOKBACK_DAYS)
   const dateTo = kstDate(-1)
   const dateOptions = { dateFrom, dateTo }
 
@@ -245,15 +251,31 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   // 광고 수집기 context.close() 후 브라우저 데이터 디렉토리 잠금 해제 대기
   await new Promise((r) => setTimeout(r, 3000))
 
-  let inventoryResult: { healthRows?: number; vendorRows?: number; errors: string[] } = {
+  // self-heal 누락 일자 조회 — 자동 cron 만(수동은 UI 백필로 보충).
+  // 같은 Wing 세션에서 어제+누락 일자를 함께 수집해 추가 로그인이 없도록 한다.
+  let gapDates: string[] = []
+  if (!isManual && credential.collectVendorSales !== false) {
+    gapDates = await fetchSalesGapDates(credential.workspaceId).catch((err) => {
+      console.error('[orchestrator] sales-gaps 조회 실패:', err)
+      return []
+    })
+  }
+
+  let inventoryResult: {
+    healthRows?: number
+    vendorRows?: number
+    gapVendorRows?: number
+    errors: string[]
+  } = {
     errors: [],
   }
   try {
     console.log('\n[orchestrator] 재고 데이터 수집 시작...')
-    // collectVendorSales 플래그를 credential에서 그대로 전달
+    // collectVendorSales 플래그를 credential에서 그대로 전달. gapDates 는 같은 세션 self-heal.
     inventoryResult = await collectAndUploadInventory({
       ...credential,
       collectVendorSales: credential.collectVendorSales,
+      gapDates,
     })
     console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건`)
   } catch (err) {
@@ -354,6 +376,33 @@ async function triggerSellerOpsSync(
   }
 }
 
+/**
+ * 판매(VENDOR) self-heal — 최근 14일 중 누락 일자를 조회한다(조회만).
+ * 실제 수집은 collectAndUploadInventory 가 같은 Wing 세션에서 처리(추가 로그인 0).
+ * 어제는 본 수집(Step9)이 담당하므로 제외 — 어제 이전 공백만 보충 대상.
+ */
+async function fetchSalesGapDates(workspaceId: string): Promise<string[]> {
+  const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
+  const apiKey = process.env.WORKER_API_KEY
+  if (!baseUrl || !apiKey) return []
+
+  const SALES_LOOKBACK_DAYS = 14
+  const url = `${baseUrl}/api/collection/sales-gaps?workspaceId=${encodeURIComponent(workspaceId)}&days=${SALES_LOOKBACK_DAYS}`
+  const res = await fetch(url, { headers: { 'x-worker-api-key': apiKey } })
+  if (!res.ok) {
+    console.error(`[orchestrator] sales-gaps 조회 실패: ${res.status}`)
+    return []
+  }
+  const data = (await res.json()) as { missingDates?: string[] }
+  const missing = data.missingDates ?? []
+
+  // 어제 제외 — 본 수집이 담당. 어제 이전 공백만 self-heal.
+  const yesterdayKst = new Date(Date.now() + 9 * 3600 * 1000 - 86400 * 1000)
+    .toISOString()
+    .slice(0, 10)
+  return missing.filter((d) => d < yesterdayKst)
+}
+
 /** Wing에서 재고 데이터를 수집하고 업로드한다 */
 async function collectAndUploadInventory(credential: {
   loginId: string
@@ -362,7 +411,14 @@ async function collectAndUploadInventory(credential: {
   workspaceId: string
   /** false면 판매분석(VENDOR) 수집 생략, inventory_health만 수집 */
   collectVendorSales?: boolean
-}): Promise<{ healthRows?: number; vendorRows?: number; errors: string[] }> {
+  /** self-heal: 같은 세션에서 추가 수집할 누락 일자(KST). 추가 로그인 없음. */
+  gapDates?: string[]
+}): Promise<{
+  healthRows?: number
+  vendorRows?: number
+  gapVendorRows?: number
+  errors: string[]
+}> {
   const password =
     credential.passwordIv === 'none'
       ? credential.encryptedPassword
@@ -380,9 +436,10 @@ async function collectAndUploadInventory(credential: {
 
   // collectVendorSales=false면 VENDOR 수집 생략 — targetDateKst를 넘기지 않아 판매분석 건너뜀
   const shouldCollectVendor = credential.collectVendorSales !== false
+  const gapDates = shouldCollectVendor ? (credential.gapDates ?? []) : []
   const inventoryData = await collectInventoryData(
     { loginId: credential.loginId, password },
-    shouldCollectVendor ? { targetDateKst: yesterdayKst } : {}
+    shouldCollectVendor ? { targetDateKst: yesterdayKst, gapDates } : {}
   )
   if (!shouldCollectVendor) {
     console.log('[inventory] collectVendorSales=false — 판매분석(VENDOR) 수집 건너뜀')
@@ -450,7 +507,49 @@ async function collectAndUploadInventory(credential: {
     errors.push('판매분석 VENDOR 다운로드: 결과 파일 없음 (원인 미식별)')
   }
 
-  return { healthRows, vendorRows, errors }
+  // self-heal: 같은 세션에서 추가 수집한 누락 일자 VENDOR 업로드 + 변환.
+  let gapVendorRows = 0
+  const healedDates: string[] = []
+  for (const gv of inventoryData.gapVendors ?? []) {
+    const snapshotIso = new Date(`${gv.dateKst}T00:00:00+09:00`).toISOString()
+    try {
+      const buffer = fs.readFileSync(gv.filePath)
+      const result = await uploadInventory(
+        Buffer.from(buffer),
+        gv.fileName,
+        credential.workspaceId,
+        snapshotIso
+      )
+      gapVendorRows += result.insertedRows ?? 0
+      healedDates.push(gv.dateKst)
+      console.log(`[inventory] self-heal VENDOR 업로드: ${gv.dateKst} ${result.insertedRows}건`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[inventory] self-heal VENDOR 업로드 실패 (${gv.dateKst}): ${msg}`)
+    } finally {
+      try {
+        fs.unlinkSync(gv.filePath)
+      } catch {}
+    }
+  }
+
+  // 보충된 일자 OUTBOUND 변환 (범위로 한 번에 — referenceId 멱등이라 비-gap 일자 재변환도 안전)
+  if (healedDates.length > 0) {
+    const sorted = healedDates.sort()
+    const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
+    const apiKey = process.env.WORKER_API_KEY
+    if (baseUrl && apiKey) {
+      try {
+        const url = `${baseUrl}/api/cron/coupang-sales-sync?from=${sorted[0]}&to=${sorted[sorted.length - 1]}`
+        const r = await fetch(url, { headers: { 'x-worker-api-key': apiKey } })
+        console.log(`[inventory] self-heal 변환 트리거: ${r.status} (${healedDates.length}일)`)
+      } catch (err) {
+        console.error('[inventory] self-heal 변환 실패:', err)
+      }
+    }
+  }
+
+  return { healthRows, vendorRows, gapVendorRows, errors }
 }
 
 /** 재고 분석 트리거 — 재고 수집 완료 후 항상 실행, Slack 발송 포함 */

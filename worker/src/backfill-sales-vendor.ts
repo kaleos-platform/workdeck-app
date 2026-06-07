@@ -70,23 +70,39 @@ export type BackfillProgressCallback = (params: {
 /**
  * 과거 N일치 VENDOR 판매분석을 Wing에서 수집해 API에 업로드한다.
  *
- * @param days       수집할 일수 (1~120)
+ * @param days       수집할 일수 (1~120). explicitDates 지정 시 무시됨.
  * @param creds      Wing 로그인 자격증명 (복호화된 평문 패스워드)
  * @param workspaceId 업로드 대상 워크스페이스 ID
  * @param onProgress  진행 콜백 (선택)
  * @param shouldCancel 날짜 루프 사이에 호출되어 true 면 즉시 중단(사용자 취소 감지). 선택.
+ * @param explicitDates 수집할 특정 KST 일자 배열("YYYY-MM-DD"). 지정 시 연속 days 대신
+ *                      이 비연속 일자만 수집(self-heal gap fill 용).
  */
 export async function runBackfill(
   days: number,
   creds: BackfillCreds,
   workspaceId: string,
   onProgress?: BackfillProgressCallback,
-  shouldCancel?: () => Promise<boolean>
+  shouldCancel?: () => Promise<boolean>,
+  explicitDates?: string[]
 ): Promise<BackfillResult & { cancelled?: boolean }> {
-  // ── 대상 날짜 목록 생성: 어제(offset=1) → N일 전(offset=days) ──
-  const dates: string[] = []
-  for (let i = 1; i <= days; i++) {
-    dates.push(kstDateOffset(i))
+  // ── 대상 날짜 목록 ──
+  // explicitDates 지정 시 그 일자만(gap fill), 아니면 어제(offset=1) → N일 전 연속.
+  const dates: string[] =
+    explicitDates && explicitDates.length > 0
+      ? [...explicitDates].sort().reverse() // 최신순 (기존 동작과 일치)
+      : Array.from({ length: days }, (_, i) => kstDateOffset(i + 1))
+
+  if (dates.length === 0) {
+    return {
+      succeeded: 0,
+      failed: 0,
+      totalInserted: 0,
+      totalDuplicate: 0,
+      failedDates: [],
+      fromDate: '',
+      toDate: '',
+    }
   }
 
   console.log(`[backfill] workspaceId: ${workspaceId}`)
