@@ -24,6 +24,8 @@ export interface InventoryCollectorResult {
   salesVendor?: { filePath: string; fileName: string } | null
   /** 판매분석 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
   salesVendorError?: string
+  /** self-heal: 같은 세션에서 추가 수집한 누락 일자 VENDOR 파일들(날짜별). 추가 로그인 없음. */
+  gapVendors?: Array<{ dateKst: string; filePath: string; fileName: string }>
 }
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
@@ -488,6 +490,8 @@ export async function collectInventoryData(
     headless?: boolean
     /** 판매분석 수집 대상 날짜 (KST YYYY-MM-DD). 미지정 시 판매분석 수집 생략. */
     targetDateKst?: string
+    /** self-heal: 같은 세션에서 추가로 수집할 누락 일자(KST). 추가 Wing 로그인 없음. */
+    gapDates?: string[]
   } = {}
 ): Promise<InventoryCollectorResult> {
   const {
@@ -495,6 +499,7 @@ export async function collectInventoryData(
     browserDataDir = process.env.COUPANG_BROWSER_DATA_DIR || '.browser-data',
     headless = process.env.HEADLESS !== 'false',
     targetDateKst,
+    gapDates = [],
   } = options
 
   if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true })
@@ -550,7 +555,26 @@ export async function collectInventoryData(
       }
     }
 
-    return { inventoryHealth, inventoryHealthError, salesVendor, salesVendorError }
+    // self-heal: 누락 일자 VENDOR 를 같은 세션에서 추가 수집 (추가 로그인 없음).
+    // 어제(targetDateKst)는 위에서 이미 수집했으므로 제외.
+    const gapVendors: Array<{ dateKst: string; filePath: string; fileName: string }> = []
+    const uniqueGaps = Array.from(new Set(gapDates.filter((d) => d !== targetDateKst)))
+    if (uniqueGaps.length > 0) {
+      console.log(
+        `[inventory] self-heal — 누락 ${uniqueGaps.length}일 추가 수집: ${uniqueGaps.join(', ')}`
+      )
+      for (const dateKst of uniqueGaps) {
+        try {
+          const f = await downloadSalesAnalysisVendor(page, downloadDir, dateKst)
+          gapVendors.push({ dateKst, filePath: f.filePath, fileName: f.fileName })
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err)
+          console.error(`[inventory] self-heal 판매분석 실패 (${dateKst}): ${msg}`)
+        }
+      }
+    }
+
+    return { inventoryHealth, inventoryHealthError, salesVendor, salesVendorError, gapVendors }
   } catch (error) {
     await saveScreenshot(page, 'inventory-error')
     throw error
