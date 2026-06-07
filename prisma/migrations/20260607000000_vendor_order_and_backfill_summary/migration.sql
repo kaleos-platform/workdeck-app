@@ -1,0 +1,9 @@
+-- InventoryRecord: VENDOR '주문' 컬럼
+ALTER TABLE "InventoryRecord" ADD COLUMN IF NOT EXISTS "orderCount" INTEGER;
+
+-- CoupangBackfillJob: 수집 결과 요약 (이력 가시화)
+ALTER TABLE "CoupangBackfillJob" ADD COLUMN IF NOT EXISTS "duplicateRows" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "CoupangBackfillJob" ADD COLUMN IF NOT EXISTS "outboundCount" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "CoupangBackfillJob" ADD COLUMN IF NOT EXISTS "revenueSum" DECIMAL(18,2) NOT NULL DEFAULT 0;
+ALTER TABLE "CoupangBackfillJob" ADD COLUMN IF NOT EXISTS "orderSum" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "CoupangBackfillJob" ADD COLUMN IF NOT EXISTS "salesQtySum" INTEGER NOT NULL DEFAULT 0;

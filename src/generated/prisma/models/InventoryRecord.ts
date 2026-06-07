@@ -36,6 +36,7 @@ export type InventoryRecordAvgAggregateOutputType = {
   revenue30d: runtime.Decimal | null
   salesQty7d: number | null
   salesQty30d: number | null
+  orderCount: number | null
   visitors: number | null
   views: number | null
   cartAdds: number | null
@@ -63,6 +64,7 @@ export type InventoryRecordSumAggregateOutputType = {
   revenue30d: runtime.Decimal | null
   salesQty7d: number | null
   salesQty30d: number | null
+  orderCount: number | null
   visitors: number | null
   views: number | null
   cartAdds: number | null
@@ -104,6 +106,7 @@ export type InventoryRecordMinAggregateOutputType = {
   revenue30d: runtime.Decimal | null
   salesQty7d: number | null
   salesQty30d: number | null
+  orderCount: number | null
   fulfillmentType: string | null
   visitors: number | null
   views: number | null
@@ -147,6 +150,7 @@ export type InventoryRecordMaxAggregateOutputType = {
   revenue30d: runtime.Decimal | null
   salesQty7d: number | null
   salesQty30d: number | null
+  orderCount: number | null
   fulfillmentType: string | null
   visitors: number | null
   views: number | null
@@ -190,6 +194,7 @@ export type InventoryRecordCountAggregateOutputType = {
   revenue30d: number
   salesQty7d: number
   salesQty30d: number
+  orderCount: number
   fulfillmentType: number
   visitors: number
   views: number
@@ -221,6 +226,7 @@ export type InventoryRecordAvgAggregateInputType = {
   revenue30d?: true
   salesQty7d?: true
   salesQty30d?: true
+  orderCount?: true
   visitors?: true
   views?: true
   cartAdds?: true
@@ -248,6 +254,7 @@ export type InventoryRecordSumAggregateInputType = {
   revenue30d?: true
   salesQty7d?: true
   salesQty30d?: true
+  orderCount?: true
   visitors?: true
   views?: true
   cartAdds?: true
@@ -289,6 +296,7 @@ export type InventoryRecordMinAggregateInputType = {
   revenue30d?: true
   salesQty7d?: true
   salesQty30d?: true
+  orderCount?: true
   fulfillmentType?: true
   visitors?: true
   views?: true
@@ -332,6 +340,7 @@ export type InventoryRecordMaxAggregateInputType = {
   revenue30d?: true
   salesQty7d?: true
   salesQty30d?: true
+  orderCount?: true
   fulfillmentType?: true
   visitors?: true
   views?: true
@@ -375,6 +384,7 @@ export type InventoryRecordCountAggregateInputType = {
   revenue30d?: true
   salesQty7d?: true
   salesQty30d?: true
+  orderCount?: true
   fulfillmentType?: true
   visitors?: true
   views?: true
@@ -505,6 +515,7 @@ export type InventoryRecordGroupByOutputType = {
   revenue30d: runtime.Decimal | null
   salesQty7d: number | null
   salesQty30d: number | null
+  orderCount: number | null
   fulfillmentType: string | null
   visitors: number | null
   views: number | null
@@ -571,6 +582,7 @@ export type InventoryRecordWhereInput = {
   revenue30d?: Prisma.DecimalNullableFilter<"InventoryRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   salesQty30d?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
+  orderCount?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   fulfillmentType?: Prisma.StringNullableFilter<"InventoryRecord"> | string | null
   visitors?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   views?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
@@ -616,6 +628,7 @@ export type InventoryRecordOrderByWithRelationInput = {
   revenue30d?: Prisma.SortOrderInput | Prisma.SortOrder
   salesQty7d?: Prisma.SortOrderInput | Prisma.SortOrder
   salesQty30d?: Prisma.SortOrderInput | Prisma.SortOrder
+  orderCount?: Prisma.SortOrderInput | Prisma.SortOrder
   fulfillmentType?: Prisma.SortOrderInput | Prisma.SortOrder
   visitors?: Prisma.SortOrderInput | Prisma.SortOrder
   views?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -665,6 +678,7 @@ export type InventoryRecordWhereUniqueInput = Prisma.AtLeast<{
   revenue30d?: Prisma.DecimalNullableFilter<"InventoryRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   salesQty30d?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
+  orderCount?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   fulfillmentType?: Prisma.StringNullableFilter<"InventoryRecord"> | string | null
   visitors?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   views?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
@@ -710,6 +724,7 @@ export type InventoryRecordOrderByWithAggregationInput = {
   revenue30d?: Prisma.SortOrderInput | Prisma.SortOrder
   salesQty7d?: Prisma.SortOrderInput | Prisma.SortOrder
   salesQty30d?: Prisma.SortOrderInput | Prisma.SortOrder
+  orderCount?: Prisma.SortOrderInput | Prisma.SortOrder
   fulfillmentType?: Prisma.SortOrderInput | Prisma.SortOrder
   visitors?: Prisma.SortOrderInput | Prisma.SortOrder
   views?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -761,6 +776,7 @@ export type InventoryRecordScalarWhereWithAggregatesInput = {
   revenue30d?: Prisma.DecimalNullableWithAggregatesFilter<"InventoryRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.IntNullableWithAggregatesFilter<"InventoryRecord"> | number | null
   salesQty30d?: Prisma.IntNullableWithAggregatesFilter<"InventoryRecord"> | number | null
+  orderCount?: Prisma.IntNullableWithAggregatesFilter<"InventoryRecord"> | number | null
   fulfillmentType?: Prisma.StringNullableWithAggregatesFilter<"InventoryRecord"> | string | null
   visitors?: Prisma.IntNullableWithAggregatesFilter<"InventoryRecord"> | number | null
   views?: Prisma.IntNullableWithAggregatesFilter<"InventoryRecord"> | number | null
@@ -803,6 +819,7 @@ export type InventoryRecordCreateInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -847,6 +864,7 @@ export type InventoryRecordUncheckedCreateInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -889,6 +907,7 @@ export type InventoryRecordUpdateInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -933,6 +952,7 @@ export type InventoryRecordUncheckedUpdateInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -976,6 +996,7 @@ export type InventoryRecordCreateManyInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -1018,6 +1039,7 @@ export type InventoryRecordUpdateManyMutationInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1060,6 +1082,7 @@ export type InventoryRecordUncheckedUpdateManyInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1121,6 +1144,7 @@ export type InventoryRecordCountOrderByAggregateInput = {
   revenue30d?: Prisma.SortOrder
   salesQty7d?: Prisma.SortOrder
   salesQty30d?: Prisma.SortOrder
+  orderCount?: Prisma.SortOrder
   fulfillmentType?: Prisma.SortOrder
   visitors?: Prisma.SortOrder
   views?: Prisma.SortOrder
@@ -1150,6 +1174,7 @@ export type InventoryRecordAvgOrderByAggregateInput = {
   revenue30d?: Prisma.SortOrder
   salesQty7d?: Prisma.SortOrder
   salesQty30d?: Prisma.SortOrder
+  orderCount?: Prisma.SortOrder
   visitors?: Prisma.SortOrder
   views?: Prisma.SortOrder
   cartAdds?: Prisma.SortOrder
@@ -1191,6 +1216,7 @@ export type InventoryRecordMaxOrderByAggregateInput = {
   revenue30d?: Prisma.SortOrder
   salesQty7d?: Prisma.SortOrder
   salesQty30d?: Prisma.SortOrder
+  orderCount?: Prisma.SortOrder
   fulfillmentType?: Prisma.SortOrder
   visitors?: Prisma.SortOrder
   views?: Prisma.SortOrder
@@ -1234,6 +1260,7 @@ export type InventoryRecordMinOrderByAggregateInput = {
   revenue30d?: Prisma.SortOrder
   salesQty7d?: Prisma.SortOrder
   salesQty30d?: Prisma.SortOrder
+  orderCount?: Prisma.SortOrder
   fulfillmentType?: Prisma.SortOrder
   visitors?: Prisma.SortOrder
   views?: Prisma.SortOrder
@@ -1263,6 +1290,7 @@ export type InventoryRecordSumOrderByAggregateInput = {
   revenue30d?: Prisma.SortOrder
   salesQty7d?: Prisma.SortOrder
   salesQty30d?: Prisma.SortOrder
+  orderCount?: Prisma.SortOrder
   visitors?: Prisma.SortOrder
   views?: Prisma.SortOrder
   cartAdds?: Prisma.SortOrder
@@ -1391,6 +1419,7 @@ export type InventoryRecordCreateWithoutWorkspaceInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -1433,6 +1462,7 @@ export type InventoryRecordUncheckedCreateWithoutWorkspaceInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -1505,6 +1535,7 @@ export type InventoryRecordScalarWhereInput = {
   revenue30d?: Prisma.DecimalNullableFilter<"InventoryRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   salesQty30d?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
+  orderCount?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   fulfillmentType?: Prisma.StringNullableFilter<"InventoryRecord"> | string | null
   visitors?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
   views?: Prisma.IntNullableFilter<"InventoryRecord"> | number | null
@@ -1547,6 +1578,7 @@ export type InventoryRecordCreateWithoutUploadInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -1590,6 +1622,7 @@ export type InventoryRecordUncheckedCreateWithoutUploadInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -1657,6 +1690,7 @@ export type InventoryRecordCreateManyWorkspaceInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -1699,6 +1733,7 @@ export type InventoryRecordUpdateWithoutWorkspaceInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1741,6 +1776,7 @@ export type InventoryRecordUncheckedUpdateWithoutWorkspaceInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1783,6 +1819,7 @@ export type InventoryRecordUncheckedUpdateManyWithoutWorkspaceInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1826,6 +1863,7 @@ export type InventoryRecordCreateManyUploadInput = {
   revenue30d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: number | null
   salesQty30d?: number | null
+  orderCount?: number | null
   fulfillmentType?: string | null
   visitors?: number | null
   views?: number | null
@@ -1867,6 +1905,7 @@ export type InventoryRecordUpdateWithoutUploadInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1910,6 +1949,7 @@ export type InventoryRecordUncheckedUpdateWithoutUploadInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1952,6 +1992,7 @@ export type InventoryRecordUncheckedUpdateManyWithoutUploadInput = {
   revenue30d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   salesQty7d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salesQty30d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  orderCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fulfillmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1996,6 +2037,7 @@ export type InventoryRecordSelect<ExtArgs extends runtime.Types.Extensions.Inter
   revenue30d?: boolean
   salesQty7d?: boolean
   salesQty30d?: boolean
+  orderCount?: boolean
   fulfillmentType?: boolean
   visitors?: boolean
   views?: boolean
@@ -2041,6 +2083,7 @@ export type InventoryRecordSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   revenue30d?: boolean
   salesQty7d?: boolean
   salesQty30d?: boolean
+  orderCount?: boolean
   fulfillmentType?: boolean
   visitors?: boolean
   views?: boolean
@@ -2086,6 +2129,7 @@ export type InventoryRecordSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   revenue30d?: boolean
   salesQty7d?: boolean
   salesQty30d?: boolean
+  orderCount?: boolean
   fulfillmentType?: boolean
   visitors?: boolean
   views?: boolean
@@ -2131,6 +2175,7 @@ export type InventoryRecordSelectScalar = {
   revenue30d?: boolean
   salesQty7d?: boolean
   salesQty30d?: boolean
+  orderCount?: boolean
   fulfillmentType?: boolean
   visitors?: boolean
   views?: boolean
@@ -2150,7 +2195,7 @@ export type InventoryRecordSelectScalar = {
   uploadId?: boolean
 }
 
-export type InventoryRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "snapshotDate" | "fileType" | "productId" | "optionId" | "skuId" | "productName" | "optionName" | "category" | "availableStock" | "inboundStock" | "productGrade" | "restockQty" | "restockDate" | "estimatedDepletion" | "storageFee" | "isItemWinner" | "returns30d" | "revenue7d" | "revenue30d" | "salesQty7d" | "salesQty30d" | "fulfillmentType" | "visitors" | "views" | "cartAdds" | "conversionRate" | "itemWinnerRate" | "totalRevenue" | "totalSales" | "totalCancelAmt" | "totalCancelled" | "stock1to30d" | "stock31to45d" | "stock46to60d" | "stock61to120d" | "stock121to180d" | "stock181plusD" | "uploadId", ExtArgs["result"]["inventoryRecord"]>
+export type InventoryRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "snapshotDate" | "fileType" | "productId" | "optionId" | "skuId" | "productName" | "optionName" | "category" | "availableStock" | "inboundStock" | "productGrade" | "restockQty" | "restockDate" | "estimatedDepletion" | "storageFee" | "isItemWinner" | "returns30d" | "revenue7d" | "revenue30d" | "salesQty7d" | "salesQty30d" | "orderCount" | "fulfillmentType" | "visitors" | "views" | "cartAdds" | "conversionRate" | "itemWinnerRate" | "totalRevenue" | "totalSales" | "totalCancelAmt" | "totalCancelled" | "stock1to30d" | "stock31to45d" | "stock46to60d" | "stock61to120d" | "stock121to180d" | "stock181plusD" | "uploadId", ExtArgs["result"]["inventoryRecord"]>
 export type InventoryRecordInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   upload?: boolean | Prisma.InventoryUploadDefaultArgs<ExtArgs>
@@ -2194,6 +2239,7 @@ export type $InventoryRecordPayload<ExtArgs extends runtime.Types.Extensions.Int
     revenue30d: runtime.Decimal | null
     salesQty7d: number | null
     salesQty30d: number | null
+    orderCount: number | null
     fulfillmentType: string | null
     visitors: number | null
     views: number | null
@@ -2659,6 +2705,7 @@ export interface InventoryRecordFieldRefs {
   readonly revenue30d: Prisma.FieldRef<"InventoryRecord", 'Decimal'>
   readonly salesQty7d: Prisma.FieldRef<"InventoryRecord", 'Int'>
   readonly salesQty30d: Prisma.FieldRef<"InventoryRecord", 'Int'>
+  readonly orderCount: Prisma.FieldRef<"InventoryRecord", 'Int'>
   readonly fulfillmentType: Prisma.FieldRef<"InventoryRecord", 'String'>
   readonly visitors: Prisma.FieldRef<"InventoryRecord", 'Int'>
   readonly views: Prisma.FieldRef<"InventoryRecord", 'Int'>

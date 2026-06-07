@@ -50,6 +50,10 @@ export type SyncCoupangSalesResult = {
   skipped: number
   unmapped: number
   unmappedCodes: string[]
+  // 집계 (이력·Slack 표시용) — 해당 일자 로켓그로스 VENDOR 합
+  revenue: number
+  orderCount: number
+  salesQty: number
 }
 
 /**
@@ -82,11 +86,32 @@ export async function syncCoupangSalesMovements(params: {
       optionId: true,
       skuId: true,
       salesQty30d: true,
+      revenue30d: true,
+      orderCount: true,
     },
   })
 
   if (records.length === 0) {
-    return { created: 0, updated: 0, skipped: 0, unmapped: 0, unmappedCodes: [] }
+    return {
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      unmapped: 0,
+      unmappedCodes: [],
+      revenue: 0,
+      orderCount: 0,
+      salesQty: 0,
+    }
+  }
+
+  // 집계 (이력·Slack 표시) — 로켓그로스 VENDOR 합. 매핑 성공 여부와 무관하게 수집된 실적.
+  let aggRevenue = 0
+  let aggOrder = 0
+  let aggSalesQty = 0
+  for (const r of records) {
+    aggRevenue += r.revenue30d != null ? Number(r.revenue30d) : 0
+    aggOrder += r.orderCount ?? 0
+    aggSalesQty += r.salesQty30d ?? 0
   }
 
   // 1.5) optionId → skuId 브릿지 맵.
@@ -146,6 +171,9 @@ export async function syncCoupangSalesMovements(params: {
     skipped: 0,
     unmapped: 0,
     unmappedCodes: [],
+    revenue: aggRevenue,
+    orderCount: aggOrder,
+    salesQty: aggSalesQty,
   }
 
   // 옵션별 합산 수량 (서로 다른 externalCode 가 같은 옵션을 가리킬 수 있음)
@@ -275,11 +303,16 @@ async function upsertOutboundMovement(input: {
 
 export type SalesSyncSpaceSummary = {
   spaceId: string
+  workspaceId?: string // 변환 대상 워크스페이스 (이력 잡 기록용)
   status: string
   created?: number
   updated?: number
   skipped?: number
   unmapped?: number
+  // 집계 (이력·Slack 표시)
+  revenue?: number
+  orderCount?: number
+  salesQty?: number
 }
 
 /**
@@ -330,6 +363,9 @@ export async function runCoupangSalesSyncForDates(dates: Date[]): Promise<SalesS
       let updated = 0
       let skipped = 0
       let unmapped = 0
+      let revenue = 0
+      let orderCount = 0
+      let salesQty = 0
       for (const date of dates) {
         const r = await syncCoupangSalesMovements({
           spaceId,
@@ -342,6 +378,9 @@ export async function runCoupangSalesSyncForDates(dates: Date[]): Promise<SalesS
         updated += r.updated
         skipped += r.skipped
         unmapped += r.unmapped
+        revenue += r.revenue
+        orderCount += r.orderCount
+        salesQty += r.salesQty
         if (r.unmapped > 0) {
           console.warn(
             `[coupang-sales-sync] space ${spaceId} ${date.toISOString().slice(0, 10)}: 미매핑 ${r.unmapped}건`,
@@ -349,7 +388,18 @@ export async function runCoupangSalesSyncForDates(dates: Date[]): Promise<SalesS
           )
         }
       }
-      summary.push({ spaceId, status: 'ok', created, updated, skipped, unmapped })
+      summary.push({
+        spaceId,
+        workspaceId: resolved.workspaceId,
+        status: 'ok',
+        created,
+        updated,
+        skipped,
+        unmapped,
+        revenue,
+        orderCount,
+        salesQty,
+      })
     } catch (err) {
       console.error(`[coupang-sales-sync] space ${spaceId} 실패:`, err)
       summary.push({ spaceId, status: 'error' })

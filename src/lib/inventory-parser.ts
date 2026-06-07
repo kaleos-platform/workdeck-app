@@ -26,6 +26,7 @@ export type ParsedInventoryRow = {
   revenue30d: number | null
   salesQty7d: number | null
   salesQty30d: number | null
+  orderCount: number | null // VENDOR_ITEM_METRICS '주문' 컬럼
   // VENDOR_ITEM_METRICS 전용
   fulfillmentType: string | null // 판매방식: "로켓그로스" | "판매자배송"
   visitors: number | null
@@ -128,6 +129,7 @@ function parseInventoryHealthRow(row: Record<string, unknown>): ParsedInventoryR
     revenue30d: parseNum(row['최근 매출 (번들 매출 제외)_지난 30일'] ?? row['최근 매출_지난 30일']),
     salesQty7d: parseInt_(row['최근 판매수량_지난 7일']),
     salesQty30d: parseInt_(row['최근 판매수량_지난 30일']),
+    orderCount: null, // INVENTORY_HEALTH 에는 주문 컬럼 없음
     // vendor_item_metrics 전용 (null)
     fulfillmentType: null,
     visitors: null,
@@ -195,6 +197,7 @@ function parseVendorItemRow(row: Record<string, unknown>): ParsedInventoryRow | 
     revenue30d: parseNum(row['매출(원)'] ?? row['매출']),
     salesQty7d: null,
     salesQty30d: parseInt_(row['판매량']),
+    orderCount: parseInt_(row['주문']),
     // vendor_item_metrics 전용
     fulfillmentType: parseStr(row['판매방식']),
     visitors: parseInt_(row['방문자']),
