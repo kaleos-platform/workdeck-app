@@ -50,6 +50,7 @@ export type BackfillResult = {
   succeeded: number
   failed: number
   totalInserted: number
+  totalDuplicate: number // 중복으로 건너뛴 행 수 (totalRows - insertedRows 누적)
   failedDates: string[]
   /** 백필 범위 oldest KST 날짜 (어제−days+1) */
   fromDate: string
@@ -97,6 +98,7 @@ export async function runBackfill(
   let succeeded = 0
   let failed = 0
   let totalInserted = 0
+  let totalDuplicate = 0
   let cancelled = false
   const failedDates: string[] = []
 
@@ -146,11 +148,13 @@ export async function runBackfill(
           throw new Error(result.error ?? '업로드 응답 success=false')
         }
 
+        const dup = Math.max(0, (result.totalRows ?? 0) - (result.insertedRows ?? 0))
         console.log(
-          `[backfill]   ✓ ${dateKst} 업로드 완료 — ${result.insertedRows}건 (snapshotDate: ${snapshotDateIso})`
+          `[backfill]   ✓ ${dateKst} 업로드 완료 — ${result.insertedRows}건${dup > 0 ? ` (중복 ${dup}건)` : ''} (snapshotDate: ${snapshotDateIso})`
         )
         succeeded++
         totalInserted += result.insertedRows ?? 0
+        totalDuplicate += dup
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error(`[backfill]   ✗ 업로드 실패 (${dateKst}): ${msg}`)
@@ -177,6 +181,7 @@ export async function runBackfill(
     succeeded,
     failed,
     totalInserted,
+    totalDuplicate,
     failedDates,
     fromDate: dates[dates.length - 1], // oldest
     toDate: dates[0], // newest (어제)

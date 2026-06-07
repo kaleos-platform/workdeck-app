@@ -18,6 +18,7 @@ import {
   notifyCollectionDone,
   notifyCollectionFailed,
   notifyInventoryDone,
+  notifyVendorSalesDone,
 } from './slack-notifier.js'
 
 /**
@@ -276,10 +277,16 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     (err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err)
   )
 
-  // ── Step 12: seller-ops 연동 — 로켓그로스 판매 OUTBOUND 변환 트리거 ──
+  // ── Step 12: seller-ops 연동 — 로켓그로스 판매 OUTBOUND 변환 트리거 + 판매 Slack 알림 ──
   // 수집 직후 호출해야 정확(VENDOR 스냅샷이 방금 적재됨).
   // 자동 재고 대조(inventory-sync)는 제거됨 — 재고 truth = OUTBOUND 차감 + 사용자 수동 대조.
-  await triggerSellerOpsSync().catch((err) =>
+  // VENDOR 수집을 한 경우에만 판매 알림(변환 트리거는 전 Space 대상이라 항상 호출).
+  // cron 일일 수집 = 어제 1일치 VENDOR.
+  const salesDateKst = new Date(Date.now() + 9 * 3600 * 1000 - 86400 * 1000)
+    .toISOString()
+    .slice(0, 10)
+  const vendorCollected = (inventoryResult.vendorRows ?? 0) > 0
+  await triggerSellerOpsSync(salesDateKst, vendorCollected, isManual).catch((err) =>
     console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err)
   )
 
@@ -290,17 +297,48 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
  * seller-ops 연동 트리거 — 수집 후 로켓그로스 판매 OUTBOUND 변환(재고 차감).
  * 워커 인증(x-worker-api-key)으로 sales-sync 라우트를 직접 호출.
  * 전 Space 를 쓸어 처리하므로 workspaceId 불필요.
+ *
+ * 변환 응답의 totals(매출/주문/판매량/converted)로 판매 수집 완료 Slack 알림을 발송한다.
+ * @param salesDateRange 판매(VENDOR) 수집 대상 KST 일자 범위 (cron=어제 1일)
+ * @param vendorCollected 이번 사이클에 VENDOR 를 실제 수집했는지 — false면 변환만 하고 알림 생략
+ *                        (변환은 전 Space 의 어제 기존 데이터 대상이라 항상 호출하되,
+ *                         이번 수집이 없으면 stale 데이터로 "수집 완료" 알림이 나가지 않게).
  */
-async function triggerSellerOpsSync(): Promise<void> {
+async function triggerSellerOpsSync(
+  salesDateRange: string,
+  vendorCollected: boolean,
+  isManual: boolean
+): Promise<void> {
   const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
   const apiKey = process.env.WORKER_API_KEY
   if (!baseUrl || !apiKey) return
 
   const headers = { 'x-worker-api-key': apiKey }
-  // 판매 OUTBOUND 변환(수요 신호 + 재고 차감)
+  // 판매 OUTBOUND 변환(수요 신호 + 재고 차감). trigger 로 이력 잡 라벨 구분(manual/scheduled).
+  const trigger = isManual ? 'manual' : 'scheduled'
   try {
-    const r = await fetch(`${baseUrl}/api/cron/coupang-sales-sync`, { headers })
+    const r = await fetch(`${baseUrl}/api/cron/coupang-sales-sync?trigger=${trigger}`, { headers })
     console.log(`[orchestrator] 쿠팡 판매 변환 트리거: ${r.status}`)
+    if (!r.ok) return
+
+    // 이번 사이클에 VENDOR 수집이 없었으면 알림 생략 (stale 데이터 오발송 방지)
+    if (!vendorCollected) return
+
+    const data = (await r.json().catch(() => null)) as {
+      totals?: { converted?: number; revenue?: number; orderCount?: number; salesQty?: number }
+    } | null
+    const t = data?.totals
+    if (!t) return
+
+    // 판매 수집 완료 Slack 알림 (cron 일일)
+    await notifyVendorSalesDone({
+      mode: 'daily',
+      dateRange: salesDateRange,
+      outboundCount: t.converted ?? 0,
+      revenue: t.revenue ?? 0,
+      orderCount: t.orderCount ?? 0,
+      salesQty: t.salesQty ?? 0,
+    }).catch((err: unknown) => console.error('[slack] 판매 알림 전송 실패:', err))
   } catch (err) {
     console.error('[orchestrator] 쿠팡 판매 변환 트리거 실패:', err)
   }
