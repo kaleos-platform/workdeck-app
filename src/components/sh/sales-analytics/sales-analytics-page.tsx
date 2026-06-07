@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import {
   lastClosedDateKst,
   last30DaysRange,
   startOfWeekMon,
@@ -20,9 +28,10 @@ import { useSalesAnalysis } from '@/hooks/use-sales-analysis'
 import { SalesPivotTable } from './sales-pivot-table'
 import { ChannelRevenueStackedChart } from './channel-revenue-stacked-chart'
 
-type Channel = { id: string; name: string }
+export type Channel = { id: string; name: string; typeName: string; isUnitCount: boolean }
 
 const UNITS: SalesUnit[] = ['일', '주', '월']
+const ALL_TYPES = 'ALL'
 
 // ─── 퀵필터 (기간만 변경 — 표시 단위와 독립) ─────────────────────────────────
 type QuickFilter = { label: string; range: () => DateRange }
@@ -80,6 +89,7 @@ export function SalesAnalyticsPage() {
   const [unit, setUnit] = useState<SalesUnit>('일')
   const [range, setRange] = useState<DateRange>(() => last30DaysRange())
   const [channels, setChannels] = useState<Channel[]>([])
+  const [typeFilter, setTypeFilter] = useState<string>(ALL_TYPES)
   const [selectedChannelIds, setSelectedChannelIds] = useState<Set<string>>(new Set())
 
   // 판매채널만 로드
@@ -87,28 +97,52 @@ export function SalesAnalyticsPage() {
     fetch('/api/channels?isSalesChannel=true&isActive=true')
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        const list: Channel[] = (d?.channels ?? []).map((c: { id: string; name: string }) => ({
-          id: c.id,
-          name: c.name,
-        }))
+        const list: Channel[] = (d?.channels ?? []).map(
+          (c: {
+            id: string
+            name: string
+            externalSource?: string | null
+            channelTypeDef?: { name?: string } | null
+          }) => ({
+            id: c.id,
+            name: c.name,
+            typeName: c.channelTypeDef?.name ?? '기타',
+            isUnitCount: c.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
+          })
+        )
         setChannels(list)
         setSelectedChannelIds(new Set(list.map((c) => c.id)))
       })
       .catch(() => {})
   }, [])
 
-  const allChannelIds = useMemo(() => channels.map((c) => c.id), [channels])
+  // 유형 옵션 (distinct typeName, 정렬)
+  const typeOptions = useMemo(
+    () => Array.from(new Set(channels.map((c) => c.typeName))).sort(),
+    [channels]
+  )
 
-  // 데이터: channelIds 는 "판매채널 전체"(집계 대상). 화면 표시 채널은 selectedChannelIds 로 차트에서 필터.
+  // 유형필터 통과 채널
+  const typedChannels = useMemo(
+    () => (typeFilter === ALL_TYPES ? channels : channels.filter((c) => c.typeName === typeFilter)),
+    [channels, typeFilter]
+  )
+
+  // 표시 대상 채널 = 유형필터 통과 ∩ 선택 (차트·테이블 공통)
+  const visibleChannels = useMemo(
+    () => typedChannels.filter((c) => selectedChannelIds.has(c.id)),
+    [typedChannels, selectedChannelIds]
+  )
+
+  // 데이터 호출은 판매채널 전체 기준 (buckets 에 채널별 다 담김). 표시만 visibleChannels 로 필터.
+  const allChannelIds = useMemo(() => channels.map((c) => c.id), [channels])
   const data = useSalesAnalysis(unit, range, allChannelIds)
 
   function changeUnit(next: SalesUnit) {
-    // 단위만 변경, 기간은 완전 유지 (사용자 요구).
-    setUnit(next)
+    setUnit(next) // 단위만 변경, 기간 유지
   }
 
   function applyQuickFilter(qf: QuickFilter) {
-    // 단위는 유지, 기간만 변경. 현재 단위 경계로 from 스냅.
     setRange(snapRangeToUnit(unit, qf.range()))
   }
 
@@ -117,11 +151,28 @@ export function SalesAnalyticsPage() {
     setRange((r) => snapRangeToUnit(unit, { ...r, [key]: value }))
   }
 
+  function changeTypeFilter(next: string) {
+    setTypeFilter(next)
+    // 유형 변경 시 해당 유형 전체 채널을 선택으로 리셋
+    const inType = next === ALL_TYPES ? channels : channels.filter((c) => c.typeName === next)
+    setSelectedChannelIds(new Set(inType.map((c) => c.id)))
+  }
+
   function toggleChannel(id: string) {
     setSelectedChannelIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
+      return next
+    })
+  }
+
+  function toggleAll() {
+    const allSelected = typedChannels.every((c) => selectedChannelIds.has(c.id))
+    setSelectedChannelIds((prev) => {
+      const next = new Set(prev)
+      if (allSelected) typedChannels.forEach((c) => next.delete(c.id))
+      else typedChannels.forEach((c) => next.add(c.id))
       return next
     })
   }
@@ -143,8 +194,24 @@ export function SalesAnalyticsPage() {
       {/* 컨트롤 바 — 좌: 단위·날짜 / 우: 퀵필터 (높이 절약) */}
       <Card>
         <CardContent className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-6">
-          {/* 좌측: 단위 토글 + 날짜 */}
+          {/* 좌측: 유형 + 단위 토글 + 날짜 */}
           <div className="flex flex-wrap items-end gap-4">
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">채널 유형</Label>
+              <Select value={typeFilter} onValueChange={changeTypeFilter}>
+                <SelectTrigger className="w-32" size="sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_TYPES}>전체</SelectItem>
+                  {typeOptions.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">표시 단위</Label>
               <div className="flex gap-1">
@@ -201,21 +268,17 @@ export function SalesAnalyticsPage() {
       {/* 차트 */}
       <ChannelRevenueStackedChart
         buckets={data.buckets}
-        channels={channels}
-        channelTotals={data.channelTotals}
+        typedChannels={typedChannels}
         selectedChannelIds={selectedChannelIds}
         onToggleChannel={toggleChannel}
+        onToggleAll={toggleAll}
         loading={data.loading}
       />
 
       {/* 테이블 매트릭스 */}
       <SalesPivotTable
-        unit={unit}
         buckets={data.buckets}
-        channels={channels}
-        channelTotals={data.channelTotals}
-        currentTotals={data.currentTotals}
-        prevTotals={data.prevTotals}
+        visibleChannels={visibleChannels}
         loading={data.loading}
       />
     </div>

@@ -13,44 +13,24 @@ import {
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
-  bucketOrderTotal,
+  bucketTotalsFor,
   bucketValueFor,
-  deltaLabelForUnit,
   formatKRW,
   pctChange,
   resolveDisplayChannels,
   type RevenueBucket,
-  type SalesUnit,
 } from '@/lib/sh/sales-analytics'
 
-type Channel = { id: string; name: string }
-type ChannelTotal = {
-  channelId: string
-  totalRevenue: number
-  orderCount: number
-  isUnitCount: boolean
-}
+type VisibleChannel = { id: string; name: string; isUnitCount: boolean }
 
 type Props = {
-  unit: SalesUnit
   buckets: RevenueBucket[]
-  channels: Channel[]
-  channelTotals: ChannelTotal[]
-  currentTotals: { totalRevenue: number; orderCount: number }
-  prevTotals: { totalRevenue: number; orderCount: number }
+  visibleChannels: VisibleChannel[]
   loading: boolean
 }
 
 /** 증감 % → 텍스트 컬러 + ▲▼ + 부호. 배경 없음. null 이면 "-". prefix=라벨(매출/주문) */
-function DeltaText({
-  pct,
-  prefix,
-  suffix,
-}: {
-  pct: number | null
-  prefix?: string
-  suffix?: string
-}) {
+function DeltaText({ pct, prefix }: { pct: number | null; prefix?: string }) {
   const label = prefix ? <span className="mr-1 text-muted-foreground">{prefix}</span> : null
   if (pct === null) {
     return <span className="inline-flex items-center text-xs text-muted-foreground">{label}-</span>
@@ -67,56 +47,37 @@ function DeltaText({
       >
         {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
         {positive ? '+' : ''}
-        {pct.toFixed(1)}%{suffix ? ` ${suffix}` : ''}
+        {pct.toFixed(1)}%
       </span>
     </span>
   )
 }
 
 /** 매출·주문 증감 2줄 묶음 */
-function DeltaPair({
-  revPct,
-  ordPct,
-  suffix,
-}: {
-  revPct: number | null
-  ordPct: number | null
-  suffix?: string
-}) {
+function DeltaPair({ revPct, ordPct }: { revPct: number | null; ordPct: number | null }) {
   return (
     <div className="flex flex-col items-end gap-0.5">
-      <DeltaText pct={revPct} prefix="매출" suffix={suffix} />
-      <DeltaText pct={ordPct} prefix="주문" suffix={suffix} />
+      <DeltaText pct={revPct} prefix="매출" />
+      <DeltaText pct={ordPct} prefix="주문" />
     </div>
   )
 }
 
-export function SalesPivotTable({
-  unit,
-  buckets,
-  channels,
-  channelTotals,
-  currentTotals,
-  prevTotals,
-  loading,
-}: Props) {
+export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
+  // 표시 채널을 매출 desc 정렬 + 색상 부여 (차트와 동일 소스)
   const displayChannels = useMemo(
-    () => resolveDisplayChannels(channels, buckets),
-    [channels, buckets]
+    () => resolveDisplayChannels(visibleChannels, buckets),
+    [visibleChannels, buckets]
   )
-
-  // 로켓 등 isUnitCount 채널 id 집합 (주문수 "개" 표기용)
   const unitCountIds = useMemo(
-    () => new Set(channelTotals.filter((c) => c.isUnitCount).map((c) => c.channelId)),
-    [channelTotals]
+    () => new Set(visibleChannels.filter((c) => c.isUnitCount).map((c) => c.id)),
+    [visibleChannels]
   )
-  // 표시 채널 중 하나라도 units 면 "개" 표기 (기타 묶음은 혼합 가능 → 표기 생략)
+  const displayIds = useMemo(() => displayChannels.map((dc) => dc.id), [displayChannels])
   const displayHasUnit = (chId: string) => unitCountIds.has(chId)
 
-  // 합계 주문수("주문" 단위, 로켓 units 제외) — 공유 헬퍼 (차트와 동일 값)
-  const orderTotal = (b: RevenueBucket): number => bucketOrderTotal(b, unitCountIds)
-
-  const deltaLabel = deltaLabelForUnit(unit)
+  // 합계 = 표시(선택) 채널 합 — 보이는 채널 열 합과 일치 (로켓 units 주문 제외)
+  const totalsFor = (b: RevenueBucket) => bucketTotalsFor(b, displayIds, unitCountIds)
 
   // 채널 열별 합계 (매트릭스 하단 합계행)
   const channelColumnTotals = useMemo(() => {
@@ -124,13 +85,27 @@ export function SalesPivotTable({
       let revenue = 0
       let orderCount = 0
       for (const b of buckets) {
-        const v = bucketValueFor(b, dc, displayChannels)
+        const v = bucketValueFor(b, dc.id)
         revenue += v.revenue
         orderCount += v.orderCount
       }
       return { revenue, orderCount }
     })
   }, [displayChannels, buckets])
+
+  // 전체 합계행 수치 (선택 채널 열 합)
+  const grandTotal = useMemo(() => {
+    let revenue = 0
+    let orderCount = 0
+    for (let i = 0; i < displayChannels.length; i++) {
+      revenue += channelColumnTotals[i].revenue
+      if (!displayHasUnit(displayChannels[i].id)) orderCount += channelColumnTotals[i].orderCount
+    }
+    return { revenue, orderCount }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayChannels, channelColumnTotals, unitCountIds])
+
+  const noChannels = displayChannels.length === 0
 
   return (
     <Card>
@@ -142,6 +117,8 @@ export function SalesPivotTable({
           <p className="text-sm text-muted-foreground">불러오는 중...</p>
         ) : buckets.length === 0 ? (
           <p className="text-sm text-muted-foreground">해당 기간에 매출 데이터가 없습니다</p>
+        ) : noChannels ? (
+          <p className="text-sm text-muted-foreground">표시할 채널을 선택하세요</p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -159,22 +136,20 @@ export function SalesPivotTable({
               </TableHeader>
               <TableBody>
                 {buckets.map((bucket, idx) => {
+                  const cur = totalsFor(bucket)
                   const prevBucket = idx > 0 ? buckets[idx - 1] : null
-                  const revPct = prevBucket
-                    ? pctChange(bucket.total.revenue, prevBucket.total.revenue)
-                    : null
-                  const ordPct = prevBucket
-                    ? pctChange(orderTotal(bucket), orderTotal(prevBucket))
-                    : null
+                  const prev = prevBucket ? totalsFor(prevBucket) : null
+                  const revPct = prev ? pctChange(cur.revenue, prev.revenue) : null
+                  const ordPct = prev ? pctChange(cur.orderCount, prev.orderCount) : null
                   return (
                     <TableRow key={bucket.key}>
                       <TableCell className="sticky left-0 z-10 bg-muted/40 font-medium">
                         {bucket.label}
                       </TableCell>
                       <TableCell className="bg-muted/40 text-right font-semibold tabular-nums">
-                        <div>{formatKRW(bucket.total.revenue)}</div>
+                        <div>{formatKRW(cur.revenue)}</div>
                         <div className="font-normal">
-                          {orderTotal(bucket).toLocaleString('ko-KR')}건
+                          {cur.orderCount.toLocaleString('ko-KR')}건
                         </div>
                       </TableCell>
                       <TableCell className="border-r bg-muted/40 text-right">
@@ -185,7 +160,7 @@ export function SalesPivotTable({
                         )}
                       </TableCell>
                       {displayChannels.map((dc) => {
-                        const v = bucketValueFor(bucket, dc, displayChannels)
+                        const v = bucketValueFor(bucket, dc.id)
                         const unitLabel = displayHasUnit(dc.id) ? '개' : '건'
                         return (
                           <TableCell key={dc.id} className="text-right tabular-nums">
@@ -201,22 +176,18 @@ export function SalesPivotTable({
                   )
                 })}
               </TableBody>
-              {/* 합계 행 */}
+              {/* 합계 행 (증감 없음) */}
               <TableBody>
                 <TableRow className="border-t-2 font-semibold">
                   <TableCell className="sticky left-0 z-10 bg-muted/60">합계</TableCell>
                   <TableCell className="bg-muted/60 text-right tabular-nums">
-                    <div>{formatKRW(currentTotals.totalRevenue)}</div>
+                    <div>{formatKRW(grandTotal.revenue)}</div>
                     <div className="font-normal">
-                      {currentTotals.orderCount.toLocaleString('ko-KR')}건
+                      {grandTotal.orderCount.toLocaleString('ko-KR')}건
                     </div>
                   </TableCell>
                   <TableCell className="border-r bg-muted/60 text-right">
-                    <DeltaPair
-                      revPct={pctChange(currentTotals.totalRevenue, prevTotals.totalRevenue)}
-                      ordPct={pctChange(currentTotals.orderCount, prevTotals.orderCount)}
-                      suffix={deltaLabel}
-                    />
+                    <span className="text-xs text-muted-foreground">-</span>
                   </TableCell>
                   {displayChannels.map((dc, i) => (
                     <TableCell key={dc.id} className="text-right tabular-nums">

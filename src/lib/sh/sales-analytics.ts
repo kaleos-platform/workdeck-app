@@ -228,9 +228,6 @@ export const CHANNEL_COLORS = [
   '#4338ca',
 ]
 
-/** "기타" 묶음 가상 채널 id */
-export const OTHER_CHANNEL_ID = '__기타__'
-
 export const formatKRW = (value: number): string =>
   new Intl.NumberFormat('ko-KR', {
     style: 'currency',
@@ -238,20 +235,16 @@ export const formatKRW = (value: number): string =>
     maximumFractionDigits: 0,
   }).format(value)
 
-export type DisplayChannel = { id: string; name: string; color: string; isOther?: boolean }
+export type DisplayChannel = { id: string; name: string; color: string }
 
 /**
- * 버킷 전체 매출 합 기준 채널을 desc 정렬하고, topN 초과는 "기타"로 묶는다.
- * 차트 Bar 순서·테이블 열 순서를 동일하게 맞추는 단일 소스.
- *
- * @param channels 전체 판매채널 (id, name)
- * @param buckets bucketRevenue 결과 (매출 합 산출용)
- * @param topN 개별 표시 채널 수 (초과분 "기타")
+ * 채널을 버킷 전체 매출 합 기준 desc 정렬하고 색상을 부여한다.
+ * "기타" 자동묶음 없음 — 표시 채널은 호출부(유형필터·선택)가 결정한다.
+ * 차트 Bar/Line 순서·테이블 열 순서를 맞추는 단일 소스.
  */
 export function resolveDisplayChannels(
   channels: { id: string; name: string }[],
-  buckets: RevenueBucket[],
-  topN = 12
+  buckets: RevenueBucket[]
 ): DisplayChannel[] {
   const revById = new Map<string, number>()
   for (const b of buckets) {
@@ -260,58 +253,34 @@ export function resolveDisplayChannels(
     }
   }
   const sorted = [...channels].sort((a, b) => (revById.get(b.id) ?? 0) - (revById.get(a.id) ?? 0))
-  // 초과분이 1개뿐이면 "기타"로 묶지 않고 개별 표시 (묶는 의미가 없음).
-  const cutoff = sorted.length - topN === 1 ? sorted.length : topN
-  const top = sorted.slice(0, cutoff)
-  const rest = sorted.slice(cutoff)
-
-  const result: DisplayChannel[] = top.map((c, i) => ({
+  return sorted.map((c, i) => ({
     id: c.id,
     name: c.name,
     color: CHANNEL_COLORS[i % CHANNEL_COLORS.length],
   }))
-  if (rest.length > 0) {
-    result.push({
-      id: OTHER_CHANNEL_ID,
-      name: '기타',
-      color: '#94a3b8',
-      isOther: true,
-    })
-  }
-  return result
 }
 
-/** 버킷 한 칸에서 표시 채널(기타 묶음 포함)의 집계를 얻는다. */
-export function bucketValueFor(
-  bucket: RevenueBucket,
-  display: DisplayChannel,
-  allDisplay: DisplayChannel[]
-): ChannelAgg {
-  if (!display.isOther) {
-    return bucket.byChannel[display.id] ?? { revenue: 0, orderCount: 0 }
-  }
-  // 기타 = 전체 - 개별 표시 채널 합
-  const namedIds = new Set(allDisplay.filter((d) => !d.isOther).map((d) => d.id))
-  let revenue = 0
-  let orderCount = 0
-  for (const [chId, agg] of Object.entries(bucket.byChannel)) {
-    if (!namedIds.has(chId)) {
-      revenue += agg.revenue
-      orderCount += agg.orderCount
-    }
-  }
-  return { revenue, orderCount }
+/** 버킷 한 칸에서 채널의 집계를 얻는다. */
+export function bucketValueFor(bucket: RevenueBucket, channelId: string): ChannelAgg {
+  return bucket.byChannel[channelId] ?? { revenue: 0, orderCount: 0 }
 }
 
 /**
- * 버킷의 "주문" 합계 — 로켓(isUnitCount) 채널의 수량은 제외.
- * bucket.total.orderCount 는 로켓 qty 가 섞여 있어 직접 쓰면 오염되므로 채널별 재집계.
- * 차트 주문 라인 · 테이블 합계 주문수가 동일 값을 공유.
+ * 버킷의 주문/매출 합 — 대상 채널 집합 한정. 로켓(unitCountIds)의 orderCount(수량)는 주문 합에서 제외.
+ * 테이블 합계·차트 라인이 동일 값을 공유.
  */
-export function bucketOrderTotal(bucket: RevenueBucket, unitCountIds: Set<string>): number {
-  let n = 0
-  for (const [chId, agg] of Object.entries(bucket.byChannel)) {
-    if (!unitCountIds.has(chId)) n += agg.orderCount
+export function bucketTotalsFor(
+  bucket: RevenueBucket,
+  channelIds: Iterable<string>,
+  unitCountIds: Set<string>
+): { revenue: number; orderCount: number } {
+  let revenue = 0
+  let orderCount = 0
+  for (const id of channelIds) {
+    const agg = bucket.byChannel[id]
+    if (!agg) continue
+    revenue += agg.revenue
+    if (!unitCountIds.has(id)) orderCount += agg.orderCount
   }
-  return n
+  return { revenue, orderCount }
 }
