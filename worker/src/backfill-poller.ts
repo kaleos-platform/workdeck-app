@@ -9,6 +9,7 @@
 
 import { runBackfill, type BackfillCreds } from './backfill-sales-vendor.js'
 import { decrypt } from './encryption.js'
+import { notifyVendorSalesDone } from './slack-notifier.js'
 
 const POLL_INTERVAL = 60_000 // 60초
 const BASE_URL = (): string => {
@@ -77,6 +78,11 @@ async function reportBackfillJob(params: {
   status: 'DONE' | 'FAILED'
   collected?: number
   converted?: number
+  duplicateRows?: number
+  outboundCount?: number
+  revenueSum?: number
+  orderSum?: number
+  salesQtySum?: number
   error?: string
 }): Promise<boolean> {
   try {
@@ -105,11 +111,18 @@ async function reportBackfillJob(params: {
  * 단일 테넌트 배포에서는 곧 해당 워크스페이스 수치이지만,
  * 멀티 Space 환경에서는 다른 Space 변환 수치가 포함될 수 있다.
  */
-async function chainSalesSync(fromDate: string, toDate: string): Promise<number> {
+type SalesSyncTotals = {
+  converted: number
+  revenue: number
+  orderCount: number
+  salesQty: number
+}
+
+async function chainSalesSync(fromDate: string, toDate: string): Promise<SalesSyncTotals> {
   // 120일 초과 시 범위 분할 (API 제한 준수)
   const dates = buildDateList(fromDate, toDate)
   const CHUNK = 120
-  let totalConverted = 0
+  const acc: SalesSyncTotals = { converted: 0, revenue: 0, orderCount: 0, salesQty: 0 }
 
   for (let i = 0; i < dates.length; i += CHUNK) {
     const chunk = dates.slice(i, i + CHUNK)
@@ -125,11 +138,19 @@ async function chainSalesSync(fromDate: string, toDate: string): Promise<number>
         continue
       }
       const data = (await res.json()) as {
+        totals?: { converted?: number; revenue?: number; orderCount?: number; salesQty?: number }
         spaces?: Array<{ created?: number; updated?: number }>
       }
-      // space 별 created+updated 합산 → converted 카운트
-      for (const space of data.spaces ?? []) {
-        totalConverted += (space.created ?? 0) + (space.updated ?? 0)
+      if (data.totals) {
+        acc.converted += data.totals.converted ?? 0
+        acc.revenue += data.totals.revenue ?? 0
+        acc.orderCount += data.totals.orderCount ?? 0
+        acc.salesQty += data.totals.salesQty ?? 0
+      } else {
+        // 구버전 API 폴백 — spaces 합산
+        for (const space of data.spaces ?? []) {
+          acc.converted += (space.created ?? 0) + (space.updated ?? 0)
+        }
       }
     } catch (err) {
       console.error(
@@ -138,7 +159,7 @@ async function chainSalesSync(fromDate: string, toDate: string): Promise<number>
     }
   }
 
-  return totalConverted
+  return acc
 }
 
 /** fromDate(oldest)~toDate(newest) KST 날짜 목록 생성 (newest 순) */
@@ -217,10 +238,12 @@ export function startBackfillPoller(): void {
       )
 
       // Step 2: OUTBOUND 변환 체이닝
-      let converted = 0
+      let totals: SalesSyncTotals = { converted: 0, revenue: 0, orderCount: 0, salesQty: 0 }
       try {
-        converted = await chainSalesSync(result.fromDate, result.toDate)
-        console.log(`[backfill-poller] 변환 완료 — ${converted}건`)
+        totals = await chainSalesSync(result.fromDate, result.toDate)
+        console.log(
+          `[backfill-poller] 변환 완료 — ${totals.converted}건 (매출 ${totals.revenue.toLocaleString()}원, 주문 ${totals.orderCount}, 판매량 ${totals.salesQty})`
+        )
       } catch (err) {
         // 변환 실패는 전체 잡을 FAILED 처리하지 않음 (수집 성공은 보존)
         console.error(
@@ -234,11 +257,31 @@ export function startBackfillPoller(): void {
         jobId: job.id,
         status: finalStatus,
         collected: result.succeeded,
-        converted,
+        converted: totals.converted,
+        duplicateRows: result.totalDuplicate,
+        outboundCount: totals.converted,
+        revenueSum: totals.revenue,
+        orderSum: totals.orderCount,
+        salesQtySum: totals.salesQty,
         ...(finalStatus === 'FAILED' && {
           error: `실패 날짜: ${result.failedDates.join(', ')}`,
         }),
       })
+
+      // Step 4: 판매 수집 완료 Slack 알림 (DONE 만)
+      if (finalStatus === 'DONE') {
+        await notifyVendorSalesDone({
+          mode: 'backfill',
+          dateRange: `${result.fromDate} ~ ${result.toDate}`,
+          collectedDays: result.succeeded,
+          insertedRows: result.totalInserted,
+          duplicateRows: result.totalDuplicate,
+          outboundCount: totals.converted,
+          revenue: totals.revenue,
+          orderCount: totals.orderCount,
+          salesQty: totals.salesQty,
+        }).catch((err) => console.error('[slack] 판매 알림 전송 실패:', err))
+      }
 
       console.log(`[backfill-poller] 잡 완료: ${job.id} → ${finalStatus}`)
     } catch (err) {
