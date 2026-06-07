@@ -59,6 +59,16 @@ export function endOfMonth(ymd: string): string {
   return toYmd(y, m, last)
 }
 
+/** 월 가산/감산 (말일 clamp). 예: addMonthsYmd('2026-03-31', -1) → '2026-02-28' */
+export function addMonthsYmd(ymd: string, n: number): string {
+  const [y, m, d] = parseYmd(ymd)
+  const target = new Date(Date.UTC(y, m - 1 + n, 1, 12, 0, 0))
+  const ty = target.getUTCFullYear()
+  const tm = target.getUTCMonth() + 1
+  const lastDay = new Date(Date.UTC(ty, tm, 0, 12, 0, 0)).getUTCDate()
+  return toYmd(ty, tm, Math.min(d, lastDay))
+}
+
 /** 마지막 집계완료 KST 일자 = 어제 (로켓 VENDOR 가 어제까지만 수집됨) */
 export function lastClosedDateKst(): string {
   return addDaysYmd(getTodayStrKst(), -1)

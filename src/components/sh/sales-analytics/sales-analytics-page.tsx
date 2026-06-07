@@ -12,6 +12,7 @@ import {
   startOfMonth,
   endOfMonth,
   addDaysYmd,
+  addMonthsYmd,
   type DateRange,
   type SalesUnit,
 } from '@/lib/sh/sales-analytics'
@@ -23,19 +24,16 @@ type Channel = { id: string; name: string }
 
 const UNITS: SalesUnit[] = ['일', '주', '월']
 
-// ─── 퀵필터 (사용자 명시 3종: 지난주/이번달/지난달) ──────────────────────────
+// ─── 퀵필터 (모두 월 단위) ────────────────────────────────────────────────────
 type QuickFilter = { label: string; unit: SalesUnit; range: () => DateRange }
 
+/** 최근 N개월: (N-1)개월 전 시작월 1일 ~ 마지막 집계일 */
+function lastNMonthsRange(n: number): DateRange {
+  const anchor = lastClosedDateKst()
+  return { from: startOfMonth(addMonthsYmd(anchor, -(n - 1))), to: anchor }
+}
+
 const QUICK_FILTERS: QuickFilter[] = [
-  {
-    label: '지난주',
-    unit: '주',
-    range: () => {
-      const thisMonday = startOfWeekMon(lastClosedDateKst())
-      const lastMonday = addDaysYmd(thisMonday, -7)
-      return { from: lastMonday, to: addDaysYmd(lastMonday, 6) }
-    },
-  },
   {
     label: '이번달',
     unit: '월',
@@ -50,6 +48,26 @@ const QUICK_FILTERS: QuickFilter[] = [
     range: () => {
       const prevMonthEnd = addDaysYmd(startOfMonth(lastClosedDateKst()), -1)
       return { from: startOfMonth(prevMonthEnd), to: endOfMonth(prevMonthEnd) }
+    },
+  },
+  { label: '최근 3개월', unit: '월', range: () => lastNMonthsRange(3) },
+  { label: '최근 6개월', unit: '월', range: () => lastNMonthsRange(6) },
+  { label: '최근 12개월', unit: '월', range: () => lastNMonthsRange(12) },
+  {
+    label: '올해',
+    unit: '월',
+    range: () => {
+      const anchor = lastClosedDateKst()
+      const year = anchor.slice(0, 4)
+      return { from: `${year}-01-01`, to: anchor }
+    },
+  },
+  {
+    label: '작년',
+    unit: '월',
+    range: () => {
+      const year = Number(lastClosedDateKst().slice(0, 4)) - 1
+      return { from: `${year}-01-01`, to: `${year}-12-31` }
     },
   },
 ]
@@ -125,11 +143,11 @@ export function SalesAnalyticsPage() {
         <p className="text-xs text-muted-foreground">데이터 기준일: {dataAsOf}</p>
       </div>
 
-      {/* 컨트롤 바 */}
+      {/* 컨트롤 바 — 좌: 단위·날짜 / 우: 퀵필터 (높이 절약) */}
       <Card>
-        <CardContent className="flex flex-col gap-3 pt-6">
+        <CardContent className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-6">
+          {/* 좌측: 단위 토글 + 날짜 */}
           <div className="flex flex-wrap items-end gap-4">
-            {/* 단위 토글 */}
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">표시 단위</Label>
               <div className="flex gap-1">
@@ -145,7 +163,6 @@ export function SalesAnalyticsPage() {
                 ))}
               </div>
             </div>
-            {/* 날짜 직접 선택 */}
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">시작일</Label>
               <Input
@@ -168,9 +185,8 @@ export function SalesAnalyticsPage() {
               />
             </div>
           </div>
-          {/* 퀵필터 */}
-          <div className="flex flex-wrap items-center gap-1">
-            <span className="mr-1 text-xs text-muted-foreground">퀵필터:</span>
+          {/* 우측: 퀵필터 */}
+          <div className="flex flex-wrap justify-end gap-1">
             {QUICK_FILTERS.map((qf) => (
               <Button
                 key={qf.label}
