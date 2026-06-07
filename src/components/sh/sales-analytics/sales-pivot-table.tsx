@@ -10,8 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import {
   bucketValueFor,
   deltaLabelForUnit,
@@ -40,18 +40,23 @@ type Props = {
   loading: boolean
 }
 
-/** 증감 % → ▲▼ Badge. null 이면 "-" */
-function DeltaBadge({ pct, suffix }: { pct: number | null; suffix?: string }) {
+/** 증감 % → 텍스트 컬러 + ▲▼ + 부호. 배경 없음. null 이면 "-" */
+function DeltaText({ pct, suffix }: { pct: number | null; suffix?: string }) {
   if (pct === null) {
     return <span className="text-xs text-muted-foreground">-</span>
   }
   const positive = pct >= 0
   return (
-    <Badge variant={positive ? 'default' : 'destructive'} className="gap-0.5 text-xs">
+    <span
+      className={cn(
+        'inline-flex items-center gap-0.5 text-xs font-medium tabular-nums',
+        positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+      )}
+    >
       {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       {positive ? '+' : ''}
       {pct.toFixed(1)}%{suffix ? ` ${suffix}` : ''}
-    </Badge>
+    </span>
   )
 }
 
@@ -118,14 +123,14 @@ export function SalesPivotTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 z-10 bg-background">기간</TableHead>
+                  <TableHead className="sticky left-0 z-10 bg-muted/40">기간</TableHead>
+                  <TableHead className="bg-muted/40 text-right font-semibold">합계</TableHead>
+                  <TableHead className="border-r bg-muted/40 text-right">증감</TableHead>
                   {displayChannels.map((dc) => (
                     <TableHead key={dc.id} className="text-right">
                       <span style={{ color: dc.color }}>{dc.name}</span>
                     </TableHead>
                   ))}
-                  <TableHead className="text-right font-semibold">합계</TableHead>
-                  <TableHead className="text-right">증감</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -136,8 +141,21 @@ export function SalesPivotTable({
                     : null
                   return (
                     <TableRow key={bucket.key}>
-                      <TableCell className="sticky left-0 z-10 bg-background font-medium">
+                      <TableCell className="sticky left-0 z-10 bg-muted/40 font-medium">
                         {bucket.label}
+                      </TableCell>
+                      <TableCell className="bg-muted/40 text-right font-semibold tabular-nums">
+                        <div>{formatKRW(bucket.total.revenue)}</div>
+                        <div className="text-xs font-normal text-muted-foreground">
+                          {bucketOrderTotal(bucket).toLocaleString('ko-KR')}
+                        </div>
+                      </TableCell>
+                      <TableCell className="border-r bg-muted/40 text-right">
+                        {idx === 0 ? (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        ) : (
+                          <DeltaText pct={rowPct} />
+                        )}
                       </TableCell>
                       {displayChannels.map((dc) => {
                         const v = bucketValueFor(bucket, dc, displayChannels)
@@ -151,19 +169,6 @@ export function SalesPivotTable({
                           </TableCell>
                         )
                       })}
-                      <TableCell className="text-right font-semibold tabular-nums">
-                        <div>{formatKRW(bucket.total.revenue)}</div>
-                        <div className="text-xs font-normal text-muted-foreground">
-                          {bucketOrderTotal(bucket).toLocaleString('ko-KR')}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {idx === 0 ? (
-                          <span className="text-xs text-muted-foreground">-</span>
-                        ) : (
-                          <DeltaBadge pct={rowPct} />
-                        )}
-                      </TableCell>
                     </TableRow>
                   )
                 })}
@@ -171,7 +176,19 @@ export function SalesPivotTable({
               {/* 합계 행 */}
               <TableBody>
                 <TableRow className="border-t-2 font-semibold">
-                  <TableCell className="sticky left-0 z-10 bg-background">합계</TableCell>
+                  <TableCell className="sticky left-0 z-10 bg-muted/60">합계</TableCell>
+                  <TableCell className="bg-muted/60 text-right tabular-nums">
+                    <div>{formatKRW(currentTotals.totalRevenue)}</div>
+                    <div className="text-xs font-normal text-muted-foreground">
+                      {currentTotals.orderCount.toLocaleString('ko-KR')}
+                    </div>
+                  </TableCell>
+                  <TableCell className="border-r bg-muted/60 text-right">
+                    <DeltaText
+                      pct={pctChange(currentTotals.totalRevenue, prevTotals.totalRevenue)}
+                      suffix={deltaLabel}
+                    />
+                  </TableCell>
                   {displayChannels.map((dc, i) => (
                     <TableCell key={dc.id} className="text-right tabular-nums">
                       <div>{formatKRW(channelColumnTotals[i].revenue)}</div>
@@ -181,18 +198,6 @@ export function SalesPivotTable({
                       </div>
                     </TableCell>
                   ))}
-                  <TableCell className="text-right tabular-nums">
-                    <div>{formatKRW(currentTotals.totalRevenue)}</div>
-                    <div className="text-xs font-normal text-muted-foreground">
-                      {currentTotals.orderCount.toLocaleString('ko-KR')}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DeltaBadge
-                      pct={pctChange(currentTotals.totalRevenue, prevTotals.totalRevenue)}
-                      suffix={deltaLabel}
-                    />
-                  </TableCell>
                 </TableRow>
               </TableBody>
             </Table>
