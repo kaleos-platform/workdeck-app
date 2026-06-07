@@ -260,8 +260,10 @@ export function resolveDisplayChannels(
     }
   }
   const sorted = [...channels].sort((a, b) => (revById.get(b.id) ?? 0) - (revById.get(a.id) ?? 0))
-  const top = sorted.slice(0, topN)
-  const rest = sorted.slice(topN)
+  // 초과분이 1개뿐이면 "기타"로 묶지 않고 개별 표시 (묶는 의미가 없음).
+  const cutoff = sorted.length - topN === 1 ? sorted.length : topN
+  const top = sorted.slice(0, cutoff)
+  const rest = sorted.slice(cutoff)
 
   const result: DisplayChannel[] = top.map((c, i) => ({
     id: c.id,
