@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url'
 import { getCredentials, uploadInventory } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { openWingSession, downloadSalesAnalysisVendorOnPage } from './inventory-collector.js'
+import { renewProfileLock } from './browser.js'
 
 // ─── 유틸 ──────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,10 @@ export type BackfillResult = {
   fromDate: string
   /** 백필 범위 newest KST 날짜 (어제) */
   toDate: string
+  /** 루프 도중 예기치 못한 예외(브라우저 사망 등)로 중단됐는지. true 면 부분 수집. */
+  aborted?: boolean
+  /** aborted 시 원인 메시지 */
+  abortError?: string
 }
 
 export type BackfillProgressCallback = (params: {
@@ -116,6 +121,8 @@ export async function runBackfill(
   let totalInserted = 0
   let totalDuplicate = 0
   let cancelled = false
+  let aborted = false
+  let abortError: string | undefined
   const failedDates: string[] = []
 
   // ── Wing 세션 1개를 열고 날짜 루프 ──
@@ -133,6 +140,11 @@ export async function runBackfill(
       }
 
       console.log(`\n[backfill] ── ${dateKst} 수집 중...`)
+
+      // 장시간 백필이 진행 중임을 락에 알려 idle 타임아웃을 갱신한다.
+      // (안 하면 12분 후 락이 강제 해제돼 형제 op preflight 가 살아있는 백필 Chrome
+      //  을 죽이는 2026-06-07 류 사고 발생.)
+      renewProfileLock(context)
 
       // 1) 다운로드
       const downloadResult = await downloadSalesAnalysisVendorOnPage(page, downloadDir, dateKst)
@@ -188,8 +200,18 @@ export async function runBackfill(
       // rate-limit 방어: 날짜 간 2~3초 sleep
       await sleep(2000 + Math.random() * 1000)
     }
+  } catch (err) {
+    // 루프 도중 예기치 못한 예외(브라우저 사망 등). 여기까지 수집한 일자는 이미
+    // 적재됐으므로 결과를 throw 로 버리지 않고 부분 결과로 반환한다(부분 성공 보존).
+    aborted = true
+    abortError = err instanceof Error ? err.message : String(err)
+    console.error(`[backfill] 루프 중단 — 부분 수집 보존 (성공 ${succeeded}일까지): ${abortError}`)
   } finally {
-    await context.close()
+    try {
+      await context.close()
+    } catch {
+      /* 이미 죽은 context close 실패 — 무시 */
+    }
     console.log('\n[backfill] Wing 세션 종료')
   }
 
@@ -202,6 +224,8 @@ export async function runBackfill(
     fromDate: dates[dates.length - 1], // oldest
     toDate: dates[0], // newest (어제)
     cancelled,
+    aborted,
+    abortError,
   }
 }
 
