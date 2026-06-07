@@ -36,6 +36,7 @@ import {
   getCoupangAdsCampaignPath,
   SELLER_HUB_BASE_PATH,
   SELLER_HUB_HOME_PATH,
+  SELLER_HUB_SALES_ANALYTICS_PATH,
   SELLER_HUB_SETTINGS_PATH,
   SELLER_HUB_PRODUCTS_LIST_PATH,
   SELLER_HUB_BRANDS_PATH,
@@ -310,6 +311,19 @@ export function Sidebar({
             >
               <Home className="mr-3 h-5 w-5 flex-shrink-0" />
               <span className="truncate">홈</span>
+            </Link>
+            {/* 판매분석 */}
+            <Link
+              href={SELLER_HUB_SALES_ANALYTICS_PATH}
+              className={cn(
+                'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                pathname === SELLER_HUB_SALES_ANALYTICS_PATH
+                  ? 'bg-white/10 text-white'
+                  : 'text-zinc-400'
+              )}
+            >
+              <BarChart3 className="mr-3 h-5 w-5 flex-shrink-0" />
+              <span className="truncate">판매분석</span>
             </Link>
             {/* 섹션 그룹 */}
             <SidebarSection label="상품" icon={Package} items={SELLER_HUB_PRODUCTS_ITEMS} />
