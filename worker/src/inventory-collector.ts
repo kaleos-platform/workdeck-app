@@ -12,7 +12,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import type { BrowserContext, Page } from 'playwright'
-import { launchStealthPersistentContext } from './browser.js'
+import { launchStealthPersistentContext, renewProfileLock } from './browser.js'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────────
 
@@ -40,10 +40,20 @@ const DOWNLOAD_TIMEOUT = 120_000
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────────
 
 async function saveScreenshot(page: Page, name: string): Promise<void> {
-  if (!fs.existsSync(SCREENSHOT_DIR)) fs.mkdirSync(SCREENSHOT_DIR, { recursive: true })
-  const fileName = `${name}_${new Date().toISOString().replace(/[:.]/g, '-')}.png`
-  await page.screenshot({ path: path.join(SCREENSHOT_DIR, fileName), fullPage: true })
-  console.log(`[inventory] 스크린샷: ${fileName}`)
+  // ⚠️ 진단용 스크린샷은 절대 throw 해선 안 된다. catch 블록에서 호출되는 경우가
+  // 많은데(에러 직후 화면 캡처), 이때 page/context 가 이미 닫혔으면 screenshot 가
+  // "Target page... closed" 로 throw → 진짜 에러를 가린다(2026-06-07 백필 크래시:
+  // Chrome 사망이라는 진짜 원인이 screenshot 실패로 마스킹됨). 실패해도 삼킨다.
+  try {
+    if (!fs.existsSync(SCREENSHOT_DIR)) fs.mkdirSync(SCREENSHOT_DIR, { recursive: true })
+    const fileName = `${name}_${new Date().toISOString().replace(/[:.]/g, '-')}.png`
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, fileName), fullPage: true })
+    console.log(`[inventory] 스크린샷: ${fileName}`)
+  } catch (err) {
+    console.warn(
+      `[inventory] 스크린샷 저장 실패(무시): ${err instanceof Error ? err.message : String(err)}`
+    )
+  }
 }
 
 /** Wing에 로그인되어 있는지 확인 */
@@ -564,6 +574,8 @@ export async function collectInventoryData(
         `[inventory] self-heal — 누락 ${uniqueGaps.length}일 추가 수집: ${uniqueGaps.join(', ')}`
       )
       for (const dateKst of uniqueGaps) {
+        // 장시간 self-heal(최대 14일)이 진행 중임을 락에 알려 idle 타임아웃 갱신.
+        renewProfileLock(context)
         try {
           const f = await downloadSalesAnalysisVendor(page, downloadDir, dateKst)
           gapVendors.push({ dateKst, filePath: f.filePath, fileName: f.fileName })

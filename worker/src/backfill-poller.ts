@@ -252,7 +252,16 @@ export function startBackfillPoller(): void {
       }
 
       // Step 3: 잡 완료 보고
-      const finalStatus = result.failed > 0 && result.succeeded === 0 ? 'FAILED' : 'DONE'
+      // 한 일자도 못 모았으면 FAILED, 아니면 DONE(부분 수집 포함). aborted(브라우저
+      // 사망 등 중단)여도 수집분이 있으면 DONE 으로 보존하고 원인은 error 에 남긴다.
+      const finalStatus = result.succeeded === 0 ? 'FAILED' : 'DONE'
+      const errorParts: string[] = []
+      if (result.aborted && result.abortError) {
+        errorParts.push(`중단(부분 수집): ${result.abortError}`)
+      }
+      if (result.failedDates.length > 0) {
+        errorParts.push(`실패 날짜: ${result.failedDates.join(', ')}`)
+      }
       await reportBackfillJob({
         jobId: job.id,
         status: finalStatus,
@@ -263,9 +272,7 @@ export function startBackfillPoller(): void {
         revenueSum: totals.revenue,
         orderSum: totals.orderCount,
         salesQtySum: totals.salesQty,
-        ...(finalStatus === 'FAILED' && {
-          error: `실패 날짜: ${result.failedDates.join(', ')}`,
-        }),
+        ...(errorParts.length > 0 && { error: errorParts.join(' / ') }),
       })
 
       // Step 4: 판매 수집 완료 Slack 알림 (DONE 만)
