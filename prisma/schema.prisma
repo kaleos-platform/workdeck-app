@@ -521,12 +521,19 @@ model CoupangBackfillJob {
   id          String                @id @default(cuid())
   workspaceId String
   days        Int // 과거 N일 (어제부터 역순)
+  trigger     String                @default("backfill") // backfill(UI 과거수집) | scheduled(매일 cron)
   status      CoupangBackfillStatus @default(PENDING)
   claimedAt   DateTime?
   claimedBy   String?
   completedAt DateTime?
   collected   Int                   @default(0) // 적재된 일자 수
   converted   Int                   @default(0) // OUTBOUND 변환된 일자 수
+  // 이력 요약 (수집 결과 가시화) — 잡 전체 누적
+  duplicateRows Int     @default(0) // 중복으로 건너뛴 VENDOR 행 수
+  outboundCount Int     @default(0) // 생성/갱신된 OUTBOUND(재고차감) 이동 건수
+  revenueSum    Decimal @default(0) @db.Decimal(18, 2) // 매출 합
+  orderSum      Int     @default(0) // 주문 합
+  salesQtySum   Int     @default(0) // 판매량 합
   error       String?
   workspace   Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdAt   DateTime              @default(now())
@@ -729,6 +736,7 @@ model InventoryRecord {
   revenue30d  Decimal? @db.Decimal(18, 2)
   salesQty7d  Int?
   salesQty30d Int?
+  orderCount  Int? // VENDOR_ITEM_METRICS '주문' 컬럼
 
   // vendor_item_metrics 전용
   fulfillmentType String? // 판매방식: "로켓그로스" | "판매자배송"

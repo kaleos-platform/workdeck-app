@@ -96,6 +96,7 @@ export async function processInventoryUpload(params: {
           revenue30d: row.revenue30d,
           salesQty7d: row.salesQty7d,
           salesQty30d: row.salesQty30d,
+          orderCount: row.orderCount,
           fulfillmentType: row.fulfillmentType,
           visitors: row.visitors,
           views: row.views,

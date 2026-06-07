@@ -2,46 +2,66 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 
+// 잡 1건 select (요약 필드 포함)
+const JOB_SELECT = {
+  id: true,
+  workspaceId: true,
+  days: true,
+  trigger: true,
+  status: true,
+  claimedAt: true,
+  claimedBy: true,
+  completedAt: true,
+  collected: true,
+  converted: true,
+  duplicateRows: true,
+  outboundCount: true,
+  revenueSum: true,
+  orderSum: true,
+  salesQtySum: true,
+  error: true,
+  createdAt: true,
+  updatedAt: true,
+} as const
+
 /**
  * GET /api/collection/backfill
- * 현재 워크스페이스의 최신 백필 잡 1건 반환.
- * UI 팝업 폴링 및 콜드스타트 감지에 사용.
+ * - 기본: 현재 워크스페이스의 최신 백필 잡 1건 + hasVendorData (콜드스타트/폴링).
+ * - ?list=true: 최근 백필 잡 이력 배열 반환 (수집 이력 패널).
  *
- * 응답: { job: CoupangBackfillJob | null, hasVendorData: boolean }
+ * 응답(기본): { job: CoupangBackfillJob | null, hasVendorData: boolean }
+ * 응답(list): { jobs: CoupangBackfillJob[], hasVendorData: boolean }
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   const resolved = await resolveWorkspace()
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
+
+  const isList = request.nextUrl.searchParams.get('list') === 'true'
+
+  // VENDOR_ITEM_METRICS 데이터 존재 여부 — 콜드스타트 팝업 조건
+  const vendorCount = await prisma.inventoryRecord.count({
+    where: { workspaceId: workspace.id, fileType: 'VENDOR_ITEM_METRICS' },
+  })
+  const hasVendorData = vendorCount > 0
+
+  if (isList) {
+    const limit = Math.min(Number(request.nextUrl.searchParams.get('limit')) || 30, 100)
+    const jobs = await prisma.coupangBackfillJob.findMany({
+      where: { workspaceId: workspace.id },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: JOB_SELECT,
+    })
+    return NextResponse.json({ jobs, hasVendorData })
+  }
 
   // 최신 잡 1건 조회
   const job = await prisma.coupangBackfillJob.findFirst({
     where: { workspaceId: workspace.id },
     orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      workspaceId: true,
-      days: true,
-      status: true,
-      claimedAt: true,
-      claimedBy: true,
-      completedAt: true,
-      collected: true,
-      converted: true,
-      error: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: JOB_SELECT,
   })
-
-  // VENDOR_ITEM_METRICS 데이터 존재 여부 — 콜드스타트 팝업 조건
-  const vendorCount = await prisma.inventoryRecord.count({
-    where: {
-      workspaceId: workspace.id,
-      fileType: 'VENDOR_ITEM_METRICS',
-    },
-  })
-  const hasVendorData = vendorCount > 0
 
   return NextResponse.json({ job, hasVendorData })
 }

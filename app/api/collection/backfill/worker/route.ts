@@ -133,7 +133,18 @@ export async function PATCH(request: NextRequest) {
   }
 
   const raw = body as Record<string, unknown>
-  const { jobId, status, collected, converted, error: jobError } = raw
+  const {
+    jobId,
+    status,
+    collected,
+    converted,
+    duplicateRows,
+    outboundCount,
+    revenueSum,
+    orderSum,
+    salesQtySum,
+    error: jobError,
+  } = raw
 
   if (typeof jobId !== 'string') {
     return errorResponse('jobId 가 필요합니다', 400)
@@ -161,6 +172,11 @@ export async function PATCH(request: NextRequest) {
       completedAt: new Date(),
       ...(typeof collected === 'number' && { collected }),
       ...(typeof converted === 'number' && { converted }),
+      ...(typeof duplicateRows === 'number' && { duplicateRows }),
+      ...(typeof outboundCount === 'number' && { outboundCount }),
+      ...(typeof revenueSum === 'number' && { revenueSum }),
+      ...(typeof orderSum === 'number' && { orderSum }),
+      ...(typeof salesQtySum === 'number' && { salesQtySum }),
       ...(typeof jobError === 'string' && { error: jobError }),
     },
   })
