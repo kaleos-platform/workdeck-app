@@ -266,6 +266,16 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     console.error('[slack] 재고 알림 전송 실패:', err)
   )
 
+  // ── Step 10.1: 재고 실패를 CollectionRun에 가시화 ──
+  // 상태는 COMPLETED 유지(광고 수집은 성공)하되, 재고 단계 오류를 error 필드에 남겨
+  // 이력 UI에서 "완료"인데 재고가 비는 무음 실패를 사용자가 인지할 수 있게 한다.
+  if (inventoryResult.errors.length > 0) {
+    const inventoryError = `재고 수집 일부 실패: ${inventoryResult.errors.join(' / ')}`
+    await updateCollectionRun(runId, { error: inventoryError.slice(0, 500) }).catch((err) =>
+      console.error('[orchestrator] 재고 실패 가시화 업데이트 실패:', err)
+    )
+  }
+
   // ── Step 10.5: 재고 분석 트리거 ──
   await triggerInventoryAnalysis(credential.workspaceId).catch((err) =>
     console.error('[orchestrator] 재고 분석 트리거 실패:', err)
