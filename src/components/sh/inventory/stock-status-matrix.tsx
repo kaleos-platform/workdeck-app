@@ -66,18 +66,18 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
         ) : (
           <div className="max-h-[65vh] overflow-auto">
             <table className="w-full min-w-[800px] border-collapse text-sm">
-              <thead className="sticky top-0 z-20 bg-muted/40">
+              <thead className="sticky top-0 z-20 bg-muted">
                 <tr className="border-b">
-                  <th className="sticky left-0 z-30 min-w-[200px] border-r bg-muted/40 px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <th className="sticky left-0 z-30 min-w-[200px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     상품명
                   </th>
-                  <th className="sticky left-[200px] z-30 min-w-[180px] border-r bg-muted/40 px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <th className="sticky left-[200px] z-30 min-w-[180px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     옵션
                   </th>
                   {visibleLocations.map((l) => (
                     <th
                       key={l.id}
-                      className="min-w-[100px] border-l px-2 py-2 text-center text-[11px] font-medium text-muted-foreground"
+                      className="min-w-[100px] border-l bg-muted px-2 py-2 text-center text-[11px] font-medium text-muted-foreground"
                     >
                       <div className="truncate font-semibold text-foreground" title={l.name}>
                         {l.name}
@@ -87,10 +87,10 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                       </div>
                     </th>
                   ))}
-                  <th className="min-w-[90px] border-l px-2 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <th className="min-w-[90px] border-l bg-muted px-2 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     입고예정
                   </th>
-                  <th className="sticky right-0 z-30 min-w-[140px] border-l bg-muted/40 px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <th className="sticky right-0 z-30 min-w-[140px] border-l bg-muted px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     합계
                   </th>
                 </tr>
