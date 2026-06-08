@@ -84,3 +84,9 @@ scripts/sc/_debug/
 
 # code review run artifacts (compound-engineering)
 .context/
+
+# QA 스크린샷 (디버그용, 커밋 안 함)
+qa-*.png
+# agent / gstack 런타임 산출물
+.agents/
+.gstack/
