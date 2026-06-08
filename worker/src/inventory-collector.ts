@@ -12,7 +12,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import type { BrowserContext, Page } from 'playwright'
-import { launchStealthPersistentContext } from './browser.js'
+import { launchStealthPersistentContext, renewProfileLock } from './browser.js'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────────
 
@@ -24,6 +24,8 @@ export interface InventoryCollectorResult {
   salesVendor?: { filePath: string; fileName: string } | null
   /** 판매분석 다운로드 단계가 실패했을 때의 오류 메시지. 성공이면 undefined. */
   salesVendorError?: string
+  /** self-heal: 같은 세션에서 추가 수집한 누락 일자 VENDOR 파일들(날짜별). 추가 로그인 없음. */
+  gapVendors?: Array<{ dateKst: string; filePath: string; fileName: string }>
 }
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────────
@@ -38,10 +40,20 @@ const DOWNLOAD_TIMEOUT = 120_000
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────────
 
 async function saveScreenshot(page: Page, name: string): Promise<void> {
-  if (!fs.existsSync(SCREENSHOT_DIR)) fs.mkdirSync(SCREENSHOT_DIR, { recursive: true })
-  const fileName = `${name}_${new Date().toISOString().replace(/[:.]/g, '-')}.png`
-  await page.screenshot({ path: path.join(SCREENSHOT_DIR, fileName), fullPage: true })
-  console.log(`[inventory] 스크린샷: ${fileName}`)
+  // ⚠️ 진단용 스크린샷은 절대 throw 해선 안 된다. catch 블록에서 호출되는 경우가
+  // 많은데(에러 직후 화면 캡처), 이때 page/context 가 이미 닫혔으면 screenshot 가
+  // "Target page... closed" 로 throw → 진짜 에러를 가린다(2026-06-07 백필 크래시:
+  // Chrome 사망이라는 진짜 원인이 screenshot 실패로 마스킹됨). 실패해도 삼킨다.
+  try {
+    if (!fs.existsSync(SCREENSHOT_DIR)) fs.mkdirSync(SCREENSHOT_DIR, { recursive: true })
+    const fileName = `${name}_${new Date().toISOString().replace(/[:.]/g, '-')}.png`
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, fileName), fullPage: true })
+    console.log(`[inventory] 스크린샷: ${fileName}`)
+  } catch (err) {
+    console.warn(
+      `[inventory] 스크린샷 저장 실패(무시): ${err instanceof Error ? err.message : String(err)}`
+    )
+  }
 }
 
 /** Wing에 로그인되어 있는지 확인 */
@@ -363,7 +375,21 @@ async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Pro
   await page.waitForTimeout(300)
   await cell.click()
   await page.waitForTimeout(500)
-  console.log(`[inventory]   → 판매분석 기간 1일 선택: ${targetDateKst}`)
+
+  // vue-datepicker 는 "선택 완료" 버튼을 눌러야 기간이 적용된다(즉시 적용 아님).
+  // 이걸 누르지 않으면 picker 가 열린 채 남고 기존 기본 기간("어제")으로 export 되어
+  // 과거 날짜 백필이 전부 어제 데이터로 채워지는 silent 과대집계가 발생한다.
+  // 버튼 라벨은 "'06.05 (금)' 선택 완료"처럼 날짜 prefix 가 가변이므로 substring 매칭.
+  const confirmBtn = page.locator('button:has-text("선택 완료")').first()
+  if (!(await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+    await saveScreenshot(page, 'sales-analysis-no-confirm-btn')
+    throw new Error(
+      `[inventory] 판매분석 기간 "선택 완료" 버튼을 찾지 못했습니다 (${targetDateKst}) — DOM 변경 의심`
+    )
+  }
+  await confirmBtn.click()
+  await page.waitForTimeout(500)
+  console.log(`[inventory]   → 판매분석 기간 1일 선택 완료: ${targetDateKst}`)
 }
 
 async function downloadSalesAnalysisVendor(
@@ -397,10 +423,18 @@ async function downloadSalesAnalysisVendor(
   await saveScreenshot(page, 'sales-analysis-after-search')
 
   // ── 엑셀 다운로드 버튼 ──────────────────────────────────────────────────────
-  // TODO: 실제 DOM 확인 필요 — 상위 "엑셀 다운로드" 버튼 셀렉터
-  let excelMainBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
+  // 2026-06 live DOM 확인: 엑셀 트리거는 <button> 이 아니라
+  //   <div._wrapper><div._container><i icon:excel><span>엑셀 다운로드</span><i arrow-down></div></div>
+  // 구조다. hashed 클래스(_container_hgdwt_6 등)는 Wing 재배포 시 회전하므로
+  // 텍스트 "엑셀 다운로드"(고유 — "모바일 앱 다운로드"/"Download for…" 와 안 겹침)로
+  // span 을 잡고 클릭 가능한 조상 div 를 타깃한다.
+  const excelTextSpan = page.getByText('엑셀 다운로드', { exact: true }).first()
+  let excelMainBtn = excelTextSpan.locator(
+    'xpath=ancestor-or-self::div[contains(@class,"_container") or contains(@class,"_wrapper")][1]'
+  )
   if (!(await excelMainBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-    excelMainBtn = page.locator('button:has-text("엑셀 다운로드")').first()
+    // fallback: span 자체 클릭(이벤트 위임이 처리하는 경우)
+    excelMainBtn = excelTextSpan
   }
 
   if (!(await excelMainBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
@@ -482,6 +516,8 @@ export async function collectInventoryData(
     headless?: boolean
     /** 판매분석 수집 대상 날짜 (KST YYYY-MM-DD). 미지정 시 판매분석 수집 생략. */
     targetDateKst?: string
+    /** self-heal: 같은 세션에서 추가로 수집할 누락 일자(KST). 추가 Wing 로그인 없음. */
+    gapDates?: string[]
   } = {}
 ): Promise<InventoryCollectorResult> {
   const {
@@ -489,6 +525,7 @@ export async function collectInventoryData(
     browserDataDir = process.env.COUPANG_BROWSER_DATA_DIR || '.browser-data',
     headless = process.env.HEADLESS !== 'false',
     targetDateKst,
+    gapDates = [],
   } = options
 
   if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true })
@@ -544,7 +581,28 @@ export async function collectInventoryData(
       }
     }
 
-    return { inventoryHealth, inventoryHealthError, salesVendor, salesVendorError }
+    // self-heal: 누락 일자 VENDOR 를 같은 세션에서 추가 수집 (추가 로그인 없음).
+    // 어제(targetDateKst)는 위에서 이미 수집했으므로 제외.
+    const gapVendors: Array<{ dateKst: string; filePath: string; fileName: string }> = []
+    const uniqueGaps = Array.from(new Set(gapDates.filter((d) => d !== targetDateKst)))
+    if (uniqueGaps.length > 0) {
+      console.log(
+        `[inventory] self-heal — 누락 ${uniqueGaps.length}일 추가 수집: ${uniqueGaps.join(', ')}`
+      )
+      for (const dateKst of uniqueGaps) {
+        // 장시간 self-heal(최대 14일)이 진행 중임을 락에 알려 idle 타임아웃 갱신.
+        renewProfileLock(context)
+        try {
+          const f = await downloadSalesAnalysisVendor(page, downloadDir, dateKst)
+          gapVendors.push({ dateKst, filePath: f.filePath, fileName: f.fileName })
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err)
+          console.error(`[inventory] self-heal 판매분석 실패 (${dateKst}): ${msg}`)
+        }
+      }
+    }
+
+    return { inventoryHealth, inventoryHealthError, salesVendor, salesVendorError, gapVendors }
   } catch (error) {
     await saveScreenshot(page, 'inventory-error')
     throw error
