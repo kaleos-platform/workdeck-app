@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url'
 import { getCredentials, uploadInventory } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { openWingSession, downloadSalesAnalysisVendorOnPage } from './inventory-collector.js'
+import { renewProfileLock } from './browser.js'
 
 // ─── 유틸 ──────────────────────────────────────────────────────────────────────
 
@@ -50,11 +51,16 @@ export type BackfillResult = {
   succeeded: number
   failed: number
   totalInserted: number
+  totalDuplicate: number // 중복으로 건너뛴 행 수 (totalRows - insertedRows 누적)
   failedDates: string[]
   /** 백필 범위 oldest KST 날짜 (어제−days+1) */
   fromDate: string
   /** 백필 범위 newest KST 날짜 (어제) */
   toDate: string
+  /** 루프 도중 예기치 못한 예외(브라우저 사망 등)로 중단됐는지. true 면 부분 수집. */
+  aborted?: boolean
+  /** aborted 시 원인 메시지 */
+  abortError?: string
 }
 
 export type BackfillProgressCallback = (params: {
@@ -69,21 +75,39 @@ export type BackfillProgressCallback = (params: {
 /**
  * 과거 N일치 VENDOR 판매분석을 Wing에서 수집해 API에 업로드한다.
  *
- * @param days       수집할 일수 (1~120)
+ * @param days       수집할 일수 (1~120). explicitDates 지정 시 무시됨.
  * @param creds      Wing 로그인 자격증명 (복호화된 평문 패스워드)
  * @param workspaceId 업로드 대상 워크스페이스 ID
  * @param onProgress  진행 콜백 (선택)
+ * @param shouldCancel 날짜 루프 사이에 호출되어 true 면 즉시 중단(사용자 취소 감지). 선택.
+ * @param explicitDates 수집할 특정 KST 일자 배열("YYYY-MM-DD"). 지정 시 연속 days 대신
+ *                      이 비연속 일자만 수집(self-heal gap fill 용).
  */
 export async function runBackfill(
   days: number,
   creds: BackfillCreds,
   workspaceId: string,
-  onProgress?: BackfillProgressCallback
-): Promise<BackfillResult> {
-  // ── 대상 날짜 목록 생성: 어제(offset=1) → N일 전(offset=days) ──
-  const dates: string[] = []
-  for (let i = 1; i <= days; i++) {
-    dates.push(kstDateOffset(i))
+  onProgress?: BackfillProgressCallback,
+  shouldCancel?: () => Promise<boolean>,
+  explicitDates?: string[]
+): Promise<BackfillResult & { cancelled?: boolean }> {
+  // ── 대상 날짜 목록 ──
+  // explicitDates 지정 시 그 일자만(gap fill), 아니면 어제(offset=1) → N일 전 연속.
+  const dates: string[] =
+    explicitDates && explicitDates.length > 0
+      ? [...explicitDates].sort().reverse() // 최신순 (기존 동작과 일치)
+      : Array.from({ length: days }, (_, i) => kstDateOffset(i + 1))
+
+  if (dates.length === 0) {
+    return {
+      succeeded: 0,
+      failed: 0,
+      totalInserted: 0,
+      totalDuplicate: 0,
+      failedDates: [],
+      fromDate: '',
+      toDate: '',
+    }
   }
 
   console.log(`[backfill] workspaceId: ${workspaceId}`)
@@ -95,6 +119,10 @@ export async function runBackfill(
   let succeeded = 0
   let failed = 0
   let totalInserted = 0
+  let totalDuplicate = 0
+  let cancelled = false
+  let aborted = false
+  let abortError: string | undefined
   const failedDates: string[] = []
 
   // ── Wing 세션 1개를 열고 날짜 루프 ──
@@ -104,7 +132,19 @@ export async function runBackfill(
 
   try {
     for (const dateKst of dates) {
+      // 사용자 취소 감지 — 각 날짜 시작 전 확인해 조기 종료(이미 수집한 날짜는 보존).
+      if (shouldCancel && (await shouldCancel().catch(() => false))) {
+        console.log('[backfill] 사용자 취소 감지 — 백필 중단')
+        cancelled = true
+        break
+      }
+
       console.log(`\n[backfill] ── ${dateKst} 수집 중...`)
+
+      // 장시간 백필이 진행 중임을 락에 알려 idle 타임아웃을 갱신한다.
+      // (안 하면 12분 후 락이 강제 해제돼 형제 op preflight 가 살아있는 백필 Chrome
+      //  을 죽이는 2026-06-07 류 사고 발생.)
+      renewProfileLock(context)
 
       // 1) 다운로드
       const downloadResult = await downloadSalesAnalysisVendorOnPage(page, downloadDir, dateKst)
@@ -136,11 +176,13 @@ export async function runBackfill(
           throw new Error(result.error ?? '업로드 응답 success=false')
         }
 
+        const dup = Math.max(0, (result.totalRows ?? 0) - (result.insertedRows ?? 0))
         console.log(
-          `[backfill]   ✓ ${dateKst} 업로드 완료 — ${result.insertedRows}건 (snapshotDate: ${snapshotDateIso})`
+          `[backfill]   ✓ ${dateKst} 업로드 완료 — ${result.insertedRows}건${dup > 0 ? ` (중복 ${dup}건)` : ''} (snapshotDate: ${snapshotDateIso})`
         )
         succeeded++
         totalInserted += result.insertedRows ?? 0
+        totalDuplicate += dup
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error(`[backfill]   ✗ 업로드 실패 (${dateKst}): ${msg}`)
@@ -158,8 +200,18 @@ export async function runBackfill(
       // rate-limit 방어: 날짜 간 2~3초 sleep
       await sleep(2000 + Math.random() * 1000)
     }
+  } catch (err) {
+    // 루프 도중 예기치 못한 예외(브라우저 사망 등). 여기까지 수집한 일자는 이미
+    // 적재됐으므로 결과를 throw 로 버리지 않고 부분 결과로 반환한다(부분 성공 보존).
+    aborted = true
+    abortError = err instanceof Error ? err.message : String(err)
+    console.error(`[backfill] 루프 중단 — 부분 수집 보존 (성공 ${succeeded}일까지): ${abortError}`)
   } finally {
-    await context.close()
+    try {
+      await context.close()
+    } catch {
+      /* 이미 죽은 context close 실패 — 무시 */
+    }
     console.log('\n[backfill] Wing 세션 종료')
   }
 
@@ -167,9 +219,13 @@ export async function runBackfill(
     succeeded,
     failed,
     totalInserted,
+    totalDuplicate,
     failedDates,
     fromDate: dates[dates.length - 1], // oldest
     toDate: dates[0], // newest (어제)
+    cancelled,
+    aborted,
+    abortError,
   }
 }
 
