@@ -266,13 +266,13 @@ export function bucketValueFor(bucket: RevenueBucket, channelId: string): Channe
 }
 
 /**
- * 버킷의 주문/매출 합 — 대상 채널 집합 한정. 로켓(unitCountIds)의 orderCount(수량)는 주문 합에서 제외.
- * 테이블 합계·차트 라인이 동일 값을 공유.
+ * 버킷의 주문/매출 합 — 대상 채널 집합 한정.
+ * 로켓 포함 모든 판매채널이 "주문" 기준 통일 (orderCount = 주문건수).
+ * 테이블 합계·차트가 동일 값을 공유.
  */
 export function bucketTotalsFor(
   bucket: RevenueBucket,
-  channelIds: Iterable<string>,
-  unitCountIds: Set<string>
+  channelIds: Iterable<string>
 ): { revenue: number; orderCount: number } {
   let revenue = 0
   let orderCount = 0
@@ -280,7 +280,7 @@ export function bucketTotalsFor(
     const agg = bucket.byChannel[id]
     if (!agg) continue
     revenue += agg.revenue
-    if (!unitCountIds.has(id)) orderCount += agg.orderCount
+    orderCount += agg.orderCount
   }
   return { revenue, orderCount }
 }

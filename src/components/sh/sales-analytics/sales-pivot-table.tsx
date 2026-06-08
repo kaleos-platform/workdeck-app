@@ -21,7 +21,7 @@ import {
   type RevenueBucket,
 } from '@/lib/sh/sales-analytics'
 
-type VisibleChannel = { id: string; name: string; isUnitCount: boolean }
+type VisibleChannel = { id: string; name: string }
 
 type Props = {
   buckets: RevenueBucket[]
@@ -69,15 +69,10 @@ export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
     () => resolveDisplayChannels(visibleChannels, buckets),
     [visibleChannels, buckets]
   )
-  const unitCountIds = useMemo(
-    () => new Set(visibleChannels.filter((c) => c.isUnitCount).map((c) => c.id)),
-    [visibleChannels]
-  )
   const displayIds = useMemo(() => displayChannels.map((dc) => dc.id), [displayChannels])
-  const displayHasUnit = (chId: string) => unitCountIds.has(chId)
 
-  // 합계 = 표시(선택) 채널 합 — 보이는 채널 열 합과 일치 (로켓 units 주문 제외)
-  const totalsFor = (b: RevenueBucket) => bucketTotalsFor(b, displayIds, unitCountIds)
+  // 합계 = 표시(선택) 채널 합 — 보이는 채널 열 합과 일치 (전 채널 주문 기준)
+  const totalsFor = (b: RevenueBucket) => bucketTotalsFor(b, displayIds)
 
   // 채널 열별 합계 (매트릭스 하단 합계행)
   const channelColumnTotals = useMemo(() => {
@@ -99,11 +94,10 @@ export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
     let orderCount = 0
     for (let i = 0; i < displayChannels.length; i++) {
       revenue += channelColumnTotals[i].revenue
-      if (!displayHasUnit(displayChannels[i].id)) orderCount += channelColumnTotals[i].orderCount
+      orderCount += channelColumnTotals[i].orderCount
     }
     return { revenue, orderCount }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayChannels, channelColumnTotals, unitCountIds])
+  }, [displayChannels, channelColumnTotals])
 
   const noChannels = displayChannels.length === 0
 
@@ -128,7 +122,10 @@ export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
                   <TableHead className="bg-muted/40 text-right font-semibold">합계</TableHead>
                   <TableHead className="border-r bg-muted/40 text-right">증감</TableHead>
                   {displayChannels.map((dc) => (
-                    <TableHead key={dc.id} className="text-right">
+                    <TableHead
+                      key={dc.id}
+                      className="w-[110px] text-right align-bottom break-keep whitespace-normal"
+                    >
                       <span style={{ color: dc.color }}>{dc.name}</span>
                     </TableHead>
                   ))}
@@ -161,14 +158,10 @@ export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
                       </TableCell>
                       {displayChannels.map((dc) => {
                         const v = bucketValueFor(bucket, dc.id)
-                        const unitLabel = displayHasUnit(dc.id) ? '개' : '건'
                         return (
-                          <TableCell key={dc.id} className="text-right tabular-nums">
-                            <div>{formatKRW(v.revenue)}</div>
-                            <div>
-                              {v.orderCount.toLocaleString('ko-KR')}
-                              {unitLabel}
-                            </div>
+                          <TableCell key={dc.id} className="w-[110px] text-right tabular-nums">
+                            <div className="break-all">{formatKRW(v.revenue)}</div>
+                            <div>{v.orderCount.toLocaleString('ko-KR')}건</div>
                           </TableCell>
                         )
                       })}
@@ -190,11 +183,10 @@ export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
                     <span className="text-xs text-muted-foreground">-</span>
                   </TableCell>
                   {displayChannels.map((dc, i) => (
-                    <TableCell key={dc.id} className="text-right tabular-nums">
-                      <div>{formatKRW(channelColumnTotals[i].revenue)}</div>
+                    <TableCell key={dc.id} className="w-[110px] text-right tabular-nums">
+                      <div className="break-all">{formatKRW(channelColumnTotals[i].revenue)}</div>
                       <div className="font-normal">
-                        {channelColumnTotals[i].orderCount.toLocaleString('ko-KR')}
-                        {displayHasUnit(dc.id) ? '개' : '건'}
+                        {channelColumnTotals[i].orderCount.toLocaleString('ko-KR')}건
                       </div>
                     </TableCell>
                   ))}

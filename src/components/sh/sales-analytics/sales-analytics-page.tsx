@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import {
   lastClosedDateKst,
   last30DaysRange,
@@ -28,7 +27,7 @@ import { useSalesAnalysis } from '@/hooks/use-sales-analysis'
 import { SalesPivotTable } from './sales-pivot-table'
 import { ChannelRevenueStackedChart } from './channel-revenue-stacked-chart'
 
-export type Channel = { id: string; name: string; typeName: string; isUnitCount: boolean }
+export type Channel = { id: string; name: string; typeName: string }
 
 const UNITS: SalesUnit[] = ['일', '주', '월']
 const ALL_TYPES = 'ALL'
@@ -98,16 +97,10 @@ export function SalesAnalyticsPage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         const list: Channel[] = (d?.channels ?? []).map(
-          (c: {
-            id: string
-            name: string
-            externalSource?: string | null
-            channelTypeDef?: { name?: string } | null
-          }) => ({
+          (c: { id: string; name: string; channelTypeDef?: { name?: string } | null }) => ({
             id: c.id,
             name: c.name,
             typeName: c.channelTypeDef?.name ?? '기타',
-            isUnitCount: c.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
           })
         )
         setChannels(list)
