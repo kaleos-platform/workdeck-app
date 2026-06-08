@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
           orderCount: 0,
         }
         entry.totalRevenue += agg.revenue
-        entry.orderCount += agg.qty
+        entry.orderCount += agg.orderCount
         keyMap.set(key, entry)
       }
     }
@@ -195,19 +195,19 @@ export async function GET(req: NextRequest) {
       loadRocketDailyRevenue(resolved.space.id, from, to),
       loadRocketDailyRevenue(resolved.space.id, prevFrom, prevTo),
     ])
-    const sumRocket = (m: Map<string, { revenue: number; qty: number }>) => {
+    const sumRocket = (m: Map<string, { revenue: number; orderCount: number; qty: number }>) => {
       let revenue = 0
-      let qty = 0
+      let orderCount = 0
       for (const v of m.values()) {
         revenue += v.revenue
-        qty += v.qty
+        orderCount += v.orderCount
       }
-      return { revenue, qty }
+      return { revenue, orderCount }
     }
     const curr = sumRocket(currRocket)
     const prev = sumRocket(prevRocket)
     const ce = currentMap.get(rocketCh.id) ?? { orderCount: 0, totalRevenue: 0 }
-    ce.orderCount += curr.qty
+    ce.orderCount += curr.orderCount
     ce.totalRevenue += curr.revenue
     currentMap.set(rocketCh.id, ce)
     const pe = prevMap.get(rocketCh.id) ?? { totalRevenue: 0 }
@@ -221,12 +221,9 @@ export async function GET(req: NextRequest) {
   const rows = channels.map((channel) => {
     const curr = currentMap.get(channel.id) ?? { orderCount: 0, totalRevenue: 0 }
     const prev = prevMap.get(channel.id) ?? { totalRevenue: 0 }
-    // 로켓그로스는 주문수 컬럼이 없어 orderCount = 판매 "수량"(units) proxy 다.
-    // 객단가(avgOrder)·totals 주문수는 "주문" 단위라 의미가 다르므로 로켓은 제외해
-    // 혼합 평균 오염을 막는다. 매출은 정상 합산.
-    const isRocketUnits = channel.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH
-    const avgOrder =
-      !isRocketUnits && curr.orderCount > 0 ? Math.round(curr.totalRevenue / curr.orderCount) : 0
+    // 로켓그로스도 주문건수를 별도 수집(orderCount)하므로 일반 채널과 동일하게 취급.
+    // 판매량(salesQty)은 재고 차감 전용이라 이 API 의 주문 집계와 무관.
+    const avgOrder = curr.orderCount > 0 ? Math.round(curr.totalRevenue / curr.orderCount) : 0
 
     // 전월 대비 변화율 (이전 기간 매출이 0이면 null)
     const momChange =
@@ -234,15 +231,13 @@ export async function GET(req: NextRequest) {
         ? Math.round(((curr.totalRevenue - prev.totalRevenue) / prev.totalRevenue) * 10000) / 100
         : null
 
-    if (!isRocketUnits) totalOrderCount += curr.orderCount
+    totalOrderCount += curr.orderCount
     totalRevenue += curr.totalRevenue
 
     return {
       channelId: channel.id,
       channelName: channel.name,
       orderCount: curr.orderCount,
-      // 로켓: orderCount 는 판매 수량(units)이라 객단가 비계산.
-      isUnitCount: isRocketUnits,
       totalRevenue: Math.round(curr.totalRevenue),
       avgOrder,
       prevRevenue: Math.round(prev.totalRevenue),
@@ -283,8 +278,8 @@ async function loadRocketDailyRevenue(
   spaceId: string,
   from: Date,
   to: Date
-): Promise<Map<string, { revenue: number; qty: number }>> {
-  const out = new Map<string, { revenue: number; qty: number }>()
+): Promise<Map<string, { revenue: number; orderCount: number; qty: number }>> {
+  const out = new Map<string, { revenue: number; orderCount: number; qty: number }>()
   const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
   if (!resolved) return out
 
@@ -300,14 +295,15 @@ async function loadRocketDailyRevenue(
       fulfillmentType: '로켓그로스',
       snapshotDate: { gte, lt: ltExclusive },
     },
-    select: { snapshotDate: true, revenue30d: true, salesQty30d: true },
+    select: { snapshotDate: true, revenue30d: true, salesQty30d: true, orderCount: true },
   })
 
   for (const r of records) {
     const date = toKstDateKey(r.snapshotDate)
-    const entry = out.get(date) ?? { revenue: 0, qty: 0 }
+    const entry = out.get(date) ?? { revenue: 0, orderCount: 0, qty: 0 }
     entry.revenue += Number(r.revenue30d ?? 0)
-    entry.qty += r.salesQty30d ?? 0
+    entry.orderCount += r.orderCount ?? 0 // 주문건수 (별도 수집) — 판매분석은 주문 기준
+    entry.qty += r.salesQty30d ?? 0 // 판매량 — 재고 차감 전용 (이 API 합계 미사용)
     out.set(date, entry)
   }
   return out

@@ -23,7 +23,7 @@ import {
   type RevenueBucket,
 } from '@/lib/sh/sales-analytics'
 
-type TypedChannel = { id: string; name: string; isUnitCount: boolean }
+type TypedChannel = { id: string; name: string }
 
 type Props = {
   buckets: RevenueBucket[]
@@ -53,25 +53,15 @@ export function ChannelRevenueStackedChart({
 }: Props) {
   const [metric, setMetric] = useState<Metric>('매출')
 
-  const unitCountIds = useMemo(
-    () => new Set(typedChannels.filter((c) => c.isUnitCount).map((c) => c.id)),
-    [typedChannels]
-  )
-
   // 정렬·색상 — 유형 통과 전체 채널 기준 (체크박스 표시용)
   const displayChannels = useMemo(
     () => resolveDisplayChannels(typedChannels, buckets),
     [typedChannels, buckets]
   )
-  // 차트에 그릴 채널 = 선택된 것
+  // 차트에 그릴 채널 = 선택된 것 (로켓 포함 전부 주문 기준)
   const visibleChannels = useMemo(
     () => displayChannels.filter((dc) => selectedChannelIds.has(dc.id)),
     [displayChannels, selectedChannelIds]
-  )
-  // 주문 라인은 로켓(units) 제외 — units 는 주문과 의미 다름
-  const orderLineChannels = useMemo(
-    () => visibleChannels.filter((dc) => !unitCountIds.has(dc.id)),
-    [visibleChannels, unitCountIds]
   )
 
   const showBars = metric === '매출' || metric === '매출+주문'
@@ -83,11 +73,11 @@ export function ChannelRevenueStackedChart({
       for (const dc of visibleChannels) {
         const v = bucketValueFor(b, dc.id)
         row[dc.id] = v.revenue
-        if (!unitCountIds.has(dc.id)) row[ordKey(dc.id)] = v.orderCount
+        row[ordKey(dc.id)] = v.orderCount
       }
       return row
     })
-  }, [buckets, visibleChannels, unitCountIds])
+  }, [buckets, visibleChannels])
 
   const nameById = useMemo(() => {
     const m = new Map<string, string>()
@@ -202,7 +192,7 @@ export function ChannelRevenueStackedChart({
                   <Bar key={dc.id} yAxisId="left" dataKey={dc.id} stackId="rev" fill={dc.color} />
                 ))}
               {showLines &&
-                orderLineChannels.map((dc) => (
+                visibleChannels.map((dc) => (
                   <Line
                     key={ordKey(dc.id)}
                     yAxisId="right"
