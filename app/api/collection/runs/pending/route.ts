@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
       id: run.id,
       workspaceId: run.workspaceId,
       triggeredBy: run.triggeredBy,
+      collectAds: run.collectAds,
+      collectInventory: run.collectInventory,
     },
   })
 }

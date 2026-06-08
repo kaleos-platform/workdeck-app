@@ -44,17 +44,26 @@ export async function GET(request: NextRequest) {
 
   // uploadId가 있는 run에 대해 ReportUpload 정보 조회
   const uploadIds = runs.map((r) => r.uploadId).filter(Boolean) as string[]
-  const uploads = uploadIds.length > 0
-    ? await prisma.reportUpload.findMany({
-        where: { id: { in: uploadIds } },
-        select: { id: true, fileName: true, periodStart: true, periodEnd: true, totalRows: true, insertedRows: true, duplicateRows: true },
-      })
-    : []
+  const uploads =
+    uploadIds.length > 0
+      ? await prisma.reportUpload.findMany({
+          where: { id: { in: uploadIds } },
+          select: {
+            id: true,
+            fileName: true,
+            periodStart: true,
+            periodEnd: true,
+            totalRows: true,
+            insertedRows: true,
+            duplicateRows: true,
+          },
+        })
+      : []
   const uploadMap = new Map(uploads.map((u) => [u.id, u]))
 
   const runsWithUpload = runs.map((r) => ({
     ...r,
-    upload: r.uploadId ? uploadMap.get(r.uploadId) ?? null : null,
+    upload: r.uploadId ? (uploadMap.get(r.uploadId) ?? null) : null,
   }))
 
   return NextResponse.json({
@@ -95,6 +104,20 @@ export async function POST(request: NextRequest) {
 
   const workspace = { id: workspaceId }
 
+  // 수동 수집 작업 스코프 — 사용자(비-worker) 요청에서만 받는다. 미지정/worker(자동)는
+  // 둘 다 true(전체 수집, 현행 유지). 판매(VENDOR)는 수동에서 항상 제외(워커가 보장).
+  let collectAds = true
+  let collectInventory = true
+  if (!isWorker) {
+    const scopeBody = await request.json().catch(() => ({}) as Record<string, unknown>)
+    if (typeof scopeBody.collectAds === 'boolean') collectAds = scopeBody.collectAds
+    if (typeof scopeBody.collectInventory === 'boolean')
+      collectInventory = scopeBody.collectInventory
+    if (!collectAds && !collectInventory) {
+      return errorResponse('최소 한 가지 작업을 선택해야 합니다', 422)
+    }
+  }
+
   // 자격증명 존재 확인
   const credential = await prisma.coupangCredential.findUnique({
     where: { workspaceId: workspace.id },
@@ -122,6 +145,8 @@ export async function POST(request: NextRequest) {
       workspaceId: workspace.id,
       triggeredBy,
       status,
+      collectAds,
+      collectInventory,
       ...(isWorker && { startedAt: new Date() }),
     },
   })

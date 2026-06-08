@@ -13,6 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Play, Square } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -123,6 +125,10 @@ export function CollectionHistory() {
   const [isLoading, setIsLoading] = useState(true)
   const [isTriggering, setIsTriggering] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
+  // 수동 수집 작업 선택 (판매는 수동 제외 — 노출 안 함)
+  const [scopePopoverOpen, setScopePopoverOpen] = useState(false)
+  const [collectAds, setCollectAds] = useState(true)
+  const [collectInventory, setCollectInventory] = useState(true)
 
   // 진행 중인 작업 확인
   const activeRun = runs.find((r) => ACTIVE_STATUSES.includes(r.status))
@@ -153,11 +159,17 @@ export function CollectionHistory() {
   }, [hasActiveRun, fetchRuns])
 
   async function handleManualTrigger() {
+    if (!collectAds && !collectInventory) {
+      toast.error('최소 한 가지 작업을 선택해주세요')
+      return
+    }
     setIsTriggering(true)
+    setScopePopoverOpen(false)
     try {
       const res = await fetch('/api/collection/runs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collectAds, collectInventory }),
       })
 
       if (!res.ok) {
@@ -226,19 +238,58 @@ export function CollectionHistory() {
                 )}
               </Button>
             ) : (
-              <Button size="sm" onClick={handleManualTrigger} disabled={isTriggering}>
-                {isTriggering ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    수집 시작 중...
-                  </>
-                ) : (
-                  <>
-                    <Play className="mr-2 h-4 w-4" />
-                    수동 수집
-                  </>
-                )}
-              </Button>
+              <Popover open={scopePopoverOpen} onOpenChange={setScopePopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button size="sm" disabled={isTriggering}>
+                    {isTriggering ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        수집 시작 중...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="mr-2 h-4 w-4" />
+                        수동 수집
+                      </>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64">
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium">수집할 작업 선택</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        판매 데이터는 자동 수집 전용입니다.
+                      </p>
+                    </div>
+                    <div className="space-y-2.5">
+                      <label className="flex cursor-pointer items-center gap-2 text-sm">
+                        <Checkbox
+                          checked={collectAds}
+                          onCheckedChange={(v) => setCollectAds(v === true)}
+                        />
+                        광고 데이터
+                      </label>
+                      <label className="flex cursor-pointer items-center gap-2 text-sm">
+                        <Checkbox
+                          checked={collectInventory}
+                          onCheckedChange={(v) => setCollectInventory(v === true)}
+                        />
+                        재고현황
+                      </label>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={handleManualTrigger}
+                      disabled={isTriggering || (!collectAds && !collectInventory)}
+                    >
+                      <Play className="mr-2 h-4 w-4" />
+                      수집 시작
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
           </div>
         </div>
