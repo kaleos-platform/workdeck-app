@@ -7365,6 +7365,8 @@ export const CollectionRunScalarFieldEnum = {
   completedAt: 'completedAt',
   error: 'error',
   uploadId: 'uploadId',
+  collectAds: 'collectAds',
+  collectInventory: 'collectInventory',
   createdAt: 'createdAt'
 } as const
 

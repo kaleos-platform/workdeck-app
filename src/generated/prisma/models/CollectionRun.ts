@@ -33,6 +33,8 @@ export type CollectionRunMinAggregateOutputType = {
   completedAt: Date | null
   error: string | null
   uploadId: string | null
+  collectAds: boolean | null
+  collectInventory: boolean | null
   createdAt: Date | null
 }
 
@@ -45,6 +47,8 @@ export type CollectionRunMaxAggregateOutputType = {
   completedAt: Date | null
   error: string | null
   uploadId: string | null
+  collectAds: boolean | null
+  collectInventory: boolean | null
   createdAt: Date | null
 }
 
@@ -57,6 +61,8 @@ export type CollectionRunCountAggregateOutputType = {
   completedAt: number
   error: number
   uploadId: number
+  collectAds: number
+  collectInventory: number
   createdAt: number
   _all: number
 }
@@ -71,6 +77,8 @@ export type CollectionRunMinAggregateInputType = {
   completedAt?: true
   error?: true
   uploadId?: true
+  collectAds?: true
+  collectInventory?: true
   createdAt?: true
 }
 
@@ -83,6 +91,8 @@ export type CollectionRunMaxAggregateInputType = {
   completedAt?: true
   error?: true
   uploadId?: true
+  collectAds?: true
+  collectInventory?: true
   createdAt?: true
 }
 
@@ -95,6 +105,8 @@ export type CollectionRunCountAggregateInputType = {
   completedAt?: true
   error?: true
   uploadId?: true
+  collectAds?: true
+  collectInventory?: true
   createdAt?: true
   _all?: true
 }
@@ -180,6 +192,8 @@ export type CollectionRunGroupByOutputType = {
   completedAt: Date | null
   error: string | null
   uploadId: string | null
+  collectAds: boolean
+  collectInventory: boolean
   createdAt: Date
   _count: CollectionRunCountAggregateOutputType | null
   _min: CollectionRunMinAggregateOutputType | null
@@ -213,6 +227,8 @@ export type CollectionRunWhereInput = {
   completedAt?: Prisma.DateTimeNullableFilter<"CollectionRun"> | Date | string | null
   error?: Prisma.StringNullableFilter<"CollectionRun"> | string | null
   uploadId?: Prisma.StringNullableFilter<"CollectionRun"> | string | null
+  collectAds?: Prisma.BoolFilter<"CollectionRun"> | boolean
+  collectInventory?: Prisma.BoolFilter<"CollectionRun"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CollectionRun"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
 }
@@ -226,6 +242,8 @@ export type CollectionRunOrderByWithRelationInput = {
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   uploadId?: Prisma.SortOrderInput | Prisma.SortOrder
+  collectAds?: Prisma.SortOrder
+  collectInventory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
 }
@@ -242,6 +260,8 @@ export type CollectionRunWhereUniqueInput = Prisma.AtLeast<{
   completedAt?: Prisma.DateTimeNullableFilter<"CollectionRun"> | Date | string | null
   error?: Prisma.StringNullableFilter<"CollectionRun"> | string | null
   uploadId?: Prisma.StringNullableFilter<"CollectionRun"> | string | null
+  collectAds?: Prisma.BoolFilter<"CollectionRun"> | boolean
+  collectInventory?: Prisma.BoolFilter<"CollectionRun"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CollectionRun"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
 }, "id">
@@ -255,6 +275,8 @@ export type CollectionRunOrderByWithAggregationInput = {
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   uploadId?: Prisma.SortOrderInput | Prisma.SortOrder
+  collectAds?: Prisma.SortOrder
+  collectInventory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.CollectionRunCountOrderByAggregateInput
   _max?: Prisma.CollectionRunMaxOrderByAggregateInput
@@ -273,6 +295,8 @@ export type CollectionRunScalarWhereWithAggregatesInput = {
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CollectionRun"> | Date | string | null
   error?: Prisma.StringNullableWithAggregatesFilter<"CollectionRun"> | string | null
   uploadId?: Prisma.StringNullableWithAggregatesFilter<"CollectionRun"> | string | null
+  collectAds?: Prisma.BoolWithAggregatesFilter<"CollectionRun"> | boolean
+  collectInventory?: Prisma.BoolWithAggregatesFilter<"CollectionRun"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CollectionRun"> | Date | string
 }
 
@@ -284,6 +308,8 @@ export type CollectionRunCreateInput = {
   completedAt?: Date | string | null
   error?: string | null
   uploadId?: string | null
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: Date | string
   workspace: Prisma.WorkspaceCreateNestedOneWithoutCollectionRunsInput
 }
@@ -297,6 +323,8 @@ export type CollectionRunUncheckedCreateInput = {
   completedAt?: Date | string | null
   error?: string | null
   uploadId?: string | null
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: Date | string
 }
 
@@ -308,6 +336,8 @@ export type CollectionRunUpdateInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectAds?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutCollectionRunsNestedInput
 }
@@ -321,6 +351,8 @@ export type CollectionRunUncheckedUpdateInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectAds?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -333,6 +365,8 @@ export type CollectionRunCreateManyInput = {
   completedAt?: Date | string | null
   error?: string | null
   uploadId?: string | null
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: Date | string
 }
 
@@ -344,6 +378,8 @@ export type CollectionRunUpdateManyMutationInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectAds?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -356,6 +392,8 @@ export type CollectionRunUncheckedUpdateManyInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectAds?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -378,6 +416,8 @@ export type CollectionRunCountOrderByAggregateInput = {
   completedAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
   uploadId?: Prisma.SortOrder
+  collectAds?: Prisma.SortOrder
+  collectInventory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -390,6 +430,8 @@ export type CollectionRunMaxOrderByAggregateInput = {
   completedAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
   uploadId?: Prisma.SortOrder
+  collectAds?: Prisma.SortOrder
+  collectInventory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -402,6 +444,8 @@ export type CollectionRunMinOrderByAggregateInput = {
   completedAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
   uploadId?: Prisma.SortOrder
+  collectAds?: Prisma.SortOrder
+  collectInventory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -459,6 +503,8 @@ export type CollectionRunCreateWithoutWorkspaceInput = {
   completedAt?: Date | string | null
   error?: string | null
   uploadId?: string | null
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: Date | string
 }
 
@@ -470,6 +516,8 @@ export type CollectionRunUncheckedCreateWithoutWorkspaceInput = {
   completedAt?: Date | string | null
   error?: string | null
   uploadId?: string | null
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: Date | string
 }
 
@@ -511,6 +559,8 @@ export type CollectionRunScalarWhereInput = {
   completedAt?: Prisma.DateTimeNullableFilter<"CollectionRun"> | Date | string | null
   error?: Prisma.StringNullableFilter<"CollectionRun"> | string | null
   uploadId?: Prisma.StringNullableFilter<"CollectionRun"> | string | null
+  collectAds?: Prisma.BoolFilter<"CollectionRun"> | boolean
+  collectInventory?: Prisma.BoolFilter<"CollectionRun"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CollectionRun"> | Date | string
 }
 
@@ -522,6 +572,8 @@ export type CollectionRunCreateManyWorkspaceInput = {
   completedAt?: Date | string | null
   error?: string | null
   uploadId?: string | null
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: Date | string
 }
 
@@ -533,6 +585,8 @@ export type CollectionRunUpdateWithoutWorkspaceInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectAds?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -544,6 +598,8 @@ export type CollectionRunUncheckedUpdateWithoutWorkspaceInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectAds?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -555,6 +611,8 @@ export type CollectionRunUncheckedUpdateManyWithoutWorkspaceInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectAds?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  collectInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -569,6 +627,8 @@ export type CollectionRunSelect<ExtArgs extends runtime.Types.Extensions.Interna
   completedAt?: boolean
   error?: boolean
   uploadId?: boolean
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["collectionRun"]>
@@ -582,6 +642,8 @@ export type CollectionRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   completedAt?: boolean
   error?: boolean
   uploadId?: boolean
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["collectionRun"]>
@@ -595,6 +657,8 @@ export type CollectionRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   completedAt?: boolean
   error?: boolean
   uploadId?: boolean
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["collectionRun"]>
@@ -608,10 +672,12 @@ export type CollectionRunSelectScalar = {
   completedAt?: boolean
   error?: boolean
   uploadId?: boolean
+  collectAds?: boolean
+  collectInventory?: boolean
   createdAt?: boolean
 }
 
-export type CollectionRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "status" | "triggeredBy" | "startedAt" | "completedAt" | "error" | "uploadId" | "createdAt", ExtArgs["result"]["collectionRun"]>
+export type CollectionRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "status" | "triggeredBy" | "startedAt" | "completedAt" | "error" | "uploadId" | "collectAds" | "collectInventory" | "createdAt", ExtArgs["result"]["collectionRun"]>
 export type CollectionRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }
@@ -636,6 +702,8 @@ export type $CollectionRunPayload<ExtArgs extends runtime.Types.Extensions.Inter
     completedAt: Date | null
     error: string | null
     uploadId: string | null
+    collectAds: boolean
+    collectInventory: boolean
     createdAt: Date
   }, ExtArgs["result"]["collectionRun"]>
   composites: {}
@@ -1069,6 +1137,8 @@ export interface CollectionRunFieldRefs {
   readonly completedAt: Prisma.FieldRef<"CollectionRun", 'DateTime'>
   readonly error: Prisma.FieldRef<"CollectionRun", 'String'>
   readonly uploadId: Prisma.FieldRef<"CollectionRun", 'String'>
+  readonly collectAds: Prisma.FieldRef<"CollectionRun", 'Boolean'>
+  readonly collectInventory: Prisma.FieldRef<"CollectionRun", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"CollectionRun", 'DateTime'>
 }
     

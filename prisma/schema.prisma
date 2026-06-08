@@ -553,6 +553,10 @@ model CollectionRun {
   completedAt DateTime?
   error       String?
   uploadId    String?
+  // 수동 수집 작업 스코프 — 어떤 작업을 실행할지. 자동(scheduled)은 둘 다 true(전체).
+  // 판매(VENDOR)는 수동 수집에서 항상 제외되므로 별도 필드 없음(자동 cron 전용).
+  collectAds       Boolean     @default(true) // 광고 데이터 수집
+  collectInventory Boolean     @default(true) // 재고현황(HEALTH) 수집
   workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdAt   DateTime         @default(now())
 
