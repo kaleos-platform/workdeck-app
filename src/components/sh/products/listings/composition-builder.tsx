@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, Plus, Search, Trash2, X } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, Plus, Search, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -13,7 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { productDisplayName } from '@/lib/sh/product-display'
 import {
   attributeValuesOf,
+  buildBackedValueSet,
   buildSimpleCompositionGroups,
+  cartesianFromAttrState,
+  diagnoseComposition,
   findMatchingOption,
 } from './composition-builder-utils'
 
@@ -324,8 +327,20 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     if (!product) return
     const groups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
     if (groups.length === 0) {
-      toast.error('생성 가능한 옵션 조합이 없습니다. 상품 옵션의 속성값을 확인해 주세요')
+      const attrs = product.optionAttributes ?? []
+      const diag = diagnoseComposition(product, cartesianFromAttrState(attrs, attrState))
+      toast.error(
+        diag.message || '생성 가능한 옵션 조합이 없습니다. 상품 옵션의 속성값을 확인해 주세요'
+      )
       return
+    }
+    // PARTIAL — 일부 조합만 backed: backed 조합으로 진행하되 누락을 경고
+    const diag = diagnoseComposition(
+      product,
+      cartesianFromAttrState(product.optionAttributes ?? [], attrState)
+    )
+    if (diag.caseType === 'PARTIAL') {
+      toast.warning(diag.message)
     }
     emit(groups)
   }
@@ -459,7 +474,26 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     }
 
     if (groups.length === 0) {
-      toast.error('구성 가능한 옵션 조합이 없습니다')
+      // 수량 지정 속성의 선택값 + 미선택 속성 전체값으로 조합을 구성해 진단
+      const advCombos = cartesianFromAttrState(
+        attrs,
+        attrs.reduce<Record<string, AttrState>>((acc, attr) => {
+          const picked = new Set<string>()
+          for (const b of bundles) {
+            for (const v of Object.keys(b.valueQuantities[attr.name] ?? {})) picked.add(v)
+          }
+          acc[attr.name] =
+            picked.size > 0
+              ? {
+                  enabled: true,
+                  valueQuantities: Object.fromEntries([...picked].map((v) => [v, 1])),
+                }
+              : { enabled: false, valueQuantities: {} }
+          return acc
+        }, {})
+      )
+      const diag = diagnoseComposition(product, advCombos)
+      toast.error(diag.message || '구성 가능한 옵션 조합이 없습니다')
       return
     }
     emit(groups)
@@ -1118,30 +1152,29 @@ function SimpleModeSettings({
   onToggleAttr: (name: string, enabled: boolean) => void
   onToggleValue: (attrName: string, value: string, on: boolean) => void
 }) {
-  const attrs = product.optionAttributes ?? []
+  const attrs = useMemo(() => product.optionAttributes ?? [], [product.optionAttributes])
   const bundleCount = setQuantities.length
 
-  // 선택된 cartesian (활성 속성은 선택값만, 미활성은 전체)
-  const effectiveCombos: Record<string, string>[] = (() => {
-    if (attrs.length === 0) return product.options.length > 0 ? [{}] : []
-    let combos: Record<string, string>[] = [{}]
-    for (const a of attrs) {
-      const state = attrState[a.name]
-      const selected = state?.enabled ? Object.keys(state.valueQuantities) : []
-      const vals = selected.length > 0 ? selected : attributeValuesOf(a)
-      const next: Record<string, string>[] = []
-      for (const prev of combos) {
-        for (const v of vals) next.push({ ...prev, [a.name]: v })
-      }
-      combos = next
-    }
-    return combos
-  })()
+  // 정의 cartesian(전체 선택 조합) + 뒷받침 진단을 단일 source로 계산
+  const allCombos = useMemo(
+    () =>
+      attrs.length === 0
+        ? product.options.length > 0
+          ? [{} as Record<string, string>]
+          : []
+        : cartesianFromAttrState(attrs, attrState),
+    [attrs, attrState, product.options.length]
+  )
+  const diag = useMemo(() => diagnoseComposition(product, allCombos), [product, allCombos])
+  // 옵션 행이 실제 보유한 (속성, 값) 집합 — 인라인 배지용
+  const backedValueSet = useMemo(() => buildBackedValueSet(product.options), [product.options])
+
   const previewGroups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
-  const comboCount = effectiveCombos.length
+  const comboCount = diag.backedCombos.length
   const totalListings = previewGroups.length
 
-  const samples = effectiveCombos.slice(0, 3).map((c) =>
+  // 예시는 정의가 아니라 "뒷받침되는" 조합에서만 — false confidence 방지
+  const samples = diag.backedCombos.slice(0, 3).map((c) =>
     attrs
       .map((a) => c[a.name])
       .filter(Boolean)
@@ -1150,6 +1183,12 @@ function SimpleModeSettings({
 
   return (
     <div className="space-y-3 rounded-md border bg-background p-3">
+      {attrs.length > 0 && diag.caseType !== 'OK' && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-300">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>{diag.message}</span>
+        </div>
+      )}
       <div className="space-y-1.5">
         <Label>세트 수량</Label>
         <div className="space-y-1.5">
@@ -1213,6 +1252,7 @@ function SimpleModeSettings({
                     <div className="mt-2 flex flex-wrap gap-1.5 pl-6">
                       {attributeValuesOf(attr).map((value) => {
                         const checked = state.valueQuantities[value] !== undefined
+                        const unbacked = !backedValueSet.has(`${attr.name.trim()} ${value}`)
                         return (
                           <label
                             key={value}
@@ -1225,6 +1265,12 @@ function SimpleModeSettings({
                               onCheckedChange={(c) => onToggleValue(attr.name, value, c === true)}
                             />
                             <span>{value}</span>
+                            {unbacked && (
+                              <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 text-[10px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
+                                <AlertTriangle className="h-2.5 w-2.5" />
+                                옵션 없음
+                              </span>
+                            )}
                           </label>
                         )
                       })}
@@ -1282,8 +1328,16 @@ function BundlesEditor({
     )
   }
   const selectedAttrs = attrs.filter((a) => attrState[a.name]?.enabled)
+  const backedValueSet = buildBackedValueSet(product.options)
+  const advDiag = diagnoseComposition(product, cartesianFromAttrState(attrs, attrState))
   return (
     <div className="space-y-4">
+      {advDiag.caseType !== 'OK' && advDiag.caseType !== 'PARTIAL' && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-300">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>{advDiag.message}</span>
+        </div>
+      )}
       {/* 1) 어떤 속성을 "수량 지정"으로 다룰지 선택 */}
       <div className="space-y-2">
         <Label className="text-xs">수량 지정 속성</Label>
@@ -1361,6 +1415,7 @@ function BundlesEditor({
                         <div className="space-y-1 pl-1">
                           {attributeValuesOf(attr).map((value) => {
                             const checked = value in valueMap
+                            const unbacked = !backedValueSet.has(`${attr.name.trim()} ${value}`)
                             return (
                               <div key={value} className="flex items-center gap-2">
                                 <Checkbox
@@ -1370,6 +1425,12 @@ function BundlesEditor({
                                   }
                                 />
                                 <span className="min-w-[80px] text-sm">{value}</span>
+                                {unbacked && (
+                                  <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 text-[10px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
+                                    <AlertTriangle className="h-2.5 w-2.5" />
+                                    옵션 없음
+                                  </span>
+                                )}
                                 {checked && (
                                   <>
                                     <span className="text-xs text-muted-foreground">수량</span>
