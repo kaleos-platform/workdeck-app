@@ -16,7 +16,13 @@ import {
 import { Loader2, Play, Square } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type CollectionRunStatus = 'COMPLETED' | 'FAILED' | 'RUNNING' | 'PENDING' | 'DOWNLOADING' | 'PARSING'
+type CollectionRunStatus =
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'RUNNING'
+  | 'PENDING'
+  | 'DOWNLOADING'
+  | 'PARSING'
 
 type UploadInfo = {
   fileName: string
@@ -38,10 +44,7 @@ type CollectionRun = {
   createdAt: string
 }
 
-const STATUS_CONFIG: Record<
-  CollectionRunStatus,
-  { label: string; className: string }
-> = {
+const STATUS_CONFIG: Record<CollectionRunStatus, { label: string; className: string }> = {
   COMPLETED: {
     label: '완료',
     className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -69,9 +72,18 @@ const STATUS_CONFIG: Record<
 }
 
 const TRIGGER_CONFIG: Record<string, { label: string; className: string }> = {
-  manual: { label: '수동', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
-  scheduled: { label: '자동', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
-  file: { label: '파일', className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+  manual: {
+    label: '수동',
+    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  },
+  scheduled: {
+    label: '자동',
+    className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+  },
+  file: {
+    label: '파일',
+    className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  },
   api: { label: 'API', className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' },
 }
 
@@ -121,7 +133,7 @@ export function CollectionHistory() {
       const res = await fetch('/api/collection/runs')
       if (!res.ok) throw new Error()
       const data = await res.json()
-      setRuns(Array.isArray(data) ? data : data.runs ?? [])
+      setRuns(Array.isArray(data) ? data : (data.runs ?? []))
     } catch {
       // 조용히 실패
     } finally {
@@ -191,9 +203,7 @@ export function CollectionHistory() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>수집 이력</CardTitle>
-            <CardDescription>
-              최근 데이터 수집 실행 기록을 확인합니다.
-            </CardDescription>
+            <CardDescription>최근 데이터 수집 실행 기록을 확인합니다.</CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {hasActiveRun ? (
@@ -216,11 +226,7 @@ export function CollectionHistory() {
                 )}
               </Button>
             ) : (
-              <Button
-                size="sm"
-                onClick={handleManualTrigger}
-                disabled={isTriggering}
-              >
+              <Button size="sm" onClick={handleManualTrigger} disabled={isTriggering}>
                 {isTriggering ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -243,9 +249,7 @@ export function CollectionHistory() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : runs.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            수집 이력이 없습니다
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">수집 이력이 없습니다</p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -262,14 +266,10 @@ export function CollectionHistory() {
               <TableBody>
                 {runs.map((run) => (
                   <TableRow key={run.id}>
-                    <TableCell className="font-medium">
-                      {formatDate(run.createdAt)}
-                    </TableCell>
+                    <TableCell className="font-medium">{formatDate(run.createdAt)}</TableCell>
                     <TableCell>
                       <Badge
-                        className={cn(
-                          STATUS_CONFIG[run.status as CollectionRunStatus]?.className
-                        )}
+                        className={cn(STATUS_CONFIG[run.status as CollectionRunStatus]?.className)}
                       >
                         {STATUS_CONFIG[run.status as CollectionRunStatus]?.label ?? run.status}
                       </Badge>
@@ -287,11 +287,38 @@ export function CollectionHistory() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {run.startedAt && run.completedAt
-                        ? formatDuration(new Date(run.completedAt).getTime() - new Date(run.startedAt).getTime())
+                        ? formatDuration(
+                            new Date(run.completedAt).getTime() - new Date(run.startedAt).getTime()
+                          )
                         : '-'}
                     </TableCell>
                     <TableCell className="max-w-[300px]">
-                      {run.error ? (
+                      {run.status === 'COMPLETED' && run.error ? (
+                        // 광고 수집은 성공했으나 재고 등 후속 단계 일부 실패 — 업로드 정보 + 경고 병기
+                        <span className="flex flex-col gap-0.5 text-sm">
+                          {run.upload && (
+                            <span className="text-muted-foreground">
+                              {formatDate(run.upload.periodStart)} ~{' '}
+                              {formatDate(run.upload.periodEnd)}
+                              {' · '}
+                              <span className="font-medium text-foreground">
+                                {(
+                                  run.upload.insertedRows ??
+                                  run.upload.totalRows ??
+                                  0
+                                ).toLocaleString()}
+                                건
+                              </span>
+                            </span>
+                          )}
+                          <span
+                            className="truncate text-amber-600 dark:text-amber-500"
+                            title={run.error}
+                          >
+                            ⚠ {run.error}
+                          </span>
+                        </span>
+                      ) : run.error ? (
                         <span className="truncate text-sm text-destructive" title={run.error}>
                           {run.error}
                         </span>
@@ -300,10 +327,18 @@ export function CollectionHistory() {
                           {formatDate(run.upload.periodStart)} ~ {formatDate(run.upload.periodEnd)}
                           {' · '}
                           <span className="font-medium text-foreground">
-                            {(run.upload.insertedRows ?? run.upload.totalRows ?? 0).toLocaleString()}건
+                            {(
+                              run.upload.insertedRows ??
+                              run.upload.totalRows ??
+                              0
+                            ).toLocaleString()}
+                            건
                           </span>
                           {(run.upload.duplicateRows ?? 0) > 0 && (
-                            <span className="text-muted-foreground"> (중복 {run.upload.duplicateRows}건)</span>
+                            <span className="text-muted-foreground">
+                              {' '}
+                              (중복 {run.upload.duplicateRows}건)
+                            </span>
                           )}
                         </span>
                       ) : run.status === 'COMPLETED' ? (

@@ -231,6 +231,22 @@ async function downloadInventoryHealth(
 ): Promise<{ filePath: string; fileName: string }> {
   await navigateToRocketGrowthInventory(page)
 
+  // 그리드 로드 대기 (best-effort) — 부분 export 방지.
+  // 표 데이터 행이 충분히 렌더될 때까지 잠시 대기한다. 셀렉터가 불확실하므로
+  // 다건의 행(tr/role=row)이 보이면 OK로 보고, 못 찾아도 throw 하지 않고 진행한다
+  // (행수 완전성은 업로드 단계의 이력 앵커 가드가 최종 방어한다).
+  try {
+    const rowLoc = page.locator('table tbody tr, [role="row"]')
+    for (let i = 0; i < 10; i++) {
+      const n = await rowLoc.count().catch(() => 0)
+      if (n >= 10) break
+      await page.waitForTimeout(1000)
+    }
+    await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
+  } catch {
+    // 그리드 대기 실패는 무시 — 업로드 가드가 부분 export 를 잡는다
+  }
+
   let downloadBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
   if (!(await downloadBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
     downloadBtn = page.locator('button:has-text("엑셀 다운로드")').first()

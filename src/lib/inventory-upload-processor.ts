@@ -40,6 +40,31 @@ export async function processInventoryUpload(params: {
     return { success: false, error: '파싱된 데이터가 없습니다' }
   }
 
+  // 1.5. 완전성 가드 (INVENTORY_HEALTH 한정)
+  // 부분 export(그리드 미완전 로드 상태에서 다운로드) 차단. 절대 임계 대신
+  // 이력 앵커로 셀러 규모에 자동 적응한다. VENDOR는 날짜별 판매량 변동이 커 적용하지 않는다.
+  //
+  // 앵커는 "직전 1건"이 아니라 "최근 N건의 MAX"를 쓴다 — 직전 1건만 보면 가드 도입 전
+  // 이미 적재된 부분 export(예: 2행)를 정상 baseline 으로 신뢰해 임계가 무력화되기 때문.
+  // MAX 는 corruption 1건이 섞여도 정상 규모를 유지한다.
+  if (parsed.fileType === 'INVENTORY_HEALTH') {
+    const recent = await prisma.inventoryUpload.findMany({
+      where: { workspaceId, fileType: 'INVENTORY_HEALTH', insertedRows: { gt: 0 } },
+      orderBy: { uploadedAt: 'desc' },
+      take: 10,
+      select: { insertedRows: true },
+    })
+    const baseline = recent.reduce((max, u) => Math.max(max, u.insertedRows ?? 0), 0)
+    if (baseline > 0 && parsed.rows.length < baseline * 0.5) {
+      return {
+        success: false,
+        error:
+          `재고현황 데이터가 비정상적으로 적습니다 (${parsed.rows.length}행, 최근 최대 ${baseline}행 대비 50% 미만). ` +
+          `Wing 그리드가 완전히 로드되기 전 부분 export 되었을 수 있어 적재를 중단합니다.`,
+      }
+    }
+  }
+
   // 2. 업로드 레코드 생성
   const upload = await prisma.inventoryUpload.create({
     data: {
