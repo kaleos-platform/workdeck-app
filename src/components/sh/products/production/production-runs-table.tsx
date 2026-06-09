@@ -547,6 +547,11 @@ export function ProductionRunsTable() {
                 runNo: transitionRun.runNo,
                 totalQuantity: transitionRun.totalQuantity,
                 itemCount: transitionRun.itemCount,
+                items: transitionRun.items.map((it) => ({
+                  optionId: it.optionId,
+                  optionName: it.optionName,
+                  quantity: it.quantity,
+                })),
               }
             : null
         }
