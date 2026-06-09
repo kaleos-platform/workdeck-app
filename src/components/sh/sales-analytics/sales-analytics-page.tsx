@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   lastClosedDateKst,
   last30DaysRange,
@@ -24,8 +25,10 @@ import {
   type SalesUnit,
 } from '@/lib/sh/sales-analytics'
 import { useSalesAnalysis } from '@/hooks/use-sales-analysis'
+import { useOptionSales } from '@/hooks/use-option-sales'
 import { SalesPivotTable } from './sales-pivot-table'
 import { ChannelRevenueStackedChart } from './channel-revenue-stacked-chart'
+import { OptionQtyStackedChart } from './option-qty-stacked-chart'
 
 export type Channel = { id: string; name: string; typeName: string }
 
@@ -84,7 +87,10 @@ function snapRangeToUnit(unit: SalesUnit, range: DateRange): DateRange {
   return range
 }
 
+type SalesTab = 'channel' | 'product'
+
 export function SalesAnalyticsPage() {
+  const [tab, setTab] = useState<SalesTab>('channel')
   const [unit, setUnit] = useState<SalesUnit>('일')
   const [range, setRange] = useState<DateRange>(() => last30DaysRange())
   const [channels, setChannels] = useState<Channel[]>([])
@@ -130,6 +136,8 @@ export function SalesAnalyticsPage() {
   // 데이터 호출은 판매채널 전체 기준 (buckets 에 채널별 다 담김). 표시만 visibleChannels 로 필터.
   const allChannelIds = useMemo(() => channels.map((c) => c.id), [channels])
   const data = useSalesAnalysis(unit, range, allChannelIds)
+  // 상품(옵션) 탭 — 활성 시에만 지연 로드. 채널 범위는 판매채널 전체.
+  const optionData = useOptionSales(unit, range, allChannelIds, tab === 'product')
 
   function changeUnit(next: SalesUnit) {
     setUnit(next) // 단위만 변경, 기간 유지
@@ -258,22 +266,40 @@ export function SalesAnalyticsPage() {
         </CardContent>
       </Card>
 
-      {/* 차트 */}
-      <ChannelRevenueStackedChart
-        buckets={data.buckets}
-        typedChannels={typedChannels}
-        selectedChannelIds={selectedChannelIds}
-        onToggleChannel={toggleChannel}
-        onToggleAll={toggleAll}
-        loading={data.loading}
-      />
+      {/* 채널 / 상품 탭 */}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as SalesTab)}>
+        <TabsList>
+          <TabsTrigger value="channel">채널</TabsTrigger>
+          <TabsTrigger value="product">상품</TabsTrigger>
+        </TabsList>
 
-      {/* 테이블 매트릭스 */}
-      <SalesPivotTable
-        buckets={data.buckets}
-        visibleChannels={visibleChannels}
-        loading={data.loading}
-      />
+        <TabsContent value="channel" className="space-y-6">
+          {/* 차트 */}
+          <ChannelRevenueStackedChart
+            buckets={data.buckets}
+            typedChannels={typedChannels}
+            selectedChannelIds={selectedChannelIds}
+            onToggleChannel={toggleChannel}
+            onToggleAll={toggleAll}
+            loading={data.loading}
+          />
+
+          {/* 테이블 매트릭스 */}
+          <SalesPivotTable
+            buckets={data.buckets}
+            visibleChannels={visibleChannels}
+            loading={data.loading}
+          />
+        </TabsContent>
+
+        <TabsContent value="product" className="space-y-6">
+          <OptionQtyStackedChart
+            buckets={optionData.buckets}
+            nameById={optionData.nameById}
+            loading={optionData.loading}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
