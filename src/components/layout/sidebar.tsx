@@ -21,10 +21,15 @@ import {
   Lightbulb,
   ClipboardList,
   Rocket,
+  PanelLeftClose,
+  PanelLeftOpen,
+  type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
+import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
 import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { getLastNDaysRangeKst } from '@/lib/date-range'
 import {
   COUPANG_ADS_BASE_PATH,
@@ -166,6 +171,60 @@ function getDeckHref(deckId: string) {
   return DECK_ENTRY[deckId] ?? `/d/${deckId}`
 }
 
+/**
+ * 펼침/접힘 두 상태를 모두 처리하는 네비게이션 링크.
+ * 접힘 시 아이콘만 표시하고 hover 툴팁으로 라벨을 노출한다.
+ */
+function RailLink({
+  href,
+  icon: Icon,
+  label,
+  isActive,
+  collapsed,
+  size = 'md',
+}: {
+  href: string
+  icon: LucideIcon
+  label: string
+  isActive: boolean
+  collapsed: boolean
+  size?: 'md' | 'sm'
+}) {
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            href={href}
+            aria-label={label}
+            className={cn(
+              'group flex w-full cursor-pointer items-center justify-center rounded-lg p-3 transition hover:bg-white/10 hover:text-white',
+              isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
+            )}
+          >
+            <Icon className="h-5 w-5 flex-shrink-0" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">{label}</TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return (
+    <Link
+      href={href}
+      className={cn(
+        'group flex w-full cursor-pointer justify-start rounded-lg text-sm font-medium transition hover:bg-white/10 hover:text-white',
+        size === 'sm' ? 'px-2 py-2' : 'p-3',
+        isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
+      )}
+    >
+      <Icon className={cn('flex-shrink-0', size === 'sm' ? 'mr-2.5 h-4 w-4' : 'mr-3 h-5 w-5')} />
+      <span className="truncate">{label}</span>
+    </Link>
+  )
+}
+
 export function Sidebar({
   workspaceName,
   variant = 'workdeck',
@@ -174,6 +233,7 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname()
   const { signOut } = useAuth()
+  const { collapsed, toggle, expand, mounted } = useSidebarCollapsed()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
   const isWorkdeckSidebar = variant === 'workdeck'
@@ -241,96 +301,144 @@ export function Sidebar({
     return `${basePath}?${query.toString()}`
   }
 
+  const expandedWidth = isSalesContentSidebar ? 'w-56' : 'w-64'
+
   return (
     <div
-      className={`flex h-full flex-shrink-0 flex-col bg-slate-900 py-4 text-white ${isSalesContentSidebar ? 'w-56' : 'w-64'}`}
+      className={cn(
+        'flex h-full flex-shrink-0 flex-col bg-slate-900 py-4 text-white ease-out',
+        // 마운트 후에만 transition 적용 — 저장된 접힘 상태 복원 시 width 튐 방지
+        mounted && 'transition-[width] duration-200',
+        collapsed ? 'w-16' : expandedWidth
+      )}
     >
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
+      {/* 접기/펴기 토글 */}
+      <div
+        className={cn('flex flex-shrink-0 px-3 pb-2', collapsed ? 'justify-center' : 'justify-end')}
+      >
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+          aria-expanded={!collapsed}
+          className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 transition hover:bg-white/10 hover:text-white"
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="h-5 w-5" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" />
+          )}
+        </button>
+      </div>
+
+      <div
+        className={cn(
+          'min-h-0 flex-1 overflow-x-hidden overflow-y-auto py-2',
+          collapsed ? 'px-2' : 'px-3'
+        )}
+      >
         {isWorkdeckSidebar && (
           <>
             <div className="mb-2">
-              <Link
+              <RailLink
                 href="/my-deck"
-                className={cn(
-                  'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                  pathname === '/my-deck' ? 'bg-white/10 text-white' : 'text-zinc-400'
-                )}
-              >
-                <Home className="mr-3 h-5 w-5 flex-shrink-0" />
-                <span className="truncate">My Deck 홈</span>
-              </Link>
+                icon={Home}
+                label="My Deck 홈"
+                isActive={pathname === '/my-deck'}
+                collapsed={collapsed}
+              />
             </div>
 
-            <Separator className="mb-3 bg-white/10" />
-            <section className="rounded-xl bg-white/[0.02] px-3 py-3">
-              <div className="mb-3 px-1">
-                <p className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
-                  {workspaceName}
-                </p>
-                <p className="mt-1 text-[11px] text-zinc-500">사용 중인 Deck 빠른 진입</p>
-              </div>
-              {isMyDeckMode && activeDecks.length > 0 ? (
-                <div className="space-y-1">
-                  {activeDecks.map((deck) => {
-                    const href = getDeckHref(deck.id)
-                    const isDeckActive = pathname === href || pathname.startsWith(`${href}/`)
+            {!collapsed && (
+              <>
+                <Separator className="mb-3 bg-white/10" />
+                <section className="rounded-xl bg-white/[0.02] px-3 py-3">
+                  <div className="mb-3 px-1">
+                    <p className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
+                      {workspaceName}
+                    </p>
+                    <p className="mt-1 text-[11px] text-zinc-500">사용 중인 Deck 빠른 진입</p>
+                  </div>
+                  {isMyDeckMode && activeDecks.length > 0 ? (
+                    <div className="space-y-1">
+                      {activeDecks.map((deck) => {
+                        const href = getDeckHref(deck.id)
+                        const isDeckActive = pathname === href || pathname.startsWith(`${href}/`)
 
-                    return (
-                      <Link
-                        key={deck.id}
-                        href={href}
-                        className={cn(
-                          'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-3 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                          isDeckActive ? 'bg-white/10 text-white' : 'text-zinc-400'
-                        )}
-                      >
-                        <span className="mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-600" />
-                        <span className="truncate">{deck.name}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
-              ) : (
-                <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
-                  사용 중인 Deck이 없습니다
-                </p>
-              )}
-            </section>
+                        return (
+                          <Link
+                            key={deck.id}
+                            href={href}
+                            className={cn(
+                              'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-3 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                              isDeckActive ? 'bg-white/10 text-white' : 'text-zinc-400'
+                            )}
+                          >
+                            <span className="mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-600" />
+                            <span className="truncate">{deck.name}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
+                      사용 중인 Deck이 없습니다
+                    </p>
+                  )}
+                </section>
+              </>
+            )}
           </>
         )}
 
         {isSellerHubSidebar && (
           <div className="space-y-2">
             {/* 홈 */}
-            <Link
+            <RailLink
               href={SELLER_HUB_HOME_PATH}
-              className={cn(
-                'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                pathname === SELLER_HUB_HOME_PATH ? 'bg-white/10 text-white' : 'text-zinc-400'
-              )}
-            >
-              <Home className="mr-3 h-5 w-5 flex-shrink-0" />
-              <span className="truncate">홈</span>
-            </Link>
+              icon={Home}
+              label="홈"
+              isActive={pathname === SELLER_HUB_HOME_PATH}
+              collapsed={collapsed}
+            />
             {/* 판매분석 */}
-            <Link
+            <RailLink
               href={SELLER_HUB_SALES_ANALYTICS_PATH}
-              className={cn(
-                'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                pathname === SELLER_HUB_SALES_ANALYTICS_PATH
-                  ? 'bg-white/10 text-white'
-                  : 'text-zinc-400'
-              )}
-            >
-              <BarChart3 className="mr-3 h-5 w-5 flex-shrink-0" />
-              <span className="truncate">판매분석</span>
-            </Link>
+              icon={BarChart3}
+              label="판매분석"
+              isActive={pathname === SELLER_HUB_SALES_ANALYTICS_PATH}
+              collapsed={collapsed}
+            />
             {/* 섹션 그룹 */}
-            <SidebarSection label="상품" icon={Package} items={SELLER_HUB_PRODUCTS_ITEMS} />
-            <SidebarSection label="재고" icon={Boxes} items={SELLER_HUB_INVENTORY_ITEMS} />
-            <SidebarSection label="배송" icon={Truck} items={SELLER_HUB_SHIPPING_ITEMS} />
+            <SidebarSection
+              label="상품"
+              icon={Package}
+              items={SELLER_HUB_PRODUCTS_ITEMS}
+              collapsed={collapsed}
+              onExpand={expand}
+            />
+            <SidebarSection
+              label="재고"
+              icon={Boxes}
+              items={SELLER_HUB_INVENTORY_ITEMS}
+              collapsed={collapsed}
+              onExpand={expand}
+            />
+            <SidebarSection
+              label="배송"
+              icon={Truck}
+              items={SELLER_HUB_SHIPPING_ITEMS}
+              collapsed={collapsed}
+              onExpand={expand}
+            />
             {/* 설정 섹션 — 채널 관리 + 일반 설정 통합 */}
-            <SidebarSection label="설정" icon={Settings} items={SELLER_HUB_SETTINGS_ITEMS} />
+            <SidebarSection
+              label="설정"
+              icon={Settings}
+              items={SELLER_HUB_SETTINGS_ITEMS}
+              collapsed={collapsed}
+              onExpand={expand}
+            />
           </div>
         )}
 
@@ -345,18 +453,15 @@ export function Sidebar({
                   ? pathname === route.href
                   : pathname === route.href || pathname.startsWith(`${route.href}/`)
               return (
-                <Link
+                <RailLink
                   key={route.href}
                   href={route.href}
-                  className={cn(
-                    // Linear 스타일: 더 작은 padding, 더 미세한 hover
-                    'group flex w-full cursor-pointer justify-start rounded-md px-2 py-2 text-sm font-medium transition hover:bg-white/[0.06] hover:text-white',
-                    isActive ? 'bg-white/[0.08] text-white' : 'text-zinc-400'
-                  )}
-                >
-                  <route.icon className="mr-2.5 h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">{route.label}</span>
-                </Link>
+                  icon={route.icon}
+                  label={route.label}
+                  isActive={isActive}
+                  collapsed={collapsed}
+                  size="sm"
+                />
               )
             })}
           </div>
@@ -371,118 +476,140 @@ export function Sidebar({
                   ? pathname === route.href
                   : pathname === route.href || pathname.startsWith(`${route.href}/`)
                 return (
-                  <Link
+                  <RailLink
                     key={route.href}
                     href={route.href}
-                    className={cn(
-                      'group flex w-full cursor-pointer justify-start rounded-lg p-3 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                      isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
-                    )}
-                  >
-                    <route.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                    <span className="truncate">{route.label}</span>
-                  </Link>
+                    icon={route.icon}
+                    label={route.label}
+                    isActive={isActive}
+                    collapsed={collapsed}
+                  />
                 )
               })}
             </div>
 
-            <Separator className="my-4 bg-white/10" />
+            {!collapsed && (
+              <>
+                <Separator className="my-4 bg-white/10" />
 
-            <section className="rounded-xl bg-white/[0.02] px-3 py-3">
-              <div className="mb-3 px-1">
-                <div className="flex items-center gap-2">
-                  <BarChart2 className="h-4 w-4 text-zinc-300" />
-                  <span className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
-                    캠페인
-                  </span>
-                </div>
-                <p className="mt-1 text-[11px] text-zinc-500">광고 유형별 캠페인 관리</p>
-              </div>
+                <section className="rounded-xl bg-white/[0.02] px-3 py-3">
+                  <div className="mb-3 px-1">
+                    <div className="flex items-center gap-2">
+                      <BarChart2 className="h-4 w-4 text-zinc-300" />
+                      <span className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
+                        캠페인
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-zinc-500">광고 유형별 캠페인 관리</p>
+                  </div>
 
-              <div className="space-y-3">
-                {groupedCampaigns.length === 0 ? (
-                  <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
-                    업로드된 캠페인이 없습니다
-                  </p>
-                ) : (
-                  groupedCampaigns.map(({ adType, items }) => {
-                    const isOpen = !collapsedAdTypes.has(adType)
-                    const contentId = `ad-type-${encodeURIComponent(adType)}`
+                  <div className="space-y-3">
+                    {groupedCampaigns.length === 0 ? (
+                      <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
+                        업로드된 캠페인이 없습니다
+                      </p>
+                    ) : (
+                      groupedCampaigns.map(({ adType, items }) => {
+                        const isOpen = !collapsedAdTypes.has(adType)
+                        const contentId = `ad-type-${encodeURIComponent(adType)}`
 
-                    return (
-                      <div key={adType} className="rounded-md bg-black/10 px-1 py-1">
-                        <button
-                          type="button"
-                          onClick={() => toggleAdType(adType)}
-                          aria-expanded={isOpen}
-                          aria-controls={contentId}
-                          className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition hover:bg-white/5"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate text-[11px] font-semibold tracking-wide text-zinc-300 uppercase">
-                              {adType}
-                            </p>
+                        return (
+                          <div key={adType} className="rounded-md bg-black/10 px-1 py-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleAdType(adType)}
+                              aria-expanded={isOpen}
+                              aria-controls={contentId}
+                              className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition hover:bg-white/5"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate text-[11px] font-semibold tracking-wide text-zinc-300 uppercase">
+                                  {adType}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/10 px-1.5 text-[10px] font-semibold text-zinc-300">
+                                  {items.length}
+                                </span>
+                                <ChevronDown
+                                  className={cn(
+                                    'h-4 w-4 text-zinc-500 transition-transform',
+                                    isOpen && 'rotate-180'
+                                  )}
+                                />
+                              </div>
+                            </button>
+
+                            {isOpen && (
+                              <div id={contentId} className="mx-1 mb-1 pl-2">
+                                <div className="space-y-1 pt-1">
+                                  {items.map((campaign) => {
+                                    const campaignPath = getCoupangAdsCampaignPath(campaign.id)
+                                    const isCampaignActive =
+                                      pathname === campaignPath ||
+                                      pathname.startsWith(`${campaignPath}/`)
+
+                                    return (
+                                      <Link
+                                        key={`${adType}-${campaign.id}`}
+                                        href={buildCampaignHref(campaign)}
+                                        className={cn(
+                                          'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-2 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
+                                          isCampaignActive
+                                            ? 'bg-white/10 text-white'
+                                            : 'text-zinc-400'
+                                        )}
+                                      >
+                                        <span className="mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-600" />
+                                        <span className="truncate">
+                                          {campaign.displayName || campaign.name}
+                                        </span>
+                                      </Link>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/10 px-1.5 text-[10px] font-semibold text-zinc-300">
-                              {items.length}
-                            </span>
-                            <ChevronDown
-                              className={cn(
-                                'h-4 w-4 text-zinc-500 transition-transform',
-                                isOpen && 'rotate-180'
-                              )}
-                            />
-                          </div>
-                        </button>
-
-                        {isOpen && (
-                          <div id={contentId} className="mx-1 mb-1 pl-2">
-                            <div className="space-y-1 pt-1">
-                              {items.map((campaign) => {
-                                const campaignPath = getCoupangAdsCampaignPath(campaign.id)
-                                const isCampaignActive =
-                                  pathname === campaignPath ||
-                                  pathname.startsWith(`${campaignPath}/`)
-
-                                return (
-                                  <Link
-                                    key={`${adType}-${campaign.id}`}
-                                    href={buildCampaignHref(campaign)}
-                                    className={cn(
-                                      'group flex w-full cursor-pointer items-center justify-start truncate rounded-md px-2 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white',
-                                      isCampaignActive ? 'bg-white/10 text-white' : 'text-zinc-400'
-                                    )}
-                                  >
-                                    <span className="mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-600" />
-                                    <span className="truncate">
-                                      {campaign.displayName || campaign.name}
-                                    </span>
-                                  </Link>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </section>
+                        )
+                      })
+                    )}
+                  </div>
+                </section>
+              </>
+            )}
           </>
         )}
       </div>
 
-      <div className="flex-shrink-0 border-t border-white/5 px-3 py-2">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"
-          onClick={signOut}
-        >
-          <LogOut className="mr-3 h-5 w-5" />
-          로그아웃
-        </Button>
+      <div
+        className={cn('flex-shrink-0 border-t border-white/5 py-2', collapsed ? 'px-2' : 'px-3')}
+      >
+        {collapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-full text-zinc-400 hover:bg-white/10 hover:text-white"
+                onClick={signOut}
+                aria-label="로그아웃"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">로그아웃</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"
+            onClick={signOut}
+          >
+            <LogOut className="mr-3 h-5 w-5" />
+            로그아웃
+          </Button>
+        )}
       </div>
     </div>
   )

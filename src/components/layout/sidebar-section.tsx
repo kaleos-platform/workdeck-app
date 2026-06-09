@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ChevronDown, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export type SidebarItem = {
   label: string
@@ -17,14 +18,47 @@ type SidebarSectionProps = {
   label: string
   icon: LucideIcon
   items: SidebarItem[]
+  /** 접힘(아이콘 레일) 상태 여부 */
+  collapsed?: boolean
+  /** 접힌 상태에서 그룹 아이콘 클릭 시 사이드바를 다시 펼친다 */
+  onExpand?: () => void
 }
 
-export function SidebarSection({ label, icon: Icon, items }: SidebarSectionProps) {
+export function SidebarSection({
+  label,
+  icon: Icon,
+  items,
+  collapsed = false,
+  onExpand,
+}: SidebarSectionProps) {
   const pathname = usePathname()
   const sectionIsActive = items.some(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
   )
   const [isOpen, setIsOpen] = useState(sectionIsActive)
+
+  // ── 접힘(아이콘 레일) 상태: 아이콘만 표시, 클릭 시 사이드바 재확장 ──
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={onExpand}
+            aria-label={`${label} 펼치기`}
+            className={cn(
+              'flex w-full items-center justify-center rounded-lg p-3 transition',
+              'text-zinc-400 hover:bg-white/10 hover:text-white',
+              sectionIsActive && 'text-white'
+            )}
+          >
+            <Icon className="h-5 w-5 flex-shrink-0" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">{label}</TooltipContent>
+      </Tooltip>
+    )
+  }
 
   return (
     <div>
