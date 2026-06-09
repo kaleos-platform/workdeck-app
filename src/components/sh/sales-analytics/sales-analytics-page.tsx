@@ -136,8 +136,10 @@ export function SalesAnalyticsPage() {
   // 데이터 호출은 판매채널 전체 기준 (buckets 에 채널별 다 담김). 표시만 visibleChannels 로 필터.
   const allChannelIds = useMemo(() => channels.map((c) => c.id), [channels])
   const data = useSalesAnalysis(unit, range, allChannelIds)
-  // 상품(옵션) 탭 — 활성 시에만 지연 로드. 채널 범위는 판매채널 전체.
-  const optionData = useOptionSales(unit, range, allChannelIds, tab === 'product')
+  // 상품(옵션) 탭 — 활성 시에만 지연 로드. 공유 컨트롤 바의 채널 유형 필터를 적용해 스코프한다
+  // (상품 탭엔 채널 체크박스가 없으므로 유형 통과 채널 = typedChannels 가 데이터 범위).
+  const typedChannelIds = useMemo(() => typedChannels.map((c) => c.id), [typedChannels])
+  const optionData = useOptionSales(unit, range, typedChannelIds, tab === 'product')
 
   function changeUnit(next: SalesUnit) {
     setUnit(next) // 단위만 변경, 기간 유지
