@@ -438,14 +438,24 @@ export const productionRunStatusTransitionSchema = z
   .object({
     status: z.enum(['PLANNED', 'ORDERED', 'STOCKED_IN']),
     transitionDate: z.string().min(1), // YYYY-MM-DD
-    locationId: z.string().min(1).optional(),
+    // STOCKED_IN 전환 시 옵션별 보관 위치 분배. 옵션 하나를 여러 위치로 나눠 입고 가능.
+    // 옵션별 분배 합 = 발주 수량 검증은 서버에서 (Zod는 발주 수량을 모름).
+    allocations: z
+      .array(
+        z.object({
+          optionId: z.string().min(1),
+          locationId: z.string().min(1),
+          quantity: z.number().int().positive(),
+        })
+      )
+      .optional(),
   })
   .superRefine((v, ctx) => {
-    if (v.status === 'STOCKED_IN' && !v.locationId) {
+    if (v.status === 'STOCKED_IN' && (!v.allocations || v.allocations.length === 0)) {
       ctx.addIssue({
         code: 'custom',
-        message: '입고완료 전환 시 보관 위치를 선택하세요',
-        path: ['locationId'],
+        message: '입고완료 전환 시 옵션별 보관 위치를 지정하세요',
+        path: ['allocations'],
       })
     }
   })
