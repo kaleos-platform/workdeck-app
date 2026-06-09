@@ -124,7 +124,12 @@ export async function getCredentials(): Promise<CredentialResponse> {
  * GET /api/collection/runs/pending
  * @returns 가장 오래된 PENDING 레코드 1건 또는 null
  */
-export async function getPendingRun(): Promise<{ id: string; workspaceId: string } | null> {
+export async function getPendingRun(): Promise<{
+  id: string
+  workspaceId: string
+  collectAds?: boolean
+  collectInventory?: boolean
+} | null> {
   const response = await workerFetch('/api/collection/runs/pending')
   const data = await response.json()
   return data.run ?? null

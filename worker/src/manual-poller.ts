@@ -20,7 +20,10 @@ export function startManualPoller(): void {
       isProcessing = true
 
       try {
-        await runCollectionForRun(run.id)
+        await runCollectionForRun(run.id, {
+          collectAds: run.collectAds,
+          collectInventory: run.collectInventory,
+        })
         console.log(`[manual-poller] 수집 완료: ${run.id}`)
       } catch (err) {
         console.error(`[manual-poller] 수집 실패: ${run.id}`, err)
