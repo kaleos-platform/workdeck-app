@@ -152,14 +152,14 @@ export type RevenueBucket = {
 }
 
 /** 일자 → 버킷 키 */
-function bucketKey(date: string, unit: SalesUnit): string {
+export function bucketKey(date: string, unit: SalesUnit): string {
   if (unit === '일') return date
   if (unit === '주') return startOfWeekMon(date)
   return date.slice(0, 7) // YYYY-MM
 }
 
 /** 버킷 키 → 표시 라벨 */
-function bucketLabel(key: string, unit: SalesUnit): string {
+export function bucketLabel(key: string, unit: SalesUnit): string {
   if (unit === '일') return key.slice(5) // MM-DD
   if (unit === '주') {
     // 주 시작(월)~종료(일) + ISO 연 주차: MM/DD~MM/DD (W주차)
@@ -283,4 +283,96 @@ export function bucketTotalsFor(
     orderCount += agg.orderCount
   }
   return { revenue, orderCount }
+}
+
+// ─── 상품(옵션) 단위 판매량 — 채널 버킷팅과 평행 구조 ─────────────────────────
+// 판매분석 "상품" 탭 전용. 채널 대신 내부 InvProductOption 을 시리즈로 한다.
+// 수치는 매출(원)이 아니라 판매량(수량)이다.
+
+export type OptionQtyRow = {
+  date: string // YYYY-MM-DD (KST)
+  optionId: string // 내부 InvProductOption.id
+  optionName: string // "상품명 / 옵션명"
+  channelId: string
+  quantity: number
+}
+
+export type OptionBucket = {
+  /** 버킷 키: 일=YYYY-MM-DD, 주=주시작 YYYY-MM-DD, 월=YYYY-MM */
+  key: string
+  label: string
+  byOption: Record<string, number> // optionId → 수량
+  total: number
+}
+
+/** groupBy=date 옵션 행을 단위 버킷으로 집계 (채널은 합산, 옵션 grain 유지). */
+export function bucketOptionQty(rows: OptionQtyRow[], unit: SalesUnit): OptionBucket[] {
+  const map = new Map<string, OptionBucket>()
+  for (const row of rows) {
+    if (!row.date || !row.optionId) continue
+    const key = bucketKey(row.date, unit)
+    let bucket = map.get(key)
+    if (!bucket) {
+      bucket = { key, label: bucketLabel(key, unit), byOption: {}, total: 0 }
+      map.set(key, bucket)
+    }
+    const qty = Number(row.quantity ?? 0)
+    bucket.byOption[row.optionId] = (bucket.byOption[row.optionId] ?? 0) + qty
+    bucket.total += qty
+  }
+  return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key))
+}
+
+export type DisplayOption = { id: string; name: string; color: string }
+
+/** "기타" 묶음 옵션의 고정 id (체크박스·시리즈 키). */
+export const OTHER_OPTION_ID = '__other__'
+
+/**
+ * 옵션을 기간 합계 desc 정렬해 상위 topN 만 시리즈로, 나머지는 "기타"로 묶는다.
+ * 옵션 수 폭증 시 차트 시리즈·색상 과밀 방지. 색상은 CHANNEL_COLORS 팔레트 재사용.
+ *
+ * @returns 상위 N개(+ 나머지가 있으면 "기타") 표시 옵션. 차트 시리즈·체크박스 단일 소스.
+ */
+export function resolveDisplayOptions(
+  buckets: OptionBucket[],
+  nameById: Map<string, string>,
+  topN = 10
+): DisplayOption[] {
+  const qtyById = new Map<string, number>()
+  for (const b of buckets) {
+    for (const [optId, qty] of Object.entries(b.byOption)) {
+      qtyById.set(optId, (qtyById.get(optId) ?? 0) + qty)
+    }
+  }
+  const sorted = Array.from(qtyById.entries()).sort((a, b) => b[1] - a[1])
+  const top = sorted.slice(0, topN)
+  const result: DisplayOption[] = top.map(([id], i) => ({
+    id,
+    name: nameById.get(id) ?? '(미상 옵션)',
+    color: CHANNEL_COLORS[i % CHANNEL_COLORS.length],
+  }))
+  if (sorted.length > topN) {
+    result.push({ id: OTHER_OPTION_ID, name: '기타', color: '#94a3b8' })
+  }
+  return result
+}
+
+/**
+ * 버킷 한 칸에서 표시 옵션의 수량을 얻는다. "기타"는 표시 상위 옵션을 제외한 나머지 합.
+ * @param topOptionIds "기타"가 아닌 실제 상위 옵션 id 집합 (기타 합산 시 제외용)
+ */
+export function optionBucketValue(
+  bucket: OptionBucket,
+  optionId: string,
+  topOptionIds: Set<string>
+): number {
+  if (optionId === OTHER_OPTION_ID) {
+    let other = 0
+    for (const [optId, qty] of Object.entries(bucket.byOption)) {
+      if (!topOptionIds.has(optId)) other += qty
+    }
+    return other
+  }
+  return bucket.byOption[optionId] ?? 0
 }

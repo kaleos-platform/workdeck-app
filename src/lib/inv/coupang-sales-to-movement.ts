@@ -424,3 +424,143 @@ async function findCoupangSalesChannel(spaceId: string): Promise<{ id: string } 
     select: { id: true },
   })
 }
+
+// ─── 판매분석 옵션별 시계열 (재고 차감과 무관, 조회 전용) ──────────────────────
+//
+// 판매분석 "상품(옵션)" 탭이 로켓그로스 일자×옵션 판매량을 그릴 때 쓴다.
+// syncCoupangSalesMovements 와 **동일한 매핑 규칙**(skuId→optionId 브릿지→productId →
+// InvLocationProductMap → items[].optionId, 1:N 묶음은 salesQty×item.quantity)으로 내부
+// InvProductOption 에 귀속하되, OUTBOUND 를 쓰지 않고 원본 InventoryRecord 에서 재집계한다.
+// OUTBOUND 는 비-ACTIVE 옵션 skip·cron 의존이라 과거 이력이 빠질 수 있으므로 조회엔 원본이 안전.
+
+export type RocketOptionQtyRow = {
+  date: string // YYYY-MM-DD (KST)
+  optionId: string // 내부 InvProductOption.id
+  optionName: string // "상품명 / 옵션명" (관리명 우선)
+  quantity: number // 구성 옵션 단위 판매량 (1:N 묶음 분해 반영)
+}
+
+/** Date → KST 일자 키 (revenue API 와 동일 규칙). */
+function toKstDateKeyPublic(d: Date): string {
+  return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
+}
+
+/**
+ * 한 Space 의 기간 [from, to] 로켓그로스 일자×내부옵션 판매량을 집계한다(재고 미차감, 조회 전용).
+ * 미매핑 externalCode 는 제외된다(sync 의 unmapped 와 동일 — 무음 누락 방지 위해 호출부에서 표기 가능).
+ *
+ * @returns 일자×옵션 행 배열. 로켓 미연동(workspace/location 링크 없음)이면 빈 배열.
+ */
+export async function loadRocketDailyOptionQty(
+  spaceId: string,
+  from: Date,
+  to: Date
+): Promise<RocketOptionQtyRow[]> {
+  const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
+  if (!resolved) return []
+  const { workspaceId, locationId } = resolved
+
+  // from/to 의 KST 일자를 KST 자정 instant 범위로 정규화 (snapshotDate 저장 형식과 정렬).
+  const gte = new Date(`${toKstDateKeyPublic(from)}T00:00:00+09:00`)
+  const ltExclusive = new Date(`${toKstDateKeyPublic(to)}T00:00:00+09:00`)
+  ltExclusive.setTime(ltExclusive.getTime() + 24 * 60 * 60 * 1000) // to 일자 포함
+
+  const records = await prisma.inventoryRecord.findMany({
+    where: {
+      workspaceId,
+      fileType: 'VENDOR_ITEM_METRICS',
+      fulfillmentType: ROCKET_GROWTH_FULFILLMENT,
+      snapshotDate: { gte, lt: ltExclusive },
+    },
+    select: { snapshotDate: true, productId: true, optionId: true, skuId: true, salesQty30d: true },
+  })
+  if (records.length === 0) return []
+
+  // optionId → skuId 브릿지 (전 기간 최신 inventory_health 스냅샷, 1:1). sync 와 동일.
+  const vendorOptionIds = Array.from(
+    new Set(records.map((r) => r.optionId).filter((v): v is string => !!v))
+  )
+  const optionToSku = new Map<string, string>()
+  if (vendorOptionIds.length > 0) {
+    const healthRows = await prisma.inventoryRecord.findMany({
+      where: {
+        workspaceId,
+        fileType: 'INVENTORY_HEALTH',
+        optionId: { in: vendorOptionIds },
+        skuId: { not: null },
+      },
+      orderBy: { snapshotDate: 'desc' },
+      select: { optionId: true, skuId: true },
+    })
+    for (const h of healthRows) {
+      if (h.optionId && h.skuId && !optionToSku.has(h.optionId)) {
+        optionToSku.set(h.optionId, h.skuId)
+      }
+    }
+  }
+
+  // externalCode 결정 (sku 직접 → 브릿지 → optionId → productId). sync 와 동일 규칙.
+  const externalCodeFor = (r: (typeof records)[number]): string | null =>
+    r.skuId ??
+    (r.optionId ? (optionToSku.get(r.optionId) ?? null) : null) ??
+    r.optionId ??
+    r.productId
+
+  const externalCodes = Array.from(
+    new Set(records.map(externalCodeFor).filter((v): v is string => !!v))
+  )
+  const mappings = externalCodes.length
+    ? await prisma.invLocationProductMap.findMany({
+        where: { locationId, externalCode: { in: externalCodes } },
+        include: { items: { select: { optionId: true, quantity: true } } },
+      })
+    : []
+  const mappingByCode = new Map(mappings.map((m) => [m.externalCode, m]))
+
+  // 내부 옵션명 (관리명 우선). 매핑 대상 옵션만.
+  const mappedOptionIds = Array.from(
+    new Set(mappings.flatMap((m) => m.items.map((i) => i.optionId)))
+  )
+  const optionMeta = mappedOptionIds.length
+    ? await prisma.invProductOption.findMany({
+        where: { id: { in: mappedOptionIds } },
+        select: { id: true, name: true, product: { select: { name: true, internalName: true } } },
+      })
+    : []
+  const nameByOption = new Map(
+    optionMeta.map((o) => {
+      const internal = o.product.internalName?.trim()
+      const productName = internal && internal.length > 0 ? internal : o.product.name
+      return [o.id, `${productName} / ${o.name}`]
+    })
+  )
+
+  // (date, internalOptionId) → qty 합산. 1:N 묶음은 salesQty×item.quantity 로 분해.
+  const byKey = new Map<string, RocketOptionQtyRow>()
+  for (const r of records) {
+    const qty = Math.max(0, r.salesQty30d ?? 0)
+    if (qty <= 0) continue
+    const code = externalCodeFor(r)
+    if (!code) continue
+    const mapping = mappingByCode.get(code)
+    if (!mapping || mapping.items.length === 0) continue // 미매핑 제외
+    const date = toKstDateKeyPublic(r.snapshotDate)
+    for (const item of mapping.items) {
+      const optQty = qty * item.quantity
+      if (optQty <= 0) continue
+      const key = `${date}|${item.optionId}`
+      const entry =
+        byKey.get(key) ??
+        ({
+          date,
+          optionId: item.optionId,
+          optionName: nameByOption.get(item.optionId) ?? '(미상 옵션)',
+          quantity: 0,
+        } satisfies RocketOptionQtyRow)
+      entry.quantity += optQty
+      byKey.set(key, entry)
+    }
+  }
+
+  return Array.from(byKey.values())
+}
