@@ -25,7 +25,12 @@ type ProductionRunForProduct = {
   totalQuantity: number
   itemCount: number
   averageUnitCost: number | null
-  myItems: Array<{ optionId: string; optionName: string; quantity: number }>
+  myItems: Array<{
+    optionId: string
+    optionName: string
+    quantity: number
+    stockedInQty: number | null
+  }>
   updatedAt: string
 }
 
@@ -136,7 +141,11 @@ export function ProductProductionRunsPanel({ productId }: Props) {
             <TableBody>
               {rows.map((r) => {
                 const myComposition = r.myItems
-                  .map((i) => `${i.optionName} ×${i.quantity}`)
+                  .map((i) =>
+                    i.stockedInQty != null && i.stockedInQty !== i.quantity
+                      ? `${i.optionName} ×${i.quantity}→${i.stockedInQty}`
+                      : `${i.optionName} ×${i.quantity}`
+                  )
                   .join(' · ')
                 return (
                   <TableRow key={r.id} className="hover:bg-muted/40">

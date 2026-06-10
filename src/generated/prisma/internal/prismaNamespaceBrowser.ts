@@ -1025,7 +1025,8 @@ export const ProductionRunItemScalarFieldEnum = {
   id: 'id',
   runId: 'runId',
   optionId: 'optionId',
-  quantity: 'quantity'
+  quantity: 'quantity',
+  stockedInQty: 'stockedInQty'
 } as const
 
 export type ProductionRunItemScalarFieldEnum = (typeof ProductionRunItemScalarFieldEnum)[keyof typeof ProductionRunItemScalarFieldEnum]

@@ -56,12 +56,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     return errorResponse('전환 일자가 올바르지 않습니다', 400)
   }
 
-  // STOCKED_IN 전환: 옵션별 보관 위치 분배 INBOUND + 상태 + 타임스탬프 갱신
+  // STOCKED_IN 전환: 옵션별 보관 위치 분배 INBOUND + 상태 + 타임스탬프 + 실입고량 기록
+  // 실입고량은 발주 수량과 달라도 됨(양방향). 미입고 옵션은 분배 부재로 표현(stockedInQty=0).
   if (input.status === 'STOCKED_IN') {
     const allocations = input.allocations ?? []
-    if (allocations.length === 0) {
-      return errorResponse('옵션별 보관 위치를 지정하세요', 400)
-    }
     if (existing.items.length === 0) {
       return errorResponse('입고할 옵션이 없습니다', 400)
     }
@@ -85,26 +83,20 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
-    // 2) 옵션별 분배 합 === 발주 수량 (정확히 일치), 모든 옵션 커버
+    // 2) 옵션별 실입고 합 집계 (발주 수량 일치 검증 없음 — 양방향 차이 허용)
     const allocSumByOptionId = new Map<string, number>()
     for (const a of allocations) {
       allocSumByOptionId.set(a.optionId, (allocSumByOptionId.get(a.optionId) ?? 0) + a.quantity)
     }
-    for (const it of existing.items) {
-      const sum = allocSumByOptionId.get(it.optionId) ?? 0
-      if (sum !== it.quantity) {
-        return errorResponse(
-          `옵션 "${it.option.name}" 분배 수량 합(${sum.toLocaleString('ko-KR')}개)이 발주 수량(${it.quantity.toLocaleString('ko-KR')}개)과 일치하지 않습니다`,
-          400
-        )
-      }
-    }
 
     // 3) 분배에 쓰인 모든 distinct 위치 조회·검증 (in-space + isActive)
     const distinctLocationIds = [...new Set(allocations.map((a) => a.locationId))]
-    const locations = await prisma.invStorageLocation.findMany({
-      where: { id: { in: distinctLocationIds }, spaceId: resolved.space.id },
-    })
+    const locations =
+      distinctLocationIds.length > 0
+        ? await prisma.invStorageLocation.findMany({
+            where: { id: { in: distinctLocationIds }, spaceId: resolved.space.id },
+          })
+        : []
     const locationById = new Map(locations.map((l) => [l.id, l]))
     for (const locId of distinctLocationIds) {
       const loc = locationById.get(locId)
@@ -113,8 +105,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     // ── 분배별 INBOUND 처리 (movement-processor 가 자체 트랜잭션) ──
-    // 주의: movement N건이 각자 트랜잭션 후 마지막에 status 갱신하는 best-effort 구조.
-    // 분배로 N이 늘 뿐 부분실패 노출 구조는 기존과 동일. 선검증으로 흔한 에러는 write 전 차단.
+    // 주의: movement N건이 각자 트랜잭션 후 마지막에 status/실입고량 갱신하는 best-effort 구조.
+    // 부분실패 노출 구조는 1차와 동일. 선검증으로 흔한 에러는 write 전 차단.
     const brandPart = existing.brand?.name ? ` · ${existing.brand.name}` : ''
     const movementResults: Array<{
       optionId: string
@@ -149,17 +141,26 @@ export async function POST(req: NextRequest, { params }: Params) {
       throw e
     }
 
-    // 상태 + 타임스탬프 + 위치 갱신
-    // stockInLocationId: 분배 위치가 1개면 그 값, 2개 이상이면 null (단일 FK라 분할 표현 불가)
-    await prisma.productionRun.update({
-      where: { id: runId },
-      data: {
-        status: 'STOCKED_IN',
-        stockedInAt: transitionDate,
-        completedAt: transitionDate, // 레거시 호환
-        stockInLocationId: distinctLocationIds.length === 1 ? distinctLocationIds[0] : null,
-      },
-    })
+    // 상태 + 타임스탬프 + 위치 + 옵션별 실입고량 갱신 (트랜잭션 묶음)
+    // stockInLocationId: 분배 위치가 1개면 그 값, 0/2개 이상이면 null (단일 FK라 분할/미입고 표현 불가)
+    await prisma.$transaction([
+      prisma.productionRun.update({
+        where: { id: runId },
+        data: {
+          status: 'STOCKED_IN',
+          stockedInAt: transitionDate,
+          completedAt: transitionDate, // 레거시 호환
+          stockInLocationId: distinctLocationIds.length === 1 ? distinctLocationIds[0] : null,
+        },
+      }),
+      // 모든 옵션에 실입고량 기록 (분배 없는 옵션 = 0)
+      ...existing.items.map((it) =>
+        prisma.productionRunItem.update({
+          where: { id: it.id },
+          data: { stockedInQty: allocSumByOptionId.get(it.optionId) ?? 0 },
+        })
+      ),
+    ])
 
     return NextResponse.json({
       run: { id: runId, status: 'STOCKED_IN' },
@@ -174,10 +175,18 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
   // PLANNED 로 되돌리는 회귀 전환은 타임스탬프 보존(이력으로 남김)
 
-  await prisma.productionRun.update({
-    where: { id: runId },
-    data,
-  })
+  // PLANNED 회귀 시 실입고량 clear (재입고 시 stale 방지)
+  if (input.status === 'PLANNED') {
+    await prisma.$transaction([
+      prisma.productionRun.update({ where: { id: runId }, data }),
+      prisma.productionRunItem.updateMany({
+        where: { runId },
+        data: { stockedInQty: null },
+      }),
+    ])
+  } else {
+    await prisma.productionRun.update({ where: { id: runId }, data })
+  }
 
   return NextResponse.json({ run: { id: runId, status: input.status } })
 }

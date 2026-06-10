@@ -68,6 +68,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         productOfficialName: it.option.product.name,
         brandName: it.option.product.brand?.name ?? null,
         quantity: it.quantity,
+        stockedInQty: it.stockedInQty,
       })),
       costs: run.costs.map((c) => ({
         id: c.id,

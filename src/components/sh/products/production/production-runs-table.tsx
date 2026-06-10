@@ -83,6 +83,7 @@ type RunRow = {
     productId: string
     productName: string
     quantity: number
+    stockedInQty: number | null
   }>
   updatedAt: string
 }
