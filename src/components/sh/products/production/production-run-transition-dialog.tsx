@@ -127,14 +127,15 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
     return map
   }, [allocByOption])
 
-  // 클라/서버 검증 일치: 0·NaN·빈 행은 서버 Zod(.positive())가 거부하므로 여기서도 막는다.
-  const allMatched = useMemo(() => {
+  // 실입고량은 발주 수량과 달라도 됨(양방향). 행이 존재하면 위치 선택 + 양수 정수만 검증.
+  // 행 0개 옵션은 통과(= 미입고, stockedInQty=0). 서버 Zod 와 동일 규칙(.positive()).
+  const allValid = useMemo(() => {
     if (!run) return false
     return run.items.every((it) => {
       const rows = allocByOption[it.optionId] ?? []
-      if (rows.length === 0) return false
-      if (!rows.every((r) => Number.isInteger(r.quantity) && r.quantity > 0)) return false
-      return rows.reduce((s, r) => s + r.quantity, 0) === it.quantity
+      return rows.every(
+        (r) => r.locationId !== '' && Number.isInteger(r.quantity) && r.quantity > 0
+      )
     })
   }, [run, allocByOption])
 
@@ -173,8 +174,8 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
         toast.error('활성화된 보관 위치가 없습니다')
         return
       }
-      if (!allMatched) {
-        toast.error('옵션별 분배 수량 합을 발주 수량과 일치시키세요')
+      if (!allValid) {
+        toast.error('입고 행의 위치와 수량(1개 이상)을 확인하세요')
         return
       }
     }
@@ -228,7 +229,7 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
           </DialogTitle>
           <DialogDescription>
             {isStockIn
-              ? `옵션 ${run.itemCount}개 · 총 수량 ${run.totalQuantity.toLocaleString('ko-KR')}개를 옵션별 보관 위치에 입고합니다.`
+              ? `옵션 ${run.itemCount}개 · 발주 ${run.totalQuantity.toLocaleString('ko-KR')}개. 실제 입고 수량은 발주와 달라도 됩니다(부족·초과·미입고 가능).`
               : target === 'PLANNED'
                 ? '계획중 상태로 되돌립니다. 기존 발주완료·입고완료 일자는 이력으로 유지됩니다.'
                 : '전환 일자를 확인하고 상태를 변경합니다.'}
@@ -272,19 +273,29 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
                   {run.items.map((it) => {
                     const rows = allocByOption[it.optionId] ?? []
                     const sum = optionSums[it.optionId] ?? 0
-                    const matched = sum === it.quantity
+                    const diff = sum - it.quantity // +초과 / -부족 / 0 일치
+                    const diffLabel =
+                      diff === 0
+                        ? '일치'
+                        : diff > 0
+                          ? `초과 +${diff.toLocaleString('ko-KR')}`
+                          : `부족 ${diff.toLocaleString('ko-KR')}`
+                    const diffClass =
+                      diff === 0
+                        ? 'text-muted-foreground'
+                        : diff > 0
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-amber-600 dark:text-amber-400'
                     return (
                       <div key={it.optionId} className="rounded-md border border-border p-3">
                         <div className="mb-2 flex items-center justify-between gap-2">
                           <span className="text-sm font-medium">{it.optionName}</span>
-                          <span
-                            className={
-                              matched
-                                ? 'text-xs text-muted-foreground'
-                                : 'text-xs font-medium text-destructive'
-                            }
-                          >
-                            {sum.toLocaleString('ko-KR')} / {it.quantity.toLocaleString('ko-KR')}개
+                          <span className="flex items-center gap-1.5 text-xs">
+                            <span className="text-muted-foreground">
+                              입고 {sum.toLocaleString('ko-KR')} / 발주{' '}
+                              {it.quantity.toLocaleString('ko-KR')}개
+                            </span>
+                            <span className={`font-medium ${diffClass}`}>({diffLabel})</span>
                           </span>
                         </div>
 
@@ -319,21 +330,25 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
                                   })
                                 }
                               />
-                              {rows.length > 1 && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="shrink-0"
-                                  onClick={() => removeRow(it.optionId, idx)}
-                                  aria-label="분배 행 삭제"
-                                >
-                                  <Trash2 className="size-4" />
-                                </Button>
-                              )}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="shrink-0"
+                                onClick={() => removeRow(it.optionId, idx)}
+                                aria-label="입고 행 삭제"
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
                             </div>
                           ))}
                         </div>
+
+                        {rows.length === 0 && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400">
+                            미입고 (이 옵션은 입고하지 않음)
+                          </p>
+                        )}
 
                         <Button
                           type="button"
@@ -342,7 +357,8 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
                           className="mt-2 h-7 px-2 text-xs"
                           onClick={() => addRow(it.optionId)}
                         >
-                          <Plus className="mr-1 size-3.5" /> 분할 추가
+                          <Plus className="mr-1 size-3.5" />{' '}
+                          {rows.length === 0 ? '입고 행 추가' : '분할 추가'}
                         </Button>
                       </div>
                     )
@@ -360,7 +376,7 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
           <Button
             onClick={handleSubmit}
             disabled={
-              saving || (isStockIn && (loadingLocations || locations.length === 0 || !allMatched))
+              saving || (isStockIn && (loadingLocations || locations.length === 0 || !allValid))
             }
           >
             {saving ? '처리 중...' : '확인'}

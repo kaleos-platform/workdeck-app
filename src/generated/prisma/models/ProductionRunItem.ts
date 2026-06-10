@@ -28,10 +28,12 @@ export type AggregateProductionRunItem = {
 
 export type ProductionRunItemAvgAggregateOutputType = {
   quantity: number | null
+  stockedInQty: number | null
 }
 
 export type ProductionRunItemSumAggregateOutputType = {
   quantity: number | null
+  stockedInQty: number | null
 }
 
 export type ProductionRunItemMinAggregateOutputType = {
@@ -39,6 +41,7 @@ export type ProductionRunItemMinAggregateOutputType = {
   runId: string | null
   optionId: string | null
   quantity: number | null
+  stockedInQty: number | null
 }
 
 export type ProductionRunItemMaxAggregateOutputType = {
@@ -46,6 +49,7 @@ export type ProductionRunItemMaxAggregateOutputType = {
   runId: string | null
   optionId: string | null
   quantity: number | null
+  stockedInQty: number | null
 }
 
 export type ProductionRunItemCountAggregateOutputType = {
@@ -53,16 +57,19 @@ export type ProductionRunItemCountAggregateOutputType = {
   runId: number
   optionId: number
   quantity: number
+  stockedInQty: number
   _all: number
 }
 
 
 export type ProductionRunItemAvgAggregateInputType = {
   quantity?: true
+  stockedInQty?: true
 }
 
 export type ProductionRunItemSumAggregateInputType = {
   quantity?: true
+  stockedInQty?: true
 }
 
 export type ProductionRunItemMinAggregateInputType = {
@@ -70,6 +77,7 @@ export type ProductionRunItemMinAggregateInputType = {
   runId?: true
   optionId?: true
   quantity?: true
+  stockedInQty?: true
 }
 
 export type ProductionRunItemMaxAggregateInputType = {
@@ -77,6 +85,7 @@ export type ProductionRunItemMaxAggregateInputType = {
   runId?: true
   optionId?: true
   quantity?: true
+  stockedInQty?: true
 }
 
 export type ProductionRunItemCountAggregateInputType = {
@@ -84,6 +93,7 @@ export type ProductionRunItemCountAggregateInputType = {
   runId?: true
   optionId?: true
   quantity?: true
+  stockedInQty?: true
   _all?: true
 }
 
@@ -178,6 +188,7 @@ export type ProductionRunItemGroupByOutputType = {
   runId: string
   optionId: string
   quantity: number
+  stockedInQty: number | null
   _count: ProductionRunItemCountAggregateOutputType | null
   _avg: ProductionRunItemAvgAggregateOutputType | null
   _sum: ProductionRunItemSumAggregateOutputType | null
@@ -208,6 +219,7 @@ export type ProductionRunItemWhereInput = {
   runId?: Prisma.StringFilter<"ProductionRunItem"> | string
   optionId?: Prisma.StringFilter<"ProductionRunItem"> | string
   quantity?: Prisma.IntFilter<"ProductionRunItem"> | number
+  stockedInQty?: Prisma.IntNullableFilter<"ProductionRunItem"> | number | null
   run?: Prisma.XOR<Prisma.ProductionRunScalarRelationFilter, Prisma.ProductionRunWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
 }
@@ -217,6 +229,7 @@ export type ProductionRunItemOrderByWithRelationInput = {
   runId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  stockedInQty?: Prisma.SortOrderInput | Prisma.SortOrder
   run?: Prisma.ProductionRunOrderByWithRelationInput
   option?: Prisma.InvProductOptionOrderByWithRelationInput
 }
@@ -230,6 +243,7 @@ export type ProductionRunItemWhereUniqueInput = Prisma.AtLeast<{
   runId?: Prisma.StringFilter<"ProductionRunItem"> | string
   optionId?: Prisma.StringFilter<"ProductionRunItem"> | string
   quantity?: Prisma.IntFilter<"ProductionRunItem"> | number
+  stockedInQty?: Prisma.IntNullableFilter<"ProductionRunItem"> | number | null
   run?: Prisma.XOR<Prisma.ProductionRunScalarRelationFilter, Prisma.ProductionRunWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
 }, "id" | "runId_optionId">
@@ -239,6 +253,7 @@ export type ProductionRunItemOrderByWithAggregationInput = {
   runId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  stockedInQty?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ProductionRunItemCountOrderByAggregateInput
   _avg?: Prisma.ProductionRunItemAvgOrderByAggregateInput
   _max?: Prisma.ProductionRunItemMaxOrderByAggregateInput
@@ -254,11 +269,13 @@ export type ProductionRunItemScalarWhereWithAggregatesInput = {
   runId?: Prisma.StringWithAggregatesFilter<"ProductionRunItem"> | string
   optionId?: Prisma.StringWithAggregatesFilter<"ProductionRunItem"> | string
   quantity?: Prisma.IntWithAggregatesFilter<"ProductionRunItem"> | number
+  stockedInQty?: Prisma.IntNullableWithAggregatesFilter<"ProductionRunItem"> | number | null
 }
 
 export type ProductionRunItemCreateInput = {
   id?: string
   quantity: number
+  stockedInQty?: number | null
   run: Prisma.ProductionRunCreateNestedOneWithoutItemsInput
   option: Prisma.InvProductOptionCreateNestedOneWithoutProductionRunItemsInput
 }
@@ -268,11 +285,13 @@ export type ProductionRunItemUncheckedCreateInput = {
   runId: string
   optionId: string
   quantity: number
+  stockedInQty?: number | null
 }
 
 export type ProductionRunItemUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   run?: Prisma.ProductionRunUpdateOneRequiredWithoutItemsNestedInput
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutProductionRunItemsNestedInput
 }
@@ -282,6 +301,7 @@ export type ProductionRunItemUncheckedUpdateInput = {
   runId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ProductionRunItemCreateManyInput = {
@@ -289,11 +309,13 @@ export type ProductionRunItemCreateManyInput = {
   runId: string
   optionId: string
   quantity: number
+  stockedInQty?: number | null
 }
 
 export type ProductionRunItemUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ProductionRunItemUncheckedUpdateManyInput = {
@@ -301,6 +323,7 @@ export type ProductionRunItemUncheckedUpdateManyInput = {
   runId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ProductionRunItemListRelationFilter = {
@@ -323,10 +346,12 @@ export type ProductionRunItemCountOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  stockedInQty?: Prisma.SortOrder
 }
 
 export type ProductionRunItemAvgOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
+  stockedInQty?: Prisma.SortOrder
 }
 
 export type ProductionRunItemMaxOrderByAggregateInput = {
@@ -334,6 +359,7 @@ export type ProductionRunItemMaxOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  stockedInQty?: Prisma.SortOrder
 }
 
 export type ProductionRunItemMinOrderByAggregateInput = {
@@ -341,10 +367,12 @@ export type ProductionRunItemMinOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  stockedInQty?: Prisma.SortOrder
 }
 
 export type ProductionRunItemSumOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
+  stockedInQty?: Prisma.SortOrder
 }
 
 export type ProductionRunItemCreateNestedManyWithoutOptionInput = {
@@ -434,6 +462,7 @@ export type ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput = {
 export type ProductionRunItemCreateWithoutOptionInput = {
   id?: string
   quantity: number
+  stockedInQty?: number | null
   run: Prisma.ProductionRunCreateNestedOneWithoutItemsInput
 }
 
@@ -441,6 +470,7 @@ export type ProductionRunItemUncheckedCreateWithoutOptionInput = {
   id?: string
   runId: string
   quantity: number
+  stockedInQty?: number | null
 }
 
 export type ProductionRunItemCreateOrConnectWithoutOptionInput = {
@@ -477,11 +507,13 @@ export type ProductionRunItemScalarWhereInput = {
   runId?: Prisma.StringFilter<"ProductionRunItem"> | string
   optionId?: Prisma.StringFilter<"ProductionRunItem"> | string
   quantity?: Prisma.IntFilter<"ProductionRunItem"> | number
+  stockedInQty?: Prisma.IntNullableFilter<"ProductionRunItem"> | number | null
 }
 
 export type ProductionRunItemCreateWithoutRunInput = {
   id?: string
   quantity: number
+  stockedInQty?: number | null
   option: Prisma.InvProductOptionCreateNestedOneWithoutProductionRunItemsInput
 }
 
@@ -489,6 +521,7 @@ export type ProductionRunItemUncheckedCreateWithoutRunInput = {
   id?: string
   optionId: string
   quantity: number
+  stockedInQty?: number | null
 }
 
 export type ProductionRunItemCreateOrConnectWithoutRunInput = {
@@ -521,11 +554,13 @@ export type ProductionRunItemCreateManyOptionInput = {
   id?: string
   runId: string
   quantity: number
+  stockedInQty?: number | null
 }
 
 export type ProductionRunItemUpdateWithoutOptionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   run?: Prisma.ProductionRunUpdateOneRequiredWithoutItemsNestedInput
 }
 
@@ -533,23 +568,27 @@ export type ProductionRunItemUncheckedUpdateWithoutOptionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ProductionRunItemUncheckedUpdateManyWithoutOptionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ProductionRunItemCreateManyRunInput = {
   id?: string
   optionId: string
   quantity: number
+  stockedInQty?: number | null
 }
 
 export type ProductionRunItemUpdateWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutProductionRunItemsNestedInput
 }
 
@@ -557,12 +596,14 @@ export type ProductionRunItemUncheckedUpdateWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ProductionRunItemUncheckedUpdateManyWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockedInQty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -572,6 +613,7 @@ export type ProductionRunItemSelect<ExtArgs extends runtime.Types.Extensions.Int
   runId?: boolean
   optionId?: boolean
   quantity?: boolean
+  stockedInQty?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunItem"]>
@@ -581,6 +623,7 @@ export type ProductionRunItemSelectCreateManyAndReturn<ExtArgs extends runtime.T
   runId?: boolean
   optionId?: boolean
   quantity?: boolean
+  stockedInQty?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunItem"]>
@@ -590,6 +633,7 @@ export type ProductionRunItemSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   runId?: boolean
   optionId?: boolean
   quantity?: boolean
+  stockedInQty?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunItem"]>
@@ -599,9 +643,10 @@ export type ProductionRunItemSelectScalar = {
   runId?: boolean
   optionId?: boolean
   quantity?: boolean
+  stockedInQty?: boolean
 }
 
-export type ProductionRunItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "optionId" | "quantity", ExtArgs["result"]["productionRunItem"]>
+export type ProductionRunItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "optionId" | "quantity" | "stockedInQty", ExtArgs["result"]["productionRunItem"]>
 export type ProductionRunItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -626,6 +671,7 @@ export type $ProductionRunItemPayload<ExtArgs extends runtime.Types.Extensions.I
     runId: string
     optionId: string
     quantity: number
+    stockedInQty: number | null
   }, ExtArgs["result"]["productionRunItem"]>
   composites: {}
 }
@@ -1055,6 +1101,7 @@ export interface ProductionRunItemFieldRefs {
   readonly runId: Prisma.FieldRef<"ProductionRunItem", 'String'>
   readonly optionId: Prisma.FieldRef<"ProductionRunItem", 'String'>
   readonly quantity: Prisma.FieldRef<"ProductionRunItem", 'Int'>
+  readonly stockedInQty: Prisma.FieldRef<"ProductionRunItem", 'Int'>
 }
     
 

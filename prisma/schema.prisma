@@ -1488,10 +1488,11 @@ model ProductionRun {
 }
 
 model ProductionRunItem {
-  id       String @id @default(cuid())
-  runId    String
-  optionId String
-  quantity Int
+  id           String @id @default(cuid())
+  runId        String
+  optionId     String
+  quantity     Int // 발주 수량 (불변)
+  stockedInQty Int? // 실제 입고 수량 (옵션별 분배 합). null = 입고완료 전. 0 이상 = 실입고
 
   run    ProductionRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
   option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)

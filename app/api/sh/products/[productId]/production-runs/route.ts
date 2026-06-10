@@ -80,6 +80,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         optionId: it.optionId,
         optionName: it.option.name,
         quantity: it.quantity,
+        stockedInQty: it.stockedInQty,
       }))
 
     // distinct products (전체 run 기준)
