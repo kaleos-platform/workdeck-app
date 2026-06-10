@@ -41,6 +41,7 @@ type OptionItem = {
   brandName: string | null
   totalStock: number
   quantity: number
+  stockedInQty: number | null
 }
 
 type CostRow = {
@@ -89,6 +90,7 @@ type RunDetail = {
       productName: string
       brandName: string | null
       quantity: number
+      stockedInQty: number | null
     }>
     costs: Array<{
       id: string
@@ -324,6 +326,7 @@ export function ProductionRunFormDialog({
               brandName: it.brandName,
               totalStock: 0, // detail API에서 재고 미포함 — 표시 생략
               quantity: it.quantity,
+              stockedInQty: it.stockedInQty,
             }))
           )
 
@@ -390,6 +393,7 @@ export function ProductionRunFormDialog({
             brandName: p.brandName,
             totalStock: 0,
             quantity: p.quantity,
+            stockedInQty: null,
           }))
         )
       }
@@ -436,6 +440,7 @@ export function ProductionRunFormDialog({
           brandName: opt.brandName,
           totalStock: opt.totalStock,
           quantity: prevItem ? prevItem.quantity : 1,
+          stockedInQty: prevItem ? prevItem.stockedInQty : null,
         }
       })
       return [...others, ...incoming]
@@ -807,6 +812,20 @@ export function ProductionRunFormDialog({
                                   className="h-7 w-20 text-right text-sm"
                                 />
                               </div>
+                              {status === 'STOCKED_IN' && opt.stockedInQty != null && (
+                                <span
+                                  className={`shrink-0 text-xs font-medium ${
+                                    opt.stockedInQty === opt.quantity
+                                      ? 'text-muted-foreground'
+                                      : opt.stockedInQty > opt.quantity
+                                        ? 'text-blue-600 dark:text-blue-400'
+                                        : 'text-amber-600 dark:text-amber-400'
+                                  }`}
+                                  title="실제 입고 수량"
+                                >
+                                  입고 {opt.stockedInQty.toLocaleString('ko-KR')}
+                                </span>
+                              )}
                               <Button
                                 type="button"
                                 variant="ghost"

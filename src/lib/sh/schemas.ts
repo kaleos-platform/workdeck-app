@@ -439,7 +439,8 @@ export const productionRunStatusTransitionSchema = z
     status: z.enum(['PLANNED', 'ORDERED', 'STOCKED_IN']),
     transitionDate: z.string().min(1), // YYYY-MM-DD
     // STOCKED_IN 전환 시 옵션별 보관 위치 분배. 옵션 하나를 여러 위치로 나눠 입고 가능.
-    // 옵션별 분배 합 = 발주 수량 검증은 서버에서 (Zod는 발주 수량을 모름).
+    // 실입고량은 발주 수량과 달라도 됨(양방향). 미입고 옵션은 allocation 부재로 표현(빈 배열 허용).
+    // 0개 행은 무의미하므로 quantity 는 양수 유지.
     allocations: z
       .array(
         z.object({
@@ -451,10 +452,11 @@ export const productionRunStatusTransitionSchema = z
       .optional(),
   })
   .superRefine((v, ctx) => {
-    if (v.status === 'STOCKED_IN' && (!v.allocations || v.allocations.length === 0)) {
+    // 입고완료 시 allocations 키 자체는 있어야 함(빈 배열 = 전 옵션 미입고, 허용)
+    if (v.status === 'STOCKED_IN' && v.allocations === undefined) {
       ctx.addIssue({
         code: 'custom',
-        message: '입고완료 전환 시 옵션별 보관 위치를 지정하세요',
+        message: '입고완료 전환 시 옵션별 입고 정보가 필요합니다',
         path: ['allocations'],
       })
     }

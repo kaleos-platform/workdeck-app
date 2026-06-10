@@ -120,6 +120,7 @@ export async function GET(req: NextRequest) {
         productId: it.option.product.id,
         productName: it.option.product.internalName ?? it.option.product.name,
         quantity: it.quantity,
+        stockedInQty: it.stockedInQty,
       })),
       updatedAt: run.updatedAt.toISOString(),
     }
