@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react'
 import {
   bucketOptionQty,
+  buildOptionCatalog,
   type DateRange,
   type OptionBucket,
+  type OptionCatalogProduct,
   type OptionQtyRow,
   type SalesUnit,
 } from '@/lib/sh/sales-analytics'
@@ -12,16 +14,16 @@ import {
 export type OptionSalesData = {
   /** 단위 버킷 시계열 — 옵션별 판매량(수량). */
   buckets: OptionBucket[]
-  /** optionId → "상품명 / 옵션명" (표시 옵션 라벨용). */
-  nameById: Map<string, string>
+  /** 기간 내 판매 있는 상품→옵션 계층 카탈로그 (필터 목록용). */
+  catalog: OptionCatalogProduct[]
   loading: boolean
 }
 
-const EMPTY: OptionSalesData = { buckets: [], nameById: new Map(), loading: false }
+const EMPTY: OptionSalesData = { buckets: [], catalog: [], loading: false }
 
 /**
  * 판매분석 "상품(옵션)" 탭 데이터 로더 — `groupBy=date` 1회.
- * use-sales-analysis 미러. rows 의 optionName 으로 nameById 를 함께 구성한다.
+ * rows → bucketOptionQty(시계열) + buildOptionCatalog(필터 목록) 둘 다 산출.
  */
 export function useOptionSales(
   unit: SalesUnit,
@@ -38,7 +40,7 @@ export function useOptionSales(
 
     const run = async () => {
       if (channelIdsKey === '') {
-        if (!cancelled) setData({ ...EMPTY, nameById: new Map() })
+        if (!cancelled) setData({ ...EMPTY })
         return
       }
       if (!cancelled) setData((d) => ({ ...d, loading: true }))
@@ -53,16 +55,17 @@ export function useOptionSales(
           date: r.date,
           optionId: r.optionId,
           optionName: r.optionName,
+          productId: r.productId,
+          productName: r.productName,
           channelId: r.channelId,
           quantity: Number(r.quantity ?? 0),
         }))
 
-        const nameById = new Map<string, string>()
-        for (const r of rows) {
-          if (!nameById.has(r.optionId)) nameById.set(r.optionId, r.optionName)
-        }
-
-        setData({ buckets: bucketOptionQty(rows, unit), nameById, loading: false })
+        setData({
+          buckets: bucketOptionQty(rows, unit),
+          catalog: buildOptionCatalog(rows),
+          loading: false,
+        })
       } catch {
         if (!cancelled) setData((d) => ({ ...d, loading: false }))
       }

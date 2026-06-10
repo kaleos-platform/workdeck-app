@@ -13,7 +13,9 @@ import { loadRocketDailyOptionQty } from '@/lib/inv/coupang-sales-to-movement'
 type OptionQtyRow = {
   date: string // YYYY-MM-DD (KST)
   optionId: string
-  optionName: string // "상품명 / 옵션명"
+  optionName: string // 옵션명 (InvProductOption.name)
+  productId: string // 내부 InvProduct.id
+  productName: string // 상품명 (관리명 우선)
   channelId: string
   quantity: number
 }
@@ -74,16 +76,23 @@ export async function GET(req: NextRequest) {
   const keyMap = new Map<string, OptionQtyRow>()
   const addQty = (
     date: string,
-    optionId: string,
-    optionName: string,
+    opt: { optionId: string; optionName: string; productId: string; productName: string },
     channelId: string,
     quantity: number
   ) => {
     if (quantity <= 0) return
-    const key = `${date}|${optionId}|${channelId}`
+    const key = `${date}|${opt.optionId}|${channelId}`
     const entry =
       keyMap.get(key) ??
-      ({ date, optionId, optionName, channelId, quantity: 0 } satisfies OptionQtyRow)
+      ({
+        date,
+        optionId: opt.optionId,
+        optionName: opt.optionName,
+        productId: opt.productId,
+        productName: opt.productName,
+        channelId,
+        quantity: 0,
+      } satisfies OptionQtyRow)
     entry.quantity += quantity
     keyMap.set(key, entry)
   }
@@ -101,7 +110,12 @@ export async function GET(req: NextRequest) {
       quantity: true,
       optionId: true,
       option: {
-        select: { id: true, name: true, product: { select: { name: true, internalName: true } } },
+        select: {
+          id: true,
+          name: true,
+          productId: true,
+          product: { select: { name: true, internalName: true } },
+        },
       },
       fulfillments: {
         select: {
@@ -110,6 +124,7 @@ export async function GET(req: NextRequest) {
             select: {
               id: true,
               name: true,
+              productId: true,
               product: { select: { name: true, internalName: true } },
             },
           },
@@ -119,13 +134,16 @@ export async function GET(req: NextRequest) {
     },
   })
 
-  const optionLabel = (o: {
+  // 옵션 → 집계용 메타 (옵션명 + 상품 분리). 상품명은 관리명 우선.
+  const optMeta = (o: {
+    id: string
     name: string
+    productId: string
     product: { name: string; internalName: string | null }
-  }): string => {
+  }) => {
     const internal = o.product.internalName?.trim()
     const productName = internal && internal.length > 0 ? internal : o.product.name
-    return `${productName} / ${o.name}`
+    return { optionId: o.id, optionName: o.name, productId: o.productId, productName }
   }
 
   for (const it of items) {
@@ -137,11 +155,11 @@ export async function GET(req: NextRequest) {
       // 묶음/listing → 구성 옵션으로 팬아웃 (DelOrderItemFulfillment.quantity 는 이미 분해된 수량)
       for (const f of it.fulfillments) {
         if (!f.option) continue
-        addQty(date, f.option.id, optionLabel(f.option), channelId, f.quantity)
+        addQty(date, optMeta(f.option), channelId, f.quantity)
       }
     } else if (it.option) {
       // 단일 옵션 직접 매칭
-      addQty(date, it.option.id, optionLabel(it.option), channelId, it.quantity)
+      addQty(date, optMeta(it.option), channelId, it.quantity)
     }
     // option·fulfillment 둘 다 없으면(미매칭) 옵션 귀속 불가 → 제외 (무음 누락이나 v1 범위 밖)
   }
@@ -151,7 +169,17 @@ export async function GET(req: NextRequest) {
   if (rocketCh) {
     const rocketRows = await loadRocketDailyOptionQty(resolved.space.id, from, to)
     for (const r of rocketRows) {
-      addQty(r.date, r.optionId, r.optionName, rocketCh.id, r.quantity)
+      addQty(
+        r.date,
+        {
+          optionId: r.optionId,
+          optionName: r.optionName,
+          productId: r.productId,
+          productName: r.productName,
+        },
+        rocketCh.id,
+        r.quantity
+      )
     }
   }
 

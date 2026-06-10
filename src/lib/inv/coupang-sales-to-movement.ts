@@ -436,7 +436,9 @@ async function findCoupangSalesChannel(spaceId: string): Promise<{ id: string } 
 export type RocketOptionQtyRow = {
   date: string // YYYY-MM-DD (KST)
   optionId: string // 내부 InvProductOption.id
-  optionName: string // "상품명 / 옵션명" (관리명 우선)
+  optionName: string // 옵션명 (InvProductOption.name)
+  productId: string // 내부 InvProduct.id
+  productName: string // 상품명 (관리명 우선)
   quantity: number // 구성 옵션 단위 판매량 (1:N 묶음 분해 반영)
 }
 
@@ -524,14 +526,19 @@ export async function loadRocketDailyOptionQty(
   const optionMeta = mappedOptionIds.length
     ? await prisma.invProductOption.findMany({
         where: { id: { in: mappedOptionIds } },
-        select: { id: true, name: true, product: { select: { name: true, internalName: true } } },
+        select: {
+          id: true,
+          name: true,
+          productId: true,
+          product: { select: { name: true, internalName: true } },
+        },
       })
     : []
-  const nameByOption = new Map(
+  const metaByOption = new Map(
     optionMeta.map((o) => {
       const internal = o.product.internalName?.trim()
       const productName = internal && internal.length > 0 ? internal : o.product.name
-      return [o.id, `${productName} / ${o.name}`]
+      return [o.id, { optionName: o.name, productId: o.productId, productName }]
     })
   )
 
@@ -549,12 +556,15 @@ export async function loadRocketDailyOptionQty(
       const optQty = qty * item.quantity
       if (optQty <= 0) continue
       const key = `${date}|${item.optionId}`
+      const meta = metaByOption.get(item.optionId)
       const entry =
         byKey.get(key) ??
         ({
           date,
           optionId: item.optionId,
-          optionName: nameByOption.get(item.optionId) ?? '(미상 옵션)',
+          optionName: meta?.optionName ?? '(미상 옵션)',
+          productId: meta?.productId ?? item.optionId,
+          productName: meta?.productName ?? '(미상 상품)',
           quantity: 0,
         } satisfies RocketOptionQtyRow)
       entry.quantity += optQty
