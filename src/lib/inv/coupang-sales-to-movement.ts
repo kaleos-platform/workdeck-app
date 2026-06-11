@@ -442,6 +442,9 @@ export type RocketOptionQtyRow = {
   quantity: number // 구성 옵션 단위 판매량 (1:N 묶음 분해 반영)
 }
 
+/** 옵션 메타 부재(FK 정합 깨짐) 시 묶음용 sentinel 상품 id — 카탈로그 유령 상품 분열 방지. */
+const UNKNOWN_PRODUCT_ID = '__unknown_product__'
+
 /** Date → KST 일자 키 (revenue API 와 동일 규칙). */
 function toKstDateKeyPublic(d: Date): string {
   return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -557,13 +560,15 @@ export async function loadRocketDailyOptionQty(
       if (optQty <= 0) continue
       const key = `${date}|${item.optionId}`
       const meta = metaByOption.get(item.optionId)
+      // meta 부재(매핑 optionId 가 삭제된 옵션을 가리키는 등 FK 정합 깨짐)는 단일 sentinel
+      // 상품으로 묶는다 — optionId 를 productId 로 쓰면 카탈로그가 옵션마다 유령 상품으로 쪼개진다.
       const entry =
         byKey.get(key) ??
         ({
           date,
           optionId: item.optionId,
           optionName: meta?.optionName ?? '(미상 옵션)',
-          productId: meta?.productId ?? item.optionId,
+          productId: meta?.productId ?? UNKNOWN_PRODUCT_ID,
           productName: meta?.productName ?? '(미상 상품)',
           quantity: 0,
         } satisfies RocketOptionQtyRow)
