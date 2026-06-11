@@ -21,14 +21,18 @@ import {
   endOfMonth,
   addDaysYmd,
   addMonthsYmd,
+  resolveOptionSeries,
   type DateRange,
   type SalesUnit,
+  type OptionSelection,
 } from '@/lib/sh/sales-analytics'
 import { useSalesAnalysis } from '@/hooks/use-sales-analysis'
 import { useOptionSales } from '@/hooks/use-option-sales'
 import { SalesPivotTable } from './sales-pivot-table'
 import { ChannelRevenueStackedChart } from './channel-revenue-stacked-chart'
-import { OptionQtyStackedChart } from './option-qty-stacked-chart'
+import { OptionQtyLineChart } from './option-qty-line-chart'
+import { OptionPivotTable } from './option-pivot-table'
+import { OptionFilter } from './option-filter'
 
 export type Channel = { id: string; name: string; typeName: string }
 
@@ -140,6 +144,17 @@ export function SalesAnalyticsPage() {
   // (상품 탭엔 채널 체크박스가 없으므로 유형 통과 채널 = typedChannels 가 데이터 범위).
   const typedChannelIds = useMemo(() => typedChannels.map((c) => c.id), [typedChannels])
   const optionData = useOptionSales(unit, range, typedChannelIds, tab === 'product')
+
+  // 상품(옵션) 필터 선택 — 미선택=전체. 그래프·표 공통 단일 소스.
+  const [optionSelection, setOptionSelection] = useState<OptionSelection>({
+    productIds: [],
+    optionIds: [],
+  })
+  // 선택 + 카탈로그 → 시리즈(선·열). 카탈로그가 바뀌면(기간/채널 변경) 사라진 선택은 자연 무시됨.
+  const optionSeries = useMemo(
+    () => resolveOptionSeries(optionSelection, optionData.catalog),
+    [optionSelection, optionData.catalog]
+  )
 
   function changeUnit(next: SalesUnit) {
     setUnit(next) // 단위만 변경, 기간 유지
@@ -295,9 +310,23 @@ export function SalesAnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="product" className="space-y-6">
-          <OptionQtyStackedChart
+          {/* 상품→옵션 계층 필터 (그래프·표 공통). 미선택=전체. */}
+          <OptionFilter
+            catalog={optionData.catalog}
+            selection={optionSelection}
+            onChange={setOptionSelection}
+            seriesCount={optionSeries.length}
+          />
+
+          <OptionQtyLineChart
             buckets={optionData.buckets}
-            nameById={optionData.nameById}
+            series={optionSeries}
+            loading={optionData.loading}
+          />
+
+          <OptionPivotTable
+            buckets={optionData.buckets}
+            series={optionSeries}
             loading={optionData.loading}
           />
         </TabsContent>
