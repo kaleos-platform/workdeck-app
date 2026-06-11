@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   lastClosedDateKst,
   last30DaysRange,
@@ -20,12 +21,18 @@ import {
   endOfMonth,
   addDaysYmd,
   addMonthsYmd,
+  resolveOptionSeries,
   type DateRange,
   type SalesUnit,
+  type OptionSelection,
 } from '@/lib/sh/sales-analytics'
 import { useSalesAnalysis } from '@/hooks/use-sales-analysis'
+import { useOptionSales } from '@/hooks/use-option-sales'
 import { SalesPivotTable } from './sales-pivot-table'
 import { ChannelRevenueStackedChart } from './channel-revenue-stacked-chart'
+import { OptionQtyLineChart } from './option-qty-line-chart'
+import { OptionPivotTable } from './option-pivot-table'
+import { OptionFilter } from './option-filter'
 
 export type Channel = { id: string; name: string; typeName: string }
 
@@ -84,7 +91,10 @@ function snapRangeToUnit(unit: SalesUnit, range: DateRange): DateRange {
   return range
 }
 
+type SalesTab = 'channel' | 'product'
+
 export function SalesAnalyticsPage() {
+  const [tab, setTab] = useState<SalesTab>('channel')
   const [unit, setUnit] = useState<SalesUnit>('일')
   const [range, setRange] = useState<DateRange>(() => last30DaysRange())
   const [channels, setChannels] = useState<Channel[]>([])
@@ -130,6 +140,21 @@ export function SalesAnalyticsPage() {
   // 데이터 호출은 판매채널 전체 기준 (buckets 에 채널별 다 담김). 표시만 visibleChannels 로 필터.
   const allChannelIds = useMemo(() => channels.map((c) => c.id), [channels])
   const data = useSalesAnalysis(unit, range, allChannelIds)
+  // 상품(옵션) 탭 — 활성 시에만 지연 로드. 공유 컨트롤 바의 채널 유형 필터를 적용해 스코프한다
+  // (상품 탭엔 채널 체크박스가 없으므로 유형 통과 채널 = typedChannels 가 데이터 범위).
+  const typedChannelIds = useMemo(() => typedChannels.map((c) => c.id), [typedChannels])
+  const optionData = useOptionSales(unit, range, typedChannelIds, tab === 'product')
+
+  // 상품(옵션) 필터 선택 — 미선택=전체. 그래프·표 공통 단일 소스.
+  const [optionSelection, setOptionSelection] = useState<OptionSelection>({
+    productIds: [],
+    optionIds: [],
+  })
+  // 선택 + 카탈로그 → 시리즈(선·열). 카탈로그가 바뀌면(기간/채널 변경) 사라진 선택은 자연 무시됨.
+  const optionSeries = useMemo(
+    () => resolveOptionSeries(optionSelection, optionData.catalog),
+    [optionSelection, optionData.catalog]
+  )
 
   function changeUnit(next: SalesUnit) {
     setUnit(next) // 단위만 변경, 기간 유지
@@ -258,22 +283,54 @@ export function SalesAnalyticsPage() {
         </CardContent>
       </Card>
 
-      {/* 차트 */}
-      <ChannelRevenueStackedChart
-        buckets={data.buckets}
-        typedChannels={typedChannels}
-        selectedChannelIds={selectedChannelIds}
-        onToggleChannel={toggleChannel}
-        onToggleAll={toggleAll}
-        loading={data.loading}
-      />
+      {/* 채널 / 상품 탭 */}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as SalesTab)}>
+        <TabsList>
+          <TabsTrigger value="channel">채널</TabsTrigger>
+          <TabsTrigger value="product">상품</TabsTrigger>
+        </TabsList>
 
-      {/* 테이블 매트릭스 */}
-      <SalesPivotTable
-        buckets={data.buckets}
-        visibleChannels={visibleChannels}
-        loading={data.loading}
-      />
+        <TabsContent value="channel" className="space-y-6">
+          {/* 차트 */}
+          <ChannelRevenueStackedChart
+            buckets={data.buckets}
+            typedChannels={typedChannels}
+            selectedChannelIds={selectedChannelIds}
+            onToggleChannel={toggleChannel}
+            onToggleAll={toggleAll}
+            loading={data.loading}
+          />
+
+          {/* 테이블 매트릭스 */}
+          <SalesPivotTable
+            buckets={data.buckets}
+            visibleChannels={visibleChannels}
+            loading={data.loading}
+          />
+        </TabsContent>
+
+        <TabsContent value="product" className="space-y-6">
+          {/* 상품→옵션 계층 필터 (그래프·표 공통). 미선택=전체. */}
+          <OptionFilter
+            catalog={optionData.catalog}
+            selection={optionSelection}
+            onChange={setOptionSelection}
+            seriesCount={optionSeries.length}
+          />
+
+          <OptionQtyLineChart
+            buckets={optionData.buckets}
+            series={optionSeries}
+            loading={optionData.loading}
+          />
+
+          <OptionPivotTable
+            buckets={optionData.buckets}
+            series={optionSeries}
+            loading={optionData.loading}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

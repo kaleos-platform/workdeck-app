@@ -152,14 +152,14 @@ export type RevenueBucket = {
 }
 
 /** 일자 → 버킷 키 */
-function bucketKey(date: string, unit: SalesUnit): string {
+export function bucketKey(date: string, unit: SalesUnit): string {
   if (unit === '일') return date
   if (unit === '주') return startOfWeekMon(date)
   return date.slice(0, 7) // YYYY-MM
 }
 
 /** 버킷 키 → 표시 라벨 */
-function bucketLabel(key: string, unit: SalesUnit): string {
+export function bucketLabel(key: string, unit: SalesUnit): string {
   if (unit === '일') return key.slice(5) // MM-DD
   if (unit === '주') {
     // 주 시작(월)~종료(일) + ISO 연 주차: MM/DD~MM/DD (W주차)
@@ -283,4 +283,175 @@ export function bucketTotalsFor(
     orderCount += agg.orderCount
   }
   return { revenue, orderCount }
+}
+
+// ─── 상품(옵션) 단위 판매량 — 채널 버킷팅과 평행 구조 ─────────────────────────
+// 판매분석 "상품" 탭 전용. 채널 대신 내부 InvProductOption 을 시리즈로 한다.
+// 수치는 매출(원)이 아니라 판매량(수량)이다.
+
+export type OptionQtyRow = {
+  date: string // YYYY-MM-DD (KST)
+  optionId: string // 내부 InvProductOption.id
+  optionName: string // 옵션명 (InvProductOption.name)
+  productId: string // 내부 InvProduct.id
+  productName: string // 상품명 (관리명 우선)
+  channelId: string
+  quantity: number
+}
+
+export type OptionBucket = {
+  /** 버킷 키: 일=YYYY-MM-DD, 주=주시작 YYYY-MM-DD, 월=YYYY-MM */
+  key: string
+  label: string
+  byOption: Record<string, number> // optionId → 수량
+  total: number
+}
+
+/** groupBy=date 옵션 행을 단위 버킷으로 집계 (채널은 합산, 옵션 grain 유지). */
+export function bucketOptionQty(rows: OptionQtyRow[], unit: SalesUnit): OptionBucket[] {
+  const map = new Map<string, OptionBucket>()
+  for (const row of rows) {
+    if (!row.date || !row.optionId) continue
+    const key = bucketKey(row.date, unit)
+    let bucket = map.get(key)
+    if (!bucket) {
+      bucket = { key, label: bucketLabel(key, unit), byOption: {}, total: 0 }
+      map.set(key, bucket)
+    }
+    const qty = Number(row.quantity ?? 0)
+    bucket.byOption[row.optionId] = (bucket.byOption[row.optionId] ?? 0) + qty
+    bucket.total += qty
+  }
+  return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key))
+}
+
+// ─── 상품→옵션 계층 카탈로그 (필터 목록 — 기간 내 판매 항목만) ────────────────
+
+export type OptionCatalogOption = { optionId: string; optionName: string; qty: number }
+export type OptionCatalogProduct = {
+  productId: string
+  productName: string
+  qty: number
+  options: OptionCatalogOption[]
+}
+
+/**
+ * 기간 내 판매 데이터가 있는 상품→옵션 계층 카탈로그를 만든다(필터 드롭다운용).
+ * 판매량 desc 정렬. rows 에 등장한 항목만 포함 → "기간 내 판매 있는 항목만" 보장.
+ */
+export function buildOptionCatalog(rows: OptionQtyRow[]): OptionCatalogProduct[] {
+  const products = new Map<
+    string,
+    { productName: string; qty: number; options: Map<string, OptionCatalogOption> }
+  >()
+  for (const r of rows) {
+    const qty = Number(r.quantity ?? 0)
+    if (qty <= 0) continue
+    let p = products.get(r.productId)
+    if (!p) {
+      p = { productName: r.productName, qty: 0, options: new Map() }
+      products.set(r.productId, p)
+    }
+    p.qty += qty
+    const o = p.options.get(r.optionId)
+    if (o) o.qty += qty
+    else p.options.set(r.optionId, { optionId: r.optionId, optionName: r.optionName, qty })
+  }
+  return Array.from(products.entries())
+    .map(([productId, p]) => ({
+      productId,
+      productName: p.productName,
+      qty: p.qty,
+      options: Array.from(p.options.values()).sort((a, b) => b.qty - a.qty),
+    }))
+    .sort((a, b) => b.qty - a.qty)
+}
+
+// ─── 시리즈 해석 (선택 → 차트 선·표 열) ──────────────────────────────────────
+// 미선택 = 전체 합산 1선. 상품 선택 = 그 상품의 모든 옵션 합산 1선.
+// 옵션 선택 = 옵션당 1선. 선택은 그래프·표 공통 단일 소스.
+
+/** 전체 합산 시리즈의 고정 id. */
+export const ALL_SERIES_ID = '__all__'
+
+/** 차트 선 / 표 열 한 개. optionIds = 이 시리즈가 합산하는 옵션 집합. */
+export type OptionSeries = {
+  id: string
+  name: string
+  color: string
+  optionIds: string[]
+}
+
+export type OptionSelection = {
+  /** 선택 상품 id (옵션 미지정 → 상품 전체 합산 1선) */
+  productIds: string[]
+  /** 선택 옵션 id (상품 내 특정 옵션 → 옵션당 1선) */
+  optionIds: string[]
+}
+
+export const MAX_OPTION_SERIES = 8
+
+/**
+ * 선택 + 카탈로그 → 시리즈 배열(차트 선·표 열 단일 소스).
+ * - 미선택: 전체 합산 1선 (카탈로그 전 옵션).
+ * - 상품 선택(옵션 미선택): 상품당 1선 (상품의 모든 옵션 합산).
+ * - 옵션 선택: 옵션당 1선. 상품 선택 + 그 상품 옵션 선택 시 옵션선이 우선(상품 전체선 대체).
+ * 최대 MAX_OPTION_SERIES 선. 색상 CHANNEL_COLORS 순환.
+ */
+export function resolveOptionSeries(
+  selection: OptionSelection,
+  catalog: OptionCatalogProduct[]
+): OptionSeries[] {
+  const color = (i: number) => CHANNEL_COLORS[i % CHANNEL_COLORS.length]
+  const { productIds, optionIds } = selection
+
+  // 미선택 → 전체 합산 1선
+  if (productIds.length === 0 && optionIds.length === 0) {
+    const allOptionIds = catalog.flatMap((p) => p.options.map((o) => o.optionId))
+    return [{ id: ALL_SERIES_ID, name: '전체', color: color(0), optionIds: allOptionIds }]
+  }
+
+  const series: OptionSeries[] = []
+  const optionToProduct = new Map<string, OptionCatalogProduct>()
+  for (const p of catalog) for (const o of p.options) optionToProduct.set(o.optionId, p)
+
+  // 옵션 선택분이 속한 상품 — 그 상품은 전체선 대신 옵션선으로 표현
+  const productsWithSelectedOption = new Set(
+    optionIds.map((oid) => optionToProduct.get(oid)?.productId).filter(Boolean) as string[]
+  )
+
+  // 1) 옵션선 (옵션당 1선)
+  for (const oid of optionIds) {
+    const p = optionToProduct.get(oid)
+    const opt = p?.options.find((o) => o.optionId === oid)
+    if (!opt) continue
+    series.push({
+      id: oid,
+      name: `${p?.productName ?? ''} / ${opt.optionName}`,
+      color: color(series.length),
+      optionIds: [oid],
+    })
+  }
+
+  // 2) 상품선 (옵션 미선택 상품만 — 상품 전체 옵션 합산 1선)
+  for (const pid of productIds) {
+    if (productsWithSelectedOption.has(pid)) continue // 옵션선으로 이미 표현
+    const p = catalog.find((c) => c.productId === pid)
+    if (!p) continue
+    series.push({
+      id: pid,
+      name: p.productName,
+      color: color(series.length),
+      optionIds: p.options.map((o) => o.optionId),
+    })
+  }
+
+  return series.slice(0, MAX_OPTION_SERIES)
+}
+
+/** 버킷 한 칸에서 한 시리즈의 수량(시리즈가 합산하는 옵션들의 합). */
+export function seriesBucketValue(bucket: OptionBucket, series: OptionSeries): number {
+  let sum = 0
+  for (const oid of series.optionIds) sum += bucket.byOption[oid] ?? 0
+  return sum
 }
