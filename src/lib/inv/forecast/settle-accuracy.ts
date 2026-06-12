@@ -81,6 +81,7 @@ export async function settlePlanAccuracy(planId: string, spaceId: string): Promi
     if (windowEnd.getTime() > now) return null // 아직 미경과 — 건너뜀
 
     const accuracy = await computeAccuracy({
+      spaceId,
       planId,
       optionId: item.optionId,
       planItemId: item.id,

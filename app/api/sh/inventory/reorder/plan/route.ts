@@ -138,13 +138,9 @@ export async function POST(req: NextRequest) {
   // ── 3) 분석 기간별 주문수요 집계 ──────────────────────────────────────────
   // 수요 신호 = 옵션×일자 주문수요(수동채널 DelOrderItem + 로켓 VENDOR). 판매분석과
   // 동일한 loadOptionDemand 를 공유해 두 화면이 정의상 같은 수요를 본다.
-  // (OUTBOUND 장부 대신 주문수요 — OUTBOUND 는 재고차감·정확도 baseline 전용.)
-  //
-  // ⚠️ accuracy 불일치 (후속 PR 과제): 예측 입력은 여기서 주문수요로 바뀌었지만
-  //   accuracy.ts 의 actualOutbound 는 여전히 OUTBOUND 장부를 읽는다. 수동주문이 섞인
-  //   옵션은 forecast(수요) > actual(OUTBOUND 로켓분) → positive bias → 다음 계획이
-  //   bias-adjust 로 억제되어 추가한 수동수요가 부분 상쇄된다. accuracy 도 loadOptionDemand
-  //   기준으로 정렬해야 완결 (과거 확정 계획 소급 변경 위험 때문에 별도 PR 로 분리).
+  // (OUTBOUND 장부 대신 주문수요 — OUTBOUND 는 재고차감 전용.)
+  // accuracy.ts 의 WAPE/bias baseline 도 같은 loadOptionDemand 를 써 예측-검증이 정합한다
+  //   (stockout/overstock 만 물리적 OUTBOUND 유지).
   const windowDaysByOption = new Map<string, number>()
   for (const p of products) {
     const wd = p.reorderConfig?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
