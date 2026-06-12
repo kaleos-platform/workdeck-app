@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
-import { Header } from '@/components/layout/header'
-import { Sidebar } from '@/components/layout/sidebar'
+import { DeckShell } from '@/components/layout/deck-shell'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser()
@@ -21,14 +20,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      <Header variant="coupang-ads" />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar workspaceName={workspace.name} variant="coupang-ads" />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-8">{children}</div>
-        </main>
-      </div>
-    </div>
+    <DeckShell workspaceName={workspace.name} variant="coupang-ads">
+      {children}
+    </DeckShell>
   )
 }
