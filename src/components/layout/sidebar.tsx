@@ -68,6 +68,7 @@ import {
   SALES_CONTENT_SETTINGS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
+import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 
 type Campaign = {
   id: string
@@ -77,11 +78,9 @@ type Campaign = {
   adTypes: string[]
 }
 
-type SidebarVariant = 'workdeck' | 'coupang-ads' | 'seller-hub' | 'sales-content'
-
 type SidebarProps = {
   workspaceName: string
-  variant?: SidebarVariant
+  variant?: DeckVariant
   mode?: 'default' | 'my-deck'
   activeDecks?: Array<{ id: string; name: string }>
 }
@@ -241,6 +240,8 @@ export function Sidebar({
   const isSellerHubSidebar = variant === 'seller-hub'
   const isSalesContentSidebar = variant === 'sales-content'
   const isMyDeckMode = mode === 'my-deck'
+  const meta = DECK_META[variant]
+  const BrandIcon = meta.icon
 
   useEffect(() => {
     if (!isCoupangSidebar) return
@@ -312,16 +313,36 @@ export function Sidebar({
         collapsed ? 'w-16' : expandedWidth
       )}
     >
-      {/* 접기/펴기 토글 */}
+      {/* 브랜드 로고 + 접기/펴기 토글 */}
       <div
-        className={cn('flex flex-shrink-0 px-3 pb-2', collapsed ? 'justify-center' : 'justify-end')}
+        className={cn(
+          'flex flex-shrink-0 border-b border-white/5 px-3 pb-3',
+          collapsed ? 'flex-col items-center gap-2' : 'items-center justify-between gap-2'
+        )}
       >
+        <Link
+          href={meta.href}
+          aria-label={`${meta.name} 홈으로 이동`}
+          className={cn('flex min-w-0 items-center gap-2', collapsed && 'justify-center')}
+        >
+          <div
+            className={cn(
+              'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br',
+              meta.gradient
+            )}
+          >
+            <BrandIcon className="h-5 w-5 text-white" />
+          </div>
+          {!collapsed && (
+            <span className="truncate text-sm leading-tight font-bold text-white">{meta.name}</span>
+          )}
+        </Link>
         <button
           type="button"
           onClick={toggle}
           aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
           aria-expanded={!collapsed}
-          className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 transition hover:bg-white/10 hover:text-white"
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-zinc-400 transition hover:bg-white/10 hover:text-white"
         >
           {collapsed ? (
             <PanelLeftOpen className="h-5 w-5" />
