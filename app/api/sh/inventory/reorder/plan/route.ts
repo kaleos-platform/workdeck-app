@@ -2,7 +2,7 @@
 // DRAFT 발주 계획 생성
 //
 // 흐름:
-//  1) 옵션별 history(OUTBOUND) + currentStock + config + safetyStock + roundUnit 로드
+//  1) 옵션별 history(주문수요 — loadOptionDemand) + currentStock + config + safetyStock + roundUnit 로드
 //  2) 직전 FINALIZED 계획의 accuracy bias → biasAdjust 계수 계산
 //  3) forecastOption → suggestedQty 계산 (bias 보정 + roundUnit 반올림)
 //  4) LLM rationale 생성 (실패 시 결정론적 폴백 텍스트)
@@ -18,6 +18,7 @@ import { roundUp } from '@/lib/inv/round'
 import { mapWithConcurrency } from '@/lib/concurrency'
 import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
+import { loadOptionDemand } from '@/lib/inv/option-demand'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
@@ -134,52 +135,46 @@ export async function POST(req: NextRequest) {
     stockByOption.set(g.optionId, g._sum.quantity ?? 0)
   }
 
-  // ── 3) 분석 기간별 OUTBOUND 집계 ──────────────────────────────────────────
-  const windowBuckets = new Map<number, string[]>()
-  const optionProductMap = new Map<string, (typeof products)[0]>()
+  // ── 3) 분석 기간별 주문수요 집계 ──────────────────────────────────────────
+  // 수요 신호 = 옵션×일자 주문수요(수동채널 DelOrderItem + 로켓 VENDOR). 판매분석과
+  // 동일한 loadOptionDemand 를 공유해 두 화면이 정의상 같은 수요를 본다.
+  // (OUTBOUND 장부 대신 주문수요 — OUTBOUND 는 재고차감·정확도 baseline 전용.)
+  //
+  // ⚠️ accuracy 불일치 (후속 PR 과제): 예측 입력은 여기서 주문수요로 바뀌었지만
+  //   accuracy.ts 의 actualOutbound 는 여전히 OUTBOUND 장부를 읽는다. 수동주문이 섞인
+  //   옵션은 forecast(수요) > actual(OUTBOUND 로켓분) → positive bias → 다음 계획이
+  //   bias-adjust 로 억제되어 추가한 수동수요가 부분 상쇄된다. accuracy 도 loadOptionDemand
+  //   기준으로 정렬해야 완결 (과거 확정 계획 소급 변경 위험 때문에 별도 PR 로 분리).
+  const windowDaysByOption = new Map<string, number>()
   for (const p of products) {
     const wd = p.reorderConfig?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
-    const list = windowBuckets.get(wd) ?? []
-    list.push(...p.options.map((o) => o.id))
-    windowBuckets.set(wd, list)
     for (const o of p.options) {
-      optionProductMap.set(o.id, p)
+      windowDaysByOption.set(o.id, wd)
     }
   }
 
-  // windowDays별 일별 집계
-  const dailyOutboundByOption = new Map<string, Record<string, number>>()
-  const windowDaysByOption = new Map<string, number>()
   const now = new Date()
 
-  for (const [wd, ids] of windowBuckets.entries()) {
-    if (!ids.length) continue
-    const since = new Date(now.getTime() - wd * 24 * 60 * 60 * 1000)
+  // 활성 채널 전체(발주는 채널 무관 전수 수요). 최대 window 한 번 로드 후 옵션별로 자른다
+  // (buildDailySeries 가 옵션별 windowDays 로 zero-fill·절단).
+  const maxWindowDays = Math.max(DEFAULT_WINDOW_DAYS, ...windowDaysByOption.values())
+  const since = new Date(now.getTime() - maxWindowDays * 24 * 60 * 60 * 1000)
+  const optionIdSet = new Set(optionIds)
 
-    const movements = await prisma.invMovement.findMany({
-      where: {
-        spaceId,
-        optionId: { in: ids },
-        type: 'OUTBOUND',
-        movementDate: { gte: since },
-      },
-      select: { optionId: true, movementDate: true, quantity: true },
-    })
+  const activeChannels = await prisma.channel.findMany({
+    where: { spaceId, isActive: true },
+    select: { id: true, name: true, externalSource: true },
+  })
 
-    // 옵션별 일별 집계
-    for (const mv of movements) {
-      const dateKey = toDateStr(mv.movementDate)
-      const byDate = dailyOutboundByOption.get(mv.optionId) ?? {}
-      byDate[dateKey] = (byDate[dateKey] ?? 0) + mv.quantity
-      dailyOutboundByOption.set(mv.optionId, byDate)
-    }
+  const demandRows = await loadOptionDemand(spaceId, since, now, activeChannels)
 
-    for (const id of ids) {
-      windowDaysByOption.set(id, wd)
-      if (!dailyOutboundByOption.has(id)) {
-        dailyOutboundByOption.set(id, {})
-      }
-    }
+  // 옵션별 일별 수요 집계 (채널 합산). 이 계획 스코프 옵션만.
+  const dailyOutboundByOption = new Map<string, Record<string, number>>()
+  for (const id of optionIds) dailyOutboundByOption.set(id, {})
+  for (const row of demandRows) {
+    if (!optionIdSet.has(row.optionId)) continue
+    const byDate = dailyOutboundByOption.get(row.optionId)!
+    byDate[row.date] = (byDate[row.date] ?? 0) + row.quantity
   }
 
   // ── 4) 직전 입고분 자동 정산(lazy) + 정산된 계획의 bias 로드 ──────────────
@@ -389,11 +384,4 @@ export async function POST(req: NextRequest) {
       confidenceScore: item.confidenceScore ? Number(item.confidenceScore) : null,
     })),
   })
-}
-
-function toDateStr(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
 }
