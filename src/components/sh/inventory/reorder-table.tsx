@@ -394,7 +394,7 @@ export function ReorderTable({ productId }: { productId: string }) {
               <TableHead>옵션</TableHead>
               <TableHead>관리코드(SKU)</TableHead>
               <TableHead className="text-right">현재재고</TableHead>
-              <TableHead className="text-right">{windowDays}일 출고</TableHead>
+              <TableHead className="text-right">{windowDays}일 수요</TableHead>
               <TableHead className="text-right">일평균</TableHead>
               <TableHead className="text-right">리드타임</TableHead>
               <TableHead className="text-right" title="옵션 단위 안전재고">

@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { calculateReorder } from '@/lib/inv/reorder-calculator'
+import { loadOptionDemand } from '@/lib/inv/option-demand'
+
+// 로컬 일자 YYYY-MM-DD (loadOptionDemand 의 KST 키와 윈도우 절단 비교용).
+function toDateStr(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
@@ -69,32 +78,46 @@ export async function GET(req: NextRequest) {
     stockByOption.set(g.optionId, g._sum.quantity ?? 0)
   }
 
-  // 분석기간(상품 config) 별로 버킷팅해 1~2회 쿼리만 발생하도록
-  const windowBuckets = new Map<number, string[]>()
+  // 수요 신호 = 옵션별 주문수요 합(수동채널 DelOrderItem + 로켓 VENDOR). 발주 plan 생성과
+  // 판매분석이 공유하는 loadOptionDemand 를 써 세 화면이 정의상 같은 수요를 본다.
+  // (OUTBOUND 장부 대신 주문수요 — OUTBOUND 는 재고차감·정확도 baseline 전용.)
+  const windowDaysByOption = new Map<string, number>()
   for (const p of products) {
     const wd = p.reorderConfig?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
-    const list = windowBuckets.get(wd) ?? []
-    list.push(...p.options.map((o) => o.id))
-    windowBuckets.set(wd, list)
+    for (const o of p.options) windowDaysByOption.set(o.id, wd)
   }
 
   const outboundByOption = new Map<string, number>()
-  const now = Date.now()
-  for (const [wd, ids] of windowBuckets.entries()) {
-    if (!ids.length) continue
-    const since = new Date(now - wd * 24 * 60 * 60 * 1000)
-    const outGroups = await prisma.invMovement.groupBy({
-      by: ['optionId'],
-      where: {
-        spaceId,
-        optionId: { in: ids },
-        type: 'OUTBOUND',
-        movementDate: { gte: since },
-      },
-      _sum: { quantity: true },
+  if (optionIds.length > 0) {
+    const now = new Date()
+    const maxWindowDays = Math.max(DEFAULT_WINDOW_DAYS, ...windowDaysByOption.values())
+    const since = new Date(now.getTime() - maxWindowDays * 24 * 60 * 60 * 1000)
+    const optionIdSet = new Set(optionIds)
+
+    const activeChannels = await prisma.channel.findMany({
+      where: { spaceId, isActive: true },
+      select: { id: true, name: true, externalSource: true },
     })
-    for (const g of outGroups) {
-      outboundByOption.set(g.optionId, g._sum.quantity ?? 0)
+
+    const demandRows = await loadOptionDemand(spaceId, since, now, activeChannels)
+
+    // 옵션별 일별 수요 → windowDays 절단 합산 (옵션마다 분석기간 다를 수 있음).
+    const dailyByOption = new Map<string, Record<string, number>>()
+    for (const id of optionIds) dailyByOption.set(id, {})
+    for (const row of demandRows) {
+      if (!optionIdSet.has(row.optionId)) continue
+      const byDate = dailyByOption.get(row.optionId)!
+      byDate[row.date] = (byDate[row.date] ?? 0) + row.quantity
+    }
+    for (const id of optionIds) {
+      const wd = windowDaysByOption.get(id) ?? DEFAULT_WINDOW_DAYS
+      const cutoff = toDateStr(new Date(now.getTime() - (wd - 1) * 24 * 60 * 60 * 1000))
+      const byDate = dailyByOption.get(id) ?? {}
+      let sum = 0
+      for (const [date, qty] of Object.entries(byDate)) {
+        if (date >= cutoff) sum += qty
+      }
+      outboundByOption.set(id, sum)
     }
   }
 
