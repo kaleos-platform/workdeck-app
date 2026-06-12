@@ -313,43 +313,53 @@ export function Sidebar({
         collapsed ? 'w-16' : expandedWidth
       )}
     >
-      {/* 브랜드 로고 + 접기/펴기 토글 */}
+      {/* 상단: 접힘 시 펼치기 토글만 / 펼침 시 [로고 … 접기 토글] */}
       <div
         className={cn(
-          'flex flex-shrink-0 border-b border-white/5 px-3 pb-3',
-          collapsed ? 'flex-col items-center gap-2' : 'items-center justify-between gap-2'
+          'flex flex-shrink-0 items-center border-b border-white/5 px-3 pb-3',
+          collapsed ? 'justify-center' : 'justify-between gap-2'
         )}
       >
-        <Link
-          href={meta.href}
-          aria-label={`${meta.name} 홈으로 이동`}
-          className={cn('flex min-w-0 items-center gap-2', collapsed && 'justify-center')}
-        >
-          <div
-            className={cn(
-              'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br',
-              meta.gradient
-            )}
+        {collapsed ? (
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label="사이드바 펼치기"
+            aria-expanded={false}
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-zinc-400 transition hover:bg-white/10 hover:text-white"
           >
-            <BrandIcon className="h-5 w-5 text-white" />
-          </div>
-          {!collapsed && (
-            <span className="truncate text-sm leading-tight font-bold text-white">{meta.name}</span>
-          )}
-        </Link>
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-          aria-expanded={!collapsed}
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-zinc-400 transition hover:bg-white/10 hover:text-white"
-        >
-          {collapsed ? (
             <PanelLeftOpen className="h-5 w-5" />
-          ) : (
-            <PanelLeftClose className="h-5 w-5" />
-          )}
-        </button>
+          </button>
+        ) : (
+          <>
+            <Link
+              href={meta.href}
+              aria-label={`${meta.name} 홈으로 이동`}
+              className="flex min-w-0 items-center gap-2"
+            >
+              <div
+                className={cn(
+                  'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br',
+                  meta.gradient
+                )}
+              >
+                <BrandIcon className="h-5 w-5 text-white" />
+              </div>
+              <span className="truncate text-sm leading-tight font-bold text-white">
+                {meta.name}
+              </span>
+            </Link>
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label="사이드바 접기"
+              aria-expanded={true}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-zinc-400 transition hover:bg-white/10 hover:text-white"
+            >
+              <PanelLeftClose className="h-5 w-5" />
+            </button>
+          </>
+        )}
       </div>
 
       <div
