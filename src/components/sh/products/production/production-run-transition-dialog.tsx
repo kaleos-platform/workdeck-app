@@ -127,14 +127,17 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
     return map
   }, [allocByOption])
 
-  // 실입고량은 발주 수량과 달라도 됨(양방향). 행이 존재하면 위치 선택 + 양수 정수만 검증.
-  // 행 0개 옵션은 통과(= 미입고, stockedInQty=0). 서버 Zod 와 동일 규칙(.positive()).
+  // 실입고량은 발주 수량과 달라도 됨(양방향). 0 행은 "그 위치 미배정"으로 제출 시 제외되므로 통과.
+  // 양수 행만 위치 선택 + 정수 검증. 한 옵션 전 행 0 = 미입고(stockedInQty=0, 허용).
+  // submit 의 quantity>0 필터와 동일 술어를 써야 표시 상태와 제출 상태가 어긋나지 않음.
   const allValid = useMemo(() => {
     if (!run) return false
     return run.items.every((it) => {
       const rows = allocByOption[it.optionId] ?? []
       return rows.every(
-        (r) => r.locationId !== '' && Number.isInteger(r.quantity) && r.quantity > 0
+        (r) =>
+          r.quantity === 0 ||
+          (r.locationId !== '' && Number.isInteger(r.quantity) && r.quantity > 0)
       )
     })
   }, [run, allocByOption])
@@ -187,12 +190,15 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
         transitionDate,
       }
       if (isStockIn) {
+        // quantity 0 행은 "그 위치 미배정" → 제외 (서버 Zod .positive() 와 일치, allValid 와 동일 술어)
         const allocations = run.items.flatMap((it) =>
-          (allocByOption[it.optionId] ?? []).map((r) => ({
-            optionId: it.optionId,
-            locationId: r.locationId,
-            quantity: r.quantity,
-          }))
+          (allocByOption[it.optionId] ?? [])
+            .filter((r) => r.quantity > 0)
+            .map((r) => ({
+              optionId: it.optionId,
+              locationId: r.locationId,
+              quantity: r.quantity,
+            }))
         )
         body.allocations = allocations
       }
