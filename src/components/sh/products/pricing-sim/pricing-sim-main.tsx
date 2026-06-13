@@ -39,7 +39,7 @@ import { PricingMatrix } from './pricing-matrix'
 import { PricingMarginAdvisor, type AdvisorChannelEntry } from './pricing-margin-advisor'
 import { PricingSensitivityChart } from './pricing-sensitivity-chart'
 import { DebouncedNumInput } from './debounced-num-input'
-import { calculateMatrix } from '@/lib/sh/pricing-matrix-calc'
+import { calculateMatrix, optionToBundle } from '@/lib/sh/pricing-matrix-calc'
 import type { MatrixGlobals, MatrixOption, MatrixChannel } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 
@@ -1086,7 +1086,7 @@ export function PricingSimMain() {
                       const sensitivityMatrix =
                         isChartExpanded && row.retailPrice > 0
                           ? calculateMatrix({
-                              option: rowMatrixOption,
+                              bundle: optionToBundle(rowMatrixOption),
                               channel: matrixChannel,
                               promotion: matrixPromotion,
                               globals: matrixGlobals,

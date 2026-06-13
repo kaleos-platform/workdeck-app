@@ -5,14 +5,25 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils'
 import {
   calculateMatrix,
+  optionToBundle,
   DISCOUNT_COLUMNS,
-  type MatrixInputs,
+  type MatrixOption,
+  type MatrixChannel,
+  type MatrixPromotion,
+  type MatrixGlobals,
   type MatrixCell,
 } from '@/lib/sh/pricing-matrix-calc'
+import type { TierThresholds } from '@/lib/sh/margin-tier'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
 
-type Props = MatrixInputs
+type Props = {
+  option: MatrixOption
+  channel: MatrixChannel
+  promotion: MatrixPromotion
+  globals: MatrixGlobals
+  thresholds: TierThresholds
+}
 
 // ─── 숫자 포맷 헬퍼 ────────────────────────────────────────────────────────────
 
@@ -86,7 +97,8 @@ function marginStyle(cell: MatrixCell): React.CSSProperties {
 
 export function PricingMatrix({ option, channel, promotion, globals, thresholds }: Props) {
   const matrix = useMemo(
-    () => calculateMatrix({ option, channel, promotion, globals, thresholds }),
+    () =>
+      calculateMatrix({ bundle: optionToBundle(option), channel, promotion, globals, thresholds }),
     [option, channel, promotion, globals, thresholds]
   )
 
