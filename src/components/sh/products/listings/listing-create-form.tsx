@@ -102,26 +102,131 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     sessionStorage.removeItem(prefillKey)
     prefillApplied.current = true
 
-    let prefill: { optionId: string; productId: string; retailPrice: number }
+    // 페이로드 파싱
+    type LegacyPrefill = { optionId: string; productId: string; retailPrice: number }
+    type PricingPrefillV2 = {
+      schemaVersion: 2
+      spaceId: string
+      channelId?: string | null
+      productId: string
+      items: { optionId: string; productId: string; quantity: number }[]
+      salePrice: number
+      createdAt: number
+    }
+
+    let parsed: LegacyPrefill | PricingPrefillV2
     try {
-      prefill = JSON.parse(raw)
+      parsed = JSON.parse(raw)
     } catch {
       toast.error('prefill 데이터 파싱 실패')
       return
     }
 
-    const apply = async () => {
-      try {
-        // 상품 + 옵션 직접 fetch — productId 기반으로 정확하게 조회
-        const [productRes, optionRes] = await Promise.all([
-          fetch(`/api/sh/products/${prefill.productId}`),
-          fetch(`/api/sh/products/${prefill.productId}/options/${prefill.optionId}`),
-        ])
-        if (!productRes.ok) throw new Error('상품 조회 실패')
-        if (!optionRes.ok) throw new Error('옵션 조회 실패')
+    // v1 레거시 경로 (schemaVersion 없음)
+    if (!('schemaVersion' in parsed) || parsed.schemaVersion !== 2) {
+      const prefill = parsed as LegacyPrefill
+      const applyLegacy = async () => {
+        try {
+          const [productRes, optionRes] = await Promise.all([
+            fetch(`/api/sh/products/${prefill.productId}`),
+            fetch(`/api/sh/products/${prefill.productId}/options/${prefill.optionId}`),
+          ])
+          if (!productRes.ok) throw new Error('상품 조회 실패')
+          if (!optionRes.ok) throw new Error('옵션 조회 실패')
 
+          const { product } = await productRes.json()
+          const { option } = await optionRes.json()
+
+          const ctx: ProductContext = {
+            id: product.id,
+            displayName: product.internalName ?? product.name,
+            officialName: product.name,
+            brandName: product.brand?.name ?? null,
+          }
+          setProductCtx(ctx)
+          if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
+
+          const row: CompositionRow = {
+            key: `prefill-${option.id}`,
+            suffixParts: [],
+            items: [
+              {
+                optionId: option.id,
+                optionName: option.name,
+                sku: option.sku ?? null,
+                quantity: 1,
+                retailPrice: option.retailPrice ?? null,
+                attributeValues: option.attributeValues ?? {},
+              },
+            ],
+            retailPrice: String(prefill.retailPrice),
+            channelAllocation: '',
+            status: 'ACTIVE',
+          }
+          setRows([row])
+          setSelected(new Set())
+          toast.success('옵션 자동 선택 + 가격 미리 채움 완료')
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : 'prefill 처리 실패')
+        }
+      }
+      applyLegacy()
+      return
+    }
+
+    // v2 경로
+    const prefillV2 = parsed as PricingPrefillV2
+
+    // TTL 검사 (10분)
+    if (Date.now() - prefillV2.createdAt > 10 * 60 * 1000) {
+      toast.error('prefill 데이터가 만료되었습니다')
+      return
+    }
+
+    const applyV2 = async () => {
+      try {
+        // 상품 조회
+        const productRes = await fetch(`/api/sh/products/${prefillV2.productId}`)
+        if (!productRes.ok) throw new Error('상품 조회 실패')
         const { product } = await productRes.json()
-        const { option } = await optionRes.json()
+
+        // 각 item의 옵션 유효성 검사 — 스페이스 검증은 API가 404/403으로 처리
+        // (클라이언트에서 spaceId를 직접 확인하지 않고 API 응답에 의존)
+        const optionResults = await Promise.all(
+          prefillV2.items.map(async (item) => {
+            try {
+              const res = await fetch(`/api/sh/products/${item.productId}/options/${item.optionId}`)
+              if (!res.ok) return { item, option: null }
+              const { option } = await res.json()
+              return { item, option }
+            } catch {
+              return { item, option: null }
+            }
+          })
+        )
+
+        // 유효하지 않은 옵션 경고
+        const invalid = optionResults.filter((r) => r.option === null)
+        if (invalid.length > 0) {
+          for (const r of invalid) {
+            toast.warning(`옵션을 찾을 수 없어 제외되었습니다: ${r.item.optionId}`)
+          }
+        }
+
+        // 유효한 옵션만 필터링
+        const validResults = optionResults.filter(
+          (
+            r
+          ): r is {
+            item: (typeof prefillV2.items)[number]
+            option: NonNullable<typeof r.option>
+          } => r.option !== null
+        )
+
+        if (validResults.length === 0) {
+          toast.error('유효한 옵션이 없습니다. prefill을 중단합니다.')
+          return
+        }
 
         // ProductContext 구성
         const ctx: ProductContext = {
@@ -133,34 +238,36 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         setProductCtx(ctx)
         if (!baseSearchName.trim()) setBaseSearchName(ctx.displayName)
 
-        // CompositionRow 1개 직접 생성 (suffix 없이 — 단일 옵션)
+        // channelId prefill
+        if (prefillV2.channelId) {
+          setChannelId(prefillV2.channelId)
+        }
+
+        // 단일 CompositionRow — 모든 유효 옵션을 items로 구성 (단일 상품 번들)
         const row: CompositionRow = {
-          key: `prefill-${option.id}`,
+          key: `prefill-v2-${prefillV2.productId}`,
           suffixParts: [],
-          items: [
-            {
-              optionId: option.id,
-              optionName: option.name,
-              sku: option.sku ?? null,
-              quantity: 1,
-              retailPrice: option.retailPrice ?? null,
-              attributeValues: option.attributeValues ?? {},
-            },
-          ],
-          retailPrice: String(prefill.retailPrice),
+          items: validResults.map((r) => ({
+            optionId: r.option.id,
+            optionName: r.option.name,
+            sku: r.option.sku ?? null,
+            quantity: r.item.quantity,
+            retailPrice: r.option.retailPrice ?? null,
+            attributeValues: r.option.attributeValues ?? {},
+          })),
+          retailPrice: String(prefillV2.salePrice),
           channelAllocation: '',
           status: 'ACTIVE',
         }
         setRows([row])
         setSelected(new Set())
-
-        toast.success('옵션 자동 선택 + 가격 미리 채움 완료')
+        toast.success('적정가 기반 상품 정보 미리 채움 완료')
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'prefill 처리 실패')
       }
     }
 
-    apply()
+    applyV2()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillKey])
 
