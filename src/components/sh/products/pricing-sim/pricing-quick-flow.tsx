@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -17,49 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
-import { groupOptionsByPrice, type PriceGroup } from '@/lib/sh/price-group'
-import { snapPrice } from '@/lib/sh/price-snap'
-import { calculateMatrix } from '@/lib/sh/pricing-matrix-calc'
 import type { MatrixBundle, MatrixChannel, MatrixGlobals } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 import { SELLER_HUB_LISTING_NEW_PATH } from '@/lib/deck-routes'
 
+import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
+import { ChannelResultCard } from './pricing-channel-result-card'
+import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
+
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
 
-type ProductHit = {
-  productId: string
-  productName: string
-}
-
-// /api/sh/pricing-options 응답 형태 (옵션 단위)
-type PricingOptionRaw = {
-  optionId: string
-  optionName: string
-  sku: string | null
-  productId: string
-  productName: string
-  brandName: string | null
-  costPrice: number | null
-  retailPrice: number | null
-  totalStock: number
-  msrp: number | null
-}
-
-// /api/sh/products/[productId]/options 응답 형태
-// Decimal 필드는 string으로 반환됨 — Number() 변환 필수
-type ApiProductOption = {
-  id: string
-  name: string
-  sku: string | null
-  costPrice: string | number | null
-  retailPrice: string | number | null
-  sizeLabel: string | null
-  attributeValues: Record<string, string> | null
-  totalStock: number
-}
-
-// /api/channels 응답 형태 (pricing-sim-main.tsx 300-332 참조)
+// /api/channels 응답 형태
 type ApiCh = {
   id: string
   name: string
@@ -96,9 +67,15 @@ type FullSettings = {
   returnHandlingCost: number
 }
 
+/** 안정 ID를 가진 번들 행 엔트리 */
+type RowEntry = {
+  id: string
+  resolved: ResolvedComponent | null
+}
+
 // ─── 헬퍼 ─────────────────────────────────────────────────────────────────────
 
-/** ApiCh → MatrixChannel 변환 (pricing-sim-main.tsx 180-210 참조, db 브랜치 사용) */
+/** ApiCh → MatrixChannel 변환 */
 function apiChToMatrixChannel(c: ApiCh): MatrixChannel {
   const channelType = c.channelTypeDef?.isSalesChannel === false ? 'INTERNAL_TRANSFER' : null
   return {
@@ -120,7 +97,7 @@ function apiChToMatrixChannel(c: ApiCh): MatrixChannel {
   }
 }
 
-/** settings → MatrixGlobals (pricing-sim-main.tsx 545-559 참조) */
+/** settings → MatrixGlobals */
 function buildGlobals(s: FullSettings): MatrixGlobals {
   return {
     includeVat: true,
@@ -134,7 +111,7 @@ function buildGlobals(s: FullSettings): MatrixGlobals {
   }
 }
 
-/** settings → TierThresholds (pricing-sim-main.tsx 556-559 참조) */
+/** settings → TierThresholds */
 function buildThresholds(s: FullSettings): TierThresholds {
   return {
     platformTargetGood: s.platformTargetGood,
@@ -147,11 +124,10 @@ function fmt(n: number): string {
   return Math.round(n).toLocaleString('ko-KR')
 }
 
-/** 마진 티어 색상 */
-function tierColor(tier: 'good' | 'fair' | 'bad'): string {
-  if (tier === 'good') return 'text-emerald-600'
-  if (tier === 'fair') return 'text-amber-600'
-  return 'text-destructive'
+/** 고유 행 ID 생성 */
+let _rowSeq = 0
+function nextRowId(): string {
+  return `row-${++_rowSeq}`
 }
 
 // ─── 컴포넌트 ──────────────────────────────────────────────────────────────────
@@ -171,8 +147,8 @@ export function PricingQuickFlow() {
     returnHandlingCost: 5000,
   })
 
-  // ── 채널 목록 (판매 채널만 — isSalesChannel=true) ─────────────────────────
-  const [channels, setChannels] = useState<ApiCh[]>([])
+  // ── 채널 목록 ─────────────────────────────────────────────────────────────
+  const [allChannels, setAllChannels] = useState<ApiCh[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -180,7 +156,6 @@ export function PricingQuickFlow() {
       try {
         const [stRes, chRes] = await Promise.all([
           fetch('/api/sh/settings'),
-          // 판매 채널만 조회 (listing-create-form과 동일한 필터)
           fetch('/api/channels?isActive=true&isSalesChannel=true'),
         ])
         if (stRes.ok) {
@@ -201,10 +176,10 @@ export function PricingQuickFlow() {
         }
         if (chRes.ok) {
           const d: { channels?: ApiCh[] } = await chRes.json()
-          if (!cancelled) setChannels(d.channels ?? [])
+          if (!cancelled) setAllChannels(d.channels ?? [])
         }
       } catch {
-        // 설정 로드 실패 시 기본값 유지
+        // 기본값 유지
       }
     }
     load()
@@ -213,231 +188,169 @@ export function PricingQuickFlow() {
     }
   }, [])
 
-  // ── Step 1: 상품 검색 및 선택 ──────────────────────────────────────────────
-  const [search, setSearch] = useState('')
-  const [debounced, setDebounced] = useState('')
-  const [searchResults, setSearchResults] = useState<PricingOptionRaw[]>([])
-  const [searchLoading, setSearchLoading] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<ProductHit | null>(null)
+  // ── 번들 행 상태 ──────────────────────────────────────────────────────────
+  // 안정 ID 배열로 관리 → 인라인 화살표 함수 없이 rowId로 변경 위임
+  const [rows, setRows] = useState<RowEntry[]>(() => [{ id: nextRowId(), resolved: null }])
 
-  // 검색 디바운스
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(search), 300)
-    return () => clearTimeout(t)
-  }, [search])
+  // BundleRow.onChange 시그니처: (rowId, component) — useCallback([]) 안정 참조
+  // 이 함수는 절대 새 참조를 만들지 않으므로 BundleRow effect의 dep으로 안전
+  const handleRowChange = useCallback((rowId: string, component: ResolvedComponent | null) => {
+    setRows((prev) => {
+      const idx = prev.findIndex((r) => r.id === rowId)
+      if (idx === -1) return prev
+      // 값이 실제로 바뀐 경우에만 새 배열 생성 (참조 안정화)
+      if (prev[idx].resolved === component) return prev
+      const next = [...prev]
+      next[idx] = { ...next[idx], resolved: component }
+      return next
+    })
+  }, [])
 
-  // 상품 검색
-  useEffect(() => {
-    if (!debounced.trim()) {
-      setSearchResults([])
-      return
-    }
-    let cancelled = false
-    const load = async () => {
-      setSearchLoading(true)
-      try {
-        const qs = new URLSearchParams({ search: debounced.trim(), pageSize: '30' })
-        const res = await fetch(`/api/sh/pricing-options?${qs.toString()}`)
-        if (!res.ok) throw new Error('검색 실패')
-        const data: { data: PricingOptionRaw[] } = await res.json()
-        if (!cancelled) setSearchResults(data.data ?? [])
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : '검색 실패')
-      } finally {
-        if (!cancelled) setSearchLoading(false)
-      }
-    }
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [debounced])
-
-  // 검색 결과를 상품 단위로 dedup
-  const productHits = useMemo(() => {
-    const seen = new Set<string>()
-    const hits: ProductHit[] = []
-    for (const r of searchResults) {
-      if (!seen.has(r.productId)) {
-        seen.add(r.productId)
-        hits.push({ productId: r.productId, productName: r.productName })
-      }
-    }
-    return hits
-  }, [searchResults])
-
-  // ── Step 2: 상품 선택 후 옵션 로드 → 가격 그룹 ────────────────────────────
-  const [priceGroups, setPriceGroups] = useState<PriceGroup[]>([])
-  const [groupsLoading, setGroupsLoading] = useState(false)
-  const [selectedGroupKey, setSelectedGroupKey] = useState<string>('')
-  // 그룹 내 모든 옵션 (구체 옵션 선택 Select용)
-  const [groupOptions, setGroupOptions] = useState<ApiProductOption[]>([])
-  // 대표 옵션 → 사용자가 구체 옵션을 직접 선택 가능
-  const [selectedOptionId, setSelectedOptionId] = useState<string>('')
-
-  const handlePickProduct = async (hit: ProductHit) => {
-    setSelectedProduct(hit)
-    setSearch('')
-    setSearchResults([])
-    setPriceGroups([])
-    setSelectedGroupKey('')
-    setGroupOptions([])
-    setSelectedOptionId('')
-    setSelectedChannelId('')
-    setSalePriceInput('')
-
-    setGroupsLoading(true)
-    try {
-      const res = await fetch(`/api/sh/products/${hit.productId}/options`)
-      if (!res.ok) throw new Error('옵션 조회 실패')
-      const data: { options: ApiProductOption[] } = await res.json()
-      const options = data.options ?? []
-
-      // Decimal → number 변환 (API는 string으로 반환)
-      const converted = options.map((o) => ({
-        ...o,
-        costPrice: o.costPrice != null ? Number(o.costPrice) : null,
-        retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
-      }))
-
-      setGroupOptions(converted)
-      const groups = groupOptionsByPrice(
-        converted.map((o) => ({
-          optionId: o.id,
-          optionName: o.name,
-          costPrice: o.costPrice as number | null,
-          retailPrice: o.retailPrice as number | null,
-          attributeValues: o.attributeValues,
-          sizeLabel: o.sizeLabel,
-        }))
-      )
-      setPriceGroups(groups)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '옵션 조회 실패')
-    } finally {
-      setGroupsLoading(false)
-    }
+  const addRow = () => {
+    setRows((prev) => [...prev, { id: nextRowId(), resolved: null }])
   }
 
-  // 선택된 그룹
-  const selectedGroup = useMemo(
-    () => priceGroups.find((g) => g.key === selectedGroupKey) ?? null,
-    [priceGroups, selectedGroupKey]
+  // setRows 업데이터만 사용 — 안정 참조이므로 useCallback([])로 충분 (ref 불필요)
+  const handleRemoveRow = useCallback((rowId: string) => {
+    setRows((prev) => {
+      if (prev.length <= 1) return prev
+      return prev.filter((r) => r.id !== rowId)
+    })
+  }, [])
+
+  // 확정된 행만
+  const confirmedRows = useMemo(
+    () => rows.map((r) => r.resolved).filter((r): r is ResolvedComponent => r !== null),
+    [rows]
   )
 
-  // 그룹 내 옵션 목록 (구체 옵션 Select용)
-  const groupMemberOptions = useMemo(() => {
-    if (!selectedGroup) return []
-    return groupOptions.filter((o) => selectedGroup.optionIds.includes(o.id))
-  }, [selectedGroup, groupOptions])
+  // 번들 이름 (첫 번째 상품명 + "외 N")
+  const defaultBundleName = useMemo(() => {
+    if (confirmedRows.length === 0) return ''
+    const first = confirmedRows[0].productName
+    return confirmedRows.length > 1 ? `${first} 외 ${confirmedRows.length - 1}` : first
+  }, [confirmedRows])
 
-  // 그룹 선택 시 대표 옵션으로 기본 설정
-  const handleGroupChange = (key: string) => {
-    setSelectedGroupKey(key)
-    const group = priceGroups.find((g) => g.key === key)
-    if (group) setSelectedOptionId(group.representativeOptionId)
+  const [bundleNameInput, setBundleNameInput] = useState('')
+  const bundleName = bundleNameInput || defaultBundleName
+
+  // 번들 비용 요약
+  const bundleCostSummary = useMemo(() => {
+    if (confirmedRows.length === 0) return null
+    const totalCost = confirmedRows.reduce((s, r) => s + r.costPrice * r.quantity, 0)
+    const totalRetail = confirmedRows.reduce((s, r) => s + r.retailPrice * r.quantity, 0)
+    return { totalCost, totalRetail }
+  }, [confirmedRows])
+
+  // MatrixBundle 구성
+  const matrixBundle = useMemo<MatrixBundle | null>(() => {
+    if (confirmedRows.length === 0) return null
+    return {
+      components: confirmedRows.map((r) => ({
+        costPrice: r.costPrice,
+        retailPrice: r.retailPrice,
+        quantity: r.quantity,
+      })),
+      packagingCost: settings.defaultPackagingCost,
+      salePrice: 0, // 판매가는 별도 슬라이더로 오버라이드
+    }
+  }, [confirmedRows, settings.defaultPackagingCost])
+
+  // ── 채널 선택 ─────────────────────────────────────────────────────────────
+  const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>([])
+  const [channelPickerId, setChannelPickerId] = useState<string>('')
+
+  const addChannel = (id: string) => {
+    if (!id || selectedChannelIds.includes(id)) return
+    setSelectedChannelIds((prev) => [...prev, id])
+    setChannelPickerId('')
   }
 
-  // ── Step 3: 채널 선택 ─────────────────────────────────────────────────────
-  const [selectedChannelId, setSelectedChannelId] = useState<string>('')
+  const removeChannel = (id: string) => {
+    setSelectedChannelIds((prev) => prev.filter((c) => c !== id))
+  }
 
-  const selectedChannel = useMemo(
-    () => channels.find((c) => c.id === selectedChannelId) ?? null,
-    [channels, selectedChannelId]
+  const selectedMatrixChannels = useMemo(
+    () =>
+      selectedChannelIds
+        .map((id) => allChannels.find((c) => c.id === id))
+        .filter((c): c is ApiCh => c != null)
+        .map(apiChToMatrixChannel),
+    [selectedChannelIds, allChannels]
   )
 
-  const matrixChannel: MatrixChannel | null = useMemo(
-    () => (selectedChannel ? apiChToMatrixChannel(selectedChannel) : null),
-    [selectedChannel]
+  // 추가 가능한 채널 목록 (이미 선택된 것 제외)
+  const availableChannels = useMemo(
+    () => allChannels.filter((c) => !selectedChannelIds.includes(c.id)),
+    [allChannels, selectedChannelIds]
   )
 
-  // ── Step 4: 판매가 입력 및 매트릭스 계산 ───────────────────────────────────
+  // ── 판매가 슬라이더 + 입력 ────────────────────────────────────────────────
   const [salePriceInput, setSalePriceInput] = useState<string>('')
   const salePrice = useMemo(() => {
     const n = Number(salePriceInput)
     return Number.isFinite(n) && n > 0 ? n : 0
   }, [salePriceInput])
 
+  // 슬라이더 최대값: 소비자가 합계 × 2 (최소 10000)
+  const sliderMax = useMemo(() => {
+    const baseline = bundleCostSummary?.totalRetail ?? 0
+    const upperEstimate = baseline > 0 ? baseline * 2 : 100000
+    return Math.max(upperEstimate, baseline, 10000)
+  }, [bundleCostSummary])
+
+  const handleSliderChange = (vals: number[]) => {
+    setSalePriceInput(String(Math.round(vals[0])))
+  }
+
+  const handleSetSalePrice = (price: number) => {
+    setSalePriceInput(String(Math.round(price)))
+  }
+
+  // 번들에 판매가 주입
+  const effectiveBundle = useMemo<MatrixBundle | null>(() => {
+    if (!matrixBundle || salePrice <= 0) return null
+    return { ...matrixBundle, salePrice }
+  }, [matrixBundle, salePrice])
+
+  // ── 프로모션 ──────────────────────────────────────────────────────────────
+  const [promotion, setPromotion] = useState<PromotionValue>({ type: 'NONE', value: 0 })
+
+  // ── 설정값 ────────────────────────────────────────────────────────────────
   const matrixGlobals = useMemo(() => buildGlobals(settings), [settings])
   const tierThresholds = useMemo(() => buildThresholds(settings), [settings])
 
-  // 추천가: 그룹 + 채널 선택되면 salePrice와 무관하게 계산
-  const recommendedPrices = useMemo(() => {
-    if (!selectedGroup || !matrixChannel) return null
-    const bundle: MatrixBundle = {
-      components: [
-        {
-          costPrice: selectedGroup.costPrice ?? 0,
-          retailPrice: selectedGroup.retailPrice ?? 0,
-          quantity: 1,
-        },
-      ],
-      packagingCost: settings.defaultPackagingCost,
-      salePrice: selectedGroup.retailPrice ?? 0, // 추천가 역산 기준가 (salePrice는 무관)
-    }
-    const result = calculateMatrix({
-      bundle,
-      channel: matrixChannel,
-      promotion: { type: 'NONE', value: 0 },
-      globals: matrixGlobals,
-      thresholds: tierThresholds,
-    })
-    return result.recommendedRetail
-  }, [selectedGroup, matrixChannel, settings.defaultPackagingCost, matrixGlobals, tierThresholds])
+  // ── 핸드오프 판단 ─────────────────────────────────────────────────────────
+  // 단일 상품 번들 여부: 모든 행이 같은 productId
+  const isSingleProduct = useMemo(() => {
+    if (confirmedRows.length === 0) return false
+    const first = confirmedRows[0].productId
+    return confirmedRows.every((r) => r.productId === first)
+  }, [confirmedRows])
 
-  // 마진 계산: salePrice 입력값으로
-  const marginResult = useMemo(() => {
-    if (!selectedGroup || !matrixChannel || salePrice <= 0) return null
-    const bundle: MatrixBundle = {
-      components: [
-        {
-          costPrice: selectedGroup.costPrice ?? 0,
-          retailPrice: selectedGroup.retailPrice ?? 0,
-          quantity: 1,
-        },
-      ],
-      packagingCost: settings.defaultPackagingCost,
-      salePrice,
-    }
-    const matrix = calculateMatrix({
-      bundle,
-      channel: matrixChannel,
-      promotion: { type: 'NONE', value: 0 },
-      globals: matrixGlobals,
-      thresholds: tierThresholds,
-    })
-    // cells[0] = 0% 할인 셀
-    return matrix.cells[0]
-  }, [
-    selectedGroup,
-    matrixChannel,
-    salePrice,
-    settings.defaultPackagingCost,
-    matrixGlobals,
-    tierThresholds,
-  ])
+  const canCreate =
+    isSingleProduct && confirmedRows.length > 0 && salePrice > 0 && selectedChannelIds.length > 0
 
-  // ── 판매채널 상품 생성 핸들러 ─────────────────────────────────────────────
   const handleCreateListing = () => {
-    if (!selectedProduct || !selectedGroup || !selectedOptionId || salePrice <= 0) {
-      toast.error('상품, 가격 그룹, 옵션, 판매가를 모두 입력해 주세요')
+    if (!canCreate) {
+      toast.error('상품, 채널, 판매가를 모두 입력해 주세요')
       return
     }
+
+    const firstChannelId = selectedChannelIds[0]
+    const firstRow = confirmedRows[0]
 
     const key = `pricing-prefill-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     const payload = {
       schemaVersion: 2,
-      // spaceId는 클라이언트에서 확인하지 않음 — API가 잘못된 옵션에 대해 404를 반환
       spaceId: '',
-      channelId: selectedChannelId || null,
-      productId: selectedProduct.productId,
-      items: [
-        {
-          optionId: selectedOptionId,
-          productId: selectedProduct.productId,
-          quantity: 1,
-        },
-      ],
+      channelId: firstChannelId,
+      productId: firstRow.productId,
+      items: confirmedRows.map((r) => ({
+        optionId: r.optionId,
+        productId: r.productId,
+        quantity: r.quantity,
+      })),
       salePrice,
       createdAt: Date.now(),
     }
@@ -452,288 +365,218 @@ export function PricingQuickFlow() {
     router.push(`${SELLER_HUB_LISTING_NEW_PATH}?prefillKey=${key}`)
   }
 
-  // ── 입력 완성도 체크 ──────────────────────────────────────────────────────
-  const hasGroup = Boolean(selectedGroup)
-  const hasChannel = Boolean(selectedChannelId)
-  const canCreate =
-    Boolean(selectedProduct) && hasGroup && Boolean(selectedOptionId) && salePrice > 0
-
   // ─── 렌더 ─────────────────────────────────────────────────────────────────
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">
-          빠른 적정가{' '}
-          <Badge variant="secondary" className="ml-1 text-[10px]">
-            베타
-          </Badge>
-        </CardTitle>
+        <CardTitle className="text-base">상품·번들 가격 시뮬레이션</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5">
-        {/* ── Step 1: 상품 검색 ── */}
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold text-muted-foreground">1. 상품 선택</Label>
-          {selectedProduct ? (
-            <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2">
-              <span className="flex-1 text-sm font-medium">{selectedProduct.productName}</span>
-              <button
-                type="button"
-                className="text-xs text-muted-foreground hover:text-foreground"
-                onClick={() => {
-                  setSelectedProduct(null)
-                  setPriceGroups([])
-                  setSelectedGroupKey('')
-                  setGroupOptions([])
-                  setSelectedOptionId('')
-                  setSelectedChannelId('')
-                  setSalePriceInput('')
-                }}
-              >
-                변경
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <div className="relative">
-                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="상품명 / SKU / 브랜드 검색"
-                  className="h-8 pl-9 text-sm"
-                />
-              </div>
-              {(searchLoading || productHits.length > 0) && (
-                <div className="max-h-48 overflow-y-auto rounded-md border bg-popover shadow-md">
-                  {searchLoading ? (
-                    <p className="p-3 text-center text-xs text-muted-foreground">검색 중...</p>
-                  ) : (
-                    <ul className="divide-y">
-                      {productHits.map((hit) => (
-                        <li key={hit.productId}>
-                          <button
-                            type="button"
-                            onClick={() => handlePickProduct(hit)}
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-muted/60"
-                          >
-                            {hit.productName}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* ── Step 2: 가격 그룹 선택 ── */}
-        {selectedProduct && (
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold text-muted-foreground">2. 가격 그룹 선택</Label>
-            {groupsLoading ? (
-              <p className="text-xs text-muted-foreground">옵션 로딩 중...</p>
-            ) : priceGroups.length === 0 ? (
-              <p className="text-xs text-muted-foreground">옵션이 없습니다</p>
-            ) : (
-              <Select value={selectedGroupKey} onValueChange={handleGroupChange}>
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue placeholder="가격 그룹을 선택하세요" />
-                </SelectTrigger>
-                <SelectContent>
-                  {priceGroups.map((g) => (
-                    <SelectItem key={g.key} value={g.key} disabled={g.priceUndefined}>
-                      {g.sharedLabel}
-                      {g.priceUndefined && (
-                        <span className="ml-1 text-[10px] text-muted-foreground">(원가 미정)</span>
-                      )}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-
-            {/* 그룹 내 구체 옵션 선택 (대표→구체 확정 UX) */}
-            {selectedGroup && groupMemberOptions.length > 1 && (
-              <div className="space-y-1">
-                <Label className="text-[11px] text-muted-foreground">
-                  등록할 옵션 선택 <span className="font-normal">(기본: 대표 옵션)</span>
-                </Label>
-                <Select value={selectedOptionId} onValueChange={setSelectedOptionId}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue placeholder="옵션 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {groupMemberOptions.map((o) => (
-                      <SelectItem key={o.id} value={o.id}>
-                        {o.name}
-                        {o.totalStock != null && (
-                          <span className="ml-1 text-[10px] text-muted-foreground">
-                            (재고 {o.totalStock.toLocaleString()})
-                          </span>
-                        )}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      <CardContent className="space-y-6">
+        {/* ── 섹션 1: 번들 구성 ── */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">번들 구성</h3>
+            {bundleName && (
+              <span className="max-w-[200px] truncate text-xs text-muted-foreground">
+                {bundleName}
+              </span>
             )}
           </div>
-        )}
 
-        {/* ── Step 3: 채널 선택 ── */}
-        {selectedProduct && (
+          {/* 번들 행 목록 — key=row.id (안정 ID) 로 keying */}
           <div className="space-y-2">
-            <Label className="text-xs font-semibold text-muted-foreground">3. 판매채널 선택</Label>
-            <Select value={selectedChannelId} onValueChange={setSelectedChannelId}>
+            {rows.map((row, idx) => (
+              <BundleRow
+                key={row.id}
+                rowId={row.id}
+                rowIndex={idx}
+                onChange={handleRowChange}
+                onRemove={handleRemoveRow}
+                showRemove={rows.length > 1}
+              />
+            ))}
+          </div>
+
+          {/* 상품 추가 버튼 */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full text-xs"
+            onClick={addRow}
+          >
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            상품 추가
+          </Button>
+
+          {/* 번들 이름 입력 (2개 이상) */}
+          {confirmedRows.length >= 2 && (
+            <div className="space-y-1">
+              <Label className="text-[11px] text-muted-foreground">번들 이름 (선택)</Label>
+              <Input
+                value={bundleNameInput}
+                onChange={(e) => setBundleNameInput(e.target.value)}
+                placeholder={defaultBundleName}
+                className="h-8 text-sm"
+              />
+            </div>
+          )}
+
+          {/* 번들 비용 요약 */}
+          {bundleCostSummary && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1 rounded-md bg-muted/30 px-3 py-2 text-xs">
+              <span>
+                총 원가{' '}
+                <span className="font-semibold tabular-nums">
+                  {fmt(bundleCostSummary.totalCost)}원
+                </span>
+              </span>
+              <span>
+                소비자가 합계{' '}
+                <span className="font-semibold tabular-nums">
+                  {fmt(bundleCostSummary.totalRetail)}원
+                </span>
+              </span>
+            </div>
+          )}
+        </section>
+
+        {/* ── 섹션 2: 채널 선택 ── */}
+        <section className="space-y-3">
+          <h3 className="text-sm font-semibold">판매채널</h3>
+
+          {/* 선택된 채널 목록 */}
+          {selectedMatrixChannels.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {selectedMatrixChannels.map((ch) => (
+                <Badge key={ch.id} variant="secondary" className="gap-1.5 pr-1">
+                  {ch.name}
+                  <button
+                    type="button"
+                    onClick={() => removeChannel(ch.id!)}
+                    className="text-muted-foreground hover:text-foreground"
+                    aria-label={`${ch.name} 제거`}
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* 채널 추가 picker */}
+          {availableChannels.length > 0 && (
+            <Select value={channelPickerId} onValueChange={addChannel}>
               <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="채널을 선택하세요 (선택)" />
+                <SelectValue placeholder="채널 추가..." />
               </SelectTrigger>
               <SelectContent>
-                {channels.map((c) => (
+                {availableChannels.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
-        )}
+          )}
 
-        {/* ── Step 4: 판매가 입력 + 추천가 배지 + 마진 표시 ── */}
-        {hasGroup && hasChannel && (
-          <div className="space-y-3">
-            <Label className="text-xs font-semibold text-muted-foreground">4. 판매가 설정</Label>
-
-            {/* 추천가 배지 — salePrice와 무관하게 표시 */}
-            {recommendedPrices && (
-              <div className="space-y-1">
-                <p className="text-[11px] text-muted-foreground">추천 판매가 (클릭 시 적용)</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {recommendedPrices.good != null && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setSalePriceInput(String(recommendedPrices.good))}
-                        className="rounded px-0 py-0"
-                      >
-                        <Badge
-                          variant="outline"
-                          className="cursor-pointer text-emerald-700 hover:bg-emerald-50"
-                        >
-                          good {fmt(recommendedPrices.good)}원
-                        </Badge>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSalePriceInput(String(snapPrice(recommendedPrices.good!, 'end900')))
-                        }
-                        className="rounded px-0 py-0"
-                      >
-                        <Badge
-                          variant="outline"
-                          className="cursor-pointer text-emerald-700 hover:bg-emerald-50"
-                        >
-                          good {fmt(snapPrice(recommendedPrices.good, 'end900'))}원 (…900)
-                        </Badge>
-                      </button>
-                    </>
-                  )}
-                  {recommendedPrices.fair != null && (
-                    <button
-                      type="button"
-                      onClick={() => setSalePriceInput(String(recommendedPrices.fair))}
-                      className="rounded px-0 py-0"
-                    >
-                      <Badge
-                        variant="outline"
-                        className="cursor-pointer text-amber-700 hover:bg-amber-50"
-                      >
-                        fair {fmt(recommendedPrices.fair)}원
-                      </Badge>
-                    </button>
-                  )}
-                  {recommendedPrices.min != null && (
-                    <button
-                      type="button"
-                      onClick={() => setSalePriceInput(String(recommendedPrices.min))}
-                      className="rounded px-0 py-0"
-                    >
-                      <Badge
-                        variant="outline"
-                        className="cursor-pointer text-muted-foreground hover:bg-muted"
-                      >
-                        min {fmt(recommendedPrices.min)}원
-                      </Badge>
-                    </button>
-                  )}
-                </div>
-              </div>
+          {allChannels.length > 0 &&
+            availableChannels.length === 0 &&
+            selectedChannelIds.length > 0 && (
+              <p className="text-xs text-muted-foreground">모든 채널이 추가되었습니다</p>
             )}
+        </section>
 
-            {/* 판매가 입력 */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Input
-                  type="number"
-                  value={salePriceInput}
-                  onChange={(e) => setSalePriceInput(e.target.value)}
-                  placeholder="판매가 입력"
-                  className="h-8 [appearance:textfield] pr-6 text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  min={0}
-                />
-                <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs text-muted-foreground">
-                  원
-                </span>
-              </div>
+        {/* ── 섹션 3: 판매가 레버 ── */}
+        <section className="space-y-3">
+          <h3 className="text-sm font-semibold">판매가</h3>
+
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Input
+                type="number"
+                value={salePriceInput}
+                onChange={(e) => setSalePriceInput(e.target.value)}
+                placeholder="판매가 입력"
+                className="h-8 [appearance:textfield] pr-6 text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                min={0}
+              />
+              <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs text-muted-foreground">
+                원
+              </span>
             </div>
-
-            {/* 마진 표시 */}
-            {marginResult && salePrice > 0 && (
-              <div className="rounded-md border bg-muted/20 px-3 py-2">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-                  <span>
-                    마진율{' '}
-                    <span className={`font-semibold tabular-nums ${tierColor(marginResult.tier)}`}>
-                      {(marginResult.margin * 100).toFixed(1)}%
-                    </span>
-                  </span>
-                  <span>
-                    순수익{' '}
-                    <span className="font-semibold tabular-nums">
-                      {fmt(marginResult.netProfit)}원
-                    </span>
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className={`px-1.5 py-0 text-[10px] ${
-                      marginResult.tier === 'good'
-                        ? 'border-emerald-300 text-emerald-700'
-                        : marginResult.tier === 'fair'
-                          ? 'border-amber-300 text-amber-700'
-                          : 'border-destructive/50 text-destructive'
-                    }`}
-                  >
-                    {marginResult.tier === 'good'
-                      ? '양호'
-                      : marginResult.tier === 'fair'
-                        ? '보통'
-                        : '미달'}
-                  </Badge>
-                </div>
-              </div>
+            {salePrice > 0 && (
+              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                {fmt(salePrice)}원
+              </span>
             )}
           </div>
+
+          {/* 슬라이더 */}
+          <Slider
+            min={0}
+            max={sliderMax}
+            step={100}
+            value={[salePrice]}
+            onValueChange={handleSliderChange}
+            className="py-1"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground">
+            <span>0원</span>
+            <span>{fmt(sliderMax)}원</span>
+          </div>
+        </section>
+
+        {/* ── 섹션 4: 프로모션 ── */}
+        <section>
+          <PricingPromotionCard value={promotion} onChange={setPromotion} embedded />
+        </section>
+
+        {/* ── 섹션 5: 라이브 결과 (채널별) ── */}
+        {effectiveBundle && selectedMatrixChannels.length > 0 && (
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold">채널별 마진 결과</h3>
+            <div className="space-y-3">
+              {selectedMatrixChannels.map((ch) => (
+                <ChannelResultCard
+                  key={ch.id}
+                  channel={ch}
+                  bundle={effectiveBundle}
+                  promotion={promotion}
+                  globals={matrixGlobals}
+                  thresholds={tierThresholds}
+                  onSetSalePrice={handleSetSalePrice}
+                  onRemove={() => removeChannel(ch.id!)}
+                />
+              ))}
+            </div>
+          </section>
         )}
 
-        {/* ── 생성 버튼 ── */}
-        {selectedProduct && (
-          <Button onClick={handleCreateListing} disabled={!canCreate} size="sm" className="w-full">
-            판매채널 상품으로 생성
-          </Button>
+        {/* ── 핸드오프 버튼 ── */}
+        {confirmedRows.length > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full">
+                  <Button
+                    onClick={handleCreateListing}
+                    disabled={!canCreate}
+                    size="sm"
+                    className="w-full"
+                  >
+                    판매채널 상품으로 생성
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {!isSingleProduct && (
+                <TooltipContent side="top" className="max-w-[280px] text-xs">
+                  다중 상품 번들은 현재 판매채널 상품 자동 생성을 지원하지 않습니다 (단일 상품만).
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         )}
       </CardContent>
     </Card>
