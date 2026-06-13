@@ -20,7 +20,12 @@ import {
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
-import type { MatrixBundle, MatrixChannel, MatrixGlobals } from '@/lib/sh/pricing-matrix-calc'
+import type {
+  MatrixBundle,
+  MatrixChannel,
+  MatrixGlobals,
+  MatrixPromotion,
+} from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 import { SELLER_HUB_LISTING_NEW_PATH } from '@/lib/deck-routes'
 
@@ -316,6 +321,15 @@ export function PricingQuickFlow() {
   // ── 프로모션 ──────────────────────────────────────────────────────────────
   const [promotion, setPromotion] = useState<PromotionValue>({ type: 'NONE', value: 0 })
 
+  // PromotionValue(UI) → MatrixPromotion(엔진): PERCENT는 0~100 → 0~1 변환
+  const matrixPromotion = useMemo<MatrixPromotion>(
+    () => ({
+      type: promotion.type,
+      value: promotion.type === 'PERCENT' ? promotion.value / 100 : promotion.value,
+    }),
+    [promotion]
+  )
+
   // ── 설정값 ────────────────────────────────────────────────────────────────
   const matrixGlobals = useMemo(() => buildGlobals(settings), [settings])
   const tierThresholds = useMemo(() => buildThresholds(settings), [settings])
@@ -543,7 +557,7 @@ export function PricingQuickFlow() {
                   key={ch.id}
                   channel={ch}
                   bundle={effectiveBundle}
-                  promotion={promotion}
+                  promotion={matrixPromotion}
                   globals={matrixGlobals}
                   thresholds={tierThresholds}
                   onSetSalePrice={handleSetSalePrice}
