@@ -5,6 +5,7 @@ import { Info } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   calculateMatrix,
+  optionToBundle,
   type MatrixChannel,
   type MatrixOption,
   type MatrixPromotion,
@@ -52,7 +53,7 @@ function ChannelAdvisorRow({
   const result = useMemo(
     () =>
       calculateMatrix({
-        option,
+        bundle: optionToBundle(option),
         channel: channelEntry.channel,
         promotion,
         globals,
