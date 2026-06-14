@@ -592,6 +592,13 @@ export function PricingQuickFlow() {
             </Tooltip>
           </TooltipProvider>
         )}
+
+        {/* 다중 상품 번들 — 핸드오프 비활성 사유를 인라인으로 명시 (비활성 버튼은 hover 어려움) */}
+        {confirmedRows.length > 1 && !isSingleProduct && (
+          <p className="text-center text-[11px] text-muted-foreground">
+            다중 상품 번들은 판매채널 상품 자동 생성을 지원하지 않습니다 (단일 상품만 가능).
+          </p>
+        )}
       </CardContent>
     </Card>
   )
