@@ -8,6 +8,7 @@ import {
   optionToBundle,
   DISCOUNT_COLUMNS,
   type MatrixOption,
+  type MatrixBundle,
   type MatrixChannel,
   type MatrixPromotion,
   type MatrixGlobals,
@@ -18,7 +19,10 @@ import type { TierThresholds } from '@/lib/sh/margin-tier'
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
 
 type Props = {
-  option: MatrixOption
+  /** 레거시 단일 옵션 경로 — bundle이 없을 때 사용 */
+  option?: MatrixOption
+  /** 번들 경로 — 제공 시 option보다 우선 적용 */
+  bundle?: MatrixBundle
   channel: MatrixChannel
   promotion: MatrixPromotion
   globals: MatrixGlobals
@@ -95,12 +99,20 @@ function marginStyle(cell: MatrixCell): React.CSSProperties {
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
-export function PricingMatrix({ option, channel, promotion, globals, thresholds }: Props) {
-  const matrix = useMemo(
-    () =>
-      calculateMatrix({ bundle: optionToBundle(option), channel, promotion, globals, thresholds }),
-    [option, channel, promotion, globals, thresholds]
-  )
+export function PricingMatrix({ option, bundle, channel, promotion, globals, thresholds }: Props) {
+  // bundle prop이 우선; 없으면 option → 번들 변환 (레거시 경로)
+  const effectiveBundle = useMemo<MatrixBundle | null>(() => {
+    if (bundle) return bundle
+    if (option) return optionToBundle(option)
+    return null
+  }, [bundle, option])
+
+  const matrix = useMemo(() => {
+    if (!effectiveBundle) return null
+    return calculateMatrix({ bundle: effectiveBundle, channel, promotion, globals, thresholds })
+  }, [effectiveBundle, channel, promotion, globals, thresholds])
+
+  if (!matrix || !effectiveBundle) return null
 
   const { cells, maxDiscountForMinMargin } = matrix
   // maxDiscountForMinMargin은 할인율(0~0.5) — 해당 컬럼 인덱스로 변환
@@ -108,7 +120,12 @@ export function PricingMatrix({ option, channel, promotion, globals, thresholds 
     maxDiscountForMinMargin !== null
       ? DISCOUNT_COLUMNS.indexOf(maxDiscountForMinMargin as (typeof DISCOUNT_COLUMNS)[number])
       : null
-  const showSet = option.unitsPerSet > 1
+  // 번들 총 단위 수 (perUnitProfit 표시 여부 결정)
+  const totalUnits = effectiveBundle.components.reduce(
+    (sum, c) => sum + Math.max(1, Math.round(c.quantity)),
+    0
+  )
+  const showSet = totalUnits > 1
 
   // 절대값 최대값 (색상 강도 기준점)
   const maxRevenue = Math.max(...cells.map((c) => c.revenue), 1)
@@ -166,7 +183,7 @@ export function PricingMatrix({ option, channel, promotion, globals, thresholds 
                         </p>
                         {showSet && (
                           <p className="text-[9px] text-muted-foreground">
-                            1개 {fmt(cell.finalPrice / option.unitsPerSet)}
+                            1개 {fmt(cell.finalPrice / totalUnits)}
                           </p>
                         )}
                       </div>
@@ -281,7 +298,7 @@ export function PricingMatrix({ option, channel, promotion, globals, thresholds 
                       <p>순이익: {fmt(cell.netProfit)}원</p>
                       {showSet && (
                         <p className="text-muted-foreground">
-                          1개당: {fmt(cell.perUnitProfit)}원 ({option.unitsPerSet}개 세트)
+                          1개당: {fmt(cell.perUnitProfit)}원 ({totalUnits}개 세트)
                         </p>
                       )}
                     </TooltipContent>
