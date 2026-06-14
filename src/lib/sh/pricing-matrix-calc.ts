@@ -80,6 +80,12 @@ export function optionToBundle(option: MatrixOption): MatrixBundle {
 export type MatrixPromotion = {
   type: 'NONE' | 'FLAT' | 'PERCENT' | 'COUPON' | 'MIN_PRICE'
   value: number // PERCENT: 0~1, FLAT/COUPON: 원, MIN_PRICE: 최소 판매가 ceiling (원)
+  /**
+   * 최소 금액 조건 (원, FLAT/PERCENT 전용, 선택).
+   * 컬럼 할인 적용 후 가격(p)이 이 값 이상일 때만 프로모션 차감 적용.
+   * 0/undefined면 무조건 적용(현행). 예: "5만원 이상 2,000원 할인" → minThreshold=50000.
+   */
+  minThreshold?: number
 }
 
 /** 글로벌 시나리오 설정 */
@@ -195,9 +201,15 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   let p = n(bundle.salePrice) * (1 - discountRate)
 
   // 2. 시나리오 프로모션 누적 적용 (컬럼 할인 → 프로모션 순서)
+  //    FLAT/PERCENT는 최소 금액 조건(minThreshold) 충족 시에만 차감 (조건부 할인).
+  //    조건 비교 기준 = 컬럼 할인 적용 후 가격 p. 미설정/0이면 무조건 적용.
+  const minThreshold = n(promotion.minThreshold)
+  const conditionMet = minThreshold <= 0 || p >= minThreshold
   if (promotion.type === 'PERCENT') {
-    p = p * (1 - n(promotion.value))
-  } else if (promotion.type === 'FLAT' || promotion.type === 'COUPON') {
+    if (conditionMet) p = p * (1 - n(promotion.value))
+  } else if (promotion.type === 'FLAT') {
+    if (conditionMet) p = p - n(promotion.value)
+  } else if (promotion.type === 'COUPON') {
     p = p - n(promotion.value)
   } else if (promotion.type === 'MIN_PRICE') {
     // 최소 판매가 ceiling — column 할인 결과가 promotion.value보다 높으면 강제 인하
