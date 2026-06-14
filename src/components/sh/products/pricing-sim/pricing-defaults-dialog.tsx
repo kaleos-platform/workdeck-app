@@ -34,6 +34,9 @@ export type PricingFullSettings = {
   // 반품 / 교환
   defaultReturnRate: number
   defaultReturnShipping: number
+  // VAT (0~1 단위 DB 저장)
+  defaultIncludeVat: boolean
+  defaultVatRate: number
   // 마진 등급 임계값 (0~1 단위 DB 저장, UI에서 % 표시) — 단일 기준
   platformTargetGood: number
   platformTargetFair: number
@@ -104,6 +107,10 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const retRateId = useId()
   const retShipId = useId()
 
+  // VAT
+  const incVatId = useId()
+  const vatRateId = useId()
+
   // 마진 등급
   const plGoodId = useId()
   const plFairId = useId()
@@ -134,6 +141,10 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     String(initialSettings.defaultReturnShipping)
   )
 
+  // VAT (vatRate 0~1 → % 표시)
+  const [includeVat, setIncludeVat] = useState(initialSettings.defaultIncludeVat)
+  const [vatRate, setVatRate] = useState(String(initialSettings.defaultVatRate * 100))
+
   // 마진 등급 (0~1 → % 표시)
   const [platformGood, setPlatformGood] = useState(String(initialSettings.platformTargetGood * 100))
   const [platformFair, setPlatformFair] = useState(String(initialSettings.platformTargetFair * 100))
@@ -155,6 +166,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     setAutoShipping(s.autoApplyShipping)
     setReturnRate(String(s.defaultReturnRate * 100))
     setReturnShipping(String(s.defaultReturnShipping))
+    setIncludeVat(s.defaultIncludeVat)
+    setVatRate(String(s.defaultVatRate * 100))
     setPlatformGood(String(s.platformTargetGood * 100))
     setPlatformFair(String(s.platformTargetFair * 100))
     setMinMargin(String(s.minimumAcceptableMargin * 100))
@@ -171,6 +184,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     initialSettings.autoApplyShipping,
     initialSettings.defaultReturnRate,
     initialSettings.defaultReturnShipping,
+    initialSettings.defaultIncludeVat,
+    initialSettings.defaultVatRate,
     initialSettings.platformTargetGood,
     initialSettings.platformTargetFair,
     initialSettings.minimumAcceptableMargin,
@@ -190,6 +205,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     setAutoShipping(s.autoApplyShipping)
     setReturnRate(String(s.defaultReturnRate * 100))
     setReturnShipping(String(s.defaultReturnShipping))
+    setIncludeVat(s.defaultIncludeVat)
+    setVatRate(String(s.defaultVatRate * 100))
     setPlatformGood(String(s.platformTargetGood * 100))
     setPlatformFair(String(s.platformTargetFair * 100))
     setMinMargin(String(s.minimumAcceptableMargin * 100))
@@ -211,6 +228,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const shipVal = parseFloat(shippingCost)
   const retRateVal = parseFloat(returnRate)
   const retShipVal = parseFloat(returnShipping)
+  const vatRateVal = parseFloat(vatRate)
   const plGoodVal = parseFloat(platformGood)
   const plFairVal = parseFloat(platformFair)
   const minMgnVal = parseFloat(minMargin)
@@ -223,6 +241,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     !isNaN(shipVal) &&
     !isNaN(retRateVal) &&
     !isNaN(retShipVal) &&
+    !isNaN(vatRateVal) &&
     !isNaN(plGoodVal) &&
     !isNaN(plFairVal) &&
     !isNaN(minMgnVal)
@@ -240,6 +259,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
       autoShipping !== ref.autoApplyShipping ||
       retRateVal / 100 !== ref.defaultReturnRate ||
       retShipVal !== ref.defaultReturnShipping ||
+      includeVat !== ref.defaultIncludeVat ||
+      vatRateVal / 100 !== ref.defaultVatRate ||
       plGoodVal / 100 !== ref.platformTargetGood ||
       plFairVal / 100 !== ref.platformTargetFair ||
       minMgnVal / 100 !== ref.minimumAcceptableMargin)
@@ -269,6 +290,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
           defaultShippingCost: shipVal,
           defaultReturnRate: retRateVal / 100,
           defaultReturnShipping: retShipVal,
+          defaultIncludeVat: includeVat,
+          defaultVatRate: vatRateVal / 100,
           autoApplyChannelFee: autoChannelFee,
           autoApplyAdCost: autoAdCost,
           autoApplyShipping: autoShipping,
@@ -294,6 +317,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         autoApplyShipping: Boolean(s.autoApplyShipping ?? autoShipping),
         defaultReturnRate: Number(s.defaultReturnRate ?? retRateVal / 100),
         defaultReturnShipping: Number(s.defaultReturnShipping ?? retShipVal),
+        defaultIncludeVat: Boolean(s.defaultIncludeVat ?? includeVat),
+        defaultVatRate: Number(s.defaultVatRate ?? vatRateVal / 100),
         platformTargetGood: Number(s.platformTargetGood ?? plGoodVal / 100),
         platformTargetFair: Number(s.platformTargetFair ?? plFairVal / 100),
         minimumAcceptableMargin: Number(s.minimumAcceptableMargin ?? minMgnVal / 100),
@@ -311,6 +336,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         setAutoShipping(saved.autoApplyShipping)
         setReturnRate(String(saved.defaultReturnRate * 100))
         setReturnShipping(String(saved.defaultReturnShipping))
+        setIncludeVat(saved.defaultIncludeVat)
+        setVatRate(String(saved.defaultVatRate * 100))
         setPlatformGood(String(saved.platformTargetGood * 100))
         setPlatformFair(String(saved.platformTargetFair * 100))
         setMinMargin(String(saved.minimumAcceptableMargin * 100))
@@ -347,7 +374,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
               채널 및 배송
             </TabsTrigger>
             <TabsTrigger value="return" className="text-xs">
-              반품 / 교환
+              반품 / VAT
             </TabsTrigger>
             <TabsTrigger value="margin" className="text-xs">
               마진 등급
@@ -525,6 +552,39 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
             <p className="text-xs text-muted-foreground">
               반품율은 전체 주문 대비 반품 비율. 순수익 계산 시 반품 손실 자동 반영.
             </p>
+
+            {/* VAT */}
+            <div className="space-y-3 rounded-md border p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor={incVatId} className="text-xs">
+                    VAT 포함
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    판매가에 VAT가 포함된 경우 매출에서 제외하고 계산
+                  </p>
+                </div>
+                <Switch id={incVatId} checked={includeVat} onCheckedChange={setIncludeVat} />
+              </div>
+              {includeVat && (
+                <div className="space-y-1.5">
+                  <Label htmlFor={vatRateId} className="text-xs">
+                    VAT 율 (%)
+                  </Label>
+                  <SuffixInput
+                    id={vatRateId}
+                    value={vatRate}
+                    onChange={setVatRate}
+                    suffix="%"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    placeholder="10"
+                    dirty={!isNaN(vatRateVal) && vatRateVal / 100 !== ref.defaultVatRate}
+                  />
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           {/* ── 탭 4: 마진 등급 ── */}

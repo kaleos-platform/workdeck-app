@@ -21,6 +21,8 @@ function serializeSettings(s: {
   defaultShippingCost: Decimal
   defaultReturnRate: Decimal
   defaultReturnShipping: Decimal
+  defaultIncludeVat: boolean
+  defaultVatRate: Decimal
   autoApplyChannelFee: boolean
   autoApplyAdCost: boolean
   autoApplyShipping: boolean
@@ -39,6 +41,7 @@ function serializeSettings(s: {
     defaultShippingCost: d(s.defaultShippingCost),
     defaultReturnRate: d(s.defaultReturnRate),
     defaultReturnShipping: d(s.defaultReturnShipping),
+    defaultVatRate: d(s.defaultVatRate),
     platformTargetGood: d(s.platformTargetGood),
     platformTargetFair: d(s.platformTargetFair),
     minimumAcceptableMargin: d(s.minimumAcceptableMargin),
@@ -62,6 +65,8 @@ export async function GET() {
       defaultShippingCost: 0,
       defaultReturnRate: 0,
       defaultReturnShipping: 0,
+      defaultIncludeVat: true,
+      defaultVatRate: 0.1,
       autoApplyChannelFee: false,
       autoApplyAdCost: false,
       autoApplyShipping: false,
@@ -98,6 +103,8 @@ export async function PUT(req: NextRequest) {
     defaultShippingCost,
     defaultReturnRate,
     defaultReturnShipping,
+    defaultIncludeVat,
+    defaultVatRate,
     autoApplyChannelFee,
     autoApplyAdCost,
     autoApplyShipping,
@@ -114,6 +121,8 @@ export async function PUT(req: NextRequest) {
     defaultShippingCost,
     defaultReturnRate,
     defaultReturnShipping,
+    defaultIncludeVat,
+    defaultVatRate,
     autoApplyChannelFee,
     autoApplyAdCost,
     autoApplyShipping,
