@@ -326,6 +326,7 @@ export function PricingQuickFlow() {
     () => ({
       type: promotion.type,
       value: promotion.type === 'PERCENT' ? promotion.value / 100 : promotion.value,
+      minThreshold: promotion.minThreshold,
     }),
     [promotion]
   )
