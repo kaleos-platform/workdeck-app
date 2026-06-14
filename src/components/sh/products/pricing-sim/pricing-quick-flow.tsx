@@ -1,13 +1,20 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Plus, Settings2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -18,7 +25,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 import type {
   MatrixBundle,
@@ -27,7 +33,6 @@ import type {
   MatrixPromotion,
 } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
-import { SELLER_HUB_LISTING_NEW_PATH } from '@/lib/deck-routes'
 
 import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
 import { ChannelResultCard } from './pricing-channel-result-card'
@@ -141,8 +146,6 @@ function nextRowId(): string {
 // ─── 컴포넌트 ──────────────────────────────────────────────────────────────────
 
 export function PricingQuickFlow() {
-  const router = useRouter()
-
   // ── 글로벌 설정 (초기 로드) ────────────────────────────────────────────────
   const [settings, setSettings] = useState<PricingFullSettings>(DEFAULT_SETTINGS)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -339,7 +342,7 @@ export function PricingQuickFlow() {
   const matrixGlobals = useMemo(() => buildGlobals(settings), [settings])
   const tierThresholds = useMemo(() => buildThresholds(settings), [settings])
 
-  // ── 핸드오프 판단 ─────────────────────────────────────────────────────────
+  // ── 채널별 직접 생성 ──────────────────────────────────────────────────────
   // 단일 상품 번들 여부: 모든 행이 같은 productId
   const isSingleProduct = useMemo(() => {
     if (confirmedRows.length === 0) return false
@@ -347,41 +350,61 @@ export function PricingQuickFlow() {
     return confirmedRows.every((r) => r.productId === first)
   }, [confirmedRows])
 
-  const canCreate =
-    isSingleProduct && confirmedRows.length > 0 && salePrice > 0 && selectedChannelIds.length > 0
+  // 생성 가능 조건 (채널별 공통 — 채널 1개 기준)
+  const canCreate = isSingleProduct && confirmedRows.length > 0 && salePrice > 0
 
-  const handleCreateListing = () => {
-    if (!canCreate) {
-      toast.error('상품, 채널, 판매가를 모두 입력해 주세요')
+  // 가격 그룹 전체 옵션 + 수량 (단일 상품 번들 — 첫 행 기준)
+  // 시뮬 마진은 번들 수량으로 계산되므로 생성 listing의 item 수량도 동일하게 맞춘다.
+  const groupOptionIds = useMemo(
+    () => (confirmedRows.length > 0 ? confirmedRows[0].optionIds : []),
+    [confirmedRows]
+  )
+  const createQuantity = confirmedRows.length > 0 ? Math.max(1, confirmedRows[0].quantity) : 1
+
+  // 생성 확인 대상 채널 (다이얼로그) + 생성 중 채널 id
+  const [confirmChannel, setConfirmChannel] = useState<MatrixChannel | null>(null)
+  const [creatingChannelId, setCreatingChannelId] = useState<string | null>(null)
+
+  // 채널별 생성 실행 — 가격 그룹 전체 옵션을 옵션당 listing 1개로, 같은 판매가로 생성
+  const handleCreateForChannel = async (channel: MatrixChannel) => {
+    if (!canCreate || !channel.id || groupOptionIds.length === 0) {
+      toast.error('상품과 판매가를 먼저 설정해 주세요')
       return
     }
-
-    const firstChannelId = selectedChannelIds[0]
-    const firstRow = confirmedRows[0]
-
-    const key = `pricing-prefill-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    const payload = {
-      schemaVersion: 2,
-      spaceId: '',
-      channelId: firstChannelId,
-      productId: firstRow.productId,
-      items: confirmedRows.map((r) => ({
-        optionId: r.optionId,
-        productId: r.productId,
-        quantity: r.quantity,
-      })),
-      salePrice,
-      createdAt: Date.now(),
-    }
-
+    setCreatingChannelId(channel.id)
     try {
-      sessionStorage.setItem(key, JSON.stringify(payload))
-    } catch {
-      toast.error('세션 스토리지 저장 실패')
-      return
+      const name = bundleName || confirmedRows[0].productName
+      const price = Math.round(salePrice)
+      const res = await fetch('/api/sh/products/listings/channel-products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channelId: channel.id,
+          baseSearchName: name,
+          baseDisplayName: name,
+          keywords: [],
+          // 가격 그룹 옵션마다 listing 1개 (옵션별), 전부 동일 판매가.
+          // 번들 수량을 item 수량에 반영 — 시뮬 마진과 동일 economics 유지.
+          listings: groupOptionIds.map((optionId) => ({
+            searchName: name,
+            displayName: name,
+            retailPrice: price,
+            status: 'ACTIVE' as const,
+            items: [{ optionId, quantity: createQuantity }],
+          })),
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data?.message ?? data?.error ?? '생성 실패')
+      }
+      toast.success(`${channel.name}에 옵션 ${groupOptionIds.length}개 생성 완료`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '생성 실패')
+    } finally {
+      setCreatingChannelId(null)
+      setConfirmChannel(null)
     }
-
-    router.push(`${SELLER_HUB_LISTING_NEW_PATH}?prefillKey=${key}`)
   }
 
   // ─── 렌더 ─────────────────────────────────────────────────────────────────
@@ -404,233 +427,207 @@ export function PricingQuickFlow() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          {/* 2단: 좌측 = 레버(자주 변경) / 우측 = sticky 결과(한눈에) */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* ═══ 좌측: 레버 ═══ */}
-            <div className="space-y-6">
-              {/* ── 섹션 1: 번들 구성 ── */}
-              <section className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">번들 구성</h3>
-                  {bundleName && (
-                    <span className="max-w-[200px] truncate text-xs text-muted-foreground">
-                      {bundleName}
-                    </span>
-                  )}
-                </div>
-
-                {/* 번들 행 목록 — key=row.id (안정 ID) 로 keying */}
-                <div className="space-y-2">
-                  {rows.map((row, idx) => (
-                    <BundleRow
-                      key={row.id}
-                      rowId={row.id}
-                      rowIndex={idx}
-                      onChange={handleRowChange}
-                      onRemove={handleRemoveRow}
-                      showRemove={rows.length > 1}
-                    />
-                  ))}
-                </div>
-
-                {/* 상품 추가 버튼 */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-xs"
-                  onClick={addRow}
-                >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  상품 추가
-                </Button>
-
-                {/* 번들 이름 입력 (2개 이상) */}
-                {confirmedRows.length >= 2 && (
-                  <div className="space-y-1">
-                    <Label className="text-[11px] text-muted-foreground">번들 이름 (선택)</Label>
-                    <Input
-                      value={bundleNameInput}
-                      onChange={(e) => setBundleNameInput(e.target.value)}
-                      placeholder={defaultBundleName}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                )}
-
-                {/* 번들 비용 요약 */}
-                {bundleCostSummary && (
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 rounded-md bg-muted/30 px-3 py-2 text-xs">
-                    <span>
-                      총 원가{' '}
-                      <span className="font-semibold tabular-nums">
-                        {fmt(bundleCostSummary.totalCost)}원
-                      </span>
-                    </span>
-                    <span>
-                      소비자가 합계{' '}
-                      <span className="font-semibold tabular-nums">
-                        {fmt(bundleCostSummary.totalRetail)}원
-                      </span>
-                    </span>
-                  </div>
-                )}
-              </section>
-
-              {/* ── 섹션 2: 채널 선택 ── */}
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold">판매채널</h3>
-
-                {/* 선택된 채널 목록 */}
-                {selectedMatrixChannels.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedMatrixChannels.map((ch) => (
-                      <Badge key={ch.id} variant="secondary" className="gap-1.5 pr-1">
-                        {ch.name}
-                        <button
-                          type="button"
-                          onClick={() => removeChannel(ch.id!)}
-                          className="text-muted-foreground hover:text-foreground"
-                          aria-label={`${ch.name} 제거`}
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-
-                {/* 채널 추가 picker */}
-                {availableChannels.length > 0 && (
-                  <Select value={channelPickerId} onValueChange={addChannel}>
-                    <SelectTrigger className="h-8 text-sm">
-                      <SelectValue placeholder="채널 추가..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableChannels.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-
-                {allChannels.length > 0 &&
-                  availableChannels.length === 0 &&
-                  selectedChannelIds.length > 0 && (
-                    <p className="text-xs text-muted-foreground">모든 채널이 추가되었습니다</p>
-                  )}
-              </section>
-
-              {/* ── 섹션 3: 판매가 레버 ── */}
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold">판매가</h3>
-
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      type="number"
-                      value={salePriceInput}
-                      onChange={(e) => setSalePriceInput(e.target.value)}
-                      placeholder="판매가 입력"
-                      className="h-8 [appearance:textfield] pr-6 text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      min={0}
-                    />
-                    <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs text-muted-foreground">
-                      원
-                    </span>
-                  </div>
-                  {salePrice > 0 && (
-                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                      {fmt(salePrice)}원
-                    </span>
-                  )}
-                </div>
-
-                {/* 슬라이더 */}
-                <Slider
-                  min={0}
-                  max={sliderMax}
-                  step={100}
-                  value={[salePrice]}
-                  onValueChange={handleSliderChange}
-                  className="py-1"
-                />
-                <div className="flex justify-between text-[10px] text-muted-foreground">
-                  <span>0원</span>
-                  <span>{fmt(sliderMax)}원</span>
-                </div>
-              </section>
-
-              {/* ── 섹션 4: 프로모션 ── */}
-              <section>
-                <PricingPromotionCard value={promotion} onChange={setPromotion} embedded />
-              </section>
+        <CardContent className="space-y-6">
+          {/* ── 섹션 1: 상품 구성 (최상단) ── */}
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">상품 구성</h3>
+              {bundleName && (
+                <span className="max-w-[200px] truncate text-xs text-muted-foreground">
+                  {bundleName}
+                </span>
+              )}
             </div>
-            {/* ═══ 우측: 결과 (sticky) ═══ */}
-            <div className="lg:sticky lg:top-4 lg:self-start">
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold">채널별 마진 결과</h3>
 
-                {/* 결과 카드 또는 안내 placeholder */}
-                {effectiveBundle && selectedMatrixChannels.length > 0 ? (
-                  <div className="space-y-3">
-                    {selectedMatrixChannels.map((ch) => (
-                      <ChannelResultCard
-                        key={ch.id}
-                        channel={ch}
-                        bundle={effectiveBundle}
-                        promotion={matrixPromotion}
-                        globals={matrixGlobals}
-                        thresholds={tierThresholds}
-                        onSetSalePrice={handleSetSalePrice}
-                        onRemove={() => removeChannel(ch.id!)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-lg border border-dashed bg-muted/20 px-4 py-10 text-center text-xs text-muted-foreground">
-                    상품·채널·판매가를 입력하면 채널별 마진이 여기에 표시됩니다.
-                  </div>
-                )}
+            {/* 상품 행 목록 — key=row.id (안정 ID) 로 keying */}
+            <div className="space-y-2">
+              {rows.map((row, idx) => (
+                <BundleRow
+                  key={row.id}
+                  rowId={row.id}
+                  rowIndex={idx}
+                  resolved={row.resolved}
+                  onChange={handleRowChange}
+                  onRemove={handleRemoveRow}
+                  showRemove={rows.length > 1}
+                />
+              ))}
+            </div>
 
-                {/* ── 핸드오프 버튼 ── */}
-                {confirmedRows.length > 0 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="w-full">
-                          <Button
-                            onClick={handleCreateListing}
-                            disabled={!canCreate}
-                            size="sm"
-                            className="w-full"
-                          >
-                            판매채널 상품으로 생성
-                          </Button>
-                        </div>
-                      </TooltipTrigger>
-                      {!isSingleProduct && (
-                        <TooltipContent side="top" className="max-w-[280px] text-xs">
-                          다중 상품 번들은 현재 판매채널 상품 자동 생성을 지원하지 않습니다 (단일
-                          상품만).
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+            {/* 상품 추가 버튼 */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-xs"
+              onClick={addRow}
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              상품 추가
+            </Button>
 
-                {/* 다중 상품 번들 — 핸드오프 비활성 사유를 인라인으로 명시 (비활성 버튼은 hover 어려움) */}
-                {confirmedRows.length > 1 && !isSingleProduct && (
-                  <p className="text-center text-[11px] text-muted-foreground">
-                    다중 상품 번들은 판매채널 상품 자동 생성을 지원하지 않습니다 (단일 상품만 가능).
-                  </p>
-                )}
+            {/* 번들 이름 입력 (2개 이상) */}
+            {confirmedRows.length >= 2 && (
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">번들 이름 (선택)</Label>
+                <Input
+                  value={bundleNameInput}
+                  onChange={(e) => setBundleNameInput(e.target.value)}
+                  placeholder={defaultBundleName}
+                  className="h-8 text-sm"
+                />
+              </div>
+            )}
+
+            {/* 번들 비용 요약 */}
+            {bundleCostSummary && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1 rounded-md bg-muted/30 px-3 py-2 text-xs">
+                <span>
+                  총 원가{' '}
+                  <span className="font-semibold tabular-nums">
+                    {fmt(bundleCostSummary.totalCost)}원
+                  </span>
+                </span>
+                <span>
+                  소비자가 합계{' '}
+                  <span className="font-semibold tabular-nums">
+                    {fmt(bundleCostSummary.totalRetail)}원
+                  </span>
+                </span>
+              </div>
+            )}
+          </section>
+
+          {/* ── 섹션 2: 판매채널 ── */}
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold">판매채널</h3>
+
+            {selectedMatrixChannels.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {selectedMatrixChannels.map((ch) => (
+                  <Badge key={ch.id} variant="secondary" className="gap-1.5 pr-1">
+                    {ch.name}
+                    <button
+                      type="button"
+                      onClick={() => removeChannel(ch.id!)}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label={`${ch.name} 제거`}
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {availableChannels.length > 0 && (
+              <Select value={channelPickerId} onValueChange={addChannel}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="채널 추가..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableChannels.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {allChannels.length > 0 &&
+              availableChannels.length === 0 &&
+              selectedChannelIds.length > 0 && (
+                <p className="text-xs text-muted-foreground">모든 채널이 추가되었습니다</p>
+              )}
+          </section>
+
+          {/* ── 섹션 3: 판매가(좌) · 프로모션(우) — 좌우 압축 ── */}
+          <section className="grid gap-6 sm:grid-cols-2">
+            {/* 판매가 */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold">판매가</h3>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    type="number"
+                    value={salePriceInput}
+                    onChange={(e) => setSalePriceInput(e.target.value)}
+                    placeholder="판매가 입력"
+                    className="h-8 [appearance:textfield] pr-6 text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    min={0}
+                  />
+                  <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs text-muted-foreground">
+                    원
+                  </span>
+                </div>
+              </div>
+              <Slider
+                min={0}
+                max={sliderMax}
+                step={100}
+                value={[salePrice]}
+                onValueChange={handleSliderChange}
+                className="py-1"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground">
+                <span>0원</span>
+                <span>{fmt(sliderMax)}원</span>
               </div>
             </div>
-          </div>
+
+            {/* 프로모션 */}
+            <div>
+              <PricingPromotionCard value={promotion} onChange={setPromotion} embedded />
+            </div>
+          </section>
+
+          {/* ── 섹션 4: 채널별 마진 결과 + 채널별 생성 ── */}
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold">채널별 마진 결과</h3>
+
+            {effectiveBundle && selectedMatrixChannels.length > 0 ? (
+              <div className="space-y-3">
+                {selectedMatrixChannels.map((ch) => (
+                  <div key={ch.id} className="space-y-2">
+                    <ChannelResultCard
+                      channel={ch}
+                      bundle={effectiveBundle}
+                      promotion={matrixPromotion}
+                      globals={matrixGlobals}
+                      thresholds={tierThresholds}
+                      onSetSalePrice={handleSetSalePrice}
+                      onRemove={() => removeChannel(ch.id!)}
+                    />
+                    {/* 채널별 생성 버튼 */}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="w-full text-xs"
+                      disabled={!canCreate || creatingChannelId === ch.id}
+                      onClick={() => setConfirmChannel(ch)}
+                    >
+                      {creatingChannelId === ch.id
+                        ? '생성 중...'
+                        : `${ch.name}에 판매채널 상품 생성`}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed bg-muted/20 px-4 py-10 text-center text-xs text-muted-foreground">
+                상품·채널·판매가를 입력하면 채널별 마진이 여기에 표시됩니다.
+              </div>
+            )}
+
+            {/* 다중 상품 번들 — 생성 비활성 사유 안내 */}
+            {confirmedRows.length > 1 && !isSingleProduct && (
+              <p className="text-center text-[11px] text-muted-foreground">
+                다중 상품 번들은 판매채널 상품 자동 생성을 지원하지 않습니다 (단일 상품만 가능).
+              </p>
+            )}
+          </section>
         </CardContent>
       </Card>
 
@@ -641,6 +638,41 @@ export function PricingQuickFlow() {
         initialSettings={settings}
         onSaved={setSettings}
       />
+
+      {/* 채널별 생성 확인 다이얼로그 */}
+      <Dialog
+        open={!!confirmChannel}
+        onOpenChange={(v) => {
+          if (!v) setConfirmChannel(null)
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>판매채널 상품 생성</DialogTitle>
+            <DialogDescription>
+              {confirmChannel?.name}에 가격 그룹의 옵션 {groupOptionIds.length}개를 각각 판매가{' '}
+              {fmt(salePrice)}원으로 생성합니다. 계속할까요?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmChannel(null)}
+              disabled={!!creatingChannelId}
+            >
+              취소
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => confirmChannel && handleCreateForChannel(confirmChannel)}
+              disabled={!!creatingChannelId}
+            >
+              {creatingChannelId ? '생성 중...' : '생성'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
