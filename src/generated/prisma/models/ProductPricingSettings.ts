@@ -34,6 +34,7 @@ export type ProductPricingSettingsAvgAggregateOutputType = {
   defaultShippingCost: runtime.Decimal | null
   defaultReturnRate: runtime.Decimal | null
   defaultReturnShipping: runtime.Decimal | null
+  defaultVatRate: runtime.Decimal | null
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
@@ -47,6 +48,7 @@ export type ProductPricingSettingsSumAggregateOutputType = {
   defaultShippingCost: runtime.Decimal | null
   defaultReturnRate: runtime.Decimal | null
   defaultReturnShipping: runtime.Decimal | null
+  defaultVatRate: runtime.Decimal | null
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
@@ -62,6 +64,8 @@ export type ProductPricingSettingsMinAggregateOutputType = {
   defaultShippingCost: runtime.Decimal | null
   defaultReturnRate: runtime.Decimal | null
   defaultReturnShipping: runtime.Decimal | null
+  defaultIncludeVat: boolean | null
+  defaultVatRate: runtime.Decimal | null
   autoApplyChannelFee: boolean | null
   autoApplyAdCost: boolean | null
   autoApplyShipping: boolean | null
@@ -82,6 +86,8 @@ export type ProductPricingSettingsMaxAggregateOutputType = {
   defaultShippingCost: runtime.Decimal | null
   defaultReturnRate: runtime.Decimal | null
   defaultReturnShipping: runtime.Decimal | null
+  defaultIncludeVat: boolean | null
+  defaultVatRate: runtime.Decimal | null
   autoApplyChannelFee: boolean | null
   autoApplyAdCost: boolean | null
   autoApplyShipping: boolean | null
@@ -102,6 +108,8 @@ export type ProductPricingSettingsCountAggregateOutputType = {
   defaultShippingCost: number
   defaultReturnRate: number
   defaultReturnShipping: number
+  defaultIncludeVat: number
+  defaultVatRate: number
   autoApplyChannelFee: number
   autoApplyAdCost: number
   autoApplyShipping: number
@@ -122,6 +130,7 @@ export type ProductPricingSettingsAvgAggregateInputType = {
   defaultShippingCost?: true
   defaultReturnRate?: true
   defaultReturnShipping?: true
+  defaultVatRate?: true
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
@@ -135,6 +144,7 @@ export type ProductPricingSettingsSumAggregateInputType = {
   defaultShippingCost?: true
   defaultReturnRate?: true
   defaultReturnShipping?: true
+  defaultVatRate?: true
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
@@ -150,6 +160,8 @@ export type ProductPricingSettingsMinAggregateInputType = {
   defaultShippingCost?: true
   defaultReturnRate?: true
   defaultReturnShipping?: true
+  defaultIncludeVat?: true
+  defaultVatRate?: true
   autoApplyChannelFee?: true
   autoApplyAdCost?: true
   autoApplyShipping?: true
@@ -170,6 +182,8 @@ export type ProductPricingSettingsMaxAggregateInputType = {
   defaultShippingCost?: true
   defaultReturnRate?: true
   defaultReturnShipping?: true
+  defaultIncludeVat?: true
+  defaultVatRate?: true
   autoApplyChannelFee?: true
   autoApplyAdCost?: true
   autoApplyShipping?: true
@@ -190,6 +204,8 @@ export type ProductPricingSettingsCountAggregateInputType = {
   defaultShippingCost?: true
   defaultReturnRate?: true
   defaultReturnShipping?: true
+  defaultIncludeVat?: true
+  defaultVatRate?: true
   autoApplyChannelFee?: true
   autoApplyAdCost?: true
   autoApplyShipping?: true
@@ -297,6 +313,8 @@ export type ProductPricingSettingsGroupByOutputType = {
   defaultShippingCost: runtime.Decimal
   defaultReturnRate: runtime.Decimal
   defaultReturnShipping: runtime.Decimal
+  defaultIncludeVat: boolean
+  defaultVatRate: runtime.Decimal
   autoApplyChannelFee: boolean
   autoApplyAdCost: boolean
   autoApplyShipping: boolean
@@ -340,6 +358,8 @@ export type ProductPricingSettingsWhereInput = {
   defaultShippingCost?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
+  defaultVatRate?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
   autoApplyAdCost?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
   autoApplyShipping?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
@@ -361,6 +381,8 @@ export type ProductPricingSettingsOrderByWithRelationInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
+  defaultIncludeVat?: Prisma.SortOrder
+  defaultVatRate?: Prisma.SortOrder
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
@@ -385,6 +407,8 @@ export type ProductPricingSettingsWhereUniqueInput = Prisma.AtLeast<{
   defaultShippingCost?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
+  defaultVatRate?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
   autoApplyAdCost?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
   autoApplyShipping?: Prisma.BoolFilter<"ProductPricingSettings"> | boolean
@@ -406,6 +430,8 @@ export type ProductPricingSettingsOrderByWithAggregationInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
+  defaultIncludeVat?: Prisma.SortOrder
+  defaultVatRate?: Prisma.SortOrder
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
@@ -434,6 +460,8 @@ export type ProductPricingSettingsScalarWhereWithAggregatesInput = {
   defaultShippingCost?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolWithAggregatesFilter<"ProductPricingSettings"> | boolean
+  defaultVatRate?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolWithAggregatesFilter<"ProductPricingSettings"> | boolean
   autoApplyAdCost?: Prisma.BoolWithAggregatesFilter<"ProductPricingSettings"> | boolean
   autoApplyShipping?: Prisma.BoolWithAggregatesFilter<"ProductPricingSettings"> | boolean
@@ -453,6 +481,8 @@ export type ProductPricingSettingsCreateInput = {
   defaultShippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: boolean
+  defaultVatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -474,6 +504,8 @@ export type ProductPricingSettingsUncheckedCreateInput = {
   defaultShippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: boolean
+  defaultVatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -493,6 +525,8 @@ export type ProductPricingSettingsUpdateInput = {
   defaultShippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  defaultVatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -514,6 +548,8 @@ export type ProductPricingSettingsUncheckedUpdateInput = {
   defaultShippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  defaultVatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -534,6 +570,8 @@ export type ProductPricingSettingsCreateManyInput = {
   defaultShippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: boolean
+  defaultVatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -553,6 +591,8 @@ export type ProductPricingSettingsUpdateManyMutationInput = {
   defaultShippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  defaultVatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -573,6 +613,8 @@ export type ProductPricingSettingsUncheckedUpdateManyInput = {
   defaultShippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  defaultVatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -598,6 +640,8 @@ export type ProductPricingSettingsCountOrderByAggregateInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
+  defaultIncludeVat?: Prisma.SortOrder
+  defaultVatRate?: Prisma.SortOrder
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
@@ -616,6 +660,7 @@ export type ProductPricingSettingsAvgOrderByAggregateInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
+  defaultVatRate?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -631,6 +676,8 @@ export type ProductPricingSettingsMaxOrderByAggregateInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
+  defaultIncludeVat?: Prisma.SortOrder
+  defaultVatRate?: Prisma.SortOrder
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
@@ -651,6 +698,8 @@ export type ProductPricingSettingsMinOrderByAggregateInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
+  defaultIncludeVat?: Prisma.SortOrder
+  defaultVatRate?: Prisma.SortOrder
   autoApplyChannelFee?: Prisma.SortOrder
   autoApplyAdCost?: Prisma.SortOrder
   autoApplyShipping?: Prisma.SortOrder
@@ -669,6 +718,7 @@ export type ProductPricingSettingsSumOrderByAggregateInput = {
   defaultShippingCost?: Prisma.SortOrder
   defaultReturnRate?: Prisma.SortOrder
   defaultReturnShipping?: Prisma.SortOrder
+  defaultVatRate?: Prisma.SortOrder
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
@@ -715,6 +765,8 @@ export type ProductPricingSettingsCreateWithoutSpaceInput = {
   defaultShippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: boolean
+  defaultVatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -734,6 +786,8 @@ export type ProductPricingSettingsUncheckedCreateWithoutSpaceInput = {
   defaultShippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: boolean
+  defaultVatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -769,6 +823,8 @@ export type ProductPricingSettingsUpdateWithoutSpaceInput = {
   defaultShippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  defaultVatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -788,6 +844,8 @@ export type ProductPricingSettingsUncheckedUpdateWithoutSpaceInput = {
   defaultShippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   defaultReturnShipping?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  defaultIncludeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  defaultVatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   autoApplyChannelFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoApplyShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -810,6 +868,8 @@ export type ProductPricingSettingsSelect<ExtArgs extends runtime.Types.Extension
   defaultShippingCost?: boolean
   defaultReturnRate?: boolean
   defaultReturnShipping?: boolean
+  defaultIncludeVat?: boolean
+  defaultVatRate?: boolean
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -831,6 +891,8 @@ export type ProductPricingSettingsSelectCreateManyAndReturn<ExtArgs extends runt
   defaultShippingCost?: boolean
   defaultReturnRate?: boolean
   defaultReturnShipping?: boolean
+  defaultIncludeVat?: boolean
+  defaultVatRate?: boolean
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -852,6 +914,8 @@ export type ProductPricingSettingsSelectUpdateManyAndReturn<ExtArgs extends runt
   defaultShippingCost?: boolean
   defaultReturnRate?: boolean
   defaultReturnShipping?: boolean
+  defaultIncludeVat?: boolean
+  defaultVatRate?: boolean
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -873,6 +937,8 @@ export type ProductPricingSettingsSelectScalar = {
   defaultShippingCost?: boolean
   defaultReturnRate?: boolean
   defaultReturnShipping?: boolean
+  defaultIncludeVat?: boolean
+  defaultVatRate?: boolean
   autoApplyChannelFee?: boolean
   autoApplyAdCost?: boolean
   autoApplyShipping?: boolean
@@ -883,7 +949,7 @@ export type ProductPricingSettingsSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductPricingSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "defaultOperatingCostPct" | "defaultAdCostPct" | "defaultPackagingCost" | "defaultChannelFeePct" | "defaultShippingCost" | "defaultReturnRate" | "defaultReturnShipping" | "autoApplyChannelFee" | "autoApplyAdCost" | "autoApplyShipping" | "platformTargetGood" | "platformTargetFair" | "minimumAcceptableMargin" | "createdAt" | "updatedAt", ExtArgs["result"]["productPricingSettings"]>
+export type ProductPricingSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "defaultOperatingCostPct" | "defaultAdCostPct" | "defaultPackagingCost" | "defaultChannelFeePct" | "defaultShippingCost" | "defaultReturnRate" | "defaultReturnShipping" | "defaultIncludeVat" | "defaultVatRate" | "autoApplyChannelFee" | "autoApplyAdCost" | "autoApplyShipping" | "platformTargetGood" | "platformTargetFair" | "minimumAcceptableMargin" | "createdAt" | "updatedAt", ExtArgs["result"]["productPricingSettings"]>
 export type ProductPricingSettingsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -909,6 +975,8 @@ export type $ProductPricingSettingsPayload<ExtArgs extends runtime.Types.Extensi
     defaultShippingCost: runtime.Decimal
     defaultReturnRate: runtime.Decimal
     defaultReturnShipping: runtime.Decimal
+    defaultIncludeVat: boolean
+    defaultVatRate: runtime.Decimal
     autoApplyChannelFee: boolean
     autoApplyAdCost: boolean
     autoApplyShipping: boolean
@@ -1350,6 +1418,8 @@ export interface ProductPricingSettingsFieldRefs {
   readonly defaultShippingCost: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly defaultReturnRate: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly defaultReturnShipping: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
+  readonly defaultIncludeVat: Prisma.FieldRef<"ProductPricingSettings", 'Boolean'>
+  readonly defaultVatRate: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly autoApplyChannelFee: Prisma.FieldRef<"ProductPricingSettings", 'Boolean'>
   readonly autoApplyAdCost: Prisma.FieldRef<"ProductPricingSettings", 'Boolean'>
   readonly autoApplyShipping: Prisma.FieldRef<"ProductPricingSettings", 'Boolean'>
