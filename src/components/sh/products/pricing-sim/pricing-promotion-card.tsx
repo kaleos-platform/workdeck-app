@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils'
 export type PromotionValue = {
   type: 'NONE' | 'FLAT' | 'PERCENT' | 'COUPON' | 'MIN_PRICE'
   value: number
+  /** 최소 판매가 조건 (원, FLAT/PERCENT 전용, 선택). 컬럼 할인 후 가격이 이 값 이상일 때만 적용. */
+  minThreshold?: number
 }
 
 type Props = {
@@ -35,8 +37,9 @@ const RULE_TEXT: Record<PromotionValue['type'], string> = {
   NONE: '',
   MIN_PRICE:
     '프로모션 적용 후 판매가가 이 값을 초과하지 않도록 강제 인하 — 컬럼 할인이 이미 더 낮으면 영향 없음.',
-  PERCENT: '할인된 가격 × (1 - 프로모션%) 로 계산됩니다.',
-  FLAT: '할인된 가격에서 정액을 차감합니다.',
+  PERCENT:
+    '할인된 가격 × (1 - 프로모션%) 로 계산됩니다. 최소 조건 설정 시 조건 충족 가격에만 적용.',
+  FLAT: '할인된 가격에서 정액을 차감합니다. 최소 조건 설정 시 조건 충족 가격에만 적용.',
   COUPON: '할인된 가격에서 쿠폰 금액을 차감합니다.',
 }
 
@@ -71,19 +74,26 @@ function PromotionContent({
 }) {
   const typeId = useId()
   const valId = useId()
+  const minThrId = useId()
 
   // 입력 중 string 상태 (number 전환 전)
   const [rawVal, setRawVal] = useState(String(value.value || ''))
+  const [rawMinThr, setRawMinThr] = useState(String(value.minThreshold || ''))
 
   const isPercent = value.type === 'PERCENT'
   const hasValue = value.type !== 'NONE'
+  // 조건부 할인(최소 금액 조건)은 정액/정률 전용
+  const supportsCondition = value.type === 'FLAT' || value.type === 'PERCENT'
   const suffix = isPercent ? '%' : '원'
   const ruleText = RULE_TEXT[value.type]
 
   function handleTypeChange(t: string) {
     const newType = t as PromotionValue['type']
     const numVal = parseFloat(rawVal) || 0
-    onChange({ type: newType, value: numVal })
+    // 조건 미지원 타입으로 바뀌면 minThreshold 제거
+    const nextSupports = newType === 'FLAT' || newType === 'PERCENT'
+    const minThr = nextSupports ? parseFloat(rawMinThr) || undefined : undefined
+    onChange({ type: newType, value: numVal, minThreshold: minThr })
   }
 
   function handleValueChange(raw: string) {
@@ -92,6 +102,13 @@ function PromotionContent({
     if (!isNaN(num)) {
       onChange({ ...value, value: num })
     }
+  }
+
+  function handleMinThrChange(raw: string) {
+    setRawMinThr(raw)
+    const num = parseFloat(raw)
+    // 빈값이면 조건 해제(undefined), 숫자면 설정
+    onChange({ ...value, minThreshold: raw.trim() === '' || isNaN(num) ? undefined : num })
   }
 
   return (
@@ -138,6 +155,33 @@ function PromotionContent({
             />
             <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
               {suffix}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* 최소 판매가 조건 (정액/정률 전용, 선택) */}
+      {supportsCondition && (
+        <div className="space-y-1.5">
+          <Label htmlFor={minThrId} className="text-xs">
+            최소 판매가 조건 (원, 선택)
+          </Label>
+          <div className="relative flex items-center">
+            <Input
+              id={minThrId}
+              type="number"
+              value={rawMinThr}
+              min={0}
+              step={1000}
+              onChange={(e) => handleMinThrChange(e.target.value)}
+              className={cn(
+                'h-8 w-32 [appearance:textfield] pr-6 text-right text-sm',
+                '[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+              )}
+              placeholder="조건 없음"
+            />
+            <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
+              원
             </span>
           </div>
         </div>

@@ -264,3 +264,57 @@ describe('targetAchievableUnderPromotion', () => {
     expect(result.targetAchievableUnderPromotion).toBe(false)
   })
 })
+
+// ─── Test 5: 조건부 할인 — FLAT/PERCENT minThreshold ──────────────────────────
+
+describe('조건부 할인 (minThreshold)', () => {
+  // salePrice 60000 기준. cells[0]=0% 할인 → p=60000, cells[10]=50% 할인 → p=30000.
+  // threshold 50000 → 0% 셀은 충족(p=60000>=50000), 50% 셀은 미충족(p=30000<50000).
+  const bundle = makeBundle(20000, 60000, 1, 2000)
+  const ch = noThresholdChannel // 무료배송 분기 노이즈 제거
+
+  test('FLAT: 임계 충족 셀만 차감, 미달 셀은 컬럼 할인만', () => {
+    const promoCond: MatrixPromotion = { type: 'FLAT', value: 2000, minThreshold: 50000 }
+    const promoNone: MatrixPromotion = { type: 'NONE', value: 0 }
+    const cond = calculateMatrix(makeInputs(bundle, ch, promoCond))
+    const none = calculateMatrix(makeInputs(bundle, ch, promoNone))
+
+    // cells[0]: 0% 할인 → p=60000 >= 50000 → 2000 차감 적용
+    expect(cond.cells[0].finalPrice).toBe(60000 - 2000)
+    // cells[10]: 50% 할인 → p=30000 < 50000 → 미적용 (컬럼 할인만, NONE과 동일)
+    expect(cond.cells[10].finalPrice).toBe(none.cells[10].finalPrice)
+    expect(none.cells[10].finalPrice).toBe(30000)
+  })
+
+  test('FLAT: minThreshold 미설정이면 전 셀 적용 (무조건 = 기존 동치)', () => {
+    const promoUncond: MatrixPromotion = { type: 'FLAT', value: 2000 }
+    const promoZero: MatrixPromotion = { type: 'FLAT', value: 2000, minThreshold: 0 }
+    const uncond = calculateMatrix(makeInputs(bundle, ch, promoUncond))
+    const zero = calculateMatrix(makeInputs(bundle, ch, promoZero))
+
+    // 모든 셀에서 2000 차감 (조건 없음)
+    expect(uncond.cells[0].finalPrice).toBe(60000 - 2000)
+    expect(uncond.cells[10].finalPrice).toBe(30000 - 2000)
+    // minThreshold:0 == 미설정
+    expect(zero.cells[10].finalPrice).toBe(uncond.cells[10].finalPrice)
+  })
+
+  test('PERCENT: 임계 충족 셀만 차감', () => {
+    const promoCond: MatrixPromotion = { type: 'PERCENT', value: 0.1, minThreshold: 50000 }
+    const cond = calculateMatrix(makeInputs(bundle, ch, promoCond))
+
+    // cells[0]: p=60000 >= 50000 → 10% 차감 → 54000
+    expect(cond.cells[0].finalPrice).toBe(60000 * 0.9)
+    // cells[10]: p=30000 < 50000 → 미적용 → 30000
+    expect(cond.cells[10].finalPrice).toBe(30000)
+  })
+
+  test('COUPON: minThreshold 무관 (항상 적용)', () => {
+    // COUPON은 조건부 대상 아님 — minThreshold가 있어도 무시하고 무조건 차감
+    const promoCoupon: MatrixPromotion = { type: 'COUPON', value: 2000, minThreshold: 50000 }
+    const coupon = calculateMatrix(makeInputs(bundle, ch, promoCoupon))
+
+    // cells[10]: p=30000 < 50000 이지만 COUPON은 무조건 차감 → 28000
+    expect(coupon.cells[10].finalPrice).toBe(30000 - 2000)
+  })
+})

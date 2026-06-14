@@ -211,6 +211,9 @@ export const pricingSettingsSchema = z.object({
   defaultShippingCost: z.number().nonnegative().default(0),
   defaultReturnRate: z.number().min(0).max(1).default(0),
   defaultReturnShipping: z.number().nonnegative().default(0),
+  // VAT (0~1 비율 단위)
+  defaultIncludeVat: z.boolean().default(true),
+  defaultVatRate: z.coerce.number().min(0).max(1).default(0.1),
   autoApplyChannelFee: z.boolean().default(false),
   autoApplyAdCost: z.boolean().default(false),
   autoApplyShipping: z.boolean().default(false),

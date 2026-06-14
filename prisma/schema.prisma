@@ -1614,6 +1614,9 @@ model ProductPricingSettings {
   defaultShippingCost     Decimal @default(0) @db.Decimal(18, 2) // 기본 배송비
   defaultReturnRate       Decimal @default(0) @db.Decimal(6, 4) // 기본 반품율 (0~1)
   defaultReturnShipping   Decimal @default(0) @db.Decimal(18, 2) // 반품 건당 배송비
+  // VAT (가격 시뮬레이터 공통 — 시나리오별 VAT 대체)
+  defaultIncludeVat       Boolean @default(true) // VAT 포함 여부
+  defaultVatRate          Decimal @default(0.1) @db.Decimal(6, 4) // VAT 율 (0~1)
   autoApplyChannelFee     Boolean @default(false) // 채널 수수료 자동 적용
   autoApplyAdCost         Boolean @default(false) // 광고비 자동 적용
   autoApplyShipping       Boolean @default(false) // 배송비 자동 적용
