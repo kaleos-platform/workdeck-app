@@ -49,7 +49,7 @@ type ApiCh = {
   paymentFeePct: string | number | null
 }
 
-// settings API 응답 형태
+// settings API 응답 형태 (/api/sh/settings serializeSettings 키와 일치)
 type SettingsRaw = {
   defaultOperatingCostPct?: number
   defaultAdCostPct?: number
@@ -57,8 +57,10 @@ type SettingsRaw = {
   platformTargetGood?: number
   platformTargetFair?: number
   minimumAcceptableMargin?: number
-  expectedReturnRate?: number
-  returnHandlingCost?: number
+  defaultReturnRate?: number // 0~1
+  defaultReturnShipping?: number // 원/건
+  defaultIncludeVat?: boolean
+  defaultVatRate?: number // 0~1
 }
 
 type FullSettings = {
@@ -68,8 +70,10 @@ type FullSettings = {
   platformTargetGood: number
   platformTargetFair: number
   minimumAcceptableMargin: number
-  expectedReturnRate: number
-  returnHandlingCost: number
+  defaultReturnRate: number // 0~1
+  defaultReturnShipping: number // 원/건
+  defaultIncludeVat: boolean
+  defaultVatRate: number // 0~1
 }
 
 /** 안정 ID를 가진 번들 행 엔트리 */
@@ -105,13 +109,14 @@ function apiChToMatrixChannel(c: ApiCh): MatrixChannel {
 /** settings → MatrixGlobals */
 function buildGlobals(s: FullSettings): MatrixGlobals {
   return {
-    includeVat: true,
-    vatRate: 0.1,
+    includeVat: s.defaultIncludeVat,
+    vatRate: s.defaultVatRate,
     adCostPct: s.defaultAdCostPct / 100,
     operatingCostPct: s.defaultOperatingCostPct / 100,
-    applyReturnAdjustment: false,
-    expectedReturnRate: s.expectedReturnRate,
-    returnHandlingCost: s.returnHandlingCost,
+    // 반품률이 설정돼 있으면 반품 보정 적용 (0이면 비활성)
+    applyReturnAdjustment: s.defaultReturnRate > 0,
+    expectedReturnRate: s.defaultReturnRate,
+    returnHandlingCost: s.defaultReturnShipping,
     minimumAcceptableMargin: s.minimumAcceptableMargin,
   }
 }
@@ -148,8 +153,10 @@ export function PricingQuickFlow() {
     platformTargetGood: 0.25,
     platformTargetFair: 0.15,
     minimumAcceptableMargin: 0.1,
-    expectedReturnRate: 0.05,
-    returnHandlingCost: 5000,
+    defaultReturnRate: 0,
+    defaultReturnShipping: 0,
+    defaultIncludeVat: true,
+    defaultVatRate: 0.1,
   })
 
   // ── 채널 목록 ─────────────────────────────────────────────────────────────
@@ -174,8 +181,10 @@ export function PricingQuickFlow() {
               platformTargetGood: Number(s.platformTargetGood ?? 0.25),
               platformTargetFair: Number(s.platformTargetFair ?? 0.15),
               minimumAcceptableMargin: Number(s.minimumAcceptableMargin ?? 0.1),
-              expectedReturnRate: Number(s.expectedReturnRate ?? 0.05),
-              returnHandlingCost: Number(s.returnHandlingCost ?? 5000),
+              defaultReturnRate: Number(s.defaultReturnRate ?? 0) || 0,
+              defaultReturnShipping: Number(s.defaultReturnShipping ?? 0) || 0,
+              defaultIncludeVat: s.defaultIncludeVat ?? true,
+              defaultVatRate: Number(s.defaultVatRate ?? 0.1),
             })
           }
         }
