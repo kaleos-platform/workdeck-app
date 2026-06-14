@@ -8072,6 +8072,8 @@ export const ProductPricingSettingsScalarFieldEnum = {
   defaultShippingCost: 'defaultShippingCost',
   defaultReturnRate: 'defaultReturnRate',
   defaultReturnShipping: 'defaultReturnShipping',
+  defaultIncludeVat: 'defaultIncludeVat',
+  defaultVatRate: 'defaultVatRate',
   autoApplyChannelFee: 'autoApplyChannelFee',
   autoApplyAdCost: 'autoApplyAdCost',
   autoApplyShipping: 'autoApplyShipping',
