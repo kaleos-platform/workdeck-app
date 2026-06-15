@@ -34,7 +34,7 @@ const WING_URL = 'https://wing.coupang.com'
 const INVENTORY_HEALTH_URL = `${WING_URL}/tenants/rfm-inventory/management/list`
 const SALES_ANALYSIS_URL = `${WING_URL}/tenants/business-insight/sales-analysis`
 const SCREENSHOT_DIR = path.resolve('.screenshots')
-const DEFAULT_TIMEOUT = 30_000
+const DEFAULT_TIMEOUT = 90_000
 const DOWNLOAD_TIMEOUT = 120_000
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────────
@@ -77,10 +77,20 @@ async function performWingLogin(
   credentials: { loginId: string; password: string }
 ): Promise<void> {
   console.log('[inventory] Wing 로그인 시도...')
-  await page.goto(`${WING_URL}/login`, {
-    waitUntil: 'domcontentloaded',
-    timeout: DEFAULT_TIMEOUT,
-  })
+  const currentUrl = page.url()
+  const alreadyOnLoginPage =
+    currentUrl.includes('xauth.coupang.com') ||
+    currentUrl.includes('/sso/login') ||
+    currentUrl.includes('/login')
+
+  // isWingLoggedIn()이 /dashboard 접근 중 이미 Coupang xauth 로그인 페이지로 redirect된 경우가 있다.
+  // 이 상태에서 다시 /login으로 이동하면 redirect 체인이 hang 날 수 있으므로 현재 로그인 페이지를 재사용한다.
+  if (!alreadyOnLoginPage) {
+    await page.goto(`${WING_URL}/login`, {
+      waitUntil: 'domcontentloaded',
+      timeout: DEFAULT_TIMEOUT,
+    })
+  }
   await page.waitForTimeout(2000)
 
   // ID 입력
@@ -118,6 +128,24 @@ async function performWingLogin(
  * 페이지에서 다운로드를 트리거하고 파일을 저장한다.
  * download 이벤트 프로미스를 안전하게 관리하여 unhandled rejection을 방지한다.
  */
+function uniqueDownloadTarget(
+  downloadDir: string,
+  fileName: string
+): { filePath: string; fileName: string } {
+  const parsed = path.parse(fileName)
+  let candidateName = fileName
+  let candidatePath = path.join(downloadDir, candidateName)
+  let counter = 1
+
+  while (fs.existsSync(candidatePath)) {
+    candidateName = `${parsed.name}_${Date.now()}_${counter}${parsed.ext}`
+    candidatePath = path.join(downloadDir, candidateName)
+    counter += 1
+  }
+
+  return { filePath: candidatePath, fileName: candidateName }
+}
+
 async function clickAndDownload(
   page: Page,
   downloadDir: string,
@@ -130,10 +158,11 @@ async function clickAndDownload(
   await btnLocator.click({ force: true })
 
   const download = await downloadPromise
-  const fileName = download.suggestedFilename() || fallbackName
-  const filePath = path.join(downloadDir, fileName)
-  await download.saveAs(filePath)
-  return { filePath, fileName }
+  const suggestedName = download.suggestedFilename()
+  const baseName = suggestedName && suggestedName.trim().length > 0 ? suggestedName : fallbackName
+  const target = uniqueDownloadTarget(downloadDir, baseName)
+  await download.saveAs(target.filePath)
+  return target
 }
 
 /** 페이지에 떠 있는 공지/프로모션 모달을 모두 닫는다 */
