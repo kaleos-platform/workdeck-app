@@ -338,9 +338,28 @@ export function PricingQuickFlow() {
     [promotion]
   )
 
+  // ── 목표마진 / 마진하한 라이브 오버라이드 ──────────────────────────────────
+  // null이면 설정 기본값 사용. 슬라이더로 조정 시 이 세션 한정 값으로 덮어쓴다(미저장).
+  // 설정이 새로 로드/저장되면 오버라이드를 초기화해 설정값을 따른다.
+  const [targetMarginOverride, setTargetMarginOverride] = useState<number | null>(null)
+  const [minMarginOverride, setMinMarginOverride] = useState<number | null>(null)
+  useEffect(() => {
+    setTargetMarginOverride(null)
+    setMinMarginOverride(null)
+  }, [settings])
+
+  const effectiveTargetGood = targetMarginOverride ?? settings.platformTargetGood
+  const effectiveMinMargin = minMarginOverride ?? settings.minimumAcceptableMargin
+
   // ── 설정값 ────────────────────────────────────────────────────────────────
-  const matrixGlobals = useMemo(() => buildGlobals(settings), [settings])
-  const tierThresholds = useMemo(() => buildThresholds(settings), [settings])
+  const matrixGlobals = useMemo(
+    () => ({ ...buildGlobals(settings), minimumAcceptableMargin: effectiveMinMargin }),
+    [settings, effectiveMinMargin]
+  )
+  const tierThresholds = useMemo(
+    () => ({ ...buildThresholds(settings), platformTargetGood: effectiveTargetGood }),
+    [settings, effectiveTargetGood]
+  )
 
   // ── 채널별 직접 생성 ──────────────────────────────────────────────────────
   // 단일 상품 번들 여부: 모든 행이 같은 productId
@@ -579,6 +598,56 @@ export function PricingQuickFlow() {
             {/* 프로모션 */}
             <div>
               <PricingPromotionCard value={promotion} onChange={setPromotion} embedded />
+            </div>
+          </section>
+
+          {/* ── 섹션 3.5: 목표 마진 (라이브) ── */}
+          <section className="grid gap-6 sm:grid-cols-2">
+            {/* 목표 마진율 */}
+            <div className="space-y-2">
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-sm font-semibold">목표 마진율</h3>
+                <span className="text-sm font-bold text-emerald-600 tabular-nums">
+                  {Math.round(effectiveTargetGood * 100)}%
+                </span>
+              </div>
+              <Slider
+                min={0}
+                max={0.6}
+                step={0.01}
+                value={[effectiveTargetGood]}
+                onValueChange={(v) => setTargetMarginOverride(v[0])}
+                className="py-1"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                채널별 추천 판매가(good) 역산 기준. 기본값은 설정에서 관리합니다.
+              </p>
+            </div>
+
+            {/* 마진 하한 */}
+            <div className="space-y-2">
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-sm font-semibold">
+                  마진 하한
+                  <span className="ml-1.5 text-[11px] font-normal text-muted-foreground">
+                    프로모션 방어선
+                  </span>
+                </h3>
+                <span className="text-sm font-bold text-destructive tabular-nums">
+                  {Math.round(effectiveMinMargin * 100)}%
+                </span>
+              </div>
+              <Slider
+                min={0}
+                max={Math.max(0.01, effectiveTargetGood)}
+                step={0.01}
+                value={[Math.min(effectiveMinMargin, effectiveTargetGood)]}
+                onValueChange={(v) => setMinMarginOverride(v[0])}
+                className="py-1"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                할인 여력 게이지 기준. 이 마진 아래로 떨어지면 경고합니다.
+              </p>
             </div>
           </section>
 
