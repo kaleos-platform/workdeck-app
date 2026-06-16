@@ -131,3 +131,28 @@
     cursor: pointer;
   }
 }
+
+/*
+ * 가격 시뮬레이션 페이지 로컬 테마 (warm cream).
+ * 전역 테마(중립 그레이)는 건드리지 않고 .ps-root 스코프에서만 웜 팔레트 적용.
+ * --ps-* 는 커스텀 변수, --foreground/--muted-foreground/--border 는 자식의
+ * Tailwind 유틸(text-muted-foreground 등)이 웜 톤을 상속하도록 로컬 재정의.
+ */
+.ps-root {
+  --ps-bg: oklch(0.97 0.012 85); /* 크림 배경 */
+  --ps-card: oklch(0.995 0.006 85); /* 카드 (거의 흰색, 따뜻한 기운) */
+  --ps-muted: oklch(0.955 0.012 85); /* 옅은 크림 (게이지 트랙 배경 등) */
+  --ps-track: oklch(0.9 0.012 85); /* 게이지 트랙 */
+  --ps-border: oklch(0.9 0.012 80); /* 따뜻한 보더 */
+  --ps-fg: oklch(0.22 0.01 60); /* 진한 갈색빛 텍스트 */
+
+  /* 자식 컴포넌트가 참조하는 전역 토큰을 로컬 웜 톤으로 재정의 */
+  --foreground: oklch(0.22 0.01 60);
+  --muted-foreground: oklch(0.5 0.012 70);
+  --border: oklch(0.9 0.012 80);
+  --muted: oklch(0.955 0.012 85);
+}
+
+.ps-root .font-serif {
+  font-family: 'Nanum Myeongjo', Georgia, 'Apple SD Gothic Neo', serif;
+}
