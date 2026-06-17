@@ -131,3 +131,18 @@
     cursor: pointer;
   }
 }
+
+/*
+ * 가격 시뮬레이션 페이지 로컬 토큰.
+ * 기존 workdeck 전역 테마(중립 그레이 shadcn)와 통일 — 별도 웜 팔레트 없음.
+ * --ps-* 는 컴포넌트가 참조하는 별칭으로, 전부 전역 shadcn 토큰에 매핑한다.
+ * (다크 모드는 전역 토큰이 .dark에서 자동 전환되므로 함께 따라감)
+ */
+.ps-root {
+  --ps-bg: var(--background);
+  --ps-card: var(--card);
+  --ps-muted: var(--muted);
+  --ps-track: var(--muted);
+  --ps-border: var(--border);
+  --ps-fg: var(--foreground);
+}

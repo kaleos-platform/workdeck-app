@@ -116,27 +116,29 @@ describe('calcRecommendedRetail 라운드트립', () => {
   })
 })
 
-// ─── Test 2: 단일 컴포넌트 번들 == 레거시 단일 옵션 수식 ─────────────────────
+// ─── Test 2: gross-basis 셀 계산 (수수료=판매가 기준, 마진 분모=공급가) ────────
 
-describe('1-컴포넌트 번들 == 레거시 옵션 동등성', () => {
+describe('gross-basis 0% 할인 셀 수작업 검증', () => {
   // 구체적인 수치 케이스:
   // salePrice=40000, cost=15000, qty=1, packaging=2000
-  // channel: fee=10%, paymentFee=3%, adCost=5%, op=3%, threshold=30000, shipping=3000
+  // channel: fee=10%, paymentFee=3%, adCost=5%, threshold=30000, shipping=3000
   // 0% 할인, VAT 10% 포함, 프로모션 없음
+  // applyReturnAdjustment=false → returnCost=0. 운영비는 신 모델에서 미사용(0).
   //
-  // 수작업 계산:
+  // 수작업 계산 (gross 모델 — 수수료/PG/광고는 finalPrice 기준):
   //   finalPrice = 40000
-  //   nominalRevenue = 40000 / 1.1 ≈ 36363.64 → r2 = 36363.64
-  //   channelFee = 36363.64 * 0.10 = 3636.36 → r2 = 3636.36
-  //   paymentFee = 36363.64 * 0.03 = 1090.91 → r2 = 1090.91
-  //   adCost = 36363.64 * 0.05 = 1818.18 → r2 = 1818.18
-  //   operating = 36363.64 * 0.03 = 1090.91 → r2 = 1090.91
+  //   nominalRevenue(공급가) = 40000 / 1.1 ≈ 36363.64
+  //   vat = 40000 − 36363.64 = 3636.36
+  //   channelFee = 40000 * 0.10 = 4000
+  //   paymentFee = 40000 * 0.03 = 1200
+  //   adCost = 40000 * 0.05 = 2000
+  //   operating = 0
   //   packaging = 2000
   //   shipping = 3000 (finalPrice 40000 >= threshold 30000)
-  //   setCost = 15000 * 1 = 15000
-  //   totalCost = 15000 + 3636.36 + 1090.91 + 1818.18 + 1090.91 + 2000 + 3000 = 27636.36
-  //   netProfit = r2(36363.64 - 27636.36) = r2(8727.28) = 8727.28
-  //   margin = r4(8727.28 / 36363.64) ≈ 0.2400
+  //   setCost(cogs) = 15000
+  //   totalCost = 15000 + 4000 + 1200 + 2000 + 0 + 2000 + 3000 = 27200
+  //   netProfit = r2(36363.64 − 27200) = 9163.64
+  //   margin = r4(9163.64 / 36363.64) ≈ 0.2520
 
   const bundle = makeBundle(15000, 40000, 1, 2000)
 
@@ -150,8 +152,21 @@ describe('1-컴포넌트 번들 == 레거시 옵션 동등성', () => {
   test('0% 할인 셀 순이익 수작업 값과 일치 (±1원 허용)', () => {
     const result = calculateMatrix(makeInputs(bundle))
     const cell0 = result.cells[0]
-    // 수작업: 8727.28
-    expect(cell0.netProfit).toBeCloseTo(8727.28, 1)
+    // 수작업: 9163.64
+    expect(cell0.netProfit).toBeCloseTo(9163.64, 1)
+  })
+
+  test('수수료는 판매가(gross) 기준, cogs·vat 노출, 운영비 0', () => {
+    const result = calculateMatrix(makeInputs(bundle))
+    const c = result.cells[0]
+    expect(c.channelFee).toBeCloseTo(4000, 2) // 40000 × 10% (gross)
+    expect(c.paymentFee).toBeCloseTo(1200, 2) // 40000 × 3%
+    expect(c.adCost).toBeCloseTo(2000, 2) // 40000 × 5%
+    expect(c.cogs).toBeCloseTo(15000, 2)
+    expect(c.vat).toBeCloseTo(3636.36, 1) // 40000 − 공급가
+    expect(c.operating).toBe(0)
+    expect(c.revenue).toBeCloseTo(36363.64, 1) // 마진 분모 = 공급가
+    expect(c.margin).toBeCloseTo(0.252, 3)
   })
 
   test('optionToBundle 변환 후 결과가 직접 번들과 동일', () => {
@@ -316,5 +331,107 @@ describe('조건부 할인 (minThreshold)', () => {
 
     // cells[10]: p=30000 < 50000 이지만 COUPON은 무조건 차감 → 28000
     expect(coupon.cells[10].finalPrice).toBe(30000 - 2000)
+  })
+})
+
+// ─── Test 6: 스크린샷 시안 회귀 벡터 (gross 모델 권장가 역산) ──────────────────
+
+describe('스크린샷 시안 회귀 벡터 — 목표마진 30% 권장가', () => {
+  // 시안 공통값: 원가 62,000 · 물류 3,000 · 반품처리비 6,000 × 반품율 15% = 900
+  //   VAT 10% 포함 · 목표마진(good) 30%. 채널별 Σfee% = 채널수수료 + 광고 + PG.
+  //   권장가(good) 역산 → 0% 셀에 넣으면 마진 정확히 30.0%.
+  // 검증 앵커 (수식 재현 시 일치해야 함):
+  //   쿠팡   Σfee=0.208 → P≈153,841 → 마진 ₩41,957 / 30.0%
+  //   네이버 Σfee=0.115 → P≈126,399 → 마진 ₩34,473 / 30.0%
+  //   무신사 Σfee=0.34  → P≈222,362 → 마진 ₩60,644 / 30.0%
+  const screenshotGlobals: MatrixGlobals = {
+    includeVat: true,
+    vatRate: 0.1,
+    adCostPct: 0, // 채널별 applyAdCost로 결정 — 채널 fixture에서 ad는 fee에 미포함, 아래 adCostPct로 주입
+    operatingCostPct: 0,
+    applyReturnAdjustment: true,
+    expectedReturnRate: 0.15,
+    returnHandlingCost: 6000,
+    minimumAcceptableMargin: 0.12,
+  }
+  const screenshotThresholds: TierThresholds = {
+    platformTargetGood: 0.3,
+    platformTargetFair: 0.2,
+  }
+  // 원가 62,000 · 물류 3,000(threshold 0 → 항상 부담) · 포장 0
+  const ssBundle: MatrixBundle = {
+    components: [{ costPrice: 62000, retailPrice: 189000, quantity: 1 }],
+    packagingCost: 0,
+    salePrice: 0, // 권장가로 오버라이드
+  }
+  function ssChannel(channelFeePct: number, adPct: number): MatrixChannel {
+    return {
+      channelType: 'OPEN_MARKET',
+      feeRates: [{ categoryName: '기본', ratePercent: channelFeePct * 100 }],
+      paymentFeeIncluded: false,
+      paymentFeePct: 0.02, // PG 2%
+      applyAdCost: true,
+      shippingFee: 3000,
+      freeShippingThreshold: 1, // 물류비 항상 부담 (>0, 모든 가격이 초과)
+    }
+  }
+  // adCostPct는 globals 공유값이므로 채널별로 globals를 복제해 주입
+  function ssInputs(channelFeePct: number, adPct: number): MatrixInputs {
+    return {
+      bundle: ssBundle,
+      channel: ssChannel(channelFeePct, adPct),
+      promotion: noPromotion,
+      globals: { ...screenshotGlobals, adCostPct: adPct },
+      thresholds: screenshotThresholds,
+    }
+  }
+
+  const cases = [
+    { name: '쿠팡', channelFee: 0.108, ad: 0.08, expectP: 153841, expectMargin: 41957 },
+    { name: '네이버', channelFee: 0.035, ad: 0.06, expectP: 126399, expectMargin: 34473 },
+    { name: '무신사', channelFee: 0.28, ad: 0.04, expectP: 222362, expectMargin: 60644 },
+  ]
+
+  for (const c of cases) {
+    test(`${c.name}: good 권장가 ≈ ${c.expectP}원, 0% 셀 마진 30.0%`, () => {
+      const inputs = ssInputs(c.channelFee, c.ad)
+      const result = calculateMatrix(inputs)
+      const good = result.recommendedRetail.good
+      expect(good).not.toBeNull()
+      // 권장가 ±2원 (반올림)
+      expect(good!).toBeCloseTo(c.expectP, -1)
+
+      // 권장가를 salePrice로 넣어 0% 셀 검증
+      const checkBundle: MatrixBundle = { ...ssBundle, salePrice: good! }
+      const cell = calculateMatrix({ ...inputs, bundle: checkBundle }).cells[0]
+      expect(cell.margin).toBeCloseTo(0.3, 3) // 정확히 30.0%
+      expect(cell.netProfit).toBeCloseTo(c.expectMargin, -1)
+    })
+  }
+
+  // ── board-card 계산 경로 회귀 (헤드라인 NONE vs 프로모션 실제 분리) ──────────
+  // PricingChannelBoardCard 가 헤드라인 cell(프로모션 NONE)과 promoCell(실제)을
+  // 분리 계산해야 게이지 fill이 0이 아니고 헤드라인 마진이 프로모션에 왜곡되지 않는다.
+  describe('board-card 헤드라인/프로모션 분리', () => {
+    const inputs = ssInputs(0.108, 0.08) // 쿠팡
+    const good = calculateMatrix(inputs).recommendedRetail.good!
+    const atRecommended = (promo: MatrixPromotion) =>
+      calculateMatrix({ ...inputs, bundle: { ...ssBundle, salePrice: good }, promotion: promo })
+
+    test('헤드라인(NONE)은 정확히 목표 마진 30%', () => {
+      const headline = atRecommended({ type: 'NONE', value: 0 })
+      expect(headline.cells[0].margin).toBeCloseTo(0.3, 3)
+    })
+
+    test('프로모션 10% 적용 셀은 헤드라인보다 낮은 판매가·마진 (게이지 fill > 0)', () => {
+      const headline = atRecommended({ type: 'NONE', value: 0 }).cells[0]
+      const promo = atRecommended({ type: 'PERCENT', value: 0.1 }).cells[0]
+      // 프로모션가 < 헤드라인가 → currentDiscount > 0
+      expect(promo.finalPrice).toBeLessThan(headline.finalPrice)
+      const currentDiscount = 1 - promo.finalPrice / headline.finalPrice
+      expect(currentDiscount).toBeGreaterThan(0.05)
+      // 프로모션 마진 < 헤드라인 마진
+      expect(promo.margin).toBeLessThan(headline.margin)
+    })
   })
 })
