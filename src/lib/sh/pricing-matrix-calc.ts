@@ -113,18 +113,20 @@ export type MatrixInputs = {
 export type MatrixCell = {
   discountRate: number // 0~1
   finalPrice: number // 최종 판매가 (프로모션 적용 후, 원)
-  revenue: number // 유효 매출 (반품 반영, VAT 제외, 원)
+  revenue: number // 유효 매출 (= 공급가 = finalPrice / (1+VAT), 마진 분모)
+  cogs: number // 번들 원가 Σ(costPrice × quantity) (원)
+  vat: number // 부가세 (= finalPrice − 공급가, includeVat=false 이면 0)
   fee: number // 채널수수료 + 결제수수료 합산 (원)
-  channelFee: number // 채널 수수료 (원)
+  channelFee: number // 채널 수수료 (원, 판매가 기준)
   paymentFee: number // 결제 수수료 (원, paymentFeeIncluded=true 이면 0)
-  adCost: number // 광고비 (원)
+  adCost: number // 광고비 (원, 판매가 기준)
   shipping: number // 배송비 (원, 무료배송 조건 충족 시 0)
   packaging: number // 포장비 (원)
-  operating: number // 운영비 (원)
+  operating: number // 운영비 (원) — 신 모델에서 미사용(항상 0)
   returnCost: number // 반품 처리비 (원, applyReturnAdjustment=false 이면 0)
   totalCost: number // 원가 + 모든 비용 합산 (원)
   netProfit: number // 순이익 (원, 1번들 기준)
-  margin: number // 순이익율 (0~1)
+  margin: number // 순이익율 (0~1, 공급가 분모)
   perUnitProfit: number // 1개당 순이익 (원)
   tier: Tier // 마진 등급
 }
@@ -217,20 +219,22 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   }
   const finalPrice = Math.max(0, r2(p))
 
-  // 3. VAT 처리
+  // 3. VAT 처리 — 공급가(VAT 제외) = 마진 분모. vat = 판매가 − 공급가.
   const nominalRevenue = globals.includeVat ? r2(finalPrice / (1 + n(globals.vatRate))) : finalPrice
+  const vat = r2(finalPrice - nominalRevenue)
 
-  // 4. 채널 수수료 — categoryName으로 카테고리별 수수료 조회, 없으면 '기본' fallback
-  const channelFee = r2(nominalRevenue * lookupCategoryFeePct(channel.feeRates))
+  // 4. 채널 수수료 — 판매가(gross) 기준. categoryName fallback '기본'.
+  //    쿠팡 등 마켓 수수료는 결제금액(판매가) 기준 부과 → finalPrice × 수수료율.
+  const channelFee = r2(finalPrice * lookupCategoryFeePct(channel.feeRates))
 
-  // 5. 결제 수수료 (PG) — paymentFeeIncluded=true 이면 이미 채널 수수료에 포함
-  const paymentFee = channel.paymentFeeIncluded ? 0 : r2(nominalRevenue * n(channel.paymentFeePct))
+  // 5. 결제 수수료 (PG) — 판매가 기준. paymentFeeIncluded=true 이면 채널 수수료에 포함.
+  const paymentFee = channel.paymentFeeIncluded ? 0 : r2(finalPrice * n(channel.paymentFeePct))
 
-  // 6. 광고비 (채널 설정이 결정)
-  const adCost = channel.applyAdCost ? r2(nominalRevenue * n(globals.adCostPct)) : 0
+  // 6. 광고비 (채널 설정이 결정) — 판매가 기준
+  const adCost = channel.applyAdCost ? r2(finalPrice * n(globals.adCostPct)) : 0
 
-  // 7. 운영비
-  const operating = r2(nominalRevenue * n(globals.operatingCostPct))
+  // 7. 운영비 — 신 모델에서 미사용 (스크린샷 시안에 항목 없음)
+  const operating = 0
 
   // 8. 포장비 (번들당 1회)
   const packaging = r2(n(bundle.packagingCost))
@@ -245,18 +249,14 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   // 10. 번들 원가: Σ(component.costPrice × quantity)
   const setCost = bundleSetCost(bundle)
 
-  // 11. 반품 보정 (applyReturnAdjustment)
-  let effectiveRevenue: number
-  let returnCost: number
-  if (globals.applyReturnAdjustment && globals.expectedReturnRate > 0) {
-    effectiveRevenue = r2(nominalRevenue * (1 - n(globals.expectedReturnRate)))
-    returnCost = r2(n(globals.returnHandlingCost) * n(globals.expectedReturnRate))
-  } else {
-    effectiveRevenue = nominalRevenue
-    returnCost = 0
-  }
+  // 11. 반품 — 처리비만 비용 반영(매출 차감 없음). returnCost = 처리비 × 반품율.
+  const returnCost =
+    globals.applyReturnAdjustment && globals.expectedReturnRate > 0
+      ? r2(n(globals.returnHandlingCost) * n(globals.expectedReturnRate))
+      : 0
 
-  // 12. 합산
+  // 12. 합산 — 마진 분모 = 공급가(nominalRevenue)
+  const effectiveRevenue = nominalRevenue
   const fee = r2(channelFee + paymentFee)
   const totalCost = r2(
     setCost + channelFee + paymentFee + adCost + operating + packaging + shipping + returnCost
@@ -270,6 +270,8 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
     discountRate,
     finalPrice,
     revenue: effectiveRevenue,
+    cogs: setCost,
+    vat,
     fee,
     channelFee,
     paymentFee,
@@ -287,20 +289,20 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
 }
 
 /**
- * 목표 마진 달성을 위한 추천 소매가 역산 (0% 할인, 프로모션 없음 기준 근사).
+ * 목표 마진 달성을 위한 추천 판매가 역산 (0% 할인, 프로모션 없음 기준).
  *
- * 공식 (applyReturnAdjustment=false 근사):
- *   revenue = retailPrice / (1 + vatRate)  [includeVat=true]
- *   totalPctCost = channelFeePct + paymentFeePct(미포함시) + operatingCostPct + adCostPct(적용시)
- *   setCost = Σ(component.costPrice × quantity)
- *   revenue * (1 - totalPctCost) - (setCost + packaging + shipping) = revenue * target
- *   → revenue = (setCost + packaging + shipping) / (1 - totalPctCost - target)
- *   → retailPrice = revenue * (1 + vatRate)
+ * gross-basis 모델 — 수수료/광고/PG는 판매가(P) 기준, 마진 분모는 공급가(P/(1+v)).
+ *   margin = (공급가 − totalCost) / 공급가 = target
+ *   공급가 = P / (1 + v)   [includeVat=true, 아니면 v=0]
+ *   totalCost = cogs + P·Σfee% + packaging + shipping + returnCost
+ *   Σfee% = 채널수수료율 + PG율(미포함시) + 광고비율(적용시)
+ *   ⇒ P·(1−target)/(1+v) − P·Σfee% = cogs + packaging + shipping + returnCost
+ *   ⇒ P = fixedCosts / [ (1−target)/(1+v) − Σfee% ]
  *
  * 무료배송 임계값 step function 처리:
  *   - threshold null/0: 배송비 비용 = 0 (calcCell과 동일)
  *   - threshold > 0: 두 가지 시나리오(배송비 포함/미포함)를 각각 역산 후
- *     결과 소매가가 자신의 가정과 일치하는 브랜치를 선택.
+ *     결과 판매가가 자신의 가정과 일치하는 브랜치를 선택.
  *     둘 다 일치하면(임계값 사이) 보수적 고가 선택.
  *
  * 분모 <= 0 이면 null 반환 (구조적 달성 불가).
@@ -309,58 +311,41 @@ function calcRetailForTarget(target: number, inputs: MatrixInputs): number | nul
   try {
     const { bundle, channel, globals } = inputs
 
-    let totalPctCost = lookupCategoryFeePct(channel.feeRates) + n(globals.operatingCostPct)
-    if (!channel.paymentFeeIncluded) totalPctCost += n(channel.paymentFeePct)
-    if (channel.applyAdCost) totalPctCost += n(globals.adCostPct)
-    // 반품 보정 적용 시 유효 매출이 줄어드는 효과를 근사 반영
-    if (globals.applyReturnAdjustment) {
-      totalPctCost += n(globals.expectedReturnRate)
-    }
+    let feePct = lookupCategoryFeePct(channel.feeRates)
+    if (!channel.paymentFeeIncluded) feePct += n(channel.paymentFeePct)
+    if (channel.applyAdCost) feePct += n(globals.adCostPct)
 
-    const denominator = 1 - totalPctCost - target
+    // gross-basis 분모: (1−target)/(1+v) − Σfee%
+    const vatDivisor = globals.includeVat ? 1 + n(globals.vatRate) : 1
+    const denominator = (1 - target) / vatDivisor - feePct
     if (denominator <= 0) return null
 
     const setCost = bundleSetCost(bundle)
-    const returnCostFixed = globals.applyReturnAdjustment
-      ? r2(n(globals.returnHandlingCost) * n(globals.expectedReturnRate))
-      : 0
+    const returnCostFixed =
+      globals.applyReturnAdjustment && globals.expectedReturnRate > 0
+        ? r2(n(globals.returnHandlingCost) * n(globals.expectedReturnRate))
+        : 0
     const packagingCost = n(bundle.packagingCost)
+
+    // 판매가(P) = fixedCosts / denominator
+    const priceFor = (fixed: number): number | null => {
+      const p = fixed / denominator
+      return p > 0 && Number.isFinite(p) ? r2(p) : null
+    }
 
     const threshold = channel.freeShippingThreshold
 
     // threshold null/0: 판매자 배송비 부담 없음 (고객 부담 or 무관)
     if (threshold == null || threshold <= 0) {
-      const fixedCosts = setCost + packagingCost + returnCostFixed
-      const revenueNeeded = fixedCosts / denominator
-      if (revenueNeeded <= 0 || !Number.isFinite(revenueNeeded)) return null
-      const retail = globals.includeVat
-        ? r2(revenueNeeded * (1 + n(globals.vatRate)))
-        : r2(revenueNeeded)
-      return retail > 0 ? retail : null
+      return priceFor(setCost + packagingCost + returnCostFixed)
     }
 
     // threshold > 0: 두 브랜치 계산
     const shippingFee = r2(n(channel.shippingFee))
-
     // 브랜치 A: 판매자 배송비 포함 (finalPrice >= threshold 가정)
-    const fixedA = setCost + packagingCost + shippingFee + returnCostFixed
-    const revenueA = fixedA / denominator
-    const retailA =
-      revenueA > 0 && Number.isFinite(revenueA)
-        ? globals.includeVat
-          ? r2(revenueA * (1 + n(globals.vatRate)))
-          : r2(revenueA)
-        : null
-
+    const retailA = priceFor(setCost + packagingCost + shippingFee + returnCostFixed)
     // 브랜치 B: 판매자 배송비 없음 (finalPrice < threshold 가정)
-    const fixedB = setCost + packagingCost + returnCostFixed
-    const revenueB = fixedB / denominator
-    const retailB =
-      revenueB > 0 && Number.isFinite(revenueB)
-        ? globals.includeVat
-          ? r2(revenueB * (1 + n(globals.vatRate)))
-          : r2(revenueB)
-        : null
+    const retailB = priceFor(setCost + packagingCost + returnCostFixed)
 
     const aConsistent = retailA != null && retailA >= threshold
     const bConsistent = retailB != null && retailB < threshold

@@ -96,7 +96,26 @@ export function ChannelResultCard({
   const cellNone = matrixNone.cells[0]
   const cellPromo = matrixPromo?.cells[0] ?? null
 
-  const { recommendedRetail, targetAchievableUnderPromotion } = matrixNone
+  const { recommendedRetail, targetAchievableUnderPromotion, maxDiscountForMinMargin } = matrixNone
+
+  // ── 할인 여력 게이지 ───────────────────────────────────────────────────────
+  // 현재 판매가 기준 마진 하한(minimumAcceptableMargin) 도달 전까지 가능한 최대 할인폭.
+  // maxDiscountForMinMargin은 salePrice 대비 비율 — 현재 프로모션 할인 깊이와 같은 분모.
+  const floorPct = globals.minimumAcceptableMargin
+  // 현재 프로모션 할인 깊이 (salePrice 대비). cellNone.finalPrice = salePrice(0% 컬럼).
+  const currentDiscount =
+    cellPromo != null && cellNone.finalPrice > 0
+      ? Math.max(0, 1 - cellPromo.finalPrice / cellNone.finalPrice)
+      : 0
+  // 마진 하한 한계 = maxDiscountForMinMargin (할인 여력 없음이면 null)
+  const headroomDiscount = maxDiscountForMinMargin
+  // 게이지 도메인 — 0 나눗셈/빈 게이지 방지
+  const gaugeDomain = Math.max(headroomDiscount ?? 0, currentDiscount, 0.05)
+  // 하한 초과 여부 — 프로모션 적용 마진이 하한 미달 (good 목표가 아닌 floor 기준)
+  const overFloor = cellPromo != null && cellPromo.margin < floorPct - 0.005
+  // 하한까지 남은 할인 여력 금액 (salePrice 기준)
+  const headroomAmount =
+    headroomDiscount != null ? Math.max(0, cellNone.finalPrice * headroomDiscount) : 0
 
   return (
     <div className="rounded-lg border bg-card shadow-sm">
@@ -231,6 +250,66 @@ export function ChannelResultCard({
             </div>
           </div>
         )}
+
+        {/* 할인 여력 게이지 — 마진 하한 도달 전 최대 할인폭 */}
+        <div className="space-y-1.5 rounded-md border bg-muted/20 px-3 py-2.5">
+          <div className="flex items-baseline justify-between text-[11px]">
+            <span className="text-muted-foreground">
+              현재 할인{' '}
+              <span className="font-semibold text-foreground tabular-nums">
+                {(currentDiscount * 100).toFixed(0)}%
+              </span>
+            </span>
+            <span className="text-muted-foreground">
+              하한 한계{' '}
+              {headroomDiscount != null ? (
+                <span className="font-semibold text-destructive tabular-nums">
+                  −{(headroomDiscount * 100).toFixed(0)}%
+                </span>
+              ) : (
+                <span className="font-semibold text-destructive">여력 없음</span>
+              )}
+            </span>
+          </div>
+          {/* 게이지 트랙 */}
+          <div className="relative h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className={`absolute inset-y-0 left-0 rounded-full ${
+                overFloor ? 'bg-destructive' : 'bg-amber-500'
+              }`}
+              style={{ width: `${Math.min(100, (currentDiscount / gaugeDomain) * 100)}%` }}
+            />
+            {headroomDiscount != null && (
+              <div
+                className="absolute inset-y-[-2px] w-0.5 rounded-full bg-foreground"
+                style={{ left: `${Math.min(100, (headroomDiscount / gaugeDomain) * 100)}%` }}
+                aria-hidden
+              />
+            )}
+          </div>
+          {/* 안내 / 경고 */}
+          <p className="text-[11px] leading-snug">
+            {headroomDiscount == null ? (
+              <span className="text-destructive">
+                0% 할인에서도 마진 하한 {(floorPct * 100).toFixed(0)}% 미달 — 공급가·수수료를
+                확인하세요.
+              </span>
+            ) : overFloor ? (
+              <span className="text-destructive">
+                ⚠ 마진 하한 {(floorPct * 100).toFixed(0)}% 미달 — 할인폭을{' '}
+                {((currentDiscount - headroomDiscount) * 100).toFixed(0)}% 줄이세요.
+              </span>
+            ) : (
+              <span className="text-muted-foreground">
+                마진 하한 {(floorPct * 100).toFixed(0)}% 도달 전{' '}
+                <span className="font-semibold text-foreground tabular-nums">
+                  −{fmt(headroomAmount)}원 (−{(headroomDiscount * 100).toFixed(0)}%)
+                </span>
+                까지 할인 가능
+              </span>
+            )}
+          </p>
+        </div>
 
         {/* 접힘/펼침 토글 */}
         <Button
