@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -124,6 +125,7 @@ type Draft = {
   preview: Preview
   mapping: Record<string, number[]>
   orderDateFixed: string | null
+  paymentIsOrderTotal?: boolean
 }
 
 // ---------- 프리셋 타입 ----------
@@ -269,6 +271,7 @@ async function saveDraft(
     preview: Preview
     mapping: Record<string, number[]>
     orderDateFixed: string | null
+    paymentIsOrderTotal: boolean
   }
 ) {
   if (!batchId) return
@@ -279,6 +282,7 @@ async function saveDraft(
       preview: state.preview,
       mapping: state.mapping,
       orderDateFixed: state.orderDateFixed,
+      paymentIsOrderTotal: state.paymentIsOrderTotal,
     }
     if (state.file) {
       const fileBase64 = await fileToDataUrl(state.file)
@@ -296,6 +300,7 @@ async function saveDraft(
           preview: state.preview,
           mapping: state.mapping,
           orderDateFixed: state.orderDateFixed,
+          paymentIsOrderTotal: state.paymentIsOrderTotal,
         })
       )
       if (err instanceof DOMException && err.name === 'QuotaExceededError') {
@@ -335,6 +340,9 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
 
   // 주문일자 고정 날짜 모드 상태
   const [orderDateFixed, setOrderDateFixed] = useState<string | null>(null)
+
+  // 결제금액이 "주문 총액"(행마다 반복)인지 — true면 동일 주문 그룹에서 행끼리 합산하지 않음
+  const [paymentIsOrderTotal, setPaymentIsOrderTotal] = useState(false)
 
   // 프리셋 관련 상태
   const [presets, setPresets] = useState<Preset[]>([])
@@ -486,6 +494,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
         setPreview(draft.preview)
         setMapping(draft.mapping ?? {})
         setOrderDateFixed(draft.orderDateFixed ?? null)
+        setPaymentIsOrderTotal(draft.paymentIsOrderTotal ?? false)
         if (draft.fileBase64) {
           setFile(dataUrlToFile(draft.fileBase64, draft.fileName))
           setFileMissing(false)
@@ -499,6 +508,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
         setPreview(null)
         setMapping({})
         setOrderDateFixed(null)
+        setPaymentIsOrderTotal(false)
         setFileMissing(false)
       }
     } catch {
@@ -507,6 +517,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       setPreview(null)
       setMapping({})
       setOrderDateFixed(null)
+      setPaymentIsOrderTotal(false)
       setFileMissing(false)
     }
     draftLoadedRef.current = true
@@ -546,14 +557,14 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presets, preview])
 
-  // mapping / orderDateFixed 변경 시 draft 갱신 (debounce)
+  // mapping / orderDateFixed / paymentIsOrderTotal 변경 시 draft 갱신 (debounce)
   useEffect(() => {
     if (!open || !batchId || !preview || !draftLoadedRef.current) return
     const t = setTimeout(() => {
-      void saveDraft(batchId, { file, preview, mapping, orderDateFixed })
+      void saveDraft(batchId, { file, preview, mapping, orderDateFixed, paymentIsOrderTotal })
     }, 300)
     return () => clearTimeout(t)
-  }, [open, batchId, file, preview, mapping, orderDateFixed])
+  }, [open, batchId, file, preview, mapping, orderDateFixed, paymentIsOrderTotal])
 
   async function handleFileUpload(selectedFile: File, password = '') {
     setFile(selectedFile)
@@ -626,6 +637,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
         preview: data,
         mapping: newMapping,
         orderDateFixed,
+        paymentIsOrderTotal,
       })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '파일 처리 실패')
@@ -655,6 +667,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     setPreview(null)
     setMapping({})
     setOrderDateFixed(null)
+    setPaymentIsOrderTotal(false)
     setFileMissing(false)
     setErrorDialog({ open: false, created: 0, errorCount: 0, errors: [] })
     setFilePassword('')
@@ -698,9 +711,12 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       if (filePassword) formData.append('password', filePassword)
 
       // 고정 날짜 모드면 orderDate를 { fixed: "YYYY-MM-DD" } 로 변환
-      const finalMapping: Record<string, number[] | { fixed: string }> = orderDateFixed
-        ? { ...mapping, orderDate: { fixed: orderDateFixed } }
-        : { ...mapping }
+      // 결제금액이 주문 총액이면 paymentIsOrderTotal 플래그를 함께 전달(행 합산 끄기)
+      const finalMapping: Record<string, number[] | { fixed: string } | boolean> = {
+        ...mapping,
+        ...(orderDateFixed ? { orderDate: { fixed: orderDateFixed } } : {}),
+        ...(paymentIsOrderTotal ? { paymentIsOrderTotal: true } : {}),
+      }
       formData.append('columnMapping', JSON.stringify(finalMapping))
 
       const res = await fetch('/api/sh/shipping/import', { method: 'POST', body: formData })
@@ -827,6 +843,8 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
                 onChangeChannel={setSelectedChannelId}
                 orderDateFixed={orderDateFixed}
                 onOrderDateFixedChange={setOrderDateFixed}
+                paymentIsOrderTotal={paymentIsOrderTotal}
+                onPaymentIsOrderTotalChange={setPaymentIsOrderTotal}
               />
             )}
           </div>
@@ -1014,6 +1032,8 @@ type MappingViewProps = {
   onChangeChannel: (channelId: string | null) => void
   orderDateFixed: string | null
   onOrderDateFixedChange: (v: string | null) => void
+  paymentIsOrderTotal: boolean
+  onPaymentIsOrderTotalChange: (v: boolean) => void
 }
 
 function MappingView(p: MappingViewProps) {
@@ -1040,6 +1060,8 @@ function MappingView(p: MappingViewProps) {
     onChangeChannel,
     orderDateFixed,
     onOrderDateFixedChange,
+    paymentIsOrderTotal,
+    onPaymentIsOrderTotalChange,
   } = p
 
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
@@ -1315,6 +1337,12 @@ function MappingView(p: MappingViewProps) {
                   setHoveredColumnIdx={setHoveredColumnIdx}
                   onAdd={(idx) => addColumn(field.value, idx)}
                   onRemove={(idx) => removeColumn(field.value, idx)}
+                  paymentIsOrderTotal={
+                    field.value === 'paymentAmount' ? paymentIsOrderTotal : undefined
+                  }
+                  onPaymentIsOrderTotalChange={
+                    field.value === 'paymentAmount' ? onPaymentIsOrderTotalChange : undefined
+                  }
                 />
               </div>
             )
@@ -1575,6 +1603,9 @@ type FieldRowProps = {
   setHoveredColumnIdx: (v: number | null) => void
   onAdd: (idx: number) => void
   onRemove: (idx: number) => void
+  /** paymentAmount 필드 전용 — "주문 총액(행 합산 안 함)" 토글 상태/변경 */
+  paymentIsOrderTotal?: boolean
+  onPaymentIsOrderTotalChange?: (v: boolean) => void
 }
 
 function FieldRow({
@@ -1587,6 +1618,8 @@ function FieldRow({
   setHoveredColumnIdx,
   onAdd,
   onRemove,
+  paymentIsOrderTotal,
+  onPaymentIsOrderTotalChange,
 }: FieldRowProps) {
   const isMissingRequired = field.required && columns.length === 0
   return (
@@ -1663,6 +1696,19 @@ function FieldRow({
           <span className="ml-1 text-[11px] text-muted-foreground">
             {field.value === 'paymentAmount' ? '숫자 합계로 계산' : '공백으로 결합'}
           </span>
+        )}
+        {field.value === 'paymentAmount' && onPaymentIsOrderTotalChange && columns.length > 0 && (
+          <label className="mt-1 flex w-full cursor-pointer items-start gap-2 text-[11px] text-muted-foreground">
+            <Checkbox
+              checked={!!paymentIsOrderTotal}
+              onCheckedChange={(v) => onPaymentIsOrderTotalChange(v === true)}
+              className="mt-0.5"
+            />
+            <span>
+              주문 총 결제금액 (행마다 같은 금액이 반복되면 켜세요 — 동일 주문의 행끼리 합산하지
+              않습니다)
+            </span>
+          </label>
         )}
       </div>
     </div>

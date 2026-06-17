@@ -51,6 +51,8 @@ export type ColumnMapping = {
   orderDate?: number | number[] | FixedDate
   orderNumber?: number | number[]
   paymentAmount?: number | number[]
+  /** true면 paymentAmount는 "주문 총액" → 동일 주문 그룹에서 행끼리 합산하지 않고 1회만 사용 */
+  paymentIsOrderTotal?: boolean
   productName?: number | number[]
   productQuantity?: number | number[]
   memo?: number | number[]

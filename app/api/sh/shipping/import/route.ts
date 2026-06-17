@@ -258,7 +258,11 @@ export async function POST(req: NextRequest) {
         })
 
       const hasPayment = group.rows.some((r) => r.paymentAmount != null)
-      const paymentSum = group.rows.reduce((sum, r) => sum + (r.paymentAmount ?? 0), 0)
+      // paymentIsOrderTotal: 각 행에 동일한 "주문 총액"이 반복되는 채널 → 1회만 사용(max는 일부 행 공백에 강건).
+      // 기본(false): 행별 금액을 합산.
+      const paymentTotal = mapping.paymentIsOrderTotal
+        ? Math.max(...group.rows.map((r) => r.paymentAmount ?? 0))
+        : group.rows.reduce((sum, r) => sum + (r.paymentAmount ?? 0), 0)
 
       await prisma.$transaction(async (tx) => {
         const order = await tx.delOrder.create({
@@ -273,7 +277,7 @@ export async function POST(req: NextRequest) {
             memo: first.memo || null,
             orderDate: new Date(first.orderDate),
             orderNumber: first.orderNumber || null,
-            paymentAmount: hasPayment ? paymentSum : null,
+            paymentAmount: hasPayment ? paymentTotal : null,
           },
         })
         for (const it of items) {
