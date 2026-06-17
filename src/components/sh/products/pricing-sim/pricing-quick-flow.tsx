@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Plus, RotateCcw, Save, Settings2 } from 'lucide-react'
+import { Info, Plus, RotateCcw, Save, Settings2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 import { calculateMatrix } from '@/lib/sh/pricing-matrix-calc'
@@ -506,29 +507,11 @@ export function PricingQuickFlow() {
 
   // ─── 렌더 ─────────────────────────────────────────────────────────────────
 
-  const today = new Date().toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-
   return (
     <div className="ps-root">
       {/* ── 헤더 ── */}
       <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-[11px] font-medium text-emerald-700">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600" />
-            SANDBOX · {today} 기준
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            채널마다 다른 가격, 마진은 한 기준으로.
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            원가·수수료·광고비·물류·반품까지 반영해 목표 마진율을 만족하는 채널별 권장가를 즉시
-            역산합니다. 프로모션을 걸어도 마진 하한을 지키는지 한눈에 확인하세요.
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight">가격 시뮬레이션</h1>
         <div className="flex shrink-0 items-center gap-2">
           <Button
             type="button"
@@ -658,107 +641,135 @@ export function PricingQuickFlow() {
               </Button>
             }
           >
-            {/* 목표 마진율 */}
-            <SliderRow
-              label="목표 마진율"
-              valueText={`${Math.round(live.targetMargin * 100)}%`}
-              valueClass="text-emerald-700"
-              hint={`마진 하한 ${Math.round(live.minMargin * 100)}%`}
-            >
-              <Slider
-                min={0}
-                max={0.6}
-                step={0.01}
-                value={[live.targetMargin]}
-                onValueChange={(v) => setLiveField('targetMargin', v[0])}
-              />
-              <div className="flex justify-between text-[10px] text-muted-foreground">
-                <span>0%</span>
-                <span>30%</span>
-                <span>60%</span>
-              </div>
-            </SliderRow>
-
-            {/* 마진 하한 */}
-            <SliderRow
-              label="마진 하한"
-              sub="프로모션 방어선"
-              valueText={`${Math.round(live.minMargin * 100)}%`}
-              valueClass="text-destructive"
-            >
-              <Slider
-                min={0}
-                max={Math.max(0.01, live.targetMargin)}
-                step={0.01}
-                value={[Math.min(live.minMargin, live.targetMargin)]}
-                onValueChange={(v) => setLiveField('minMargin', v[0])}
-              />
-            </SliderRow>
-
-            {/* VAT */}
-            <FieldRow label="부가세 (VAT)" sub="판매가 = VAT 포함">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold tabular-nums">
-                  {Math.round(live.vatRate * 100)}%
-                </span>
-                <Switch
-                  checked={live.includeVat}
-                  onCheckedChange={(v) => setLiveField('includeVat', v)}
+            <TooltipProvider delayDuration={200}>
+              {/* 목표 마진율 */}
+              <SliderRow
+                label="목표 마진율"
+                valueText={`${Math.round(live.targetMargin * 100)}%`}
+                valueClass="text-emerald-700"
+                hint={`마진 하한 ${Math.round(live.minMargin * 100)}%`}
+                tooltip="채널별 권장 판매가(good)를 역산하는 기준. 공급가(VAT 제외) 대비 순이익율입니다."
+              >
+                <Slider
+                  min={0}
+                  max={0.6}
+                  step={0.01}
+                  value={[live.targetMargin]}
+                  onValueChange={(v) => setLiveField('targetMargin', v[0])}
                 />
-              </div>
-            </FieldRow>
+                <div className="flex justify-between text-[10px] text-muted-foreground">
+                  <span>0%</span>
+                  <span>30%</span>
+                  <span>60%</span>
+                </div>
+              </SliderRow>
 
-            {/* 반품율 */}
-            <FieldRow label="반품율" sub={`반품 1건 ₩${fmt(live.returnHandling)} 처리`}>
-              <SuffixInput
-                value={String(Math.round(live.returnRate * 1000) / 10)}
-                onChange={(v) => setLiveField('returnRate', (Number(v) || 0) / 100)}
-                suffix="%"
-                step={0.1}
-                className="w-20"
-              />
-            </FieldRow>
+              {/* 마진 하한 */}
+              <SliderRow
+                label="마진 하한"
+                sub="프로모션 방어선"
+                valueText={`${Math.round(live.minMargin * 100)}%`}
+                valueClass="text-destructive"
+                tooltip="프로모션 할인 방어선. 할인 여력 게이지가 이 마진 아래로 떨어지면 경고합니다."
+              >
+                <Slider
+                  min={0}
+                  max={Math.max(0.01, live.targetMargin)}
+                  step={0.01}
+                  value={[Math.min(live.minMargin, live.targetMargin)]}
+                  onValueChange={(v) => setLiveField('minMargin', v[0])}
+                />
+              </SliderRow>
 
-            {/* 반품 처리비 */}
-            <FieldRow label="반품 처리비" sub="왕복 물류 + 검수 · 건당">
-              <SuffixInput
-                value={String(live.returnHandling)}
-                onChange={(v) => setLiveField('returnHandling', Number(v) || 0)}
-                suffix="₩"
-                step={100}
-                className="w-24"
-              />
-            </FieldRow>
+              {/* VAT */}
+              <FieldRow
+                label="부가세 (VAT)"
+                sub="판매가 = VAT 포함"
+                tooltip="켜면 판매가에 VAT가 포함된 것으로 보고 공급가(=판매가÷(1+VAT))로 마진을 계산합니다. 수수료·광고·PG는 판매가 기준."
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold tabular-nums">
+                    {Math.round(live.vatRate * 100)}%
+                  </span>
+                  <Switch
+                    checked={live.includeVat}
+                    onCheckedChange={(v) => setLiveField('includeVat', v)}
+                  />
+                </div>
+              </FieldRow>
 
-            {/* 물류·풀필먼트비 */}
-            <FieldRow label="물류·풀필먼트비" sub="입출고·포장 · 건당">
-              <SuffixInput
-                value={String(live.shippingCost)}
-                onChange={(v) => setLiveField('shippingCost', Number(v) || 0)}
-                suffix="₩"
-                step={100}
-                className="w-24"
-              />
-            </FieldRow>
+              {/* 반품율 */}
+              <FieldRow
+                label="반품율"
+                sub={`반품 1건 ₩${fmt(live.returnHandling)} 처리`}
+                tooltip="전체 주문 대비 반품 비율. 반품 1건당 처리비만 비용에 반영합니다(매출 차감 아님)."
+              >
+                <SuffixInput
+                  value={String(Math.round(live.returnRate * 1000) / 10)}
+                  onChange={(v) => setLiveField('returnRate', (Number(v) || 0) / 100)}
+                  suffix="%"
+                  step={0.1}
+                  className="w-20"
+                />
+              </FieldRow>
 
-            {/* PG 결제 수수료 */}
-            <FieldRow label="PG 결제 수수료" sub="전 채널 공통">
-              <SuffixInput
-                value={String(Math.round(live.paymentFeePct * 1000) / 10)}
-                onChange={(v) => setLiveField('paymentFeePct', (Number(v) || 0) / 100)}
-                suffix="%"
-                step={0.1}
-                className="w-20"
-              />
-            </FieldRow>
+              {/* 반품 처리비 */}
+              <FieldRow
+                label="반품 처리비"
+                sub="왕복 물류 + 검수 · 건당"
+                tooltip="반품 1건당 왕복 물류·검수 비용. 반품율과 곱해 건당 비용으로 반영합니다."
+              >
+                <SuffixInput
+                  value={String(live.returnHandling)}
+                  onChange={(v) => setLiveField('returnHandling', Number(v) || 0)}
+                  suffix="₩"
+                  step={100}
+                  className="w-24"
+                />
+              </FieldRow>
 
-            {/* 광고비 사용 */}
-            <FieldRow label="광고비 사용" sub="채널별 매출 대비 비율 적용">
-              <Switch
-                checked={live.applyAdCost}
-                onCheckedChange={(v) => setLiveField('applyAdCost', v)}
-              />
-            </FieldRow>
+              {/* 물류·풀필먼트비 */}
+              <FieldRow
+                label="물류·풀필먼트비"
+                sub="입출고·포장 · 건당"
+                tooltip="주문 1건당 입출고·포장 고정비. 전 채널 공통 적용됩니다."
+              >
+                <SuffixInput
+                  value={String(live.shippingCost)}
+                  onChange={(v) => setLiveField('shippingCost', Number(v) || 0)}
+                  suffix="₩"
+                  step={100}
+                  className="w-24"
+                />
+              </FieldRow>
+
+              {/* PG 결제 수수료 */}
+              <FieldRow
+                label="PG 결제 수수료"
+                sub="전 채널 공통"
+                tooltip="결제대행(PG) 수수료. 판매가 기준이며 전 채널에 공통 적용됩니다."
+              >
+                <SuffixInput
+                  value={String(Math.round(live.paymentFeePct * 1000) / 10)}
+                  onChange={(v) => setLiveField('paymentFeePct', (Number(v) || 0) / 100)}
+                  suffix="%"
+                  step={0.1}
+                  className="w-20"
+                />
+              </FieldRow>
+
+              {/* 광고비 사용 */}
+              <FieldRow
+                label="광고비 사용"
+                sub="채널별 매출 대비 비율 적용"
+                tooltip="끄면 광고비 0. 켜면 ③ 판매채널의 채널별 광고비율(%)을 판매가 대비 비용으로 적용합니다."
+              >
+                <Switch
+                  checked={live.applyAdCost}
+                  onCheckedChange={(v) => setLiveField('applyAdCost', v)}
+                />
+              </FieldRow>
+            </TooltipProvider>
           </StepCard>
 
           {/* ③ 판매채널 */}
@@ -982,12 +993,27 @@ function StepCard({
   )
 }
 
+/** 라벨 옆 안내 툴팁 — Info 아이콘 hover (pricing-promotion-card 패턴) */
+function HelpTip({ text }: { text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Info className="ml-1 inline h-3 w-3 cursor-help align-text-top text-muted-foreground" />
+      </TooltipTrigger>
+      <TooltipContent side="right" className="max-w-[240px] text-xs">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 function SliderRow({
   label,
   sub,
   valueText,
   valueClass,
   hint,
+  tooltip,
   children,
 }: {
   label: string
@@ -995,6 +1021,7 @@ function SliderRow({
   valueText: string
   valueClass?: string
   hint?: string
+  tooltip?: string
   children: React.ReactNode
 }) {
   return (
@@ -1002,6 +1029,7 @@ function SliderRow({
       <div className="flex items-baseline justify-between">
         <span className="text-xs font-medium">
           {label}
+          {tooltip && <HelpTip text={tooltip} />}
           {sub && (
             <span className="ml-1.5 text-[10px] font-normal text-muted-foreground">{sub}</span>
           )}
@@ -1017,16 +1045,21 @@ function SliderRow({
 function FieldRow({
   label,
   sub,
+  tooltip,
   children,
 }: {
   label: string
   sub?: string
+  tooltip?: string
   children: React.ReactNode
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-xs font-medium">{label}</p>
+        <p className="text-xs font-medium">
+          {label}
+          {tooltip && <HelpTip text={tooltip} />}
+        </p>
         {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
       </div>
       <div className="shrink-0">{children}</div>
