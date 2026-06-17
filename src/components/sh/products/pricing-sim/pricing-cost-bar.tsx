@@ -25,17 +25,19 @@ type SegmentDef = {
   color: string
 }
 
-// 표시 순서 = 스크린샷 레전드 순서
+// 표시 순서 = 레전드 순서.
+// 색은 seller-ops 컨벤션 따름: 원가=slate(중립), 비용군=amber 그라데이션(비용=amber),
+// VAT=slate 연회색(세금=중립), 마진=emerald(success). emerald/amber/slate 3색계.
 const SEGMENTS: SegmentDef[] = [
-  { key: 'cogs', label: '원가', color: '#1c1917' }, // stone-900 (검정)
-  { key: 'channelFee', label: '채널수수료', color: '#c2682f' }, // 주황
-  { key: 'adCost', label: '광고비', color: '#d9a441' }, // 황
-  { key: 'shipping', label: '물류', color: '#b08968' }, // 연갈
-  { key: 'returnCost', label: '반품', color: '#8a5a44' }, // 진갈
-  { key: 'packaging', label: '포장', color: '#9c8e7a' }, // 진탠
-  { key: 'paymentFee', label: 'PG', color: '#cbb89d' }, // 탠
-  { key: 'vat', label: 'VAT', color: '#c9c4bc' }, // 회색
-  { key: 'margin', label: '마진', color: '#5b7f5b' }, // 녹색
+  { key: 'cogs', label: '원가', color: '#334155' }, // slate-700 (원가 = 큰 중립 덩어리)
+  { key: 'channelFee', label: '채널수수료', color: '#b45309' }, // amber-700
+  { key: 'adCost', label: '광고비', color: '#d97706' }, // amber-600
+  { key: 'shipping', label: '물류', color: '#f59e0b' }, // amber-500
+  { key: 'returnCost', label: '반품', color: '#fbbf24' }, // amber-400
+  { key: 'packaging', label: '포장', color: '#fcd34d' }, // amber-300
+  { key: 'paymentFee', label: 'PG', color: '#fde68a' }, // amber-200
+  { key: 'vat', label: 'VAT', color: '#cbd5e1' }, // slate-300 (세금 = 중립 회색)
+  { key: 'margin', label: '마진', color: '#10b981' }, // emerald-500 (마진 = success)
 ]
 
 function fmt(n: number): string {

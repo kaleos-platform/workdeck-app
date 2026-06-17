@@ -513,7 +513,7 @@ export function PricingQuickFlow() {
   })
 
   return (
-    <div className="ps-root rounded-2xl bg-[var(--ps-bg)] p-6 text-[var(--ps-fg)]">
+    <div className="ps-root">
       {/* ── 헤더 ── */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
@@ -521,8 +521,8 @@ export function PricingQuickFlow() {
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600" />
             SANDBOX · {today} 기준
           </div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight">
-            채널마다 다른 가격, <span className="italic">마진은 한 기준으로.</span>
+          <h1 className="text-2xl font-bold tracking-tight">
+            채널마다 다른 가격, 마진은 한 기준으로.
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             원가·수수료·광고비·물류·반품까지 반영해 목표 마진율을 만족하는 채널별 권장가를 즉시
@@ -542,7 +542,7 @@ export function PricingQuickFlow() {
           <Button
             type="button"
             size="sm"
-            className="h-8 gap-1.5 bg-stone-900 text-white hover:bg-stone-800"
+            className="h-8 gap-1.5"
             onClick={() => toast.info('시나리오 저장은 준비 중입니다')}
           >
             <Save className="h-3.5 w-3.5" /> 시나리오 저장
@@ -965,7 +965,7 @@ function StepCard({
     <section className="rounded-xl border border-[var(--ps-border)] bg-[var(--ps-card)] p-4">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-stone-900 text-[11px] font-bold text-white">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
             {step}
           </span>
           <h3 className="text-sm font-semibold">{title}</h3>
