@@ -165,7 +165,7 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
     const load = async () => {
       setSearchLoading(true)
       try {
-        const qs = new URLSearchParams({ search: debounced.trim(), pageSize: '50' })
+        const qs = new URLSearchParams({ search: debounced.trim(), pageSize: '100' })
         const res = await fetch(`/api/sh/pricing-options?${qs.toString()}`)
         if (!res.ok) throw new Error('검색 실패')
         const data: { data: PricingOptionRaw[] } = await res.json()

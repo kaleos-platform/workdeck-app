@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 // Decimal-like → number | null 변환 헬퍼
 function dn(v: { toString(): string } | null | undefined): number | null {
@@ -16,71 +16,51 @@ export async function GET(req: NextRequest) {
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
   const search = (searchParams.get('search') ?? '').trim()
 
-  // 옵션 where: product.spaceId로 소속 검증, 소프트삭제 옵션 제외
+  // 상품 단위 조회 — picker step1은 상품 목록이 필요(옵션 단위가 아님).
+  // 옵션 단위로 페이지네이션하면 같은 상품 옵션이 page를 채워 상품이 일부만 노출됨.
+  // spaceId 소속 검증 + 활성 옵션이 1건 이상 있는 상품만(가격그룹 step2 빈 화면 방지).
   const where: Record<string, unknown> = {
-    product: { spaceId: resolved.space.id },
-    deletedAt: null,
+    spaceId: resolved.space.id,
+    options: { some: { deletedAt: null } },
   }
 
   if (search) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
-      { sku: { contains: search, mode: 'insensitive' } },
-      { product: { name: { contains: search, mode: 'insensitive' } } },
-      { product: { internalName: { contains: search, mode: 'insensitive' } } },
+      { internalName: { contains: search, mode: 'insensitive' } },
+      { options: { some: { name: { contains: search, mode: 'insensitive' } } } },
+      { options: { some: { sku: { contains: search, mode: 'insensitive' } } } },
     ]
   }
 
-  const [options, total] = await Promise.all([
-    prisma.invProductOption.findMany({
+  const [products, total] = await Promise.all([
+    prisma.invProduct.findMany({
       where,
-      orderBy: [{ product: { name: 'asc' } }, { name: 'asc' }],
+      orderBy: { name: 'asc' },
       skip: (page - 1) * pageSize,
       take: pageSize,
       select: {
         id: true,
         name: true,
-        sku: true,
-        costPrice: true,
-        retailPrice: true,
-        product: {
-          select: {
-            id: true,
-            name: true,
-            msrp: true,
-            brand: { select: { name: true } },
-          },
-        },
+        msrp: true,
+        brand: { select: { name: true } },
       },
     }),
-    prisma.invProductOption.count({ where }),
+    prisma.invProduct.count({ where }),
   ])
 
-  // 재고 집계
-  const optionIds = options.map((o) => o.id)
-  const stockByOption = new Map<string, number>()
-  if (optionIds.length > 0) {
-    const stockRows = await prisma.invStockLevel.groupBy({
-      by: ['optionId'],
-      where: { optionId: { in: optionIds } },
-      _sum: { quantity: true },
-    })
-    for (const r of stockRows) {
-      stockByOption.set(r.optionId, r._sum.quantity ?? 0)
-    }
-  }
-
-  const data = options.map((o) => ({
-    optionId: o.id,
-    optionName: o.name,
-    sku: o.sku ?? null,
-    productId: o.product.id,
-    productName: o.product.name,
-    brandName: o.product.brand?.name ?? null,
-    costPrice: dn(o.costPrice), // null이면 UI에서 직접 입력 유도
-    retailPrice: dn(o.retailPrice),
-    msrp: dn(o.product.msrp),
-    totalStock: stockByOption.get(o.id) ?? 0,
+  // picker step1 호환 shape — productId/productName 필수, 가격·옵션 상세는 step2에서 별도 로드.
+  const data = products.map((p) => ({
+    optionId: '', // step1 미사용 (가격그룹/옵션은 [productId]/options에서 로드)
+    optionName: '',
+    sku: null,
+    productId: p.id,
+    productName: p.name,
+    brandName: p.brand?.name ?? null,
+    costPrice: null,
+    retailPrice: null,
+    msrp: dn(p.msrp),
+    totalStock: 0,
   }))
 
   return NextResponse.json({ data, total, page, pageSize })
