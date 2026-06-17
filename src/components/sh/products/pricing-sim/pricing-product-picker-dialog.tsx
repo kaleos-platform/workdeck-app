@@ -157,17 +157,15 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
   }, [search])
 
   // ── 상품 검색 ────────────────────────────────────────────────────────────
+  // 빈 검색(debounced='')이면 전체 첫 페이지를 불러와 팝업 열자마자 목록 표시.
+  // 서버(/api/sh/pricing-options)는 빈 search 시 OR 필터 없이 전체 반환.
   useEffect(() => {
     if (!open || selectedProduct) return
-    if (!debounced.trim()) {
-      setSearchResults([])
-      return
-    }
     let cancelled = false
     const load = async () => {
       setSearchLoading(true)
       try {
-        const qs = new URLSearchParams({ search: debounced.trim(), pageSize: '30' })
+        const qs = new URLSearchParams({ search: debounced.trim(), pageSize: '50' })
         const res = await fetch(`/api/sh/pricing-options?${qs.toString()}`)
         if (!res.ok) throw new Error('검색 실패')
         const data: { data: PricingOptionRaw[] } = await res.json()
@@ -264,7 +262,7 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
                   <p className="p-8 text-center text-sm text-muted-foreground">검색 중...</p>
                 ) : productHits.length === 0 ? (
                   <p className="p-8 text-center text-sm text-muted-foreground">
-                    {debounced ? '검색 결과가 없습니다' : '검색어를 입력하세요'}
+                    {debounced ? '검색 결과가 없습니다' : '상품이 없습니다'}
                   </p>
                 ) : (
                   <ul className="divide-y">
