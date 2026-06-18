@@ -1299,6 +1299,7 @@ model DelColumnMappingPreset {
   name      String
   mapping   Json // Array<{ headerName: string; field: string }>
   channelId String? // 프리셋 적용 시 배송 등록의 판매채널로 자동 입력될 채널
+  paymentIsOrderTotal Boolean @default(false) // 결제금액이 "주문 총액"(행마다 반복)이면 import 시 행 합산 안 함
 
   space   Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channel Channel? @relation("PresetChannel", fields: [channelId], references: [id], onDelete: SetNull)
