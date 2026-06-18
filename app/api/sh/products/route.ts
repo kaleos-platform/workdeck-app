@@ -26,11 +26,12 @@ export async function GET(req: NextRequest) {
   else if (groupId) where.groupId = groupId
 
   if (search) {
-    // 검색은 관리 상품명(internalName) 기준 — 공식명(name)은 제외
+    // 검색은 관리 상품명(internalName) 기준 — 공식명(name)은 제외, 브랜드명 포함
     where.OR = [
       { internalName: { contains: search, mode: 'insensitive' } },
       { nameEn: { contains: search, mode: 'insensitive' } },
       { code: { contains: search, mode: 'insensitive' } },
+      { brand: { name: { contains: search, mode: 'insensitive' } } },
       { options: { some: { name: { contains: search, mode: 'insensitive' } } } },
       { options: { some: { sku: { contains: search, mode: 'insensitive' } } } },
     ]

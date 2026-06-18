@@ -293,8 +293,8 @@ export function OptionPickerDialog({
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={
                     mode === 'two-step' || isMultiMode
-                      ? '상품명 / 관리코드'
-                      : '상품명 / 관리코드 / SKU'
+                      ? '상품명 / 코드 / 브랜드'
+                      : '상품명 / 코드 / 브랜드 / SKU'
                   }
                   className="pl-9"
                 />
