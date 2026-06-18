@@ -941,7 +941,7 @@ function ManualRowEditor({
                 <Input
                   value={optionQuery}
                   onChange={(e) => setOptionQuery(e.target.value)}
-                  placeholder="상품명·관리코드"
+                  placeholder="상품명·코드·브랜드"
                   className="h-8 pl-8 text-sm"
                   autoFocus
                 />
@@ -1078,7 +1078,7 @@ function ProductSearchPane({ onPick }: { onPick: (p: ProductRow) => void }) {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="상품명·관리코드 검색"
+          placeholder="상품명·코드·브랜드 검색"
           className="pl-9"
           autoFocus
         />
