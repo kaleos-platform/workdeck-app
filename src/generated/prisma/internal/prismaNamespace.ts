@@ -7870,6 +7870,7 @@ export const DelColumnMappingPresetScalarFieldEnum = {
   name: 'name',
   mapping: 'mapping',
   channelId: 'channelId',
+  paymentIsOrderTotal: 'paymentIsOrderTotal',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -34,6 +34,7 @@ export async function GET() {
       name: true,
       mapping: true,
       channelId: true,
+      paymentIsOrderTotal: true,
       channel: { select: { id: true, name: true } },
       updatedAt: true,
     },
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
   const rawChannelId = body?.channelId
   const channelId =
     typeof rawChannelId === 'string' && rawChannelId.trim() !== '' ? rawChannelId : null
+  const paymentIsOrderTotal = body?.paymentIsOrderTotal === true
 
   if (!name) return errorResponse('프리셋 이름이 필요합니다', 400)
   if (name.length > 100) return errorResponse('프리셋 이름은 100자 이하여야 합니다', 400)
@@ -73,18 +75,20 @@ export async function POST(req: NextRequest) {
     where: {
       spaceId_name: { spaceId: resolved.space.id, name },
     },
-    update: { mapping, channelId },
+    update: { mapping, channelId, paymentIsOrderTotal },
     create: {
       spaceId: resolved.space.id,
       name,
       mapping,
       channelId,
+      paymentIsOrderTotal,
     },
     select: {
       id: true,
       name: true,
       mapping: true,
       channelId: true,
+      paymentIsOrderTotal: true,
       channel: { select: { id: true, name: true } },
       updatedAt: true,
     },

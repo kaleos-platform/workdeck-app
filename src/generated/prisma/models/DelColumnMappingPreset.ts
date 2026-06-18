@@ -29,6 +29,7 @@ export type DelColumnMappingPresetMinAggregateOutputType = {
   spaceId: string | null
   name: string | null
   channelId: string | null
+  paymentIsOrderTotal: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +39,7 @@ export type DelColumnMappingPresetMaxAggregateOutputType = {
   spaceId: string | null
   name: string | null
   channelId: string | null
+  paymentIsOrderTotal: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +50,7 @@ export type DelColumnMappingPresetCountAggregateOutputType = {
   name: number
   mapping: number
   channelId: number
+  paymentIsOrderTotal: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -59,6 +62,7 @@ export type DelColumnMappingPresetMinAggregateInputType = {
   spaceId?: true
   name?: true
   channelId?: true
+  paymentIsOrderTotal?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -68,6 +72,7 @@ export type DelColumnMappingPresetMaxAggregateInputType = {
   spaceId?: true
   name?: true
   channelId?: true
+  paymentIsOrderTotal?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -78,6 +83,7 @@ export type DelColumnMappingPresetCountAggregateInputType = {
   name?: true
   mapping?: true
   channelId?: true
+  paymentIsOrderTotal?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -161,6 +167,7 @@ export type DelColumnMappingPresetGroupByOutputType = {
   name: string
   mapping: runtime.JsonValue
   channelId: string | null
+  paymentIsOrderTotal: boolean
   createdAt: Date
   updatedAt: Date
   _count: DelColumnMappingPresetCountAggregateOutputType | null
@@ -192,6 +199,7 @@ export type DelColumnMappingPresetWhereInput = {
   name?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   mapping?: Prisma.JsonFilter<"DelColumnMappingPreset">
   channelId?: Prisma.StringNullableFilter<"DelColumnMappingPreset"> | string | null
+  paymentIsOrderTotal?: Prisma.BoolFilter<"DelColumnMappingPreset"> | boolean
   createdAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -204,6 +212,7 @@ export type DelColumnMappingPresetOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   mapping?: Prisma.SortOrder
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentIsOrderTotal?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -220,6 +229,7 @@ export type DelColumnMappingPresetWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   mapping?: Prisma.JsonFilter<"DelColumnMappingPreset">
   channelId?: Prisma.StringNullableFilter<"DelColumnMappingPreset"> | string | null
+  paymentIsOrderTotal?: Prisma.BoolFilter<"DelColumnMappingPreset"> | boolean
   createdAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -232,6 +242,7 @@ export type DelColumnMappingPresetOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   mapping?: Prisma.SortOrder
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentIsOrderTotal?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DelColumnMappingPresetCountOrderByAggregateInput
@@ -248,6 +259,7 @@ export type DelColumnMappingPresetScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"DelColumnMappingPreset"> | string
   mapping?: Prisma.JsonWithAggregatesFilter<"DelColumnMappingPreset">
   channelId?: Prisma.StringNullableWithAggregatesFilter<"DelColumnMappingPreset"> | string | null
+  paymentIsOrderTotal?: Prisma.BoolWithAggregatesFilter<"DelColumnMappingPreset"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DelColumnMappingPreset"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DelColumnMappingPreset"> | Date | string
 }
@@ -256,6 +268,7 @@ export type DelColumnMappingPresetCreateInput = {
   id?: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelColumnMappingPresetsInput
@@ -268,6 +281,7 @@ export type DelColumnMappingPresetUncheckedCreateInput = {
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   channelId?: string | null
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -276,6 +290,7 @@ export type DelColumnMappingPresetUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelColumnMappingPresetsNestedInput
@@ -288,6 +303,7 @@ export type DelColumnMappingPresetUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -298,6 +314,7 @@ export type DelColumnMappingPresetCreateManyInput = {
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   channelId?: string | null
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -306,6 +323,7 @@ export type DelColumnMappingPresetUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -316,6 +334,7 @@ export type DelColumnMappingPresetUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -341,6 +360,7 @@ export type DelColumnMappingPresetCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   mapping?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  paymentIsOrderTotal?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -350,6 +370,7 @@ export type DelColumnMappingPresetMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  paymentIsOrderTotal?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -359,6 +380,7 @@ export type DelColumnMappingPresetMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  paymentIsOrderTotal?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -451,6 +473,7 @@ export type DelColumnMappingPresetCreateWithoutSpaceInput = {
   id?: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   channel?: Prisma.ChannelCreateNestedOneWithoutColumnMappingPresetsInput
@@ -461,6 +484,7 @@ export type DelColumnMappingPresetUncheckedCreateWithoutSpaceInput = {
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   channelId?: string | null
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -500,6 +524,7 @@ export type DelColumnMappingPresetScalarWhereInput = {
   name?: Prisma.StringFilter<"DelColumnMappingPreset"> | string
   mapping?: Prisma.JsonFilter<"DelColumnMappingPreset">
   channelId?: Prisma.StringNullableFilter<"DelColumnMappingPreset"> | string | null
+  paymentIsOrderTotal?: Prisma.BoolFilter<"DelColumnMappingPreset"> | boolean
   createdAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DelColumnMappingPreset"> | Date | string
 }
@@ -508,6 +533,7 @@ export type DelColumnMappingPresetCreateWithoutChannelInput = {
   id?: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDelColumnMappingPresetsInput
@@ -518,6 +544,7 @@ export type DelColumnMappingPresetUncheckedCreateWithoutChannelInput = {
   spaceId: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -553,6 +580,7 @@ export type DelColumnMappingPresetCreateManySpaceInput = {
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   channelId?: string | null
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -561,6 +589,7 @@ export type DelColumnMappingPresetUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneWithoutColumnMappingPresetsNestedInput
@@ -571,6 +600,7 @@ export type DelColumnMappingPresetUncheckedUpdateWithoutSpaceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -580,6 +610,7 @@ export type DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -589,6 +620,7 @@ export type DelColumnMappingPresetCreateManyChannelInput = {
   spaceId: string
   name: string
   mapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -597,6 +629,7 @@ export type DelColumnMappingPresetUpdateWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDelColumnMappingPresetsNestedInput
@@ -607,6 +640,7 @@ export type DelColumnMappingPresetUncheckedUpdateWithoutChannelInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -616,6 +650,7 @@ export type DelColumnMappingPresetUncheckedUpdateManyWithoutChannelInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   mapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  paymentIsOrderTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -628,6 +663,7 @@ export type DelColumnMappingPresetSelect<ExtArgs extends runtime.Types.Extension
   name?: boolean
   mapping?: boolean
   channelId?: boolean
+  paymentIsOrderTotal?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -640,6 +676,7 @@ export type DelColumnMappingPresetSelectCreateManyAndReturn<ExtArgs extends runt
   name?: boolean
   mapping?: boolean
   channelId?: boolean
+  paymentIsOrderTotal?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -652,6 +689,7 @@ export type DelColumnMappingPresetSelectUpdateManyAndReturn<ExtArgs extends runt
   name?: boolean
   mapping?: boolean
   channelId?: boolean
+  paymentIsOrderTotal?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -664,11 +702,12 @@ export type DelColumnMappingPresetSelectScalar = {
   name?: boolean
   mapping?: boolean
   channelId?: boolean
+  paymentIsOrderTotal?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DelColumnMappingPresetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "mapping" | "channelId" | "createdAt" | "updatedAt", ExtArgs["result"]["delColumnMappingPreset"]>
+export type DelColumnMappingPresetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "mapping" | "channelId" | "paymentIsOrderTotal" | "createdAt" | "updatedAt", ExtArgs["result"]["delColumnMappingPreset"]>
 export type DelColumnMappingPresetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.DelColumnMappingPreset$channelArgs<ExtArgs>
@@ -694,6 +733,7 @@ export type $DelColumnMappingPresetPayload<ExtArgs extends runtime.Types.Extensi
     name: string
     mapping: runtime.JsonValue
     channelId: string | null
+    paymentIsOrderTotal: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["delColumnMappingPreset"]>
@@ -1126,6 +1166,7 @@ export interface DelColumnMappingPresetFieldRefs {
   readonly name: Prisma.FieldRef<"DelColumnMappingPreset", 'String'>
   readonly mapping: Prisma.FieldRef<"DelColumnMappingPreset", 'Json'>
   readonly channelId: Prisma.FieldRef<"DelColumnMappingPreset", 'String'>
+  readonly paymentIsOrderTotal: Prisma.FieldRef<"DelColumnMappingPreset", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"DelColumnMappingPreset", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DelColumnMappingPreset", 'DateTime'>
 }

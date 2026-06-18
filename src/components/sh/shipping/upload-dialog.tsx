@@ -139,6 +139,7 @@ type Preset = {
   name: string
   mapping: PresetMappingEntry[]
   channelId: string | null
+  paymentIsOrderTotal?: boolean
   channel?: PresetChannel | null
   updatedAt: string
 }
@@ -389,6 +390,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     const result = applyPreset(preset.mapping, preview.headers)
     setMapping(result.mapping)
     setSelectedChannelId(preset.channelId ?? null)
+    setPaymentIsOrderTotal(preset.paymentIsOrderTotal ?? false)
     if (result.matched < result.total) {
       setPresetMismatch({
         presetName: preset.name,
@@ -427,7 +429,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       const res = await fetch('/api/sh/shipping/column-mapping-presets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, mapping: entries, channelId }),
+        body: JSON.stringify({ name, mapping: entries, channelId, paymentIsOrderTotal }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -543,6 +545,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
     const result = applyPreset(best.mapping, preview.headers)
     setMapping(result.mapping)
     setSelectedChannelId(best.channelId ?? null)
+    setPaymentIsOrderTotal(best.paymentIsOrderTotal ?? false)
     if (result.matched < result.total) {
       setPresetMismatch({
         presetName: best.name,
@@ -604,6 +607,8 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
 
       // 로드된 presets가 있으면 자동 프리셋 적용 시도, 없으면 autoMap 폴백
       let newMapping: Record<string, number[]>
+      // 프리셋 적용 시 프리셋 값으로, 아니면 현재 토글 값 유지 (state 비동기 업데이트 대비 로컬 변수)
+      let nextPaymentIsOrderTotal = paymentIsOrderTotal
       if (presets.length > 0) {
         autoPresetTriedRef.current = true
         const best = findBestPreset(presets, data.headers)
@@ -611,6 +616,8 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
           const result = applyPreset(best.mapping, data.headers)
           newMapping = result.mapping
           setSelectedChannelId(best.channelId ?? null)
+          nextPaymentIsOrderTotal = best.paymentIsOrderTotal ?? false
+          setPaymentIsOrderTotal(nextPaymentIsOrderTotal)
           if (result.matched < result.total) {
             setPresetMismatch({
               presetName: best.name,
@@ -637,7 +644,7 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
         preview: data,
         mapping: newMapping,
         orderDateFixed,
-        paymentIsOrderTotal,
+        paymentIsOrderTotal: nextPaymentIsOrderTotal,
       })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '파일 처리 실패')
