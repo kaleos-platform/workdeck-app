@@ -4,7 +4,6 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productListingPatchSchema } from '@/lib/sh/schemas'
 import {
-  applyChannelAllocation,
   computeDiscount,
   computeEffectiveStatus,
   computeListingAvailableStock,
@@ -91,9 +90,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }))
   const baseline = computeListingRetailBaseline(priceSnapshots)
   const retailPrice = listing.retailPrice != null ? Number(listing.retailPrice) : null
-  const autoAvailable = computeListingAvailableStock(stockSnapshots)
-  const available = applyChannelAllocation(autoAvailable, listing.channelAllocation)
-  const effective = computeEffectiveStatus(listing.status, available)
+  const available = computeListingAvailableStock(stockSnapshots)
+  const effective = computeEffectiveStatus(listing.status, available, listing.channelStock)
   const { diff, percent } = computeDiscount(baseline, retailPrice)
 
   return NextResponse.json({
@@ -113,8 +111,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
       status: listing.status,
       effectiveStatus: effective,
       availableStock: available,
-      autoAvailableStock: autoAvailable,
-      channelAllocation: listing.channelAllocation,
+      autoAvailableStock: available,
+      channelStock: listing.channelStock,
       memo: listing.memo,
       items: listing.items.map((it) => ({
         optionId: it.optionId,
@@ -198,8 +196,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         managementName: input.managementName === undefined ? undefined : input.managementName,
         keywords: input.keywords ?? undefined,
         retailPrice: input.retailPrice === undefined ? undefined : input.retailPrice,
-        channelAllocation:
-          input.channelAllocation === undefined ? undefined : input.channelAllocation,
+        channelStock: input.channelStock === undefined ? undefined : input.channelStock,
         status: input.status ?? undefined,
         memo: input.memo === undefined ? undefined : input.memo,
       },

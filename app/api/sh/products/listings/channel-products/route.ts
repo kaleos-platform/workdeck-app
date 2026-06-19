@@ -33,7 +33,7 @@ const listingInputSchema = z.object({
   internalCode: z.string().max(100).optional(),
   memo: z.string().max(1000).optional(),
   retailPrice: z.number().nonnegative().nullable().optional(),
-  channelAllocation: z.number().int().nonnegative().nullable().optional(),
+  channelStock: z.number().int().nonnegative().nullable().optional(),
   status: z.enum(['ACTIVE', 'SUSPENDED']).default('ACTIVE'),
   items: z.array(listingItemSchema).min(1),
 })
@@ -189,7 +189,7 @@ export async function GET(req: NextRequest) {
         baselinePrice: baseline,
         retailPrice,
         status: l.status,
-        effectiveStatus: computeEffectiveStatus(l.status, available),
+        effectiveStatus: computeEffectiveStatus(l.status, available, l.channelStock),
         items: l.items.map((it) => ({
           optionId: it.optionId,
           optionName: it.option.name,
@@ -355,7 +355,7 @@ export async function POST(req: NextRequest) {
               internalCode: li.internalCode,
               memo: li.memo,
               retailPrice: li.retailPrice ?? null,
-              channelAllocation: li.channelAllocation ?? null,
+              channelStock: li.channelStock ?? null,
               status: li.status,
               items: {
                 create: li.items.map((it) => ({

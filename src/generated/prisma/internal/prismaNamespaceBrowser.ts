@@ -115,6 +115,7 @@ export const ModelName = {
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
   ProductListing: 'ProductListing',
   ProductListingItem: 'ProductListingItem',
+  ChannelStockMovement: 'ChannelStockMovement',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
   ChannelProduct: 'ChannelProduct',
   Product: 'Product',
@@ -1153,7 +1154,7 @@ export const ProductListingScalarFieldEnum = {
   managementName: 'managementName',
   keywords: 'keywords',
   retailPrice: 'retailPrice',
-  channelAllocation: 'channelAllocation',
+  channelStock: 'channelStock',
   status: 'status',
   memo: 'memo',
   createdAt: 'createdAt',
@@ -1172,6 +1173,19 @@ export const ProductListingItemScalarFieldEnum = {
 } as const
 
 export type ProductListingItemScalarFieldEnum = (typeof ProductListingItemScalarFieldEnum)[keyof typeof ProductListingItemScalarFieldEnum]
+
+
+export const ChannelStockMovementScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  listingId: 'listingId',
+  batchId: 'batchId',
+  orderItemId: 'orderItemId',
+  quantity: 'quantity',
+  createdAt: 'createdAt'
+} as const
+
+export type ChannelStockMovementScalarFieldEnum = (typeof ChannelStockMovementScalarFieldEnum)[keyof typeof ChannelStockMovementScalarFieldEnum]
 
 
 export const DelOrderItemFulfillmentScalarFieldEnum = {
