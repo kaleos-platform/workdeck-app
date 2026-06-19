@@ -1,9 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Info, Loader2, PackageX } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -45,9 +46,18 @@ type MirrorData =
   | { status: 'no_representative'; channel: { id: string; name: string } }
   | { status: 'not_fulfillment'; channel: { id: string; name: string } }
 
+type MatchFilter = 'all' | 'matched' | 'unmatched'
+
+const FILTER_OPTIONS: { value: MatchFilter; label: string }[] = [
+  { value: 'all', label: '전체' },
+  { value: 'matched', label: '매칭됨' },
+  { value: 'unmatched', label: '미매칭' },
+]
+
 export function ChannelMirrorView({ channelId }: { channelId: string }) {
   const [data, setData] = useState<MirrorData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<MatchFilter>('all')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -70,6 +80,44 @@ export function ChannelMirrorView({ channelId }: { channelId: string }) {
   useEffect(() => {
     load()
   }, [load])
+
+  // 채널 변경 시 필터 초기화
+  useEffect(() => {
+    setFilter('all')
+  }, [channelId])
+
+  // status==='ok'일 때만 listings 존재 — 필터/정렬 파생값
+  const okListings = data?.status === 'ok' ? data.listings : null
+  const okHasLocation = data?.status === 'ok' ? !!data.location : false
+
+  // 매칭됨 우선 정렬 + 필터 적용. 매칭 상태는 연동 위치가 있어야 의미가 있으므로,
+  // 위치 미연결 시엔 정렬/필터를 적용하지 않고 원본을 그대로 표시한다.
+  const visibleListings = useMemo(() => {
+    if (!okListings) return []
+    if (!okHasLocation) return okListings
+
+    const matchesFilter = (matched: boolean) =>
+      filter === 'all' ? true : filter === 'matched' ? matched : !matched
+
+    return (
+      okListings
+        .map((l) => {
+          const items = l.items
+            .filter((it) => matchesFilter(it.matched))
+            // 매칭됨을 위로
+            .sort((a, b) => Number(b.matched) - Number(a.matched))
+          return { ...l, items }
+        })
+        // 표시할 옵션이 없는 상품은 제외
+        .filter((l) => l.items.length > 0)
+        // 매칭된 옵션이 있는 상품을 위로
+        .sort((a, b) => {
+          const am = a.items.some((it) => it.matched) ? 1 : 0
+          const bm = b.items.some((it) => it.matched) ? 1 : 0
+          return bm - am
+        })
+    )
+  }, [okListings, okHasLocation, filter])
 
   if (loading) {
     return (
@@ -139,23 +187,54 @@ export function ChannelMirrorView({ channelId }: { channelId: string }) {
           대표 채널에 상품이 없습니다
         </div>
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>상품 / 구성 옵션</TableHead>
-                <TableHead className="w-28 text-right">연동 재고</TableHead>
-                <TableHead className="w-24 text-center">매칭 상태</TableHead>
-                <TableHead className="w-24">판매상태</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {listings.map((l) => (
-                <MirrorListingRows key={l.id} listing={l} hasLocation={!!location} />
+        <>
+          {/* 매칭 상태 필터 — 연동 위치가 있을 때만 의미가 있음 */}
+          {location && (
+            <div className="flex items-center justify-end gap-1">
+              <span className="mr-1 text-xs text-muted-foreground">매칭 상태</span>
+              {FILTER_OPTIONS.map((opt) => (
+                <Button
+                  key={opt.value}
+                  type="button"
+                  size="sm"
+                  variant={filter === opt.value ? 'default' : 'outline'}
+                  className="h-7 px-2.5 text-xs"
+                  onClick={() => setFilter(opt.value)}
+                >
+                  {opt.label}
+                </Button>
               ))}
-            </TableBody>
-          </Table>
-        </div>
+            </div>
+          )}
+
+          {visibleListings.length === 0 ? (
+            <div className="rounded-md border border-dashed py-10 text-center text-sm text-muted-foreground">
+              {filter === 'matched'
+                ? '매칭된 옵션이 없습니다'
+                : filter === 'unmatched'
+                  ? '미매칭 옵션이 없습니다'
+                  : '표시할 상품이 없습니다'}
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>상품 / 구성 옵션</TableHead>
+                    <TableHead className="w-28 text-right">연동 재고</TableHead>
+                    <TableHead className="w-24 text-center">매칭 상태</TableHead>
+                    <TableHead className="w-24">판매상태</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleListings.map((l) => (
+                    <MirrorListingRows key={l.id} listing={l} hasLocation={!!location} />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
