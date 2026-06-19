@@ -24,7 +24,7 @@ type ListingRow = {
   retailPrice: number | null
   baselinePrice: number | null
   availableStock: number
-  channelAllocation: number | null
+  channelStock: number | null
   status: 'ACTIVE' | 'SUSPENDED'
   effectiveStatus: 'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'
   myOptionsInListing: Array<{ optionId: string; optionName: string; quantity: number }>
@@ -112,7 +112,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const baseline = computeListingRetailBaseline(priceSnapshots)
     const retailPrice = l.retailPrice != null ? Number(l.retailPrice) : null
     const available = computeListingAvailableStock(stockSnapshots)
-    const effective = computeEffectiveStatus(l.status, available)
+    const effective = computeEffectiveStatus(l.status, available, l.channelStock)
 
     const row: ListingRow = {
       id: l.id,
@@ -122,7 +122,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       retailPrice,
       baselinePrice: baseline,
       availableStock: available,
-      channelAllocation: l.channelAllocation,
+      channelStock: l.channelStock,
       status: l.status,
       effectiveStatus: effective,
       myOptionsInListing: mine.map((it) => ({

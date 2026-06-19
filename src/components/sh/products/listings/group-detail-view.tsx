@@ -18,11 +18,7 @@ import {
 } from '@/components/ui/dialog'
 import { SELLER_HUB_LISTING_NEW_PATH, SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 import { SaveStatusChip } from '@/components/sh/save-status-chip'
-import {
-  applyChannelAllocation,
-  computeDiscount,
-  computeEffectiveStatus,
-} from '@/lib/sh/listing-calc'
+import { computeDiscount, computeEffectiveStatus } from '@/lib/sh/listing-calc'
 
 import { KeywordEditor } from './keyword-editor'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
@@ -262,7 +258,7 @@ export function GroupDetailView({ channelProductId }: Props) {
       if (!o) continue
       if (
         r.retailPrice !== o.retailPrice ||
-        r.channelAllocation !== o.channelAllocation ||
+        r.channelStock !== o.channelStock ||
         r.status !== o.status
       ) {
         set.add(r.id)
@@ -280,16 +276,15 @@ export function GroupDetailView({ channelProductId }: Props) {
         if (r.id !== id) return r
         const next = { ...r }
         if (patch.retailPrice !== undefined) next.retailPrice = patch.retailPrice
-        if (patch.channelAllocation !== undefined) {
-          next.channelAllocation = patch.channelAllocation
-          next.availableStock = applyChannelAllocation(
-            next.autoAvailableStock,
-            next.channelAllocation
-          )
-        }
+        if (patch.channelStock !== undefined) next.channelStock = patch.channelStock
         if (patch.status !== undefined) next.status = patch.status
-        if (patch.status !== undefined || patch.channelAllocation !== undefined) {
-          next.effectiveStatus = computeEffectiveStatus(next.status, next.availableStock)
+        if (patch.status !== undefined || patch.channelStock !== undefined) {
+          // 채널 재고는 가용 재고에 영향 없음 — 품절 판정에만 반영
+          next.effectiveStatus = computeEffectiveStatus(
+            next.status,
+            next.availableStock,
+            next.channelStock
+          )
         }
         const discount = computeDiscount(next.baselinePrice, next.retailPrice)
         next.discountAmount = discount.diff
@@ -307,15 +302,13 @@ export function GroupDetailView({ channelProductId }: Props) {
         if (!selected.has(r.id)) return r
         const next = { ...r }
         if (patch.retailPrice !== undefined) next.retailPrice = patch.retailPrice
-        if (patch.channelAllocation !== undefined) {
-          next.channelAllocation = patch.channelAllocation
-          next.availableStock = applyChannelAllocation(
-            next.autoAvailableStock,
-            next.channelAllocation
-          )
-        }
+        if (patch.channelStock !== undefined) next.channelStock = patch.channelStock
         if (patch.status !== undefined) next.status = patch.status
-        next.effectiveStatus = computeEffectiveStatus(next.status, next.availableStock)
+        next.effectiveStatus = computeEffectiveStatus(
+          next.status,
+          next.availableStock,
+          next.channelStock
+        )
         const discount = computeDiscount(next.baselinePrice, next.retailPrice)
         next.discountAmount = discount.diff
         next.discountPercent = discount.percent
@@ -716,7 +709,7 @@ export function GroupDetailView({ channelProductId }: Props) {
         internalCode?: string | null
         memo?: string | null
         retailPrice?: number | null
-        channelAllocation?: number | null
+        channelStock?: number | null
         status?: 'ACTIVE' | 'SUSPENDED'
       }
     >()
@@ -731,7 +724,7 @@ export function GroupDetailView({ channelProductId }: Props) {
         internalCode?: string | null
         memo?: string | null
         retailPrice?: number | null
-        channelAllocation?: number | null
+        channelStock?: number | null
         status?: 'ACTIVE' | 'SUSPENDED'
       } = {}
 
@@ -784,8 +777,8 @@ export function GroupDetailView({ channelProductId }: Props) {
 
       const orig = origById.get(l.id)!
       if (current.retailPrice !== orig.retailPrice) patch.retailPrice = current.retailPrice
-      if (current.channelAllocation !== orig.channelAllocation) {
-        patch.channelAllocation = current.channelAllocation
+      if (current.channelStock !== orig.channelStock) {
+        patch.channelStock = current.channelStock
       }
       if (current.status !== orig.status) patch.status = current.status
 
@@ -887,29 +880,16 @@ export function GroupDetailView({ channelProductId }: Props) {
               ...(p.internalCode !== undefined ? { internalCode: p.internalCode } : {}),
               ...(p.memo !== undefined ? { memo: p.memo } : {}),
               ...(p.retailPrice !== undefined ? { retailPrice: p.retailPrice } : {}),
-              ...(p.channelAllocation !== undefined
+              ...(p.channelStock !== undefined ? { channelStock: p.channelStock } : {}),
+              ...(p.status !== undefined ? { status: p.status } : {}),
+              // 채널 재고는 가용 재고에 영향 없음 — status/channelStock 변경 시 품절 판정만 재계산
+              ...(p.status !== undefined || p.channelStock !== undefined
                 ? {
-                    channelAllocation: p.channelAllocation,
-                    availableStock: applyChannelAllocation(
-                      l.autoAvailableStock,
-                      p.channelAllocation
-                    ),
                     effectiveStatus: computeEffectiveStatus(
                       p.status ?? l.status,
-                      applyChannelAllocation(l.autoAvailableStock, p.channelAllocation)
+                      l.availableStock,
+                      p.channelStock !== undefined ? p.channelStock : l.channelStock
                     ),
-                  }
-                : {}),
-              ...(p.status !== undefined
-                ? {
-                    status: p.status,
-                    effectiveStatus:
-                      p.channelAllocation !== undefined
-                        ? computeEffectiveStatus(
-                            p.status,
-                            applyChannelAllocation(l.autoAvailableStock, p.channelAllocation)
-                          )
-                        : computeEffectiveStatus(p.status, l.availableStock),
                   }
                 : {}),
             }

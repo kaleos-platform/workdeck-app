@@ -5,10 +5,10 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productDisplayName } from '@/lib/sh/product-display'
 import {
-  applyChannelAllocation,
   computeDiscount,
   computeEffectiveStatus,
   computeListingAvailableStock,
+  computeListingAvailableStockByLocation,
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
 
@@ -93,18 +93,39 @@ export async function GET(_req: NextRequest, { params }: Params) {
   })
   if (!cp) return errorResponse('채널상품을 찾을 수 없습니다', 404)
 
-  // 재고 배치 조회
+  // 재고 배치 조회 — 옵션×위치별로 조회해 (1) 전체 합산(가용재고용) + (2) 위치별 분해 둘 다 구성
   const optionIds = Array.from(
     new Set(cp.listings.flatMap((l) => l.items.map((it) => it.optionId)))
   )
-  const stockMap = new Map<string, number>()
+  const stockMap = new Map<string, number>() // optionId → 전체 위치 합산
+  const stockByLoc = new Map<string, Map<string, number>>() // optionId → (locationId → qty)
+  const locationIds = new Set<string>()
   if (optionIds.length > 0) {
     const rows = await prisma.invStockLevel.groupBy({
-      by: ['optionId'],
+      by: ['optionId', 'locationId'],
       where: { optionId: { in: optionIds } },
       _sum: { quantity: true },
     })
-    for (const r of rows) stockMap.set(r.optionId, r._sum.quantity ?? 0)
+    for (const r of rows) {
+      const qty = r._sum.quantity ?? 0
+      stockMap.set(r.optionId, (stockMap.get(r.optionId) ?? 0) + qty)
+      let byLoc = stockByLoc.get(r.optionId)
+      if (!byLoc) {
+        byLoc = new Map<string, number>()
+        stockByLoc.set(r.optionId, byLoc)
+      }
+      byLoc.set(r.locationId, qty)
+      locationIds.add(r.locationId)
+    }
+  }
+  // 위치명 조회 (재고가 존재하는 위치만)
+  const locationNameMap = new Map<string, string>()
+  if (locationIds.size > 0) {
+    const locs = await prisma.invStorageLocation.findMany({
+      where: { spaceId: cp.spaceId, id: { in: Array.from(locationIds) } },
+      select: { id: true, name: true },
+    })
+    for (const loc of locs) locationNameMap.set(loc.id, loc.name)
   }
 
   // product discriminated union 파생
@@ -171,10 +192,33 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }))
     const baseline = computeListingRetailBaseline(priceSnapshots)
     const retailPrice = l.retailPrice != null ? Number(l.retailPrice) : null
-    const autoAvailable = computeListingAvailableStock(stockSnapshots)
-    const available = applyChannelAllocation(autoAvailable, l.channelAllocation)
-    const effective = computeEffectiveStatus(l.status, available)
+    // 가용재고 = 물리 재고만으로 계산 (채널 재고 캡 없음)
+    const available = computeListingAvailableStock(stockSnapshots)
+    const effective = computeEffectiveStatus(l.status, available, l.channelStock)
     const { diff, percent } = computeDiscount(baseline, retailPrice)
+
+    // 위치별 가용재고 분해 — 이 listing 구성에 등장하는 모든 위치
+    const locIdsForListing = new Set<string>()
+    for (const it of l.items) {
+      const byLoc = stockByLoc.get(it.optionId)
+      if (byLoc) for (const lid of byLoc.keys()) locIdsForListing.add(lid)
+    }
+    const availableByLocation = computeListingAvailableStockByLocation(
+      Array.from(locIdsForListing).map((locId) => ({
+        locationId: locId,
+        items: l.items.map((it) => ({
+          quantity: it.quantity,
+          optionStock: stockByLoc.get(it.optionId)?.get(locId) ?? 0,
+        })),
+      }))
+    )
+      .map((row) => ({
+        locationId: row.locationId,
+        locationName: locationNameMap.get(row.locationId) ?? '(알 수 없는 위치)',
+        availableStock: row.availableStock,
+      }))
+      .sort((a, b) => b.availableStock - a.availableStock)
+
     return {
       id: l.id,
       searchName: l.searchName,
@@ -185,12 +229,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
       status: l.status,
       effectiveStatus: effective,
       retailPrice,
-      channelAllocation: l.channelAllocation,
+      channelStock: l.channelStock,
       baselinePrice: baseline,
       discountAmount: diff,
       discountPercent: percent,
       availableStock: available,
-      autoAvailableStock: autoAvailable,
+      autoAvailableStock: available,
+      availableByLocation,
       items: l.items.map((it) => ({
         optionId: it.optionId,
         optionName: it.option.name,

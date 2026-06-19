@@ -26,7 +26,7 @@ type ListingDetail = {
   effectiveStatus: 'ACTIVE' | 'SOLD_OUT' | 'SUSPENDED'
   availableStock: number
   autoAvailableStock: number
-  channelAllocation: number | null
+  channelStock: number | null
   memo: string | null
   items: Array<{
     optionId: string
@@ -100,7 +100,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ listin
     managementName: listing.managementName,
     keywords: listing.keywords,
     retailPrice: listing.retailPrice,
-    channelAllocation: listing.channelAllocation,
+    channelStock: listing.channelStock,
     status: listing.status,
     memo: listing.memo,
     availableStock: listing.availableStock,

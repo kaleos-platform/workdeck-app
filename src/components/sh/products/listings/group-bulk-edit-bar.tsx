@@ -22,7 +22,7 @@ import {
 
 export type BulkPatch = {
   retailPrice?: number | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: 'ACTIVE' | 'SUSPENDED'
 }
 
@@ -42,29 +42,29 @@ export function GroupBulkEditBar({
   loading,
 }: Props) {
   const [retailDraft, setRetailDraft] = useState('')
-  const [channelAllocationDraft, setChannelAllocationDraft] = useState('')
+  const [channelStockDraft, setChannelStockDraft] = useState('')
   const [statusDraft, setStatusDraft] = useState<'' | 'ACTIVE' | 'SUSPENDED'>('')
 
   const hasChange =
-    retailDraft.trim() !== '' || channelAllocationDraft.trim() !== '' || statusDraft !== ''
+    retailDraft.trim() !== '' || channelStockDraft.trim() !== '' || statusDraft !== ''
 
   async function apply() {
     const patch: BulkPatch = {}
     if (retailDraft.trim() !== '') patch.retailPrice = Number(retailDraft)
-    if (channelAllocationDraft.trim() !== '') {
-      patch.channelAllocation = Number(channelAllocationDraft)
+    if (channelStockDraft.trim() !== '') {
+      patch.channelStock = Number(channelStockDraft)
     }
     if (statusDraft !== '') patch.status = statusDraft
     if (
       patch.retailPrice === undefined &&
-      patch.channelAllocation === undefined &&
+      patch.channelStock === undefined &&
       patch.status === undefined
     ) {
       return
     }
     await onApply(patch)
     setRetailDraft('')
-    setChannelAllocationDraft('')
+    setChannelStockDraft('')
     setStatusDraft('')
   }
 
@@ -87,12 +87,12 @@ export function GroupBulkEditBar({
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-background/70">재고</span>
+            <span className="text-xs text-background/70">채널 재고</span>
             <Input
               type="number"
               min={0}
-              value={channelAllocationDraft}
-              onChange={(e) => setChannelAllocationDraft(e.target.value)}
+              value={channelStockDraft}
+              onChange={(e) => setChannelStockDraft(e.target.value)}
               placeholder="변경 없음"
               className={`${floatingActionInputClass} w-28`}
             />

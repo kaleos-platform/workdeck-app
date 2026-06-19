@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { applyRangeSelection } from '@/lib/range-selection'
 import { computeDiscount } from '@/lib/sh/listing-calc'
 
@@ -37,9 +38,10 @@ export type GroupListingRow = {
   baselinePrice: number | null
   discountAmount: number | null
   discountPercent: number | null
-  channelAllocation: number | null
+  channelStock: number | null
   availableStock: number
   autoAvailableStock: number
+  availableByLocation: Array<{ locationId: string; locationName: string; availableStock: number }>
   items: Array<{
     optionId: string
     optionName: string
@@ -57,7 +59,7 @@ type Props = {
     id: string,
     patch: {
       retailPrice?: number | null
-      channelAllocation?: number | null
+      channelStock?: number | null
       status?: 'ACTIVE' | 'SUSPENDED'
     }
   ) => void
@@ -186,13 +188,14 @@ export function GroupListingsTable({
             </TableHead>
             <TableHead className="text-right">
               <SortableHeaderButton
-                label="재고"
+                label="가용 재고"
                 sortKey="stock"
                 sort={sort}
                 onToggle={toggleSort}
                 align="right"
               />
             </TableHead>
+            <TableHead className="w-32 text-right">채널 재고</TableHead>
             <TableHead className="text-right">
               <SortableHeaderButton
                 label="소비자가"
@@ -262,10 +265,64 @@ export function GroupListingsTable({
                     <p className="text-xs text-muted-foreground">{r.internalCode}</p>
                   )}
                 </TableCell>
-                <TableCell
-                  className={`text-right ${r.availableStock === 0 ? 'text-destructive' : ''}`}
-                >
-                  {r.availableStock.toLocaleString('ko-KR')}
+                <TableCell className="text-right">
+                  {(r.availableByLocation ?? []).length > 0 ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={`tabular-nums underline decoration-dotted underline-offset-4 hover:text-foreground ${
+                            r.availableStock === 0 ? 'text-destructive' : ''
+                          }`}
+                        >
+                          {r.availableStock.toLocaleString('ko-KR')}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent align="end" className="w-56 p-0">
+                        <div className="border-b px-3 py-2 text-xs font-medium text-muted-foreground">
+                          위치별 가용 재고
+                        </div>
+                        <ul className="max-h-60 overflow-auto py-1">
+                          {(r.availableByLocation ?? []).map((loc) => (
+                            <li
+                              key={loc.locationId}
+                              className="flex items-center justify-between px-3 py-1 text-sm"
+                            >
+                              <span className="truncate">{loc.locationName}</span>
+                              <span className="tabular-nums">
+                                {loc.availableStock.toLocaleString('ko-KR')}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="border-t px-3 py-2 text-[11px] leading-snug text-muted-foreground">
+                          위치별 합은 전체 가용 재고와 다를 수 있습니다(교차 위치 구성 합산).
+                        </p>
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <span
+                      className={`tabular-nums ${r.availableStock === 0 ? 'text-destructive' : ''}`}
+                    >
+                      {r.availableStock.toLocaleString('ko-KR')}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={r.channelStock != null ? String(r.channelStock) : ''}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      onRowChange(r.id, {
+                        channelStock: v === '' ? null : Number(v),
+                      })
+                    }}
+                    placeholder="미사용"
+                    className="h-8 bg-background text-right"
+                    disabled={disabled}
+                  />
                 </TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">
                   {r.baselinePrice != null ? `${r.baselinePrice.toLocaleString('ko-KR')}원` : '-'}

@@ -5,7 +5,6 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productListingSchema } from '@/lib/sh/schemas'
 import {
-  applyChannelAllocation,
   computeDiscount,
   computeEffectiveStatus,
   computeListingAvailableStock,
@@ -134,9 +133,8 @@ export async function GET(req: NextRequest) {
     }))
     const baseline = computeListingRetailBaseline(priceSnapshots)
     const retailPrice = l.retailPrice != null ? Number(l.retailPrice) : null
-    const autoAvailable = computeListingAvailableStock(stockSnapshots)
-    const available = applyChannelAllocation(autoAvailable, l.channelAllocation)
-    const effective = computeEffectiveStatus(l.status, available)
+    const available = computeListingAvailableStock(stockSnapshots)
+    const effective = computeEffectiveStatus(l.status, available, l.channelStock)
     const { diff, percent } = computeDiscount(baseline, retailPrice)
 
     // product discriminated union 파생
@@ -172,8 +170,8 @@ export async function GET(req: NextRequest) {
       discountAmount: diff,
       discountPercent: percent,
       availableStock: available,
-      autoAvailableStock: autoAvailable,
-      channelAllocation: l.channelAllocation,
+      autoAvailableStock: available,
+      channelStock: l.channelStock,
       itemCount: l.items.length,
       product,
       items: l.items.map((it) => ({
@@ -249,7 +247,7 @@ export async function POST(req: NextRequest) {
         internalCode: input.internalCode ?? null,
         keywords: input.keywords ?? [],
         retailPrice: input.retailPrice ?? null,
-        channelAllocation: input.channelAllocation ?? null,
+        channelStock: input.channelStock ?? null,
         status: input.status,
         memo: input.memo ?? null,
       },
