@@ -269,7 +269,7 @@ export const productListingSchema = z
         z.number().min(0).max(99_999_999)
       )
       .optional(),
-    channelAllocation: z
+    channelStock: z
       .preprocess(
         (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
         z.number().int().min(0).max(999_999)
@@ -313,7 +313,7 @@ export const productListingPatchSchema = z
         z.union([z.number().min(0).max(99_999_999), z.null()])
       )
       .optional(),
-    channelAllocation: z
+    channelStock: z
       .preprocess(
         (v) => (v === null || v === '' ? null : v === undefined ? undefined : Number(v)),
         z.union([z.number().int().min(0).max(999_999), z.null()])
@@ -542,7 +542,7 @@ export const productListingBulkPatchSchema = z.object({
           z.union([z.number().min(0).max(99_999_999), z.null()])
         )
         .optional(),
-      channelAllocation: z
+      channelStock: z
         .preprocess(
           (v) => (v === null || v === '' ? null : v === undefined ? undefined : Number(v)),
           z.union([z.number().int().min(0).max(999_999), z.null()])
@@ -551,8 +551,7 @@ export const productListingBulkPatchSchema = z.object({
       status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
     })
     .refine(
-      (p) =>
-        p.retailPrice !== undefined || p.channelAllocation !== undefined || p.status !== undefined,
+      (p) => p.retailPrice !== undefined || p.channelStock !== undefined || p.status !== undefined,
       {
         message: '변경할 필드가 없습니다',
       }

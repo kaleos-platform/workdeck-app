@@ -38,7 +38,7 @@ export type CompositionRow = {
   suffixParts: string[]
   items: ItemEntry[]
   retailPrice: string
-  channelAllocation: string
+  channelStock: string
   status: 'ACTIVE' | 'SUSPENDED'
   /** manual 모드에서만 설정. BuiltGroup.manualNames에서 복사. */
   manualNames?: {
@@ -113,8 +113,8 @@ export function CompositionRowsTable({
           return compareString(aC, bC, dir)
         }
         case 'stock': {
-          const aS = a.channelAllocation.trim() === '' ? null : Number(a.channelAllocation)
-          const bS = b.channelAllocation.trim() === '' ? null : Number(b.channelAllocation)
+          const aS = a.channelStock.trim() === '' ? null : Number(a.channelStock)
+          const bS = b.channelStock.trim() === '' ? null : Number(b.channelStock)
           return compareNullableNumber(aS, bS, dir)
         }
         case 'baseline': {
@@ -184,9 +184,8 @@ export function CompositionRowsTable({
         if (patch.retailPrice !== undefined) {
           next.retailPrice = patch.retailPrice == null ? '' : String(patch.retailPrice)
         }
-        if (patch.channelAllocation !== undefined) {
-          next.channelAllocation =
-            patch.channelAllocation == null ? '' : String(patch.channelAllocation)
+        if (patch.channelStock !== undefined) {
+          next.channelStock = patch.channelStock == null ? '' : String(patch.channelStock)
         }
         if (patch.status !== undefined) next.status = patch.status
         return next
@@ -248,7 +247,7 @@ export function CompositionRowsTable({
               </TableHead>
               <TableHead className="w-28 text-right">
                 <SortableHeaderButton
-                  label="재고"
+                  label="채널 재고"
                   sortKey="stock"
                   sort={sort}
                   onToggle={toggleSort}
@@ -328,9 +327,9 @@ export function CompositionRowsTable({
                     <Input
                       type="number"
                       min={0}
-                      value={r.channelAllocation}
-                      onChange={(e) => updateRow(r.key, { channelAllocation: e.target.value })}
-                      placeholder="-"
+                      value={r.channelStock}
+                      onChange={(e) => updateRow(r.key, { channelStock: e.target.value })}
+                      placeholder="미사용"
                       className="h-8 bg-background text-right"
                       disabled={disabled}
                     />

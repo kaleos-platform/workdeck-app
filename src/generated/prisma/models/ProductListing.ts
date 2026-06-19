@@ -28,12 +28,12 @@ export type AggregateProductListing = {
 
 export type ProductListingAvgAggregateOutputType = {
   retailPrice: runtime.Decimal | null
-  channelAllocation: number | null
+  channelStock: number | null
 }
 
 export type ProductListingSumAggregateOutputType = {
   retailPrice: runtime.Decimal | null
-  channelAllocation: number | null
+  channelStock: number | null
 }
 
 export type ProductListingMinAggregateOutputType = {
@@ -46,7 +46,7 @@ export type ProductListingMinAggregateOutputType = {
   displayName: string | null
   managementName: string | null
   retailPrice: runtime.Decimal | null
-  channelAllocation: number | null
+  channelStock: number | null
   status: $Enums.ProductListingStatus | null
   memo: string | null
   createdAt: Date | null
@@ -63,7 +63,7 @@ export type ProductListingMaxAggregateOutputType = {
   displayName: string | null
   managementName: string | null
   retailPrice: runtime.Decimal | null
-  channelAllocation: number | null
+  channelStock: number | null
   status: $Enums.ProductListingStatus | null
   memo: string | null
   createdAt: Date | null
@@ -81,7 +81,7 @@ export type ProductListingCountAggregateOutputType = {
   managementName: number
   keywords: number
   retailPrice: number
-  channelAllocation: number
+  channelStock: number
   status: number
   memo: number
   createdAt: number
@@ -92,12 +92,12 @@ export type ProductListingCountAggregateOutputType = {
 
 export type ProductListingAvgAggregateInputType = {
   retailPrice?: true
-  channelAllocation?: true
+  channelStock?: true
 }
 
 export type ProductListingSumAggregateInputType = {
   retailPrice?: true
-  channelAllocation?: true
+  channelStock?: true
 }
 
 export type ProductListingMinAggregateInputType = {
@@ -110,7 +110,7 @@ export type ProductListingMinAggregateInputType = {
   displayName?: true
   managementName?: true
   retailPrice?: true
-  channelAllocation?: true
+  channelStock?: true
   status?: true
   memo?: true
   createdAt?: true
@@ -127,7 +127,7 @@ export type ProductListingMaxAggregateInputType = {
   displayName?: true
   managementName?: true
   retailPrice?: true
-  channelAllocation?: true
+  channelStock?: true
   status?: true
   memo?: true
   createdAt?: true
@@ -145,7 +145,7 @@ export type ProductListingCountAggregateInputType = {
   managementName?: true
   keywords?: true
   retailPrice?: true
-  channelAllocation?: true
+  channelStock?: true
   status?: true
   memo?: true
   createdAt?: true
@@ -250,7 +250,7 @@ export type ProductListingGroupByOutputType = {
   managementName: string | null
   keywords: runtime.JsonValue
   retailPrice: runtime.Decimal | null
-  channelAllocation: number | null
+  channelStock: number | null
   status: $Enums.ProductListingStatus
   memo: string | null
   createdAt: Date
@@ -291,7 +291,7 @@ export type ProductListingWhereInput = {
   managementName?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   keywords?: Prisma.JsonFilter<"ProductListing">
   retailPrice?: Prisma.DecimalNullableFilter<"ProductListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.IntNullableFilter<"ProductListing"> | number | null
+  channelStock?: Prisma.IntNullableFilter<"ProductListing"> | number | null
   status?: Prisma.EnumProductListingStatusFilter<"ProductListing"> | $Enums.ProductListingStatus
   memo?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductListing"> | Date | string
@@ -302,6 +302,7 @@ export type ProductListingWhereInput = {
   items?: Prisma.ProductListingItemListRelationFilter
   aliases?: Prisma.ChannelProductAliasListRelationFilter
   delItems?: Prisma.DelOrderItemListRelationFilter
+  stockMovements?: Prisma.ChannelStockMovementListRelationFilter
 }
 
 export type ProductListingOrderByWithRelationInput = {
@@ -315,7 +316,7 @@ export type ProductListingOrderByWithRelationInput = {
   managementName?: Prisma.SortOrderInput | Prisma.SortOrder
   keywords?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrderInput | Prisma.SortOrder
-  channelAllocation?: Prisma.SortOrderInput | Prisma.SortOrder
+  channelStock?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -326,6 +327,7 @@ export type ProductListingOrderByWithRelationInput = {
   items?: Prisma.ProductListingItemOrderByRelationAggregateInput
   aliases?: Prisma.ChannelProductAliasOrderByRelationAggregateInput
   delItems?: Prisma.DelOrderItemOrderByRelationAggregateInput
+  stockMovements?: Prisma.ChannelStockMovementOrderByRelationAggregateInput
 }
 
 export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
@@ -342,7 +344,7 @@ export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
   managementName?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   keywords?: Prisma.JsonFilter<"ProductListing">
   retailPrice?: Prisma.DecimalNullableFilter<"ProductListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.IntNullableFilter<"ProductListing"> | number | null
+  channelStock?: Prisma.IntNullableFilter<"ProductListing"> | number | null
   status?: Prisma.EnumProductListingStatusFilter<"ProductListing"> | $Enums.ProductListingStatus
   memo?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductListing"> | Date | string
@@ -353,6 +355,7 @@ export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
   items?: Prisma.ProductListingItemListRelationFilter
   aliases?: Prisma.ChannelProductAliasListRelationFilter
   delItems?: Prisma.DelOrderItemListRelationFilter
+  stockMovements?: Prisma.ChannelStockMovementListRelationFilter
 }, "id">
 
 export type ProductListingOrderByWithAggregationInput = {
@@ -366,7 +369,7 @@ export type ProductListingOrderByWithAggregationInput = {
   managementName?: Prisma.SortOrderInput | Prisma.SortOrder
   keywords?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrderInput | Prisma.SortOrder
-  channelAllocation?: Prisma.SortOrderInput | Prisma.SortOrder
+  channelStock?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -392,7 +395,7 @@ export type ProductListingScalarWhereWithAggregatesInput = {
   managementName?: Prisma.StringNullableWithAggregatesFilter<"ProductListing"> | string | null
   keywords?: Prisma.JsonWithAggregatesFilter<"ProductListing">
   retailPrice?: Prisma.DecimalNullableWithAggregatesFilter<"ProductListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.IntNullableWithAggregatesFilter<"ProductListing"> | number | null
+  channelStock?: Prisma.IntNullableWithAggregatesFilter<"ProductListing"> | number | null
   status?: Prisma.EnumProductListingStatusWithAggregatesFilter<"ProductListing"> | $Enums.ProductListingStatus
   memo?: Prisma.StringNullableWithAggregatesFilter<"ProductListing"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProductListing"> | Date | string
@@ -407,7 +410,7 @@ export type ProductListingCreateInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -418,6 +421,7 @@ export type ProductListingCreateInput = {
   items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateInput = {
@@ -431,7 +435,7 @@ export type ProductListingUncheckedCreateInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -439,6 +443,7 @@ export type ProductListingUncheckedCreateInput = {
   items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUpdateInput = {
@@ -449,7 +454,7 @@ export type ProductListingUpdateInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -460,6 +465,7 @@ export type ProductListingUpdateInput = {
   items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateInput = {
@@ -473,7 +479,7 @@ export type ProductListingUncheckedUpdateInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -481,6 +487,7 @@ export type ProductListingUncheckedUpdateInput = {
   items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateManyInput = {
@@ -494,7 +501,7 @@ export type ProductListingCreateManyInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -509,7 +516,7 @@ export type ProductListingUpdateManyMutationInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -527,7 +534,7 @@ export type ProductListingUncheckedUpdateManyInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -560,7 +567,7 @@ export type ProductListingCountOrderByAggregateInput = {
   managementName?: Prisma.SortOrder
   keywords?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
-  channelAllocation?: Prisma.SortOrder
+  channelStock?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -569,7 +576,7 @@ export type ProductListingCountOrderByAggregateInput = {
 
 export type ProductListingAvgOrderByAggregateInput = {
   retailPrice?: Prisma.SortOrder
-  channelAllocation?: Prisma.SortOrder
+  channelStock?: Prisma.SortOrder
 }
 
 export type ProductListingMaxOrderByAggregateInput = {
@@ -582,7 +589,7 @@ export type ProductListingMaxOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   managementName?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
-  channelAllocation?: Prisma.SortOrder
+  channelStock?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -599,7 +606,7 @@ export type ProductListingMinOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   managementName?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
-  channelAllocation?: Prisma.SortOrder
+  channelStock?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -608,7 +615,7 @@ export type ProductListingMinOrderByAggregateInput = {
 
 export type ProductListingSumOrderByAggregateInput = {
   retailPrice?: Prisma.SortOrder
-  channelAllocation?: Prisma.SortOrder
+  channelStock?: Prisma.SortOrder
 }
 
 export type ProductListingScalarRelationFilter = {
@@ -750,6 +757,20 @@ export type ProductListingUpdateOneRequiredWithoutItemsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProductListingUpdateToOneWithWhereWithoutItemsInput, Prisma.ProductListingUpdateWithoutItemsInput>, Prisma.ProductListingUncheckedUpdateWithoutItemsInput>
 }
 
+export type ProductListingCreateNestedOneWithoutStockMovementsInput = {
+  create?: Prisma.XOR<Prisma.ProductListingCreateWithoutStockMovementsInput, Prisma.ProductListingUncheckedCreateWithoutStockMovementsInput>
+  connectOrCreate?: Prisma.ProductListingCreateOrConnectWithoutStockMovementsInput
+  connect?: Prisma.ProductListingWhereUniqueInput
+}
+
+export type ProductListingUpdateOneRequiredWithoutStockMovementsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductListingCreateWithoutStockMovementsInput, Prisma.ProductListingUncheckedCreateWithoutStockMovementsInput>
+  connectOrCreate?: Prisma.ProductListingCreateOrConnectWithoutStockMovementsInput
+  upsert?: Prisma.ProductListingUpsertWithoutStockMovementsInput
+  connect?: Prisma.ProductListingWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductListingUpdateToOneWithWhereWithoutStockMovementsInput, Prisma.ProductListingUpdateWithoutStockMovementsInput>, Prisma.ProductListingUncheckedUpdateWithoutStockMovementsInput>
+}
+
 export type ProductListingCreateNestedManyWithoutChannelProductInput = {
   create?: Prisma.XOR<Prisma.ProductListingCreateWithoutChannelProductInput, Prisma.ProductListingUncheckedCreateWithoutChannelProductInput> | Prisma.ProductListingCreateWithoutChannelProductInput[] | Prisma.ProductListingUncheckedCreateWithoutChannelProductInput[]
   connectOrCreate?: Prisma.ProductListingCreateOrConnectWithoutChannelProductInput | Prisma.ProductListingCreateOrConnectWithoutChannelProductInput[]
@@ -800,7 +821,7 @@ export type ProductListingCreateWithoutSpaceInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -810,6 +831,7 @@ export type ProductListingCreateWithoutSpaceInput = {
   items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutSpaceInput = {
@@ -822,7 +844,7 @@ export type ProductListingUncheckedCreateWithoutSpaceInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -830,6 +852,7 @@ export type ProductListingUncheckedCreateWithoutSpaceInput = {
   items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutSpaceInput = {
@@ -872,7 +895,7 @@ export type ProductListingScalarWhereInput = {
   managementName?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   keywords?: Prisma.JsonFilter<"ProductListing">
   retailPrice?: Prisma.DecimalNullableFilter<"ProductListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.IntNullableFilter<"ProductListing"> | number | null
+  channelStock?: Prisma.IntNullableFilter<"ProductListing"> | number | null
   status?: Prisma.EnumProductListingStatusFilter<"ProductListing"> | $Enums.ProductListingStatus
   memo?: Prisma.StringNullableFilter<"ProductListing"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductListing"> | Date | string
@@ -887,7 +910,7 @@ export type ProductListingCreateWithoutDelItemsInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -897,6 +920,7 @@ export type ProductListingCreateWithoutDelItemsInput = {
   channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutListingsInput
   items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutDelItemsInput = {
@@ -910,13 +934,14 @@ export type ProductListingUncheckedCreateWithoutDelItemsInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutDelItemsInput = {
@@ -943,7 +968,7 @@ export type ProductListingUpdateWithoutDelItemsInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -953,6 +978,7 @@ export type ProductListingUpdateWithoutDelItemsInput = {
   channelProduct?: Prisma.ChannelProductUpdateOneWithoutListingsNestedInput
   items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutDelItemsInput = {
@@ -966,13 +992,14 @@ export type ProductListingUncheckedUpdateWithoutDelItemsInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutAliasesInput = {
@@ -983,7 +1010,7 @@ export type ProductListingCreateWithoutAliasesInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -993,6 +1020,7 @@ export type ProductListingCreateWithoutAliasesInput = {
   channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutListingsInput
   items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutAliasesInput = {
@@ -1006,13 +1034,14 @@ export type ProductListingUncheckedCreateWithoutAliasesInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutAliasesInput = {
@@ -1039,7 +1068,7 @@ export type ProductListingUpdateWithoutAliasesInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1049,6 +1078,7 @@ export type ProductListingUpdateWithoutAliasesInput = {
   channelProduct?: Prisma.ChannelProductUpdateOneWithoutListingsNestedInput
   items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutAliasesInput = {
@@ -1062,13 +1092,14 @@ export type ProductListingUncheckedUpdateWithoutAliasesInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutChannelInput = {
@@ -1079,7 +1110,7 @@ export type ProductListingCreateWithoutChannelInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1089,6 +1120,7 @@ export type ProductListingCreateWithoutChannelInput = {
   items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutChannelInput = {
@@ -1101,7 +1133,7 @@ export type ProductListingUncheckedCreateWithoutChannelInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1109,6 +1141,7 @@ export type ProductListingUncheckedCreateWithoutChannelInput = {
   items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutChannelInput = {
@@ -1145,7 +1178,7 @@ export type ProductListingCreateWithoutItemsInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1155,6 +1188,7 @@ export type ProductListingCreateWithoutItemsInput = {
   channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutListingsInput
   aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutItemsInput = {
@@ -1168,13 +1202,14 @@ export type ProductListingUncheckedCreateWithoutItemsInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutItemsInput = {
@@ -1201,7 +1236,7 @@ export type ProductListingUpdateWithoutItemsInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1211,6 +1246,7 @@ export type ProductListingUpdateWithoutItemsInput = {
   channelProduct?: Prisma.ChannelProductUpdateOneWithoutListingsNestedInput
   aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutItemsInput = {
@@ -1224,11 +1260,112 @@ export type ProductListingUncheckedUpdateWithoutItemsInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
+  delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
+}
+
+export type ProductListingCreateWithoutStockMovementsInput = {
+  id?: string
+  internalCode?: string | null
+  searchName: string
+  displayName: string
+  managementName?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: number | null
+  status?: $Enums.ProductListingStatus
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutProductListingsInput
+  channel: Prisma.ChannelCreateNestedOneWithoutProductListingsInput
+  channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutListingsInput
+  items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
+  aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
+  delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+}
+
+export type ProductListingUncheckedCreateWithoutStockMovementsInput = {
+  id?: string
+  spaceId: string
+  channelId: string
+  channelProductId?: string | null
+  internalCode?: string | null
+  searchName: string
+  displayName: string
+  managementName?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: number | null
+  status?: $Enums.ProductListingStatus
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
+  aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
+  delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+}
+
+export type ProductListingCreateOrConnectWithoutStockMovementsInput = {
+  where: Prisma.ProductListingWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductListingCreateWithoutStockMovementsInput, Prisma.ProductListingUncheckedCreateWithoutStockMovementsInput>
+}
+
+export type ProductListingUpsertWithoutStockMovementsInput = {
+  update: Prisma.XOR<Prisma.ProductListingUpdateWithoutStockMovementsInput, Prisma.ProductListingUncheckedUpdateWithoutStockMovementsInput>
+  create: Prisma.XOR<Prisma.ProductListingCreateWithoutStockMovementsInput, Prisma.ProductListingUncheckedCreateWithoutStockMovementsInput>
+  where?: Prisma.ProductListingWhereInput
+}
+
+export type ProductListingUpdateToOneWithWhereWithoutStockMovementsInput = {
+  where?: Prisma.ProductListingWhereInput
+  data: Prisma.XOR<Prisma.ProductListingUpdateWithoutStockMovementsInput, Prisma.ProductListingUncheckedUpdateWithoutStockMovementsInput>
+}
+
+export type ProductListingUpdateWithoutStockMovementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  internalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  searchName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutProductListingsNestedInput
+  channel?: Prisma.ChannelUpdateOneRequiredWithoutProductListingsNestedInput
+  channelProduct?: Prisma.ChannelProductUpdateOneWithoutListingsNestedInput
+  items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
+  aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
+  delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+}
+
+export type ProductListingUncheckedUpdateWithoutStockMovementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  searchName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
 }
@@ -1241,7 +1378,7 @@ export type ProductListingCreateWithoutChannelProductInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1251,6 +1388,7 @@ export type ProductListingCreateWithoutChannelProductInput = {
   items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutChannelProductInput = {
@@ -1263,7 +1401,7 @@ export type ProductListingUncheckedCreateWithoutChannelProductInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1271,6 +1409,7 @@ export type ProductListingUncheckedCreateWithoutChannelProductInput = {
   items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
   aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutChannelProductInput = {
@@ -1309,7 +1448,7 @@ export type ProductListingCreateManySpaceInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1324,7 +1463,7 @@ export type ProductListingUpdateWithoutSpaceInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1334,6 +1473,7 @@ export type ProductListingUpdateWithoutSpaceInput = {
   items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutSpaceInput = {
@@ -1346,7 +1486,7 @@ export type ProductListingUncheckedUpdateWithoutSpaceInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1354,6 +1494,7 @@ export type ProductListingUncheckedUpdateWithoutSpaceInput = {
   items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutSpaceInput = {
@@ -1366,7 +1507,7 @@ export type ProductListingUncheckedUpdateManyWithoutSpaceInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1383,7 +1524,7 @@ export type ProductListingCreateManyChannelInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1398,7 +1539,7 @@ export type ProductListingUpdateWithoutChannelInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1408,6 +1549,7 @@ export type ProductListingUpdateWithoutChannelInput = {
   items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutChannelInput = {
@@ -1420,7 +1562,7 @@ export type ProductListingUncheckedUpdateWithoutChannelInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1428,6 +1570,7 @@ export type ProductListingUncheckedUpdateWithoutChannelInput = {
   items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutChannelInput = {
@@ -1440,7 +1583,7 @@ export type ProductListingUncheckedUpdateManyWithoutChannelInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1457,7 +1600,7 @@ export type ProductListingCreateManyChannelProductInput = {
   managementName?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: number | null
+  channelStock?: number | null
   status?: $Enums.ProductListingStatus
   memo?: string | null
   createdAt?: Date | string
@@ -1472,7 +1615,7 @@ export type ProductListingUpdateWithoutChannelProductInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1482,6 +1625,7 @@ export type ProductListingUpdateWithoutChannelProductInput = {
   items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutChannelProductInput = {
@@ -1494,7 +1638,7 @@ export type ProductListingUncheckedUpdateWithoutChannelProductInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1502,6 +1646,7 @@ export type ProductListingUncheckedUpdateWithoutChannelProductInput = {
   items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
   aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutChannelProductInput = {
@@ -1514,7 +1659,7 @@ export type ProductListingUncheckedUpdateManyWithoutChannelProductInput = {
   managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  channelAllocation?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1530,12 +1675,14 @@ export type ProductListingCountOutputType = {
   items: number
   aliases: number
   delItems: number
+  stockMovements: number
 }
 
 export type ProductListingCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | ProductListingCountOutputTypeCountItemsArgs
   aliases?: boolean | ProductListingCountOutputTypeCountAliasesArgs
   delItems?: boolean | ProductListingCountOutputTypeCountDelItemsArgs
+  stockMovements?: boolean | ProductListingCountOutputTypeCountStockMovementsArgs
 }
 
 /**
@@ -1569,6 +1716,13 @@ export type ProductListingCountOutputTypeCountDelItemsArgs<ExtArgs extends runti
   where?: Prisma.DelOrderItemWhereInput
 }
 
+/**
+ * ProductListingCountOutputType without action
+ */
+export type ProductListingCountOutputTypeCountStockMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChannelStockMovementWhereInput
+}
+
 
 export type ProductListingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1581,7 +1735,7 @@ export type ProductListingSelect<ExtArgs extends runtime.Types.Extensions.Intern
   managementName?: boolean
   keywords?: boolean
   retailPrice?: boolean
-  channelAllocation?: boolean
+  channelStock?: boolean
   status?: boolean
   memo?: boolean
   createdAt?: boolean
@@ -1592,6 +1746,7 @@ export type ProductListingSelect<ExtArgs extends runtime.Types.Extensions.Intern
   items?: boolean | Prisma.ProductListing$itemsArgs<ExtArgs>
   aliases?: boolean | Prisma.ProductListing$aliasesArgs<ExtArgs>
   delItems?: boolean | Prisma.ProductListing$delItemsArgs<ExtArgs>
+  stockMovements?: boolean | Prisma.ProductListing$stockMovementsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductListingCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productListing"]>
 
@@ -1606,7 +1761,7 @@ export type ProductListingSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   managementName?: boolean
   keywords?: boolean
   retailPrice?: boolean
-  channelAllocation?: boolean
+  channelStock?: boolean
   status?: boolean
   memo?: boolean
   createdAt?: boolean
@@ -1627,7 +1782,7 @@ export type ProductListingSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   managementName?: boolean
   keywords?: boolean
   retailPrice?: boolean
-  channelAllocation?: boolean
+  channelStock?: boolean
   status?: boolean
   memo?: boolean
   createdAt?: boolean
@@ -1648,14 +1803,14 @@ export type ProductListingSelectScalar = {
   managementName?: boolean
   keywords?: boolean
   retailPrice?: boolean
-  channelAllocation?: boolean
+  channelStock?: boolean
   status?: boolean
   memo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductListingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "channelProductId" | "internalCode" | "searchName" | "displayName" | "managementName" | "keywords" | "retailPrice" | "channelAllocation" | "status" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["productListing"]>
+export type ProductListingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "channelProductId" | "internalCode" | "searchName" | "displayName" | "managementName" | "keywords" | "retailPrice" | "channelStock" | "status" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["productListing"]>
 export type ProductListingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
@@ -1663,6 +1818,7 @@ export type ProductListingInclude<ExtArgs extends runtime.Types.Extensions.Inter
   items?: boolean | Prisma.ProductListing$itemsArgs<ExtArgs>
   aliases?: boolean | Prisma.ProductListing$aliasesArgs<ExtArgs>
   delItems?: boolean | Prisma.ProductListing$delItemsArgs<ExtArgs>
+  stockMovements?: boolean | Prisma.ProductListing$stockMovementsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductListingCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProductListingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1685,6 +1841,7 @@ export type $ProductListingPayload<ExtArgs extends runtime.Types.Extensions.Inte
     items: Prisma.$ProductListingItemPayload<ExtArgs>[]
     aliases: Prisma.$ChannelProductAliasPayload<ExtArgs>[]
     delItems: Prisma.$DelOrderItemPayload<ExtArgs>[]
+    stockMovements: Prisma.$ChannelStockMovementPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1697,7 +1854,7 @@ export type $ProductListingPayload<ExtArgs extends runtime.Types.Extensions.Inte
     managementName: string | null
     keywords: runtime.JsonValue
     retailPrice: runtime.Decimal | null
-    channelAllocation: number | null
+    channelStock: number | null
     status: $Enums.ProductListingStatus
     memo: string | null
     createdAt: Date
@@ -2102,6 +2259,7 @@ export interface Prisma__ProductListingClient<T, Null = never, ExtArgs extends r
   items<T extends Prisma.ProductListing$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductListingItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   aliases<T extends Prisma.ProductListing$aliasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$aliasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelProductAliasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   delItems<T extends Prisma.ProductListing$delItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$delItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelOrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  stockMovements<T extends Prisma.ProductListing$stockMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$stockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelStockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2141,7 +2299,7 @@ export interface ProductListingFieldRefs {
   readonly managementName: Prisma.FieldRef<"ProductListing", 'String'>
   readonly keywords: Prisma.FieldRef<"ProductListing", 'Json'>
   readonly retailPrice: Prisma.FieldRef<"ProductListing", 'Decimal'>
-  readonly channelAllocation: Prisma.FieldRef<"ProductListing", 'Int'>
+  readonly channelStock: Prisma.FieldRef<"ProductListing", 'Int'>
   readonly status: Prisma.FieldRef<"ProductListing", 'ProductListingStatus'>
   readonly memo: Prisma.FieldRef<"ProductListing", 'String'>
   readonly createdAt: Prisma.FieldRef<"ProductListing", 'DateTime'>
@@ -2630,6 +2788,30 @@ export type ProductListing$delItemsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.DelOrderItemScalarFieldEnum | Prisma.DelOrderItemScalarFieldEnum[]
+}
+
+/**
+ * ProductListing.stockMovements
+ */
+export type ProductListing$stockMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChannelStockMovement
+   */
+  select?: Prisma.ChannelStockMovementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChannelStockMovement
+   */
+  omit?: Prisma.ChannelStockMovementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelStockMovementInclude<ExtArgs> | null
+  where?: Prisma.ChannelStockMovementWhereInput
+  orderBy?: Prisma.ChannelStockMovementOrderByWithRelationInput | Prisma.ChannelStockMovementOrderByWithRelationInput[]
+  cursor?: Prisma.ChannelStockMovementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChannelStockMovementScalarFieldEnum | Prisma.ChannelStockMovementScalarFieldEnum[]
 }
 
 /**

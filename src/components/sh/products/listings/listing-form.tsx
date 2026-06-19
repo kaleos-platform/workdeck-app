@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/dialog'
 import { SELLER_HUB_LISTINGS_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
 import {
-  applyChannelAllocation,
   computeDiscount,
   computeEffectiveStatus,
   computeListingAvailableStock,
@@ -70,7 +69,7 @@ export type ListingFormInitial = {
   managementName: string | null
   keywords: string[]
   retailPrice: number | null
-  channelAllocation: number | null
+  channelStock: number | null
   status: 'ACTIVE' | 'SUSPENDED'
   memo: string | null
   items: ItemDraft[]
@@ -98,8 +97,8 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   const [retailPrice, setRetailPrice] = useState<string>(
     initial?.retailPrice != null ? String(initial.retailPrice) : ''
   )
-  const [channelAllocation, setChannelAllocation] = useState<string>(
-    initial?.channelAllocation != null ? String(initial.channelAllocation) : ''
+  const [channelStock, setChannelStock] = useState<string>(
+    initial?.channelStock != null ? String(initial.channelStock) : ''
   )
   const [keywords, setKeywords] = useState<string[]>(initial?.keywords ?? [])
   const [status, setStatus] = useState<'ACTIVE' | 'SUSPENDED'>(initial?.status ?? 'ACTIVE')
@@ -145,13 +144,15 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       ),
     [items]
   )
-  const allocationNumber = channelAllocation.trim() === '' ? null : Number(channelAllocation)
-  const availableStock = useMemo(
-    () => applyChannelAllocation(autoAvailableStock, allocationNumber),
-    [autoAvailableStock, allocationNumber]
-  )
+  const channelStockNumber = channelStock.trim() === '' ? null : Number(channelStock)
+  // 가용재고 = 물리 재고만으로 계산 (채널 재고는 캡으로 작용하지 않음)
+  const availableStock = autoAvailableStock
   const saleNumber = retailPrice.trim().length > 0 ? Number(retailPrice) : null
-  const effective: EffectiveListingStatus = computeEffectiveStatus(status, availableStock)
+  const effective: EffectiveListingStatus = computeEffectiveStatus(
+    status,
+    availableStock,
+    channelStockNumber
+  )
   const discount = computeDiscount(baselinePrice, saleNumber)
 
   const keywordSuggestions = useMemo(() => {
@@ -224,7 +225,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
         internalCode: internalCode.trim() || undefined,
         memo: memo.trim() || undefined,
         retailPrice: retailPrice.trim() === '' ? undefined : Number(retailPrice),
-        channelAllocation: channelAllocation.trim() === '' ? null : Number(channelAllocation),
+        channelStock: channelStock.trim() === '' ? null : Number(channelStock),
         keywords,
         status,
         items: items.map((it, idx) => ({
@@ -468,34 +469,28 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               <span>
                 가용재고{' '}
                 <span className="font-medium">{availableStock.toLocaleString('ko-KR')}</span>
-                {allocationNumber != null && autoAvailableStock !== availableStock && (
-                  <span className="ml-1 text-xs text-muted-foreground">
-                    (자동 {autoAvailableStock.toLocaleString('ko-KR')} → 할당{' '}
-                    {allocationNumber.toLocaleString('ko-KR')}로 제한)
-                  </span>
-                )}
               </span>
             </div>
           )}
 
-          {/* 재고 할당 — 자동계산을 상한으로 제한 */}
+          {/* 채널 재고 — 채널에 노출/등록한 재고 수량. 출고 시 자동 차감, 0 도달 시 자동 품절 */}
           <div className="mt-3 space-y-1.5 border-t pt-3">
-            <Label htmlFor="channel-allocation">채널 할당 재고 (선택)</Label>
+            <Label htmlFor="channel-stock">채널 재고 (선택)</Label>
             <div className="flex items-center gap-2">
               <Input
-                id="channel-allocation"
+                id="channel-stock"
                 type="number"
                 min={0}
-                value={channelAllocation}
-                onChange={(e) => setChannelAllocation(e.target.value)}
-                placeholder="비우면 자동 계산 그대로"
+                value={channelStock}
+                onChange={(e) => setChannelStock(e.target.value)}
+                placeholder="비우면 미사용"
                 className="max-w-[240px]"
               />
               <span className="text-xs text-muted-foreground">세트</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              값을 입력하면 가용재고 = min(할당량, 자동계산). 같은 옵션을 여러 채널에 배분할 때
-              사용.
+              채널에 등록한 재고 수량. 값을 입력하면 0 도달 시 자동 품절 처리되고, 배송 완료(출고)
+              시 자동 차감됩니다. 입고 등 증가 조정은 직접 수정하세요. 비우면 미사용.
             </p>
           </div>
         </CardContent>

@@ -448,6 +448,7 @@ export const ModelName = {
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
   ProductListing: 'ProductListing',
   ProductListingItem: 'ProductListingItem',
+  ChannelStockMovement: 'ChannelStockMovement',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
   ChannelProduct: 'ChannelProduct',
   Product: 'Product',
@@ -488,7 +489,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanItem" | "reorderPlanAccuracy"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanItem" | "reorderPlanAccuracy"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5228,6 +5229,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ChannelStockMovement: {
+      payload: Prisma.$ChannelStockMovementPayload<ExtArgs>
+      fields: Prisma.ChannelStockMovementFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChannelStockMovementFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChannelStockMovementFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>
+        }
+        findFirst: {
+          args: Prisma.ChannelStockMovementFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChannelStockMovementFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>
+        }
+        findMany: {
+          args: Prisma.ChannelStockMovementFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>[]
+        }
+        create: {
+          args: Prisma.ChannelStockMovementCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>
+        }
+        createMany: {
+          args: Prisma.ChannelStockMovementCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChannelStockMovementCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>[]
+        }
+        delete: {
+          args: Prisma.ChannelStockMovementDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>
+        }
+        update: {
+          args: Prisma.ChannelStockMovementUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChannelStockMovementDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChannelStockMovementUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChannelStockMovementUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChannelStockMovementUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelStockMovementPayload>
+        }
+        aggregate: {
+          args: Prisma.ChannelStockMovementAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelStockMovement>
+        }
+        groupBy: {
+          args: Prisma.ChannelStockMovementGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelStockMovementGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChannelStockMovementCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelStockMovementCountAggregateOutputType> | number
+        }
+      }
+    }
     DelOrderItemFulfillment: {
       payload: Prisma.$DelOrderItemFulfillmentPayload<ExtArgs>
       fields: Prisma.DelOrderItemFulfillmentFieldRefs
@@ -8112,7 +8187,7 @@ export const ProductListingScalarFieldEnum = {
   managementName: 'managementName',
   keywords: 'keywords',
   retailPrice: 'retailPrice',
-  channelAllocation: 'channelAllocation',
+  channelStock: 'channelStock',
   status: 'status',
   memo: 'memo',
   createdAt: 'createdAt',
@@ -8131,6 +8206,19 @@ export const ProductListingItemScalarFieldEnum = {
 } as const
 
 export type ProductListingItemScalarFieldEnum = (typeof ProductListingItemScalarFieldEnum)[keyof typeof ProductListingItemScalarFieldEnum]
+
+
+export const ChannelStockMovementScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  listingId: 'listingId',
+  batchId: 'batchId',
+  orderItemId: 'orderItemId',
+  quantity: 'quantity',
+  createdAt: 'createdAt'
+} as const
+
+export type ChannelStockMovementScalarFieldEnum = (typeof ChannelStockMovementScalarFieldEnum)[keyof typeof ChannelStockMovementScalarFieldEnum]
 
 
 export const DelOrderItemFulfillmentScalarFieldEnum = {
@@ -9449,6 +9537,7 @@ export type GlobalOmitConfig = {
   spaceOptionCodeAlias?: Prisma.SpaceOptionCodeAliasOmit
   productListing?: Prisma.ProductListingOmit
   productListingItem?: Prisma.ProductListingItemOmit
+  channelStockMovement?: Prisma.ChannelStockMovementOmit
   delOrderItemFulfillment?: Prisma.DelOrderItemFulfillmentOmit
   channelProduct?: Prisma.ChannelProductOmit
   product?: Prisma.ProductOmit

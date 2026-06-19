@@ -338,6 +338,11 @@ export type ProductListing = Prisma.ProductListingModel
  */
 export type ProductListingItem = Prisma.ProductListingItemModel
 /**
+ * Model ChannelStockMovement
+ * 
+ */
+export type ChannelStockMovement = Prisma.ChannelStockMovementModel
+/**
  * Model DelOrderItemFulfillment
  * 
  */

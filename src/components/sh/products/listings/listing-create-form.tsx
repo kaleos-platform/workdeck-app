@@ -160,7 +160,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               },
             ],
             retailPrice: String(prefill.retailPrice),
-            channelAllocation: '',
+            channelStock: '',
             status: 'ACTIVE',
           }
           setRows([row])
@@ -256,7 +256,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             attributeValues: r.option.attributeValues ?? {},
           })),
           retailPrice: String(prefillV2.salePrice),
-          channelAllocation: '',
+          channelStock: '',
           status: 'ACTIVE',
         }
         setRows([row])
@@ -315,7 +315,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             memo: string | null
             status: 'ACTIVE' | 'SUSPENDED'
             retailPrice: number | null
-            channelAllocation: number | null
+            channelStock: number | null
             items: Array<{
               optionId: string
               optionName: string
@@ -415,7 +415,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                 attributeValues: it.attributeValues,
               })),
               retailPrice: l.retailPrice != null ? String(l.retailPrice) : '',
-              channelAllocation: l.channelAllocation != null ? String(l.channelAllocation) : '',
+              channelStock: l.channelStock != null ? String(l.channelStock) : '',
               status: l.status,
               manualNames: {
                 searchName: l.searchName,
@@ -446,7 +446,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               attributeValues: it.attributeValues,
             })),
             retailPrice: l.retailPrice != null ? String(l.retailPrice) : '',
-            channelAllocation: l.channelAllocation != null ? String(l.channelAllocation) : '',
+            channelStock: l.channelStock != null ? String(l.channelStock) : '',
             status: l.status,
           }
         })
@@ -568,8 +568,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             : undefined,
         memo: memo.trim() || undefined,
         retailPrice: row.retailPrice.trim() === '' ? undefined : Number(row.retailPrice),
-        channelAllocation:
-          row.channelAllocation.trim() === '' ? undefined : Number(row.channelAllocation),
+        channelStock: row.channelStock.trim() === '' ? undefined : Number(row.channelStock),
         status: row.status,
         items: row.items.map((it, idx) => ({
           optionId: it.optionId,
@@ -763,7 +762,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               <div className="space-y-1.5">
                 <CardTitle className="text-lg">구성 옵션 ({rows.length}개)</CardTitle>
                 <CardDescription>
-                  각 행마다 재고·판매가·판매상태를 설정하세요. 체크박스로 여러 옵션을 선택하면
+                  각 행마다 채널 재고·판매가·판매상태를 설정하세요. 체크박스로 여러 옵션을 선택하면
                   한번에 수정할 수 있습니다. 소비자가는 옵션 소비자가에서 자동 계산됩니다.
                 </CardDescription>
               </div>
@@ -874,7 +873,7 @@ function buildRowsFromGroups(groups: BuiltGroup[]): CompositionRow[] {
     suffixParts: g.suffixParts,
     items: g.items,
     retailPrice: '',
-    channelAllocation: '',
+    channelStock: '',
     status: 'ACTIVE',
     manualNames: g.manualNames,
   }))
