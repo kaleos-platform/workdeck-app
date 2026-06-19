@@ -46,6 +46,7 @@ export type ChannelMinAggregateOutputType = {
   channelTypeDefId: string | null
   name: string | null
   externalSource: string | null
+  representativeChannelId: string | null
   isActive: boolean | null
   useSimulation: boolean | null
   adminUrl: string | null
@@ -71,6 +72,7 @@ export type ChannelMaxAggregateOutputType = {
   channelTypeDefId: string | null
   name: string | null
   externalSource: string | null
+  representativeChannelId: string | null
   isActive: boolean | null
   useSimulation: boolean | null
   adminUrl: string | null
@@ -96,6 +98,7 @@ export type ChannelCountAggregateOutputType = {
   channelTypeDefId: number
   name: number
   externalSource: number
+  representativeChannelId: number
   isActive: number
   useSimulation: number
   adminUrl: number
@@ -137,6 +140,7 @@ export type ChannelMinAggregateInputType = {
   channelTypeDefId?: true
   name?: true
   externalSource?: true
+  representativeChannelId?: true
   isActive?: true
   useSimulation?: true
   adminUrl?: true
@@ -162,6 +166,7 @@ export type ChannelMaxAggregateInputType = {
   channelTypeDefId?: true
   name?: true
   externalSource?: true
+  representativeChannelId?: true
   isActive?: true
   useSimulation?: true
   adminUrl?: true
@@ -187,6 +192,7 @@ export type ChannelCountAggregateInputType = {
   channelTypeDefId?: true
   name?: true
   externalSource?: true
+  representativeChannelId?: true
   isActive?: true
   useSimulation?: true
   adminUrl?: true
@@ -299,6 +305,7 @@ export type ChannelGroupByOutputType = {
   channelTypeDefId: string | null
   name: string
   externalSource: string | null
+  representativeChannelId: string | null
   isActive: boolean
   useSimulation: boolean
   adminUrl: string | null
@@ -347,6 +354,7 @@ export type ChannelWhereInput = {
   channelTypeDefId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
   externalSource?: Prisma.StringNullableFilter<"Channel"> | string | null
+  representativeChannelId?: Prisma.StringNullableFilter<"Channel"> | string | null
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
@@ -366,6 +374,8 @@ export type ChannelWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channelTypeDef?: Prisma.XOR<Prisma.ChannelTypeDefNullableScalarRelationFilter, Prisma.ChannelTypeDefWhereInput> | null
+  representativeChannel?: Prisma.XOR<Prisma.ChannelNullableScalarRelationFilter, Prisma.ChannelWhereInput> | null
+  fulfillmentChannels?: Prisma.ChannelListRelationFilter
   feeRates?: Prisma.ChannelFeeRateListRelationFilter
   invMovements?: Prisma.InvMovementListRelationFilter
   delOrders?: Prisma.DelOrderListRelationFilter
@@ -383,6 +393,7 @@ export type ChannelOrderByWithRelationInput = {
   channelTypeDefId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   externalSource?: Prisma.SortOrderInput | Prisma.SortOrder
+  representativeChannelId?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -402,6 +413,8 @@ export type ChannelOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   channelTypeDef?: Prisma.ChannelTypeDefOrderByWithRelationInput
+  representativeChannel?: Prisma.ChannelOrderByWithRelationInput
+  fulfillmentChannels?: Prisma.ChannelOrderByRelationAggregateInput
   feeRates?: Prisma.ChannelFeeRateOrderByRelationAggregateInput
   invMovements?: Prisma.InvMovementOrderByRelationAggregateInput
   delOrders?: Prisma.DelOrderOrderByRelationAggregateInput
@@ -424,6 +437,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   channelTypeDefId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
   externalSource?: Prisma.StringNullableFilter<"Channel"> | string | null
+  representativeChannelId?: Prisma.StringNullableFilter<"Channel"> | string | null
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
@@ -443,6 +457,8 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channelTypeDef?: Prisma.XOR<Prisma.ChannelTypeDefNullableScalarRelationFilter, Prisma.ChannelTypeDefWhereInput> | null
+  representativeChannel?: Prisma.XOR<Prisma.ChannelNullableScalarRelationFilter, Prisma.ChannelWhereInput> | null
+  fulfillmentChannels?: Prisma.ChannelListRelationFilter
   feeRates?: Prisma.ChannelFeeRateListRelationFilter
   invMovements?: Prisma.InvMovementListRelationFilter
   delOrders?: Prisma.DelOrderListRelationFilter
@@ -460,6 +476,7 @@ export type ChannelOrderByWithAggregationInput = {
   channelTypeDefId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   externalSource?: Prisma.SortOrderInput | Prisma.SortOrder
+  representativeChannelId?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -493,6 +510,7 @@ export type ChannelScalarWhereWithAggregatesInput = {
   channelTypeDefId?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"Channel"> | string
   externalSource?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
+  representativeChannelId?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
@@ -535,6 +553,8 @@ export type ChannelCreateInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -552,6 +572,7 @@ export type ChannelUncheckedCreateInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -569,6 +590,7 @@ export type ChannelUncheckedCreateInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -603,6 +625,8 @@ export type ChannelUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -620,6 +644,7 @@ export type ChannelUncheckedUpdateInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -637,6 +662,7 @@ export type ChannelUncheckedUpdateInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -654,6 +680,7 @@ export type ChannelCreateManyInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -702,6 +729,7 @@ export type ChannelUncheckedUpdateManyInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -757,6 +785,7 @@ export type ChannelCountOrderByAggregateInput = {
   channelTypeDefId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   externalSource?: Prisma.SortOrder
+  representativeChannelId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
@@ -789,6 +818,7 @@ export type ChannelMaxOrderByAggregateInput = {
   channelTypeDefId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   externalSource?: Prisma.SortOrder
+  representativeChannelId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
@@ -814,6 +844,7 @@ export type ChannelMinOrderByAggregateInput = {
   channelTypeDefId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   externalSource?: Prisma.SortOrder
+  representativeChannelId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
@@ -986,6 +1017,64 @@ export type ChannelUncheckedUpdateManyWithoutChannelTypeDefNestedInput = {
   deleteMany?: Prisma.ChannelScalarWhereInput | Prisma.ChannelScalarWhereInput[]
 }
 
+export type ChannelCreateNestedOneWithoutFulfillmentChannelsInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutFulfillmentChannelsInput, Prisma.ChannelUncheckedCreateWithoutFulfillmentChannelsInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutFulfillmentChannelsInput
+  connect?: Prisma.ChannelWhereUniqueInput
+}
+
+export type ChannelCreateNestedManyWithoutRepresentativeChannelInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutRepresentativeChannelInput, Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput> | Prisma.ChannelCreateWithoutRepresentativeChannelInput[] | Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput[]
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutRepresentativeChannelInput | Prisma.ChannelCreateOrConnectWithoutRepresentativeChannelInput[]
+  createMany?: Prisma.ChannelCreateManyRepresentativeChannelInputEnvelope
+  connect?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+}
+
+export type ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutRepresentativeChannelInput, Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput> | Prisma.ChannelCreateWithoutRepresentativeChannelInput[] | Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput[]
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutRepresentativeChannelInput | Prisma.ChannelCreateOrConnectWithoutRepresentativeChannelInput[]
+  createMany?: Prisma.ChannelCreateManyRepresentativeChannelInputEnvelope
+  connect?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+}
+
+export type ChannelUpdateOneWithoutFulfillmentChannelsNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutFulfillmentChannelsInput, Prisma.ChannelUncheckedCreateWithoutFulfillmentChannelsInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutFulfillmentChannelsInput
+  upsert?: Prisma.ChannelUpsertWithoutFulfillmentChannelsInput
+  disconnect?: Prisma.ChannelWhereInput | boolean
+  delete?: Prisma.ChannelWhereInput | boolean
+  connect?: Prisma.ChannelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutFulfillmentChannelsInput, Prisma.ChannelUpdateWithoutFulfillmentChannelsInput>, Prisma.ChannelUncheckedUpdateWithoutFulfillmentChannelsInput>
+}
+
+export type ChannelUpdateManyWithoutRepresentativeChannelNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutRepresentativeChannelInput, Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput> | Prisma.ChannelCreateWithoutRepresentativeChannelInput[] | Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput[]
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutRepresentativeChannelInput | Prisma.ChannelCreateOrConnectWithoutRepresentativeChannelInput[]
+  upsert?: Prisma.ChannelUpsertWithWhereUniqueWithoutRepresentativeChannelInput | Prisma.ChannelUpsertWithWhereUniqueWithoutRepresentativeChannelInput[]
+  createMany?: Prisma.ChannelCreateManyRepresentativeChannelInputEnvelope
+  set?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+  disconnect?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+  delete?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+  connect?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+  update?: Prisma.ChannelUpdateWithWhereUniqueWithoutRepresentativeChannelInput | Prisma.ChannelUpdateWithWhereUniqueWithoutRepresentativeChannelInput[]
+  updateMany?: Prisma.ChannelUpdateManyWithWhereWithoutRepresentativeChannelInput | Prisma.ChannelUpdateManyWithWhereWithoutRepresentativeChannelInput[]
+  deleteMany?: Prisma.ChannelScalarWhereInput | Prisma.ChannelScalarWhereInput[]
+}
+
+export type ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutRepresentativeChannelInput, Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput> | Prisma.ChannelCreateWithoutRepresentativeChannelInput[] | Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput[]
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutRepresentativeChannelInput | Prisma.ChannelCreateOrConnectWithoutRepresentativeChannelInput[]
+  upsert?: Prisma.ChannelUpsertWithWhereUniqueWithoutRepresentativeChannelInput | Prisma.ChannelUpsertWithWhereUniqueWithoutRepresentativeChannelInput[]
+  createMany?: Prisma.ChannelCreateManyRepresentativeChannelInputEnvelope
+  set?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+  disconnect?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+  delete?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+  connect?: Prisma.ChannelWhereUniqueInput | Prisma.ChannelWhereUniqueInput[]
+  update?: Prisma.ChannelUpdateWithWhereUniqueWithoutRepresentativeChannelInput | Prisma.ChannelUpdateWithWhereUniqueWithoutRepresentativeChannelInput[]
+  updateMany?: Prisma.ChannelUpdateManyWithWhereWithoutRepresentativeChannelInput | Prisma.ChannelUpdateManyWithWhereWithoutRepresentativeChannelInput[]
+  deleteMany?: Prisma.ChannelScalarWhereInput | Prisma.ChannelScalarWhereInput[]
+}
+
 export type ChannelCreateNestedOneWithoutFeeRatesInput = {
   create?: Prisma.XOR<Prisma.ChannelCreateWithoutFeeRatesInput, Prisma.ChannelUncheckedCreateWithoutFeeRatesInput>
   connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutFeeRatesInput
@@ -1080,6 +1169,8 @@ export type ChannelCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -1096,6 +1187,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1113,6 +1205,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -1159,6 +1252,7 @@ export type ChannelScalarWhereInput = {
   channelTypeDefId?: Prisma.StringNullableFilter<"Channel"> | string | null
   name?: Prisma.StringFilter<"Channel"> | string
   externalSource?: Prisma.StringNullableFilter<"Channel"> | string | null
+  representativeChannelId?: Prisma.StringNullableFilter<"Channel"> | string | null
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
@@ -1201,6 +1295,8 @@ export type ChannelCreateWithoutInvMovementsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
@@ -1217,6 +1313,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1234,6 +1331,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
@@ -1283,6 +1381,8 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
@@ -1299,6 +1399,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1316,6 +1417,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
@@ -1349,6 +1451,8 @@ export type ChannelCreateWithoutDelOrdersInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
@@ -1365,6 +1469,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1382,6 +1487,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
@@ -1431,6 +1537,8 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
@@ -1447,6 +1555,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1464,6 +1573,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
@@ -1497,6 +1607,8 @@ export type ChannelCreateWithoutProductAliasesInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -1513,6 +1625,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1530,6 +1643,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -1579,6 +1693,8 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -1595,6 +1711,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1612,6 +1729,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -1645,6 +1763,8 @@ export type ChannelCreateWithoutColumnMappingPresetsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -1661,6 +1781,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1678,6 +1799,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -1727,6 +1849,8 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -1743,6 +1867,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1760,6 +1885,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -1792,6 +1918,8 @@ export type ChannelCreateWithoutChannelTypeDefInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -1808,6 +1936,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   spaceId: string
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1825,6 +1954,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -1862,6 +1992,258 @@ export type ChannelUpdateManyWithWhereWithoutChannelTypeDefInput = {
   data: Prisma.XOR<Prisma.ChannelUpdateManyMutationInput, Prisma.ChannelUncheckedUpdateManyWithoutChannelTypeDefInput>
 }
 
+export type ChannelCreateWithoutFulfillmentChannelsInput = {
+  id?: string
+  name: string
+  externalSource?: string | null
+  isActive?: boolean
+  useSimulation?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
+  channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
+  productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelUncheckedCreateWithoutFulfillmentChannelsInput = {
+  id?: string
+  spaceId: string
+  channelTypeDefId?: string | null
+  name: string
+  externalSource?: string | null
+  representativeChannelId?: string | null
+  isActive?: boolean
+  useSimulation?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
+  productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelCreateOrConnectWithoutFulfillmentChannelsInput = {
+  where: Prisma.ChannelWhereUniqueInput
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutFulfillmentChannelsInput, Prisma.ChannelUncheckedCreateWithoutFulfillmentChannelsInput>
+}
+
+export type ChannelCreateWithoutRepresentativeChannelInput = {
+  id?: string
+  name: string
+  externalSource?: string | null
+  isActive?: boolean
+  useSimulation?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
+  channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
+  feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
+  productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelUncheckedCreateWithoutRepresentativeChannelInput = {
+  id?: string
+  spaceId: string
+  channelTypeDefId?: string | null
+  name: string
+  externalSource?: string | null
+  isActive?: boolean
+  useSimulation?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
+  feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
+  productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelCreateOrConnectWithoutRepresentativeChannelInput = {
+  where: Prisma.ChannelWhereUniqueInput
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutRepresentativeChannelInput, Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput>
+}
+
+export type ChannelCreateManyRepresentativeChannelInputEnvelope = {
+  data: Prisma.ChannelCreateManyRepresentativeChannelInput | Prisma.ChannelCreateManyRepresentativeChannelInput[]
+  skipDuplicates?: boolean
+}
+
+export type ChannelUpsertWithoutFulfillmentChannelsInput = {
+  update: Prisma.XOR<Prisma.ChannelUpdateWithoutFulfillmentChannelsInput, Prisma.ChannelUncheckedUpdateWithoutFulfillmentChannelsInput>
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutFulfillmentChannelsInput, Prisma.ChannelUncheckedCreateWithoutFulfillmentChannelsInput>
+  where?: Prisma.ChannelWhereInput
+}
+
+export type ChannelUpdateToOneWithWhereWithoutFulfillmentChannelsInput = {
+  where?: Prisma.ChannelWhereInput
+  data: Prisma.XOR<Prisma.ChannelUpdateWithoutFulfillmentChannelsInput, Prisma.ChannelUncheckedUpdateWithoutFulfillmentChannelsInput>
+}
+
+export type ChannelUpdateWithoutFulfillmentChannelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
+  channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
+  productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelUncheckedUpdateWithoutFulfillmentChannelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
+  productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelUpsertWithWhereUniqueWithoutRepresentativeChannelInput = {
+  where: Prisma.ChannelWhereUniqueInput
+  update: Prisma.XOR<Prisma.ChannelUpdateWithoutRepresentativeChannelInput, Prisma.ChannelUncheckedUpdateWithoutRepresentativeChannelInput>
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutRepresentativeChannelInput, Prisma.ChannelUncheckedCreateWithoutRepresentativeChannelInput>
+}
+
+export type ChannelUpdateWithWhereUniqueWithoutRepresentativeChannelInput = {
+  where: Prisma.ChannelWhereUniqueInput
+  data: Prisma.XOR<Prisma.ChannelUpdateWithoutRepresentativeChannelInput, Prisma.ChannelUncheckedUpdateWithoutRepresentativeChannelInput>
+}
+
+export type ChannelUpdateManyWithWhereWithoutRepresentativeChannelInput = {
+  where: Prisma.ChannelScalarWhereInput
+  data: Prisma.XOR<Prisma.ChannelUpdateManyMutationInput, Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelInput>
+}
+
 export type ChannelCreateWithoutFeeRatesInput = {
   id?: string
   name: string
@@ -1885,6 +2267,8 @@ export type ChannelCreateWithoutFeeRatesInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
@@ -1901,6 +2285,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -1918,6 +2303,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
@@ -1967,6 +2353,8 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
@@ -1983,6 +2371,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2000,6 +2389,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
@@ -2033,6 +2423,8 @@ export type ChannelCreateWithoutPricingScenariosInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -2049,6 +2441,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2066,6 +2459,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -2115,6 +2509,8 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -2131,6 +2527,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2148,6 +2545,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -2181,6 +2579,8 @@ export type ChannelCreateWithoutPricingScenarioChannelsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -2197,6 +2597,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2214,6 +2615,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -2263,6 +2665,8 @@ export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -2279,6 +2683,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2296,6 +2701,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -2329,6 +2735,8 @@ export type ChannelCreateWithoutProductListingsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -2345,6 +2753,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2362,6 +2771,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -2411,6 +2821,8 @@ export type ChannelUpdateWithoutProductListingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -2427,6 +2839,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2444,6 +2857,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -2477,6 +2891,8 @@ export type ChannelCreateWithoutChannelProductsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
   channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
@@ -2493,6 +2909,7 @@ export type ChannelUncheckedCreateWithoutChannelProductsInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2510,6 +2927,7 @@ export type ChannelUncheckedCreateWithoutChannelProductsInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
   feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
   delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
@@ -2559,6 +2977,8 @@ export type ChannelUpdateWithoutChannelProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -2575,6 +2995,7 @@ export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2592,6 +3013,7 @@ export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -2607,6 +3029,7 @@ export type ChannelCreateManySpaceInput = {
   channelTypeDefId?: string | null
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2648,6 +3071,8 @@ export type ChannelUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -2664,6 +3089,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2681,6 +3107,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -2697,6 +3124,7 @@ export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
   channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2721,6 +3149,7 @@ export type ChannelCreateManyChannelTypeDefInput = {
   spaceId: string
   name: string
   externalSource?: string | null
+  representativeChannelId?: string | null
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
@@ -2762,6 +3191,8 @@ export type ChannelUpdateWithoutChannelTypeDefInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
@@ -2776,6 +3207,90 @@ export type ChannelUpdateWithoutChannelTypeDefInput = {
 export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
+  feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
+  productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ChannelCreateManyRepresentativeChannelInput = {
+  id?: string
+  spaceId: string
+  channelTypeDefId?: string | null
+  name: string
+  externalSource?: string | null
+  isActive?: boolean
+  useSimulation?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ChannelUpdateWithoutRepresentativeChannelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2795,6 +3310,44 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
+  channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
+  feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
+  productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelUncheckedUpdateWithoutRepresentativeChannelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
   feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
   delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
@@ -2806,9 +3359,10 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
 
-export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
+export type ChannelUncheckedUpdateManyWithoutRepresentativeChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2836,6 +3390,7 @@ export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
  */
 
 export type ChannelCountOutputType = {
+  fulfillmentChannels: number
   feeRates: number
   invMovements: number
   delOrders: number
@@ -2848,6 +3403,7 @@ export type ChannelCountOutputType = {
 }
 
 export type ChannelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  fulfillmentChannels?: boolean | ChannelCountOutputTypeCountFulfillmentChannelsArgs
   feeRates?: boolean | ChannelCountOutputTypeCountFeeRatesArgs
   invMovements?: boolean | ChannelCountOutputTypeCountInvMovementsArgs
   delOrders?: boolean | ChannelCountOutputTypeCountDelOrdersArgs
@@ -2867,6 +3423,13 @@ export type ChannelCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
    * Select specific fields to fetch from the ChannelCountOutputType
    */
   select?: Prisma.ChannelCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ChannelCountOutputType without action
+ */
+export type ChannelCountOutputTypeCountFulfillmentChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChannelWhereInput
 }
 
 /**
@@ -2939,6 +3502,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   channelTypeDefId?: boolean
   name?: boolean
   externalSource?: boolean
+  representativeChannelId?: boolean
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
@@ -2958,6 +3522,8 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
+  representativeChannel?: boolean | Prisma.Channel$representativeChannelArgs<ExtArgs>
+  fulfillmentChannels?: boolean | Prisma.Channel$fulfillmentChannelsArgs<ExtArgs>
   feeRates?: boolean | Prisma.Channel$feeRatesArgs<ExtArgs>
   invMovements?: boolean | Prisma.Channel$invMovementsArgs<ExtArgs>
   delOrders?: boolean | Prisma.Channel$delOrdersArgs<ExtArgs>
@@ -2976,6 +3542,7 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   channelTypeDefId?: boolean
   name?: boolean
   externalSource?: boolean
+  representativeChannelId?: boolean
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
@@ -2995,6 +3562,7 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
+  representativeChannel?: boolean | Prisma.Channel$representativeChannelArgs<ExtArgs>
 }, ExtArgs["result"]["channel"]>
 
 export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -3003,6 +3571,7 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   channelTypeDefId?: boolean
   name?: boolean
   externalSource?: boolean
+  representativeChannelId?: boolean
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
@@ -3022,6 +3591,7 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
+  representativeChannel?: boolean | Prisma.Channel$representativeChannelArgs<ExtArgs>
 }, ExtArgs["result"]["channel"]>
 
 export type ChannelSelectScalar = {
@@ -3030,6 +3600,7 @@ export type ChannelSelectScalar = {
   channelTypeDefId?: boolean
   name?: boolean
   externalSource?: boolean
+  representativeChannelId?: boolean
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
@@ -3049,10 +3620,12 @@ export type ChannelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "shippingFee" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "representativeChannelId" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "shippingFee" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
+  representativeChannel?: boolean | Prisma.Channel$representativeChannelArgs<ExtArgs>
+  fulfillmentChannels?: boolean | Prisma.Channel$fulfillmentChannelsArgs<ExtArgs>
   feeRates?: boolean | Prisma.Channel$feeRatesArgs<ExtArgs>
   invMovements?: boolean | Prisma.Channel$invMovementsArgs<ExtArgs>
   delOrders?: boolean | Prisma.Channel$delOrdersArgs<ExtArgs>
@@ -3067,10 +3640,12 @@ export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type ChannelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
+  representativeChannel?: boolean | Prisma.Channel$representativeChannelArgs<ExtArgs>
 }
 export type ChannelIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
+  representativeChannel?: boolean | Prisma.Channel$representativeChannelArgs<ExtArgs>
 }
 
 export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3078,6 +3653,8 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
     channelTypeDef: Prisma.$ChannelTypeDefPayload<ExtArgs> | null
+    representativeChannel: Prisma.$ChannelPayload<ExtArgs> | null
+    fulfillmentChannels: Prisma.$ChannelPayload<ExtArgs>[]
     feeRates: Prisma.$ChannelFeeRatePayload<ExtArgs>[]
     invMovements: Prisma.$InvMovementPayload<ExtArgs>[]
     delOrders: Prisma.$DelOrderPayload<ExtArgs>[]
@@ -3094,6 +3671,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     channelTypeDefId: string | null
     name: string
     externalSource: string | null
+    representativeChannelId: string | null
     isActive: boolean
     useSimulation: boolean
     adminUrl: string | null
@@ -3507,6 +4085,8 @@ export interface Prisma__ChannelClient<T, Null = never, ExtArgs extends runtime.
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   channelTypeDef<T extends Prisma.Channel$channelTypeDefArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$channelTypeDefArgs<ExtArgs>>): Prisma.Prisma__ChannelTypeDefClient<runtime.Types.Result.GetResult<Prisma.$ChannelTypeDefPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  representativeChannel<T extends Prisma.Channel$representativeChannelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$representativeChannelArgs<ExtArgs>>): Prisma.Prisma__ChannelClient<runtime.Types.Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  fulfillmentChannels<T extends Prisma.Channel$fulfillmentChannelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$fulfillmentChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   feeRates<T extends Prisma.Channel$feeRatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$feeRatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelFeeRatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invMovements<T extends Prisma.Channel$invMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$invMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   delOrders<T extends Prisma.Channel$delOrdersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$delOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3550,6 +4130,7 @@ export interface ChannelFieldRefs {
   readonly channelTypeDefId: Prisma.FieldRef<"Channel", 'String'>
   readonly name: Prisma.FieldRef<"Channel", 'String'>
   readonly externalSource: Prisma.FieldRef<"Channel", 'String'>
+  readonly representativeChannelId: Prisma.FieldRef<"Channel", 'String'>
   readonly isActive: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly useSimulation: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly adminUrl: Prisma.FieldRef<"Channel", 'String'>
@@ -3979,6 +4560,49 @@ export type Channel$channelTypeDefArgs<ExtArgs extends runtime.Types.Extensions.
    */
   include?: Prisma.ChannelTypeDefInclude<ExtArgs> | null
   where?: Prisma.ChannelTypeDefWhereInput
+}
+
+/**
+ * Channel.representativeChannel
+ */
+export type Channel$representativeChannelArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Channel
+   */
+  select?: Prisma.ChannelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Channel
+   */
+  omit?: Prisma.ChannelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelInclude<ExtArgs> | null
+  where?: Prisma.ChannelWhereInput
+}
+
+/**
+ * Channel.fulfillmentChannels
+ */
+export type Channel$fulfillmentChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Channel
+   */
+  select?: Prisma.ChannelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Channel
+   */
+  omit?: Prisma.ChannelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelInclude<ExtArgs> | null
+  where?: Prisma.ChannelWhereInput
+  orderBy?: Prisma.ChannelOrderByWithRelationInput | Prisma.ChannelOrderByWithRelationInput[]
+  cursor?: Prisma.ChannelWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChannelScalarFieldEnum | Prisma.ChannelScalarFieldEnum[]
 }
 
 /**
