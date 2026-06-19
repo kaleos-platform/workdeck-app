@@ -62,6 +62,7 @@ type Channel = {
   requirePayment: boolean
   requireProducts: boolean
   externalSource?: string | null
+  representativeChannelId?: string | null
 }
 
 type Props = {
@@ -81,6 +82,7 @@ type Props = {
 const NO_TYPE = '__none__'
 const NEW_TYPE = '__new__'
 const EXTERNAL_SOURCE_NONE = '__none__'
+const REPRESENTATIVE_NONE = '__none__'
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
@@ -96,6 +98,8 @@ export function ChannelEditDialog({
   // ── 기본 탭 ──
   const [fTypeDefId, setFTypeDefId] = useState(NO_TYPE)
   const [fExternalSource, setFExternalSource] = useState<string>(EXTERNAL_SOURCE_NONE)
+  const [fRepresentativeChannelId, setFRepresentativeChannelId] =
+    useState<string>(REPRESENTATIVE_NONE)
   const [fName, setFName] = useState('')
   const [fAdminUrl, setFAdminUrl] = useState('')
   const [fUsesMarketing, setFUsesMarketing] = useState(false)
@@ -171,6 +175,7 @@ export function ChannelEditDialog({
       setFUseSimulation(channel.useSimulation)
       setFIsActive(channel.isActive)
       setFExternalSource(channel.externalSource ?? EXTERNAL_SOURCE_NONE)
+      setFRepresentativeChannelId(channel.representativeChannelId ?? REPRESENTATIVE_NONE)
 
       setFVatIncluded(channel.vatIncludedInFee)
       setFPaymentFeeIncluded(channel.paymentFeeIncluded)
@@ -205,6 +210,7 @@ export function ChannelEditDialog({
       setFUseSimulation(true)
       setFIsActive(true)
       setFExternalSource(EXTERNAL_SOURCE_NONE)
+      setFRepresentativeChannelId(REPRESENTATIVE_NONE)
 
       setFVatIncluded(true)
       setFPaymentFeeIncluded(true)
@@ -323,6 +329,13 @@ export function ChannelEditDialog({
 
       // externalSource: '__none__' 선택 시 null(해제), 그 외 값 그대로 전송
       body.externalSource = fExternalSource === EXTERNAL_SOURCE_NONE ? null : fExternalSource
+
+      // representativeChannelId: 연동 채널(externalSource 지정)일 때만 의미.
+      // 통합재고 채널은 항상 null로 전송(편집 화면에서도 숨김 → 잘못된 잔존 값 정리).
+      body.representativeChannelId =
+        fExternalSource !== EXTERNAL_SOURCE_NONE && fRepresentativeChannelId !== REPRESENTATIVE_NONE
+          ? fRepresentativeChannelId
+          : null
 
       const res = await fetch(url, {
         method,
@@ -581,6 +594,37 @@ export function ChannelEditDialog({
                     쿠팡 로켓그로스로 지정하면 판매 OUTBOUND·매출이 이 채널에 귀속됩니다.
                   </p>
                 </div>
+
+                {/* 대표 채널 — 채널 자체 배송(연동) 채널일 때만 노출 */}
+                {fExternalSource !== EXTERNAL_SOURCE_NONE && (
+                  <div className="space-y-2">
+                    <Label htmlFor="ch-representative">대표 채널 (선택)</Label>
+                    <Select
+                      value={fRepresentativeChannelId}
+                      onValueChange={setFRepresentativeChannelId}
+                    >
+                      <SelectTrigger id="ch-representative">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={REPRESENTATIVE_NONE}>없음</SelectItem>
+                        {channels
+                          .filter(
+                            (c) => c.id !== channel?.id && (c.externalSource ?? null) === null
+                          )
+                          .map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      채널 자체 배송(로켓그로스 등)은 대표 채널의 상품을 읽기전용으로 불러옵니다.
+                      채널 재고 수동 수정은 불필요합니다.
+                    </p>
+                  </div>
+                )}
               </>
             )}
           </TabsContent>

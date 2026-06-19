@@ -44,7 +44,7 @@ type ChannelTypeDef = {
 type ChannelWithCount = {
   id: string
   name: string
-  kind: string
+  externalSource: string | null
   listingCount: number
 }
 
@@ -82,8 +82,9 @@ export function ChannelRail({
           fetch('/api/channel-types'),
         ])
         if (!chRes.ok) throw new Error('채널 조회 실패')
-        const data: { channels: Array<{ id: string; name: string; kind: string }> } =
-          await chRes.json()
+        const data: {
+          channels: Array<{ id: string; name: string; externalSource: string | null }>
+        } = await chRes.json()
         if (typeRes.ok) {
           const td: { types: ChannelTypeDef[] } = await typeRes.json()
           if (!cancelled) setChannelTypes(td.types ?? [])
@@ -269,7 +270,14 @@ function SortableChannelItem({
             isSelected ? 'font-medium' : ''
           }`}
         >
-          <span className="truncate">{channel.name}</span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate">{channel.name}</span>
+            {channel.externalSource != null && (
+              <Badge variant="outline" className="shrink-0 text-[10px]">
+                연동
+              </Badge>
+            )}
+          </span>
           <Badge variant={isSelected ? 'default' : 'secondary'} className="ml-2 shrink-0">
             {channel.listingCount}
           </Badge>

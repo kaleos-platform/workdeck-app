@@ -6,6 +6,7 @@ import { channelSchema } from '@/lib/sh/schemas'
 import { normalizeFeeRates } from '@/lib/sh/channel-fee-lookup'
 import { isExternalSource, EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { ensureCoupangLocation } from '@/lib/inv/coupang-channel-pairing'
+import { validateRepresentativeChannel } from '@/lib/sh/channel-relation'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveAnyDeckContext(['seller-hub', 'coupang-ads'])
@@ -88,6 +89,7 @@ export async function POST(req: NextRequest) {
     requireOrderNumber,
     requirePayment,
     requireProducts,
+    representativeChannelId,
     feeRates,
   } = parsed.data
 
@@ -97,6 +99,16 @@ export async function POST(req: NextRequest) {
     select: { id: true },
   })
   if (!typeDef) return errorResponse('채널 유형을 찾을 수 없습니다', 404)
+
+  // 대표 채널 관계 무결성 검증 (생성 시 representativeChannelId가 입력된 경우만)
+  if (representativeChannelId !== undefined) {
+    const relErr = await validateRepresentativeChannel({
+      spaceId: resolved.space.id,
+      selfExternalSource: externalSource ?? null,
+      representativeChannelId,
+    })
+    if (relErr) return errorResponse(relErr, 400)
+  }
 
   // feeRates 정규화 — '기본' 카테고리는 항상 1건 보장
   const normalizedFeeRates = normalizeFeeRates(feeRates)
@@ -123,6 +135,7 @@ export async function POST(req: NextRequest) {
           requirePayment,
           requireProducts,
           ...(externalSource !== undefined && { externalSource }),
+          ...(representativeChannelId !== undefined && { representativeChannelId }),
         },
       })
 

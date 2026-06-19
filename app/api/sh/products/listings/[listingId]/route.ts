@@ -153,7 +153,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       channelProductId: true,
       searchName: true,
       managementName: true,
-      channel: { select: { channelTypeDef: { select: { isSalesChannel: true } } } },
+      channel: {
+        select: { externalSource: true, channelTypeDef: { select: { isSalesChannel: true } } },
+      },
     },
   })
   if (!existing) return errorResponse('판매채널 상품을 찾을 수 없습니다', 404)
@@ -168,6 +170,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
   const input = parsed.data
+
+  // 채널 자체 배송(연동) 채널은 채널 재고를 수동 수정할 수 없다 (연동 데이터로 자동 처리).
+  if (input.channelStock !== undefined && existing.channel.externalSource != null) {
+    return errorResponse('채널 자체 배송 채널은 채널 재고를 수동 수정할 수 없습니다', 400)
+  }
   const nextSearchName = input.searchName ?? existing.searchName
   const nextDisplayName =
     input.displayName === undefined

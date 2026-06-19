@@ -5,6 +5,7 @@ import { channelSchema } from '@/lib/sh/schemas'
 import { normalizeFeeRates } from '@/lib/sh/channel-fee-lookup'
 import { isExternalSource, EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { ensureCoupangLocation } from '@/lib/inv/coupang-channel-pairing'
+import { validateRepresentativeChannel } from '@/lib/sh/channel-relation'
 
 export async function GET(
   _req: NextRequest,
@@ -38,7 +39,7 @@ export async function PATCH(
 
   const existing = await prisma.channel.findFirst({
     where: { id: channelId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, externalSource: true },
   })
   if (!existing) return errorResponse('채널을 찾을 수 없습니다', 404)
 
@@ -91,6 +92,7 @@ export async function PATCH(
     requireOrderNumber,
     requirePayment,
     requireProducts,
+    representativeChannelId,
     feeRates,
   } = parsed.data
 
@@ -101,6 +103,20 @@ export async function PATCH(
       select: { id: true },
     })
     if (!typeDef) return errorResponse('채널 유형을 찾을 수 없습니다', 404)
+  }
+
+  // 대표 채널 관계 무결성 검증 (representativeChannelId가 입력된 경우만)
+  if (representativeChannelId !== undefined) {
+    // 설정 주체의 externalSource: 이번 요청에서 바뀌면 그 값, 아니면 기존 값
+    const effectiveExternalSource =
+      externalSource !== undefined ? externalSource : existing.externalSource
+    const relErr = await validateRepresentativeChannel({
+      spaceId: resolved.space.id,
+      selfChannelId: channelId,
+      selfExternalSource: effectiveExternalSource,
+      representativeChannelId,
+    })
+    if (relErr) return errorResponse(relErr, 400)
   }
 
   try {
@@ -127,6 +143,7 @@ export async function PATCH(
           ...(requirePayment !== undefined && { requirePayment }),
           ...(requireProducts !== undefined && { requireProducts }),
           ...(externalSource !== undefined && { externalSource }),
+          ...(representativeChannelId !== undefined && { representativeChannelId }),
         },
       })
 
