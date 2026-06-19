@@ -8000,6 +8000,7 @@ export const ChannelScalarFieldEnum = {
   channelTypeDefId: 'channelTypeDefId',
   name: 'name',
   externalSource: 'externalSource',
+  representativeChannelId: 'representativeChannelId',
   isActive: 'isActive',
   useSimulation: 'useSimulation',
   adminUrl: 'adminUrl',

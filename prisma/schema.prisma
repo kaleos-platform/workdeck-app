@@ -1379,7 +1379,12 @@ model Channel {
   name                  String
   // 외부 데이터 소스 (예: 'coupang_rocket_growth'). 재고 위치(InvStorageLocation)와 동일
   // 패턴 — 위치·채널이 같은 외부 출처를 가리키고, 공간당 소스별 1개만 연결(1:1 페어링).
+  // null = 통합재고 채널(판매자 직접 배송, 채널 재고 차감 관리).
+  // non-null = 채널 자체 배송(연동) — 마켓 풀필먼트가 배송, 연동 데이터만 표시.
   externalSource        String?
+  // 채널 자체 배송(연동) 채널이 가리키는 대표 채널(통합재고). null이면 대표/일반 채널.
+  // 연동 채널의 판매채널 상품 화면은 대표 채널 상품을 읽기전용으로 미러링한다.
+  representativeChannelId String?
   isActive              Boolean  @default(true)
   useSimulation         Boolean  @default(true) // 가격 시뮬레이션 노출/필수입력 결정
   adminUrl              String?
@@ -1398,6 +1403,8 @@ model Channel {
 
   space                   Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channelTypeDef          ChannelTypeDef?          @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)
+  representativeChannel   Channel?                 @relation("ChannelRep", fields: [representativeChannelId], references: [id], onDelete: SetNull)
+  fulfillmentChannels     Channel[]                @relation("ChannelRep")
   feeRates                ChannelFeeRate[]
   invMovements            InvMovement[]
   delOrders               DelOrder[]
@@ -1415,6 +1422,7 @@ model Channel {
   @@unique([spaceId, externalSource]) // 외부 소스별 1개 채널만 (NULL 다중 허용)
   @@index([spaceId])
   @@index([channelTypeDefId])
+  @@index([representativeChannelId])
 }
 
 // 채널별 카테고리 수수료율

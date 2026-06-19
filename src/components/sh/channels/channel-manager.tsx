@@ -59,6 +59,7 @@ type Channel = {
   requirePayment: boolean
   requireProducts: boolean
   externalSource?: string | null
+  representativeChannelId?: string | null
 }
 
 type SidebarFilterKey =

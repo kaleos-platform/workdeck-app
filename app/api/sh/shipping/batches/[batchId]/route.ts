@@ -84,9 +84,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
           if (fresh.length > 0) {
             // channelStock이 설정된(non-null) listing만 차감 대상 (null = 기능 off)
+            // 채널 자체 배송(연동) 채널(externalSource!=null)은 마켓이 출고하므로 차감 제외 —
+            // 로켓그로스 등은 VENDOR→OUTBOUND 경로로 별도 처리된다.
             const listingIds = [...new Set(fresh.map((i) => i.listingId!))]
             const enabledRows = await tx.productListing.findMany({
-              where: { id: { in: listingIds }, channelStock: { not: null } },
+              where: {
+                id: { in: listingIds },
+                channelStock: { not: null },
+                channel: { externalSource: null },
+              },
               select: { id: true },
             })
             const enabled = new Set(enabledRows.map((l) => l.id))

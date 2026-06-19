@@ -23,10 +23,15 @@ export async function PATCH(req: NextRequest) {
   // Space 소속 검증
   const existing = await prisma.productListing.findMany({
     where: { id: { in: ids }, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, channel: { select: { externalSource: true } } },
   })
   if (existing.length !== ids.length) {
     return errorResponse('일부 판매 옵션을 찾을 수 없습니다', 400)
+  }
+
+  // 채널 자체 배송(연동) 채널은 채널 재고 수동 수정 불가
+  if (patch.channelStock !== undefined && existing.some((l) => l.channel.externalSource != null)) {
+    return errorResponse('채널 자체 배송 채널은 채널 재고를 수동 수정할 수 없습니다', 400)
   }
 
   const data: {

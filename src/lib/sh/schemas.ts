@@ -170,6 +170,11 @@ export const channelSchema = z.object({
   requireOrderNumber: z.boolean().default(true),
   requirePayment: z.boolean().default(true),
   requireProducts: z.boolean().default(true),
+  // 채널 자체 배송(연동) 채널의 대표 채널. ''/null=해제, 문자열=설정, undefined=미변경.
+  // 소속·externalSource·self 검증은 라우트에서 수행.
+  representativeChannelId: z
+    .preprocess((v) => (v === '' ? null : v), z.union([idLike, z.null()]))
+    .optional(),
   // 카테고리별 수수료 — 비어있거나 미전달 시 서버가 [{ '기본', 0 }] 자동 추가
   feeRates: z.array(channelFeeRateInput).max(50).optional(),
 })
