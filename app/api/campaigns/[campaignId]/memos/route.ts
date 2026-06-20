@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { assertRole, resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { formatDateToYmdKst } from '@/lib/date-range'
+import { invalidateCoupangAdsCache } from '@/lib/coupang-ads/cache'
 
 // GET /api/campaigns/[campaignId]/memos — 메모 목록 조회
 export async function GET(
@@ -108,6 +109,8 @@ export async function POST(
     },
   })
 
+  invalidateCoupangAdsCache(workspace.id)
+
   return NextResponse.json({
     ...memo,
     date: formatDateToYmdKst(memo.date),
@@ -144,6 +147,8 @@ export async function DELETE(
       date: dateUtc,
     },
   })
+
+  invalidateCoupangAdsCache(workspace.id)
 
   return NextResponse.json({ success: true })
 }

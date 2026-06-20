@@ -273,6 +273,7 @@ model AdRecord {
 
   @@unique([workspaceId, date, campaignId, adType, keyword, adGroup, optionId])
   @@index([workspaceId, campaignId])
+  @@index([workspaceId, campaignId, date])
   @@index([workspaceId, date])
 }
 

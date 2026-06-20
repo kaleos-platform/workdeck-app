@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
 import { processUpload } from '@/lib/upload-processor'
+import { invalidateCoupangAdsCache } from '@/lib/coupang-ads/cache'
 
 // POST /api/collection/upload — 워커가 수집한 Excel 파일 업로드
 export async function POST(request: NextRequest) {
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
       buffer,
       overwrite: true, // 워커 수집은 항상 덮어쓰기
     })
+
+    if (result.success) invalidateCoupangAdsCache(workspaceId)
 
     return NextResponse.json(result)
   } catch (error) {

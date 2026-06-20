@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useLayoutEffect, useRef, use } from 'react'
+import { useState, useMemo, useEffect, useLayoutEffect, useRef, use, useDeferredValue } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -55,10 +55,16 @@ import { FilterBar } from '@/components/dashboard/filter-bar'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
 import { DailyMemo } from '@/components/dashboard/daily-memo'
 import { CampaignTargetSection } from '@/components/dashboard/campaign-target-section'
+import type {
+  CampaignTarget,
+  CampaignTargetSummary,
+} from '@/components/dashboard/campaign-target-section'
 import { ProductTrendsTable } from '@/components/dashboard/product-trends-table'
 import { getDaysAgoStrKst, getTodayStrKst, isYmdDateString } from '@/lib/date-range'
 import { getDeltaColor } from '@/lib/delta-color'
 import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
+import type { CampaignOverview } from '@/lib/coupang-ads/campaign-overview'
+import { shouldLoadCampaignTab } from '@/lib/coupang-ads/campaign-detail-tabs'
 import type {
   AdRecord,
   InefficientKeyword,
@@ -251,6 +257,8 @@ export default function CampaignDetailPage({
   const [campaignName, setCampaignName] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [adTypes, setAdTypes] = useState<string[]>([])
+  const [targets, setTargets] = useState<CampaignTarget[]>([])
+  const [targetSummary, setTargetSummary] = useState<CampaignTargetSummary | null>(null)
 
   // 캠페인명 인라인 편집
   const [isEditingName, setIsEditingName] = useState(false)
@@ -319,6 +327,10 @@ export default function CampaignDetailPage({
   const [kwExcludeRemoved, setKwExcludeRemoved] = useState(false)
   // 키워드 탭 검색
   const [kwSearch, setKwSearch] = useState('')
+  const deferredKwSearch = useDeferredValue(kwSearch)
+  const [kwPage, setKwPage] = useState(1)
+  const [kwTotal, setKwTotal] = useState(0)
+  const kwPageSize = 50
 
   // 상품 탭 정렬
   const [productSortBy, setProductSortBy] = useState<ProductSortKey>('adCost')
@@ -345,10 +357,11 @@ export default function CampaignDetailPage({
     router.replace(`${pathname}?${params.toString()}`)
   }, [isDateRangeReady, pathname, router, searchParamsString])
 
-  // 지표 시계열 조회
+  // 대시보드에 필요한 메타·지표·목표·메모를 단일 요청으로 조회
   useEffect(() => {
     if (!isDateRangeReady) {
       setMetricSeries([])
+      setPrevMetricSeries([])
       return
     }
 
@@ -357,39 +370,30 @@ export default function CampaignDetailPage({
     if (to) q.set('to', to)
     if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
 
-    fetch(`/api/campaigns/${campaignId}/metrics?${q}`)
-      .then((r) => (r.ok ? r.json() : { series: [] }))
-      .then((d: { series: MetricSeries[] }) => setMetricSeries(d.series))
-      .catch(() => setMetricSeries([]))
-  }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
-
-  // 이전 동일 기간 지표 조회
-  useEffect(() => {
-    if (!isDateRangeReady || !from || !to) {
-      setPrevMetricSeries([])
-      return
-    }
-    // 현재 기간 일수 계산 후 동일 길이만큼 이전 기간 설정
-    const fromMs = new Date(from + 'T00:00:00').getTime()
-    const toMs = new Date(to + 'T00:00:00').getTime()
-    const days = Math.round((toMs - fromMs) / (1000 * 60 * 60 * 24)) + 1
-    const prevToMs = fromMs - 24 * 60 * 60 * 1000
-    const prevFromMs = prevToMs - (days - 1) * 24 * 60 * 60 * 1000
-    const prevFrom = new Date(prevFromMs).toISOString().split('T')[0]
-    const prevTo = new Date(prevToMs).toISOString().split('T')[0]
-
-    const q = new URLSearchParams({ from: prevFrom, to: prevTo })
-    if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
-
-    fetch(`/api/campaigns/${campaignId}/metrics?${q}`)
-      .then((r) => (r.ok ? r.json() : { series: [] }))
-      .then((d: { series: MetricSeries[] }) => setPrevMetricSeries(d.series))
-      .catch(() => setPrevMetricSeries([]))
+    fetch(`/api/campaigns/${campaignId}/overview?${q}`)
+      .then((r) => {
+        if (!r.ok) throw new Error('overview load failed')
+        return r.json() as Promise<CampaignOverview>
+      })
+      .then((data) => {
+        setCampaignName(data.campaign.name)
+        setDisplayName(data.campaign.displayName)
+        setAdTypes(data.campaign.adTypes)
+        setMetricSeries(data.metricSeries)
+        setPrevMetricSeries(data.prevMetricSeries)
+        setTargets(data.targets)
+        setTargetSummary(data.targetSummary)
+        setMemos(data.memos)
+      })
+      .catch(() => {
+        setMetricSeries([])
+        setPrevMetricSeries([])
+      })
   }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
 
   // 광고 데이터 조회
   useEffect(() => {
-    if (!isDateRangeReady) {
+    if (!isDateRangeReady || !shouldLoadCampaignTab(activeTab, 'records')) {
       setRecords([])
       setTotal(0)
       setPlacementOptions([])
@@ -423,7 +427,17 @@ export default function CampaignDetailPage({
         setTotal(0)
         setPlacementOptions([])
       })
-  }, [campaignId, page, pageSize, from, to, adTypeFilter, placementFilter, isDateRangeReady])
+  }, [
+    activeTab,
+    campaignId,
+    page,
+    pageSize,
+    from,
+    to,
+    adTypeFilter,
+    placementFilter,
+    isDateRangeReady,
+  ])
 
   useEffect(() => {
     setPlacementFilter('all')
@@ -438,7 +452,7 @@ export default function CampaignDetailPage({
 
   // 비효율 키워드 조회
   useEffect(() => {
-    if (!isDateRangeReady) {
+    if (!isDateRangeReady || !shouldLoadCampaignTab(activeTab, 'keywords')) {
       setKeywords([])
       setSelectedKeywords([])
       return
@@ -448,55 +462,39 @@ export default function CampaignDetailPage({
     if (from) q.set('from', from)
     if (to) q.set('to', to)
     if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
+    q.set('page', String(kwPage))
+    q.set('pageSize', String(kwPageSize))
+    q.set('sortBy', kwSortBy)
+    q.set('sortOrder', kwSortOrder)
+    q.set('filter', kwFilter)
+    q.set('excludeRemoved', String(kwExcludeRemoved))
+    if (deferredKwSearch.trim()) q.set('search', deferredKwSearch.trim())
 
     fetch(`/api/campaigns/${campaignId}/inefficient-keywords?${q}`)
-      .then((r) => (r.ok ? r.json() : { items: [] }))
-      .then((d: { items: InefficientKeyword[] }) => {
+      .then((r) => (r.ok ? r.json() : { items: [], total: 0 }))
+      .then((d: { items: InefficientKeyword[]; total: number }) => {
         setKeywords(d.items)
+        setKwTotal(d.total)
         setSelectedKeywords([])
-        setKwFilter('all') // 날짜/adType 변경 시 필터 초기화
-        setKwExcludeRemoved(false) // 기간 변경 시 제거 제외 토글도 초기화
       })
-      .catch(() => setKeywords([]))
-  }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
-
-  // 메모 조회
-  useEffect(() => {
-    if (!isDateRangeReady) {
-      setMemos([])
-      return
-    }
-
-    fetch(`/api/campaigns/${campaignId}/memos`)
-      .then((r) => (r.ok ? r.json() : { items: [] }))
-      .then((d: { items: DailyMemoType[] }) => setMemos(d.items))
-      .catch(() => setMemos([]))
-  }, [campaignId, isDateRangeReady])
-
-  // 캠페인 메타 (adTypes) 조회
-  useEffect(() => {
-    fetch('/api/campaigns')
-      .then((r) => (r.ok ? r.json() : []))
-      .then(
-        (
-          list: Array<{
-            id: string
-            name: string
-            displayName: string
-            isCustomName: boolean
-            adTypes: string[]
-          }>
-        ) => {
-          const found = list.find((c) => c.id === campaignId)
-          if (found) {
-            setCampaignName(found.name)
-            setDisplayName(found.displayName)
-            setAdTypes(found.adTypes)
-          }
-        }
-      )
-      .catch(() => {})
-  }, [campaignId])
+      .catch(() => {
+        setKeywords([])
+        setKwTotal(0)
+      })
+  }, [
+    activeTab,
+    campaignId,
+    from,
+    to,
+    adTypeFilter,
+    isDateRangeReady,
+    deferredKwSearch,
+    kwExcludeRemoved,
+    kwFilter,
+    kwPage,
+    kwSortBy,
+    kwSortOrder,
+  ])
 
   // 페이지네이션
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
@@ -549,6 +547,7 @@ export default function CampaignDetailPage({
       setKwSortBy(key)
       setKwSortOrder('desc')
     }
+    setKwPage(1)
     setSelectedKeywords([])
   }
 
@@ -562,32 +561,6 @@ export default function CampaignDetailPage({
     }
     setSelectedProducts([])
   }
-
-  // 키워드 탭 필터링
-  const filteredKeywords = useMemo(() => {
-    let result = keywords
-    if (kwExcludeRemoved) result = result.filter((kw) => kw.removedAt === null)
-    if (kwSearch.trim())
-      result = result.filter((kw) =>
-        kw.keyword.toLowerCase().includes(kwSearch.trim().toLowerCase())
-      )
-    if (kwFilter === 'zero') return result.filter((kw) => kw.orders1d === 0 && kw.adCost > 0)
-    if (kwFilter === 'orders') return result.filter((kw) => kw.orders1d >= 1)
-    return result
-  }, [keywords, kwFilter, kwExcludeRemoved, kwSearch])
-
-  // 키워드 클라이언트 사이드 정렬
-  const sortedKeywords = useMemo(() => {
-    return [...filteredKeywords].sort((a, b) => {
-      if (kwSortBy === 'keyword') {
-        const cmp = a.keyword.localeCompare(b.keyword, 'ko')
-        return kwSortOrder === 'asc' ? cmp : -cmp
-      }
-      const av = (a[kwSortBy] as number | null) ?? -Infinity
-      const bv = (b[kwSortBy] as number | null) ?? -Infinity
-      return kwSortOrder === 'asc' ? av - bv : bv - av
-    })
-  }, [filteredKeywords, kwSortBy, kwSortOrder])
 
   // 상품 탭 필터링 + 정렬
   const filteredSortedProducts = useMemo(() => {
@@ -614,8 +587,8 @@ export default function CampaignDetailPage({
     productSortOrder,
   ])
 
-  // 키워드 다중 선택 (필터링된 키워드 기준)
-  const allKeywordNames = filteredKeywords.map((k) => k.keyword)
+  // 키워드 다중 선택 (현재 페이지 기준)
+  const allKeywordNames = keywords.map((k) => k.keyword)
   const allSelected =
     selectedKeywords.length === allKeywordNames.length && allKeywordNames.length > 0
 
@@ -781,7 +754,7 @@ export default function CampaignDetailPage({
 
   // 상품 분석 데이터 조회
   useEffect(() => {
-    if (activeTab !== 'products' || !isDateRangeReady) {
+    if (!shouldLoadCampaignTab(activeTab, 'products') || !isDateRangeReady) {
       if (activeTab !== 'products') setProductItems([])
       return
     }
@@ -1240,7 +1213,13 @@ export default function CampaignDetailPage({
       </Card>
 
       {/* 예산/목표 ROAS 현황 (필터 아래) */}
-      <CampaignTargetSection campaignId={campaignId} from={from} to={to} />
+      <CampaignTargetSection
+        campaignId={campaignId}
+        from={from}
+        to={to}
+        initialTargets={targets}
+        initialSummary={targetSummary}
+      />
 
       {/* 탭 영역 */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -1362,6 +1341,7 @@ export default function CampaignDetailPage({
                 value={kwSearch}
                 onChange={(e) => {
                   setKwSearch(e.target.value)
+                  setKwPage(1)
                   setSelectedKeywords([])
                 }}
                 className="h-8 w-40 text-sm"
@@ -1373,6 +1353,7 @@ export default function CampaignDetailPage({
                 onClick={() => {
                   const next = kwFilter === 'zero' ? 'all' : 'zero'
                   setKwFilter(next)
+                  setKwPage(1)
                   setSelectedKeywords([])
                   if (next === 'zero') {
                     setKwSortBy('adCost')
@@ -1389,6 +1370,7 @@ export default function CampaignDetailPage({
                 onClick={() => {
                   const next = kwFilter === 'orders' ? 'all' : 'orders'
                   setKwFilter(next)
+                  setKwPage(1)
                   setSelectedKeywords([])
                   if (next === 'orders') {
                     setKwSortBy('orders1d')
@@ -1404,6 +1386,7 @@ export default function CampaignDetailPage({
                   checked={kwExcludeRemoved}
                   onCheckedChange={() => {
                     setKwExcludeRemoved((prev) => !prev)
+                    setKwPage(1)
                     setSelectedKeywords([])
                   }}
                 />
@@ -1411,7 +1394,7 @@ export default function CampaignDetailPage({
                   제거 제외
                 </label>
               </div>
-              <span className="text-sm text-muted-foreground">전체 {keywords.length}개 키워드</span>
+              <span className="text-sm text-muted-foreground">전체 {kwTotal}개 키워드</span>
             </div>
             <div className="ml-auto flex items-center gap-2">
               {selectedKeywords.some((kw) => keywords.find((k) => k.keyword === kw)?.removedAt) && (
@@ -1516,7 +1499,7 @@ export default function CampaignDetailPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedKeywords.length === 0 ? (
+                  {keywords.length === 0 ? (
                     <TableRow>
                       <TableCell
                         colSpan={9}
@@ -1528,7 +1511,7 @@ export default function CampaignDetailPage({
                       </TableCell>
                     </TableRow>
                   ) : (
-                    sortedKeywords.map((kw) => (
+                    keywords.map((kw) => (
                       <TableRow
                         key={kw.keyword}
                         className="cursor-pointer"
@@ -1593,6 +1576,36 @@ export default function CampaignDetailPage({
               </Table>
             </CardContent>
           </Card>
+
+          {kwTotal > kwPageSize && (
+            <div className="flex items-center justify-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={kwPage === 1}
+                onClick={() => {
+                  setKwPage((value) => Math.max(1, value - 1))
+                  setSelectedKeywords([])
+                }}
+              >
+                이전
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {kwPage} / {Math.max(1, Math.ceil(kwTotal / kwPageSize))}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={kwPage >= Math.ceil(kwTotal / kwPageSize)}
+                onClick={() => {
+                  setKwPage((value) => value + 1)
+                  setSelectedKeywords([])
+                }}
+              >
+                다음
+              </Button>
+            </div>
+          )}
 
           {selectedKeywords.length > 0 && (
             <p className="text-center text-xs text-muted-foreground">

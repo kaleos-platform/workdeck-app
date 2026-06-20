@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
+import { invalidateCoupangAdsCache } from '@/lib/coupang-ads/cache'
 
 // GET /api/campaigns/[campaignId]/targets — 설정 이력 전체 조회
 export async function GET(
@@ -70,6 +71,8 @@ export async function POST(
       targetRoas: targetRoas ?? null,
     },
   })
+
+  invalidateCoupangAdsCache(workspace.id)
 
   const toKSTDateStr = (date: Date) =>
     new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]

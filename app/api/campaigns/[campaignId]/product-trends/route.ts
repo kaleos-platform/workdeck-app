@@ -3,6 +3,7 @@ import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { calculateROAS } from '@/lib/metrics-calculator'
 import { parsePureProductName, parseOptionName } from '@/lib/product-name-parser'
+import { cacheCoupangAdsData } from '@/lib/coupang-ads/cache'
 
 type Params = { params: Promise<{ campaignId: string }> }
 
@@ -16,7 +17,12 @@ function calcChange(cur: number, prev: number) {
   return { change, pct }
 }
 
-function calcTrend(prev: Stats | undefined, curOrders: number, curRevenue: number, ordersChangePct: number | null): Trend {
+function calcTrend(
+  prev: Stats | undefined,
+  curOrders: number,
+  curRevenue: number,
+  ordersChangePct: number | null
+): Trend {
   if (!prev && (curOrders > 0 || curRevenue > 0)) return 'new'
   if (ordersChangePct != null && ordersChangePct > 10) return 'up'
   if (ordersChangePct != null && ordersChangePct < -10) return 'down'
@@ -67,18 +73,31 @@ export async function GET(req: NextRequest, { params }: Params) {
   }
 
   // 옵션 단위로 조회
-  const [currentData, previousData] = await Promise.all([
-    prisma.adRecord.groupBy({
-      by: ['productName', 'optionId'],
-      where: { ...baseWhere, date: { gte: currentStart, lte: currentEnd } },
-      _sum: { orders1d: true, revenue1d: true, adCost: true },
-    }),
-    prisma.adRecord.groupBy({
-      by: ['productName', 'optionId'],
-      where: { ...baseWhere, date: { gte: previousStart, lte: previousEnd } },
-      _sum: { orders1d: true, revenue1d: true, adCost: true },
-    }),
-  ])
+  const { currentData, previousData } = await cacheCoupangAdsData(
+    'product-trends',
+    {
+      workspaceId: resolved.workspace.id,
+      campaignId,
+      from: currentStart.toISOString(),
+      to: currentEnd.toISOString(),
+      adType: 'all',
+    },
+    async () => {
+      const [currentData, previousData] = await Promise.all([
+        prisma.adRecord.groupBy({
+          by: ['productName', 'optionId'],
+          where: { ...baseWhere, date: { gte: currentStart, lte: currentEnd } },
+          _sum: { orders1d: true, revenue1d: true, adCost: true },
+        }),
+        prisma.adRecord.groupBy({
+          by: ['productName', 'optionId'],
+          where: { ...baseWhere, date: { gte: previousStart, lte: previousEnd } },
+          _sum: { orders1d: true, revenue1d: true, adCost: true },
+        }),
+      ])
+      return { currentData, previousData }
+    }
+  )
 
   // 이전 기간 맵 (옵션 단위)
   const prevMap = new Map<string, Stats>()
@@ -104,12 +123,15 @@ export async function GET(req: NextRequest, { params }: Params) {
   }
 
   // 상품별 집계용 맵
-  const productMap = new Map<string, {
-    curTotal: Stats
-    prevTotal: Stats
-    options: OptionTrend[]
-    seenOptionKeys: Set<string>
-  }>()
+  const productMap = new Map<
+    string,
+    {
+      curTotal: Stats
+      prevTotal: Stats
+      options: OptionTrend[]
+      seenOptionKeys: Set<string>
+    }
+  >()
 
   function getOrCreate(pName: string) {
     if (!productMap.has(pName)) {
@@ -153,8 +175,18 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     entry.options.push({
       optionName: optName,
-      current: { orders: curOrders, revenue: curRevenue, adCost: curAdCost, roas: calculateROAS(curRevenue, curAdCost) },
-      previous: { orders: prevOrders, revenue: prevRevenue, adCost: prevAdCost, roas: calculateROAS(prevRevenue, prevAdCost) },
+      current: {
+        orders: curOrders,
+        revenue: curRevenue,
+        adCost: curAdCost,
+        roas: calculateROAS(curRevenue, curAdCost),
+      },
+      previous: {
+        orders: prevOrders,
+        revenue: prevRevenue,
+        adCost: prevAdCost,
+        roas: calculateROAS(prevRevenue, prevAdCost),
+      },
       ordersChange: orders.change,
       ordersChangePct: orders.pct,
       revenueChange: revenue.change,
@@ -184,7 +216,12 @@ export async function GET(req: NextRequest, { params }: Params) {
     entry.options.push({
       optionName: optName,
       current: { orders: 0, revenue: 0, adCost: 0, roas: null },
-      previous: { orders: prevOrders, revenue: prevRevenue, adCost: prevAdCost, roas: calculateROAS(prevRevenue, prevAdCost) },
+      previous: {
+        orders: prevOrders,
+        revenue: prevRevenue,
+        adCost: prevAdCost,
+        roas: calculateROAS(prevRevenue, prevAdCost),
+      },
       ordersChange: -prevOrders,
       ordersChangePct: -100,
       revenueChange: -prevRevenue,
@@ -214,13 +251,24 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     trends.push({
       productName: pName,
-      current: { ...entry.curTotal, roas: calculateROAS(entry.curTotal.revenue, entry.curTotal.adCost) },
-      previous: { ...entry.prevTotal, roas: calculateROAS(entry.prevTotal.revenue, entry.prevTotal.adCost) },
+      current: {
+        ...entry.curTotal,
+        roas: calculateROAS(entry.curTotal.revenue, entry.curTotal.adCost),
+      },
+      previous: {
+        ...entry.prevTotal,
+        roas: calculateROAS(entry.prevTotal.revenue, entry.prevTotal.adCost),
+      },
       ordersChange: orders.change,
       ordersChangePct: orders.pct,
       revenueChange: revenue.change,
       revenueChangePct: revenue.pct,
-      trend: calcTrend(hasPrev ? entry.prevTotal : undefined, entry.curTotal.orders, entry.curTotal.revenue, orders.pct),
+      trend: calcTrend(
+        hasPrev ? entry.prevTotal : undefined,
+        entry.curTotal.orders,
+        entry.curTotal.revenue,
+        orders.pct
+      ),
       options: entry.options.sort((a, b) => Math.abs(b.ordersChange) - Math.abs(a.ordersChange)),
     })
   }
