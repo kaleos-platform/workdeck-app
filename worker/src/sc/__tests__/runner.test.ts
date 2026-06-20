@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 // runner.ts — routeJob kind 별 라우팅 유닛 테스트.
 // Prisma/HTTP mock 없음 — deps 주입으로 순수 라우팅 로직만 검증.
 

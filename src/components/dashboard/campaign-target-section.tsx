@@ -25,7 +25,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getTodayStrKst } from '@/lib/date-range'
 
-type CampaignTarget = {
+export type CampaignTarget = {
   id: string
   campaignId: string
   effectiveDate: string // YYYY-MM-DD
@@ -33,7 +33,7 @@ type CampaignTarget = {
   targetRoas: number | null
 }
 
-type SummaryData = {
+export type CampaignTargetSummary = {
   budgetUtilization: number | null
   roasAchievement: number | null
 }
@@ -57,15 +57,24 @@ type Props = {
   campaignId: string
   from: string
   to: string
+  initialTargets?: CampaignTarget[]
+  initialSummary?: CampaignTargetSummary | null
   /** "budget": 일 예산/목표 ROAS compact 카드만 | "metrics": 광고 관리 현황 카드만 */
   mode?: 'budget' | 'metrics'
 }
 
-export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
+export function CampaignTargetSection({
+  campaignId,
+  from,
+  to,
+  initialTargets,
+  initialSummary,
+  mode,
+}: Props) {
   const today = getTodayStrKst()
 
-  const [targets, setTargets] = useState<CampaignTarget[]>([])
-  const [summary, setSummary] = useState<SummaryData | null>(null)
+  const [targets, setTargets] = useState<CampaignTarget[]>(initialTargets ?? [])
+  const [summary, setSummary] = useState<CampaignTargetSummary | null>(initialSummary ?? null)
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -97,21 +106,29 @@ export function CampaignTargetSection({ campaignId, from, to, mode }: Props) {
     setIsLoading(true)
     try {
       const res = await fetch(`/api/campaigns/${campaignId}/targets/summary?from=${from}&to=${to}`)
-      if (res.ok) setSummary((await res.json()) as SummaryData)
+      if (res.ok) setSummary((await res.json()) as CampaignTargetSummary)
     } finally {
       setIsLoading(false)
     }
   }, [campaignId, from, to])
 
   useEffect(() => {
+    if (initialTargets) {
+      setTargets(initialTargets)
+      return
+    }
     fetchTargets()
-  }, [fetchTargets])
+  }, [fetchTargets, initialTargets])
 
   useEffect(() => {
+    if (initialSummary !== undefined) {
+      setSummary(initialSummary)
+      return
+    }
     // budget 모드에서는 summary 불필요 (기간 독립)
     if (mode === 'budget') return
     fetchSummary()
-  }, [fetchSummary, mode])
+  }, [fetchSummary, initialSummary, mode])
 
   function openNewDialog() {
     setEditTarget(null)

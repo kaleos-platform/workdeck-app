@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { invalidateCoupangAdsCache } from '@/lib/coupang-ads/cache'
 
 // GET /api/campaigns/[campaignId]/keyword-status
 // 캠페인의 제거 처리된 키워드 목록 반환
@@ -62,6 +63,8 @@ export async function POST(
     )
   )
 
+  invalidateCoupangAdsCache(workspace.id)
+
   return NextResponse.json({ success: true, count: keywords.length })
 }
 
@@ -94,6 +97,8 @@ export async function DELETE(
   const result = await prisma.keywordStatus.deleteMany({
     where: { workspaceId: workspace.id, campaignId, keyword: { in: keywords } },
   })
+
+  invalidateCoupangAdsCache(workspace.id)
 
   return NextResponse.json({ success: true, count: result.count })
 }
