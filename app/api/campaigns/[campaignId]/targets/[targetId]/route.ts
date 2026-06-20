@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
+import { invalidateCoupangAdsCache } from '@/lib/coupang-ads/cache'
 
 // PATCH /api/campaigns/[campaignId]/targets/[targetId] — 특정 이력 수정
 export async function PATCH(
@@ -36,6 +37,8 @@ export async function PATCH(
     },
   })
 
+  invalidateCoupangAdsCache(workspace.id)
+
   const toKSTDateStr = (date: Date) =>
     new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
@@ -62,5 +65,6 @@ export async function DELETE(
   }
 
   await prisma.campaignTarget.delete({ where: { id: targetId } })
+  invalidateCoupangAdsCache(workspace.id)
   return NextResponse.json({ ok: true })
 }

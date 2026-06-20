@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { invalidateCoupangAdsCache } from '@/lib/coupang-ads/cache'
 
 // PATCH /api/campaigns/[campaignId] — 캠페인 표시명 커스텀 변경
 export async function PATCH(
@@ -48,6 +49,8 @@ export async function PATCH(
       isCustomName: true,
     },
   })
+
+  invalidateCoupangAdsCache(workspace.id)
 
   return NextResponse.json({
     campaignId: meta.campaignId,
@@ -112,6 +115,8 @@ export async function DELETE(
         campaignTargets: campaignTargetResult.count,
       }
     })
+
+    invalidateCoupangAdsCache(workspace.id)
 
     return NextResponse.json({
       message: '캠페인이 삭제되었습니다. 삭제된 데이터는 복구할 수 없습니다.',

@@ -42,14 +42,22 @@ export async function GET(
     ...(placement && placement !== 'all' && { placement }),
   }
 
-  const placementWhere = {
-    workspaceId: workspace.id,
-    campaignId,
-    ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
-    ...(adType && adType !== 'all' && { adType }),
+  const placementConditions = ['"workspaceId" = $1', '"campaignId" = $2', 'placement IS NOT NULL']
+  const placementValues: unknown[] = [workspace.id, campaignId]
+  if (dateFilter.gte) {
+    placementValues.push(dateFilter.gte)
+    placementConditions.push(`date >= $${placementValues.length}`)
+  }
+  if (dateFilter.lte) {
+    placementValues.push(dateFilter.lte)
+    placementConditions.push(`date <= $${placementValues.length}`)
+  }
+  if (adType && adType !== 'all') {
+    placementValues.push(adType)
+    placementConditions.push(`"adType" = $${placementValues.length}`)
   }
 
-  const [total, items, placementRows] = await prisma.$transaction([
+  const [total, items, placementRows] = await Promise.all([
     prisma.adRecord.count({ where }),
     prisma.adRecord.findMany({
       where,
@@ -77,12 +85,15 @@ export async function GET(
         engagements: true,
       },
     }),
-    prisma.adRecord.findMany({
-      where: placementWhere,
-      select: { placement: true },
-      distinct: ['placement'],
-      orderBy: { placement: 'asc' },
-    }),
+    prisma.$queryRawUnsafe<Array<{ placement: string | null }>>(
+      `
+        SELECT DISTINCT placement
+        FROM "AdRecord"
+        WHERE ${placementConditions.join(' AND ')}
+        ORDER BY placement ASC
+      `,
+      ...placementValues
+    ),
   ])
 
   // Decimal → Number 변환, 날짜 포맷, CTR/CVR/ROAS 계산 (F008 기준 통일)

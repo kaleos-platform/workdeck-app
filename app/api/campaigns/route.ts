@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace } from '@/lib/api-helpers'
 import { formatDateToYmdKst } from '@/lib/date-range'
+import { cacheCoupangAdsData } from '@/lib/coupang-ads/cache'
 
 // GET /api/campaigns — 워크스페이스 내 캠페인 목록 (displayName 포함)
 // startDate, endDate 파라미터 제공 시 캠페인별 기간 지표 + 이전 동일 기간 지표 포함
@@ -10,23 +11,36 @@ export async function GET(request: NextRequest) {
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 
-  // 캠페인 ID별 distinct 조회
-  const rows = await prisma.adRecord.findMany({
-    where: { workspaceId: workspace.id },
-    select: {
-      campaignId: true,
-      campaignName: true,
-      adType: true,
-    },
-    distinct: ['campaignId', 'adType'],
-    orderBy: { campaignId: 'asc' },
-  })
+  const { rows, metas, allTargets } = await cacheCoupangAdsData(
+    'campaign-catalog',
+    { workspaceId: workspace.id },
+    async () => {
+      // Prisma distinct는 모든 원본 행을 애플리케이션으로 가져오므로 DB DISTINCT ON을 사용한다.
+      const [rows, metas, allTargets] = await Promise.all([
+        prisma.$queryRaw<Array<{ campaignId: string; campaignName: string; adType: string }>>`
+          SELECT DISTINCT ON ("campaignId", "adType")
+            "campaignId", "campaignName", "adType"
+          FROM "AdRecord"
+          WHERE "workspaceId" = ${workspace.id}
+          ORDER BY "campaignId" ASC, "adType" ASC, date DESC
+        `,
+        prisma.campaignMeta.findMany({
+          where: { workspaceId: workspace.id },
+          select: { campaignId: true, displayName: true, isCustomName: true },
+        }),
+        prisma.campaignTarget.findMany({
+          where: {
+            workspaceId: workspace.id,
+            effectiveDate: { lte: new Date() },
+          },
+          orderBy: { effectiveDate: 'desc' },
+          select: { campaignId: true, dailyBudget: true, targetRoas: true },
+        }),
+      ])
+      return { rows, metas, allTargets }
+    }
+  )
 
-  // CampaignMeta 조회 (displayName, isCustomName)
-  const metas = await prisma.campaignMeta.findMany({
-    where: { workspaceId: workspace.id },
-    select: { campaignId: true, displayName: true, isCustomName: true },
-  })
   const metaMap = new Map(metas.map((m) => [m.campaignId, m]))
 
   // campaignId별 그룹화
@@ -54,14 +68,6 @@ export async function GET(request: NextRequest) {
   const campaigns = Array.from(campaignMap.values())
 
   // 각 캠페인의 현재 유효한 CampaignTarget (effectiveDate <= now, 가장 최근 1건)
-  const allTargets = await prisma.campaignTarget.findMany({
-    where: {
-      workspaceId: workspace.id,
-      effectiveDate: { lte: new Date() },
-    },
-    orderBy: { effectiveDate: 'desc' },
-    select: { campaignId: true, dailyBudget: true, targetRoas: true },
-  })
   const targetMap = new Map<string, { dailyBudget: number | null; targetRoas: number | null }>()
   for (const t of allTargets) {
     if (!targetMap.has(t.campaignId)) {
