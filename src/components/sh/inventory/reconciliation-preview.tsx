@@ -98,6 +98,8 @@ type Props = {
   reconciliationId: string
   onClose: () => void
   onConfirmed: () => void
+  // 미리보기를 닫지 않고 상위(왼쪽 목록)만 갱신해야 할 때 호출 (예: 부분 적용)
+  onChanged?: () => void
 }
 
 type UnifiedEntry = {
@@ -170,7 +172,12 @@ function manualItemsToOptionLabel(items: PickedOptionWithQty[]): string {
   return `${first} 외 ${items.length - 1}개`
 }
 
-export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }: Props) {
+export function ReconciliationPreview({
+  reconciliationId,
+  onClose,
+  onConfirmed,
+  onChanged,
+}: Props) {
   const [recon, setRecon] = useState<Reconciliation | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -525,6 +532,8 @@ export function ReconciliationPreview({ reconciliationId, onClose, onConfirmed }
       if (!res.ok) throw new Error(data.message ?? '적용 실패')
       toast.success(`${data.adjustedCount}건 조정 완료`)
       await load()
+      // 상태·조정 건수가 바뀌었으므로 왼쪽 목록도 갱신 (미리보기는 유지)
+      onChanged?.()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '적용 실패')
     } finally {

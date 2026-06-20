@@ -22,6 +22,11 @@ export default function ReconciliationPage() {
     setRefreshKey((k) => k + 1)
   }
 
+  // 미리보기를 닫지 않고 왼쪽 목록만 갱신 (부분 적용 등 상태 변경 실시간 반영)
+  function handleChanged() {
+    setRefreshKey((k) => k + 1)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between">
@@ -52,6 +57,7 @@ export default function ReconciliationPage() {
               reconciliationId={previewId}
               onClose={() => setPreviewId(null)}
               onConfirmed={handleConfirmed}
+              onChanged={handleChanged}
             />
           ) : (
             <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
