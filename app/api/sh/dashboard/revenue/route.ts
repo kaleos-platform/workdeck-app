@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -136,7 +136,7 @@ export async function GET(req: NextRequest) {
     })
   }
 
-  // 현재 기간 집계
+  // 현재 기간 집계 (MTD 비교는 sales-summary 가 담당. 이 라우트는 차트·채널 분해용)
   const currentPeriodDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1
   const prevFrom = new Date(from)
   prevFrom.setDate(prevFrom.getDate() - currentPeriodDays)
@@ -195,17 +195,8 @@ export async function GET(req: NextRequest) {
       loadRocketDailyRevenue(resolved.space.id, from, to),
       loadRocketDailyRevenue(resolved.space.id, prevFrom, prevTo),
     ])
-    const sumRocket = (m: Map<string, { revenue: number; orderCount: number; qty: number }>) => {
-      let revenue = 0
-      let orderCount = 0
-      for (const v of m.values()) {
-        revenue += v.revenue
-        orderCount += v.orderCount
-      }
-      return { revenue, orderCount }
-    }
-    const curr = sumRocket(currRocket)
-    const prev = sumRocket(prevRocket)
+    const curr = sumRocketDaily(currRocket)
+    const prev = sumRocketDaily(prevRocket)
     const ce = currentMap.get(rocketCh.id) ?? { orderCount: 0, totalRevenue: 0 }
     ce.orderCount += curr.orderCount
     ce.totalRevenue += curr.revenue
@@ -256,55 +247,4 @@ export async function GET(req: NextRequest) {
       avgOrder: totalsAvgOrder,
     },
   })
-}
-
-/** Date 를 KST 일자 YYYY-MM-DD 로. (UTC instant → +9h → 날짜부) */
-function toKstDateKey(d: Date): string {
-  return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
-}
-
-/**
- * 로켓그로스 채널의 VENDOR 기반 매출·수량을 일자별로 집계한다.
- * 로켓그로스는 DelOrder 가 없어 paymentAmount 로 안 잡히므로, workspace VENDOR
- * (fileType=VENDOR_ITEM_METRICS, fulfillmentType=로켓그로스, 1일 export)에서
- * revenue30d(매출원)·salesQty30d(판매량=수량 proxy)를 snapshotDate 기준으로 합산.
- *
- * snapshotDate 는 KST 자정 instant(UTC 전날 15:00)로 저장된다. from/to(UTC instant)를
- * 그대로 비교하면 경계 일자가 누락되므로, KST 일자 경계로 정규화해 조회한다.
- *
- * @returns Map<YYYY-MM-DD(KST), { revenue, qty }> — 로켓 미연동이면 빈 Map.
- */
-async function loadRocketDailyRevenue(
-  spaceId: string,
-  from: Date,
-  to: Date
-): Promise<Map<string, { revenue: number; orderCount: number; qty: number }>> {
-  const out = new Map<string, { revenue: number; orderCount: number; qty: number }>()
-  const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
-  if (!resolved) return out
-
-  // from/to 의 KST 일자를 KST 자정 instant 범위로 (snapshotDate 저장 형식과 정렬).
-  const gte = new Date(`${toKstDateKey(from)}T00:00:00+09:00`)
-  const ltExclusive = new Date(`${toKstDateKey(to)}T00:00:00+09:00`)
-  ltExclusive.setTime(ltExclusive.getTime() + 24 * 60 * 60 * 1000) // to 일자 포함
-
-  const records = await prisma.inventoryRecord.findMany({
-    where: {
-      workspaceId: resolved.workspaceId,
-      fileType: 'VENDOR_ITEM_METRICS',
-      fulfillmentType: '로켓그로스',
-      snapshotDate: { gte, lt: ltExclusive },
-    },
-    select: { snapshotDate: true, revenue30d: true, salesQty30d: true, orderCount: true },
-  })
-
-  for (const r of records) {
-    const date = toKstDateKey(r.snapshotDate)
-    const entry = out.get(date) ?? { revenue: 0, orderCount: 0, qty: 0 }
-    entry.revenue += Number(r.revenue30d ?? 0)
-    entry.orderCount += r.orderCount ?? 0 // 주문건수 (별도 수집) — 판매분석은 주문 기준
-    entry.qty += r.salesQty30d ?? 0 // 판매량 — 재고 차감 전용 (이 API 합계 미사용)
-    out.set(date, entry)
-  }
-  return out
 }
