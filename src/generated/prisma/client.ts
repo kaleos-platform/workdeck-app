@@ -489,3 +489,48 @@ export type ReorderPlanItem = Prisma.ReorderPlanItemModel
  * 
  */
 export type ReorderPlanAccuracy = Prisma.ReorderPlanAccuracyModel
+/**
+ * Model FinAccount
+ * 
+ */
+export type FinAccount = Prisma.FinAccountModel
+/**
+ * Model FinLiability
+ * 
+ */
+export type FinLiability = Prisma.FinLiabilityModel
+/**
+ * Model FinCategory
+ * 
+ */
+export type FinCategory = Prisma.FinCategoryModel
+/**
+ * Model FinClassRule
+ * 
+ */
+export type FinClassRule = Prisma.FinClassRuleModel
+/**
+ * Model FinMappingPreset
+ * 
+ */
+export type FinMappingPreset = Prisma.FinMappingPresetModel
+/**
+ * Model FinImport
+ * 
+ */
+export type FinImport = Prisma.FinImportModel
+/**
+ * Model FinStagedRow
+ * 
+ */
+export type FinStagedRow = Prisma.FinStagedRowModel
+/**
+ * Model FinTransaction
+ * 
+ */
+export type FinTransaction = Prisma.FinTransactionModel
+/**
+ * Model FinBalanceSnapshot
+ * 
+ */
+export type FinBalanceSnapshot = Prisma.FinBalanceSnapshotModel

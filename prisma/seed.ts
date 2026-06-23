@@ -19,6 +19,7 @@ async function main() {
     { id: 'coupang-ads', name: '쿠팡 광고 자동화', isActive: true },
     { id: 'seller-hub', name: '브랜드 운영', isActive: true },
     { id: 'sales-content', name: '세일즈 콘텐츠', isActive: true },
+    { id: 'finance', name: '재무 관리', isActive: true },
     { id: 'delivery-mgmt', name: '통합 배송 관리', isActive: false },
     { id: 'inventory-mgmt', name: '통합 재고 관리', isActive: false },
     { id: 'osmu', name: 'OSMU 광고 제작', isActive: false },

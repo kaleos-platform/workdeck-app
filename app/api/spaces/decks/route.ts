@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { errorResponse, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { seedFinanceCategories } from '@/lib/finance/kifrs-seed'
 
 type CreateDeckRequest = {
   deckAppId?: string
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
       data: { isActive: true },
       select: { id: true, deckAppId: true, isActive: true },
     })
+    if (deckAppId === 'finance') await seedFinanceCategories(resolved.space.id)
     return NextResponse.json({ deck: deckApp, instance: updated })
   }
 
@@ -54,6 +56,8 @@ export async function POST(request: NextRequest) {
     },
     select: { id: true, deckAppId: true, isActive: true },
   })
+
+  if (deckAppId === 'finance') await seedFinanceCategories(resolved.space.id)
 
   return NextResponse.json({ deck: deckApp, instance: created }, { status: 201 })
 }

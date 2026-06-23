@@ -96,3 +96,12 @@ export function getSalesContentDeploymentPath(id: string): string {
 export function getSalesContentAnalyticsPath(deploymentId: string): string {
   return `${SALES_CONTENT_ANALYTICS_PATH}/${deploymentId}`
 }
+
+// ─── 재무 관리 (Finance) ───────────────────────────────────────────────────────
+export const FINANCE_DECK_ID = 'finance'
+export const FINANCE_BASE_PATH = '/d/finance'
+export const FINANCE_DASHBOARD_PATH = `${FINANCE_BASE_PATH}/dashboard`
+export const FINANCE_CASHFLOW_PATH = `${FINANCE_BASE_PATH}/cashflow`
+export const FINANCE_TRANSACTIONS_PATH = `${FINANCE_BASE_PATH}/transactions`
+export const FINANCE_UPLOAD_PATH = `${FINANCE_BASE_PATH}/upload`
+export const FINANCE_ACCOUNTS_PATH = `${FINANCE_BASE_PATH}/accounts`

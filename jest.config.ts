@@ -16,7 +16,13 @@ const config: Config = {
     // worker 파일들이 ESM .js 확장자로 import — Jest(CJS) 에서는 확장자 없이 해석
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/', '<rootDir>/e2e/'],
+  // *.e2e.test.ts 는 실제 DB+Prisma 런타임이 필요 → 전용 설정(jest.config.e2e.ts)으로만 실행.
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/.next/',
+    '<rootDir>/e2e/',
+    '\\.e2e\\.test\\.ts$',
+  ],
   testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
 }
 
