@@ -408,3 +408,81 @@ export const RuleScope = {
 } as const
 
 export type RuleScope = (typeof RuleScope)[keyof typeof RuleScope]
+
+
+export const FinAccountKind = {
+  BANK: 'BANK',
+  CARD: 'CARD'
+} as const
+
+export type FinAccountKind = (typeof FinAccountKind)[keyof typeof FinAccountKind]
+
+
+export const FinCategoryType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  INCOME: 'INCOME',
+  EXPENSE: 'EXPENSE',
+  TRANSFER: 'TRANSFER'
+} as const
+
+export type FinCategoryType = (typeof FinCategoryType)[keyof typeof FinCategoryType]
+
+
+export const FinClassRuleMatchType = {
+  EXACT: 'EXACT',
+  KEYWORD: 'KEYWORD'
+} as const
+
+export type FinClassRuleMatchType = (typeof FinClassRuleMatchType)[keyof typeof FinClassRuleMatchType]
+
+
+export const FinClassRuleSource = {
+  USER: 'USER',
+  SEED: 'SEED'
+} as const
+
+export type FinClassRuleSource = (typeof FinClassRuleSource)[keyof typeof FinClassRuleSource]
+
+
+export const FinImportStatus = {
+  DRAFT: 'DRAFT',
+  COMMITTED: 'COMMITTED'
+} as const
+
+export type FinImportStatus = (typeof FinImportStatus)[keyof typeof FinImportStatus]
+
+
+export const FinTxnDirection = {
+  IN: 'IN',
+  OUT: 'OUT'
+} as const
+
+export type FinTxnDirection = (typeof FinTxnDirection)[keyof typeof FinTxnDirection]
+
+
+export const FinClassStatus = {
+  CLASSIFIED: 'CLASSIFIED',
+  REVIEW: 'REVIEW',
+  UNCLASSIFIED: 'UNCLASSIFIED'
+} as const
+
+export type FinClassStatus = (typeof FinClassStatus)[keyof typeof FinClassStatus]
+
+
+export const FinStagedResolution = {
+  NEW: 'NEW',
+  DUP_SAME: 'DUP_SAME',
+  DUP_CHANGED: 'DUP_CHANGED'
+} as const
+
+export type FinStagedResolution = (typeof FinStagedResolution)[keyof typeof FinStagedResolution]
+
+
+export const FinSnapshotSource = {
+  DERIVED: 'DERIVED',
+  MANUAL: 'MANUAL'
+} as const
+
+export type FinSnapshotSource = (typeof FinSnapshotSource)[keyof typeof FinSnapshotSource]

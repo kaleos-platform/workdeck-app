@@ -21,6 +21,9 @@ import {
   Lightbulb,
   ClipboardList,
   Rocket,
+  TrendingUp,
+  ListChecks,
+  FolderTree,
   PanelLeftClose,
   PanelLeftOpen,
   type LucideIcon,
@@ -66,6 +69,11 @@ import {
   SALES_CONTENT_DEPLOYMENTS_PATH,
   SALES_CONTENT_ANALYTICS_PATH,
   SALES_CONTENT_SETTINGS_PATH,
+  FINANCE_DASHBOARD_PATH,
+  FINANCE_CASHFLOW_PATH,
+  FINANCE_TRANSACTIONS_PATH,
+  FINANCE_UPLOAD_PATH,
+  FINANCE_ACCOUNTS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -131,6 +139,15 @@ const SALES_CONTENT_FLAT_ROUTES = [
   { label: '성과 관리', icon: BarChart3, href: SALES_CONTENT_ANALYTICS_PATH },
   { label: '템플릿 관리', icon: FileText, href: SALES_CONTENT_TEMPLATES_PATH },
   { label: '설정', icon: Settings, href: SALES_CONTENT_SETTINGS_PATH },
+]
+
+// ─── 재무 관리 평탄 메뉴 데이터 (5섹션 + 도메인 탭 금지) ───────────────────────
+const FINANCE_FLAT_ROUTES = [
+  { label: '요약 대시보드', icon: LayoutDashboard, href: FINANCE_DASHBOARD_PATH },
+  { label: '현금흐름 상세', icon: TrendingUp, href: FINANCE_CASHFLOW_PATH },
+  { label: '거래 내역', icon: ListChecks, href: FINANCE_TRANSACTIONS_PATH },
+  { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
+  { label: '계정과목 관리', icon: FolderTree, href: FINANCE_ACCOUNTS_PATH },
 ]
 
 const COUPANG_MAIN_ROUTES = [
@@ -239,6 +256,7 @@ export function Sidebar({
   const isCoupangSidebar = variant === 'coupang-ads'
   const isSellerHubSidebar = variant === 'seller-hub'
   const isSalesContentSidebar = variant === 'sales-content'
+  const isFinanceSidebar = variant === 'finance'
   const isMyDeckMode = mode === 'my-deck'
   const meta = DECK_META[variant]
   const BrandIcon = meta.icon
@@ -483,6 +501,28 @@ export function Sidebar({
                 : route.href === SALES_CONTENT_HOME_PATH
                   ? pathname === route.href
                   : pathname === route.href || pathname.startsWith(`${route.href}/`)
+              return (
+                <RailLink
+                  key={route.href}
+                  href={route.href}
+                  icon={route.icon}
+                  label={route.label}
+                  isActive={isActive}
+                  collapsed={collapsed}
+                  size="sm"
+                />
+              )
+            })}
+          </div>
+        )}
+
+        {isFinanceSidebar && (
+          <div className="space-y-0.5">
+            {FINANCE_FLAT_ROUTES.map((route) => {
+              const isHomeRoute = route.href === FINANCE_DASHBOARD_PATH
+              const isActive = isHomeRoute
+                ? pathname === route.href
+                : pathname === route.href || pathname.startsWith(`${route.href}/`)
               return (
                 <RailLink
                   key={route.href}
