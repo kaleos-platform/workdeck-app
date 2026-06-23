@@ -140,6 +140,9 @@ export function TransactionsView() {
   const [categoryTree, setCategoryTree] = useState<CategoryNode[]>([])
   const leafTargets = useMemo(() => flattenLeafTargets(categoryTree), [categoryTree])
 
+  // 계좌 목록 (전체 거래 출처 필터)
+  const [accounts, setAccounts] = useState<{ id: string; name: string; kind: FinAccountKind }[]>([])
+
   // 스테이징 상태
   const [stagingRows, setStagingRows] = useState<StagedRow[]>([])
   const [stagingCounts, setStagingCounts] = useState<StagedCounts>({
@@ -185,6 +188,24 @@ export function TransactionsView() {
       if (!res.ok) return
       const data = await res.json()
       setCategoryTree(data.tree ?? [])
+    } catch {
+      // 조용히 실패
+    }
+  }, [])
+
+  // 계좌 목록 로드 (출처 필터 옵션)
+  const loadAccounts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/finance/accounts')
+      if (!res.ok) return
+      const data = await res.json()
+      setAccounts(
+        (data.accounts ?? []).map((a: { id: string; name: string; kind: FinAccountKind }) => ({
+          id: a.id,
+          name: a.name,
+          kind: a.kind,
+        }))
+      )
     } catch {
       // 조용히 실패
     }
@@ -238,11 +259,12 @@ export function TransactionsView() {
   // 초기 로드
   useEffect(() => {
     void loadCategories()
+    void loadAccounts()
     void loadStaging('all').then(() => {
       // counts 반영 후 탭 결정
       setMainTabReady(true)
     })
-  }, [loadCategories, loadStaging])
+  }, [loadCategories, loadAccounts, loadStaging])
 
   // counts 변화에 따른 기본 탭 결정 (초기 1회)
   useEffect(() => {
@@ -373,7 +395,6 @@ export function TransactionsView() {
           leafTargets={leafTargets}
           newCount={newCount}
           dupExcluded={dupExcluded}
-          reviewRemaining={reviewRemaining}
           onTabChange={handleStagingTabChange}
           onClassify={handleStagingClassify}
           onDupResolution={handleDupResolution}
@@ -389,10 +410,13 @@ export function TransactionsView() {
           summary={txnSummary}
           loading={txnLoading}
           filterQ={filterQ}
+          filterAccountId={filterAccountId}
           filterDirection={filterDirection}
           filterClassStatus={filterClassStatus}
+          accounts={accounts}
           leafTargets={leafTargets}
           onFilterQChange={setFilterQ}
+          onFilterAccountIdChange={setFilterAccountId}
           onFilterDirectionChange={setFilterDirection}
           onFilterClassStatusChange={setFilterClassStatus}
           onSearch={handleTxnSearch}
@@ -454,7 +478,6 @@ function StagingPanel({
   leafTargets,
   newCount,
   dupExcluded,
-  reviewRemaining,
   onTabChange,
   onClassify,
   onDupResolution,
@@ -468,7 +491,6 @@ function StagingPanel({
   leafTargets: { id: string; label: string }[]
   newCount: number
   dupExcluded: number
-  reviewRemaining: number
   onTabChange: (tab: string) => void
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
@@ -720,10 +742,13 @@ function TransactionsPanel({
   summary,
   loading,
   filterQ,
+  filterAccountId,
   filterDirection,
   filterClassStatus,
+  accounts,
   leafTargets,
   onFilterQChange,
+  onFilterAccountIdChange,
   onFilterDirectionChange,
   onFilterClassStatusChange,
   onSearch,
@@ -734,10 +759,13 @@ function TransactionsPanel({
   summary: TransactionSummary
   loading: boolean
   filterQ: string
+  filterAccountId: string
   filterDirection: 'all' | 'IN' | 'OUT'
   filterClassStatus: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED'
+  accounts: { id: string; name: string; kind: FinAccountKind }[]
   leafTargets: { id: string; label: string }[]
   onFilterQChange: (v: string) => void
+  onFilterAccountIdChange: (v: string) => void
   onFilterDirectionChange: (v: 'all' | 'IN' | 'OUT') => void
   onFilterClassStatusChange: (v: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED') => void
   onSearch: () => void
@@ -756,6 +784,24 @@ function TransactionsPanel({
           placeholder="적요 · 가맹점 검색"
           className="h-8 max-w-52 text-xs"
         />
+        {accounts.length > 0 && (
+          <Select
+            value={filterAccountId || 'all'}
+            onValueChange={(v) => onFilterAccountIdChange(v === 'all' ? '' : v)}
+          >
+            <SelectTrigger className="h-8 w-36 text-xs">
+              <SelectValue placeholder="출처" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 출처</SelectItem>
+              {accounts.map((a) => (
+                <SelectItem key={a.id} value={a.id} className="text-xs">
+                  {a.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Select
           value={filterDirection}
           onValueChange={(v) => onFilterDirectionChange(v as 'all' | 'IN' | 'OUT')}
