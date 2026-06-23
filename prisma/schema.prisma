@@ -433,6 +433,17 @@ model Space {
   salesContentJobs     SalesContentJob[]
   deploymentMetrics    DeploymentMetric[]
   improvementRules     ImprovementRule[]
+
+  // ─── 재무 관리 Deck (Finance) ───
+  finAccounts         FinAccount[]
+  finLiabilities      FinLiability[]
+  finCategories       FinCategory[]
+  finClassRules       FinClassRule[]
+  finMappingPresets   FinMappingPreset[]
+  finImports          FinImport[]
+  finStagedRows       FinStagedRow[]
+  finTransactions     FinTransaction[]
+  finBalanceSnapshots FinBalanceSnapshot[]
 }
 
 // 공간 멤버십 + 역할
@@ -2501,4 +2512,288 @@ model ReorderPlanAccuracy {
   @@index([planId])
   @@index([optionId])
   @@index([validity])
+}
+
+// ─── 재무 관리 Deck (Finance) ─────────────────────────────────────────────────
+// 현금주의(cash-basis) 모델. 은행/카드 거래내역 업로드 → 계정과목 분류 → 현금흐름·잔고·부채.
+
+enum FinAccountKind {
+  BANK
+  CARD
+}
+
+enum FinCategoryType {
+  ASSET
+  LIABILITY
+  EQUITY
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum FinClassRuleMatchType {
+  EXACT // 정정 학습 — 정규화된 적요/가맹점 완전 일치 (고신뢰 = 자동분류)
+  KEYWORD // 시드/부분 키워드 포함 매칭 (저신뢰 = 검토 제안)
+}
+
+enum FinClassRuleSource {
+  USER // 사용자 분류로 학습
+  SEED // K-IFRS 시드 키워드
+}
+
+enum FinImportStatus {
+  DRAFT
+  COMMITTED
+}
+
+enum FinTxnDirection {
+  IN // 수입
+  OUT // 지출
+}
+
+enum FinClassStatus {
+  CLASSIFIED
+  REVIEW
+  UNCLASSIFIED
+}
+
+enum FinStagedResolution {
+  NEW
+  DUP_SAME // identity 일치 + content 동일 → 건너뜀
+  DUP_CHANGED // identity 일치 + content 상이 → 변경 반영 여부 사용자 판단
+}
+
+enum FinSnapshotSource {
+  DERIVED // 거래후잔액에서 파생
+  MANUAL // 사용자 입력
+}
+
+// 금융 계좌 (은행 계좌 / 카드). 파일 업로드 시 preamble에서 자동 감지 후 사용자 확인.
+model FinAccount {
+  id             String         @id @default(cuid())
+  spaceId        String
+  name           String
+  kind           FinAccountKind
+  institution    String // 은행·카드사명
+  accountNumber  String? // 마스킹 가능
+  accountType    String? // 입출금/보통예금/법인카드 등
+  openingBalance Decimal?       @db.Decimal(18, 2)
+
+  space            Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  imports          FinImport[]
+  transactions     FinTransaction[]
+  stagedRows       FinStagedRow[]
+  balanceSnapshots FinBalanceSnapshot[]
+  mappingPresets   FinMappingPreset[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, accountNumber])
+  @@index([spaceId])
+}
+
+// 부채 (대출 등) — 수기 관리. 대시보드 인라인 Dialog로 잔액 등록/갱신.
+model FinLiability {
+  id             String   @id @default(cuid())
+  spaceId        String
+  name           String
+  lender         String?
+  principal      Decimal  @db.Decimal(18, 2)
+  balance        Decimal  @db.Decimal(18, 2)
+  rate           String? // "연 4.8%" 등 표시 문자열
+  dueDate        String? // "2027-03" 등
+  monthlyPayment Decimal? @db.Decimal(18, 2)
+  memo           String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// 계정과목 트리 (표준 K-IFRS 시드 + 사용자 하위계정). 분류 타깃 = leaf.
+model FinCategory {
+  id         String          @id @default(cuid())
+  spaceId    String
+  parentId   String?
+  name       String
+  code       String? // K-IFRS 코드
+  alias      String?
+  type       FinCategoryType
+  groupLabel String? // 변동비/고정비/마케팅비 등 사용자 그룹
+  isSystem   Boolean         @default(false)
+  isActive   Boolean         @default(true)
+  sortOrder  Int             @default(0)
+
+  space    Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  parent   FinCategory?  @relation("FinCategoryTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children FinCategory[] @relation("FinCategoryTree")
+
+  classRules   FinClassRule[]
+  transactions FinTransaction[]
+  stagedRows   FinStagedRow[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, parentId, name])
+  @@index([spaceId])
+  @@index([parentId])
+}
+
+// 적요/가맹점 → 계정과목 학습 규칙 (ChannelProductAlias 패턴).
+model FinClassRule {
+  id          String                @id @default(cuid())
+  spaceId     String
+  matchKey    String // 정규화된 적요/가맹점 or 키워드
+  matchType   FinClassRuleMatchType @default(EXACT)
+  categoryId  String
+  learnedFrom FinClassRuleSource    @default(USER)
+
+  space    Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  category FinCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, matchKey])
+  @@index([spaceId])
+  @@index([categoryId])
+}
+
+// 소스별 컬럼 매핑 프리셋 (헤더 → 필드 기억, DelColumnMappingPreset 패턴).
+model FinMappingPreset {
+  id               String         @id @default(cuid())
+  spaceId          String
+  name             String
+  institution      String
+  kind             FinAccountKind
+  mapping          Json // Array<{ headerName, field }>
+  defaultAccountId String?
+  dateFormat       String?
+
+  space          Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  defaultAccount FinAccount? @relation(fields: [defaultAccountId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
+}
+
+// 업로드 배치 / 스테이징 헤더 (파일 1개 = import 1개).
+model FinImport {
+  id            String          @id @default(cuid())
+  spaceId       String
+  accountId     String
+  fileName      String
+  institution   String
+  kind          FinAccountKind
+  status        FinImportStatus @default(DRAFT)
+  periodFrom    DateTime?
+  periodTo      DateTime?
+  totalRows     Int             @default(0)
+  committedRows Int             @default(0)
+
+  space        Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  account      FinAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  stagedRows   FinStagedRow[]
+  transactions FinTransaction[]
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
+  @@index([accountId])
+}
+
+// 확정 전 검토 행 (commit 시 FinTransaction 으로 승격, dedup 적용).
+model FinStagedRow {
+  id            String              @id @default(cuid())
+  importId      String
+  spaceId       String
+  accountId     String
+  raw           Json
+  txnDate       DateTime
+  direction     FinTxnDirection
+  amount        Decimal             @db.Decimal(18, 2)
+  balanceAfter  Decimal?            @db.Decimal(18, 2)
+  description   String?
+  counterparty  String?
+  approvalNo    String?
+  cancelFlag    String?
+  categoryId    String?
+  classStatus   FinClassStatus      @default(UNCLASSIFIED)
+  matchedRuleId String? // soft ref — 규칙 재학습/삭제 가능
+  identityKey   String
+  contentHash   String
+  resolution    FinStagedResolution @default(NEW)
+
+  import   FinImport    @relation(fields: [importId], references: [id], onDelete: Cascade)
+  space    Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  account  FinAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category FinCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([importId])
+  @@index([spaceId])
+}
+
+// 확정 거래 (장부). identityKey unique 로 중복 불가.
+model FinTransaction {
+  id            String          @id @default(cuid())
+  spaceId       String
+  accountId     String
+  importId      String?
+  txnDate       DateTime
+  direction     FinTxnDirection
+  amount        Decimal         @db.Decimal(18, 2)
+  balanceAfter  Decimal?        @db.Decimal(18, 2)
+  description   String?
+  counterparty  String?
+  memo          String?
+  categoryId    String?
+  isTransfer    Boolean         @default(false)
+  classStatus   FinClassStatus  @default(UNCLASSIFIED)
+  matchedRuleId String? // soft ref
+  approvalNo    String?
+  cancelFlag    String?
+  identityKey   String // 안정 키 — BANK: account+date+dir+amount, CARD: 승인번호+이용일+취소구분
+  contentHash   String // 가변 필드 해시 — 변경 감지용
+
+  space    Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  account  FinAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  import   FinImport?   @relation(fields: [importId], references: [id], onDelete: SetNull)
+  category FinCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, accountId, identityKey])
+  @@index([spaceId, txnDate])
+  @@index([spaceId, categoryId])
+}
+
+// 계좌 × 월말 잔고 스냅샷 (대시보드 sparkline·재무상태). 거래 없는 달은 직전 스냅샷 이월.
+model FinBalanceSnapshot {
+  id        String            @id @default(cuid())
+  spaceId   String
+  accountId String
+  yearMonth String // "YYYY-MM"
+  balance   Decimal           @db.Decimal(18, 2)
+  source    FinSnapshotSource @default(DERIVED)
+
+  space   Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  account FinAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, accountId, yearMonth])
+  @@index([spaceId])
+  @@index([accountId])
 }

@@ -1,7 +1,19 @@
-import { LayoutGrid, BarChart2, ShoppingBag, Sparkles, type LucideIcon } from 'lucide-react'
-import { COUPANG_ADS_BASE_PATH, SELLER_HUB_BASE_PATH, SALES_CONTENT_BASE_PATH } from './deck-routes'
+import {
+  LayoutGrid,
+  BarChart2,
+  ShoppingBag,
+  Sparkles,
+  Landmark,
+  type LucideIcon,
+} from 'lucide-react'
+import {
+  COUPANG_ADS_BASE_PATH,
+  SELLER_HUB_BASE_PATH,
+  SALES_CONTENT_BASE_PATH,
+  FINANCE_DASHBOARD_PATH,
+} from './deck-routes'
 
-export type DeckVariant = 'workdeck' | 'coupang-ads' | 'seller-hub' | 'sales-content'
+export type DeckVariant = 'workdeck' | 'coupang-ads' | 'seller-hub' | 'sales-content' | 'finance'
 
 export type DeckMeta = {
   name: string
@@ -33,6 +45,12 @@ export const DECK_META: Record<DeckVariant, DeckMeta> = {
     href: SALES_CONTENT_BASE_PATH,
     icon: Sparkles,
     gradient: 'from-fuchsia-500 to-indigo-600',
+  },
+  finance: {
+    name: '재무 관리',
+    href: FINANCE_DASHBOARD_PATH,
+    icon: Landmark,
+    gradient: 'from-emerald-500 to-teal-600',
   },
   workdeck: {
     name: 'Workdeck',

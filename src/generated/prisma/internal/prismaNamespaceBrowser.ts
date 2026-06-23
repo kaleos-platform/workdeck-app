@@ -140,7 +140,16 @@ export const ModelName = {
   ImprovementRule: 'ImprovementRule',
   ReorderPlan: 'ReorderPlan',
   ReorderPlanItem: 'ReorderPlanItem',
-  ReorderPlanAccuracy: 'ReorderPlanAccuracy'
+  ReorderPlanAccuracy: 'ReorderPlanAccuracy',
+  FinAccount: 'FinAccount',
+  FinLiability: 'FinLiability',
+  FinCategory: 'FinCategory',
+  FinClassRule: 'FinClassRule',
+  FinMappingPreset: 'FinMappingPreset',
+  FinImport: 'FinImport',
+  FinStagedRow: 'FinStagedRow',
+  FinTransaction: 'FinTransaction',
+  FinBalanceSnapshot: 'FinBalanceSnapshot'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1626,6 +1635,174 @@ export const ReorderPlanAccuracyScalarFieldEnum = {
 } as const
 
 export type ReorderPlanAccuracyScalarFieldEnum = (typeof ReorderPlanAccuracyScalarFieldEnum)[keyof typeof ReorderPlanAccuracyScalarFieldEnum]
+
+
+export const FinAccountScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  kind: 'kind',
+  institution: 'institution',
+  accountNumber: 'accountNumber',
+  accountType: 'accountType',
+  openingBalance: 'openingBalance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinAccountScalarFieldEnum = (typeof FinAccountScalarFieldEnum)[keyof typeof FinAccountScalarFieldEnum]
+
+
+export const FinLiabilityScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  lender: 'lender',
+  principal: 'principal',
+  balance: 'balance',
+  rate: 'rate',
+  dueDate: 'dueDate',
+  monthlyPayment: 'monthlyPayment',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinLiabilityScalarFieldEnum = (typeof FinLiabilityScalarFieldEnum)[keyof typeof FinLiabilityScalarFieldEnum]
+
+
+export const FinCategoryScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  parentId: 'parentId',
+  name: 'name',
+  code: 'code',
+  alias: 'alias',
+  type: 'type',
+  groupLabel: 'groupLabel',
+  isSystem: 'isSystem',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinCategoryScalarFieldEnum = (typeof FinCategoryScalarFieldEnum)[keyof typeof FinCategoryScalarFieldEnum]
+
+
+export const FinClassRuleScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  matchKey: 'matchKey',
+  matchType: 'matchType',
+  categoryId: 'categoryId',
+  learnedFrom: 'learnedFrom',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinClassRuleScalarFieldEnum = (typeof FinClassRuleScalarFieldEnum)[keyof typeof FinClassRuleScalarFieldEnum]
+
+
+export const FinMappingPresetScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  institution: 'institution',
+  kind: 'kind',
+  mapping: 'mapping',
+  defaultAccountId: 'defaultAccountId',
+  dateFormat: 'dateFormat',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinMappingPresetScalarFieldEnum = (typeof FinMappingPresetScalarFieldEnum)[keyof typeof FinMappingPresetScalarFieldEnum]
+
+
+export const FinImportScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  accountId: 'accountId',
+  fileName: 'fileName',
+  institution: 'institution',
+  kind: 'kind',
+  status: 'status',
+  periodFrom: 'periodFrom',
+  periodTo: 'periodTo',
+  totalRows: 'totalRows',
+  committedRows: 'committedRows',
+  createdAt: 'createdAt'
+} as const
+
+export type FinImportScalarFieldEnum = (typeof FinImportScalarFieldEnum)[keyof typeof FinImportScalarFieldEnum]
+
+
+export const FinStagedRowScalarFieldEnum = {
+  id: 'id',
+  importId: 'importId',
+  spaceId: 'spaceId',
+  accountId: 'accountId',
+  raw: 'raw',
+  txnDate: 'txnDate',
+  direction: 'direction',
+  amount: 'amount',
+  balanceAfter: 'balanceAfter',
+  description: 'description',
+  counterparty: 'counterparty',
+  approvalNo: 'approvalNo',
+  cancelFlag: 'cancelFlag',
+  categoryId: 'categoryId',
+  classStatus: 'classStatus',
+  matchedRuleId: 'matchedRuleId',
+  identityKey: 'identityKey',
+  contentHash: 'contentHash',
+  resolution: 'resolution',
+  createdAt: 'createdAt'
+} as const
+
+export type FinStagedRowScalarFieldEnum = (typeof FinStagedRowScalarFieldEnum)[keyof typeof FinStagedRowScalarFieldEnum]
+
+
+export const FinTransactionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  accountId: 'accountId',
+  importId: 'importId',
+  txnDate: 'txnDate',
+  direction: 'direction',
+  amount: 'amount',
+  balanceAfter: 'balanceAfter',
+  description: 'description',
+  counterparty: 'counterparty',
+  memo: 'memo',
+  categoryId: 'categoryId',
+  isTransfer: 'isTransfer',
+  classStatus: 'classStatus',
+  matchedRuleId: 'matchedRuleId',
+  approvalNo: 'approvalNo',
+  cancelFlag: 'cancelFlag',
+  identityKey: 'identityKey',
+  contentHash: 'contentHash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinTransactionScalarFieldEnum = (typeof FinTransactionScalarFieldEnum)[keyof typeof FinTransactionScalarFieldEnum]
+
+
+export const FinBalanceSnapshotScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  accountId: 'accountId',
+  yearMonth: 'yearMonth',
+  balance: 'balance',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinBalanceSnapshotScalarFieldEnum = (typeof FinBalanceSnapshotScalarFieldEnum)[keyof typeof FinBalanceSnapshotScalarFieldEnum]
 
 
 export const SortOrder = {
