@@ -6,7 +6,7 @@
  */
 import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, Info, Upload } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Info, Plus, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -182,6 +182,9 @@ export function FinanceUploadPanel() {
   // 드래그 오버 상태
   const [dragOver, setDragOver] = useState(false)
 
+  // 파일 정보 영역 인라인 계좌 등록 폼 표시 여부
+  const [showAccountForm, setShowAccountForm] = useState(false)
+
   // ─── preview 요청 ──────────────────────────────────────────────────────────
 
   const handleFile = useCallback(async (selectedFile: File) => {
@@ -190,6 +193,7 @@ export function FinanceUploadPanel() {
     setMapping({})
     setSavePreset(false)
     setPresetName('')
+    setShowAccountForm(false)
     setPreviewing(true)
 
     try {
@@ -244,6 +248,15 @@ export function FinanceUploadPanel() {
       }
       return next
     })
+  }
+
+  // ─── 계좌 등록 (파일 정보 영역 인라인) ──────────────────────────────────────
+
+  /** 인라인 폼에서 계좌 생성 성공 시: 후보 목록에 추가하고 적재 계좌로 자동 선택 */
+  function handleAccountCreated(account: Account) {
+    setPreviewRes((prev) => (prev ? { ...prev, accounts: [...prev.accounts, account] } : prev))
+    setAccountId(account.id)
+    setShowAccountForm(false)
   }
 
   // ─── 가져오기 ─────────────────────────────────────────────────────────────
@@ -311,6 +324,14 @@ export function FinanceUploadPanel() {
   // ─── 유효성 계산 ──────────────────────────────────────────────────────────
 
   const hasAccounts = (previewRes?.accounts.length ?? 0) > 0
+  // 파일 preamble에서 추출된 계좌번호가 이미 등록된 계좌와 일치하는지 (숫자만 비교)
+  const fileAccountNumber = previewRes?.preview.preamble.accountNumber?.trim() ?? ''
+  const normalizedFileAcct = fileAccountNumber.replace(/\D/g, '')
+  const fileAccountMatched =
+    normalizedFileAcct.length >= 4 &&
+    (previewRes?.accounts ?? []).some(
+      (a) => (a.accountNumber ?? '').replace(/\D/g, '') === normalizedFileAcct
+    )
   const validation = previewRes
     ? isMappingValid(mapping, kind, previewRes.preview.headers)
     : { ok: false }
@@ -418,6 +439,25 @@ export function FinanceUploadPanel() {
                         ` ~ ${previewRes.preview.preamble.periodTo}`}
                     </span>
                   )}
+                  {/* 파일 계좌 등록 상태 / 바로 등록 */}
+                  {fileAccountNumber &&
+                    (fileAccountMatched ? (
+                      <span className="ml-auto inline-flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="size-3.5 shrink-0" />
+                        등록된 계좌
+                      </span>
+                    ) : (
+                      !showAccountForm && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="ml-auto h-7"
+                          onClick={() => setShowAccountForm(true)}
+                        >
+                          <Plus className="mr-1 size-3.5" />이 계좌 등록
+                        </Button>
+                      )
+                    ))}
                 </div>
               )}
 
@@ -448,14 +488,37 @@ export function FinanceUploadPanel() {
 
                 {/* 계좌 선택 */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    적재 계좌 <span className="text-destructive">*</span>
-                  </Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs text-muted-foreground">
+                      적재 계좌 <span className="text-destructive">*</span>
+                    </Label>
+                    {hasAccounts && !showAccountForm && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAccountForm(true)}
+                        className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline"
+                      >
+                        <Plus className="size-3" />새 계좌
+                      </button>
+                    )}
+                  </div>
                   {!hasAccounts ? (
-                    <p className="flex h-8 items-center text-xs text-amber-600 dark:text-amber-400">
-                      <AlertTriangle className="mr-1 size-3.5 shrink-0" />
-                      대시보드에서 계좌를 먼저 등록하세요
-                    </p>
+                    showAccountForm ? (
+                      <p className="flex h-8 items-center gap-1 text-xs text-muted-foreground">
+                        <Info className="size-3.5 shrink-0" />
+                        아래에서 계좌 정보를 입력하세요
+                      </p>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-full justify-start text-amber-700 dark:text-amber-400"
+                        onClick={() => setShowAccountForm(true)}
+                      >
+                        <AlertTriangle className="mr-1 size-3.5 shrink-0" />
+                        계좌를 먼저 등록하세요
+                      </Button>
+                    )
                   ) : (
                     <Select
                       value={accountId || NONE_ACCOUNT}
@@ -504,6 +567,20 @@ export function FinanceUploadPanel() {
                     저장된 규칙이 없습니다 — 매핑 후 저장할 수 있습니다
                   </span>
                 </div>
+              )}
+
+              {/* 인라인 계좌 등록 폼 — 파일 정보를 prefill */}
+              {showAccountForm && (
+                <InlineAccountForm
+                  prefill={{
+                    name: previewRes.institution ?? previewRes.preview.preamble.holder ?? '',
+                    kind,
+                    institution: previewRes.institution ?? '',
+                    accountNumber: previewRes.preview.preamble.accountNumber ?? '',
+                  }}
+                  onCancel={() => setShowAccountForm(false)}
+                  onCreated={handleAccountCreated}
+                />
               )}
             </CardContent>
           </Card>
@@ -596,6 +673,170 @@ export function FinanceUploadPanel() {
           </Card>
         </>
       )}
+    </div>
+  )
+}
+
+// ─── 인라인 계좌 등록 폼 ───────────────────────────────────────────────────────
+
+type InlineAccountFormProps = {
+  /** 업로드 파일 정보에서 추출한 초기값 */
+  prefill: { name: string; kind: FinKind; institution: string; accountNumber: string }
+  onCancel: () => void
+  /** 등록 성공 시 생성된 계좌를 부모로 전달(후보 목록 추가 + 자동 선택) */
+  onCreated: (account: Account) => void
+}
+
+function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormProps) {
+  const [name, setName] = useState(prefill.name)
+  const [accKind, setAccKind] = useState<FinKind>(prefill.kind)
+  const [institution, setInstitution] = useState(prefill.institution)
+  const [accountNumber, setAccountNumber] = useState(prefill.accountNumber)
+  const [accountType, setAccountType] = useState('')
+  const [openingBalance, setOpeningBalance] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    if (!name.trim()) {
+      toast.error('계좌 이름을 입력해 주세요')
+      return
+    }
+    if (!institution.trim()) {
+      toast.error('금융기관명을 입력해 주세요')
+      return
+    }
+
+    const payload = {
+      name: name.trim(),
+      kind: accKind,
+      institution: institution.trim(),
+      accountNumber: accountNumber.trim() || undefined,
+      accountType: accountType.trim() || undefined,
+      ...(openingBalance.trim() !== '' && { openingBalance: Number(openingBalance) }),
+    }
+
+    setSaving(true)
+    try {
+      const res = await fetch('/api/finance/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = (await res.json().catch(() => ({}))) as {
+        message?: string
+        account?: {
+          id: string
+          name: string
+          kind: string
+          institution: string | null
+          accountNumber: string | null
+        }
+      }
+      if (!res.ok || !data.account) throw new Error(data?.message ?? '계좌 등록 실패')
+      toast.success('계좌가 등록되어 적재 계좌로 선택되었습니다')
+      onCreated({
+        id: data.account.id,
+        name: data.account.name,
+        kind: data.account.kind,
+        institution: data.account.institution,
+        accountNumber: data.account.accountNumber,
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '계좌 등록 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-medium">새 계좌 등록</p>
+        <span className="text-xs text-muted-foreground">
+          파일 정보를 불러왔습니다 — 확인 후 등록하세요
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {/* 이름 */}
+        <div className="col-span-2 space-y-1">
+          <Label className="text-xs">계좌 이름 *</Label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="예: 기업은행 사업용"
+            className="h-8 text-sm"
+          />
+        </div>
+
+        {/* 종류 */}
+        <div className="space-y-1">
+          <Label className="text-xs">종류 *</Label>
+          <Select value={accKind} onValueChange={(v) => setAccKind(v as FinKind)}>
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="BANK">은행</SelectItem>
+              <SelectItem value="CARD">카드</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* 금융기관 */}
+        <div className="space-y-1">
+          <Label className="text-xs">금융기관 *</Label>
+          <Input
+            value={institution}
+            onChange={(e) => setInstitution(e.target.value)}
+            placeholder="예: 기업은행"
+            className="h-8 text-sm"
+          />
+        </div>
+
+        {/* 계좌번호 */}
+        <div className="space-y-1">
+          <Label className="text-xs">계좌번호</Label>
+          <Input
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            placeholder="선택 입력"
+            className="h-8 font-mono text-sm"
+          />
+        </div>
+
+        {/* 계좌 유형 */}
+        <div className="space-y-1">
+          <Label className="text-xs">계좌 유형</Label>
+          <Input
+            value={accountType}
+            onChange={(e) => setAccountType(e.target.value)}
+            placeholder="예: 보통예금"
+            className="h-8 text-sm"
+          />
+        </div>
+
+        {/* 기초 잔액 */}
+        <div className="col-span-2 space-y-1">
+          <Label className="text-xs">기초 잔액 (원)</Label>
+          <Input
+            type="number"
+            value={openingBalance}
+            onChange={(e) => setOpeningBalance(e.target.value)}
+            placeholder="선택 입력"
+            className="h-8 text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" size="sm" onClick={onCancel} disabled={saving}>
+          취소
+        </Button>
+        <Button size="sm" onClick={handleSave} disabled={saving}>
+          {saving ? '등록 중...' : '계좌 등록'}
+        </Button>
+      </div>
     </div>
   )
 }
