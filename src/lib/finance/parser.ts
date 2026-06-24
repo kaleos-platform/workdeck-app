@@ -349,13 +349,13 @@ export type ParseResult = {
   errors: { row: number; message: string }[]
 }
 
-function getCell(idx: number | number[] | undefined, row: unknown[]): string {
+function getCell(idx: number | number[] | undefined, row: unknown[], sep = ' '): string {
   if (idx === undefined) return ''
   const indices = Array.isArray(idx) ? idx : [idx]
   return indices
     .map((i) => cellToString(row[i]).trim())
     .filter((v) => v !== '')
-    .join(' ')
+    .join(sep)
 }
 
 function sha(parts: (string | number)[]): string {
@@ -390,7 +390,7 @@ export function parseFinanceWithMapping(
       errors.push({ row: rowNumber, message: '거래일시 누락' })
       continue
     }
-    const description = getCell(mapping.description, row) || undefined
+    const description = getCell(mapping.description, row, ' / ') || undefined
     const counterparty = getCell(mapping.counterparty, row) || undefined
 
     let direction: 'IN' | 'OUT'

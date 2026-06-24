@@ -9,6 +9,7 @@ import {
   normalizeDateTime,
   type FinColumnMapping,
 } from '../parser'
+import { resolveMapping, type MappingPair } from '../automap'
 
 // ─── 헬퍼 ─────────────────────────────────────────────────────────────────────
 
@@ -264,6 +265,57 @@ describe('하나카드 (멀티라인 헤더)', () => {
       cancelFlag: '정상',
     })
     expect(rows[0].txnDate).toBe('2026-05-01')
+  })
+})
+
+// ─── 적요/내용 다중 컬럼 결합 ─────────────────────────────────────────────────
+
+describe('적요/내용 다중 컬럼 결합', () => {
+  // SHINHAN: 적요(idx 3) + 내용(idx 6) 둘 다 존재
+  const MULTI_MAP: FinColumnMapping = {
+    txnDate: 2,
+    description: [3, 6], // 적요 + 내용
+    deposit: 4,
+    withdrawal: 5,
+    counterparty: undefined,
+    balanceAfter: 7,
+  }
+
+  test('description 2개 컬럼 → " / " 로 결합', () => {
+    const { rows } = parseFinanceWithMapping(toBuf(SHINHAN), MULTI_MAP, 'BANK', 'acc-shinhan')
+    expect(rows[0].description).toBe('대체 / 김OO')
+    expect(rows[1].description).toBe('대체 / 성장지원')
+  })
+
+  test('빈 컬럼은 결합에서 제외(구분자 없이 한쪽만)', () => {
+    const rowsWithBlank = [
+      SHINHAN[0],
+      ['1', '', '2026.05.28 18:45:11', '대체', '0', '6575000', '', '365000'], // 내용 빈칸
+    ]
+    const { rows } = parseFinanceWithMapping(toBuf(rowsWithBlank), MULTI_MAP, 'BANK', 'acc-shinhan')
+    expect(rows[0].description).toBe('대체')
+  })
+
+  test('단일 컬럼 매핑은 결합 구분자 영향 없음', () => {
+    const { rows } = parseFinanceWithMapping(toBuf(SHINHAN), SHINHAN_MAP, 'BANK', 'acc-shinhan')
+    expect(rows[0].description).toBe('대체')
+  })
+
+  // 프론트 와이어 경로 그대로: {headerName,field}[] → resolveMapping → parseFinanceWithMapping
+  test('와이어 경로(pairs→resolveMapping→parse)로도 " / " 결합', () => {
+    const headers = previewFinanceFile(toBuf(SHINHAN)).headers
+    const pairs: MappingPair[] = [
+      { headerName: '거래일시', field: 'txnDate' },
+      { headerName: '적요', field: 'description' }, // 다중 #1
+      { headerName: '내용', field: 'description' }, // 다중 #2
+      { headerName: '입금액', field: 'deposit' },
+      { headerName: '출금액', field: 'withdrawal' },
+    ]
+    const resolved = resolveMapping(headers, pairs)
+    expect(resolved.description).toEqual([3, 6])
+    const { rows } = parseFinanceWithMapping(toBuf(SHINHAN), resolved, 'BANK', 'acc-shinhan')
+    expect(rows[0].description).toBe('대체 / 김OO')
+    expect(rows[1].description).toBe('대체 / 성장지원')
   })
 })
 
