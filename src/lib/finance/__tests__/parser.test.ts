@@ -319,6 +319,40 @@ describe('적요/내용 다중 컬럼 결합', () => {
   })
 })
 
+// ─── 꼬리 합계/안내행 가드 (거래일시 비-날짜 → 스킵, Invalid Date DB 유입 차단) ──
+
+describe('꼬리 합계/안내행 가드', () => {
+  const WITH_FOOTER = [
+    ['거래일시', '적요', '입금', '출금', '거래후잔액'],
+    ['2026-01-30 08:17:29', '정산입금', '6000000', '0', '6000000'],
+    ['2026-01-28 11:52:19', '카드결제', '0', '9900', '5990100'],
+    ['합   계', '', '6000000', '9900', ''], // 은행 export 꼬리 합계행
+  ]
+  const FOOTER_MAP: FinColumnMapping = {
+    txnDate: 0,
+    description: 1,
+    deposit: 2,
+    withdrawal: 3,
+    balanceAfter: 4,
+  }
+
+  test('거래일시가 날짜 아닌 행(합계)은 parseError로 스킵', () => {
+    const { rows, errors } = parseFinanceWithMapping(toBuf(WITH_FOOTER), FOOTER_MAP, 'BANK', 'acc')
+    expect(rows).toHaveLength(2)
+    expect(errors).toHaveLength(1)
+    expect(errors[0].message).toMatch(/거래일시 형식 인식 불가/)
+    // 살아남은 행의 거래일시는 모두 정상 날짜(YYYY-MM-DD…) → toDate 유효 보장
+    expect(rows.every((r) => /^\d{4}-\d{2}-\d{2}/.test(r.txnDate))).toBe(true)
+  })
+
+  test('"총 N건" 같은 안내행도 스킵', () => {
+    const withNotice = [WITH_FOOTER[0], WITH_FOOTER[1], ['총 1건', '', '', '', '']]
+    const { rows, errors } = parseFinanceWithMapping(toBuf(withNotice), FOOTER_MAP, 'BANK', 'acc')
+    expect(rows).toHaveLength(1)
+    expect(errors).toHaveLength(1)
+  })
+})
+
 // ─── 중복/변경 판정 (identity ↔ content) ──────────────────────────────────────
 
 describe('identity / content 키', () => {
