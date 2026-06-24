@@ -6,7 +6,7 @@
  */
 import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, CheckCircle2, Info, Plus, Upload } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Info, Plus, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -57,6 +57,9 @@ type PreviewData = {
 
 type MappingEntry = { headerName: string; field: string }
 
+/** 매핑 상태: 시스템 필드 → 파일 헤더 인덱스 배열(순서 = 결합 순서). */
+type FieldMapping = Record<string, number[]>
+
 type MatchedPreset = {
   id: string
   name: string
@@ -86,72 +89,75 @@ type PreviewResponse = {
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────
 
-const NONE_FIELD = '__none__'
+/** 컬럼 select '(선택 안 함)' 센티넬 */
+const NONE_COLUMN = '__none__'
 const NONE_ACCOUNT = '__none__'
 
+/** 다중 컬럼 결합 허용 필드 — 텍스트 필드만(숫자/날짜는 단일 컬럼). */
+const MULTI_COLUMN_FIELDS = new Set<string>(['description'])
+
+/** 필드 value → 라벨(검증 메시지용). */
+function fieldLabel(field: string, kind: FinKind): string {
+  const defs = kind === 'BANK' ? BANK_FIELDS : CARD_FIELDS
+  return defs.find((f) => f.value === field)?.label ?? field
+}
+
 /** 기본 필수: txnDate, description; BANK는 deposit|withdrawal 중 하나; CARD는 amount */
-function isMappingValid(
-  mapping: Record<number, string>,
-  kind: FinKind,
-  headers: string[]
-): { ok: boolean; reason?: string } {
-  const mappedFields = new Set(Object.values(mapping))
-  if (!mappedFields.has('txnDate')) return { ok: false, reason: '거래일시를 매핑해 주세요' }
-  if (!mappedFields.has('description'))
-    return { ok: false, reason: '적요/가맹점명을 매핑해 주세요' }
-  if (kind === 'BANK' && !mappedFields.has('deposit') && !mappedFields.has('withdrawal')) {
+function isMappingValid(mapping: FieldMapping, kind: FinKind): { ok: boolean; reason?: string } {
+  const has = (f: string) => (mapping[f]?.length ?? 0) > 0
+  if (!has('txnDate')) return { ok: false, reason: '거래일시를 매핑해 주세요' }
+  if (!has('description'))
+    return {
+      ok: false,
+      reason: kind === 'CARD' ? '가맹점명을 매핑해 주세요' : '적요/내용을 매핑해 주세요',
+    }
+  if (kind === 'BANK' && !has('deposit') && !has('withdrawal')) {
     return { ok: false, reason: '은행은 입금 또는 출금 컬럼을 매핑해야 합니다' }
   }
-  if (kind === 'CARD' && !mappedFields.has('amount')) {
+  if (kind === 'CARD' && !has('amount')) {
     return { ok: false, reason: '카드는 매출금액을 매핑해야 합니다' }
   }
-  // 중복 필드 검사 (same field assigned to multiple headers)
-  const fieldCount = new Map<string, number>()
-  for (const f of Object.values(mapping)) {
-    fieldCount.set(f, (fieldCount.get(f) ?? 0) + 1)
+  // 단일 필드에 컬럼 2개 이상 방어(UI에서 막지만 이중 가드)
+  for (const f of Object.keys(mapping)) {
+    if (!MULTI_COLUMN_FIELDS.has(f) && (mapping[f]?.length ?? 0) > 1) {
+      return { ok: false, reason: `"${fieldLabel(f, kind)}"에는 컬럼을 하나만 지정할 수 있습니다` }
+    }
   }
-  for (const [f, cnt] of fieldCount) {
-    if (cnt > 1) return { ok: false, reason: `"${f}" 필드가 여러 컬럼에 중복 할당되었습니다` }
-  }
-  // 미사용 headers 체크는 불필요 — 일부 컬럼은 (사용 안 함) 가능
-  void headers
   return { ok: true }
 }
 
-/** suggestedMapping/preset.mapping [{headerName, field}] → Record<headerIdx, field> */
-function mappingEntriesToState(entries: MappingEntry[], headers: string[]): Record<number, string> {
-  const result: Record<number, string> = {}
+/** suggestedMapping/preset.mapping [{headerName, field}] → FieldMapping(필드→헤더 인덱스 배열) */
+function mappingEntriesToState(entries: MappingEntry[], headers: string[]): FieldMapping {
+  const result: FieldMapping = {}
   for (const { headerName, field } of entries) {
     const idx = headers.findIndex((h) => h === headerName)
-    if (idx >= 0 && !(idx in result)) {
-      result[idx] = field
-    }
+    if (idx < 0) continue
+    const arr = (result[field] ??= [])
+    if (!arr.includes(idx)) arr.push(idx)
   }
   return result
 }
 
-/** state Record<headerIdx, field> → API [{headerName, field}] */
-function stateToMappingEntries(mapping: Record<number, string>, headers: string[]): MappingEntry[] {
-  return Object.entries(mapping)
-    .filter(([, field]) => field !== NONE_FIELD && field !== '')
-    .map(([idxStr, field]) => ({
-      headerName: headers[Number(idxStr)] ?? '',
-      field,
-    }))
-    .filter((e) => e.headerName !== '')
+/** state FieldMapping → API [{headerName, field}] (필드별 컬럼 순서 보존) */
+function stateToMappingEntries(mapping: FieldMapping, headers: string[]): MappingEntry[] {
+  const entries: MappingEntry[] = []
+  for (const [field, cols] of Object.entries(mapping)) {
+    for (const idx of cols) {
+      const headerName = headers[idx]
+      if (headerName) entries.push({ headerName, field })
+    }
+  }
+  return entries
 }
 
 /** kind 변경 시 매핑에서 새 kind에 없는 필드 제거 */
-function filterMappingForKind(
-  mapping: Record<number, string>,
-  newKind: FinKind
-): Record<number, string> {
+function filterMappingForKind(mapping: FieldMapping, newKind: FinKind): FieldMapping {
   const validFields = new Set<string>(
     (newKind === 'BANK' ? BANK_FIELDS : CARD_FIELDS).map((f) => f.value)
   )
-  const result: Record<number, string> = {}
-  for (const [idx, field] of Object.entries(mapping)) {
-    if (validFields.has(field)) result[Number(idx)] = field
+  const result: FieldMapping = {}
+  for (const [field, cols] of Object.entries(mapping)) {
+    if (validFields.has(field)) result[field] = cols
   }
   return result
 }
@@ -170,8 +176,8 @@ export function FinanceUploadPanel() {
   // 사용자 편집 상태 (preview 이후)
   const [kind, setKind] = useState<FinKind>('BANK')
   const [accountId, setAccountId] = useState<string>('')
-  // 매핑: Record<headerIdx, fieldValue | '__none__'>
-  const [mapping, setMapping] = useState<Record<number, string>>({})
+  // 매핑: 시스템 필드 → 파일 헤더 인덱스 배열
+  const [mapping, setMapping] = useState<FieldMapping>({})
   // 프리셋 저장 옵션
   const [savePreset, setSavePreset] = useState(false)
   const [presetName, setPresetName] = useState('')
@@ -236,16 +242,35 @@ export function FinanceUploadPanel() {
     setMapping((prev) => filterMappingForKind(prev, newKind))
   }
 
-  // ─── 필드 select 변경 ─────────────────────────────────────────────────────
+  // ─── 컬럼 매핑 변경 (시스템 필드 → 파일 컬럼) ──────────────────────────────
 
-  function handleFieldChange(headerIdx: number, field: string) {
+  /** 단일 컬럼 필드 — 선택/해제 */
+  function setFieldColumn(field: string, colIdx: number | null) {
     setMapping((prev) => {
       const next = { ...prev }
-      if (field === NONE_FIELD || field === '') {
-        delete next[headerIdx]
-      } else {
-        next[headerIdx] = field
-      }
+      if (colIdx === null) delete next[field]
+      else next[field] = [colIdx]
+      return next
+    })
+  }
+
+  /** 다중 컬럼 필드(적요/내용) — 컬럼 추가 */
+  function addColumn(field: string, colIdx: number) {
+    setMapping((prev) => {
+      const existing = prev[field] ?? []
+      if (existing.includes(colIdx)) return prev
+      return { ...prev, [field]: [...existing, colIdx] }
+    })
+  }
+
+  /** 다중 컬럼 필드(적요/내용) — 컬럼 제거 */
+  function removeColumn(field: string, colIdx: number) {
+    setMapping((prev) => {
+      const existing = prev[field] ?? []
+      const filtered = existing.filter((i) => i !== colIdx)
+      const next = { ...prev }
+      if (filtered.length === 0) delete next[field]
+      else next[field] = filtered
       return next
     })
   }
@@ -272,7 +297,7 @@ export function FinanceUploadPanel() {
     }
 
     const pairs = stateToMappingEntries(mapping, previewRes.preview.headers)
-    const validation = isMappingValid(mapping, kind, previewRes.preview.headers)
+    const validation = isMappingValid(mapping, kind)
     if (!validation.ok) {
       toast.error(validation.reason ?? '매핑을 확인해 주세요')
       return
@@ -332,9 +357,7 @@ export function FinanceUploadPanel() {
     (previewRes?.accounts ?? []).some(
       (a) => (a.accountNumber ?? '').replace(/\D/g, '') === normalizedFileAcct
     )
-  const validation = previewRes
-    ? isMappingValid(mapping, kind, previewRes.preview.headers)
-    : { ok: false }
+  const validation = previewRes ? isMappingValid(mapping, kind) : { ok: false }
   const canImport =
     !!file &&
     !!previewRes &&
@@ -594,9 +617,12 @@ export function FinanceUploadPanel() {
               <MappingEditor
                 headers={previewRes.preview.headers}
                 emptyColumns={previewRes.preview.emptyColumns}
+                sampleRows={previewRes.preview.sampleRows}
                 mapping={mapping}
                 kind={kind}
-                onFieldChange={handleFieldChange}
+                onSetColumn={setFieldColumn}
+                onAddColumn={addColumn}
+                onRemoveColumn={removeColumn}
               />
             </CardContent>
           </Card>
@@ -846,90 +872,171 @@ function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormPr
 type MappingEditorProps = {
   headers: string[]
   emptyColumns: number[]
-  mapping: Record<number, string>
+  sampleRows: string[][]
+  mapping: FieldMapping
   kind: FinKind
-  onFieldChange: (headerIdx: number, field: string) => void
+  onSetColumn: (field: string, colIdx: number | null) => void
+  onAddColumn: (field: string, colIdx: number) => void
+  onRemoveColumn: (field: string, colIdx: number) => void
 }
 
+/**
+ * 좌측 = 시스템 필드(필수/선택·사용 여부), 우측 = 업로드 파일 컬럼 선택.
+ * 텍스트 필드(적요/내용)는 다중 컬럼 선택 → 결합( " / " ).
+ */
 function MappingEditor({
   headers,
   emptyColumns,
+  sampleRows,
   mapping,
   kind,
-  onFieldChange,
+  onSetColumn,
+  onAddColumn,
+  onRemoveColumn,
 }: MappingEditorProps) {
   const fieldDefs = kind === 'BANK' ? BANK_FIELDS : CARD_FIELDS
   const emptySet = new Set(emptyColumns)
 
   return (
     <div className="divide-y rounded-md border">
-      {headers.map((header, idx) => {
-        const isEmpty = emptySet.has(idx)
-        const currentField = mapping[idx] ?? NONE_FIELD
-        const isRequired = fieldDefs.find((f) => f.value === currentField)?.required ?? false
+      {fieldDefs.map((f) => {
+        const cols = mapping[f.value] ?? []
+        const isMapped = cols.length > 0
+        const isMulti = MULTI_COLUMN_FIELDS.has(f.value)
 
         return (
-          <div
-            key={idx}
-            className={cn('flex items-center gap-3 px-3 py-2', isEmpty && 'opacity-40')}
-          >
-            {/* 헤더명 */}
-            <div className="w-44 shrink-0">
-              <span
-                className={cn(
-                  'block truncate text-sm',
-                  isEmpty ? 'text-muted-foreground italic' : '',
-                  isRequired && currentField !== NONE_FIELD ? 'font-medium' : ''
-                )}
-                title={header || `컬럼 ${idx + 1}`}
-              >
-                {header || <span className="text-muted-foreground">{`컬럼 ${idx + 1}`}</span>}
+          <div key={f.value} className="flex items-start gap-3 px-3 py-2.5">
+            {/* 시스템 필드 (좌) */}
+            <div className="flex w-44 shrink-0 items-center gap-1.5 pt-1.5">
+              <span className={cn('text-sm', isMapped ? 'font-medium' : 'text-muted-foreground')}>
+                {f.label}
               </span>
-              {isEmpty && <span className="text-xs text-muted-foreground">(빈 컬럼)</span>}
+              {f.required && <span className="text-destructive">*</span>}
+              {f.required && !isMapped && (
+                <Badge
+                  variant="outline"
+                  className="ml-auto h-5 border-destructive/40 px-1.5 text-[10px] text-destructive"
+                >
+                  필수
+                </Badge>
+              )}
+              {isMapped && <CheckCircle2 className="ml-auto size-4 shrink-0 text-emerald-500" />}
             </div>
 
-            {/* 화살표 */}
-            <span className="shrink-0 text-xs text-muted-foreground">→</span>
+            {/* 화살표 (시스템 ← 파일) */}
+            <span className="shrink-0 pt-2 text-xs text-muted-foreground">←</span>
 
-            {/* 필드 Select */}
-            <Select
-              value={currentField}
-              onValueChange={(v) => onFieldChange(idx, v)}
-              disabled={isEmpty}
-            >
-              <SelectTrigger className={cn('h-8 w-52 text-xs', isEmpty && 'opacity-50')}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE_FIELD}>
-                  <span className="text-muted-foreground">(사용 안 함)</span>
-                </SelectItem>
-                {fieldDefs.map((f) => (
-                  <SelectItem key={f.value} value={f.value}>
-                    {f.label}
-                    {f.required && <span className="ml-1 text-destructive">*</span>}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* 현재 매핑된 라벨 배지 */}
-            {currentField !== NONE_FIELD && (
-              <Badge
-                variant="secondary"
-                className={cn(
-                  'shrink-0 text-xs',
-                  fieldDefs.find((f) => f.value === currentField)?.required
-                    ? 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-400'
-                    : ''
-                )}
+            {/* 파일 컬럼 선택 (우) */}
+            {isMulti ? (
+              <MultiColumnPicker
+                headers={headers}
+                emptyColumns={emptyColumns}
+                sampleRows={sampleRows}
+                selected={cols}
+                onAdd={(idx) => onAddColumn(f.value, idx)}
+                onRemove={(idx) => onRemoveColumn(f.value, idx)}
+              />
+            ) : (
+              <Select
+                value={cols.length > 0 ? String(cols[0]) : NONE_COLUMN}
+                onValueChange={(v) => onSetColumn(f.value, v === NONE_COLUMN ? null : Number(v))}
               >
-                {fieldDefs.find((f) => f.value === currentField)?.label ?? currentField}
-              </Badge>
+                <SelectTrigger className="h-8 w-64 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE_COLUMN}>
+                    <span className="text-muted-foreground">(선택 안 함)</span>
+                  </SelectItem>
+                  {headers.map((h, i) => (
+                    <SelectItem key={i} value={String(i)}>
+                      {h || `컬럼 ${i + 1}`}
+                      {emptySet.has(i) && (
+                        <span className="ml-1 text-muted-foreground">(빈 컬럼)</span>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           </div>
         )
       })}
+    </div>
+  )
+}
+
+// ─── 다중 컬럼 선택기 (적요/내용 등 텍스트 결합) ───────────────────────────────
+
+type MultiColumnPickerProps = {
+  headers: string[]
+  emptyColumns: number[]
+  sampleRows: string[][]
+  selected: number[]
+  onAdd: (colIdx: number) => void
+  onRemove: (colIdx: number) => void
+}
+
+function MultiColumnPicker({
+  headers,
+  emptyColumns,
+  sampleRows,
+  selected,
+  onAdd,
+  onRemove,
+}: MultiColumnPickerProps) {
+  const emptySet = new Set(emptyColumns)
+  const available = headers.map((h, i) => ({ h, i })).filter(({ i }) => !selected.includes(i))
+  const preview = selected
+    .map((i) => (sampleRows[0]?.[i] ?? '').trim())
+    .filter((v) => v !== '')
+    .join(' / ')
+
+  return (
+    <div className="flex-1 space-y-2">
+      {selected.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {selected.map((i) => (
+            <Badge key={i} variant="secondary" className="gap-1 pr-1 text-xs">
+              <span className="max-w-32 truncate">{headers[i] || `컬럼 ${i + 1}`}</span>
+              <button
+                type="button"
+                onClick={() => onRemove(i)}
+                className="rounded-sm hover:bg-muted-foreground/20"
+                aria-label="컬럼 제거"
+              >
+                <X className="size-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      ) : (
+        <span className="flex h-8 items-center text-xs text-muted-foreground">
+          선택된 컬럼 없음
+        </span>
+      )}
+
+      {available.length > 0 && (
+        <Select value="" onValueChange={(v) => onAdd(Number(v))}>
+          <SelectTrigger className="h-8 w-64 text-xs">
+            <SelectValue placeholder="+ 컬럼 추가" />
+          </SelectTrigger>
+          <SelectContent>
+            {available.map(({ h, i }) => (
+              <SelectItem key={i} value={String(i)}>
+                {h || `컬럼 ${i + 1}`}
+                {emptySet.has(i) && <span className="ml-1 text-muted-foreground">(빈 컬럼)</span>}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {selected.length > 1 && preview && (
+        <p className="text-xs text-muted-foreground">
+          미리보기: <span className="font-mono text-foreground">{preview}</span>
+        </p>
+      )}
     </div>
   )
 }
@@ -940,12 +1047,12 @@ type SampleTableProps = {
   headers: string[]
   sampleRows: string[][]
   emptyColumns: number[]
-  mapping: Record<number, string>
+  mapping: FieldMapping
 }
 
 function SampleTable({ headers, sampleRows, emptyColumns, mapping }: SampleTableProps) {
   const emptySet = new Set(emptyColumns)
-  const mappedSet = new Set(Object.keys(mapping).map(Number))
+  const mappedSet = new Set(Object.values(mapping).flat())
 
   return (
     <Table>
