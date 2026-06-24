@@ -363,6 +363,18 @@ function sha(parts: (string | number)[]): string {
 }
 
 /**
+ * 정규화된 거래일시가 실제 파싱 가능한 날짜인지 검증한다.
+ * 은행/카드 export의 꼬리 합계·안내행("합계", "총 N건" 등)은 거래일시 컬럼이 날짜가 아니므로
+ * normalizeDateTime이 원문을 그대로 돌려준다 → Invalid Date가 DB(DateTime)로 흘러가 500이 난다.
+ * 이를 행 단위로 걸러내 parseError로 처리한다.
+ */
+function isValidTxnDate(s: string): boolean {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return false
+  return !Number.isNaN(new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00`).getTime())
+}
+
+/**
  * 컬럼 매핑으로 파일을 파싱한다.
  * accountId 는 identity 키 산출에 필요(은행 거래는 자연 고유키가 없어 계좌+일시+금액+잔액으로 식별).
  */
@@ -388,6 +400,14 @@ export function parseFinanceWithMapping(
     const txnDate = normalizeDateTime(getCell(mapping.txnDate, row))
     if (!txnDate) {
       errors.push({ row: rowNumber, message: '거래일시 누락' })
+      continue
+    }
+    // 합계/안내 등 거래일시가 날짜가 아닌 행은 스킵(Invalid Date → DB DateTime → 500 방지)
+    if (!isValidTxnDate(txnDate)) {
+      errors.push({
+        row: rowNumber,
+        message: `거래일시 형식 인식 불가: "${getCell(mapping.txnDate, row)}"`,
+      })
       continue
     }
     const description = getCell(mapping.description, row, ' / ') || undefined
