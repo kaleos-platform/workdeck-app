@@ -12,8 +12,16 @@ import { chromium as chromiumExtra } from 'playwright-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import type { BrowserContext, LaunchOptions } from 'playwright'
 import { execSync } from 'node:child_process'
-import { existsSync, lstatSync, readlinkSync, rmSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import {
+  existsSync,
+  lstatSync,
+  readlinkSync,
+  rmSync,
+  readFileSync,
+  writeFileSync,
+  statSync,
+} from 'node:fs'
+import { join, dirname, basename } from 'node:path'
 
 // stealth plugin은 module-load 시 1회만 적용
 let stealthApplied = false
@@ -21,6 +29,70 @@ function ensureStealth() {
   if (stealthApplied) return
   chromiumExtra.use(StealthPlugin())
   stealthApplied = true
+}
+
+// ─── 세션 재사용 (storageState 저장/복원) ──────────────────────────────────────
+// 쿠팡 인증 쿠키(KEYCLOAK_IDENTITY/JSESSIONID 등)는 session-scoped(만료 없음)라
+// context.close() + 다음 clean launch 때 Chromium 이 퍼지한다 → 영속 프로파일인데도
+// 매 수집마다 풀 로그인(하루 ~52회) → Akamai 봇탐지 노출 표면 증가(반복 로그인이
+// "Access Denied" 격상의 연료). 해결: 성공 세션의 storageState 를 저장하고 다음 launch
+// 때 "session 쿠키만" 복원한다. 영속 Akamai 쿠키(_abck/bm_*)는 프로파일이 이미
+// 보존하므로 제외 — 스테일 봇지문 재주입 방지. 만료/실패 시 isLoggedIn=false →
+// performLogin fallback 이라 저위험(최악도 오늘과 동일).
+
+// 인증되어 있다고 볼 수 있는 세션 쿠키 이름(이게 있으면 저장 가치 있음).
+const AUTH_COOKIE_NAMES = ['KEYCLOAK_IDENTITY', 'JSESSIONID', 'sxSessionId', 'AUTH_SESSION_ID']
+// 세션이 이보다 오래되면 서버측에서 만료됐을 가능성이 높아 복원 생략(어차피 fallback).
+const SESSION_MAX_AGE_MS = 10 * 60 * 60 * 1000
+
+// storageState().cookies 의 직렬화 형태 (JSON 파일에서 읽음).
+type StoredCookie = {
+  name: string
+  value: string
+  domain?: string
+  path?: string
+  expires?: number
+  httpOnly?: boolean
+  secure?: boolean
+  sameSite?: 'Strict' | 'Lax' | 'None'
+}
+
+function sessionFilePath(userDataDir: string): string {
+  // 프로파일 디렉토리 밖(부모)에 둬 preflightCleanupProfile 의 정리 대상과 분리.
+  return join(dirname(userDataDir), `.session-${basename(userDataDir)}.json`)
+}
+
+/** 직전 성공 세션의 session-scoped 쿠키를 새 context 에 복원해 재로그인을 회피한다. */
+async function restoreSessionCookies(context: BrowserContext, userDataDir: string): Promise<void> {
+  try {
+    const file = sessionFilePath(userDataDir)
+    if (!existsSync(file)) return
+    if (Date.now() - statSync(file).mtimeMs > SESSION_MAX_AGE_MS) return
+    const state = JSON.parse(readFileSync(file, 'utf8')) as { cookies?: StoredCookie[] }
+    // Chromium 이 clean launch 때 퍼지하는 건 session 쿠키(expires<=0)뿐 → 그것만 재주입.
+    const sessionCookies = (state.cookies ?? []).filter((c) => c.expires == null || c.expires <= 0)
+    if (sessionCookies.length === 0) return
+    await context.addCookies(sessionCookies as Parameters<BrowserContext['addCookies']>[0])
+    console.log(`[browser] 세션 쿠키 복원 (${sessionCookies.length}개) — 재로그인 회피 시도`)
+  } catch {
+    /* 복원 실패 — performLogin fallback */
+  }
+}
+
+/** 현재 context 가 인증돼 있으면 storageState 를 저장한다(다음 launch 재사용). */
+export async function saveSessionCookies(
+  context: BrowserContext,
+  userDataDir: string
+): Promise<void> {
+  try {
+    const state = await context.storageState()
+    const authed = state.cookies.some((c) => AUTH_COOKIE_NAMES.includes(c.name))
+    if (!authed) return // 로그아웃/실패 상태로 좋은 세션을 덮어쓰지 않는다
+    writeFileSync(sessionFilePath(userDataDir), JSON.stringify(state), { mode: 0o600 })
+    console.log('[browser] 세션 저장 — 다음 수집에서 재사용')
+  } catch {
+    /* storageState 실패(브라우저 사망 등) — 무시 */
+  }
 }
 
 export type LaunchPersistentOptions = {
@@ -264,6 +336,8 @@ export async function launchStealthPersistentContext(
   }
   const origClose = context.close.bind(context)
   context.close = async (...args: Parameters<typeof origClose>) => {
+    // 닫기 전에 인증 세션 저장 — 브라우저가 살아있을 때만 storageState 가능하므로.
+    await saveSessionCookies(context, opts.userDataDir).catch(() => {})
     try {
       return await origClose(...args)
     } finally {
@@ -272,6 +346,9 @@ export async function launchStealthPersistentContext(
   }
   // close 없이 프로세스가 죽는 비정상 경로 대비 — disconnect 시에도 해제
   context.on('close', releaseOnce)
+
+  // 직전 성공 세션 복원 — isLoggedIn 이 true 가 되면 풀 로그인을 건너뛴다(Akamai 노출↓).
+  await restoreSessionCookies(context, opts.userDataDir)
 
   return context
 }
