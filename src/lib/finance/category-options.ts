@@ -57,7 +57,8 @@ export function buildClassifyOptions(
           id: sub.id,
           label: sub.name,
           hint: lvl1.name,
-          badge: null,
+          // 하위도 그룹(수익/비용/이체) 배지를 달아 검색 시 분류가 보이도록 한다.
+          badge: { label: badge.label, className: badge.className },
           indent: true,
           keywords: [sub.name, lvl1.name, badge.label],
         })
