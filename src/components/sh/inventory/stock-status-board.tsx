@@ -8,6 +8,13 @@ import { StockStatusProducts } from './stock-status-products'
 import { StockStatusToolbar } from './stock-status-toolbar'
 import { StockStatusMatrix } from './stock-status-matrix'
 import type { StockStatusResponse } from './stock-status.types'
+import {
+  buildStockStatusProducts,
+  filterStockStatusProducts,
+  scopeStockStatusRows,
+} from './stock-status-view-model'
+
+const PINNED_PRODUCTS_STORAGE_KEY = 'workdeck.stock-status.pinned-products'
 
 export function StockStatusBoard() {
   const router = useRouter()
@@ -23,6 +30,9 @@ export function StockStatusBoard() {
 
   const [data, setData] = useState<StockStatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [productQuery, setProductQuery] = useState('')
+  const [productsCollapsed, setProductsCollapsed] = useState(false)
+  const [pinnedProductIds, setPinnedProductIds] = useState<string[]>([])
   const abortRef = useRef<AbortController | null>(null)
 
   const fetchData = useCallback(async () => {
@@ -31,14 +41,7 @@ export function StockStatusBoard() {
     abortRef.current = controller
     setLoading(true)
     try {
-      const params = new URLSearchParams()
-      if (brandId) params.set('brandId', brandId)
-      if (groupId) params.set('groupId', groupId)
-      if (productId) params.set('productId', productId)
-      if (q) params.set('q', q)
-      if (onlyLow) params.set('onlyLow', '1')
-      const qs = params.toString()
-      const res = await fetch(`/api/sh/inventory/stock-status${qs ? `?${qs}` : ''}`, {
+      const res = await fetch('/api/sh/inventory/stock-status', {
         signal: controller.signal,
       })
       if (!res.ok) throw new Error('재고 데이터를 불러오지 못했습니다')
@@ -51,11 +54,24 @@ export function StockStatusBoard() {
     } finally {
       if (!controller.signal.aborted) setLoading(false)
     }
-  }, [brandId, groupId, productId, q, onlyLow])
+  }, [])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(PINNED_PRODUCTS_STORAGE_KEY)
+      if (!raw) return
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        setPinnedProductIds(parsed.filter((item): item is string => typeof item === 'string'))
+      }
+    } catch {
+      setPinnedProductIds([])
+    }
+  }, [])
 
   const updateParams = useCallback(
     (mut: Record<string, string | null>) => {
@@ -98,7 +114,8 @@ export function StockStatusBoard() {
   )
 
   const handleClearFilters = useCallback(
-    () =>
+    () => {
+      setProductQuery('')
       updateParams({
         brandId: null,
         groupId: null,
@@ -106,7 +123,8 @@ export function StockStatusBoard() {
         locationId: null,
         q: null,
         onlyLow: null,
-      }),
+      })
+    },
     [updateParams]
   )
 
@@ -115,41 +133,90 @@ export function StockStatusBoard() {
     [updateParams]
   )
 
-  const allRows = data?.matrix.rows ?? []
-  const visibleRows = locationId
-    ? allRows.filter((r) => r.byLocation[locationId] !== undefined)
-    : allRows
+  const handleProductPinToggle = useCallback((targetProductId: string) => {
+    setPinnedProductIds((current) => {
+      const next = current.includes(targetProductId)
+        ? current.filter((id) => id !== targetProductId)
+        : [targetProductId, ...current]
+      window.localStorage.setItem(PINNED_PRODUCTS_STORAGE_KEY, JSON.stringify(next))
+      return next
+    })
+  }, [])
+
+  const allRows = useMemo(() => data?.matrix.rows ?? [], [data?.matrix.rows])
+  const scopedRows = useMemo(() => scopeStockStatusRows(allRows, locationId), [allRows, locationId])
+
+  const products = useMemo(() => buildStockStatusProducts(allRows, locationId), [allRows, locationId])
+
+  const visibleProducts = useMemo(
+    () =>
+      filterStockStatusProducts(products, {
+        brandId,
+        groupId,
+        pinnedProductIds,
+        query: productQuery,
+      }),
+    [brandId, groupId, pinnedProductIds, productQuery, products]
+  )
+
+  const visibleRows = useMemo(() => {
+    const optionQuery = q.trim().toLowerCase()
+    return scopedRows.filter((row) => {
+      if (productId && row.productId !== productId) return false
+      if (onlyLow && row.displayStatus !== 'LOW' && row.displayStatus !== 'OUT') return false
+      if (!optionQuery) return true
+      return [
+        row.optionName,
+        row.sku ?? '',
+        row.productName,
+        row.productInternalName ?? '',
+        ...Object.values(row.externalCodeByLocation),
+      ].some((value) => value.toLowerCase().includes(optionQuery))
+    })
+  }, [onlyLow, productId, q, scopedRows])
 
   const selectedProductName = useMemo(
-    () => data?.products.find((p) => p.productId === productId)?.productName ?? null,
-    [data?.products, productId]
+    () => products.find((product) => product.productId === productId)?.productName ?? null,
+    [productId, products]
   )
 
   return (
     <div className="space-y-5">
       <StockStatusHeader loading={loading} onRefresh={fetchData} />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+      <div
+        className={
+          productsCollapsed
+            ? 'grid grid-cols-1 gap-4 xl:grid-cols-[116px_minmax(0,1fr)]'
+            : 'grid grid-cols-1 gap-4 xl:grid-cols-[360px_minmax(0,1fr)]'
+        }
+      >
         <StockStatusProducts
-          products={data?.products ?? []}
+          products={visibleProducts}
+          brands={data?.brands ?? []}
           loading={loading && !data}
           selectedProductId={productId}
+          selectedBrandId={brandId}
+          selectedGroupId={groupId}
+          productQuery={productQuery}
+          pinnedProductIds={pinnedProductIds}
+          collapsed={productsCollapsed}
           onSelectProduct={handleProductSelect}
+          onToggleCollapsed={() => setProductsCollapsed((current) => !current)}
+          onTogglePinned={handleProductPinToggle}
+          onBrandChange={handleBrandChange}
+          onGroupChange={handleGroupChange}
+          onSearchChange={setProductQuery}
         />
 
         <div className="min-w-0 space-y-3">
           <StockStatusToolbar
             q={q}
             onlyLow={onlyLow}
-            brands={data?.brands ?? []}
             locations={data?.locations ?? []}
-            selectedBrandId={brandId}
-            selectedGroupId={groupId}
             selectedLocationId={locationId}
             onSearchChange={handleSearchChange}
             onOnlyLowChange={handleOnlyLowChange}
-            onBrandChange={handleBrandChange}
-            onGroupChange={handleGroupChange}
             onLocationChange={handleLocationChange}
             onClearFilters={handleClearFilters}
           />

@@ -81,10 +81,12 @@ export async function GET(req: NextRequest) {
   ): { id: string; name: string; type: string; groupLabel: string | null } | null {
     let cur = catById.get(catId)
     if (!cur) return null
-    while (cur.parentId && !rootIds.has(cur.parentId)) {
-      const next = catById.get(cur.parentId)
+    let parentId = cur.parentId
+    while (parentId && !rootIds.has(parentId)) {
+      const next = catById.get(parentId)
       if (!next) break
       cur = next
+      parentId = cur.parentId
     }
     return { id: cur.id, name: cur.name, type: cur.type, groupLabel: cur.groupLabel }
   }

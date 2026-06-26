@@ -1,119 +1,246 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useMemo } from 'react'
+import { ChevronLeft, ChevronRight, Pin, PinOff, Search } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import type { StockProductSummary } from './stock-status.types'
+import type { StockBrand } from './stock-status.types'
+import {
+  STOCK_STATUS_BRAND_NONE,
+  type StockStatusProductCard,
+} from './stock-status-view-model'
 
 type Props = {
-  products: StockProductSummary[]
+  products: StockStatusProductCard[]
+  brands: StockBrand[]
   loading?: boolean
   selectedProductId: string | null
+  selectedBrandId: string | null
+  selectedGroupId: string | null
+  productQuery: string
+  pinnedProductIds: string[]
+  collapsed: boolean
   onSelectProduct: (productId: string | null) => void
+  onToggleCollapsed: () => void
+  onTogglePinned: (productId: string) => void
+  onBrandChange: (brandId: string | null) => void
+  onGroupChange: (groupId: string | null) => void
+  onSearchChange: (q: string) => void
 }
 
-const KRW = new Intl.NumberFormat('ko-KR')
-
-/** 심각도 기준 정렬: 결품 > 부족 > 과잉 > 정상 */
-function sortProducts(products: StockProductSummary[]): StockProductSummary[] {
-  return [...products].sort((a, b) => {
-    // 문제 있는 상품 우선
-    const aScore = a.outOptionCount * 100 + a.lowOptionCount * 10 + a.overOptionCount
-    const bScore = b.outOptionCount * 100 + b.lowOptionCount * 10 + b.overOptionCount
-    if (bScore !== aScore) return bScore - aScore
-    // 점수 같으면 상품명 오름차순
-    return a.productName.localeCompare(b.productName, 'ko')
-  })
-}
+const PINNED_LABEL = '고정 상품'
+type StatusTone = 'out' | 'low' | 'over' | 'ok'
 
 export function StockStatusProducts({
   products,
+  brands,
   loading,
   selectedProductId,
+  selectedBrandId,
+  selectedGroupId,
+  productQuery,
+  pinnedProductIds,
+  collapsed,
   onSelectProduct,
+  onToggleCollapsed,
+  onTogglePinned,
+  onBrandChange,
+  onGroupChange,
+  onSearchChange,
 }: Props) {
-  const [query, setQuery] = useState('')
-  const sorted = useMemo(() => sortProducts(products), [products])
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return sorted
-    return sorted.filter((p) => p.productName.toLowerCase().includes(q))
-  }, [query, sorted])
+  const pinnedSet = useMemo(() => new Set(pinnedProductIds), [pinnedProductIds])
 
-  const totals = useMemo(
-    () =>
-      products.reduce(
-        (acc, p) => ({
-          optionCount: acc.optionCount + p.optionCount,
-          okOptionCount: acc.okOptionCount + p.okOptionCount,
-          lowOptionCount: acc.lowOptionCount + p.lowOptionCount,
-          outOptionCount: acc.outOptionCount + p.outOptionCount,
-          overOptionCount: acc.overOptionCount + p.overOptionCount,
-        }),
-        {
-          optionCount: 0,
-          okOptionCount: 0,
-          lowOptionCount: 0,
-          outOptionCount: 0,
-          overOptionCount: 0,
+  const groupOptions = useMemo(() => {
+    if (selectedBrandId === null) {
+      const seen = new Map<string, { id: string; name: string }>()
+      for (const brand of brands) {
+        for (const group of brand.groups) {
+          if (!seen.has(group.id)) seen.set(group.id, { id: group.id, name: group.name })
         }
-      ),
-    [products]
+      }
+      return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+    }
+
+    if (selectedBrandId === STOCK_STATUS_BRAND_NONE) {
+      const noneBrand = brands.find((brand) => brand.id === null)
+      return noneBrand
+        ? noneBrand.groups.map((group) => ({ id: group.id, name: group.name }))
+        : []
+    }
+
+    const brand = brands.find((item) => item.id === selectedBrandId)
+    return brand ? brand.groups.map((group) => ({ id: group.id, name: group.name })) : []
+  }, [brands, selectedBrandId])
+
+  const brandSelectValue =
+    selectedBrandId === null
+      ? '__all__'
+      : selectedBrandId === ''
+        ? STOCK_STATUS_BRAND_NONE
+        : selectedBrandId
+  const groupSelectValue = selectedGroupId ?? '__all__'
+
+  const pinnedProducts = useMemo(
+    () => products.filter((product) => pinnedSet.has(product.productId)),
+    [pinnedSet, products]
+  )
+  const normalProducts = useMemo(
+    () => products.filter((product) => !pinnedSet.has(product.productId)),
+    [pinnedSet, products]
   )
 
+  if (collapsed) {
+    return (
+      <Card className="flex min-h-0 flex-col overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between border-b py-4">
+          <CardTitle className="text-sm">상품</CardTitle>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={onToggleCollapsed}
+            aria-label="상품 패널 열기"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+        </CardHeader>
+        <CardContent className="flex flex-1 items-center justify-center p-4">
+          <Button variant="outline" size="sm" onClick={onToggleCollapsed}>
+            <ChevronRight className="mr-1.5 h-3.5 w-3.5" />
+            패널 펼치기
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
-    <Card className="flex min-h-[560px] overflow-hidden">
-      <CardHeader className="border-b">
-        <CardTitle className="text-sm">상품</CardTitle>
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="상품 검색"
-          className="mt-2 h-9"
-        />
+    <Card className="flex min-h-[560px] flex-col overflow-hidden">
+      <CardHeader className="gap-3 border-b">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-sm">상품</CardTitle>
+            <Badge variant="outline" className="rounded-full text-[11px] font-medium">
+              {products.length}개
+            </Badge>
+          </div>
+          <Button variant="ghost" size="icon-xs" onClick={onToggleCollapsed} aria-label="패널 접기">
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+
+        <div className="relative">
+          <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={productQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="상품 검색"
+            className="h-9 pl-9"
+          />
+        </div>
+
+        <div className="grid gap-2 md:grid-cols-2">
+          <Select
+            value={brandSelectValue}
+            onValueChange={(value) => {
+              if (value === '__all__') onBrandChange(null)
+              else onBrandChange(value)
+            }}
+          >
+            <SelectTrigger className="h-9 w-full" aria-label="브랜드 필터">
+              <SelectValue placeholder="전체 브랜드" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">전체 브랜드</SelectItem>
+              {brands
+                .filter((brand) => brand.id !== null)
+                .map((brand) => (
+                  <SelectItem key={brand.id!} value={brand.id!}>
+                    {brand.name}
+                  </SelectItem>
+                ))}
+              {brands.some((brand) => brand.id === null) && (
+                <SelectItem value={STOCK_STATUS_BRAND_NONE}>브랜드 없음</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={groupSelectValue}
+            onValueChange={(value) => onGroupChange(value === '__all__' ? null : value)}
+          >
+            <SelectTrigger className="h-9 w-full" aria-label="카테고리 필터">
+              <SelectValue placeholder="전체 카테고리" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">전체 카테고리</SelectItem>
+              {groupOptions.map((group) => (
+                <SelectItem key={group.id} value={group.id}>
+                  {group.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
+
       <CardContent className="min-h-0 flex-1 overflow-y-auto p-2">
         {loading ? (
           <div className="space-y-2 p-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-10 animate-pulse rounded bg-muted" />
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="h-24 animate-pulse rounded-lg bg-muted" />
             ))}
           </div>
         ) : products.length === 0 ? (
           <p className="p-6 text-center text-sm text-muted-foreground">상품 데이터가 없습니다</p>
         ) : (
-          <div className="space-y-1">
-            <ProductButton
-              active={selectedProductId === null}
-              name="전체"
-              optionCount={totals.optionCount}
-              outOptionCount={totals.outOptionCount}
-              lowOptionCount={totals.lowOptionCount}
-              overOptionCount={totals.overOptionCount}
-              okOptionCount={totals.okOptionCount}
-              onClick={() => onSelectProduct(null)}
-            />
-            {filtered.length === 0 ? (
-              <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                검색 결과가 없습니다
-              </p>
-            ) : (
-              filtered.map((p) => (
-                <ProductButton
-                  key={p.productId}
-                  active={selectedProductId === p.productId}
-                  name={p.productName}
-                  optionCount={p.optionCount}
-                  outOptionCount={p.outOptionCount}
-                  lowOptionCount={p.lowOptionCount}
-                  overOptionCount={p.overOptionCount}
-                  okOptionCount={p.okOptionCount}
-                  onClick={() => onSelectProduct(p.productId)}
-                />
-              ))
+          <div className="space-y-3">
+            {pinnedProducts.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 px-2 text-[11px] font-medium text-muted-foreground">
+                  <Pin className="h-3.5 w-3.5" />
+                  {PINNED_LABEL}
+                </div>
+                <div className="space-y-1.5">
+                  {pinnedProducts.map((product) => (
+                    <ProductButton
+                      key={product.productId}
+                      product={product}
+                      active={selectedProductId === product.productId}
+                      pinned
+                      onSelectProduct={onSelectProduct}
+                      onTogglePinned={onTogglePinned}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
+
+            {pinnedProducts.length > 0 && normalProducts.length > 0 && (
+              <div className="h-px bg-border" aria-hidden="true" />
+            )}
+
+            <div className="space-y-1.5">
+              {normalProducts.map((product) => (
+                <ProductButton
+                  key={product.productId}
+                  product={product}
+                  active={selectedProductId === product.productId}
+                  pinned={false}
+                  onSelectProduct={onSelectProduct}
+                  onTogglePinned={onTogglePinned}
+                />
+              ))}
+            </div>
           </div>
         )}
       </CardContent>
@@ -122,96 +249,99 @@ export function StockStatusProducts({
 }
 
 type ProductButtonProps = {
+  product: StockStatusProductCard
   active: boolean
-  name: string
-  optionCount: number
-  outOptionCount: number
-  lowOptionCount: number
-  overOptionCount: number
-  okOptionCount: number
-  onClick: () => void
+  pinned: boolean
+  onSelectProduct: (productId: string | null) => void
+  onTogglePinned: (productId: string) => void
 }
 
 function ProductButton({
+  product,
   active,
-  name,
-  optionCount,
-  outOptionCount,
-  lowOptionCount,
-  overOptionCount,
-  okOptionCount,
-  onClick,
+  pinned,
+  onSelectProduct,
+  onTogglePinned,
 }: ProductButtonProps) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
       className={cn(
-        'w-full rounded-md border px-3 py-2 text-left transition-colors hover:bg-muted/50',
-        active ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card'
+        'w-full rounded-lg border px-3 py-2 text-left transition-colors',
+        active
+          ? 'border-primary/30 bg-muted/70 shadow-xs ring-1 ring-primary/10'
+          : 'bg-card hover:bg-muted/40'
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <span className="min-w-0 truncate text-sm font-medium">{name}</span>
-        <span
-          className={cn(
-            'font-mono text-xs tabular-nums',
-            active ? 'text-primary-foreground/80' : 'text-muted-foreground'
-          )}
+      <div className="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          aria-pressed={active}
+          onClick={() => onSelectProduct(product.productId)}
+          className="min-w-0 flex-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          {KRW.format(optionCount)}
-        </span>
+          <div className="space-y-0.5">
+            <div className="truncate text-sm font-medium">{product.productName}</div>
+            <div className="truncate text-[11px] text-muted-foreground">
+              {product.brandName ?? '브랜드 없음'} · {product.groupName}
+            </div>
+          </div>
+
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <StatusSticker label="결품" count={product.outOptionCount} tone="out" />
+            <StatusSticker label="부족" count={product.lowOptionCount} tone="low" />
+            <StatusSticker label="과잉" count={product.overOptionCount} tone="over" />
+            <StatusSticker label="정상" count={product.okOptionCount} tone="ok" />
+          </div>
+        </button>
+
+        <div className="flex items-start gap-1.5">
+          <Badge variant="outline" className="rounded-full text-[11px] font-medium tabular-nums">
+            {product.optionCount}개
+          </Badge>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={pinned ? '상품 고정 해제' : '상품 고정'}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              onTogglePinned(product.productId)
+            }}
+          >
+            {pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
       </div>
-      <div className="mt-2 grid grid-cols-4 gap-1">
-        <StatusCount label="결품" count={outOptionCount} variant="out" active={active} />
-        <StatusCount label="부족" count={lowOptionCount} variant="low" active={active} />
-        <StatusCount label="과잉" count={overOptionCount} variant="over" active={active} />
-        <StatusCount label="정상" count={okOptionCount} variant="ok" active={active} />
-      </div>
-    </button>
+    </div>
   )
 }
 
-function StatusCount({
+function StatusSticker({
   label,
   count,
-  variant,
-  active,
+  tone,
 }: {
   label: string
   count: number
-  variant: BadgeVariant
-  active: boolean
+  tone: StatusTone
 }) {
-  return (
-    <span className={cn('flex flex-col gap-1 rounded border px-1.5 py-1', active && 'bg-white/10')}>
-      <span className={cn('text-[10px]', active ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
-        {label}
-      </span>
-      <OptionCountBadge count={count} variant={variant} />
-    </span>
-  )
-}
-
-type BadgeVariant = 'out' | 'low' | 'over' | 'ok'
-
-const BADGE_CLASSES: Record<BadgeVariant, string> = {
-  out: 'border-red-300 bg-red-50 text-red-700',
-  low: 'border-amber-300 bg-amber-50 text-amber-700',
-  over: 'border-indigo-300 bg-indigo-50 text-indigo-700',
-  ok: 'border-emerald-300 bg-emerald-50 text-emerald-700',
-}
-
-function OptionCountBadge({ count, variant }: { count: number; variant: BadgeVariant }) {
-  if (count === 0) {
-    return <span className="font-mono text-xs text-muted-foreground/40 tabular-nums">—</span>
+  const toneClass: Record<StatusTone, string> = {
+    out: 'border-red-200 bg-red-50 text-red-700',
+    low: 'border-amber-200 bg-amber-50 text-amber-700',
+    over: 'border-indigo-200 bg-indigo-50 text-indigo-700',
+    ok: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   }
+
   return (
-    <Badge
-      variant="outline"
-      className={cn('font-mono text-[11px] tabular-nums', BADGE_CLASSES[variant])}
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-medium',
+        toneClass[tone]
+      )}
     >
-      {KRW.format(count)}
-    </Badge>
+      <span>{label}</span>
+      <span className="font-mono tabular-nums">{count > 0 ? count : '—'}</span>
+    </span>
   )
 }

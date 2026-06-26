@@ -7,13 +7,13 @@ import {
   LOCATION_TYPE_LABEL,
   STATUS_LABEL,
   type StockLocation,
-  type StockMatrixRow,
   type SkuStatus,
 } from './stock-status.types'
 import { StockStatusExportButton } from './stock-status-export'
+import type { StockStatusRowView } from './stock-status-view-model'
 
 type Props = {
-  rows: StockMatrixRow[]
+  rows: StockStatusRowView[]
   locations: StockLocation[]
   loading: boolean
   selectedLocationId?: string | null
@@ -74,13 +74,10 @@ export function StockStatusMatrix({
           <p className="p-10 text-center text-sm text-muted-foreground">표시할 SKU가 없습니다</p>
         ) : (
           <div className="max-h-[65vh] overflow-auto">
-            <table className="w-full min-w-[980px] border-collapse text-sm">
+            <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead className="sticky top-0 z-20 bg-muted">
                 <tr className="border-b">
-                  <th className="sticky left-0 z-30 min-w-[200px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    상품명
-                  </th>
-                  <th className="sticky left-[200px] z-30 min-w-[180px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <th className="sticky left-0 z-30 min-w-[240px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     옵션
                   </th>
                   <th className="min-w-[96px] border-l bg-muted px-2 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -111,77 +108,76 @@ export function StockStatusMatrix({
                 </tr>
               </thead>
               <tbody>
-                {displayRows.map((row) => (
-                  <tr key={row.optionId} className="border-b hover:bg-muted/30">
-                    <td className="sticky left-0 z-10 border-r bg-card px-3 py-2">
-                      <div className="text-sm font-medium">{row.productName}</div>
-                      {row.productInternalName && row.productInternalName !== row.productName && (
-                        <div className="text-[11px] text-muted-foreground">
-                          {row.productInternalName}
+                {displayRows.map((row) => {
+                  return (
+                    <tr key={row.optionId} className="border-b hover:bg-muted/30">
+                      <td className="sticky left-0 z-10 border-r bg-card px-3 py-2">
+                        <div className="text-sm font-medium">{row.optionName}</div>
+                        <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                          {row.productInternalName && row.productInternalName !== row.productName
+                            ? `${row.productName} · ${row.productInternalName}`
+                            : row.productName}
                         </div>
-                      )}
-                    </td>
-                    <td className="sticky left-[200px] z-10 border-r bg-card px-3 py-2">
-                      <span className="text-sm">{row.optionName}</span>
-                    </td>
-                    <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
-                      {row.out30d > 0 ? (
-                        KRW.format(row.out30d)
-                      ) : (
-                        <span className="text-muted-foreground/50">—</span>
-                      )}
-                    </td>
-                    <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
-                      {row.out90d > 0 ? (
-                        KRW.format(row.out90d)
-                      ) : (
-                        <span className="text-muted-foreground/50">—</span>
-                      )}
-                    </td>
-                    {visibleLocations.map((l) => {
-                      const qty = row.byLocation[l.id]
-                      // 셀 단위 출고량 데이터가 없어 위치별 부족 판정 불가.
-                      // 상태(부족/과잉)는 합계 컬럼의 배지로만 표시하고, 셀은 결품(0)만 강조.
-                      return (
-                        <td
-                          key={l.id}
-                          className={cn(
-                            'border-l px-2 py-2 text-center font-mono text-sm tabular-nums',
-                            qty === undefined
-                              ? 'text-muted-foreground/50'
-                              : qty === 0
-                                ? 'bg-red-50 text-red-700'
-                                : ''
-                          )}
-                        >
-                          {qty === undefined ? '—' : KRW.format(qty)}
-                        </td>
-                      )
-                    })}
-                    {/* 입고예정 컬럼 */}
-                    <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
-                      {row.incomingQty > 0 ? (
-                        <span className="text-blue-600">{KRW.format(row.incomingQty)}</span>
-                      ) : (
-                        <span className="text-muted-foreground/50">—</span>
-                      )}
-                    </td>
-                    {/* 합계 + 상태 */}
-                    <td className="sticky right-0 z-10 border-l bg-card px-3 py-2 text-right">
-                      <div className="font-mono text-sm font-semibold tabular-nums">
-                        {KRW.format(row.totalQty)}
-                      </div>
-                      <div className="mt-0.5 flex items-center justify-end gap-1.5">
-                        <Badge
-                          variant="outline"
-                          className={cn('text-[10px]', STATUS_BADGE[row.status])}
-                        >
-                          {STATUS_LABEL[row.status]}
-                        </Badge>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
+                        {row.out30d > 0 ? (
+                          KRW.format(row.out30d)
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+                      <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
+                        {row.out90d > 0 ? (
+                          KRW.format(row.out90d)
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+                      {visibleLocations.map((l) => {
+                        const qty = row.byLocation[l.id]
+                        // 셀 단위 출고량 데이터가 없어 위치별 부족 판정 불가.
+                        // 상태(부족/과잉)는 합계 컬럼의 배지로만 표시하고, 셀은 결품(0)만 강조.
+                        return (
+                          <td
+                            key={l.id}
+                            className={cn(
+                              'border-l px-2 py-2 text-center font-mono text-sm tabular-nums',
+                              qty === undefined
+                                ? 'text-muted-foreground/50'
+                                : qty === 0
+                                  ? 'bg-red-50 text-red-700'
+                                  : ''
+                            )}
+                          >
+                            {qty === undefined ? '—' : KRW.format(qty)}
+                          </td>
+                        )
+                      })}
+                      {/* 입고예정 컬럼 */}
+                      <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
+                        {row.incomingQty > 0 ? (
+                          <span className="text-blue-600">{KRW.format(row.incomingQty)}</span>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+                      {/* 합계 + 상태 */}
+                      <td className="sticky right-0 z-10 border-l bg-card px-3 py-2 text-right">
+                        <div className="font-mono text-sm font-semibold tabular-nums">
+                          {KRW.format(row.displayQty)}
+                        </div>
+                        <div className="mt-0.5 flex items-center justify-end gap-1.5">
+                          <Badge
+                            variant="outline"
+                            className={cn('text-[10px]', STATUS_BADGE[row.displayStatus])}
+                          >
+                            {STATUS_LABEL[row.displayStatus]}
+                          </Badge>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
