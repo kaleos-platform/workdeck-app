@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
+import { Plus } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -181,15 +183,18 @@ export function TransactionsView() {
   const [commitDialogOpen, setCommitDialogOpen] = useState(false)
   const [committing, setCommitting] = useState(false)
 
-  // 카테고리 트리 로드
+  // 카테고리 트리 로드 — 실패는 토스트로 가시화(빈 드롭다운 미스터리 방지)
   const loadCategories = useCallback(async () => {
     try {
       const res = await fetch('/api/finance/categories')
-      if (!res.ok) return
+      if (!res.ok) {
+        toast.error('계정과목을 불러오지 못했습니다. 새로고침 해주세요')
+        return
+      }
       const data = await res.json()
       setCategoryTree(data.tree ?? [])
     } catch {
-      // 조용히 실패
+      toast.error('계정과목을 불러오지 못했습니다. 새로고침 해주세요')
     }
   }, [])
 
@@ -393,6 +398,8 @@ export function TransactionsView() {
           tab={stagingTab}
           importId={importIdParam}
           leafTargets={leafTargets}
+          categoryTree={categoryTree}
+          reloadCategories={loadCategories}
           newCount={newCount}
           dupExcluded={dupExcluded}
           onTabChange={handleStagingTabChange}
@@ -415,6 +422,8 @@ export function TransactionsView() {
           filterClassStatus={filterClassStatus}
           accounts={accounts}
           leafTargets={leafTargets}
+          categoryTree={categoryTree}
+          reloadCategories={loadCategories}
           onFilterQChange={setFilterQ}
           onFilterAccountIdChange={setFilterAccountId}
           onFilterDirectionChange={setFilterDirection}
@@ -476,6 +485,8 @@ function StagingPanel({
   tab,
   importId,
   leafTargets,
+  categoryTree,
+  reloadCategories,
   newCount,
   dupExcluded,
   onTabChange,
@@ -489,6 +500,8 @@ function StagingPanel({
   tab: string
   importId: string | undefined
   leafTargets: { id: string; label: string }[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
   newCount: number
   dupExcluded: number
   onTabChange: (tab: string) => void
@@ -572,6 +585,8 @@ function StagingPanel({
                   key={row.id}
                   row={row}
                   leafTargets={leafTargets}
+                  categoryTree={categoryTree}
+                  reloadCategories={reloadCategories}
                   onClassify={onClassify}
                   onDupResolution={onDupResolution}
                 />
@@ -605,11 +620,15 @@ function StagingPanel({
 function StagingRow({
   row,
   leafTargets,
+  categoryTree,
+  reloadCategories,
   onClassify,
   onDupResolution,
 }: {
   row: StagedRow
   leafTargets: { id: string; label: string }[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
 }) {
@@ -657,23 +676,17 @@ function StagingRow({
         </span>
       </TableCell>
 
-      {/* 계정과목 inline Select */}
+      {/* 계정과목 inline Select (+ 계정과목 추가 팝업) */}
       <TableCell>
         <div className="flex items-center gap-1.5">
-          <Select value={row.categoryId ?? ''} onValueChange={(v) => onClassify(row.id, v)}>
-            <SelectTrigger className="h-7 w-40 text-xs">
-              <SelectValue placeholder="계정과목 선택">
-                {categoryLabel || '계정과목 선택'}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {leafTargets.map((t) => (
-                <SelectItem key={t.id} value={t.id} className="text-xs">
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CategorySelect
+            value={row.categoryId}
+            currentLabel={categoryLabel}
+            leafTargets={leafTargets}
+            categoryTree={categoryTree}
+            reloadCategories={reloadCategories}
+            onSelect={(categoryId) => onClassify(row.id, categoryId)}
+          />
           {/* 규칙 힌트 */}
           {row.matchedRuleId && row.category && (
             <span className="text-[10px] text-muted-foreground">규칙</span>
@@ -747,6 +760,8 @@ function TransactionsPanel({
   filterClassStatus,
   accounts,
   leafTargets,
+  categoryTree,
+  reloadCategories,
   onFilterQChange,
   onFilterAccountIdChange,
   onFilterDirectionChange,
@@ -764,6 +779,8 @@ function TransactionsPanel({
   filterClassStatus: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED'
   accounts: { id: string; name: string; kind: FinAccountKind }[]
   leafTargets: { id: string; label: string }[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
   onFilterQChange: (v: string) => void
   onFilterAccountIdChange: (v: string) => void
   onFilterDirectionChange: (v: 'all' | 'IN' | 'OUT') => void
@@ -880,6 +897,8 @@ function TransactionsPanel({
                   key={txn.id}
                   txn={txn}
                   leafTargets={leafTargets}
+                  categoryTree={categoryTree}
+                  reloadCategories={reloadCategories}
                   onClassify={onClassify}
                 />
               ))}
@@ -896,10 +915,14 @@ function TransactionsPanel({
 function TransactionRow({
   txn,
   leafTargets,
+  categoryTree,
+  reloadCategories,
   onClassify,
 }: {
   txn: Transaction
   leafTargets: { id: string; label: string }[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
   onClassify: (txnId: string, categoryId: string) => void
 }) {
   const statusBadge = classStatusBadge(txn.classStatus)
@@ -943,23 +966,17 @@ function TransactionRow({
         </span>
       </TableCell>
 
-      {/* 계정과목 inline Select */}
+      {/* 계정과목 inline Select (+ 계정과목 추가 팝업) */}
       <TableCell>
         <div className="flex items-center gap-1.5">
-          <Select value={txn.categoryId ?? ''} onValueChange={(v) => onClassify(txn.id, v)}>
-            <SelectTrigger className="h-7 w-40 text-xs">
-              <SelectValue placeholder="계정과목 선택">
-                {categoryLabel || '계정과목 선택'}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {leafTargets.map((t) => (
-                <SelectItem key={t.id} value={t.id} className="text-xs">
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CategorySelect
+            value={txn.categoryId}
+            currentLabel={categoryLabel}
+            leafTargets={leafTargets}
+            categoryTree={categoryTree}
+            reloadCategories={reloadCategories}
+            onSelect={(categoryId) => onClassify(txn.id, categoryId)}
+          />
           {txn.matchedRuleId && txn.category && (
             <span className="text-[10px] text-muted-foreground">규칙</span>
           )}
@@ -973,5 +990,217 @@ function TransactionRow({
         </Badge>
       </TableCell>
     </TableRow>
+  )
+}
+
+// ─── 계정과목 선택 + 인라인 추가 ────────────────────────────────────────────────
+
+/**
+ * 계정과목 inline Select. 드롭다운 하단에 '+ 계정과목 추가'가 있고, 계정과목이 하나도 없으면
+ * Select 대신 추가 버튼만 노출한다. 추가 성공 시 계정과목을 재로드하고 해당 거래에 즉시 매칭한다.
+ */
+function CategorySelect({
+  value,
+  currentLabel,
+  leafTargets,
+  categoryTree,
+  reloadCategories,
+  onSelect,
+}: {
+  value: string | null
+  currentLabel: string
+  leafTargets: { id: string; label: string }[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
+  onSelect: (categoryId: string) => void
+}) {
+  const [selectOpen, setSelectOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  // 추가된 계정과목을 재로드 후 이 거래에 즉시 매칭
+  const handleCreated = async (category: { id: string }) => {
+    await reloadCategories()
+    onSelect(category.id)
+  }
+
+  const dialog = (
+    <AddCategoryDialog
+      open={dialogOpen}
+      onOpenChange={setDialogOpen}
+      categoryTree={categoryTree}
+      onCreated={handleCreated}
+    />
+  )
+
+  // 빈 상태(계정과목 없음) — 새 계정과목은 상위 그룹(수익/비용/이체)이 있어야 추가 가능하므로,
+  // 여기선 추가 팝업 대신 재로드로 표준 계정과목(K-IFRS)을 자가복구한다. 복구 후 일반 드롭다운의
+  // '+ 계정과목 추가'로 사용자 계정과목을 더할 수 있다. 복구 실패 시 loadCategories가 토스트로 알림.
+  if (leafTargets.length === 0) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 gap-1 text-xs"
+        onClick={() => void reloadCategories()}
+      >
+        <Plus className="size-3.5" />
+        계정과목 불러오기
+      </Button>
+    )
+  }
+
+  return (
+    <>
+      <Select
+        open={selectOpen}
+        onOpenChange={setSelectOpen}
+        value={value ?? ''}
+        onValueChange={(v) => onSelect(v)}
+      >
+        <SelectTrigger className="h-7 w-40 text-xs">
+          <SelectValue placeholder="계정과목 선택">{currentLabel || '계정과목 선택'}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {leafTargets.map((t) => (
+            <SelectItem key={t.id} value={t.id} className="text-xs">
+              {t.label}
+            </SelectItem>
+          ))}
+          <div className="mt-1 border-t pt-1">
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                setSelectOpen(false)
+                setDialogOpen(true)
+              }}
+              className="flex w-full items-center gap-1 rounded-sm px-2 py-1.5 text-xs text-primary hover:bg-accent"
+            >
+              <Plus className="size-3.5" />
+              계정과목 추가
+            </button>
+          </div>
+        </SelectContent>
+      </Select>
+      {dialog}
+    </>
+  )
+}
+
+/** 분류 타깃이 될 수 있는 상위 계정과목(수익/비용/이체의 root + lvl1) 옵션. */
+function collectParentOptions(tree: CategoryNode[]): { id: string; label: string }[] {
+  const out: { id: string; label: string }[] = []
+  for (const root of tree) {
+    if (root.type !== 'INCOME' && root.type !== 'EXPENSE' && root.type !== 'TRANSFER') continue
+    out.push({ id: root.id, label: root.name })
+    for (const lvl1 of root.children) {
+      out.push({ id: lvl1.id, label: `${root.name} › ${lvl1.name}` })
+    }
+  }
+  return out
+}
+
+/**
+ * 계정과목 추가 다이얼로그 — 상위 계정과목(수익/비용/이체) 아래에 새 계정과목을 만들고
+ * 생성된 계정과목을 호출자에게 넘겨 즉시 매칭하게 한다. POST /api/finance/categories 재사용.
+ */
+function AddCategoryDialog({
+  open,
+  onOpenChange,
+  categoryTree,
+  onCreated,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  categoryTree: CategoryNode[]
+  onCreated: (category: { id: string }) => Promise<void> | void
+}) {
+  const [parentId, setParentId] = useState('')
+  const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const parentOptions = useMemo(() => collectParentOptions(categoryTree), [categoryTree])
+
+  async function handleSave() {
+    if (!parentId) {
+      toast.error('상위 계정과목을 선택해 주세요')
+      return
+    }
+    if (!name.trim()) {
+      toast.error('계정과목 이름을 입력해 주세요')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/finance/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentId, name: name.trim() }),
+      })
+      const data = (await res.json().catch(() => ({}))) as {
+        message?: string
+        category?: { id: string }
+      }
+      if (!res.ok || !data.category) throw new Error(data?.message ?? '계정과목 추가 실패')
+      toast.success('계정과목이 추가되어 이 거래에 적용되었습니다')
+      setName('')
+      setParentId('')
+      onOpenChange(false)
+      await onCreated(data.category)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '계정과목 추가 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>계정과목 추가</DialogTitle>
+          <DialogDescription>
+            상위 계정과목 아래에 새 계정과목을 추가하고 이 거래에 바로 적용합니다.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">상위 계정과목</Label>
+            <Select value={parentId} onValueChange={setParentId}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="수익 / 비용 / 이체 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {parentOptions.map((p) => (
+                  <SelectItem key={p.id} value={p.id} className="text-sm">
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">계정과목 이름</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="예: 플랫폼 수수료"
+              className="h-9 text-sm"
+              maxLength={100}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void handleSave()
+              }}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+            취소
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? '추가 중...' : '추가하고 적용'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

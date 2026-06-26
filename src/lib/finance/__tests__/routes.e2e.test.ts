@@ -105,7 +105,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
       update: { isActive: true },
       create: { spaceId: SPACE_ID, deckAppId: 'finance', isActive: true },
     })
-    await seedFinanceCategories(SPACE_ID)
+    await seedFinanceCategories(SPACE_ID, { withRules: true })
 
     const account = await prisma.finAccount.create({
       data: { spaceId: SPACE_ID, name: '기업은행 테스트', kind: 'BANK', institution: '기업은행' },
