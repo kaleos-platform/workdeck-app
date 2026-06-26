@@ -49,8 +49,9 @@ export function StockStatusMatrix({
   return (
     <Card className="overflow-hidden">
       <CardHeader className="gap-3">
+        <CardTitle className="text-sm">{selectedProductName ?? '전체 상품'}</CardTitle>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-sm">{selectedProductName ?? '전체 상품'}</CardTitle>
+          {toolbar}
           <div className="flex items-center gap-3">
             <div className="text-xs text-muted-foreground">
               {KRW.format(rows.length)}건{capped && ` · 상위 ${ROW_CAP}건만 표시`}
