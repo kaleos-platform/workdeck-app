@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const txn = await prisma.finTransaction.findFirst({
     where: { id, spaceId },
-    select: { id: true, description: true, counterparty: true },
+    select: { id: true, description: true, counterparty: true, direction: true },
   })
   if (!txn) return errorResponse('거래를 찾을 수 없습니다', 404)
 
@@ -42,7 +42,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       data.matchedRuleId = await learnRule(
         spaceId,
         { description: txn.description, counterparty: txn.counterparty },
-        body.categoryId
+        body.categoryId,
+        txn.direction
       )
     }
   }

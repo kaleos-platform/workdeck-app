@@ -9395,6 +9395,7 @@ export const FinClassRuleScalarFieldEnum = {
   matchKey: 'matchKey',
   matchType: 'matchType',
   categoryId: 'categoryId',
+  direction: 'direction',
   learnedFrom: 'learnedFrom',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -10266,6 +10267,20 @@ export type ListEnumFinClassRuleMatchTypeFieldRefInput<$PrismaModel> = FieldRefI
 
 
 /**
+ * Reference to a field of type 'FinTxnDirection'
+ */
+export type EnumFinTxnDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinTxnDirection'>
+    
+
+
+/**
+ * Reference to a field of type 'FinTxnDirection[]'
+ */
+export type ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinTxnDirection[]'>
+    
+
+
+/**
  * Reference to a field of type 'FinClassRuleSource'
  */
 export type EnumFinClassRuleSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinClassRuleSource'>
@@ -10290,20 +10305,6 @@ export type EnumFinImportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'FinImportStatus[]'
  */
 export type ListEnumFinImportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinImportStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'FinTxnDirection'
- */
-export type EnumFinTxnDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinTxnDirection'>
-    
-
-
-/**
- * Reference to a field of type 'FinTxnDirection[]'
- */
-export type ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinTxnDirection[]'>
     
 
 

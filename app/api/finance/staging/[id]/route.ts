@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { learnRule } from '@/lib/finance/classify'
+import { learnRule, matchKeyOf } from '@/lib/finance/classify'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
 const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED']
@@ -20,7 +20,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const row = await prisma.finStagedRow.findFirst({
     where: { id, spaceId },
-    select: { id: true, description: true, counterparty: true },
+    select: {
+      id: true,
+      importId: true,
+      description: true,
+      counterparty: true,
+      direction: true,
+    },
   })
   if (!row) return errorResponse('스테이징 행을 찾을 수 없습니다', 404)
 
@@ -46,7 +52,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const ruleId = await learnRule(
         spaceId,
         { description: row.description, counterparty: row.counterparty },
-        body.categoryId
+        body.categoryId,
+        row.direction
       )
       data.matchedRuleId = ruleId
     }
@@ -74,5 +81,29 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     },
   })
 
-  return NextResponse.json({ row: updated })
+  // 분류 확정 시 — 같은 임포트의 미분류+검토 행 중 동일 적요(정규화)+동일 방향인 다른 행 = 자동적용 후보.
+  let siblingIds: string[] = []
+  if (data.categoryId) {
+    const thisKey = matchKeyOf({ description: row.description, counterparty: row.counterparty })
+    if (thisKey) {
+      const candidates = await prisma.finStagedRow.findMany({
+        where: {
+          spaceId,
+          importId: row.importId,
+          id: { not: id },
+          direction: row.direction,
+          classStatus: { in: ['UNCLASSIFIED', 'REVIEW'] },
+        },
+        select: { id: true, description: true, counterparty: true },
+      })
+      siblingIds = candidates
+        .filter(
+          (c) =>
+            matchKeyOf({ description: c.description, counterparty: c.counterparty }) === thisKey
+        )
+        .map((c) => c.id)
+    }
+  }
+
+  return NextResponse.json({ row: updated, siblingIds })
 }

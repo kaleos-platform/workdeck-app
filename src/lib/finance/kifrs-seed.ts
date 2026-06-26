@@ -9,7 +9,7 @@
  * 키워드(kw)는 SEED 분류 규칙(KEYWORD 매칭, 저신뢰=검토 제안)으로 함께 등록된다.
  */
 import { prisma } from '@/lib/prisma'
-import type { FinCategoryType } from '@/generated/prisma/enums'
+import type { FinCategoryType, FinTxnDirection } from '@/generated/prisma/enums'
 
 /** 적요/가맹점/키워드 정규화 — 공백 정리 + 소문자(라틴 가맹점 대비). */
 export function normalizeFinKey(raw: string): string {
@@ -170,7 +170,7 @@ export async function seedFinanceCategories(
 
       if (withRules) {
         for (const keyword of child.kw ?? []) {
-          await upsertSeedRule(spaceId, childRow.id, keyword)
+          await upsertSeedRule(spaceId, childRow.id, keyword, directionForType(root.type))
         }
       }
     }
@@ -219,11 +219,24 @@ async function upsertCategory(
   })
 }
 
-async function upsertSeedRule(spaceId: string, categoryId: string, keyword: string): Promise<void> {
+/** 계정과목 type → 규칙 방향 (INCOME=IN, EXPENSE=OUT, 그 외=null 방향무관). */
+export function directionForType(type: FinCategoryType): FinTxnDirection | null {
+  if (type === 'INCOME') return 'IN'
+  if (type === 'EXPENSE') return 'OUT'
+  return null
+}
+
+async function upsertSeedRule(
+  spaceId: string,
+  categoryId: string,
+  keyword: string,
+  direction: FinTxnDirection | null
+): Promise<void> {
   const matchKey = normalizeFinKey(keyword)
   if (!matchKey) return
-  const existing = await prisma.finClassRule.findUnique({
-    where: { spaceId_matchKey: { spaceId, matchKey } },
+  // (spaceId, matchKey, direction) 멱등 — nullable 복합 unique upsert 회피 위해 findFirst 사용.
+  const existing = await prisma.finClassRule.findFirst({
+    where: { spaceId, matchKey, direction },
     select: { id: true },
   })
   if (existing) return
@@ -234,6 +247,7 @@ async function upsertSeedRule(spaceId: string, categoryId: string, keyword: stri
       matchType: 'KEYWORD',
       categoryId,
       learnedFrom: 'SEED',
+      direction,
     },
   })
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { normalizeFinKey } from '@/lib/finance/kifrs-seed'
+import { normalizeFinKey, directionForType } from '@/lib/finance/kifrs-seed'
 
 const VALID_MATCH_TYPES = ['EXACT', 'KEYWORD'] as const
 type MatchType = (typeof VALID_MATCH_TYPES)[number]
@@ -55,38 +55,40 @@ export async function POST(req: NextRequest) {
   // matchKey 정규화
   const normalizedKey = normalizeFinKey(matchKey)
 
-  // categoryId spaceId 소유 검증
+  // categoryId spaceId 소유 검증 + 방향(type 기반) 유도
   const category = await prisma.finCategory.findFirst({
     where: { id: categoryId, spaceId },
-    select: { id: true },
+    select: { id: true, type: true },
   })
   if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
+  const direction = directionForType(category.type)
 
-  // (spaceId, matchKey) upsert — 있으면 categoryId/matchType 갱신
-  const rule = await prisma.finClassRule.upsert({
-    where: { spaceId_matchKey: { spaceId, matchKey: normalizedKey } },
-    update: {
-      categoryId,
-      matchType: matchType as MatchType,
-      learnedFrom: 'USER',
-    },
-    create: {
-      spaceId,
-      matchKey: normalizedKey,
-      categoryId,
-      matchType: matchType as MatchType,
-      learnedFrom: 'USER',
-    },
-    include: {
-      category: {
-        select: {
-          id: true,
-          name: true,
-          parent: { select: { name: true } },
-        },
-      },
-    },
+  // (spaceId, matchKey, direction) 멱등 — direction이 null일 수 있어 compound-unique upsert 대신
+  // findFirst → update/create. 있으면 categoryId/matchType 갱신.
+  const include = {
+    category: { select: { id: true, name: true, parent: { select: { name: true } } } },
+  }
+  const existing = await prisma.finClassRule.findFirst({
+    where: { spaceId, matchKey: normalizedKey, direction },
+    select: { id: true },
   })
+  const rule = existing
+    ? await prisma.finClassRule.update({
+        where: { id: existing.id },
+        data: { categoryId, matchType: matchType as MatchType, learnedFrom: 'USER' },
+        include,
+      })
+    : await prisma.finClassRule.create({
+        data: {
+          spaceId,
+          matchKey: normalizedKey,
+          categoryId,
+          matchType: matchType as MatchType,
+          learnedFrom: 'USER',
+          direction,
+        },
+        include,
+      })
 
   return NextResponse.json({ rule }, { status: 201 })
 }

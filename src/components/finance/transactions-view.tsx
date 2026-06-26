@@ -9,9 +9,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { FloatingActionBar, floatingActionButtonClass } from '@/components/ui/floating-action-bar'
 import {
   Dialog,
   DialogContent,
@@ -170,6 +171,11 @@ export function TransactionsView() {
   const [commitDialogOpen, setCommitDialogOpen] = useState(false)
   const [committing, setCommitting] = useState(false)
 
+  // 분류 직후 동일 적요 자동 적용 다이얼로그
+  const [autoApply, setAutoApply] = useState<{ categoryId: string; siblingIds: string[] } | null>(
+    null
+  )
+
   // 카테고리 트리 로드 — 실패는 토스트로 가시화(빈 드롭다운 미스터리 방지)
   const loadCategories = useCallback(async () => {
     try {
@@ -285,11 +291,63 @@ export function TransactionsView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoryId }),
       })
-      if (!res.ok) throw new Error('분류 저장 실패')
-      toast.success('동일 적요는 다음부터 자동 분류됩니다')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '분류 저장 실패')
       void loadStaging(stagingTab)
+      // 동일 적요+동일 방향 미처리 행이 있으면 자동 적용 여부를 물음
+      const siblingIds: string[] = Array.isArray(data?.siblingIds) ? data.siblingIds : []
+      if (siblingIds.length > 0) setAutoApply({ categoryId, siblingIds })
+      else toast.success('동일 적요는 다음부터 자동 분류됩니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '분류 저장 실패')
+    }
+  }
+
+  // 일괄 처리(bulk 엔드포인트) — 계정과목 분류 또는 중복 처리
+  const applyBulk = useCallback(
+    async (payload: { ids: string[]; categoryId?: string; resolution?: FinStagedResolution }) => {
+      const res = await fetch('/api/finance/staging/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '일괄 처리 실패')
+      return (data?.updated as number) ?? 0
+    },
+    []
+  )
+
+  const handleBulkClassify = async (ids: string[], categoryId: string) => {
+    try {
+      const n = await applyBulk({ ids, categoryId })
+      toast.success(`${n}건에 계정과목을 적용했습니다`)
+      void loadStaging(stagingTab)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '일괄 처리 실패')
+    }
+  }
+
+  const handleBulkResolution = async (ids: string[], resolution: FinStagedResolution) => {
+    try {
+      const n = await applyBulk({ ids, resolution })
+      toast.success(resolution === 'DUP_SAME' ? `${n}건 제외 처리` : `${n}건 유지 처리`)
+      void loadStaging(stagingTab)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '일괄 처리 실패')
+    }
+  }
+
+  const handleAutoApplyConfirm = async () => {
+    if (!autoApply) return
+    try {
+      const n = await applyBulk({ ids: autoApply.siblingIds, categoryId: autoApply.categoryId })
+      toast.success(`동일 적요 ${n}건에 적용했습니다`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '일괄 적용 실패')
+    } finally {
+      setAutoApply(null)
+      void loadStaging(stagingTab)
     }
   }
 
@@ -392,6 +450,8 @@ export function TransactionsView() {
           onTabChange={handleStagingTabChange}
           onClassify={handleStagingClassify}
           onDupResolution={handleDupResolution}
+          onBulkClassify={handleBulkClassify}
+          onBulkResolution={handleBulkResolution}
           onCommitRequest={() => setCommitDialogOpen(true)}
         />
       </TabsContent>
@@ -459,6 +519,28 @@ export function TransactionsView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── 동일 적요 자동 적용 확인 ── */}
+      <Dialog open={autoApply !== null} onOpenChange={(open) => !open && setAutoApply(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>동일 적요 자동 적용</DialogTitle>
+            <DialogDescription>
+              같은 적요·같은 방향의 미처리 내역{' '}
+              <strong>{autoApply?.siblingIds.length ?? 0}건</strong>에도 같은 계정과목을 적용할까요?
+              (검토 제안도 덮어씁니다.)
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAutoApply(null)}>
+              이 건만
+            </Button>
+            <Button onClick={handleAutoApplyConfirm}>
+              {autoApply?.siblingIds.length ?? 0}건에 적용
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Tabs>
   )
 }
@@ -479,6 +561,8 @@ function StagingPanel({
   onTabChange,
   onClassify,
   onDupResolution,
+  onBulkClassify,
+  onBulkResolution,
   onCommitRequest,
 }: {
   rows: StagedRow[]
@@ -494,22 +578,43 @@ function StagingPanel({
   onTabChange: (tab: string) => void
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
+  onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
+  onBulkResolution: (ids: string[], resolution: FinStagedResolution) => Promise<void>
   onCommitRequest: () => void
 }) {
   const hasDraft = counts.total > 0
 
+  // 다중 선택 상태. selectedInView가 현재 탭의 행으로 스코프하므로 탭 전환 시 자연히 정리된다.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const rowIds = rows.map((r) => r.id)
+  const selectedInView = rowIds.filter((id) => selectedIds.has(id))
+  const allSelected = rowIds.length > 0 && selectedInView.length === rowIds.length
+  const toggleOne = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const toggleAll = () =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (allSelected) rowIds.forEach((id) => next.delete(id))
+      else rowIds.forEach((id) => next.add(id))
+      return next
+    })
+  const clearSelection = () => setSelectedIds(new Set())
+  const runBulkClassify = async (categoryId: string) => {
+    await onBulkClassify(selectedInView, categoryId)
+    clearSelection()
+  }
+  const runBulkResolution = async (resolution: FinStagedResolution) => {
+    await onBulkResolution(selectedInView, resolution)
+    clearSelection()
+  }
+
   return (
     <div className="space-y-3">
-      {/* 안내 배너 */}
-      {(counts.review > 0 || counts.unclassified > 0 || counts.dup > 0) && (
-        <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-          <AlertDescription className="text-xs text-amber-700 dark:text-amber-400">
-            검토 필요 <strong>{counts.review}</strong>건 · 미분류{' '}
-            <strong>{counts.unclassified}</strong>건 · 중복 의심 <strong>{counts.dup}</strong>건
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* 하위 탭 */}
       <div className="flex items-center gap-1.5 border-b pb-2">
         {[
@@ -557,6 +662,13 @@ function StagingPanel({
           <Table>
             <TableHeader>
               <TableRow className="text-xs">
+                <TableHead className="w-9">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="전체 선택"
+                  />
+                </TableHead>
                 <TableHead className="w-24">날짜</TableHead>
                 <TableHead className="w-28">출처</TableHead>
                 <TableHead>적요</TableHead>
@@ -571,6 +683,8 @@ function StagingPanel({
                 <StagingRow
                   key={row.id}
                   row={row}
+                  selected={selectedIds.has(row.id)}
+                  onToggleSelect={() => toggleOne(row.id)}
                   leafTargets={leafTargets}
                   categoryTree={categoryTree}
                   reloadCategories={reloadCategories}
@@ -598,7 +712,86 @@ function StagingPanel({
           저장 처리
         </Button>
       </div>
+
+      {/* 다중 선택 일괄 처리 바 */}
+      <StagingBulkBar
+        selectedCount={selectedInView.length}
+        leafTargets={leafTargets}
+        onClassify={runBulkClassify}
+        onResolution={runBulkResolution}
+        onClear={clearSelection}
+      />
     </div>
+  )
+}
+
+// ─── 다중 선택 일괄 처리 바 ────────────────────────────────────────────────────
+
+function StagingBulkBar({
+  selectedCount,
+  leafTargets,
+  onClassify,
+  onResolution,
+  onClear,
+}: {
+  selectedCount: number
+  leafTargets: ComboOption[]
+  onClassify: (categoryId: string) => Promise<void>
+  onResolution: (resolution: FinStagedResolution) => Promise<void>
+  onClear: () => void
+}) {
+  const [busy, setBusy] = useState(false)
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true)
+    try {
+      await fn()
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <FloatingActionBar
+      open={selectedCount > 0}
+      onClear={onClear}
+      clearDisabled={busy}
+      actions={
+        <>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-background/70">계정과목</span>
+            <CategoryCombobox
+              options={leafTargets}
+              value={null}
+              onChange={(id) => void run(() => onClassify(id))}
+              placeholder="일괄 분류"
+              triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
+              disabled={busy}
+            />
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={floatingActionButtonClass}
+            onClick={() => void run(() => onResolution('DUP_SAME'))}
+            disabled={busy}
+          >
+            제외
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={floatingActionButtonClass}
+            onClick={() => void run(() => onResolution('NEW'))}
+            disabled={busy}
+          >
+            유지
+          </Button>
+        </>
+      }
+    >
+      <span className="text-sm font-semibold">{selectedCount}개 선택됨</span>
+    </FloatingActionBar>
   )
 }
 
@@ -606,6 +799,8 @@ function StagingPanel({
 
 function StagingRow({
   row,
+  selected,
+  onToggleSelect,
   leafTargets,
   categoryTree,
   reloadCategories,
@@ -613,6 +808,8 @@ function StagingRow({
   onDupResolution,
 }: {
   row: StagedRow
+  selected: boolean
+  onToggleSelect: () => void
   leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
@@ -623,7 +820,15 @@ function StagingRow({
   const statusBadge = classStatusBadge(row.classStatus)
 
   return (
-    <TableRow className={isDup && row.resolution === 'DUP_SAME' ? 'opacity-50' : ''}>
+    <TableRow
+      data-state={selected ? 'selected' : undefined}
+      className={isDup && row.resolution === 'DUP_SAME' ? 'opacity-50' : ''}
+    >
+      {/* 선택 */}
+      <TableCell>
+        <Checkbox checked={selected} onCheckedChange={onToggleSelect} aria-label="행 선택" />
+      </TableCell>
+
       {/* 날짜 */}
       <TableCell className="font-mono text-xs">{fmtDate(row.txnDate)}</TableCell>
 

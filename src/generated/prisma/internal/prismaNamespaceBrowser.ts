@@ -1696,6 +1696,7 @@ export const FinClassRuleScalarFieldEnum = {
   matchKey: 'matchKey',
   matchType: 'matchType',
   categoryId: 'categoryId',
+  direction: 'direction',
   learnedFrom: 'learnedFrom',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

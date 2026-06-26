@@ -2651,6 +2651,9 @@ model FinClassRule {
   matchKey    String // 정규화된 적요/가맹점 or 키워드
   matchType   FinClassRuleMatchType @default(EXACT)
   categoryId  String
+  // 방향별 규칙 구분 — 동일 적요라도 비용(OUT)/수입(IN)을 별개 규칙으로 분류.
+  // null = 방향 무관(이체 시드 등). 사용자 EXACT 규칙은 행의 방향(IN/OUT)을 가진다.
+  direction   FinTxnDirection?
   learnedFrom FinClassRuleSource    @default(USER)
 
   space    Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -2659,7 +2662,7 @@ model FinClassRule {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([spaceId, matchKey])
+  @@unique([spaceId, matchKey, direction])
   @@index([spaceId])
   @@index([categoryId])
 }
