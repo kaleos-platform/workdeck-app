@@ -103,7 +103,7 @@ export function StockStatusToolbar({
         <Input
           value={local}
           onChange={(e) => setLocal(e.target.value)}
-          placeholder="상품명 검색"
+          placeholder="옵션/SKU 검색"
           className="h-9 w-64 pl-8"
         />
       </div>
