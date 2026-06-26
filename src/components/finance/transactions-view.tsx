@@ -367,24 +367,25 @@ export function TransactionsView() {
     }
   }
 
-  // 커밋 확인 — counts는 전체 임포트 기준(탭 필터 무관)
-  const dupExcluded = stagingCounts.dup // DUP_SAME + DUP_CHANGED 합산(서버 카운트)
-  const newCount = stagingCounts.total - stagingCounts.dup
-  const reviewRemaining = stagingCounts.review
+  // 저장 처리 — 분류완료(CLASSIFIED) 행만 확정 저장(임포트 무관). 미분류·검토는 보류.
+  const classifiedCount = stagingCounts.classified
+  const heldBack = stagingCounts.unclassified + stagingCounts.review
 
   const handleCommit = async () => {
-    if (!importIdParam) return
     setCommitting(true)
     try {
       const res = await fetch('/api/finance/staging/commit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ importId: importIdParam }),
+        // importId 있으면(업로드 후 진입) 그 임포트로 한정, 없으면(네비 진입) 전체 분류완료.
+        // 어느 쪽이든 분류완료 행만 저장 — 표시된 카운트와 일치.
+        body: JSON.stringify(importIdParam ? { importId: importIdParam } : {}),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '저장 처리 실패')
-      toast.success(`저장 완료 — 반영 ${data.committed}건, 제외 ${data.skipped}건`)
+      toast.success(`분류완료 ${data.committed}건을 저장했습니다`)
       setCommitDialogOpen(false)
+      void loadStaging(stagingTab) // 잔여(미분류·검토) 갱신
       // 전체 거래 탭으로 전환
       setMainTab('transactions')
       void loadTransactions()
@@ -441,12 +442,11 @@ export function TransactionsView() {
           counts={stagingCounts}
           loading={stagingLoading}
           tab={stagingTab}
-          importId={importIdParam}
           leafTargets={leafTargets}
           categoryTree={categoryTree}
           reloadCategories={loadCategories}
-          newCount={newCount}
-          dupExcluded={dupExcluded}
+          classifiedCount={classifiedCount}
+          heldBack={heldBack}
           onTabChange={handleStagingTabChange}
           onClassify={handleStagingClassify}
           onDupResolution={handleDupResolution}
@@ -485,22 +485,20 @@ export function TransactionsView() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>저장 처리 확인</DialogTitle>
-            <DialogDescription>스테이징 행을 확정 거래로 반영합니다.</DialogDescription>
+            <DialogDescription>
+              분류완료 건만 확정 거래로 저장합니다. 미분류·검토 행은 보류됩니다.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between rounded-md border px-3 py-2">
-              <span className="text-muted-foreground">신규 반영</span>
-              <span className="font-mono font-medium">{newCount}건</span>
+              <span className="text-muted-foreground">분류완료 저장</span>
+              <span className="font-mono font-medium">{classifiedCount}건</span>
             </div>
-            <div className="flex justify-between rounded-md border px-3 py-2">
-              <span className="text-muted-foreground">중복 제외</span>
-              <span className="font-mono font-medium">{dupExcluded}건</span>
-            </div>
-            {reviewRemaining > 0 && (
+            {heldBack > 0 && (
               <div className="flex justify-between rounded-md border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950">
-                <span className="text-amber-700 dark:text-amber-400">검토 잔여</span>
+                <span className="text-amber-700 dark:text-amber-400">보류(미분류·검토)</span>
                 <span className="font-mono font-medium text-amber-700 dark:text-amber-400">
-                  {reviewRemaining}건
+                  {heldBack}건
                 </span>
               </div>
             )}
@@ -552,12 +550,11 @@ function StagingPanel({
   counts,
   loading,
   tab,
-  importId,
   leafTargets,
   categoryTree,
   reloadCategories,
-  newCount,
-  dupExcluded,
+  classifiedCount,
+  heldBack,
   onTabChange,
   onClassify,
   onDupResolution,
@@ -569,12 +566,11 @@ function StagingPanel({
   counts: StagedCounts
   loading: boolean
   tab: string
-  importId: string | undefined
   leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
-  newCount: number
-  dupExcluded: number
+  classifiedCount: number
+  heldBack: number
   onTabChange: (tab: string) => void
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
@@ -697,18 +693,14 @@ function StagingPanel({
         </div>
       )}
 
-      {/* 하단 저장 처리 버튼 */}
+      {/* 하단 저장 처리 버튼 — 분류완료 행만 확정 저장(임포트 무관) */}
       <div className="flex items-center justify-between pt-1">
         <p className="text-xs text-muted-foreground">
-          {importId
-            ? `임포트 ${importId.slice(0, 8)}…`
-            : '임포트 미지정 — importId 파라미터를 지정해야 저장할 수 있습니다'}
+          분류완료 <span className="font-medium text-foreground">{classifiedCount}</span>건 저장
+          가능
+          {heldBack > 0 && ` · 미처리 ${heldBack}건 보류`}
         </p>
-        <Button
-          onClick={onCommitRequest}
-          disabled={!importId || newCount + dupExcluded === 0}
-          size="sm"
-        >
+        <Button onClick={onCommitRequest} disabled={classifiedCount === 0} size="sm">
           저장 처리
         </Button>
       </div>

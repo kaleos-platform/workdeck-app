@@ -201,6 +201,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(learned).toBeGreaterThan(0)
   }, 20000)
 
+  // ⚠️ STALE: staging/commit이 분류완료 행만 커밋 + staged 행 delete로 모델 변경됨(임포트 무관).
+  // 이 테스트는 구 모델(임포트 전체 커밋 + COMMITTED 표시) 기준이라 새 동작에 맞춘 same-session-safe
+  // 재작성 필요. (공유 dev DB의 의식주의 space를 wipe하므로 현재 세션에서 실행하지 않음.)
   test('staging/commit: 확정 거래 + 잔고 스냅샷 파생', async () => {
     const req = new NextRequest('http://localhost/api/finance/staging/commit', {
       method: 'POST',
