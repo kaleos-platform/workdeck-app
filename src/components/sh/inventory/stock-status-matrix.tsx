@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -18,6 +19,7 @@ type Props = {
   loading: boolean
   selectedLocationId?: string | null
   selectedProductName?: string | null
+  toolbar?: ReactNode
 }
 
 const KRW = new Intl.NumberFormat('ko-KR')
@@ -36,6 +38,7 @@ export function StockStatusMatrix({
   loading,
   selectedLocationId,
   selectedProductName,
+  toolbar,
 }: Props) {
   const capped = rows.length > ROW_CAP
   const displayRows = capped ? rows.slice(0, ROW_CAP) : rows
@@ -45,23 +48,21 @@ export function StockStatusMatrix({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className="text-sm">
-          옵션별 재고 현황
-          <span className="ml-2 text-xs font-normal text-muted-foreground">
-            · {selectedProductName ?? '전체 상품'} · 최신 재고
-          </span>
-        </CardTitle>
-        <div className="flex items-center gap-3">
-          <div className="text-xs text-muted-foreground">
-            {KRW.format(rows.length)}건{capped && ` · 상위 ${ROW_CAP}건만 표시`}
+      <CardHeader className="gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className="text-sm">{selectedProductName ?? '전체 상품'}</CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="text-xs text-muted-foreground">
+              {KRW.format(rows.length)}건{capped && ` · 상위 ${ROW_CAP}건만 표시`}
+            </div>
+            <StockStatusExportButton
+              rows={rows}
+              locations={locations}
+              selectedLocationId={selectedLocationId ?? null}
+            />
           </div>
-          <StockStatusExportButton
-            rows={rows}
-            locations={locations}
-            selectedLocationId={selectedLocationId ?? null}
-          />
         </div>
+        {toolbar}
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (

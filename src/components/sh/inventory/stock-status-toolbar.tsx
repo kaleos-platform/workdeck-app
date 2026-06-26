@@ -39,7 +39,7 @@ export function StockStatusToolbar({
   const hasFilters = !!(onlyLow || q)
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input

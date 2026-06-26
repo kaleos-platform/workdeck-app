@@ -216,21 +216,22 @@ export function StockStatusBoard() {
           onSearchChange={setProductQuery}
         />
 
-        <div className="min-w-0 space-y-3">
-          <StockStatusToolbar
-            q={q}
-            onlyLow={onlyLow}
-            onSearchChange={handleSearchChange}
-            onOnlyLowChange={handleOnlyLowChange}
-            onClearFilters={handleClearFilters}
-          />
-
+        <div className="min-w-0">
           <StockStatusMatrix
             rows={visibleRows}
             locations={data?.locations ?? []}
             loading={loading && !data}
             selectedLocationId={locationId}
             selectedProductName={selectedProductName}
+            toolbar={
+              <StockStatusToolbar
+                q={q}
+                onlyLow={onlyLow}
+                onSearchChange={handleSearchChange}
+                onOnlyLowChange={handleOnlyLowChange}
+                onClearFilters={handleClearFilters}
+              />
+            }
           />
         </div>
       </div>
