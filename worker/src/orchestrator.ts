@@ -19,7 +19,36 @@ import {
   notifyCollectionFailed,
   notifyInventoryDone,
   notifyVendorSalesDone,
+  notifyLoginFailed,
 } from './slack-notifier.js'
+import {
+  LoginError,
+  startLoginCooldown,
+  clearLoginCooldown,
+  getLoginCooldown,
+  shouldAlertLoginFailure,
+} from './login-guard.js'
+
+/**
+ * 수집 실패 공통 처리 — Slack 알림 + (로그인 실패면) 자동 로그인 쿨다운 진입.
+ * LoginError 면 사유별 안내 알림(디듀프)을, 그 외면 일반 수집 실패 알림을 보낸다.
+ */
+async function handleCollectionFailure(error: unknown, source: string): Promise<void> {
+  if (error instanceof LoginError) {
+    // 막힌 상태에서 자동 경로가 재로그인 난사하지 않도록 쿨다운(Akamai 악화 방지).
+    startLoginCooldown(error.reason)
+    // 같은 사유 알림이 폴링마다 도배되지 않게 디듀프.
+    if (shouldAlertLoginFailure(error.reason)) {
+      await notifyLoginFailed({ reason: error.reason, source, detail: error.message }).catch(
+        () => {}
+      )
+    }
+    return
+  }
+  await notifyCollectionFailed(error instanceof Error ? error.message : String(error)).catch(
+    () => {}
+  )
+}
 
 /**
  * 다운로드된 Excel 파일의 날짜 범위를 검증한다.
@@ -77,6 +106,8 @@ export async function runCollectionForRun(runId: string): Promise<void> {
 
     // ── Step 3~7: 공통 파이프라인 ──
     downloadedFilePath = await executeCollectionPipeline(runId, true)
+    // 사용자 직접 트리거(manual)가 성공 = 자격증명/차단이 정상 복구됨 → 자동 쿨다운 해제.
+    clearLoginCooldown()
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error(`[manual] 수집 실패: ${errorMessage}`)
@@ -88,7 +119,7 @@ export async function runCollectionForRun(runId: string): Promise<void> {
     } catch (updateError) {
       console.error('[manual] 상태 업데이트 실패:', updateError)
     }
-    await notifyCollectionFailed(errorMessage).catch(() => {})
+    await handleCollectionFailure(error, 'manual')
     throw error
   } finally {
     if (downloadedFilePath && fs.existsSync(downloadedFilePath)) {
@@ -116,6 +147,18 @@ export async function runCollectionForRun(runId: string): Promise<void> {
  * 9. 임시 파일 정리
  */
 export async function runCollection(triggeredBy: string = 'scheduled'): Promise<void> {
+  // 자동 로그인 쿨다운 중이면 자동 수집을 건너뛴다 — 비번오류/봇차단으로 막힌 상태에서
+  // 재로그인을 난사해 Akamai 차단을 악화시키지 않기 위함. manual(runCollectionForRun)은
+  // 별도 경로라 영향받지 않으며, manual 성공 시 쿨다운이 해제된다.
+  const cooldown = getLoginCooldown()
+  if (cooldown.active) {
+    const mins = Math.ceil(cooldown.remainingMs / 60000)
+    console.warn(
+      `[orchestrator] 로그인 쿨다운 중(${cooldown.reason}, ~${mins}분 남음) — 자동 수집 건너뜀`
+    )
+    return
+  }
+
   let runId: string | null = null
   let downloadedFilePath: string | null = null
 
@@ -148,6 +191,10 @@ export async function runCollection(triggeredBy: string = 'scheduled'): Promise<
         console.error('상태 업데이트 실패:', updateError)
       }
     }
+
+    // 기존엔 scheduled 실패 시 Slack 알림이 없어 비번 만료를 몇 시간씩 몰랐다(운영 갭).
+    // 사유별 알림 + (로그인 실패면) 자동 쿨다운 진입.
+    await handleCollectionFailure(error, triggeredBy)
 
     throw error
   } finally {
