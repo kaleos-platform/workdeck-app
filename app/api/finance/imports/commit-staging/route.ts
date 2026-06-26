@@ -153,7 +153,11 @@ export async function POST(req: NextRequest) {
     let cUnclassified = 0
 
     const stagedData = parsed.rows.map((r) => {
-      const cls = classifyRow({ description: r.description, counterparty: r.counterparty }, rules)
+      const cls = classifyRow(
+        { description: r.description, counterparty: r.counterparty },
+        rules,
+        r.direction
+      )
       if (cls.classStatus === 'CLASSIFIED') cClassified++
       else if (cls.classStatus === 'REVIEW') cReview++
       else cUnclassified++

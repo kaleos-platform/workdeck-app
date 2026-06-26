@@ -1136,6 +1136,13 @@ export type EnumFinClassRuleMatchTypeFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumFinClassRuleMatchTypeFilter<$PrismaModel> | $Enums.FinClassRuleMatchType
 }
 
+export type EnumFinTxnDirectionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinTxnDirection | Prisma.EnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.FinTxnDirection[] | Prisma.ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.FinTxnDirection[] | Prisma.ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumFinTxnDirectionNullableFilter<$PrismaModel> | $Enums.FinTxnDirection | null
+}
+
 export type EnumFinClassRuleSourceFilter<$PrismaModel = never> = {
   equals?: $Enums.FinClassRuleSource | Prisma.EnumFinClassRuleSourceFieldRefInput<$PrismaModel>
   in?: $Enums.FinClassRuleSource[] | Prisma.ListEnumFinClassRuleSourceFieldRefInput<$PrismaModel>
@@ -1151,6 +1158,16 @@ export type EnumFinClassRuleMatchTypeWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFinClassRuleMatchTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFinClassRuleMatchTypeFilter<$PrismaModel>
+}
+
+export type EnumFinTxnDirectionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinTxnDirection | Prisma.EnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.FinTxnDirection[] | Prisma.ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.FinTxnDirection[] | Prisma.ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumFinTxnDirectionNullableWithAggregatesFilter<$PrismaModel> | $Enums.FinTxnDirection | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFinTxnDirectionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFinTxnDirectionNullableFilter<$PrismaModel>
 }
 
 export type EnumFinClassRuleSourceWithAggregatesFilter<$PrismaModel = never> = {
@@ -2318,6 +2335,13 @@ export type NestedEnumFinClassRuleMatchTypeFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumFinClassRuleMatchTypeFilter<$PrismaModel> | $Enums.FinClassRuleMatchType
 }
 
+export type NestedEnumFinTxnDirectionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinTxnDirection | Prisma.EnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.FinTxnDirection[] | Prisma.ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.FinTxnDirection[] | Prisma.ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumFinTxnDirectionNullableFilter<$PrismaModel> | $Enums.FinTxnDirection | null
+}
+
 export type NestedEnumFinClassRuleSourceFilter<$PrismaModel = never> = {
   equals?: $Enums.FinClassRuleSource | Prisma.EnumFinClassRuleSourceFieldRefInput<$PrismaModel>
   in?: $Enums.FinClassRuleSource[] | Prisma.ListEnumFinClassRuleSourceFieldRefInput<$PrismaModel>
@@ -2333,6 +2357,16 @@ export type NestedEnumFinClassRuleMatchTypeWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFinClassRuleMatchTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFinClassRuleMatchTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumFinTxnDirectionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinTxnDirection | Prisma.EnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.FinTxnDirection[] | Prisma.ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.FinTxnDirection[] | Prisma.ListEnumFinTxnDirectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumFinTxnDirectionNullableWithAggregatesFilter<$PrismaModel> | $Enums.FinTxnDirection | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFinTxnDirectionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFinTxnDirectionNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumFinClassRuleSourceWithAggregatesFilter<$PrismaModel = never> = {

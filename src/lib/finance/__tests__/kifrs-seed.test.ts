@@ -14,7 +14,7 @@ jest.mock('@/lib/prisma', () => ({
       count: jest.fn(),
     },
     finClassRule: {
-      findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
     },
   },
@@ -25,7 +25,7 @@ import { seedFinanceCategories, ensureFinanceSeeded } from '@/lib/finance/kifrs-
 
 const p = prisma as unknown as {
   finCategory: { findFirst: jest.Mock; create: jest.Mock; count: jest.Mock }
-  finClassRule: { findUnique: jest.Mock; create: jest.Mock }
+  finClassRule: { findFirst: jest.Mock; create: jest.Mock }
 }
 
 beforeEach(() => {
@@ -33,7 +33,7 @@ beforeEach(() => {
   // 미존재 → 항상 create 경로
   p.finCategory.findFirst.mockResolvedValue(null)
   p.finCategory.create.mockResolvedValue({ id: 'cat' })
-  p.finClassRule.findUnique.mockResolvedValue(null)
+  p.finClassRule.findFirst.mockResolvedValue(null)
   p.finClassRule.create.mockResolvedValue({ id: 'rule' })
 })
 

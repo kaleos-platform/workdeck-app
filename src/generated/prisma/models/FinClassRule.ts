@@ -30,6 +30,7 @@ export type FinClassRuleMinAggregateOutputType = {
   matchKey: string | null
   matchType: $Enums.FinClassRuleMatchType | null
   categoryId: string | null
+  direction: $Enums.FinTxnDirection | null
   learnedFrom: $Enums.FinClassRuleSource | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -41,6 +42,7 @@ export type FinClassRuleMaxAggregateOutputType = {
   matchKey: string | null
   matchType: $Enums.FinClassRuleMatchType | null
   categoryId: string | null
+  direction: $Enums.FinTxnDirection | null
   learnedFrom: $Enums.FinClassRuleSource | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -52,6 +54,7 @@ export type FinClassRuleCountAggregateOutputType = {
   matchKey: number
   matchType: number
   categoryId: number
+  direction: number
   learnedFrom: number
   createdAt: number
   updatedAt: number
@@ -65,6 +68,7 @@ export type FinClassRuleMinAggregateInputType = {
   matchKey?: true
   matchType?: true
   categoryId?: true
+  direction?: true
   learnedFrom?: true
   createdAt?: true
   updatedAt?: true
@@ -76,6 +80,7 @@ export type FinClassRuleMaxAggregateInputType = {
   matchKey?: true
   matchType?: true
   categoryId?: true
+  direction?: true
   learnedFrom?: true
   createdAt?: true
   updatedAt?: true
@@ -87,6 +92,7 @@ export type FinClassRuleCountAggregateInputType = {
   matchKey?: true
   matchType?: true
   categoryId?: true
+  direction?: true
   learnedFrom?: true
   createdAt?: true
   updatedAt?: true
@@ -171,6 +177,7 @@ export type FinClassRuleGroupByOutputType = {
   matchKey: string
   matchType: $Enums.FinClassRuleMatchType
   categoryId: string
+  direction: $Enums.FinTxnDirection | null
   learnedFrom: $Enums.FinClassRuleSource
   createdAt: Date
   updatedAt: Date
@@ -203,6 +210,7 @@ export type FinClassRuleWhereInput = {
   matchKey?: Prisma.StringFilter<"FinClassRule"> | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFilter<"FinClassRule"> | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringFilter<"FinClassRule"> | string
+  direction?: Prisma.EnumFinTxnDirectionNullableFilter<"FinClassRule"> | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFilter<"FinClassRule"> | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
@@ -216,6 +224,7 @@ export type FinClassRuleOrderByWithRelationInput = {
   matchKey?: Prisma.SortOrder
   matchType?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  direction?: Prisma.SortOrderInput | Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -225,7 +234,7 @@ export type FinClassRuleOrderByWithRelationInput = {
 
 export type FinClassRuleWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  spaceId_matchKey?: Prisma.FinClassRuleSpaceIdMatchKeyCompoundUniqueInput
+  spaceId_matchKey_direction?: Prisma.FinClassRuleSpaceIdMatchKeyDirectionCompoundUniqueInput
   AND?: Prisma.FinClassRuleWhereInput | Prisma.FinClassRuleWhereInput[]
   OR?: Prisma.FinClassRuleWhereInput[]
   NOT?: Prisma.FinClassRuleWhereInput | Prisma.FinClassRuleWhereInput[]
@@ -233,12 +242,13 @@ export type FinClassRuleWhereUniqueInput = Prisma.AtLeast<{
   matchKey?: Prisma.StringFilter<"FinClassRule"> | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFilter<"FinClassRule"> | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringFilter<"FinClassRule"> | string
+  direction?: Prisma.EnumFinTxnDirectionNullableFilter<"FinClassRule"> | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFilter<"FinClassRule"> | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   category?: Prisma.XOR<Prisma.FinCategoryScalarRelationFilter, Prisma.FinCategoryWhereInput>
-}, "id" | "spaceId_matchKey">
+}, "id" | "spaceId_matchKey_direction">
 
 export type FinClassRuleOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -246,6 +256,7 @@ export type FinClassRuleOrderByWithAggregationInput = {
   matchKey?: Prisma.SortOrder
   matchType?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  direction?: Prisma.SortOrderInput | Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -263,6 +274,7 @@ export type FinClassRuleScalarWhereWithAggregatesInput = {
   matchKey?: Prisma.StringWithAggregatesFilter<"FinClassRule"> | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeWithAggregatesFilter<"FinClassRule"> | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringWithAggregatesFilter<"FinClassRule"> | string
+  direction?: Prisma.EnumFinTxnDirectionNullableWithAggregatesFilter<"FinClassRule"> | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceWithAggregatesFilter<"FinClassRule"> | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"FinClassRule"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"FinClassRule"> | Date | string
@@ -272,6 +284,7 @@ export type FinClassRuleCreateInput = {
   id?: string
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -285,6 +298,7 @@ export type FinClassRuleUncheckedCreateInput = {
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
   categoryId: string
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -294,6 +308,7 @@ export type FinClassRuleUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -307,6 +322,7 @@ export type FinClassRuleUncheckedUpdateInput = {
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -318,6 +334,7 @@ export type FinClassRuleCreateManyInput = {
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
   categoryId: string
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -327,6 +344,7 @@ export type FinClassRuleUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -338,6 +356,7 @@ export type FinClassRuleUncheckedUpdateManyInput = {
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -353,9 +372,10 @@ export type FinClassRuleOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type FinClassRuleSpaceIdMatchKeyCompoundUniqueInput = {
+export type FinClassRuleSpaceIdMatchKeyDirectionCompoundUniqueInput = {
   spaceId: string
   matchKey: string
+  direction: $Enums.FinTxnDirection
 }
 
 export type FinClassRuleCountOrderByAggregateInput = {
@@ -364,6 +384,7 @@ export type FinClassRuleCountOrderByAggregateInput = {
   matchKey?: Prisma.SortOrder
   matchType?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  direction?: Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -375,6 +396,7 @@ export type FinClassRuleMaxOrderByAggregateInput = {
   matchKey?: Prisma.SortOrder
   matchType?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  direction?: Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -386,6 +408,7 @@ export type FinClassRuleMinOrderByAggregateInput = {
   matchKey?: Prisma.SortOrder
   matchType?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  direction?: Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -479,6 +502,10 @@ export type EnumFinClassRuleMatchTypeFieldUpdateOperationsInput = {
   set?: $Enums.FinClassRuleMatchType
 }
 
+export type NullableEnumFinTxnDirectionFieldUpdateOperationsInput = {
+  set?: $Enums.FinTxnDirection | null
+}
+
 export type EnumFinClassRuleSourceFieldUpdateOperationsInput = {
   set?: $Enums.FinClassRuleSource
 }
@@ -487,6 +514,7 @@ export type FinClassRuleCreateWithoutSpaceInput = {
   id?: string
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -498,6 +526,7 @@ export type FinClassRuleUncheckedCreateWithoutSpaceInput = {
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
   categoryId: string
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -538,6 +567,7 @@ export type FinClassRuleScalarWhereInput = {
   matchKey?: Prisma.StringFilter<"FinClassRule"> | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFilter<"FinClassRule"> | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringFilter<"FinClassRule"> | string
+  direction?: Prisma.EnumFinTxnDirectionNullableFilter<"FinClassRule"> | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFilter<"FinClassRule"> | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
@@ -547,6 +577,7 @@ export type FinClassRuleCreateWithoutCategoryInput = {
   id?: string
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -558,6 +589,7 @@ export type FinClassRuleUncheckedCreateWithoutCategoryInput = {
   spaceId: string
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -594,6 +626,7 @@ export type FinClassRuleCreateManySpaceInput = {
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
   categoryId: string
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -603,6 +636,7 @@ export type FinClassRuleUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -614,6 +648,7 @@ export type FinClassRuleUncheckedUpdateWithoutSpaceInput = {
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -624,6 +659,7 @@ export type FinClassRuleUncheckedUpdateManyWithoutSpaceInput = {
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -634,6 +670,7 @@ export type FinClassRuleCreateManyCategoryInput = {
   spaceId: string
   matchKey: string
   matchType?: $Enums.FinClassRuleMatchType
+  direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -643,6 +680,7 @@ export type FinClassRuleUpdateWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -654,6 +692,7 @@ export type FinClassRuleUncheckedUpdateWithoutCategoryInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -664,6 +703,7 @@ export type FinClassRuleUncheckedUpdateManyWithoutCategoryInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -677,6 +717,7 @@ export type FinClassRuleSelect<ExtArgs extends runtime.Types.Extensions.Internal
   matchKey?: boolean
   matchType?: boolean
   categoryId?: boolean
+  direction?: boolean
   learnedFrom?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -690,6 +731,7 @@ export type FinClassRuleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   matchKey?: boolean
   matchType?: boolean
   categoryId?: boolean
+  direction?: boolean
   learnedFrom?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -703,6 +745,7 @@ export type FinClassRuleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   matchKey?: boolean
   matchType?: boolean
   categoryId?: boolean
+  direction?: boolean
   learnedFrom?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -716,12 +759,13 @@ export type FinClassRuleSelectScalar = {
   matchKey?: boolean
   matchType?: boolean
   categoryId?: boolean
+  direction?: boolean
   learnedFrom?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FinClassRuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "matchKey" | "matchType" | "categoryId" | "learnedFrom" | "createdAt" | "updatedAt", ExtArgs["result"]["finClassRule"]>
+export type FinClassRuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "matchKey" | "matchType" | "categoryId" | "direction" | "learnedFrom" | "createdAt" | "updatedAt", ExtArgs["result"]["finClassRule"]>
 export type FinClassRuleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   category?: boolean | Prisma.FinCategoryDefaultArgs<ExtArgs>
@@ -747,6 +791,7 @@ export type $FinClassRulePayload<ExtArgs extends runtime.Types.Extensions.Intern
     matchKey: string
     matchType: $Enums.FinClassRuleMatchType
     categoryId: string
+    direction: $Enums.FinTxnDirection | null
     learnedFrom: $Enums.FinClassRuleSource
     createdAt: Date
     updatedAt: Date
@@ -1180,6 +1225,7 @@ export interface FinClassRuleFieldRefs {
   readonly matchKey: Prisma.FieldRef<"FinClassRule", 'String'>
   readonly matchType: Prisma.FieldRef<"FinClassRule", 'FinClassRuleMatchType'>
   readonly categoryId: Prisma.FieldRef<"FinClassRule", 'String'>
+  readonly direction: Prisma.FieldRef<"FinClassRule", 'FinTxnDirection'>
   readonly learnedFrom: Prisma.FieldRef<"FinClassRule", 'FinClassRuleSource'>
   readonly createdAt: Prisma.FieldRef<"FinClassRule", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"FinClassRule", 'DateTime'>
