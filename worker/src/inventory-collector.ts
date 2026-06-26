@@ -13,6 +13,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { BrowserContext, Page } from 'playwright'
 import { launchStealthPersistentContext, renewProfileLock } from './browser.js'
+import { LoginError, classifyLoginFailure, reasonLabel } from './login-guard.js'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────────
 
@@ -117,7 +118,8 @@ async function performWingLogin(
 
   if (page.url().includes('login') || page.url().includes('sso')) {
     await saveScreenshot(page, 'wing-login-failed')
-    throw new Error('[inventory] Wing 로그인 실패')
+    const reason = await classifyLoginFailure(page)
+    throw new LoginError(reason, `[inventory] Wing 로그인 실패 — ${reasonLabel(reason)}`)
   }
   console.log('[inventory]   → Wing 로그인 성공')
 }

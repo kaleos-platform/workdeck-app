@@ -16,6 +16,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { BrowserContext, Page } from 'playwright'
 import { launchStealthPersistentContext } from './browser.js'
+import { LoginError, classifyLoginFailure, reasonLabel } from './login-guard.js'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────────
 
@@ -216,7 +217,8 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
 
   if (page.url().includes('login') || page.url().includes('sso')) {
     await saveScreenshot(page, 'login-failed')
-    throw new Error('로그인 실패')
+    const reason = await classifyLoginFailure(page)
+    throw new LoginError(reason, `로그인 실패 — ${reasonLabel(reason)}`)
   }
   console.log('  → 로그인 성공')
 }
