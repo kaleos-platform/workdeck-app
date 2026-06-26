@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { StockStatusHeader } from './stock-status-header'
+import { StockStatusLocationTabs } from './stock-status-location-tabs'
 import { StockStatusProducts } from './stock-status-products'
 import { StockStatusToolbar } from './stock-status-toolbar'
 import { StockStatusMatrix } from './stock-status-matrix'
@@ -184,6 +185,12 @@ export function StockStatusBoard() {
     <div className="space-y-5">
       <StockStatusHeader loading={loading} onRefresh={fetchData} />
 
+      <StockStatusLocationTabs
+        locations={data?.locations ?? []}
+        selectedLocationId={locationId}
+        onLocationChange={handleLocationChange}
+      />
+
       <div
         className={
           productsCollapsed
@@ -213,11 +220,8 @@ export function StockStatusBoard() {
           <StockStatusToolbar
             q={q}
             onlyLow={onlyLow}
-            locations={data?.locations ?? []}
-            selectedLocationId={locationId}
             onSearchChange={handleSearchChange}
             onOnlyLowChange={handleOnlyLowChange}
-            onLocationChange={handleLocationChange}
             onClearFilters={handleClearFilters}
           />
 
