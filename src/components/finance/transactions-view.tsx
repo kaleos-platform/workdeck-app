@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -412,6 +412,45 @@ export function TransactionsView() {
     }
   }
 
+  // 확정 거래 일괄 처리(bulk 엔드포인트) — 계정과목 분류 / 삭제
+  const handleTxnBulkClassify = useCallback(
+    async (ids: string[], categoryId: string) => {
+      try {
+        const res = await fetch('/api/finance/transactions/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids, categoryId }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.message ?? '일괄 처리 실패')
+        toast.success(`${data.updated ?? 0}건에 계정과목을 적용했습니다`)
+        void loadTransactions()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '일괄 처리 실패')
+      }
+    },
+    [loadTransactions]
+  )
+
+  const handleTxnBulkDelete = useCallback(
+    async (ids: string[]) => {
+      try {
+        const res = await fetch('/api/finance/transactions/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids, action: 'delete' }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
+        toast.success(`${data.deleted ?? 0}건을 삭제했습니다`)
+        void loadTransactions()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '삭제 실패')
+      }
+    },
+    [loadTransactions]
+  )
+
   // 필터 검색 실행
   const handleTxnSearch = useCallback(() => {
     void loadTransactions()
@@ -477,6 +516,8 @@ export function TransactionsView() {
           onFilterClassStatusChange={setFilterClassStatus}
           onSearch={handleTxnSearch}
           onClassify={handleTxnClassify}
+          onBulkClassify={handleTxnBulkClassify}
+          onBulkDelete={handleTxnBulkDelete}
         />
       </TabsContent>
 
@@ -944,6 +985,8 @@ function TransactionsPanel({
   onFilterClassStatusChange,
   onSearch,
   onClassify,
+  onBulkClassify,
+  onBulkDelete,
 }: {
   rows: Transaction[]
   total: number
@@ -963,7 +1006,40 @@ function TransactionsPanel({
   onFilterClassStatusChange: (v: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED') => void
   onSearch: () => void
   onClassify: (txnId: string, categoryId: string) => void
+  onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
+  onBulkDelete: (ids: string[]) => Promise<void>
 }) {
+  // 다중 선택 — selectedInView가 현재 행으로 스코프하므로 필터/조회 후 자연히 정리된다.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const rowIds = rows.map((r) => r.id)
+  const selectedInView = rowIds.filter((id) => selectedIds.has(id))
+  const allSelected = rowIds.length > 0 && selectedInView.length === rowIds.length
+  const toggleOne = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const toggleAll = () =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (allSelected) rowIds.forEach((id) => next.delete(id))
+      else rowIds.forEach((id) => next.add(id))
+      return next
+    })
+  const clearSelection = () => setSelectedIds(new Set())
+  const runBulkClassify = async (categoryId: string) => {
+    await onBulkClassify(selectedInView, categoryId)
+    clearSelection()
+  }
+  const runBulkDelete = async () => {
+    await onBulkDelete(selectedInView)
+    setDeleteOpen(false)
+    clearSelection()
+  }
+
   return (
     <div className="space-y-3">
       {/* 필터 바 */}
@@ -1059,6 +1135,13 @@ function TransactionsPanel({
           <Table>
             <TableHeader>
               <TableRow className="text-xs">
+                <TableHead className="w-9">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="전체 선택"
+                  />
+                </TableHead>
                 <TableHead className="w-24">날짜</TableHead>
                 <TableHead className="w-28">출처</TableHead>
                 <TableHead>적요</TableHead>
@@ -1072,6 +1155,8 @@ function TransactionsPanel({
                 <TransactionRow
                   key={txn.id}
                   txn={txn}
+                  selected={selectedIds.has(txn.id)}
+                  onToggleSelect={() => toggleOne(txn.id)}
                   leafTargets={leafTargets}
                   categoryTree={categoryTree}
                   reloadCategories={reloadCategories}
@@ -1082,7 +1167,98 @@ function TransactionsPanel({
           </Table>
         </div>
       )}
+
+      {/* 다중 선택 일괄 처리 바 — 계정과목 분류 / 삭제 */}
+      <TransactionsBulkBar
+        selectedCount={selectedInView.length}
+        leafTargets={leafTargets}
+        onClassify={runBulkClassify}
+        onDeleteRequest={() => setDeleteOpen(true)}
+        onClear={clearSelection}
+      />
+
+      {/* 삭제 확인 — 되돌릴 수 없음 */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>거래 삭제</DialogTitle>
+            <DialogDescription>
+              선택한 <strong>{selectedInView.length}건</strong>의 확정 거래를 삭제합니다. 되돌릴 수
+              없으며, 영향 계좌의 월말 잔고가 다시 계산됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={() => void runBulkDelete()}>
+              {selectedInView.length}건 삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  )
+}
+
+// ─── 전체 거래 다중 선택 일괄 처리 바 ──────────────────────────────────────────
+
+function TransactionsBulkBar({
+  selectedCount,
+  leafTargets,
+  onClassify,
+  onDeleteRequest,
+  onClear,
+}: {
+  selectedCount: number
+  leafTargets: ComboOption[]
+  onClassify: (categoryId: string) => Promise<void>
+  onDeleteRequest: () => void
+  onClear: () => void
+}) {
+  const [busy, setBusy] = useState(false)
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true)
+    try {
+      await fn()
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <FloatingActionBar
+      open={selectedCount > 0}
+      onClear={onClear}
+      clearDisabled={busy}
+      actions={
+        <>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-background/70">계정과목</span>
+            <CategoryCombobox
+              options={leafTargets}
+              value={null}
+              onChange={(id) => void run(() => onClassify(id))}
+              placeholder="일괄 분류"
+              triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
+              disabled={busy}
+            />
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="h-8 gap-1 px-2.5 text-xs text-red-300 hover:bg-red-500/20 hover:text-red-200"
+            onClick={onDeleteRequest}
+            disabled={busy}
+          >
+            <Trash2 className="size-3.5" />
+            삭제
+          </Button>
+        </>
+      }
+    >
+      <span className="text-sm font-semibold">{selectedCount}개 선택됨</span>
+    </FloatingActionBar>
   )
 }
 
@@ -1090,12 +1266,16 @@ function TransactionsPanel({
 
 function TransactionRow({
   txn,
+  selected,
+  onToggleSelect,
   leafTargets,
   categoryTree,
   reloadCategories,
   onClassify,
 }: {
   txn: Transaction
+  selected: boolean
+  onToggleSelect: () => void
   leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
@@ -1104,7 +1284,12 @@ function TransactionRow({
   const statusBadge = classStatusBadge(txn.classStatus)
 
   return (
-    <TableRow>
+    <TableRow data-state={selected ? 'selected' : undefined}>
+      {/* 선택 */}
+      <TableCell>
+        <Checkbox checked={selected} onCheckedChange={onToggleSelect} aria-label="행 선택" />
+      </TableCell>
+
       {/* 날짜 */}
       <TableCell className="font-mono text-xs">{fmtDate(txn.txnDate)}</TableCell>
 
