@@ -349,17 +349,29 @@ export type ParseResult = {
   errors: { row: number; message: string }[]
 }
 
-function getCell(idx: number | number[] | undefined, row: unknown[]): string {
+function getCell(idx: number | number[] | undefined, row: unknown[], sep = ' '): string {
   if (idx === undefined) return ''
   const indices = Array.isArray(idx) ? idx : [idx]
   return indices
     .map((i) => cellToString(row[i]).trim())
     .filter((v) => v !== '')
-    .join(' ')
+    .join(sep)
 }
 
 function sha(parts: (string | number)[]): string {
   return createHash('sha256').update(parts.join('')).digest('hex').slice(0, 32)
+}
+
+/**
+ * 정규화된 거래일시가 실제 파싱 가능한 날짜인지 검증한다.
+ * 은행/카드 export의 꼬리 합계·안내행("합계", "총 N건" 등)은 거래일시 컬럼이 날짜가 아니므로
+ * normalizeDateTime이 원문을 그대로 돌려준다 → Invalid Date가 DB(DateTime)로 흘러가 500이 난다.
+ * 이를 행 단위로 걸러내 parseError로 처리한다.
+ */
+function isValidTxnDate(s: string): boolean {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return false
+  return !Number.isNaN(new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00`).getTime())
 }
 
 /**
@@ -390,7 +402,15 @@ export function parseFinanceWithMapping(
       errors.push({ row: rowNumber, message: '거래일시 누락' })
       continue
     }
-    const description = getCell(mapping.description, row) || undefined
+    // 합계/안내 등 거래일시가 날짜가 아닌 행은 스킵(Invalid Date → DB DateTime → 500 방지)
+    if (!isValidTxnDate(txnDate)) {
+      errors.push({
+        row: rowNumber,
+        message: `거래일시 형식 인식 불가: "${getCell(mapping.txnDate, row)}"`,
+      })
+      continue
+    }
+    const description = getCell(mapping.description, row, ' / ') || undefined
     const counterparty = getCell(mapping.counterparty, row) || undefined
 
     let direction: 'IN' | 'OUT'

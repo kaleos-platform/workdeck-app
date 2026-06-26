@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { errorResponse, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { seedFinanceCategories } from '@/lib/finance/kifrs-seed'
+import { seedFinanceCategories, ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 
 type CreateDeckRequest = {
   deckAppId?: string
@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
   })
 
   if (existing?.isActive) {
+    // 이미 활성이어도 계정과목이 비었으면(이전 시드 실패) 재추가 시 복구
+    if (deckAppId === 'finance') await ensureFinanceSeeded(resolved.space.id)
     return errorResponse('이미 사용 중인 Deck입니다', 409)
   }
 

@@ -9,7 +9,7 @@
  * 키워드(kw)는 SEED 분류 규칙(KEYWORD 매칭, 저신뢰=검토 제안)으로 함께 등록된다.
  */
 import { prisma } from '@/lib/prisma'
-import type { FinCategoryType } from '@/generated/prisma/enums'
+import type { FinCategoryType, FinTxnDirection } from '@/generated/prisma/enums'
 
 /** 적요/가맹점/키워드 정규화 — 공백 정리 + 소문자(라틴 가맹점 대비). */
 export function normalizeFinKey(raw: string): string {
@@ -137,10 +137,17 @@ export const KIFRS_CHART: SeedRoot[] = [
 ]
 
 /**
- * Space에 K-IFRS 표준 계정과목 + SEED 분류 규칙을 시드한다(멱등).
- * 이미 존재하는 계정과목/규칙은 건너뛴다.
+ * Space에 K-IFRS 표준 계정과목을 시드한다(멱등). 이미 존재하는 계정과목은 건너뛴다.
+ *
+ * 정책: 표준 계정과목(roots + 표준 lvl1)은 시스템 기본값으로 시드한다.
+ * 하위 계정과 자동분류 규칙(FinClassRule)은 사용자가 직접 구축하는 것을 기본으로 하므로
+ * 키워드 규칙은 `opts.withRules`가 true일 때만 등록한다(기본 false).
  */
-export async function seedFinanceCategories(spaceId: string): Promise<void> {
+export async function seedFinanceCategories(
+  spaceId: string,
+  opts: { withRules?: boolean } = {}
+): Promise<void> {
+  const { withRules = false } = opts
   let rootOrder = 0
   for (const root of KIFRS_CHART) {
     const rootRow = await upsertCategory(spaceId, null, {
@@ -161,11 +168,22 @@ export async function seedFinanceCategories(spaceId: string): Promise<void> {
         sortOrder: childOrder++,
       })
 
-      for (const keyword of child.kw ?? []) {
-        await upsertSeedRule(spaceId, childRow.id, keyword)
+      if (withRules) {
+        for (const keyword of child.kw ?? []) {
+          await upsertSeedRule(spaceId, childRow.id, keyword, directionForType(root.type))
+        }
       }
     }
   }
+}
+
+/**
+ * 활성 finance space에 계정과목이 하나도 없으면(콜드케이스·시드 실패) 표준 계정과목을 시드해 복구한다.
+ * 카테고리 의존 GET에서 호출하면 빈 드롭다운이 자동 복구된다. 멱등이라 반복 호출 안전.
+ */
+export async function ensureFinanceSeeded(spaceId: string): Promise<void> {
+  const count = await prisma.finCategory.count({ where: { spaceId } })
+  if (count === 0) await seedFinanceCategories(spaceId)
 }
 
 async function upsertCategory(
@@ -201,11 +219,24 @@ async function upsertCategory(
   })
 }
 
-async function upsertSeedRule(spaceId: string, categoryId: string, keyword: string): Promise<void> {
+/** 계정과목 type → 규칙 방향 (INCOME=IN, EXPENSE=OUT, 그 외=null 방향무관). */
+export function directionForType(type: FinCategoryType): FinTxnDirection | null {
+  if (type === 'INCOME') return 'IN'
+  if (type === 'EXPENSE') return 'OUT'
+  return null
+}
+
+async function upsertSeedRule(
+  spaceId: string,
+  categoryId: string,
+  keyword: string,
+  direction: FinTxnDirection | null
+): Promise<void> {
   const matchKey = normalizeFinKey(keyword)
   if (!matchKey) return
-  const existing = await prisma.finClassRule.findUnique({
-    where: { spaceId_matchKey: { spaceId, matchKey } },
+  // (spaceId, matchKey, direction) 멱등 — nullable 복합 unique upsert 회피 위해 findFirst 사용.
+  const existing = await prisma.finClassRule.findFirst({
+    where: { spaceId, matchKey, direction },
     select: { id: true },
   })
   if (existing) return
@@ -216,6 +247,7 @@ async function upsertSeedRule(spaceId: string, categoryId: string, keyword: stri
       matchType: 'KEYWORD',
       categoryId,
       learnedFrom: 'SEED',
+      direction,
     },
   })
 }

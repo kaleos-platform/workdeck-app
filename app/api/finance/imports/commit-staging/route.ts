@@ -99,143 +99,159 @@ export async function POST(req: NextRequest) {
   }
 
   if (parsed.rows.length === 0) {
-    return errorResponse('파싱된 거래가 없습니다. 헤더/매핑을 확인하세요', 400, {
-      errors: parsed.errors.slice(0, 10),
-    })
+    // 거래일시 파싱 실패가 주원인이면(잘못된 컬럼 매핑/날짜 형식) 그에 맞는 안내를 준다.
+    const dateErrCount = parsed.errors.filter((e) => e.message.includes('거래일시')).length
+    const message =
+      dateErrCount > 0
+        ? `거래일시를 인식할 수 없습니다(${dateErrCount}건). 거래일시 컬럼 매핑과 날짜 형식을 확인하세요`
+        : '파싱된 거래가 없습니다. 헤더/매핑을 확인하세요'
+    return errorResponse(message, 400, { errors: parsed.errors.slice(0, 10) })
   }
 
-  // 기존 거래와 중복 판정 — identityKey 일치 시 contentHash 비교
-  const identityKeys = [...new Set(parsed.rows.map((r) => r.identityKey))]
-  const existing = await prisma.finTransaction.findMany({
-    where: { spaceId, accountId, identityKey: { in: identityKeys } },
-    select: { identityKey: true, contentHash: true },
-  })
-  const existingMap = new Map(existing.map((e) => [e.identityKey, e.contentHash]))
+  // 적재(DB 쓰기) 단계 — 예상치 못한 throw도 빈 500 대신 명확한 메시지로 변환한다.
+  try {
+    // 기존 거래와 중복 판정 — identityKey 일치 시 contentHash 비교
+    const identityKeys = [...new Set(parsed.rows.map((r) => r.identityKey))]
+    const existing = await prisma.finTransaction.findMany({
+      where: { spaceId, accountId, identityKey: { in: identityKeys } },
+      select: { identityKey: true, contentHash: true },
+    })
+    const existingMap = new Map(existing.map((e) => [e.identityKey, e.contentHash]))
 
-  // 규칙 로드 후 분류
-  const rules = await loadSpaceRules(spaceId)
+    // 규칙 로드 후 분류
+    const rules = await loadSpaceRules(spaceId)
 
-  // 기간(preamble 우선, 없으면 거래일 min/max)
-  const dates = parsed.rows.map((r) => toDate(r.txnDate)).sort((a, b) => a.getTime() - b.getTime())
-  const periodFrom = preamble.periodFrom ? toDate(preamble.periodFrom) : dates[0]
-  const periodTo = preamble.periodTo ? toDate(preamble.periodTo) : dates[dates.length - 1]
+    // 기간(preamble 우선, 없으면 거래일 min/max)
+    const dates = parsed.rows
+      .map((r) => toDate(r.txnDate))
+      .sort((a, b) => a.getTime() - b.getTime())
+    const periodFrom = preamble.periodFrom ? toDate(preamble.periodFrom) : dates[0]
+    const periodTo = preamble.periodTo ? toDate(preamble.periodTo) : dates[dates.length - 1]
 
-  const importRow = await prisma.finImport.create({
-    data: {
-      spaceId,
-      accountId,
-      fileName: file.name,
-      institution: String(form.get('institution') ?? '') || '미지정',
-      kind,
-      status: 'DRAFT',
-      periodFrom,
-      periodTo,
-      totalRows: parsed.rows.length,
-    },
-    select: { id: true },
-  })
+    const importRow = await prisma.finImport.create({
+      data: {
+        spaceId,
+        accountId,
+        fileName: file.name,
+        institution: String(form.get('institution') ?? '') || '미지정',
+        kind,
+        status: 'DRAFT',
+        periodFrom,
+        periodTo,
+        totalRows: parsed.rows.length,
+      },
+      select: { id: true },
+    })
 
-  // 배치 내 중복도 추적(동일 identityKey 2회 → 두번째는 DUP_SAME)
-  const seenInBatch = new Set<string>()
-  let cNew = 0
-  let cDupSame = 0
-  let cDupChanged = 0
-  let cClassified = 0
-  let cReview = 0
-  let cUnclassified = 0
+    // 배치 내 중복도 추적(동일 identityKey 2회 → 두번째는 DUP_SAME)
+    const seenInBatch = new Set<string>()
+    let cNew = 0
+    let cDupSame = 0
+    let cDupChanged = 0
+    let cClassified = 0
+    let cReview = 0
+    let cUnclassified = 0
 
-  const stagedData = parsed.rows.map((r) => {
-    const cls = classifyRow({ description: r.description, counterparty: r.counterparty }, rules)
-    if (cls.classStatus === 'CLASSIFIED') cClassified++
-    else if (cls.classStatus === 'REVIEW') cReview++
-    else cUnclassified++
+    const stagedData = parsed.rows.map((r) => {
+      const cls = classifyRow(
+        { description: r.description, counterparty: r.counterparty },
+        rules,
+        r.direction
+      )
+      if (cls.classStatus === 'CLASSIFIED') cClassified++
+      else if (cls.classStatus === 'REVIEW') cReview++
+      else cUnclassified++
 
-    let resolution: FinStagedResolution
-    const priorHash = existingMap.get(r.identityKey)
-    if (seenInBatch.has(r.identityKey)) {
-      resolution = 'DUP_SAME'
-      cDupSame++
-    } else if (priorHash !== undefined) {
-      if (priorHash === r.contentHash) {
+      let resolution: FinStagedResolution
+      const priorHash = existingMap.get(r.identityKey)
+      if (seenInBatch.has(r.identityKey)) {
         resolution = 'DUP_SAME'
         cDupSame++
+      } else if (priorHash !== undefined) {
+        if (priorHash === r.contentHash) {
+          resolution = 'DUP_SAME'
+          cDupSame++
+        } else {
+          resolution = 'DUP_CHANGED'
+          cDupChanged++
+        }
       } else {
-        resolution = 'DUP_CHANGED'
-        cDupChanged++
+        resolution = 'NEW'
+        cNew++
       }
-    } else {
-      resolution = 'NEW'
-      cNew++
-    }
-    seenInBatch.add(r.identityKey)
+      seenInBatch.add(r.identityKey)
 
-    return {
-      importId: importRow.id,
-      spaceId,
-      accountId,
-      raw: {
-        sourceRowNumber: r.sourceRowNumber,
-        txnDate: r.txnDate,
-        description: r.description ?? null,
-        counterparty: r.counterparty ?? null,
+      return {
+        importId: importRow.id,
+        spaceId,
+        accountId,
+        raw: {
+          sourceRowNumber: r.sourceRowNumber,
+          txnDate: r.txnDate,
+          description: r.description ?? null,
+          counterparty: r.counterparty ?? null,
+          amount: r.amount,
+          balanceAfter: r.balanceAfter ?? null,
+          approvalNo: r.approvalNo ?? null,
+          cancelFlag: r.cancelFlag ?? null,
+        },
+        txnDate: toDate(r.txnDate),
+        direction: r.direction,
         amount: r.amount,
         balanceAfter: r.balanceAfter ?? null,
+        description: r.description ?? null,
+        counterparty: r.counterparty ?? null,
         approvalNo: r.approvalNo ?? null,
         cancelFlag: r.cancelFlag ?? null,
-      },
-      txnDate: toDate(r.txnDate),
-      direction: r.direction,
-      amount: r.amount,
-      balanceAfter: r.balanceAfter ?? null,
-      description: r.description ?? null,
-      counterparty: r.counterparty ?? null,
-      approvalNo: r.approvalNo ?? null,
-      cancelFlag: r.cancelFlag ?? null,
-      categoryId: cls.categoryId,
-      classStatus: cls.classStatus,
-      matchedRuleId: cls.matchedRuleId,
-      identityKey: r.identityKey,
-      contentHash: r.contentHash,
-      resolution,
+        categoryId: cls.categoryId,
+        classStatus: cls.classStatus,
+        matchedRuleId: cls.matchedRuleId,
+        identityKey: r.identityKey,
+        contentHash: r.contentHash,
+        resolution,
+      }
+    })
+
+    await prisma.finStagedRow.createMany({ data: stagedData })
+
+    // 매핑 프리셋 저장(선택)
+    if (form.get('savePreset') === 'true') {
+      const presetName = String(form.get('presetName') ?? '').trim()
+      const institution = String(form.get('institution') ?? '').trim() || '미지정'
+      if (presetName) {
+        await prisma.finMappingPreset.upsert({
+          where: { spaceId_name: { spaceId, name: presetName } },
+          update: { institution, kind, mapping: pairs, defaultAccountId: accountId },
+          create: {
+            spaceId,
+            name: presetName,
+            institution,
+            kind,
+            mapping: pairs,
+            defaultAccountId: accountId,
+          },
+        })
+      }
     }
-  })
 
-  await prisma.finStagedRow.createMany({ data: stagedData })
-
-  // 매핑 프리셋 저장(선택)
-  if (form.get('savePreset') === 'true') {
-    const presetName = String(form.get('presetName') ?? '').trim()
-    const institution = String(form.get('institution') ?? '').trim() || '미지정'
-    if (presetName) {
-      await prisma.finMappingPreset.upsert({
-        where: { spaceId_name: { spaceId, name: presetName } },
-        update: { institution, kind, mapping: pairs, defaultAccountId: accountId },
-        create: {
-          spaceId,
-          name: presetName,
-          institution,
-          kind,
-          mapping: pairs,
-          defaultAccountId: accountId,
+    return NextResponse.json(
+      {
+        importId: importRow.id,
+        counts: {
+          total: parsed.rows.length,
+          new: cNew,
+          dupSame: cDupSame,
+          dupChanged: cDupChanged,
+          classified: cClassified,
+          review: cReview,
+          unclassified: cUnclassified,
+          parseErrors: parsed.errors.length,
         },
-      })
-    }
-  }
-
-  return NextResponse.json(
-    {
-      importId: importRow.id,
-      counts: {
-        total: parsed.rows.length,
-        new: cNew,
-        dupSame: cDupSame,
-        dupChanged: cDupChanged,
-        classified: cClassified,
-        review: cReview,
-        unclassified: cUnclassified,
-        parseErrors: parsed.errors.length,
       },
-    },
-    { status: 201 }
-  )
+      { status: 201 }
+    )
+  } catch (err) {
+    console.error('[finance/commit-staging] 적재 실패', err)
+    return errorResponse('가져오기 처리 중 오류가 발생했습니다. 잠시 후 다시 시도하세요', 500)
+  }
 }

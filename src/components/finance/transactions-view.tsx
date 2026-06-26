@@ -8,9 +8,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Plus, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { FloatingActionBar, floatingActionButtonClass } from '@/components/ui/floating-action-bar'
 import {
   Dialog,
   DialogContent,
@@ -20,6 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -37,6 +40,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { classStatusBadge, accountKindLabel, formatWon } from '@/components/finance/format'
+import { CategoryCombobox } from '@/components/finance/category-combobox'
+import {
+  buildClassifyOptions,
+  buildParentOptions,
+  type ComboOption,
+} from '@/lib/finance/category-options'
 import type { FinAccountKind, FinClassStatus, FinStagedResolution } from '@/generated/prisma/enums'
 
 // ─── 타입 정의 ───────────────────────────────────────────────────────────────
@@ -102,25 +111,6 @@ type TransactionSummary = {
   net: number
 }
 
-// ─── flattenLeafTargets: INCOME/EXPENSE 잎 계정과목 평탄화 ──────────────────
-
-function flattenLeafTargets(tree: CategoryNode[]): { id: string; label: string }[] {
-  const out: { id: string; label: string }[] = []
-  for (const root of tree) {
-    // 수입/지출 + 계좌간 이체(TRANSFER) 분류 대상. TRANSFER로 분류하면 isTransfer=true가 되어
-    // 수입/지출 집계에서 제외된다(이중계상 방지).
-    if (root.type !== 'INCOME' && root.type !== 'EXPENSE' && root.type !== 'TRANSFER') continue
-    const tag = root.type === 'TRANSFER' ? ' (이체)' : ''
-    for (const lvl1 of root.children) {
-      out.push({ id: lvl1.id, label: `${lvl1.name}${tag}` })
-      for (const sub of lvl1.children) {
-        out.push({ id: sub.id, label: `${lvl1.name} › ${sub.name}${tag}` })
-      }
-    }
-  }
-  return out
-}
-
 // ─── 날짜 포맷 ───────────────────────────────────────────────────────────────
 
 function fmtDate(iso: string): string {
@@ -138,7 +128,7 @@ export function TransactionsView() {
 
   // 카테고리 트리 + 잎 목록
   const [categoryTree, setCategoryTree] = useState<CategoryNode[]>([])
-  const leafTargets = useMemo(() => flattenLeafTargets(categoryTree), [categoryTree])
+  const leafTargets = useMemo(() => buildClassifyOptions(categoryTree), [categoryTree])
 
   // 계좌 목록 (전체 거래 출처 필터)
   const [accounts, setAccounts] = useState<{ id: string; name: string; kind: FinAccountKind }[]>([])
@@ -181,15 +171,23 @@ export function TransactionsView() {
   const [commitDialogOpen, setCommitDialogOpen] = useState(false)
   const [committing, setCommitting] = useState(false)
 
-  // 카테고리 트리 로드
+  // 분류 직후 동일 적요 자동 적용 다이얼로그
+  const [autoApply, setAutoApply] = useState<{ categoryId: string; siblingIds: string[] } | null>(
+    null
+  )
+
+  // 카테고리 트리 로드 — 실패는 토스트로 가시화(빈 드롭다운 미스터리 방지)
   const loadCategories = useCallback(async () => {
     try {
       const res = await fetch('/api/finance/categories')
-      if (!res.ok) return
+      if (!res.ok) {
+        toast.error('계정과목을 불러오지 못했습니다. 새로고침 해주세요')
+        return
+      }
       const data = await res.json()
       setCategoryTree(data.tree ?? [])
     } catch {
-      // 조용히 실패
+      toast.error('계정과목을 불러오지 못했습니다. 새로고침 해주세요')
     }
   }, [])
 
@@ -293,11 +291,63 @@ export function TransactionsView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoryId }),
       })
-      if (!res.ok) throw new Error('분류 저장 실패')
-      toast.success('동일 적요는 다음부터 자동 분류됩니다')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '분류 저장 실패')
       void loadStaging(stagingTab)
+      // 동일 적요+동일 방향 미처리 행이 있으면 자동 적용 여부를 물음
+      const siblingIds: string[] = Array.isArray(data?.siblingIds) ? data.siblingIds : []
+      if (siblingIds.length > 0) setAutoApply({ categoryId, siblingIds })
+      else toast.success('동일 적요는 다음부터 자동 분류됩니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '분류 저장 실패')
+    }
+  }
+
+  // 일괄 처리(bulk 엔드포인트) — 계정과목 분류 또는 중복 처리
+  const applyBulk = useCallback(
+    async (payload: { ids: string[]; categoryId?: string; resolution?: FinStagedResolution }) => {
+      const res = await fetch('/api/finance/staging/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '일괄 처리 실패')
+      return (data?.updated as number) ?? 0
+    },
+    []
+  )
+
+  const handleBulkClassify = async (ids: string[], categoryId: string) => {
+    try {
+      const n = await applyBulk({ ids, categoryId })
+      toast.success(`${n}건에 계정과목을 적용했습니다`)
+      void loadStaging(stagingTab)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '일괄 처리 실패')
+    }
+  }
+
+  const handleBulkResolution = async (ids: string[], resolution: FinStagedResolution) => {
+    try {
+      const n = await applyBulk({ ids, resolution })
+      toast.success(resolution === 'DUP_SAME' ? `${n}건 제외 처리` : `${n}건 유지 처리`)
+      void loadStaging(stagingTab)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '일괄 처리 실패')
+    }
+  }
+
+  const handleAutoApplyConfirm = async () => {
+    if (!autoApply) return
+    try {
+      const n = await applyBulk({ ids: autoApply.siblingIds, categoryId: autoApply.categoryId })
+      toast.success(`동일 적요 ${n}건에 적용했습니다`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '일괄 적용 실패')
+    } finally {
+      setAutoApply(null)
+      void loadStaging(stagingTab)
     }
   }
 
@@ -317,24 +367,25 @@ export function TransactionsView() {
     }
   }
 
-  // 커밋 확인 — counts는 전체 임포트 기준(탭 필터 무관)
-  const dupExcluded = stagingCounts.dup // DUP_SAME + DUP_CHANGED 합산(서버 카운트)
-  const newCount = stagingCounts.total - stagingCounts.dup
-  const reviewRemaining = stagingCounts.review
+  // 저장 처리 — 분류완료(CLASSIFIED) 행만 확정 저장(임포트 무관). 미분류·검토는 보류.
+  const classifiedCount = stagingCounts.classified
+  const heldBack = stagingCounts.unclassified + stagingCounts.review
 
   const handleCommit = async () => {
-    if (!importIdParam) return
     setCommitting(true)
     try {
       const res = await fetch('/api/finance/staging/commit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ importId: importIdParam }),
+        // importId 있으면(업로드 후 진입) 그 임포트로 한정, 없으면(네비 진입) 전체 분류완료.
+        // 어느 쪽이든 분류완료 행만 저장 — 표시된 카운트와 일치.
+        body: JSON.stringify(importIdParam ? { importId: importIdParam } : {}),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '저장 처리 실패')
-      toast.success(`저장 완료 — 반영 ${data.committed}건, 제외 ${data.skipped}건`)
+      toast.success(`분류완료 ${data.committed}건을 저장했습니다`)
       setCommitDialogOpen(false)
+      void loadStaging(stagingTab) // 잔여(미분류·검토) 갱신
       // 전체 거래 탭으로 전환
       setMainTab('transactions')
       void loadTransactions()
@@ -360,6 +411,45 @@ export function TransactionsView() {
       toast.error(err instanceof Error ? err.message : '분류 저장 실패')
     }
   }
+
+  // 확정 거래 일괄 처리(bulk 엔드포인트) — 계정과목 분류 / 삭제
+  const handleTxnBulkClassify = useCallback(
+    async (ids: string[], categoryId: string) => {
+      try {
+        const res = await fetch('/api/finance/transactions/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids, categoryId }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.message ?? '일괄 처리 실패')
+        toast.success(`${data.updated ?? 0}건에 계정과목을 적용했습니다`)
+        void loadTransactions()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '일괄 처리 실패')
+      }
+    },
+    [loadTransactions]
+  )
+
+  const handleTxnBulkDelete = useCallback(
+    async (ids: string[]) => {
+      try {
+        const res = await fetch('/api/finance/transactions/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids, action: 'delete' }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
+        toast.success(`${data.deleted ?? 0}건을 삭제했습니다`)
+        void loadTransactions()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '삭제 실패')
+      }
+    },
+    [loadTransactions]
+  )
 
   // 필터 검색 실행
   const handleTxnSearch = useCallback(() => {
@@ -391,13 +481,16 @@ export function TransactionsView() {
           counts={stagingCounts}
           loading={stagingLoading}
           tab={stagingTab}
-          importId={importIdParam}
           leafTargets={leafTargets}
-          newCount={newCount}
-          dupExcluded={dupExcluded}
+          categoryTree={categoryTree}
+          reloadCategories={loadCategories}
+          classifiedCount={classifiedCount}
+          heldBack={heldBack}
           onTabChange={handleStagingTabChange}
           onClassify={handleStagingClassify}
           onDupResolution={handleDupResolution}
+          onBulkClassify={handleBulkClassify}
+          onBulkResolution={handleBulkResolution}
           onCommitRequest={() => setCommitDialogOpen(true)}
         />
       </TabsContent>
@@ -415,12 +508,16 @@ export function TransactionsView() {
           filterClassStatus={filterClassStatus}
           accounts={accounts}
           leafTargets={leafTargets}
+          categoryTree={categoryTree}
+          reloadCategories={loadCategories}
           onFilterQChange={setFilterQ}
           onFilterAccountIdChange={setFilterAccountId}
           onFilterDirectionChange={setFilterDirection}
           onFilterClassStatusChange={setFilterClassStatus}
           onSearch={handleTxnSearch}
           onClassify={handleTxnClassify}
+          onBulkClassify={handleTxnBulkClassify}
+          onBulkDelete={handleTxnBulkDelete}
         />
       </TabsContent>
 
@@ -429,22 +526,20 @@ export function TransactionsView() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>저장 처리 확인</DialogTitle>
-            <DialogDescription>스테이징 행을 확정 거래로 반영합니다.</DialogDescription>
+            <DialogDescription>
+              분류완료 건만 확정 거래로 저장합니다. 미분류·검토 행은 보류됩니다.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between rounded-md border px-3 py-2">
-              <span className="text-muted-foreground">신규 반영</span>
-              <span className="font-mono font-medium">{newCount}건</span>
+              <span className="text-muted-foreground">분류완료 저장</span>
+              <span className="font-mono font-medium">{classifiedCount}건</span>
             </div>
-            <div className="flex justify-between rounded-md border px-3 py-2">
-              <span className="text-muted-foreground">중복 제외</span>
-              <span className="font-mono font-medium">{dupExcluded}건</span>
-            </div>
-            {reviewRemaining > 0 && (
+            {heldBack > 0 && (
               <div className="flex justify-between rounded-md border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950">
-                <span className="text-amber-700 dark:text-amber-400">검토 잔여</span>
+                <span className="text-amber-700 dark:text-amber-400">보류(미분류·검토)</span>
                 <span className="font-mono font-medium text-amber-700 dark:text-amber-400">
-                  {reviewRemaining}건
+                  {heldBack}건
                 </span>
               </div>
             )}
@@ -463,6 +558,28 @@ export function TransactionsView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── 동일 적요 자동 적용 확인 ── */}
+      <Dialog open={autoApply !== null} onOpenChange={(open) => !open && setAutoApply(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>동일 적요 자동 적용</DialogTitle>
+            <DialogDescription>
+              같은 적요·같은 방향의 미처리 내역{' '}
+              <strong>{autoApply?.siblingIds.length ?? 0}건</strong>에도 같은 계정과목을 적용할까요?
+              (검토 제안도 덮어씁니다.)
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAutoApply(null)}>
+              이 건만
+            </Button>
+            <Button onClick={handleAutoApplyConfirm}>
+              {autoApply?.siblingIds.length ?? 0}건에 적용
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Tabs>
   )
 }
@@ -474,42 +591,67 @@ function StagingPanel({
   counts,
   loading,
   tab,
-  importId,
   leafTargets,
-  newCount,
-  dupExcluded,
+  categoryTree,
+  reloadCategories,
+  classifiedCount,
+  heldBack,
   onTabChange,
   onClassify,
   onDupResolution,
+  onBulkClassify,
+  onBulkResolution,
   onCommitRequest,
 }: {
   rows: StagedRow[]
   counts: StagedCounts
   loading: boolean
   tab: string
-  importId: string | undefined
-  leafTargets: { id: string; label: string }[]
-  newCount: number
-  dupExcluded: number
+  leafTargets: ComboOption[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
+  classifiedCount: number
+  heldBack: number
   onTabChange: (tab: string) => void
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
+  onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
+  onBulkResolution: (ids: string[], resolution: FinStagedResolution) => Promise<void>
   onCommitRequest: () => void
 }) {
   const hasDraft = counts.total > 0
 
+  // 다중 선택 상태. selectedInView가 현재 탭의 행으로 스코프하므로 탭 전환 시 자연히 정리된다.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const rowIds = rows.map((r) => r.id)
+  const selectedInView = rowIds.filter((id) => selectedIds.has(id))
+  const allSelected = rowIds.length > 0 && selectedInView.length === rowIds.length
+  const toggleOne = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const toggleAll = () =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (allSelected) rowIds.forEach((id) => next.delete(id))
+      else rowIds.forEach((id) => next.add(id))
+      return next
+    })
+  const clearSelection = () => setSelectedIds(new Set())
+  const runBulkClassify = async (categoryId: string) => {
+    await onBulkClassify(selectedInView, categoryId)
+    clearSelection()
+  }
+  const runBulkResolution = async (resolution: FinStagedResolution) => {
+    await onBulkResolution(selectedInView, resolution)
+    clearSelection()
+  }
+
   return (
     <div className="space-y-3">
-      {/* 안내 배너 */}
-      {(counts.review > 0 || counts.unclassified > 0 || counts.dup > 0) && (
-        <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-          <AlertDescription className="text-xs text-amber-700 dark:text-amber-400">
-            검토 필요 <strong>{counts.review}</strong>건 · 미분류{' '}
-            <strong>{counts.unclassified}</strong>건 · 중복 의심 <strong>{counts.dup}</strong>건
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* 하위 탭 */}
       <div className="flex items-center gap-1.5 border-b pb-2">
         {[
@@ -557,6 +699,13 @@ function StagingPanel({
           <Table>
             <TableHeader>
               <TableRow className="text-xs">
+                <TableHead className="w-9">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="전체 선택"
+                  />
+                </TableHead>
                 <TableHead className="w-24">날짜</TableHead>
                 <TableHead className="w-28">출처</TableHead>
                 <TableHead>적요</TableHead>
@@ -571,7 +720,11 @@ function StagingPanel({
                 <StagingRow
                   key={row.id}
                   row={row}
+                  selected={selectedIds.has(row.id)}
+                  onToggleSelect={() => toggleOne(row.id)}
                   leafTargets={leafTargets}
+                  categoryTree={categoryTree}
+                  reloadCategories={reloadCategories}
                   onClassify={onClassify}
                   onDupResolution={onDupResolution}
                 />
@@ -581,22 +734,97 @@ function StagingPanel({
         </div>
       )}
 
-      {/* 하단 저장 처리 버튼 */}
+      {/* 하단 저장 처리 버튼 — 분류완료 행만 확정 저장(임포트 무관) */}
       <div className="flex items-center justify-between pt-1">
         <p className="text-xs text-muted-foreground">
-          {importId
-            ? `임포트 ${importId.slice(0, 8)}…`
-            : '임포트 미지정 — importId 파라미터를 지정해야 저장할 수 있습니다'}
+          분류완료 <span className="font-medium text-foreground">{classifiedCount}</span>건 저장
+          가능
+          {heldBack > 0 && ` · 미처리 ${heldBack}건 보류`}
         </p>
-        <Button
-          onClick={onCommitRequest}
-          disabled={!importId || newCount + dupExcluded === 0}
-          size="sm"
-        >
+        <Button onClick={onCommitRequest} disabled={classifiedCount === 0} size="sm">
           저장 처리
         </Button>
       </div>
+
+      {/* 다중 선택 일괄 처리 바 */}
+      <StagingBulkBar
+        selectedCount={selectedInView.length}
+        leafTargets={leafTargets}
+        onClassify={runBulkClassify}
+        onResolution={runBulkResolution}
+        onClear={clearSelection}
+      />
     </div>
+  )
+}
+
+// ─── 다중 선택 일괄 처리 바 ────────────────────────────────────────────────────
+
+function StagingBulkBar({
+  selectedCount,
+  leafTargets,
+  onClassify,
+  onResolution,
+  onClear,
+}: {
+  selectedCount: number
+  leafTargets: ComboOption[]
+  onClassify: (categoryId: string) => Promise<void>
+  onResolution: (resolution: FinStagedResolution) => Promise<void>
+  onClear: () => void
+}) {
+  const [busy, setBusy] = useState(false)
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true)
+    try {
+      await fn()
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <FloatingActionBar
+      open={selectedCount > 0}
+      onClear={onClear}
+      clearDisabled={busy}
+      actions={
+        <>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-background/70">계정과목</span>
+            <CategoryCombobox
+              options={leafTargets}
+              value={null}
+              onChange={(id) => void run(() => onClassify(id))}
+              placeholder="일괄 분류"
+              triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
+              disabled={busy}
+            />
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={floatingActionButtonClass}
+            onClick={() => void run(() => onResolution('DUP_SAME'))}
+            disabled={busy}
+          >
+            제외
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={floatingActionButtonClass}
+            onClick={() => void run(() => onResolution('NEW'))}
+            disabled={busy}
+          >
+            유지
+          </Button>
+        </>
+      }
+    >
+      <span className="text-sm font-semibold">{selectedCount}개 선택됨</span>
+    </FloatingActionBar>
   )
 }
 
@@ -604,27 +832,36 @@ function StagingPanel({
 
 function StagingRow({
   row,
+  selected,
+  onToggleSelect,
   leafTargets,
+  categoryTree,
+  reloadCategories,
   onClassify,
   onDupResolution,
 }: {
   row: StagedRow
-  leafTargets: { id: string; label: string }[]
+  selected: boolean
+  onToggleSelect: () => void
+  leafTargets: ComboOption[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
 }) {
   const isDup = row.resolution === 'DUP_SAME' || row.resolution === 'DUP_CHANGED'
   const statusBadge = classStatusBadge(row.classStatus)
 
-  // 계정과목 표시 레이블
-  const categoryLabel = row.category
-    ? row.category.parent
-      ? `${row.category.parent.name} › ${row.category.name}`
-      : row.category.name
-    : ''
-
   return (
-    <TableRow className={isDup && row.resolution === 'DUP_SAME' ? 'opacity-50' : ''}>
+    <TableRow
+      data-state={selected ? 'selected' : undefined}
+      className={isDup && row.resolution === 'DUP_SAME' ? 'opacity-50' : ''}
+    >
+      {/* 선택 */}
+      <TableCell>
+        <Checkbox checked={selected} onCheckedChange={onToggleSelect} aria-label="행 선택" />
+      </TableCell>
+
       {/* 날짜 */}
       <TableCell className="font-mono text-xs">{fmtDate(row.txnDate)}</TableCell>
 
@@ -657,23 +894,16 @@ function StagingRow({
         </span>
       </TableCell>
 
-      {/* 계정과목 inline Select */}
+      {/* 계정과목 inline Select (+ 계정과목 추가 팝업) */}
       <TableCell>
         <div className="flex items-center gap-1.5">
-          <Select value={row.categoryId ?? ''} onValueChange={(v) => onClassify(row.id, v)}>
-            <SelectTrigger className="h-7 w-40 text-xs">
-              <SelectValue placeholder="계정과목 선택">
-                {categoryLabel || '계정과목 선택'}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {leafTargets.map((t) => (
-                <SelectItem key={t.id} value={t.id} className="text-xs">
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CategorySelect
+            value={row.categoryId}
+            options={leafTargets}
+            categoryTree={categoryTree}
+            reloadCategories={reloadCategories}
+            onSelect={(categoryId) => onClassify(row.id, categoryId)}
+          />
           {/* 규칙 힌트 */}
           {row.matchedRuleId && row.category && (
             <span className="text-[10px] text-muted-foreground">규칙</span>
@@ -747,12 +977,16 @@ function TransactionsPanel({
   filterClassStatus,
   accounts,
   leafTargets,
+  categoryTree,
+  reloadCategories,
   onFilterQChange,
   onFilterAccountIdChange,
   onFilterDirectionChange,
   onFilterClassStatusChange,
   onSearch,
   onClassify,
+  onBulkClassify,
+  onBulkDelete,
 }: {
   rows: Transaction[]
   total: number
@@ -763,14 +997,49 @@ function TransactionsPanel({
   filterDirection: 'all' | 'IN' | 'OUT'
   filterClassStatus: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED'
   accounts: { id: string; name: string; kind: FinAccountKind }[]
-  leafTargets: { id: string; label: string }[]
+  leafTargets: ComboOption[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
   onFilterQChange: (v: string) => void
   onFilterAccountIdChange: (v: string) => void
   onFilterDirectionChange: (v: 'all' | 'IN' | 'OUT') => void
   onFilterClassStatusChange: (v: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED') => void
   onSearch: () => void
   onClassify: (txnId: string, categoryId: string) => void
+  onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
+  onBulkDelete: (ids: string[]) => Promise<void>
 }) {
+  // 다중 선택 — selectedInView가 현재 행으로 스코프하므로 필터/조회 후 자연히 정리된다.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const rowIds = rows.map((r) => r.id)
+  const selectedInView = rowIds.filter((id) => selectedIds.has(id))
+  const allSelected = rowIds.length > 0 && selectedInView.length === rowIds.length
+  const toggleOne = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const toggleAll = () =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (allSelected) rowIds.forEach((id) => next.delete(id))
+      else rowIds.forEach((id) => next.add(id))
+      return next
+    })
+  const clearSelection = () => setSelectedIds(new Set())
+  const runBulkClassify = async (categoryId: string) => {
+    await onBulkClassify(selectedInView, categoryId)
+    clearSelection()
+  }
+  const runBulkDelete = async () => {
+    await onBulkDelete(selectedInView)
+    setDeleteOpen(false)
+    clearSelection()
+  }
+
   return (
     <div className="space-y-3">
       {/* 필터 바 */}
@@ -866,6 +1135,13 @@ function TransactionsPanel({
           <Table>
             <TableHeader>
               <TableRow className="text-xs">
+                <TableHead className="w-9">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="전체 선택"
+                  />
+                </TableHead>
                 <TableHead className="w-24">날짜</TableHead>
                 <TableHead className="w-28">출처</TableHead>
                 <TableHead>적요</TableHead>
@@ -879,7 +1155,11 @@ function TransactionsPanel({
                 <TransactionRow
                   key={txn.id}
                   txn={txn}
+                  selected={selectedIds.has(txn.id)}
+                  onToggleSelect={() => toggleOne(txn.id)}
                   leafTargets={leafTargets}
+                  categoryTree={categoryTree}
+                  reloadCategories={reloadCategories}
                   onClassify={onClassify}
                 />
               ))}
@@ -887,7 +1167,98 @@ function TransactionsPanel({
           </Table>
         </div>
       )}
+
+      {/* 다중 선택 일괄 처리 바 — 계정과목 분류 / 삭제 */}
+      <TransactionsBulkBar
+        selectedCount={selectedInView.length}
+        leafTargets={leafTargets}
+        onClassify={runBulkClassify}
+        onDeleteRequest={() => setDeleteOpen(true)}
+        onClear={clearSelection}
+      />
+
+      {/* 삭제 확인 — 되돌릴 수 없음 */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>거래 삭제</DialogTitle>
+            <DialogDescription>
+              선택한 <strong>{selectedInView.length}건</strong>의 확정 거래를 삭제합니다. 되돌릴 수
+              없으며, 영향 계좌의 월말 잔고가 다시 계산됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={() => void runBulkDelete()}>
+              {selectedInView.length}건 삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  )
+}
+
+// ─── 전체 거래 다중 선택 일괄 처리 바 ──────────────────────────────────────────
+
+function TransactionsBulkBar({
+  selectedCount,
+  leafTargets,
+  onClassify,
+  onDeleteRequest,
+  onClear,
+}: {
+  selectedCount: number
+  leafTargets: ComboOption[]
+  onClassify: (categoryId: string) => Promise<void>
+  onDeleteRequest: () => void
+  onClear: () => void
+}) {
+  const [busy, setBusy] = useState(false)
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true)
+    try {
+      await fn()
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <FloatingActionBar
+      open={selectedCount > 0}
+      onClear={onClear}
+      clearDisabled={busy}
+      actions={
+        <>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-background/70">계정과목</span>
+            <CategoryCombobox
+              options={leafTargets}
+              value={null}
+              onChange={(id) => void run(() => onClassify(id))}
+              placeholder="일괄 분류"
+              triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
+              disabled={busy}
+            />
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="h-8 gap-1 px-2.5 text-xs text-red-300 hover:bg-red-500/20 hover:text-red-200"
+            onClick={onDeleteRequest}
+            disabled={busy}
+          >
+            <Trash2 className="size-3.5" />
+            삭제
+          </Button>
+        </>
+      }
+    >
+      <span className="text-sm font-semibold">{selectedCount}개 선택됨</span>
+    </FloatingActionBar>
   )
 }
 
@@ -895,22 +1266,30 @@ function TransactionsPanel({
 
 function TransactionRow({
   txn,
+  selected,
+  onToggleSelect,
   leafTargets,
+  categoryTree,
+  reloadCategories,
   onClassify,
 }: {
   txn: Transaction
-  leafTargets: { id: string; label: string }[]
+  selected: boolean
+  onToggleSelect: () => void
+  leafTargets: ComboOption[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
   onClassify: (txnId: string, categoryId: string) => void
 }) {
   const statusBadge = classStatusBadge(txn.classStatus)
-  const categoryLabel = txn.category
-    ? txn.category.parent
-      ? `${txn.category.parent.name} › ${txn.category.name}`
-      : txn.category.name
-    : ''
 
   return (
-    <TableRow>
+    <TableRow data-state={selected ? 'selected' : undefined}>
+      {/* 선택 */}
+      <TableCell>
+        <Checkbox checked={selected} onCheckedChange={onToggleSelect} aria-label="행 선택" />
+      </TableCell>
+
       {/* 날짜 */}
       <TableCell className="font-mono text-xs">{fmtDate(txn.txnDate)}</TableCell>
 
@@ -943,23 +1322,16 @@ function TransactionRow({
         </span>
       </TableCell>
 
-      {/* 계정과목 inline Select */}
+      {/* 계정과목 inline Select (+ 계정과목 추가 팝업) */}
       <TableCell>
         <div className="flex items-center gap-1.5">
-          <Select value={txn.categoryId ?? ''} onValueChange={(v) => onClassify(txn.id, v)}>
-            <SelectTrigger className="h-7 w-40 text-xs">
-              <SelectValue placeholder="계정과목 선택">
-                {categoryLabel || '계정과목 선택'}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {leafTargets.map((t) => (
-                <SelectItem key={t.id} value={t.id} className="text-xs">
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CategorySelect
+            value={txn.categoryId}
+            options={leafTargets}
+            categoryTree={categoryTree}
+            reloadCategories={reloadCategories}
+            onSelect={(categoryId) => onClassify(txn.id, categoryId)}
+          />
           {txn.matchedRuleId && txn.category && (
             <span className="text-[10px] text-muted-foreground">규칙</span>
           )}
@@ -973,5 +1345,168 @@ function TransactionRow({
         </Badge>
       </TableCell>
     </TableRow>
+  )
+}
+
+// ─── 계정과목 선택 + 인라인 추가 ────────────────────────────────────────────────
+
+/**
+ * 계정과목 검색형 선택기(콤보박스). 드롭다운 하단에 '+ 계정과목 추가'가 있고, 계정과목이 하나도
+ * 없으면 재로드(자가복구) 버튼만 노출한다. 추가 성공 시 계정과목을 재로드하고 해당 거래에 즉시 매칭.
+ */
+function CategorySelect({
+  value,
+  options,
+  categoryTree,
+  reloadCategories,
+  onSelect,
+}: {
+  value: string | null
+  options: ComboOption[]
+  categoryTree: CategoryNode[]
+  reloadCategories: () => Promise<void>
+  onSelect: (categoryId: string) => void
+}) {
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  // 추가된 계정과목을 재로드 후 이 거래에 즉시 매칭
+  const handleCreated = async (category: { id: string }) => {
+    await reloadCategories()
+    onSelect(category.id)
+  }
+
+  // 빈 상태(계정과목 없음) — 새 계정과목은 상위 그룹(수익/비용/이체)이 있어야 추가 가능하므로,
+  // 여기선 추가 팝업 대신 재로드로 표준 계정과목(K-IFRS)을 자가복구한다. 복구 후 콤보박스의
+  // '+ 계정과목 추가'로 사용자 계정과목을 더할 수 있다. 복구 실패 시 loadCategories가 토스트로 알림.
+  if (options.length === 0) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 gap-1 text-xs"
+        onClick={() => void reloadCategories()}
+      >
+        <Plus className="size-3.5" />
+        계정과목 불러오기
+      </Button>
+    )
+  }
+
+  return (
+    <>
+      <CategoryCombobox
+        options={options}
+        value={value}
+        onChange={onSelect}
+        triggerClassName="h-7 w-44 text-xs"
+        onAddNew={() => setDialogOpen(true)}
+      />
+      <AddCategoryDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        categoryTree={categoryTree}
+        onCreated={handleCreated}
+      />
+    </>
+  )
+}
+
+/**
+ * 계정과목 추가 다이얼로그 — 상위 계정과목(수익/비용/이체) 아래에 새 계정과목을 만들고
+ * 생성된 계정과목을 호출자에게 넘겨 즉시 매칭하게 한다. POST /api/finance/categories 재사용.
+ */
+function AddCategoryDialog({
+  open,
+  onOpenChange,
+  categoryTree,
+  onCreated,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  categoryTree: CategoryNode[]
+  onCreated: (category: { id: string }) => Promise<void> | void
+}) {
+  const [parentId, setParentId] = useState('')
+  const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const parentOptions = useMemo(() => buildParentOptions(categoryTree), [categoryTree])
+
+  async function handleSave() {
+    if (!parentId) {
+      toast.error('상위 계정과목을 선택해 주세요')
+      return
+    }
+    if (!name.trim()) {
+      toast.error('계정과목 이름을 입력해 주세요')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/finance/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentId, name: name.trim() }),
+      })
+      const data = (await res.json().catch(() => ({}))) as {
+        message?: string
+        category?: { id: string }
+      }
+      if (!res.ok || !data.category) throw new Error(data?.message ?? '계정과목 추가 실패')
+      toast.success('계정과목이 추가되어 이 거래에 적용되었습니다')
+      setName('')
+      setParentId('')
+      onOpenChange(false)
+      await onCreated(data.category)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '계정과목 추가 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>계정과목 추가</DialogTitle>
+          <DialogDescription>
+            상위 계정과목 아래에 새 계정과목을 추가하고 이 거래에 바로 적용합니다.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">상위 계정과목</Label>
+            <CategoryCombobox
+              options={parentOptions}
+              value={parentId || null}
+              onChange={setParentId}
+              placeholder="수익 / 비용 / 이체 선택"
+              triggerClassName="h-9 w-full text-sm"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">계정과목 이름</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="예: 플랫폼 수수료"
+              className="h-9 text-sm"
+              maxLength={100}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void handleSave()
+              }}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+            취소
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? '추가 중...' : '추가하고 적용'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

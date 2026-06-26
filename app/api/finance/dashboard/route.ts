@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, toNumOrNull, round2 } from '@/lib/finance/serialize'
 import {
   ymOf,
@@ -23,6 +24,9 @@ export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
+
+  // 콜드케이스(활성인데 계정과목 0) 자가복구
+  await ensureFinanceSeeded(spaceId)
 
   const sp = req.nextUrl.searchParams
   const period = sp.get('period') === 'year' ? 'year' : 'month'
