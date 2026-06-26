@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/select'
 import type { FinCategoryType } from '@/generated/prisma/enums'
 import { categoryTypeBadge } from '@/components/finance/format'
+import { CategoryCombobox } from '@/components/finance/category-combobox'
+import { buildClassifyOptions, type ComboOption } from '@/lib/finance/category-options'
 
 type Category = {
   id: string
@@ -39,21 +41,6 @@ type Rule = {
   matchType: 'EXACT' | 'KEYWORD'
   learnedFrom: 'USER' | 'SEED'
   category: { id: string; name: string; parent?: { name: string } | null } | null
-}
-
-/** 분류 대상이 되는 잎 계정(수익/비용) 목록을 트리에서 평탄화. */
-function flattenLeafTargets(tree: Category[]): { id: string; label: string }[] {
-  const out: { id: string; label: string }[] = []
-  for (const root of tree) {
-    if (root.type !== 'INCOME' && root.type !== 'EXPENSE') continue
-    for (const lvl1 of root.children) {
-      out.push({ id: lvl1.id, label: lvl1.name })
-      for (const sub of lvl1.children) {
-        out.push({ id: sub.id, label: `${lvl1.name} › ${sub.name}` })
-      }
-    }
-  }
-  return out
 }
 
 export function FinanceAccountsManager() {
@@ -85,7 +72,7 @@ export function FinanceAccountsManager() {
     void load()
   }, [load])
 
-  const leafTargets = useMemo(() => flattenLeafTargets(tree), [tree])
+  const leafTargets = useMemo(() => buildClassifyOptions(tree, ['INCOME', 'EXPENSE']), [tree])
 
   return (
     <Tabs defaultValue="categories" className="space-y-4">
@@ -321,7 +308,7 @@ function RuleManager({
   onChanged,
 }: {
   rules: Rule[]
-  leafTargets: { id: string; label: string }[]
+  leafTargets: ComboOption[]
   loading: boolean
   onChanged: () => void
 }) {
@@ -400,18 +387,13 @@ function RuleManager({
             </SelectContent>
           </Select>
           <span className="text-xs text-muted-foreground">→</span>
-          <Select value={categoryId} onValueChange={setCategoryId}>
-            <SelectTrigger className="h-8 w-56 text-sm">
-              <SelectValue placeholder="대상 계정과목" />
-            </SelectTrigger>
-            <SelectContent>
-              {leafTargets.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CategoryCombobox
+            options={leafTargets}
+            value={categoryId || null}
+            onChange={setCategoryId}
+            placeholder="대상 계정과목"
+            triggerClassName="h-8 w-56 text-sm"
+          />
           <Button size="sm" onClick={handleAdd} disabled={saving}>
             <Plus className="mr-1 size-3.5" />
             규칙 추가

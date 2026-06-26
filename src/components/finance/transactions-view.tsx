@@ -39,6 +39,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { classStatusBadge, accountKindLabel, formatWon } from '@/components/finance/format'
+import { CategoryCombobox } from '@/components/finance/category-combobox'
+import {
+  buildClassifyOptions,
+  buildParentOptions,
+  type ComboOption,
+} from '@/lib/finance/category-options'
 import type { FinAccountKind, FinClassStatus, FinStagedResolution } from '@/generated/prisma/enums'
 
 // ─── 타입 정의 ───────────────────────────────────────────────────────────────
@@ -104,25 +110,6 @@ type TransactionSummary = {
   net: number
 }
 
-// ─── flattenLeafTargets: INCOME/EXPENSE 잎 계정과목 평탄화 ──────────────────
-
-function flattenLeafTargets(tree: CategoryNode[]): { id: string; label: string }[] {
-  const out: { id: string; label: string }[] = []
-  for (const root of tree) {
-    // 수입/지출 + 계좌간 이체(TRANSFER) 분류 대상. TRANSFER로 분류하면 isTransfer=true가 되어
-    // 수입/지출 집계에서 제외된다(이중계상 방지).
-    if (root.type !== 'INCOME' && root.type !== 'EXPENSE' && root.type !== 'TRANSFER') continue
-    const tag = root.type === 'TRANSFER' ? ' (이체)' : ''
-    for (const lvl1 of root.children) {
-      out.push({ id: lvl1.id, label: `${lvl1.name}${tag}` })
-      for (const sub of lvl1.children) {
-        out.push({ id: sub.id, label: `${lvl1.name} › ${sub.name}${tag}` })
-      }
-    }
-  }
-  return out
-}
-
 // ─── 날짜 포맷 ───────────────────────────────────────────────────────────────
 
 function fmtDate(iso: string): string {
@@ -140,7 +127,7 @@ export function TransactionsView() {
 
   // 카테고리 트리 + 잎 목록
   const [categoryTree, setCategoryTree] = useState<CategoryNode[]>([])
-  const leafTargets = useMemo(() => flattenLeafTargets(categoryTree), [categoryTree])
+  const leafTargets = useMemo(() => buildClassifyOptions(categoryTree), [categoryTree])
 
   // 계좌 목록 (전체 거래 출처 필터)
   const [accounts, setAccounts] = useState<{ id: string; name: string; kind: FinAccountKind }[]>([])
@@ -499,7 +486,7 @@ function StagingPanel({
   loading: boolean
   tab: string
   importId: string | undefined
-  leafTargets: { id: string; label: string }[]
+  leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   newCount: number
@@ -626,7 +613,7 @@ function StagingRow({
   onDupResolution,
 }: {
   row: StagedRow
-  leafTargets: { id: string; label: string }[]
+  leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onClassify: (rowId: string, categoryId: string) => void
@@ -634,13 +621,6 @@ function StagingRow({
 }) {
   const isDup = row.resolution === 'DUP_SAME' || row.resolution === 'DUP_CHANGED'
   const statusBadge = classStatusBadge(row.classStatus)
-
-  // 계정과목 표시 레이블
-  const categoryLabel = row.category
-    ? row.category.parent
-      ? `${row.category.parent.name} › ${row.category.name}`
-      : row.category.name
-    : ''
 
   return (
     <TableRow className={isDup && row.resolution === 'DUP_SAME' ? 'opacity-50' : ''}>
@@ -681,8 +661,7 @@ function StagingRow({
         <div className="flex items-center gap-1.5">
           <CategorySelect
             value={row.categoryId}
-            currentLabel={categoryLabel}
-            leafTargets={leafTargets}
+            options={leafTargets}
             categoryTree={categoryTree}
             reloadCategories={reloadCategories}
             onSelect={(categoryId) => onClassify(row.id, categoryId)}
@@ -778,7 +757,7 @@ function TransactionsPanel({
   filterDirection: 'all' | 'IN' | 'OUT'
   filterClassStatus: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED'
   accounts: { id: string; name: string; kind: FinAccountKind }[]
-  leafTargets: { id: string; label: string }[]
+  leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onFilterQChange: (v: string) => void
@@ -920,17 +899,12 @@ function TransactionRow({
   onClassify,
 }: {
   txn: Transaction
-  leafTargets: { id: string; label: string }[]
+  leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onClassify: (txnId: string, categoryId: string) => void
 }) {
   const statusBadge = classStatusBadge(txn.classStatus)
-  const categoryLabel = txn.category
-    ? txn.category.parent
-      ? `${txn.category.parent.name} › ${txn.category.name}`
-      : txn.category.name
-    : ''
 
   return (
     <TableRow>
@@ -971,8 +945,7 @@ function TransactionRow({
         <div className="flex items-center gap-1.5">
           <CategorySelect
             value={txn.categoryId}
-            currentLabel={categoryLabel}
-            leafTargets={leafTargets}
+            options={leafTargets}
             categoryTree={categoryTree}
             reloadCategories={reloadCategories}
             onSelect={(categoryId) => onClassify(txn.id, categoryId)}
@@ -996,25 +969,22 @@ function TransactionRow({
 // ─── 계정과목 선택 + 인라인 추가 ────────────────────────────────────────────────
 
 /**
- * 계정과목 inline Select. 드롭다운 하단에 '+ 계정과목 추가'가 있고, 계정과목이 하나도 없으면
- * Select 대신 추가 버튼만 노출한다. 추가 성공 시 계정과목을 재로드하고 해당 거래에 즉시 매칭한다.
+ * 계정과목 검색형 선택기(콤보박스). 드롭다운 하단에 '+ 계정과목 추가'가 있고, 계정과목이 하나도
+ * 없으면 재로드(자가복구) 버튼만 노출한다. 추가 성공 시 계정과목을 재로드하고 해당 거래에 즉시 매칭.
  */
 function CategorySelect({
   value,
-  currentLabel,
-  leafTargets,
+  options,
   categoryTree,
   reloadCategories,
   onSelect,
 }: {
   value: string | null
-  currentLabel: string
-  leafTargets: { id: string; label: string }[]
+  options: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onSelect: (categoryId: string) => void
 }) {
-  const [selectOpen, setSelectOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
 
   // 추가된 계정과목을 재로드 후 이 거래에 즉시 매칭
@@ -1023,19 +993,10 @@ function CategorySelect({
     onSelect(category.id)
   }
 
-  const dialog = (
-    <AddCategoryDialog
-      open={dialogOpen}
-      onOpenChange={setDialogOpen}
-      categoryTree={categoryTree}
-      onCreated={handleCreated}
-    />
-  )
-
   // 빈 상태(계정과목 없음) — 새 계정과목은 상위 그룹(수익/비용/이체)이 있어야 추가 가능하므로,
-  // 여기선 추가 팝업 대신 재로드로 표준 계정과목(K-IFRS)을 자가복구한다. 복구 후 일반 드롭다운의
+  // 여기선 추가 팝업 대신 재로드로 표준 계정과목(K-IFRS)을 자가복구한다. 복구 후 콤보박스의
   // '+ 계정과목 추가'로 사용자 계정과목을 더할 수 있다. 복구 실패 시 loadCategories가 토스트로 알림.
-  if (leafTargets.length === 0) {
+  if (options.length === 0) {
     return (
       <Button
         variant="outline"
@@ -1051,53 +1012,21 @@ function CategorySelect({
 
   return (
     <>
-      <Select
-        open={selectOpen}
-        onOpenChange={setSelectOpen}
-        value={value ?? ''}
-        onValueChange={(v) => onSelect(v)}
-      >
-        <SelectTrigger className="h-7 w-40 text-xs">
-          <SelectValue placeholder="계정과목 선택">{currentLabel || '계정과목 선택'}</SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {leafTargets.map((t) => (
-            <SelectItem key={t.id} value={t.id} className="text-xs">
-              {t.label}
-            </SelectItem>
-          ))}
-          <div className="mt-1 border-t pt-1">
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                setSelectOpen(false)
-                setDialogOpen(true)
-              }}
-              className="flex w-full items-center gap-1 rounded-sm px-2 py-1.5 text-xs text-primary hover:bg-accent"
-            >
-              <Plus className="size-3.5" />
-              계정과목 추가
-            </button>
-          </div>
-        </SelectContent>
-      </Select>
-      {dialog}
+      <CategoryCombobox
+        options={options}
+        value={value}
+        onChange={onSelect}
+        triggerClassName="h-7 w-44 text-xs"
+        onAddNew={() => setDialogOpen(true)}
+      />
+      <AddCategoryDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        categoryTree={categoryTree}
+        onCreated={handleCreated}
+      />
     </>
   )
-}
-
-/** 분류 타깃이 될 수 있는 상위 계정과목(수익/비용/이체의 root + lvl1) 옵션. */
-function collectParentOptions(tree: CategoryNode[]): { id: string; label: string }[] {
-  const out: { id: string; label: string }[] = []
-  for (const root of tree) {
-    if (root.type !== 'INCOME' && root.type !== 'EXPENSE' && root.type !== 'TRANSFER') continue
-    out.push({ id: root.id, label: root.name })
-    for (const lvl1 of root.children) {
-      out.push({ id: lvl1.id, label: `${root.name} › ${lvl1.name}` })
-    }
-  }
-  return out
 }
 
 /**
@@ -1118,7 +1047,7 @@ function AddCategoryDialog({
   const [parentId, setParentId] = useState('')
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
-  const parentOptions = useMemo(() => collectParentOptions(categoryTree), [categoryTree])
+  const parentOptions = useMemo(() => buildParentOptions(categoryTree), [categoryTree])
 
   async function handleSave() {
     if (!parentId) {
@@ -1165,18 +1094,13 @@ function AddCategoryDialog({
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label className="text-xs">상위 계정과목</Label>
-            <Select value={parentId} onValueChange={setParentId}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="수익 / 비용 / 이체 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                {parentOptions.map((p) => (
-                  <SelectItem key={p.id} value={p.id} className="text-sm">
-                    {p.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CategoryCombobox
+              options={parentOptions}
+              value={parentId || null}
+              onChange={setParentId}
+              placeholder="수익 / 비용 / 이체 선택"
+              triggerClassName="h-9 w-full text-sm"
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">계정과목 이름</Label>
