@@ -118,6 +118,7 @@ describe('stock status UI', () => {
     expect(screen.getAllByText('와펜')).toHaveLength(2)
     expect(screen.getByText('30일 출고량')).toBeInTheDocument()
     expect(screen.getByText('90일 출고량')).toBeInTheDocument()
+    expect(screen.getByText('생산 관리')).toBeInTheDocument()
     expect(screen.getByText('12')).toBeInTheDocument()
     expect(screen.getByText('37')).toBeInTheDocument()
   })

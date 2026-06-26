@@ -100,8 +100,9 @@ export function StockStatusMatrix({
                       </div>
                     </th>
                   ))}
-                  <th className="min-w-[90px] border-l bg-muted px-2 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    입고예정
+                  <th className="min-w-[90px] border-l bg-muted px-2 py-2 text-center text-[11px] font-medium text-muted-foreground">
+                    <div className="font-semibold text-foreground">입고예정</div>
+                    <div className="text-[10px] font-normal text-muted-foreground">생산 관리</div>
                   </th>
                   <th className="sticky right-0 z-30 min-w-[140px] border-l bg-muted px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     합계
