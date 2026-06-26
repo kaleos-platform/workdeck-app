@@ -9,7 +9,13 @@
 
 import { runBackfill, type BackfillCreds } from './backfill-sales-vendor.js'
 import { decrypt } from './encryption.js'
-import { notifyVendorSalesDone } from './slack-notifier.js'
+import { notifyVendorSalesDone, notifyLoginFailed } from './slack-notifier.js'
+import {
+  LoginError,
+  getLoginCooldown,
+  startLoginCooldown,
+  shouldAlertLoginFailure,
+} from './login-guard.js'
 
 const POLL_INTERVAL = 60_000 // 60초
 const BASE_URL = (): string => {
@@ -179,6 +185,11 @@ export function startBackfillPoller(): void {
   setInterval(async () => {
     if (isProcessing) return
 
+    // 로그인 쿨다운 중이면 잡을 claim 하지 않는다 — 비번오류/봇차단으로 막힌 상태에서
+    // 60초마다 잡마다 Wing 재로그인해 Akamai 차단을 악화시키지 않기 위함. 잡은 PENDING
+    // 으로 남아 쿨다운 해제 후(또는 manual 수집 성공으로 해제 시) 재개된다.
+    if (getLoginCooldown().active) return
+
     let job: Awaited<ReturnType<typeof claimBackfillJob>> = null
 
     try {
@@ -220,6 +231,16 @@ export function startBackfillPoller(): void {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error(`[backfill-poller] runBackfill 실패: ${msg}`)
+        // 로그인 실패면 자동 경로 쿨다운 + 사유별 알림(디듀프) — 비번 만료/봇차단을 운영자가
+        // 즉시 알 수 있게(기존엔 잡만 FAILED 처리되고 Slack 알림이 없었다).
+        if (err instanceof LoginError) {
+          startLoginCooldown(err.reason)
+          if (shouldAlertLoginFailure(err.reason)) {
+            await notifyLoginFailed({ reason: err.reason, source: 'backfill', detail: msg }).catch(
+              () => {}
+            )
+          }
+        }
         await reportBackfillJob({ jobId: job.id, status: 'FAILED', error: msg })
         return
       }

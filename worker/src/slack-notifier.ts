@@ -185,6 +185,55 @@ export async function notifyCollectionFailed(error: string): Promise<void> {
   await postMessage(blocks, `쿠팡 광고 데이터 수집 실패: ${error.slice(0, 100)}`)
 }
 
+/**
+ * 쿠팡 로그인 실패 알림 — 사유별로 조치를 구체적으로 안내한다.
+ * CREDENTIAL_INVALID: 비밀번호 변경·만료 → 운영자가 워크덱 설정에서 갱신해야 한다.
+ * BOT_BLOCKED: Akamai 봇 차단 → 자동 로그인을 쿨다운하고 잠시 후 재시도된다.
+ */
+export async function notifyLoginFailed(params: {
+  reason: 'CREDENTIAL_INVALID' | 'BOT_BLOCKED' | 'UNKNOWN'
+  source: string // 'scheduled' | 'manual' | 'inventory' 등 — 어느 경로에서 났는지
+  detail?: string
+}): Promise<void> {
+  const settingsUrl = process.env.WORKDECK_APP_URL
+    ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/settings`
+    : 'https://app.workdeck.work/d/coupang-ads/settings'
+
+  let emoji = ':x:'
+  let title = '쿠팡 로그인 실패'
+  let guidance = ''
+  switch (params.reason) {
+    case 'CREDENTIAL_INVALID':
+      emoji = ':lock:'
+      title = '쿠팡 로그인 실패 — 아이디/비밀번호 불일치'
+      guidance =
+        `*비밀번호가 변경·만료되었을 가능성이 높습니다.*\n` +
+        `워크덱 설정에서 쿠팡 계정 정보를 갱신해 주세요.\n<${settingsUrl}|:gear: 계정 정보 변경>`
+      break
+    case 'BOT_BLOCKED':
+      emoji = ':no_entry:'
+      title = '쿠팡 로그인 실패 — Akamai 봇 차단(Access Denied)'
+      guidance =
+        `자동 로그인이 쿠팡 봇 차단(Akamai)에 막혔습니다.\n` +
+        `*자동 수집·백필*을 일시 중지(쿨다운)합니다. 수동 수집은 즉시 재시도 가능하며, ` +
+        `수동 수집이 성공하면 쿨다운이 풀립니다. 반복되면 로그인 빈도(세션 재사용)를 점검하세요.`
+      break
+    default:
+      title = '쿠팡 로그인 실패 — 사유 불명'
+      guidance = '로그인 단계에서 실패했습니다. 워커 로그/스크린샷을 확인하세요.'
+  }
+
+  const blocks: Block[] = [
+    header(`${emoji} [${DECK_COUPANG_ADS}] ${title}`),
+    divider(),
+    section(`*경로*\n${params.source}`, `*사유*\n${params.reason}`),
+    section(guidance),
+  ]
+  if (params.detail) blocks.push(context(params.detail.slice(0, 200)))
+
+  await postMessage(blocks, `쿠팡 로그인 실패(${params.reason}): ${title}`)
+}
+
 /** 로켓그로스 판매(VENDOR) 수집 완료 알림 — cron(daily) / 백필 공용 */
 export async function notifyVendorSalesDone(params: {
   mode: 'daily' | 'backfill'

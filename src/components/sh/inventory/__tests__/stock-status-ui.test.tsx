@@ -1,9 +1,20 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { StockStatusMatrix } from '../stock-status-matrix'
 import { StockStatusProducts } from '../stock-status-products'
-import type { StockLocation, StockMatrixRow, StockProductSummary } from '../stock-status.types'
+import type { StockBrand, StockLocation, StockMatrixRow } from '../stock-status.types'
+import { scopeStockStatusRows, type StockStatusProductCard } from '../stock-status-view-model'
 
-const products: StockProductSummary[] = [
+const brands: StockBrand[] = [
+  {
+    id: null,
+    name: '브랜드 없음',
+    logoUrl: null,
+    groups: [],
+    healthRatio: { ok: 0, low: 0, out: 0, over: 0, total: 0 },
+  },
+]
+
+const products: StockStatusProductCard[] = [
   {
     productId: 'product-1',
     productName: '와펜',
@@ -12,6 +23,10 @@ const products: StockProductSummary[] = [
     lowOptionCount: 0,
     outOptionCount: 1,
     overOptionCount: 0,
+    brandId: null,
+    brandName: null,
+    groupId: 'group-1',
+    groupName: '기본',
   },
 ]
 
@@ -55,28 +70,41 @@ const rows: StockMatrixRow[] = [
 ]
 
 describe('stock status UI', () => {
-  it('상품 패널에 전체 항목을 표시하고 선택할 수 있다', () => {
+  it('상품 패널에서 전체 항목 없이 상품을 선택할 수 있다', () => {
     const onSelectProduct = jest.fn()
 
     render(
       <StockStatusProducts
         products={products}
+        brands={brands}
         loading={false}
         selectedProductId={null}
+        selectedBrandId={null}
+        selectedGroupId={null}
+        productQuery=""
+        pinnedProductIds={[]}
+        collapsed={false}
         onSelectProduct={onSelectProduct}
+        onToggleCollapsed={jest.fn()}
+        onTogglePinned={jest.fn()}
+        onBrandChange={jest.fn()}
+        onGroupChange={jest.fn()}
+        onSearchChange={jest.fn()}
       />
     )
 
-    fireEvent.click(screen.getByRole('button', { name: /전체/ }))
+    expect(screen.queryByRole('button', { name: /^전체$/ })).not.toBeInTheDocument()
 
-    expect(onSelectProduct).toHaveBeenCalledWith(null)
+    fireEvent.click(screen.getByRole('button', { name: /와펜/ }))
+
+    expect(onSelectProduct).toHaveBeenCalledWith('product-1')
     expect(screen.getByText('와펜')).toBeInTheDocument()
   })
 
-  it('옵션별 재고 현황에 30일과 90일 출고량을 표시한다', () => {
+  it('상품명을 제목으로 표시하고 30일과 90일 출고량을 표시한다', () => {
     render(
       <StockStatusMatrix
-        rows={rows}
+        rows={scopeStockStatusRows(rows, null)}
         locations={locations}
         loading={false}
         selectedLocationId={null}
@@ -84,7 +112,10 @@ describe('stock status UI', () => {
       />
     )
 
-    expect(screen.getByText('옵션별 재고 현황')).toBeInTheDocument()
+    expect(screen.queryByText('옵션별 재고 현황')).not.toBeInTheDocument()
+    expect(screen.queryByText('최신 재고')).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: '상품명' })).not.toBeInTheDocument()
+    expect(screen.getAllByText('와펜')).toHaveLength(2)
     expect(screen.getByText('30일 출고량')).toBeInTheDocument()
     expect(screen.getByText('90일 출고량')).toBeInTheDocument()
     expect(screen.getByText('12')).toBeInTheDocument()
