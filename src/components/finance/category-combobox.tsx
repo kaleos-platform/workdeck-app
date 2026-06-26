@@ -86,21 +86,19 @@ export function CategoryCombobox({
                 {opt.indent && (
                   <CornerDownRight className="size-3 shrink-0 text-muted-foreground" />
                 )}
-                <span className="truncate">{opt.label}</span>
+                <span className="min-w-0 flex-1 truncate">{opt.label}</span>
                 {opt.hint && (
-                  <span className="truncate text-[10px] text-muted-foreground">({opt.hint})</span>
+                  <span className="shrink-0 text-[10px] text-muted-foreground">({opt.hint})</span>
                 )}
                 {opt.badge && (
                   <Badge
                     variant="outline"
-                    className={cn('ml-auto shrink-0 px-1.5 text-[10px]', opt.badge.className)}
+                    className={cn('shrink-0 px-1.5 text-[10px]', opt.badge.className)}
                   >
                     {opt.badge.label}
                   </Badge>
                 )}
-                {value === opt.id && (
-                  <Check className={cn('size-3.5 shrink-0', !opt.badge && 'ml-auto')} />
-                )}
+                {value === opt.id && <Check className="size-3.5 shrink-0" />}
               </CommandItem>
             ))}
           </CommandList>
