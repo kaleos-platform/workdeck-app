@@ -5,7 +5,6 @@ import { prisma } from '@/lib/prisma'
 import {
   healthRatioBySku,
   statusForSku,
-  type HealthDistribution,
   type SkuFact,
   type StatusLabel,
 } from '@/lib/inv/metrics'
@@ -28,7 +27,7 @@ function decimalToNumber(d: Prisma.Decimal | null | undefined): number | null {
  *   - matrix.rows: SKU × 위치 행 (totalQty, byLocation, status, incomingQty)
  *   - groups / locations(legacy): 기존 UI 호환용 (PR-2에서 제거 예정)
  *
- * searchParams: brandId, groupId, q, onlyLow — matrix.rows에만 적용
+ * searchParams: brandId, groupId, productId, q, onlyLow — matrix.rows에만 적용
  */
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -38,6 +37,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const brandFilter = searchParams.get('brandId')
   const groupFilter = searchParams.get('groupId')
+  const productFilter = searchParams.get('productId')
   const qFilter = (searchParams.get('q') ?? '').trim().toLowerCase()
   const onlyLow = searchParams.get('onlyLow') === '1' || searchParams.get('onlyLow') === 'true'
 
@@ -216,6 +216,8 @@ export async function GET(req: NextRequest) {
     totalQty: number
     totalValue: number
     incomingQty: number
+    out30d: number
+    out90d: number
     byLocation: Record<string, number>
     externalCodeByLocation: Record<string, string>
     status: StatusLabel
@@ -258,6 +260,8 @@ export async function GET(req: NextRequest) {
           totalQty,
           totalValue,
           incomingQty: incomingByOption.get(o.id) ?? 0,
+          out30d,
+          out90d,
           byLocation,
           externalCodeByLocation,
           status: statusForSku(totalQty, out30d, out90d),
@@ -457,10 +461,19 @@ export async function GET(req: NextRequest) {
   if (groupFilter && groupFilter !== 'all') {
     filteredRows = filteredRows.filter((r) => r.groupId === groupFilter)
   }
+  if (productFilter && productFilter !== 'all') {
+    filteredRows = filteredRows.filter((r) => r.productId === productFilter)
+  }
   if (qFilter) {
-    // 상품명 전용 검색 (공식 상품명 + 관리 상품명)
+    // 옵션 테이블 검색: 옵션명, SKU, 상품명, 관리 상품명, 위치별 외부코드
     filteredRows = filteredRows.filter((r) => {
-      const haystacks = [r.productName, r.productInternalName ?? '']
+      const haystacks = [
+        r.optionName,
+        r.sku ?? '',
+        r.productName,
+        r.productInternalName ?? '',
+        ...Object.values(r.externalCodeByLocation),
+      ]
       return haystacks.some((h) => h.toLowerCase().includes(qFilter))
     })
   }
