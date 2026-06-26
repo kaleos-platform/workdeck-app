@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 
 // 트리 노드 타입
 type CategoryNode = {
@@ -24,6 +25,9 @@ export async function GET() {
   const resolved = await resolveDeckContext('finance')
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
+
+  // 콜드케이스(활성인데 계정과목 0) 자가복구 — 빈 드롭다운 방지
+  await ensureFinanceSeeded(spaceId)
 
   const all = await prisma.finCategory.findMany({
     where: { spaceId },

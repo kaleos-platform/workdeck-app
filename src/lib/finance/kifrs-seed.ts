@@ -137,10 +137,17 @@ export const KIFRS_CHART: SeedRoot[] = [
 ]
 
 /**
- * Space에 K-IFRS 표준 계정과목 + SEED 분류 규칙을 시드한다(멱등).
- * 이미 존재하는 계정과목/규칙은 건너뛴다.
+ * Space에 K-IFRS 표준 계정과목을 시드한다(멱등). 이미 존재하는 계정과목은 건너뛴다.
+ *
+ * 정책: 표준 계정과목(roots + 표준 lvl1)은 시스템 기본값으로 시드한다.
+ * 하위 계정과 자동분류 규칙(FinClassRule)은 사용자가 직접 구축하는 것을 기본으로 하므로
+ * 키워드 규칙은 `opts.withRules`가 true일 때만 등록한다(기본 false).
  */
-export async function seedFinanceCategories(spaceId: string): Promise<void> {
+export async function seedFinanceCategories(
+  spaceId: string,
+  opts: { withRules?: boolean } = {}
+): Promise<void> {
+  const { withRules = false } = opts
   let rootOrder = 0
   for (const root of KIFRS_CHART) {
     const rootRow = await upsertCategory(spaceId, null, {
@@ -161,11 +168,22 @@ export async function seedFinanceCategories(spaceId: string): Promise<void> {
         sortOrder: childOrder++,
       })
 
-      for (const keyword of child.kw ?? []) {
-        await upsertSeedRule(spaceId, childRow.id, keyword)
+      if (withRules) {
+        for (const keyword of child.kw ?? []) {
+          await upsertSeedRule(spaceId, childRow.id, keyword)
+        }
       }
     }
   }
+}
+
+/**
+ * 활성 finance space에 계정과목이 하나도 없으면(콜드케이스·시드 실패) 표준 계정과목을 시드해 복구한다.
+ * 카테고리 의존 GET에서 호출하면 빈 드롭다운이 자동 복구된다. 멱등이라 반복 호출 안전.
+ */
+export async function ensureFinanceSeeded(spaceId: string): Promise<void> {
+  const count = await prisma.finCategory.count({ where: { spaceId } })
+  if (count === 0) await seedFinanceCategories(spaceId)
 }
 
 async function upsertCategory(
