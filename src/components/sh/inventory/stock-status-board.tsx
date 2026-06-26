@@ -1,14 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { X } from 'lucide-react'
 import { toast } from 'sonner'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { StockStatusHeader } from './stock-status-header'
-import { StockStatusKpis } from './stock-status-kpis'
-import { StockStatusLocations } from './stock-status-locations'
 import { StockStatusProducts } from './stock-status-products'
 import { StockStatusToolbar } from './stock-status-toolbar'
 import { StockStatusMatrix } from './stock-status-matrix'
@@ -21,6 +16,7 @@ export function StockStatusBoard() {
 
   const brandId = searchParams.get('brandId')
   const groupId = searchParams.get('groupId')
+  const productId = searchParams.get('productId')
   const locationId = searchParams.get('locationId')
   const q = searchParams.get('q') ?? ''
   const onlyLow = searchParams.get('onlyLow') === '1'
@@ -28,9 +24,6 @@ export function StockStatusBoard() {
   const [data, setData] = useState<StockStatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const abortRef = useRef<AbortController | null>(null)
-
-  // 매트릭스 섹션 ref — 드릴다운 시 스크롤 타겟
-  const matrixRef = useRef<HTMLDivElement>(null)
 
   const fetchData = useCallback(async () => {
     abortRef.current?.abort()
@@ -41,6 +34,7 @@ export function StockStatusBoard() {
       const params = new URLSearchParams()
       if (brandId) params.set('brandId', brandId)
       if (groupId) params.set('groupId', groupId)
+      if (productId) params.set('productId', productId)
       if (q) params.set('q', q)
       if (onlyLow) params.set('onlyLow', '1')
       const qs = params.toString()
@@ -57,7 +51,7 @@ export function StockStatusBoard() {
     } finally {
       if (!controller.signal.aborted) setLoading(false)
     }
-  }, [brandId, groupId, q, onlyLow])
+  }, [brandId, groupId, productId, q, onlyLow])
 
   useEffect(() => {
     fetchData()
@@ -88,12 +82,13 @@ export function StockStatusBoard() {
 
   // 브랜드 변경 시 groupId도 함께 클리어 (다른 브랜드 소속일 수 있음)
   const handleBrandChange = useCallback(
-    (newBrandId: string | null) => updateParams({ brandId: newBrandId, groupId: null }),
+    (newBrandId: string | null) =>
+      updateParams({ brandId: newBrandId, groupId: null, productId: null }),
     [updateParams]
   )
 
   const handleGroupChange = useCallback(
-    (newGroupId: string | null) => updateParams({ groupId: newGroupId }),
+    (newGroupId: string | null) => updateParams({ groupId: newGroupId, productId: null }),
     [updateParams]
   )
 
@@ -107,6 +102,7 @@ export function StockStatusBoard() {
       updateParams({
         brandId: null,
         groupId: null,
+        productId: null,
         locationId: null,
         q: null,
         onlyLow: null,
@@ -114,34 +110,8 @@ export function StockStatusBoard() {
     [updateParams]
   )
 
-  // 매트릭스로 부드럽게 스크롤 — DOM 업데이트 후 실행
-  const scrollToMatrix = useCallback(() => {
-    requestAnimationFrame(() => {
-      matrixRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
-  }, [])
-
-  // 상품명으로 매트릭스 필터 (q 파라미터 재사용) + 자동 스크롤
   const handleProductSelect = useCallback(
-    (productName: string) => {
-      updateParams({ q: productName })
-      scrollToMatrix()
-    },
-    [updateParams, scrollToMatrix]
-  )
-
-  // 위치 도넛에서 드릴다운 + 자동 스크롤
-  const handleViewLocationDetail = useCallback(
-    (locId: string) => {
-      handleLocationChange(locId)
-      scrollToMatrix()
-    },
-    [handleLocationChange, scrollToMatrix]
-  )
-
-  // 매트릭스 드릴다운 필터만 클리어 (locationId + q)
-  const handleClearDrilldown = useCallback(
-    () => updateParams({ locationId: null, q: null }),
+    (newProductId: string | null) => updateParams({ productId: newProductId }),
     [updateParams]
   )
 
@@ -150,77 +120,48 @@ export function StockStatusBoard() {
     ? allRows.filter((r) => r.byLocation[locationId] !== undefined)
     : allRows
 
-  // 드릴다운 필터 활성 여부 — locationId 또는 q 중 하나라도 있으면
-  const hasDrilldown = !!(locationId || q)
-  // 활성 드릴다운 레이블 — 위치명 우선, 없으면 검색어
-  const drilldownLabel = locationId
-    ? (data?.locations.find((l) => l.id === locationId)?.name ?? locationId)
-    : q
+  const selectedProductName = useMemo(
+    () => data?.products.find((p) => p.productId === productId)?.productName ?? null,
+    [data?.products, productId]
+  )
 
   return (
     <div className="space-y-5">
       <StockStatusHeader loading={loading} onRefresh={fetchData} />
 
-      {/* KPI(좌) + 위치 분포 도넛(우) 나란히 배치 */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <StockStatusKpis kpis={data?.kpis ?? null} />
-        <StockStatusLocations
-          locations={data?.locations ?? []}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <StockStatusProducts
+          products={data?.products ?? []}
           loading={loading && !data}
-          onViewLocationDetail={handleViewLocationDetail}
+          selectedProductId={productId}
+          onSelectProduct={handleProductSelect}
         />
-      </div>
 
-      {/* 상품별 재고 요약 */}
-      <StockStatusProducts
-        products={data?.products ?? []}
-        loading={loading && !data}
-        onSelectProduct={handleProductSelect}
-      />
+        <div className="min-w-0 space-y-3">
+          <StockStatusToolbar
+            q={q}
+            onlyLow={onlyLow}
+            brands={data?.brands ?? []}
+            locations={data?.locations ?? []}
+            selectedBrandId={brandId}
+            selectedGroupId={groupId}
+            selectedLocationId={locationId}
+            onSearchChange={handleSearchChange}
+            onOnlyLowChange={handleOnlyLowChange}
+            onBrandChange={handleBrandChange}
+            onGroupChange={handleGroupChange}
+            onLocationChange={handleLocationChange}
+            onClearFilters={handleClearFilters}
+          />
 
-      <StockStatusToolbar
-        q={q}
-        onlyLow={onlyLow}
-        brands={data?.brands ?? []}
-        locations={data?.locations ?? []}
-        selectedBrandId={brandId}
-        selectedGroupId={groupId}
-        selectedLocationId={locationId}
-        onSearchChange={handleSearchChange}
-        onOnlyLowChange={handleOnlyLowChange}
-        onBrandChange={handleBrandChange}
-        onGroupChange={handleGroupChange}
-        onLocationChange={handleLocationChange}
-        onClearFilters={handleClearFilters}
-      />
-
-      {/* 매트릭스 섹션 — ref 부착 + scroll-mt로 sticky 헤더 보정 */}
-      <div ref={matrixRef} className="scroll-mt-24">
-        {/* 드릴다운 활성 시 sticky 필터바 */}
-        {hasDrilldown && (
-          <div className="mb-2 flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
-            <span className="text-xs text-muted-foreground">현재 보는 중:</span>
-            <Badge variant="secondary" className="text-xs">
-              {drilldownLabel}
-            </Badge>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="ml-auto h-7 px-2 text-xs"
-              onClick={handleClearDrilldown}
-            >
-              <X className="mr-1 h-3 w-3" />
-              전체 보기
-            </Button>
-          </div>
-        )}
-
-        <StockStatusMatrix
-          rows={visibleRows}
-          locations={data?.locations ?? []}
-          loading={loading && !data}
-          selectedLocationId={locationId}
-        />
+          <StockStatusMatrix
+            rows={visibleRows}
+            locations={data?.locations ?? []}
+            loading={loading && !data}
+            selectedLocationId={locationId}
+            selectedProductName={selectedProductName}
+          />
+        </div>
       </div>
     </div>
   )
