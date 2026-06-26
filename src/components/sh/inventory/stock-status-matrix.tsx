@@ -63,7 +63,6 @@ export function StockStatusMatrix({
             />
           </div>
         </div>
-        {toolbar}
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (
