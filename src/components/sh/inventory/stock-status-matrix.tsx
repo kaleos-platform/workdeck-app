@@ -51,7 +51,7 @@ export function StockStatusMatrix({
   return (
     <Card className="flex h-full min-h-0 flex-col overflow-hidden">
       <CardHeader className="gap-3">
-        <CardTitle className="text-sm">{selectedProductName ?? '전체 상품'}</CardTitle>
+        <CardTitle className="text-sm">{selectedProductName ?? '상품 없음'}</CardTitle>
         <div className="flex flex-wrap items-center justify-between gap-2">
           {toolbar}
           <div className="flex items-center gap-3">
