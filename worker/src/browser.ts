@@ -40,8 +40,11 @@ function ensureStealth() {
 // 보존하므로 제외 — 스테일 봇지문 재주입 방지. 만료/실패 시 isLoggedIn=false →
 // performLogin fallback 이라 저위험(최악도 오늘과 동일).
 
-// 인증되어 있다고 볼 수 있는 세션 쿠키 이름(이게 있으면 저장 가치 있음).
-const AUTH_COOKIE_NAMES = ['KEYCLOAK_IDENTITY', 'JSESSIONID', 'sxSessionId', 'AUTH_SESSION_ID']
+// 로그인 "성공" 을 증명하는 쿠키 — Keycloak SSO 가 인증을 마쳐야 발급하는 IDENTITY 쿠키.
+// 주의: AUTH_SESSION_ID 는 로그인 페이지를 "열기만" 해도 생기는 인증-플로우 쿠키라
+// 실패한 로그인에도 존재한다 → 게이트로 쓰면 실패 세션까지 저장된다(검증으로 확인).
+// 그래서 저장 게이트는 KEYCLOAK_IDENTITY(성공에만 존재, 실패엔 부재) 로만 판단한다.
+const AUTHED_COOKIE_NAMES = ['KEYCLOAK_IDENTITY', 'KEYCLOAK_IDENTITY_LEGACY']
 // 세션이 이보다 오래되면 서버측에서 만료됐을 가능성이 높아 복원 생략(어차피 fallback).
 const SESSION_MAX_AGE_MS = 10 * 60 * 60 * 1000
 
@@ -86,8 +89,8 @@ export async function saveSessionCookies(
 ): Promise<void> {
   try {
     const state = await context.storageState()
-    const authed = state.cookies.some((c) => AUTH_COOKIE_NAMES.includes(c.name))
-    if (!authed) return // 로그아웃/실패 상태로 좋은 세션을 덮어쓰지 않는다
+    const authed = state.cookies.some((c) => AUTHED_COOKIE_NAMES.includes(c.name))
+    if (!authed) return // 로그인 실패(IDENTITY 부재) — 스테일 플로우 쿠키로 좋은 세션 덮어쓰기 금지
     writeFileSync(sessionFilePath(userDataDir), JSON.stringify(state), { mode: 0o600 })
     console.log('[browser] 세션 저장 — 다음 수집에서 재사용')
   } catch {
