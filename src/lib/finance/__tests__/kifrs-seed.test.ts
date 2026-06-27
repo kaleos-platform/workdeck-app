@@ -68,28 +68,30 @@ describe('isSystem/parentId 구조 (제거 가능 기본값 가드)', () => {
     return new Map(calls.map((d) => [d.name, d]))
   }
 
-  test('루트·대분류는 isSystem=true, 수입/지출 운영 항목(리프)은 isSystem=false(제거 가능)', async () => {
+  test('루트만 isSystem=true(보호), 대분류·수입/지출 리프는 false(편집·삭제 가능)', async () => {
     const m = await seedAndCollect()
 
-    // 루트 = 구조(제거 불가), parentId 없음
+    // 루트 = 보호, parentId 없음
     expect(m.get('지출')).toMatchObject({ isSystem: true, parentId: null })
     expect(m.get('수입')).toMatchObject({ isSystem: true, parentId: null })
 
-    // 대분류(그룹) = 구조(제거 불가)
-    expect(m.get('물류·배송')?.isSystem).toBe(true)
-    expect(m.get('인건비')?.isSystem).toBe(true)
+    // 대분류(그룹) = 편집/삭제 가능(이름변경·추가/삭제)
+    expect(m.get('물류·배송')?.isSystem).toBe(false)
+    expect(m.get('인건비')?.isSystem).toBe(false)
 
-    // 수입/지출 운영 항목(리프) = 제거 가능
+    // 수입/지출 운영 항목(리프) = 편집/삭제 가능
     expect(m.get('택배비')?.isSystem).toBe(false)
     expect(m.get('온라인 판매정산')?.isSystem).toBe(false)
   })
 
-  test('이체·자산·부채 리프는 isSystem=true(net-off·매핑 보호)', async () => {
+  test('TRANSFER 리프만 보호(net-off), 자산·부채 리프는 편집 가능(계좌 관리 화면)', async () => {
     const m = await seedAndCollect()
+    // net-off 불변식 보호
     expect(m.get('계좌간 이체')?.isSystem).toBe(true)
     expect(m.get('신용카드 대금 납부')?.isSystem).toBe(true)
-    expect(m.get('현금및현금성자산')?.isSystem).toBe(true)
-    expect(m.get('매입채무')?.isSystem).toBe(true)
+    // 자산/부채 리프 = 편집 가능
+    expect(m.get('현금및현금성자산')?.isSystem).toBe(false)
+    expect(m.get('매입채무')?.isSystem).toBe(false)
   })
 
   test('운영 항목의 parentId가 소속 대분류를 가리킨다(2단계 트리)', async () => {
