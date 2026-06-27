@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronRight, Plus, Trash2, Tag } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Trash2, Tag, Eye, EyeOff, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -76,15 +76,30 @@ export function FinanceAccountsManager() {
 
   return (
     <Tabs defaultValue="categories" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="categories">계정과목</TabsTrigger>
-        <TabsTrigger value="rules">
-          자동 분류 규칙
-          {rules.length > 0 && (
-            <span className="ml-1.5 text-xs text-muted-foreground">{rules.length}</span>
-          )}
-        </TabsTrigger>
-      </TabsList>
+      <div className="flex items-center justify-between gap-2">
+        <TabsList>
+          <TabsTrigger value="categories">운영 계정</TabsTrigger>
+          <TabsTrigger value="rules">
+            자동 분류 규칙
+            {rules.length > 0 && (
+              <span className="ml-1.5 text-xs text-muted-foreground">{rules.length}</span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const a = document.createElement('a')
+            a.href = '/api/finance/export'
+            a.click()
+          }}
+          title="확정 거래를 K-IFRS 회계 기준(코드·현금흐름)으로 환원한 CSV로 내보냅니다"
+        >
+          <Download className="mr-1 size-3.5" />
+          회계용 내보내기 (CSV)
+        </Button>
+      </div>
 
       <TabsContent value="categories">
         <CategoryTree tree={tree} loading={loading} onChanged={load} />
@@ -125,9 +140,10 @@ function CategoryTree({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>계정과목 체계</CardTitle>
+        <CardTitle>운영 계정 체계</CardTitle>
         <CardDescription>
-          K-IFRS 표준 계정과목. 수익·비용 계정은 펼쳐서 사용자 하위 계정을 추가할 수 있습니다.
+          비즈니스 운영 기준 계정 항목입니다. 수입·지출 대분류를 펼쳐 항목을 추가하거나, 기본 제공된
+          항목 중 쓰지 않는 것은 삭제·비활성화할 수 있습니다.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -141,9 +157,6 @@ function CategoryTree({
                   {badge.label}
                 </Badge>
                 <span className="text-sm font-semibold">{root.name}</span>
-                {root.code && (
-                  <span className="font-mono text-xs text-muted-foreground">{root.code}</span>
-                )}
               </div>
 
               <div className="divide-y">
@@ -158,9 +171,11 @@ function CategoryTree({
                   />
                 ))}
                 {root.children.length === 0 && (
-                  <p className="py-2 text-xs text-muted-foreground">하위 계정과목이 없습니다</p>
+                  <p className="py-2 text-xs text-muted-foreground">항목이 없습니다</p>
                 )}
               </div>
+
+              {editable && <AddGroup parentId={root.id} onChanged={onChanged} />}
             </div>
           )
         })}
@@ -201,7 +216,6 @@ function Lvl1Row({
         ) : (
           <span className="size-5" />
         )}
-        {node.code && <span className="font-mono text-xs text-muted-foreground">{node.code}</span>}
         <span className="text-sm font-medium">{node.name}</span>
         {node.groupLabel && (
           <Badge variant="secondary" className="text-xs">
@@ -227,25 +241,66 @@ function Lvl1Row({
 }
 
 function SubAccountRow({ node, onChanged }: { node: Category; onChanged: () => void }) {
+  const txnCount = node._count?.transactions ?? 0
+
   async function handleDelete() {
-    if (!confirm(`하위 계정 "${node.name}"을(를) 삭제하시겠습니까?`)) return
+    const warn =
+      txnCount > 0
+        ? `"${node.name}"을(를) 삭제하면 연결된 ${txnCount.toLocaleString('ko-KR')}건의 분류가 해제됩니다(거래 자체는 보존). 보존하려면 삭제 대신 비활성화하세요. 계속할까요?`
+        : `항목 "${node.name}"을(를) 삭제하시겠습니까?`
+    if (!confirm(warn)) return
     try {
       const res = await fetch(`/api/finance/categories/${node.id}`, { method: 'DELETE' })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
-      toast.success('하위 계정이 삭제되었습니다')
+      toast.success('항목이 삭제되었습니다')
       onChanged()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제 실패')
     }
   }
 
+  async function toggleActive() {
+    try {
+      const res = await fetch(`/api/finance/categories/${node.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !node.isActive }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '변경 실패')
+      toast.success(node.isActive ? '항목을 비활성화했습니다' : '항목을 활성화했습니다')
+      onChanged()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '변경 실패')
+    }
+  }
+
   return (
-    <div className="flex items-center gap-2 py-0.5">
+    <div className={`flex items-center gap-2 py-0.5 ${node.isActive ? '' : 'opacity-50'}`}>
       <span className="text-sm">{node.name}</span>
+      {node.groupLabel && (
+        <Badge variant="secondary" className="text-[10px]">
+          {node.groupLabel}
+        </Badge>
+      )}
       {node.alias && <span className="text-xs text-muted-foreground">{node.alias}</span>}
+      {!node.isActive && (
+        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+          비활성
+        </Badge>
+      )}
       <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-        <span>거래 {(node._count?.transactions ?? 0).toLocaleString('ko-KR')}</span>
+        <span>거래 {txnCount.toLocaleString('ko-KR')}</span>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={toggleActive}
+          aria-label={node.isActive ? '비활성화' : '활성화'}
+          title={node.isActive ? '비활성화(거래 분류 보존)' : '활성화'}
+        >
+          {node.isActive ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+        </Button>
         <Button variant="ghost" size="icon-xs" onClick={handleDelete} aria-label="삭제">
           <Trash2 className="size-3.5" />
         </Button>
@@ -270,7 +325,7 @@ function AddSubAccount({ parentId, onChanged }: { parentId: string; onChanged: (
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '추가 실패')
-      toast.success('하위 계정이 추가되었습니다')
+      toast.success('항목이 추가되었습니다')
       setName('')
       onChanged()
     } catch (err) {
@@ -285,7 +340,7 @@ function AddSubAccount({ parentId, onChanged }: { parentId: string; onChanged: (
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="하위 계정 이름"
+        placeholder="운영 항목 이름 (예: 택배비)"
         className="h-8 max-w-56 text-sm"
         onKeyDown={(e) => {
           if (e.key === 'Enter') void handleAdd()
@@ -294,6 +349,52 @@ function AddSubAccount({ parentId, onChanged }: { parentId: string; onChanged: (
       <Button size="sm" variant="outline" onClick={handleAdd} disabled={saving || !name.trim()}>
         <Plus className="mr-1 size-3.5" />
         추가
+      </Button>
+    </div>
+  )
+}
+
+// 대분류(level1) 추가 — 부모=수입/지출 루트. 생성된 대분류 아래에 항목을 추가해 나간다.
+function AddGroup({ parentId, onChanged }: { parentId: string; onChanged: () => void }) {
+  const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function handleAdd() {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/finance/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentId, name: trimmed }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '추가 실패')
+      toast.success('대분류가 추가되었습니다')
+      setName('')
+      onChanged()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '추가 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2 pt-2">
+      <Input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="새 대분류 이름 (예: 물류·배송)"
+        className="h-8 max-w-56 text-sm"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void handleAdd()
+        }}
+      />
+      <Button size="sm" variant="ghost" onClick={handleAdd} disabled={saving || !name.trim()}>
+        <Plus className="mr-1 size-3.5" />
+        대분류 추가
       </Button>
     </div>
   )

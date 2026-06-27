@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Sparkles, Tag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -894,19 +894,24 @@ function StagingRow({
         </span>
       </TableCell>
 
-      {/* 계정과목 inline Select (+ 계정과목 추가 팝업) */}
+      {/* 계정과목 inline Select (+ 계정과목 추가 팝업) + 미분류 시 AI 추천 */}
       <TableCell>
-        <div className="flex items-center gap-1.5">
-          <CategorySelect
-            value={row.categoryId}
-            options={leafTargets}
-            categoryTree={categoryTree}
-            reloadCategories={reloadCategories}
-            onSelect={(categoryId) => onClassify(row.id, categoryId)}
-          />
-          {/* 규칙 힌트 */}
-          {row.matchedRuleId && row.category && (
-            <span className="text-[10px] text-muted-foreground">규칙</span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1.5">
+            <CategorySelect
+              value={row.categoryId}
+              options={leafTargets}
+              categoryTree={categoryTree}
+              reloadCategories={reloadCategories}
+              onSelect={(categoryId) => onClassify(row.id, categoryId)}
+            />
+            {/* 규칙 힌트 */}
+            {row.matchedRuleId && row.category && (
+              <span className="text-[10px] text-muted-foreground">규칙</span>
+            )}
+          </div>
+          {row.classStatus !== 'CLASSIFIED' && (
+            <SuggestCell rowId={row.id} onApply={(categoryId) => onClassify(row.id, categoryId)} />
           )}
         </div>
       </TableCell>
@@ -1408,6 +1413,109 @@ function CategorySelect({
         onCreated={handleCreated}
       />
     </>
+  )
+}
+
+// ─── 계정 추천(미분류 거래): 룰베이스 기본 + AI 별도 ─────────────────────────────
+
+type SuggestSource = 'rule' | 'ai'
+type RowSuggestion = {
+  source: SuggestSource
+  categoryId: string
+  categoryName: string
+  reason: string
+}
+
+/**
+ * 미분류/검토 거래에 계정 항목 추천. 두 가지 경로 — 사용자가 선택적으로 누른다.
+ *  - [추천]   = 키워드(룰베이스). AI 미사용·즉시·무료. 학습 규칙 + 운영 차트 시드 키워드 매칭.
+ *  - [AI 추천] = Gemini. 룰로 못 잡는 거래를 AI가 추론.
+ * 수락하면 onApply로 기존 분류 경로(PATCH + 동일 적요 자동적용 + 규칙 학습)를 그대로 탄다.
+ */
+function SuggestCell({ rowId, onApply }: { rowId: string; onApply: (categoryId: string) => void }) {
+  const [loading, setLoading] = useState<SuggestSource | null>(null)
+  const [suggestion, setSuggestion] = useState<RowSuggestion | null>(null)
+
+  const fetchSuggestion = async (source: SuggestSource) => {
+    setLoading(source)
+    try {
+      const ep =
+        source === 'ai'
+          ? `/api/finance/staging/${rowId}/suggest`
+          : `/api/finance/staging/${rowId}/suggest-rule`
+      const res = await fetch(ep, { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '추천 실패')
+      if (data?.suggestion) setSuggestion({ source, ...data.suggestion })
+      else
+        toast(
+          source === 'ai'
+            ? 'AI가 추천할 항목을 찾지 못했어요'
+            : '키워드와 일치하는 항목이 없어요 — AI 추천을 눌러보세요'
+        )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '추천을 사용할 수 없습니다')
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  if (suggestion) {
+    const isAi = suggestion.source === 'ai'
+    return (
+      <div className="flex items-center gap-1" title={suggestion.reason}>
+        {isAi ? (
+          <Sparkles className="size-3 shrink-0 text-violet-500" />
+        ) : (
+          <Tag className="size-3 shrink-0 text-sky-500" />
+        )}
+        <span className="max-w-[92px] truncate text-[11px] text-muted-foreground">
+          {suggestion.categoryName}
+        </span>
+        <Button
+          size="xs"
+          variant="outline"
+          className="h-5 px-1.5 text-[10px]"
+          onClick={() => {
+            onApply(suggestion.categoryId)
+            setSuggestion(null)
+          }}
+        >
+          적용
+        </Button>
+        <button
+          type="button"
+          className="text-[10px] text-muted-foreground hover:text-foreground"
+          onClick={() => setSuggestion(null)}
+          aria-label="무시"
+        >
+          ✕
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => void fetchSuggestion('rule')}
+        disabled={loading !== null}
+        className="flex items-center gap-0.5 text-[11px] text-sky-600 hover:underline disabled:opacity-50 dark:text-sky-400"
+      >
+        <Tag className="size-3" />
+        {loading === 'rule' ? '추천 중...' : '추천'}
+      </button>
+      <button
+        type="button"
+        onClick={() => void fetchSuggestion('ai')}
+        disabled={loading !== null}
+        className="flex items-center gap-0.5 text-[11px] text-violet-600 hover:underline disabled:opacity-50 dark:text-violet-400"
+      >
+        <Sparkles className="size-3" />
+        {loading === 'ai' ? 'AI 추천 중...' : 'AI 추천'}
+      </button>
+    </div>
   )
 }
 
