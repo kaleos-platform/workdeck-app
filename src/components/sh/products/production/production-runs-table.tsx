@@ -1,7 +1,16 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { ChevronDown, Edit2, Plus, Search, Trash2 } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronDown,
+  Edit2,
+  Plus,
+  Search,
+  Trash2,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -30,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   DropdownMenu,
@@ -42,16 +52,16 @@ import {
   ProductionRunTransitionDialog,
   type TransitionTarget,
 } from './production-run-transition-dialog'
+import {
+  PRODUCTION_STATUS_LABEL,
+  PRODUCTION_STATUS_ORDER,
+  type ProductionRunStatus,
+  type ProductionRunsSortBy,
+  type ProductionRunsSortOrder,
+  type ProductionStatusTab,
+} from '@/lib/sh/production-runs-query'
 
 // ─── 상수 ─────────────────────────────────────────────────────────────────────
-
-type ProductionRunStatus = 'PLANNED' | 'ORDERED' | 'STOCKED_IN'
-
-const STATUS_LABEL: Record<ProductionRunStatus, string> = {
-  PLANNED: '계획중',
-  ORDERED: '발주완료',
-  STOCKED_IN: '입고완료',
-}
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
@@ -90,6 +100,16 @@ type RunRow = {
 
 type BrandOption = { id: string; name: string }
 
+type SortableHeadProps = {
+  field: ProductionRunsSortBy
+  label: string
+  className?: string
+  align?: 'left' | 'right'
+  sortBy: ProductionRunsSortBy
+  sortOrder: ProductionRunsSortOrder
+  onSort: (field: ProductionRunsSortBy) => void
+}
+
 // ─── 포맷 헬퍼 ────────────────────────────────────────────────────────────────
 
 function fmtKRW(n: number) {
@@ -114,7 +134,7 @@ function StatusBadge({ status }: { status: ProductionRunStatus }) {
   if (status === 'STOCKED_IN') {
     return (
       <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-        {STATUS_LABEL[status]}
+        {PRODUCTION_STATUS_LABEL[status]}
       </Badge>
     )
   }
@@ -123,7 +143,7 @@ function StatusBadge({ status }: { status: ProductionRunStatus }) {
     ORDERED: 'secondary',
     STOCKED_IN: 'default', // fallback (위에서 처리됨)
   }
-  return <Badge variant={variantMap[status]}>{STATUS_LABEL[status]}</Badge>
+  return <Badge variant={variantMap[status]}>{PRODUCTION_STATUS_LABEL[status]}</Badge>
 }
 
 // ─── 상태 전환 메뉴 ──────────────────────────────────────────────────────────
@@ -153,7 +173,7 @@ function StatusTransitionMenu({
       <DropdownMenuContent align="start" className="min-w-32">
         {others.map((t) => (
           <DropdownMenuItem key={t} onSelect={() => onSelect(t)}>
-            {STATUS_LABEL[t]}로 변경
+            {PRODUCTION_STATUS_LABEL[t]}로 변경
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -172,8 +192,7 @@ function ProductChips({ products }: { products: ProductSummary[] }) {
   return (
     <div className="flex flex-wrap items-center gap-1">
       {visible.map((p) => (
-        <Badge key={p.id} variant="secondary" className="max-w-[120px] truncate text-xs">
-          {p.brandName ? `${p.brandName} · ` : ''}
+        <Badge key={p.id} variant="secondary" className="max-w-[160px] truncate text-xs">
           {p.displayName}
         </Badge>
       ))}
@@ -188,10 +207,7 @@ function ProductChips({ products }: { products: ProductSummary[] }) {
             <TooltipContent>
               <ul className="space-y-0.5 text-xs">
                 {rest.map((p) => (
-                  <li key={p.id}>
-                    {p.brandName ? `${p.brandName} · ` : ''}
-                    {p.displayName}
-                  </li>
+                  <li key={p.id}>{p.displayName}</li>
                 ))}
               </ul>
             </TooltipContent>
@@ -199,6 +215,37 @@ function ProductChips({ products }: { products: ProductSummary[] }) {
         </TooltipProvider>
       )}
     </div>
+  )
+}
+
+function SortableHead({
+  field,
+  label,
+  className,
+  align = 'left',
+  sortBy,
+  sortOrder,
+  onSort,
+}: SortableHeadProps) {
+  const active = sortBy === field
+  const Icon = active ? (sortOrder === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown
+
+  return (
+    <TableHead
+      className={className}
+      aria-sort={active ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+    >
+      <button
+        type="button"
+        className={`inline-flex w-full items-center gap-1 text-xs font-medium hover:text-foreground ${
+          align === 'right' ? 'justify-end' : 'justify-start'
+        }`}
+        onClick={() => onSort(field)}
+      >
+        {label}
+        <Icon className={`h-3.5 w-3.5 ${active ? 'opacity-100' : 'opacity-40'}`} />
+      </button>
+    </TableHead>
   )
 }
 
@@ -212,9 +259,18 @@ export function ProductionRunsTable() {
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('ALL')
+  const [statusFilter, setStatusFilter] = useState<ProductionRunStatus>('PLANNED')
   const [brandFilter, setBrandFilter] = useState<string>('ALL')
   const [brandOptions, setBrandOptions] = useState<BrandOption[]>([])
+  const [statusTabs, setStatusTabs] = useState<ProductionStatusTab[]>(
+    PRODUCTION_STATUS_ORDER.map((status) => ({
+      value: status,
+      label: PRODUCTION_STATUS_LABEL[status],
+      count: 0,
+    }))
+  )
+  const [sortBy, setSortBy] = useState<ProductionRunsSortBy>('orderedConfirmedAt')
+  const [sortOrder, setSortOrder] = useState<ProductionRunsSortOrder>('desc')
   const [loading, setLoading] = useState(false)
 
   // 다이얼로그 상태
@@ -261,15 +317,23 @@ export function ProductionRunsTable() {
       qs.set('page', String(page))
       qs.set('pageSize', String(pageSize))
       if (debouncedSearch.trim()) qs.set('search', debouncedSearch.trim())
-      if (statusFilter !== 'ALL') qs.set('status', statusFilter)
+      qs.set('status', statusFilter)
       if (brandFilter !== 'ALL') qs.set('brandId', brandFilter)
+      qs.set('sortBy', sortBy)
+      qs.set('sortOrder', sortOrder)
       const res = await fetch(`/api/sh/production-runs?${qs.toString()}`)
       if (!res.ok) throw new Error('목록 조회 실패')
-      const data: { data: RunRow[]; total: number; page: number; pageSize: number } =
-        await res.json()
+      const data: {
+        data: RunRow[]
+        total: number
+        page: number
+        pageSize: number
+        statusTabs?: ProductionStatusTab[]
+      } = await res.json()
       if (!cancelled) {
         setRuns(data.data ?? [])
         setTotal(data.total ?? 0)
+        if (data.statusTabs) setStatusTabs(data.statusTabs)
       }
     } catch (err) {
       if (!cancelled) toast.error(err instanceof Error ? err.message : '목록 조회 실패')
@@ -279,7 +343,7 @@ export function ProductionRunsTable() {
     return () => {
       cancelled = true
     }
-  }, [page, debouncedSearch, statusFilter, brandFilter])
+  }, [page, debouncedSearch, statusFilter, brandFilter, sortBy, sortOrder])
 
   useEffect(() => {
     loadRuns()
@@ -307,8 +371,45 @@ export function ProductionRunsTable() {
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
+  function handleSort(field: ProductionRunsSortBy) {
+    if (sortBy === field) {
+      setSortOrder((current) => (current === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortBy(field)
+      setSortOrder(
+        field === 'runNo' ||
+          field === 'status' ||
+          field === 'brandName' ||
+          field === 'productName' ||
+          field === 'memo'
+          ? 'asc'
+          : 'desc'
+      )
+    }
+    setPage(1)
+  }
+
   return (
     <div className="space-y-3">
+      <Tabs
+        value={statusFilter}
+        onValueChange={(value) => {
+          setStatusFilter(value as ProductionRunStatus)
+          setPage(1)
+        }}
+      >
+        <TabsList>
+          {statusTabs.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
+              {tab.label}
+              <span className="text-xs text-muted-foreground">
+                {tab.count.toLocaleString('ko-KR')}
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       {/* 상단 툴바 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -321,18 +422,6 @@ export function ProductionRunsTable() {
               className="w-56 pl-9"
             />
           </div>
-          {/* 상태 필터 */}
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="전체 상태" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">전체 상태</SelectItem>
-              <SelectItem value="PLANNED">계획중</SelectItem>
-              <SelectItem value="ORDERED">발주완료</SelectItem>
-              <SelectItem value="STOCKED_IN">입고완료</SelectItem>
-            </SelectContent>
-          </Select>
           {/* 브랜드 필터 */}
           {brandOptions.length > 0 && (
             <Select value={brandFilter} onValueChange={setBrandFilter}>
@@ -367,28 +456,100 @@ export function ProductionRunsTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[110px]">차수 번호</TableHead>
-              <TableHead className="w-[80px]">상태</TableHead>
-              <TableHead className="w-[90px]">발주일</TableHead>
-              <TableHead className="w-[90px]">입고일</TableHead>
-              <TableHead className="w-[90px]">납기일</TableHead>
-              <TableHead className="w-[90px]">브랜드</TableHead>
-              <TableHead>포함 상품</TableHead>
-              <TableHead className="w-[70px] text-right">총 수량</TableHead>
-              <TableHead className="w-[110px] text-right">총 원가</TableHead>
+              <SortableHead
+                field="runNo"
+                label="차수 번호"
+                className="w-[110px]"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="status"
+                label="상태"
+                className="w-[80px]"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="orderedConfirmedAt"
+                label="발주일"
+                className="w-[90px]"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="stockedInAt"
+                label="입고일"
+                className="w-[90px]"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="dueAt"
+                label="납기일"
+                className="w-[90px]"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="brandName"
+                label="브랜드"
+                className="w-[90px]"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="productName"
+                label="포함 상품"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="memo"
+                label="메모"
+                className="w-[160px]"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="totalQuantity"
+                label="총 수량"
+                className="w-[70px] text-right"
+                align="right"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
+                field="totalCost"
+                label="총 원가"
+                className="w-[110px] text-right"
+                align="right"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
               <TableHead className="w-[80px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && runs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={11} className="py-12 text-center text-sm text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : runs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="py-12 text-center">
+                <TableCell colSpan={11} className="py-12 text-center">
                   <p className="text-sm text-muted-foreground">등록된 차수가 없습니다</p>
                   <Button
                     variant="outline"
@@ -416,11 +577,6 @@ export function ProductionRunsTable() {
                 >
                   <TableCell>
                     <p className="font-medium">{run.runNo}</p>
-                    {run.memo && (
-                      <p className="max-w-[100px] truncate text-xs text-muted-foreground">
-                        {run.memo}
-                      </p>
-                    )}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <StatusTransitionMenu
@@ -446,6 +602,9 @@ export function ProductionRunsTable() {
                   </TableCell>
                   <TableCell>
                     <ProductChips products={run.products} />
+                  </TableCell>
+                  <TableCell className="max-w-[160px] truncate text-sm text-muted-foreground">
+                    {run.memo ?? '-'}
                   </TableCell>
                   <TableCell className="text-right text-sm">
                     {run.totalQuantity.toLocaleString('ko-KR')}

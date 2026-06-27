@@ -1,55 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Prisma, ProductionRunStatus } from '@/generated/prisma/client'
+import { Prisma } from '@/generated/prisma/client'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productionRunSchema } from '@/lib/sh/schemas'
+import {
+  buildProductionStatusTabs,
+  compareProductionRunRows,
+  parseProductionRunsQuery,
+  type ProductionRunStatus,
+} from '@/lib/sh/production-runs-query'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
 
-  const { searchParams } = req.nextUrl
-  const productId = searchParams.get('productId')?.trim() || null
-  const search = (searchParams.get('search') ?? '').trim()
-  const statusParam = searchParams.get('status')?.trim() || null
-  const brandIdParam = searchParams.get('brandId')?.trim() || null
-  const page = Math.max(1, Number(searchParams.get('page') ?? 1))
-  const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
+  const query = parseProductionRunsQuery(req.nextUrl.searchParams)
+  const productId = req.nextUrl.searchParams.get('productId')?.trim() || null
 
-  const where: Prisma.ProductionRunWhereInput = { spaceId: resolved.space.id }
+  const baseWhere: Prisma.ProductionRunWhereInput = { spaceId: resolved.space.id }
 
   // productId 필터 — 해당 상품의 옵션이 1개라도 포함된 run만
   if (productId) {
-    where.items = { some: { option: { productId } } }
-  }
-
-  // 상태 필터
-  if (
-    statusParam &&
-    Object.values(ProductionRunStatus).includes(statusParam as ProductionRunStatus)
-  ) {
-    where.status = statusParam as ProductionRunStatus
+    baseWhere.items = { some: { option: { productId } } }
   }
 
   // 브랜드 필터
-  if (brandIdParam) {
-    where.brandId = brandIdParam
+  if (query.brandId) {
+    baseWhere.brandId = query.brandId
   }
 
-  if (search) {
-    where.OR = [
-      { runNo: { contains: search, mode: 'insensitive' } },
-      { memo: { contains: search, mode: 'insensitive' } },
+  if (query.search) {
+    baseWhere.OR = [
+      { runNo: { contains: query.search, mode: 'insensitive' } },
+      { memo: { contains: query.search, mode: 'insensitive' } },
+      {
+        items: {
+          some: {
+            option: {
+              product: {
+                OR: [
+                  { name: { contains: query.search, mode: 'insensitive' } },
+                  { internalName: { contains: query.search, mode: 'insensitive' } },
+                ],
+              },
+            },
+          },
+        },
+      },
     ]
   }
 
-  const [runs, total] = await Promise.all([
+  const where: Prisma.ProductionRunWhereInput = query.status
+    ? { ...baseWhere, status: query.status }
+    : baseWhere
+
+  const [runs, total, statusGroups] = await Promise.all([
     prisma.productionRun.findMany({
       where,
       orderBy: [{ orderedConfirmedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
-      skip: (page - 1) * pageSize,
-      take: pageSize,
       include: {
         brand: { select: { id: true, name: true } },
         items: {
@@ -73,6 +82,11 @@ export async function GET(req: NextRequest) {
       },
     }),
     prisma.productionRun.count({ where }),
+    prisma.productionRun.groupBy({
+      by: ['status'],
+      where: baseWhere,
+      _count: { _all: true },
+    }),
   ])
 
   const data = runs.map((run) => {
@@ -96,12 +110,17 @@ export async function GET(req: NextRequest) {
         })
       }
     }
+    const products = Array.from(productMap.values()).sort((a, b) =>
+      a.displayName.localeCompare(b.displayName, 'ko-KR', { numeric: true, sensitivity: 'base' })
+    )
 
     return {
       id: run.id,
       runNo: run.runNo,
       status: run.status,
       brand: run.brand ? { id: run.brand.id, name: run.brand.name } : null,
+      brandName: run.brand?.name ?? null,
+      firstProductName: products[0]?.displayName ?? null,
       dueAt: run.dueAt ? run.dueAt.toISOString() : null,
       completedAt: run.completedAt ? run.completedAt.toISOString() : null,
       orderedConfirmedAt: run.orderedConfirmedAt ? run.orderedConfirmedAt.toISOString() : null,
@@ -113,7 +132,7 @@ export async function GET(req: NextRequest) {
       itemCount: run.items.length,
       totalQuantity,
       averageUnitCost,
-      products: Array.from(productMap.values()),
+      products,
       items: run.items.map((it) => ({
         optionId: it.optionId,
         optionName: it.option.name,
@@ -126,7 +145,20 @@ export async function GET(req: NextRequest) {
     }
   })
 
-  return NextResponse.json({ data, total, page, pageSize })
+  const sortedData = data.sort(compareProductionRunRows(query.sortBy, query.sortOrder))
+  const pageData = sortedData.slice((query.page - 1) * query.pageSize, query.page * query.pageSize)
+  const counts = statusGroups.reduce<Partial<Record<ProductionRunStatus, number>>>((acc, group) => {
+    acc[group.status as ProductionRunStatus] = group._count._all
+    return acc
+  }, {})
+
+  return NextResponse.json({
+    data: pageData,
+    total,
+    page: query.page,
+    pageSize: query.pageSize,
+    statusTabs: buildProductionStatusTabs(counts),
+  })
 }
 
 export async function POST(req: NextRequest) {
