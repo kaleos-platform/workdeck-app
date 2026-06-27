@@ -19,6 +19,7 @@ import { mapWithConcurrency } from '@/lib/concurrency'
 import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
+import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
@@ -135,6 +136,22 @@ export async function POST(req: NextRequest) {
     stockByOption.set(g.optionId, g._sum.quantity ?? 0)
   }
 
+  const pendingRuns = await prisma.productionRun.findMany({
+    where: {
+      spaceId,
+      status: 'ORDERED',
+      items: { some: { optionId: { in: optionIds } } },
+    },
+    select: {
+      status: true,
+      items: {
+        where: { optionId: { in: optionIds } },
+        select: { optionId: true, quantity: true },
+      },
+    },
+  })
+  const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
+
   // ── 3) 분석 기간별 주문수요 집계 ──────────────────────────────────────────
   // 수요 신호 = 옵션×일자 주문수요(수동채널 DelOrderItem + 로켓 VENDOR). 판매분석과
   // 동일한 loadOptionDemand 를 공유해 두 화면이 정의상 같은 수요를 본다.
@@ -211,6 +228,8 @@ export async function POST(req: NextRequest) {
     leadTimeDays: number
     safetyStockQty: number
     currentStock: number
+    onHandStock: number
+    incomingQty: number
     roundUnit: number
     forecastResult: ReturnType<typeof forecastOption>
     biasAdjustFactor: number
@@ -231,10 +250,12 @@ export async function POST(req: NextRequest) {
       const prevBias = biasByOption.get(o.id) ?? null
       const biasAdjustFactor = computeBiasAdjust(prevBias)
 
-      const currentStock = stockByOption.get(o.id) ?? 0
+      const onHandStock = stockByOption.get(o.id) ?? 0
+      const incomingQty = incomingByOption.get(o.id) ?? 0
+      const currentStock = plannedStockQty({ onHandQty: onHandStock, incomingQty })
       const safetyStockQty = o.safetyStockQty
 
-      // suggestedQty = ceil((dailyAvg × bias) × leadTime + safety − currentStock)
+      // suggestedQty = ceil((dailyAvg × bias) × leadTime + safety − 계획기준재고)
       const rawQty =
         forecastResult.dailyAvg * biasAdjustFactor * leadTimeDays + safetyStockQty - currentStock
       const suggestedQty = Math.max(0, Math.ceil(rawQty))
@@ -246,6 +267,8 @@ export async function POST(req: NextRequest) {
         leadTimeDays,
         safetyStockQty,
         currentStock,
+        onHandStock,
+        incomingQty,
         roundUnit,
         forecastResult,
         biasAdjustFactor,
@@ -319,6 +342,8 @@ export async function POST(req: NextRequest) {
             leadTimeDays: item.leadTimeDays,
             safetyStockQty: item.safetyStockQty,
             currentStock: item.currentStock,
+            onHandStock: item.onHandStock,
+            incomingQty: item.incomingQty,
           })
         ),
       })),

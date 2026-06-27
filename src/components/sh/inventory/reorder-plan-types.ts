@@ -58,6 +58,8 @@ export type ReorderPlanItem = {
       seasonFactor: number
     }
     // TODO: 번스타인 응답 형식 확인
+    onHandStock?: number
+    incomingQty?: number
     [key: string]: unknown
   } | null
 }

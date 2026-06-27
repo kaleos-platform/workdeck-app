@@ -1,7 +1,9 @@
 'use client'
 
+import { Info } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import {
   LOCATION_TYPE_LABEL,
@@ -17,6 +19,7 @@ type Props = {
   locations: StockLocation[]
   loading: boolean
   selectedLocationId?: string | null
+  selectedProductName?: string | null
 }
 
 const KRW = new Intl.NumberFormat('ko-KR')
@@ -29,7 +32,13 @@ const STATUS_BADGE: Record<SkuStatus, string> = {
   OVER: 'border-indigo-300 bg-indigo-50 text-indigo-700',
 }
 
-export function StockStatusMatrix({ rows, locations, loading, selectedLocationId }: Props) {
+export function StockStatusMatrix({
+  rows,
+  locations,
+  loading,
+  selectedLocationId,
+  selectedProductName,
+}: Props) {
   const capped = rows.length > ROW_CAP
   const displayRows = capped ? rows.slice(0, ROW_CAP) : rows
   const visibleLocations = selectedLocationId
@@ -40,8 +49,10 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between gap-2">
         <CardTitle className="text-sm">
-          SKU × 위치 매트릭스
-          <span className="ml-2 text-xs font-normal text-muted-foreground">· 최신 재고</span>
+          옵션별 재고 현황
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            · {selectedProductName ?? '전체 상품'} · 최신 재고
+          </span>
         </CardTitle>
         <div className="flex items-center gap-3">
           <div className="text-xs text-muted-foreground">
@@ -65,7 +76,7 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
           <p className="p-10 text-center text-sm text-muted-foreground">표시할 SKU가 없습니다</p>
         ) : (
           <div className="max-h-[65vh] overflow-auto">
-            <table className="w-full min-w-[800px] border-collapse text-sm">
+            <table className="w-full min-w-[980px] border-collapse text-sm">
               <thead className="sticky top-0 z-20 bg-muted">
                 <tr className="border-b">
                   <th className="sticky left-0 z-30 min-w-[200px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -73,6 +84,12 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                   </th>
                   <th className="sticky left-[200px] z-30 min-w-[180px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     옵션
+                  </th>
+                  <th className="min-w-[96px] border-l bg-muted px-2 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    30일 출고량
+                  </th>
+                  <th className="min-w-[96px] border-l bg-muted px-2 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    90일 출고량
                   </th>
                   {visibleLocations.map((l) => (
                     <th
@@ -88,7 +105,18 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                     </th>
                   ))}
                   <th className="min-w-[90px] border-l bg-muted px-2 py-2 text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    입고예정
+                    <div className="flex items-center justify-center gap-1">
+                      <span>입고예정</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-3 w-3 cursor-help text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[260px] text-xs">
+                          생산 관리에서 진행중 상태인 생산차수의 미입고 수량입니다. 계획중/완료는
+                          제외됩니다.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   </th>
                   <th className="sticky right-0 z-30 min-w-[140px] border-l bg-muted px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     합계
@@ -108,6 +136,20 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                     </td>
                     <td className="sticky left-[200px] z-10 border-r bg-card px-3 py-2">
                       <span className="text-sm">{row.optionName}</span>
+                    </td>
+                    <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
+                      {row.out30d > 0 ? (
+                        KRW.format(row.out30d)
+                      ) : (
+                        <span className="text-muted-foreground/50">—</span>
+                      )}
+                    </td>
+                    <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
+                      {row.out90d > 0 ? (
+                        KRW.format(row.out90d)
+                      ) : (
+                        <span className="text-muted-foreground/50">—</span>
+                      )}
                     </td>
                     {visibleLocations.map((l) => {
                       const qty = row.byLocation[l.id]
@@ -141,6 +183,9 @@ export function StockStatusMatrix({ rows, locations, loading, selectedLocationId
                     <td className="sticky right-0 z-10 border-l bg-card px-3 py-2 text-right">
                       <div className="font-mono text-sm font-semibold tabular-nums">
                         {KRW.format(row.totalQty)}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground tabular-nums">
+                        현재 {KRW.format(row.currentQty)}
                       </div>
                       <div className="mt-0.5 flex items-center justify-end gap-1.5">
                         <Badge

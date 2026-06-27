@@ -2,13 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@/generated/prisma/client'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import {
-  healthRatioBySku,
-  statusForSku,
-  type HealthDistribution,
-  type SkuFact,
-  type StatusLabel,
-} from '@/lib/inv/metrics'
+import { healthRatioBySku, statusForSku, type SkuFact, type StatusLabel } from '@/lib/inv/metrics'
+import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 
 const NO_BRAND_KEY = '__no_brand__'
 
@@ -28,7 +23,7 @@ function decimalToNumber(d: Prisma.Decimal | null | undefined): number | null {
  *   - matrix.rows: SKU × 위치 행 (totalQty, byLocation, status, incomingQty)
  *   - groups / locations(legacy): 기존 UI 호환용 (PR-2에서 제거 예정)
  *
- * searchParams: brandId, groupId, q, onlyLow — matrix.rows에만 적용
+ * searchParams: brandId, groupId, productId, q, onlyLow — matrix.rows에만 적용
  */
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -38,6 +33,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const brandFilter = searchParams.get('brandId')
   const groupFilter = searchParams.get('groupId')
+  const productFilter = searchParams.get('productId')
   const qFilter = (searchParams.get('q') ?? '').trim().toLowerCase()
   const onlyLow = searchParams.get('onlyLow') === '1' || searchParams.get('onlyLow') === 'true'
 
@@ -108,28 +104,21 @@ export async function GET(req: NextRequest) {
     outbound90dAgg.map((a) => [a.optionId, Math.abs(a._sum.quantity ?? 0)])
   )
 
-  // 입고예정 집계 (PLANNED/ORDERED 상태의 ProductionRun 미입고분)
+  // 입고예정 집계 (진행중 상태의 ProductionRun 미입고분)
   // groupBy에서 relation 필터 미지원 → findMany + items include 방식으로 집계
   const pendingRuns = await prisma.productionRun.findMany({
     where: {
       spaceId,
-      status: { in: ['PLANNED', 'ORDERED'] },
+      status: 'ORDERED',
     },
     select: {
+      status: true,
       items: {
         select: { optionId: true, quantity: true },
       },
     },
   })
-  const incomingByOption = new Map<string, number>()
-  for (const run of pendingRuns) {
-    for (const item of run.items) {
-      incomingByOption.set(
-        item.optionId,
-        (incomingByOption.get(item.optionId) ?? 0) + item.quantity
-      )
-    }
-  }
+  const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
 
   // 그룹 → 상품 → 옵션 + 재고 + 브랜드 트리 조회
   const groups = await prisma.invProductGroup.findMany({
@@ -213,9 +202,12 @@ export async function GET(req: NextRequest) {
     costPrice: number | null
     retailPrice: number | null
     safetyStockQty: number
+    currentQty: number
     totalQty: number
     totalValue: number
     incomingQty: number
+    out30d: number
+    out90d: number
     byLocation: Record<string, number>
     externalCodeByLocation: Record<string, string>
     status: StatusLabel
@@ -226,11 +218,13 @@ export async function GET(req: NextRequest) {
     for (const p of g.products) {
       for (const o of p.options) {
         const byLocation: Record<string, number> = {}
-        let totalQty = 0
+        let currentQty = 0
         for (const sl of o.stockLevels) {
           byLocation[sl.locationId] = sl.quantity
-          totalQty += sl.quantity
+          currentQty += sl.quantity
         }
+        const incomingQty = incomingByOption.get(o.id) ?? 0
+        const totalQty = plannedStockQty({ onHandQty: currentQty, incomingQty })
         const costPrice = decimalToNumber(o.costPrice)
         const totalValue = costPrice !== null ? Math.round(costPrice * totalQty) : 0
         const out30d = outbound30dByOption.get(o.id) ?? 0
@@ -255,9 +249,12 @@ export async function GET(req: NextRequest) {
           costPrice,
           retailPrice: decimalToNumber(o.retailPrice),
           safetyStockQty: o.safetyStockQty,
+          currentQty,
           totalQty,
           totalValue,
-          incomingQty: incomingByOption.get(o.id) ?? 0,
+          incomingQty,
+          out30d,
+          out90d,
           byLocation,
           externalCodeByLocation,
           status: statusForSku(totalQty, out30d, out90d),
@@ -457,10 +454,19 @@ export async function GET(req: NextRequest) {
   if (groupFilter && groupFilter !== 'all') {
     filteredRows = filteredRows.filter((r) => r.groupId === groupFilter)
   }
+  if (productFilter && productFilter !== 'all') {
+    filteredRows = filteredRows.filter((r) => r.productId === productFilter)
+  }
   if (qFilter) {
-    // 상품명 전용 검색 (공식 상품명 + 관리 상품명)
+    // 옵션 테이블 검색: 옵션명, SKU, 상품명, 관리 상품명, 위치별 외부코드
     filteredRows = filteredRows.filter((r) => {
-      const haystacks = [r.productName, r.productInternalName ?? '']
+      const haystacks = [
+        r.optionName,
+        r.sku ?? '',
+        r.productName,
+        r.productInternalName ?? '',
+        ...Object.values(r.externalCodeByLocation),
+      ]
       return haystacks.some((h) => h.toLowerCase().includes(qFilter))
     })
   }

@@ -78,11 +78,14 @@ export type StockMatrixRow = {
   costPrice: number | null
   retailPrice: number | null
   safetyStockQty: number
+  currentQty: number
   totalQty: number
   totalValue: number
   byLocation: Record<string, number>
   externalCodeByLocation: Record<string, string>
   incomingQty: number
+  out30d: number
+  out90d: number
   status: SkuStatus
 }
 

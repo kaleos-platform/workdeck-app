@@ -41,6 +41,8 @@ type ReorderRow = {
   optionName: string
   sku: string | null
   currentStock: number
+  onHandStock: number
+  incomingQty: number
   totalOutbound: number
   windowDays: number
   dailyAvgOutbound: number
@@ -80,6 +82,8 @@ function formatDepletion(d: number | null) {
   if (d === null) return '-'
   return `${d.toFixed(1)}일`
 }
+
+const QTY = new Intl.NumberFormat('ko-KR')
 
 // debounce hook
 function useDebounce<T>(value: T, delay = 600): T {
@@ -393,7 +397,7 @@ export function ReorderTable({ productId }: { productId: string }) {
               </TableHead>
               <TableHead>옵션</TableHead>
               <TableHead>관리코드(SKU)</TableHead>
-              <TableHead className="text-right">현재재고</TableHead>
+              <TableHead className="text-right">재고</TableHead>
               <TableHead className="text-right">{windowDays}일 수요</TableHead>
               <TableHead className="text-right">일평균</TableHead>
               <TableHead className="text-right">리드타임</TableHead>
@@ -439,7 +443,12 @@ export function ReorderTable({ productId }: { productId: string }) {
                     <TableCell className="text-xs text-muted-foreground">
                       {row.sku ?? '-'}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{row.currentStock}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      <div className="font-medium">{QTY.format(row.currentStock)}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        현재 {QTY.format(row.onHandStock)} · 입고예정 {QTY.format(row.incomingQty)}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">{row.totalOutbound}</TableCell>
                     <TableCell className="text-right tabular-nums">
                       {row.dailyAvgOutbound.toFixed(2)}
