@@ -25,6 +25,13 @@ const RETRY_BACKOFF_MS = 65 * 60 * 1000 // 65분 — BOT 차단 쿨다운(60분)
 // workspaceId -> { attempts: 지금까지 예약된 재시도 횟수, nextAt: 다음 시도 epoch(ms) }
 const retryQueue = new Map<string, { attempts: number; nextAt: number }>()
 
+// 동시 실행 가드 — node-cron 은 매 분 발화하지만 runCollection 은 ~9분 걸리고 tick 을
+// 직렬화하지 않는다. 정기 1회차는 executedToday 가 await 전 동기 마킹돼 안전하나,
+// 재시도 경로는 retryQueue 정리가 await 이후라 그 사이 다음 tick 이 같은 retryDue 를
+// 보고 중복 실행한다(409·디듀프 안 되는 실패 알림·재시도 budget 오염). 진행 중인
+// workspace 를 await 전 동기로 잠가 막는다(manual-poller 의 isProcessing 과 동일 패턴).
+const inFlight = new Set<string>()
+
 function getBaseUrl(): string {
   const url = process.env.WORKDECK_API_URL
   if (!url) throw new Error('WORKDECK_API_URL 환경변수가 설정되지 않았습니다')
@@ -105,6 +112,9 @@ export async function checkAndRunCollection(
     const isCron = cronMatch && !alreadyRan
     if (!isCron && !retryDue) continue
 
+    // 이미 이 workspace 수집이 진행 중이면(직전 tick 의 await 미완) 재진입 차단.
+    if (inFlight.has(ws)) continue
+
     // 쿨다운 중이면 지금 실행해도 runCollection 이 건너뛴다(no-op) → 쿨다운 종료 후로 미룬다.
     const cd = getLoginCooldown()
     if (cd.active) {
@@ -123,6 +133,7 @@ export async function checkAndRunCollection(
     const label = isCron ? '시작' : `재시도(${(retry?.attempts ?? 0) + 1}/${MAX_RETRIES})`
     console.log(`[collection-scheduler] 수집 ${label}: workspace=${ws}, now=${nowHHMM}`)
 
+    inFlight.add(ws) // await 전 동기 잠금 — 다음 tick 의 중복 실행 차단
     try {
       await runCollection('scheduled')
       console.log(`[collection-scheduler] 수집 완료: workspace=${ws}`)
@@ -130,6 +141,8 @@ export async function checkAndRunCollection(
     } catch (err) {
       console.error(`[collection-scheduler] 수집 실패: workspace=${ws}`, err)
       scheduleRetry(ws, err)
+    } finally {
+      inFlight.delete(ws)
     }
   }
 }
