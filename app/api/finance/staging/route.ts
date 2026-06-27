@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { toNum, toNumOrNull } from '@/lib/finance/serialize'
+import { loadRuleSuggestContext, ruleSuggestionFor } from '@/lib/finance/rule-suggest'
 import type { Prisma } from '@/generated/prisma/client'
 
 const DUP = ['DUP_SAME', 'DUP_CHANGED'] as const
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
     }
   })()
 
-  const [rows, total, unclassified, review, dup, classified] = await Promise.all([
+  const [rows, total, unclassified, review, dup, classified, cats] = await Promise.all([
     prisma.finStagedRow.findMany({
       where: { ...base, ...tabWhere },
       orderBy: { txnDate: 'asc' },
@@ -78,13 +79,29 @@ export async function GET(req: NextRequest) {
     prisma.finStagedRow.count({ where: { ...base, classStatus: 'REVIEW' } }),
     prisma.finStagedRow.count({ where: { ...base, resolution: { in: [...DUP] } } }),
     prisma.finStagedRow.count({ where: { ...base, classStatus: 'CLASSIFIED' } }),
+    prisma.finCategory.findMany({
+      where: { spaceId, isActive: true },
+      select: { id: true, name: true, type: true },
+    }),
   ])
+
+  // 룰(키워드) 추천을 미분류 행에 배치로 계산해 자동 표시(버튼 없이). AI는 클라이언트 버튼.
+  const { ruleset, nameById } = await loadRuleSuggestContext(spaceId, cats)
 
   return NextResponse.json({
     rows: rows.map((r) => ({
       ...r,
       amount: toNum(r.amount),
       balanceAfter: toNumOrNull(r.balanceAfter),
+      ruleSuggestion:
+        r.classStatus === 'UNCLASSIFIED'
+          ? ruleSuggestionFor(
+              { description: r.description, counterparty: r.counterparty },
+              r.direction,
+              ruleset,
+              nameById
+            )
+          : null,
     })),
     counts: { total, unclassified, review, dup, classified },
   })
