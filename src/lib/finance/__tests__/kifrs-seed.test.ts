@@ -84,11 +84,11 @@ describe('isSystem/parentId 구조 (제거 가능 기본값 가드)', () => {
     expect(m.get('온라인 판매정산')?.isSystem).toBe(false)
   })
 
-  test('TRANSFER 리프만 보호(net-off), 자산·부채 리프는 편집 가능(계좌 관리 화면)', async () => {
+  test('TRANSFER 리프도 편집 가능(net-off는 type 기준이라 무관), 자산·부채 리프도 편집 가능', async () => {
     const m = await seedAndCollect()
-    // net-off 불변식 보호
-    expect(m.get('계좌간 이체')?.isSystem).toBe(true)
-    expect(m.get('신용카드 대금 납부')?.isSystem).toBe(true)
+    // net-off는 category.type==='TRANSFER'로 구동 → 이름변경·삭제와 무관, 리프 편집 허용
+    expect(m.get('계좌간 이체')?.isSystem).toBe(false)
+    expect(m.get('신용카드 대금 납부')?.isSystem).toBe(false)
     // 자산/부채 리프 = 편집 가능
     expect(m.get('현금및현금성자산')?.isSystem).toBe(false)
     expect(m.get('매입채무')?.isSystem).toBe(false)
