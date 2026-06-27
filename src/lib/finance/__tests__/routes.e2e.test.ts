@@ -15,8 +15,11 @@ config({ path: path.resolve(process.cwd(), '.env.local') })
 const SAMPLE_DIR = '/Users/kaleos/projects/workdeck-app/docs/source_ref'
 const BANK_FILE = path.join(SAMPLE_DIR, 'fianance_data_기업은행.csv')
 const CARD_FILE = path.join(SAMPLE_DIR, 'fianance_data_하나카드.csv')
-const SPACE_ID = '78377ae5-6614-4a40-9998-d0c392f9083b'
-const USER_ID = '797f43e4-3a8b-4ea6-a248-5da21376b663'
+// 전용 throwaway space/user — 실 데이터(특히 운영 의식주의·실 유저)를 절대 건드리지 않도록 격리.
+// 핸들러는 USER_ID의 SpaceMember로 space를 해석하므로 space·user·membership을 모두 더미로 둔다.
+// beforeAll에서 생성, afterAll에서 space 삭제(member/deckInstance/Fin* cascade)+user 삭제로 0-state 복원.
+const SPACE_ID = 'e2e00000-0000-4000-8000-000000000001'
+const USER_ID = 'e2e00000-0000-4000-8000-000000000002'
 
 const RUN = !!(process.env.DATABASE_URL || process.env.DIRECT_URL) && fs.existsSync(BANK_FILE)
 
@@ -94,6 +97,22 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
 
   beforeAll(async () => {
     mockUserId = USER_ID
+    // 전용 throwaway user/space/membership(멱등) — 실 space를 절대 사용하지 않는다.
+    await prisma.user.upsert({
+      where: { id: USER_ID },
+      update: {},
+      create: { id: USER_ID, email: 'e2e-finance@throwaway.test', name: 'E2E Finance' },
+    })
+    await prisma.space.upsert({
+      where: { id: SPACE_ID },
+      update: {},
+      create: { id: SPACE_ID, name: 'E2E Finance Throwaway', type: 'PERSONAL' },
+    })
+    await prisma.spaceMember.upsert({
+      where: { spaceId_userId: { spaceId: SPACE_ID, userId: USER_ID } },
+      update: {},
+      create: { spaceId: SPACE_ID, userId: USER_ID, role: 'OWNER' },
+    })
     await cleanup()
     await prisma.deckApp.upsert({
       where: { id: 'finance' },
@@ -131,6 +150,10 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await prisma.deckInstance.deleteMany({ where: { spaceId: SPACE_ID, deckAppId: 'finance' } })
     const remaining = await prisma.finCategory.count({ where: { spaceId: SPACE_ID } })
     expect(remaining).toBe(0) // 0-state 복원 확인
+    // 전용 throwaway 정리 — space 삭제가 member/deckInstance/Fin*를 cascade, user도 삭제.
+    await prisma.spaceMember.deleteMany({ where: { spaceId: SPACE_ID } })
+    await prisma.space.deleteMany({ where: { id: SPACE_ID } })
+    await prisma.user.deleteMany({ where: { id: USER_ID } })
     await prisma.$disconnect()
   }, 60000)
 

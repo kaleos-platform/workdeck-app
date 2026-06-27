@@ -206,7 +206,7 @@ export function StockStatusBoard() {
           productsCollapsed
             ? 'lg:grid-cols-[28px_minmax(0,1fr)]'
             : 'lg:grid-cols-[360px_minmax(0,1fr)]',
-          'lg:h-[calc(100vh-13rem)]',
+          'lg:h-[calc(140vh-13rem)]',
         ].join(' ')}
       >
         <StockStatusProducts
