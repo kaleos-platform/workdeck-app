@@ -15,10 +15,7 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import type { StockBrand } from './stock-status.types'
-import {
-  STOCK_STATUS_BRAND_NONE,
-  type StockStatusProductCard,
-} from './stock-status-view-model'
+import { STOCK_STATUS_BRAND_NONE, type StockStatusProductCard } from './stock-status-view-model'
 
 type Props = {
   products: StockStatusProductCard[]
@@ -73,9 +70,7 @@ export function StockStatusProducts({
 
     if (selectedBrandId === STOCK_STATUS_BRAND_NONE) {
       const noneBrand = brands.find((brand) => brand.id === null)
-      return noneBrand
-        ? noneBrand.groups.map((group) => ({ id: group.id, name: group.name }))
-        : []
+      return noneBrand ? noneBrand.groups.map((group) => ({ id: group.id, name: group.name })) : []
     }
 
     const brand = brands.find((item) => item.id === selectedBrandId)
@@ -101,30 +96,21 @@ export function StockStatusProducts({
 
   if (collapsed) {
     return (
-      <Card className="flex min-h-0 flex-col overflow-hidden">
+      <Card className="flex h-full min-h-0 flex-col overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between border-b py-4">
           <CardTitle className="text-sm">상품</CardTitle>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={onToggleCollapsed}
-            aria-label="상품 패널 열기"
-          >
+          <Button variant="outline" size="xs" onClick={onToggleCollapsed} aria-label="상품 펼치기">
             <ChevronRight className="h-3.5 w-3.5" />
+            펼치기
           </Button>
         </CardHeader>
-        <CardContent className="flex flex-1 items-center justify-center p-4">
-          <Button variant="outline" size="sm" onClick={onToggleCollapsed}>
-            <ChevronRight className="mr-1.5 h-3.5 w-3.5" />
-            패널 펼치기
-          </Button>
-        </CardContent>
+        <CardContent className="flex-1 p-4" />
       </Card>
     )
   }
 
   return (
-    <Card className="flex min-h-[560px] flex-col overflow-hidden">
+    <Card className="flex h-full min-h-0 flex-col overflow-hidden">
       <CardHeader className="gap-3 border-b">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -133,8 +119,9 @@ export function StockStatusProducts({
               {products.length}개
             </Badge>
           </div>
-          <Button variant="ghost" size="icon-xs" onClick={onToggleCollapsed} aria-label="패널 접기">
+          <Button variant="outline" size="xs" onClick={onToggleCollapsed} aria-label="상품 접기">
             <ChevronLeft className="h-3.5 w-3.5" />
+            접기
           </Button>
         </div>
 
@@ -317,15 +304,7 @@ function ProductButton({
   )
 }
 
-function StatusSticker({
-  label,
-  count,
-  tone,
-}: {
-  label: string
-  count: number
-  tone: StatusTone
-}) {
+function StatusSticker({ label, count, tone }: { label: string; count: number; tone: StatusTone }) {
   const toneClass: Record<StatusTone, string> = {
     out: 'border-red-200 bg-red-50 text-red-700',
     low: 'border-amber-200 bg-amber-50 text-amber-700',

@@ -32,7 +32,7 @@ const products: StockStatusProductCard[] = [
 ]
 
 describe('stock status products panel', () => {
-  it('접으면 검색과 상품 목록을 숨기고 펼치기 버튼을 보여준다', () => {
+  it('접기와 펼치기 버튼이 상태에 따라 바뀐다', () => {
     const { rerender } = render(
       <StockStatusProducts
         products={products}
@@ -54,8 +54,9 @@ describe('stock status products panel', () => {
     )
 
     expect(screen.queryByRole('button', { name: /^전체$/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /접기/ })).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /패널 접기/ }))
+    fireEvent.click(screen.getByRole('button', { name: /접기/ }))
 
     rerender(
       <StockStatusProducts
@@ -77,7 +78,8 @@ describe('stock status products panel', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /패널 펼치기/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /펼치기/ })).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('상품 검색')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /패널 펼치기/ })).not.toBeInTheDocument()
   })
 })
