@@ -113,12 +113,13 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     })
     accountId = account.id
 
+    // 운영 차트는 2단계(대분류 → 운영 항목). 분류 타깃은 리프(부모가 대분류 = 부모의 parentId도 not null).
     const expense = await prisma.finCategory.findFirst({
-      where: { spaceId: SPACE_ID, type: 'EXPENSE', parentId: { not: null } },
+      where: { spaceId: SPACE_ID, type: 'EXPENSE', parent: { parentId: { not: null } } },
       select: { id: true },
     })
     const income = await prisma.finCategory.findFirst({
-      where: { spaceId: SPACE_ID, type: 'INCOME', parentId: { not: null } },
+      where: { spaceId: SPACE_ID, type: 'INCOME', parent: { parentId: { not: null } } },
       select: { id: true },
     })
     expenseLeafId = expense!.id
@@ -133,7 +134,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await prisma.$disconnect()
   }, 60000)
 
-  test('계정과목 시드: K-IFRS 트리 + SEED 규칙', async () => {
+  test('계정과목 시드: 운영 차트 트리 + SEED 규칙', async () => {
     const cats = await prisma.finCategory.count({ where: { spaceId: SPACE_ID } })
     const rules = await prisma.finClassRule.count({
       where: { spaceId: SPACE_ID, learnedFrom: 'SEED' },
