@@ -10,8 +10,9 @@
  *    TRANSFER = 계좌간 이체·카드대금 납부(수입/지출 집계 제외 net-off).
  *  - 영업/투자/재무 현금흐름 재분류는 export에서만 — `KIFRS_CF_MAP`(code→활동)으로 유도.
  *
- * 제거 가능성: 운영 항목(INCOME/EXPENSE 리프)은 isSystem=false로 시드 → 사용자가 삭제·이름변경.
- *  대분류·루트·자산/부채/이체 항목은 isSystem=true(구조·매핑 보호).
+ * 제거 가능성: 루트(구분)만 isSystem=true로 보호. 대분류·모든 리프(수입/지출·자산/부채·이체)는
+ *  isSystem=false → 사용자가 이름변경·삭제 가능. net-off 불변식은 category.type==='TRANSFER'
+ *  기준이라(분류 시 isTransfer 설정) 이체 항목의 이름변경·삭제와 무관 — 인스턴스가 아니라 타입이 보장.
  * 키워드(kw)는 검색/AI 컨텍스트용 — `opts.withRules`가 true일 때만 SEED 분류 규칙으로 등록(기본 false).
  */
 import { prisma } from '@/lib/prisma'
@@ -267,15 +268,6 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
 ]
 
 /**
- * 시스템 보호(편집·삭제 금지) 대상인지 — net-off 불변식 보존.
- * 보호 = 루트(별도 처리) + TRANSFER 리프(계좌간 이체·신용카드 대금 납부)만.
- * 대분류·INCOME/EXPENSE·ASSET/LIABILITY 리프는 사용자 편집·삭제 가능(isSystem=false).
- */
-function isProtectedLeaf(rootType: FinCategoryType, isLeaf: boolean): boolean {
-  return isLeaf && rootType === 'TRANSFER'
-}
-
-/**
  * 운영 차트의 리프(운영 항목) 중 키워드(kw)가 있는 것을 평탄화한다.
  * 룰베이스(키워드) 추천에서 사용 — 시드 kw는 규칙으로 영속화하지 않으므로(정책) 추천 시점에만 쓴다.
  */
@@ -342,7 +334,8 @@ async function seedChildren(
       alias: node.alias ?? null,
       type: rootType,
       groupLabel: node.costNature ?? null,
-      isSystem: isProtectedLeaf(rootType, isLeaf),
+      // 루트만 보호. 모든 리프·대분류는 편집·삭제 가능(net-off는 type 기준이라 이체 리프도 안전).
+      isSystem: false,
       sortOrder: order++,
     })
 

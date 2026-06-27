@@ -7,7 +7,6 @@ import {
   Plus,
   Trash2,
   Tag,
-  MoreHorizontal,
   Pencil,
   EyeOff,
   Eye,
@@ -26,13 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -258,6 +250,14 @@ function CategoryTree({
               </div>
 
               {editable && <AddGroup parentId={root.id} onChanged={onChanged} />}
+              {root.type === 'TRANSFER' && (
+                <AddSubAccount
+                  parentId={root.id}
+                  isExpense={false}
+                  placeholder="새 이체 항목 (예: 보증금 대체)"
+                  onChanged={onChanged}
+                />
+              )}
             </div>
           )
         })}
@@ -357,34 +357,16 @@ function Lvl1Row({
         <UsageBadge count={usage} />
         <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
           {hasChildren && <span>하위 {node.children.length}</span>}
-          <RowMenu>
-            {/* 대분류: 이름변경 + 삭제 / 이체 리프: 비활성 + (보호 아니면 편집·삭제) */}
-            {(hasChildren || !node.isSystem) && (
-              <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                <Pencil className="mr-2 size-3.5" />
-                {hasChildren ? '이름 변경' : '편집'}
-              </DropdownMenuItem>
-            )}
-            {!hasChildren && (
-              <DropdownMenuItem onClick={() => void toggleActive()}>
-                {node.isActive ? (
-                  <EyeOff className="mr-2 size-3.5" />
-                ) : (
-                  <Eye className="mr-2 size-3.5" />
-                )}
-                {node.isActive ? '비활성화' : '활성화'}
-              </DropdownMenuItem>
-            )}
-            {(hasChildren || !node.isSystem) && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onClick={() => void handleDelete()}>
-                  <Trash2 className="mr-2 size-3.5" />
-                  삭제
-                </DropdownMenuItem>
-              </>
-            )}
-          </RowMenu>
+          {/* 대분류: 이름변경 + 삭제 / 이체 리프: 편집·비활성·삭제(보호 아닐 때) */}
+          <RowActionButtons
+            canEdit={hasChildren || !node.isSystem}
+            editLabel={hasChildren ? '이름 변경' : '편집'}
+            onEdit={() => setEditOpen(true)}
+            isActive={node.isActive}
+            onToggle={!hasChildren ? () => void toggleActive() : undefined}
+            canDelete={hasChildren || !node.isSystem}
+            onDelete={() => void handleDelete()}
+          />
         </div>
       </div>
 
@@ -478,25 +460,14 @@ function SubAccountRow({
       )}
       <UsageBadge count={txnCount} />
       <div className="ml-auto flex items-center">
-        <RowMenu>
-          <DropdownMenuItem onClick={() => setEditOpen(true)}>
-            <Pencil className="mr-2 size-3.5" />
-            편집
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => void toggleActive()}>
-            {node.isActive ? (
-              <EyeOff className="mr-2 size-3.5" />
-            ) : (
-              <Eye className="mr-2 size-3.5" />
-            )}
-            {node.isActive ? '비활성화' : '활성화'}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" onClick={() => void handleDelete()}>
-            <Trash2 className="mr-2 size-3.5" />
-            삭제
-          </DropdownMenuItem>
-        </RowMenu>
+        <RowActionButtons
+          canEdit
+          onEdit={() => setEditOpen(true)}
+          isActive={node.isActive}
+          onToggle={() => void toggleActive()}
+          canDelete
+          onDelete={() => void handleDelete()}
+        />
       </div>
 
       <EditCategoryDialog
@@ -511,29 +482,77 @@ function SubAccountRow({
   )
 }
 
-/** 행 끝 ⋯ 메뉴 셸. */
-function RowMenu({ children }: { children: React.ReactNode }) {
+/**
+ * 행 끝 인라인 액션 버튼(편집·활성토글·삭제) — ⋯ 더보기 대신 행에 바로 노출.
+ * onToggle 미전달(대분류)이면 토글 버튼 생략. 항상 표시(hover-only 금지)로 발견성 확보.
+ */
+function RowActionButtons({
+  canEdit,
+  editLabel = '편집',
+  onEdit,
+  isActive,
+  onToggle,
+  canDelete,
+  onDelete,
+}: {
+  canEdit: boolean
+  editLabel?: string
+  onEdit: () => void
+  isActive: boolean
+  /** 리프만 활성/비활성 토글. 대분류는 undefined로 생략. */
+  onToggle?: () => void
+  canDelete: boolean
+  onDelete: () => void
+}) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-xs" aria-label="더 보기">
-          <MoreHorizontal className="size-3.5" />
+    <div className="flex items-center gap-0.5">
+      {canEdit && (
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={onEdit}
+          aria-label={editLabel}
+          title={editLabel}
+        >
+          <Pencil className="size-3.5" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-36">
-        {children}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      )}
+      {onToggle && (
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={onToggle}
+          aria-label={isActive ? '비활성화' : '활성화'}
+          title={isActive ? '비활성화' : '활성화'}
+        >
+          {isActive ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+        </Button>
+      )}
+      {canDelete && (
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={onDelete}
+          className="text-muted-foreground hover:text-destructive"
+          aria-label="삭제"
+          title="삭제"
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
+      )}
+    </div>
   )
 }
 
 function AddSubAccount({
   parentId,
   isExpense,
+  placeholder = '운영 항목 이름 (예: 택배비)',
   onChanged,
 }: {
   parentId: string
   isExpense: boolean
+  placeholder?: string
   onChanged: () => void
 }) {
   const [name, setName] = useState('')
@@ -572,7 +591,7 @@ function AddSubAccount({
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="운영 항목 이름 (예: 택배비)"
+        placeholder={placeholder}
         className="h-8 max-w-56 text-sm"
         onKeyDown={(e) => {
           if (e.key === 'Enter') void handleAdd()
