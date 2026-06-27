@@ -137,7 +137,8 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
             name: '광고비',
             code: '5300',
             costNature: '변동',
-            kw: ['광고', '메타', 'facebk', 'ad', '마케팅'],
+            // 'ad'는 너무 짧아 오탐(load·adidas 등) — 제외.
+            kw: ['광고', '메타', 'facebk', '마케팅'],
           },
           { name: '콘텐츠·제작', code: '5300', costNature: '변동', kw: ['콘텐츠', '제작', '촬영'] },
         ],
@@ -170,7 +171,8 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
             costNature: '고정',
             kw: ['소프트웨어', '구독', 'saas', '솔루션'],
           },
-          { name: '통신비', code: '5430', costNature: '고정', kw: ['통신', '인터넷', '요금'] },
+          // '인터넷'(인터넷뱅킹)·'요금'(전기/수도/가스요금)은 오탐 — 통신 특정어만.
+          { name: '통신비', code: '5430', costNature: '고정', kw: ['통신', '휴대폰', '통신요금'] },
           { name: '외주·용역', code: '5200', costNature: '변동', kw: ['외주', '용역', '대행'] },
         ],
       },
@@ -228,7 +230,9 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
     name: '이체·조정',
     code: '9000',
     children: [
-      { name: '계좌간 이체', code: '9100', kw: ['이체', '대체', '내부이체'] },
+      // "이체"·"대체"는 너무 광범위(급여이체·타행이체·국고이체 등 오추천) — 내부이체는
+      // 적요만으론 외부 지급과 구분 불가하므로 명시 라벨만 키워드로(나머지는 사용자/AI 판단).
+      { name: '계좌간 이체', code: '9100', kw: ['내부이체'] },
       // 카드 사용 시 5000번대 비용이 먼저 잡히므로, 납부는 부채(미지급금) 감소로만 처리(이중지출 방지).
       { name: '신용카드 대금 납부', code: '2310', kw: ['카드대금', '카드결제대금', '카드청구'] },
     ],
