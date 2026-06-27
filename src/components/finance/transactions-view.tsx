@@ -76,6 +76,8 @@ type StagedRow = {
   categoryId: string | null
   category: { id: string; name: string; parent: { name: string } | null } | null
   account: { id: string; name: string; kind: FinAccountKind }
+  /** 미분류 행의 룰(키워드) 추천 — 서버가 배치 계산. 매칭 없으면 null. 버튼 없이 자동 표시. */
+  ruleSuggestion: { categoryId: string; categoryName: string; reason: string } | null
 }
 
 type StagedCounts = {
@@ -911,7 +913,11 @@ function StagingRow({
             )}
           </div>
           {row.classStatus !== 'CLASSIFIED' && (
-            <SuggestCell rowId={row.id} onApply={(categoryId) => onClassify(row.id, categoryId)} />
+            <SuggestCell
+              rowId={row.id}
+              ruleSuggestion={row.ruleSuggestion}
+              onApply={(categoryId) => onClassify(row.id, categoryId)}
+            />
           )}
         </div>
       </TableCell>
@@ -1416,77 +1422,91 @@ function CategorySelect({
   )
 }
 
-// ─── 계정 추천(미분류 거래): 룰베이스 기본 + AI 별도 ─────────────────────────────
+// ─── 계정 추천(미분류 거래): 룰(키워드) 자동 표시 + AI 별도 버튼 ─────────────────
 
 type SuggestSource = 'rule' | 'ai'
-type RowSuggestion = {
-  source: SuggestSource
-  categoryId: string
-  categoryName: string
-  reason: string
-}
+type SuggestionData = { categoryId: string; categoryName: string; reason: string }
 
 /**
- * 미분류/검토 거래에 계정 항목 추천. 두 가지 경로 — 사용자가 선택적으로 누른다.
- *  - [추천]   = 키워드(룰베이스). AI 미사용·즉시·무료. 학습 규칙 + 운영 차트 시드 키워드 매칭.
- *  - [AI 추천] = Gemini. 룰로 못 잡는 거래를 AI가 추론.
- * 수락하면 onApply로 기존 분류 경로(PATCH + 동일 적요 자동적용 + 규칙 학습)를 그대로 탄다.
+ * 미분류 거래에 계정 항목 추천.
+ *  - 룰(키워드) 추천: 서버가 스테이징 GET에서 배치 계산(`ruleSuggestion`) → **버튼 없이 자동 표시**.
+ *  - [AI 추천]: Gemini. 룰로 못 잡거나(없음) 다르게 보고 싶을 때 명시적으로 누른다(AI가 룰 표시를 덮음).
+ * 수락(적용)하면 onApply로 기존 분류 경로(PATCH + 동일 적요 자동적용 + 규칙 학습)를 그대로 탄다.
  */
-function SuggestCell({ rowId, onApply }: { rowId: string; onApply: (categoryId: string) => void }) {
-  const [loading, setLoading] = useState<SuggestSource | null>(null)
-  const [suggestion, setSuggestion] = useState<RowSuggestion | null>(null)
+function SuggestCell({
+  rowId,
+  ruleSuggestion,
+  onApply,
+}: {
+  rowId: string
+  ruleSuggestion: SuggestionData | null
+  onApply: (categoryId: string) => void
+}) {
+  const [aiSuggestion, setAiSuggestion] = useState<SuggestionData | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
 
-  const fetchSuggestion = async (source: SuggestSource) => {
-    setLoading(source)
+  // AI가 있으면 AI 우선, 없으면(무시 안 했고 룰 있으면) 룰 자동 표시.
+  const active: (SuggestionData & { source: SuggestSource }) | null = aiSuggestion
+    ? { source: 'ai', ...aiSuggestion }
+    : !dismissed && ruleSuggestion
+      ? { source: 'rule', ...ruleSuggestion }
+      : null
+
+  const fetchAi = async () => {
+    setAiLoading(true)
     try {
-      const ep =
-        source === 'ai'
-          ? `/api/finance/staging/${rowId}/suggest`
-          : `/api/finance/staging/${rowId}/suggest-rule`
-      const res = await fetch(ep, { method: 'POST' })
+      const res = await fetch(`/api/finance/staging/${rowId}/suggest`, { method: 'POST' })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.message ?? '추천 실패')
-      if (data?.suggestion) setSuggestion({ source, ...data.suggestion })
-      else
-        toast(
-          source === 'ai'
-            ? 'AI가 추천할 항목을 찾지 못했어요'
-            : '키워드와 일치하는 항목이 없어요 — AI 추천을 눌러보세요'
-        )
+      if (!res.ok) throw new Error(data?.message ?? 'AI 추천 실패')
+      if (data?.suggestion) setAiSuggestion(data.suggestion)
+      else toast('AI가 추천할 항목을 찾지 못했어요')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '추천을 사용할 수 없습니다')
+      toast.error(err instanceof Error ? err.message : 'AI 추천을 사용할 수 없습니다')
     } finally {
-      setLoading(null)
+      setAiLoading(false)
     }
   }
 
-  if (suggestion) {
-    const isAi = suggestion.source === 'ai'
+  if (active) {
+    const isAi = active.source === 'ai'
     return (
-      <div className="flex items-center gap-1" title={suggestion.reason}>
+      <div className="flex items-center gap-1" title={active.reason}>
         {isAi ? (
           <Sparkles className="size-3 shrink-0 text-violet-500" />
         ) : (
           <Tag className="size-3 shrink-0 text-sky-500" />
         )}
-        <span className="max-w-[92px] truncate text-[11px] text-muted-foreground">
-          {suggestion.categoryName}
+        <span className="max-w-[88px] truncate text-[11px] text-muted-foreground">
+          {active.categoryName}
         </span>
         <Button
           size="xs"
           variant="outline"
           className="h-5 px-1.5 text-[10px]"
-          onClick={() => {
-            onApply(suggestion.categoryId)
-            setSuggestion(null)
-          }}
+          onClick={() => onApply(active.categoryId)}
         >
           적용
         </Button>
+        {!isAi && (
+          <button
+            type="button"
+            onClick={() => void fetchAi()}
+            disabled={aiLoading}
+            title="AI로 다시 추천"
+            className="flex items-center gap-0.5 text-[10px] text-violet-600 hover:underline disabled:opacity-50 dark:text-violet-400"
+          >
+            <Sparkles className="size-3" />
+            {aiLoading ? '…' : 'AI'}
+          </button>
+        )}
         <button
           type="button"
           className="text-[10px] text-muted-foreground hover:text-foreground"
-          onClick={() => setSuggestion(null)}
+          onClick={() => {
+            setAiSuggestion(null)
+            setDismissed(true)
+          }}
           aria-label="무시"
         >
           ✕
@@ -1496,26 +1516,15 @@ function SuggestCell({ rowId, onApply }: { rowId: string; onApply: (categoryId: 
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => void fetchSuggestion('rule')}
-        disabled={loading !== null}
-        className="flex items-center gap-0.5 text-[11px] text-sky-600 hover:underline disabled:opacity-50 dark:text-sky-400"
-      >
-        <Tag className="size-3" />
-        {loading === 'rule' ? '추천 중...' : '추천'}
-      </button>
-      <button
-        type="button"
-        onClick={() => void fetchSuggestion('ai')}
-        disabled={loading !== null}
-        className="flex items-center gap-0.5 text-[11px] text-violet-600 hover:underline disabled:opacity-50 dark:text-violet-400"
-      >
-        <Sparkles className="size-3" />
-        {loading === 'ai' ? 'AI 추천 중...' : 'AI 추천'}
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={() => void fetchAi()}
+      disabled={aiLoading}
+      className="flex w-fit items-center gap-1 text-[11px] text-violet-600 hover:underline disabled:opacity-50 dark:text-violet-400"
+    >
+      <Sparkles className="size-3" />
+      {aiLoading ? 'AI 추천 중...' : 'AI 추천'}
+    </button>
   )
 }
 
