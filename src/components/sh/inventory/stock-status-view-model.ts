@@ -1,4 +1,3 @@
-import { statusForSku } from '@/lib/inv/metrics'
 import type { SkuStatus, StockMatrixRow, StockProductSummary } from './stock-status.types'
 
 export type StockStatusRowView = StockMatrixRow & {
@@ -36,14 +35,11 @@ export function scopeStockStatusRows(
 
   return rows
     .filter((row) => row.byLocation[locationId] !== undefined)
-    .map((row) => {
-      const displayQty = row.byLocation[locationId] ?? 0
-      return {
-        ...row,
-        displayQty,
-        displayStatus: statusForSku(displayQty, row.out30d, row.out90d),
-      }
-    })
+    .map((row) => ({
+      ...row,
+      displayQty: row.totalQty,
+      displayStatus: row.status,
+    }))
 }
 
 export function buildStockStatusProducts(

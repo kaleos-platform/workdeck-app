@@ -3,6 +3,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { calculateReorder } from '@/lib/inv/reorder-calculator'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
+import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 
 // 로컬 일자 YYYY-MM-DD (loadOptionDemand 의 KST 키와 윈도우 절단 비교용).
 function toDateStr(d: Date): string {
@@ -78,6 +79,24 @@ export async function GET(req: NextRequest) {
     stockByOption.set(g.optionId, g._sum.quantity ?? 0)
   }
 
+  const pendingRuns = optionIds.length
+    ? await prisma.productionRun.findMany({
+        where: {
+          spaceId,
+          status: 'ORDERED',
+          items: { some: { optionId: { in: optionIds } } },
+        },
+        select: {
+          status: true,
+          items: {
+            where: { optionId: { in: optionIds } },
+            select: { optionId: true, quantity: true },
+          },
+        },
+      })
+    : []
+  const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
+
   // 수요 신호 = 옵션별 주문수요 합(수동채널 DelOrderItem + 로켓 VENDOR). 발주 plan 생성과
   // 판매분석이 공유하는 loadOptionDemand 를 써 세 화면이 정의상 같은 수요를 본다.
   // (OUTBOUND 장부 대신 주문수요 — OUTBOUND 는 재고차감·정확도 baseline 전용.)
@@ -129,7 +148,9 @@ export async function GET(req: NextRequest) {
 
     const displayName = p.internalName && p.internalName.trim().length > 0 ? p.internalName : p.name
     return p.options.map((o) => {
-      const currentStock = stockByOption.get(o.id) ?? 0
+      const onHandStock = stockByOption.get(o.id) ?? 0
+      const incomingQty = incomingByOption.get(o.id) ?? 0
+      const currentStock = plannedStockQty({ onHandQty: onHandStock, incomingQty })
       const totalOutbound = outboundByOption.get(o.id) ?? 0
       const safetyStockQty = o.safetyStockQty
       const calc = calculateReorder({
@@ -150,6 +171,8 @@ export async function GET(req: NextRequest) {
         optionName: o.name,
         sku: o.sku ?? null,
         currentStock,
+        onHandStock,
+        incomingQty,
         totalOutbound,
         windowDays,
         dailyAvgOutbound: calc.dailyAvgOutbound,

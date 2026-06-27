@@ -1,8 +1,10 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { Info } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import {
   LOCATION_TYPE_LABEL,
@@ -101,7 +103,18 @@ export function StockStatusMatrix({
                     </th>
                   ))}
                   <th className="min-w-[90px] border-l bg-muted px-2 py-2 text-center text-[11px] font-medium text-muted-foreground">
-                    <div className="font-semibold text-foreground">입고예정</div>
+                    <div className="flex items-center justify-center gap-1 font-semibold text-foreground">
+                      <span>입고예정</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-3 w-3 cursor-help text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[260px] text-xs">
+                          생산 관리에서 진행중 상태인 생산차수의 미입고 수량입니다. 계획중/완료는
+                          제외됩니다.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <div className="text-[10px] font-normal text-muted-foreground">생산 관리</div>
                   </th>
                   <th className="sticky right-0 z-30 min-w-[140px] border-l bg-muted px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -167,6 +180,9 @@ export function StockStatusMatrix({
                       <td className="sticky right-0 z-10 border-l bg-card px-3 py-2 text-right">
                         <div className="font-mono text-sm font-semibold tabular-nums">
                           {KRW.format(row.displayQty)}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground tabular-nums">
+                          현재 {KRW.format(row.currentQty)}
                         </div>
                         <div className="mt-0.5 flex items-center justify-end gap-1.5">
                           <Badge

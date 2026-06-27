@@ -21,6 +21,7 @@ const rows: StockMatrixRow[] = [
     costPrice: null,
     retailPrice: null,
     safetyStockQty: 0,
+    currentQty: 10,
     totalQty: 10,
     totalValue: 0,
     byLocation: { 'loc-1': 3, 'loc-2': 7 },
@@ -45,6 +46,7 @@ const rows: StockMatrixRow[] = [
     costPrice: null,
     retailPrice: null,
     safetyStockQty: 0,
+    currentQty: 6,
     totalQty: 6,
     totalValue: 0,
     byLocation: { 'loc-2': 6 },
@@ -57,12 +59,12 @@ const rows: StockMatrixRow[] = [
 ]
 
 describe('stock status view model', () => {
-  it('선택 위치 수량으로 행 상태를 다시 계산한다', () => {
+  it('선택 위치로 행을 좁혀도 합계 수량과 상태는 전체 합계 기준을 유지한다', () => {
     const scoped = scopeStockStatusRows(rows, 'loc-1')
 
     expect(scoped).toHaveLength(1)
-    expect(scoped[0].displayQty).toBe(3)
-    expect(scoped[0].displayStatus).toBe('LOW')
+    expect(scoped[0].displayQty).toBe(10)
+    expect(scoped[0].displayStatus).toBe('OK')
   })
 
   it('고정 상품을 먼저 보여주고 이름순으로 정렬한다', () => {

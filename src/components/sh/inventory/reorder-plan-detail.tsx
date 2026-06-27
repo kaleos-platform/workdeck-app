@@ -71,6 +71,8 @@ const MODEL_LABEL: Record<ForecastModel, string> = {
   MANUAL: '수동',
 }
 
+const QTY = new Intl.NumberFormat('ko-KR')
+
 // 콜드스타트(데이터 부족) 판별 — 서버 cold-start API와 동일하게 forecastModel === 'BAYES'
 function isColdStart(item: ReorderPlanItem) {
   return item.forecastModel === 'BAYES'
@@ -838,7 +840,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead>옵션</TableHead>
-              <TableHead className="text-right">현재고</TableHead>
+              <TableHead className="text-right">재고</TableHead>
               <TableHead className="text-right">예측 일판매</TableHead>
               <TableHead>모델</TableHead>
               <TableHead className="text-right">리드타임</TableHead>
@@ -864,6 +866,14 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
               items.map((item) => {
                 const opt = optionMap.get(item.optionId)
                 const cold = isColdStart(item)
+                const onHandStock =
+                  typeof item.inputsSnapshot?.onHandStock === 'number'
+                    ? item.inputsSnapshot.onHandStock
+                    : null
+                const incomingQty =
+                  typeof item.inputsSnapshot?.incomingQty === 'number'
+                    ? item.inputsSnapshot.incomingQty
+                    : null
 
                 return (
                   <TableRow key={item.id}>
@@ -885,7 +895,14 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{item.currentStock}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      <div className="font-medium">{QTY.format(item.currentStock)}</div>
+                      {onHandStock !== null && incomingQty !== null && (
+                        <div className="text-[11px] text-muted-foreground">
+                          현재 {QTY.format(onHandStock)} · 입고예정 {QTY.format(incomingQty)}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       {cold ? (
                         <ColdStartCell

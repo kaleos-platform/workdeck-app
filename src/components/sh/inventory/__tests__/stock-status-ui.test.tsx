@@ -1,4 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import type { ReactElement } from 'react'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { StockStatusMatrix } from '../stock-status-matrix'
 import { StockStatusProducts } from '../stock-status-products'
 import type { StockBrand, StockLocation, StockMatrixRow } from '../stock-status.types'
@@ -58,16 +60,21 @@ const rows: StockMatrixRow[] = [
     costPrice: 1000,
     retailPrice: 2000,
     safetyStockQty: 0,
-    totalQty: 4,
+    currentQty: 4,
+    totalQty: 9,
     totalValue: 4000,
     byLocation: { 'loc-1': 4 },
     externalCodeByLocation: {},
-    incomingQty: 0,
+    incomingQty: 5,
     out30d: 12,
     out90d: 37,
     status: 'LOW',
   },
 ]
+
+function renderWithTooltip(ui: ReactElement) {
+  return render(<TooltipProvider>{ui}</TooltipProvider>)
+}
 
 describe('stock status UI', () => {
   it('상품 패널에서 전체 항목 없이 상품을 선택할 수 있다', () => {
@@ -102,7 +109,7 @@ describe('stock status UI', () => {
   })
 
   it('상품명을 제목으로 표시하고 30일과 90일 출고량을 표시한다', () => {
-    render(
+    renderWithTooltip(
       <StockStatusMatrix
         rows={scopeStockStatusRows(rows, null)}
         locations={locations}
@@ -121,5 +128,8 @@ describe('stock status UI', () => {
     expect(screen.getByText('생산 관리')).toBeInTheDocument()
     expect(screen.getByText('12')).toBeInTheDocument()
     expect(screen.getByText('37')).toBeInTheDocument()
+    expect(screen.getByText('5')).toBeInTheDocument()
+    expect(screen.getByText('9')).toBeInTheDocument()
+    expect(screen.getByText('현재 4')).toBeInTheDocument()
   })
 })
