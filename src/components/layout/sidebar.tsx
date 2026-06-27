@@ -24,6 +24,7 @@ import {
   TrendingUp,
   ListChecks,
   FolderTree,
+  Landmark,
   PanelLeftClose,
   PanelLeftOpen,
   type LucideIcon,
@@ -74,6 +75,7 @@ import {
   FINANCE_TRANSACTIONS_PATH,
   FINANCE_UPLOAD_PATH,
   FINANCE_ACCOUNTS_PATH,
+  FINANCE_BALANCES_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -148,6 +150,7 @@ const FINANCE_FLAT_ROUTES = [
   { label: '거래 내역', icon: ListChecks, href: FINANCE_TRANSACTIONS_PATH },
   { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
   { label: '계정과목 관리', icon: FolderTree, href: FINANCE_ACCOUNTS_PATH },
+  { label: '계좌 관리', icon: Landmark, href: FINANCE_BALANCES_PATH },
 ]
 
 const COUPANG_MAIN_ROUTES = [
