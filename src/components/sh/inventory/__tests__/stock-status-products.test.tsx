@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { StockStatusProducts } from '../stock-status-products'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { PRODUCTS_PAGE_SIZE, StockStatusProducts } from '../stock-status-products'
 import type { StockStatusProductCard } from '../stock-status-view-model'
 
 const products: StockStatusProductCard[] = [
@@ -50,13 +51,14 @@ describe('stock status products panel', () => {
         onBrandChange={jest.fn()}
         onGroupChange={jest.fn()}
         onSearchChange={jest.fn()}
-      />
+      />,
+      { wrapper: TooltipProvider }
     )
 
     expect(screen.queryByRole('button', { name: /^전체$/ })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /접기/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '상품 목록 접기' })).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /접기/ }))
+    fireEvent.click(screen.getByRole('button', { name: '상품 목록 접기' }))
 
     rerender(
       <StockStatusProducts
@@ -78,8 +80,60 @@ describe('stock status products panel', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /펼치기/ })).toBeInTheDocument()
+    // 접힌 상태: 가장자리 탭(데스크탑) + 가로 바(모바일) 두 개의 "상품 목록 열기" 버튼만 노출
+    expect(screen.getAllByRole('button', { name: '상품 목록 열기' }).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: '상품 목록 접기' })).not.toBeInTheDocument()
     expect(screen.queryByPlaceholderText('상품 검색')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /패널 펼치기/ })).not.toBeInTheDocument()
+  })
+
+  it('일반 상품이 페이지 크기를 넘으면 페이지네이션으로 나뉜다', () => {
+    // 페이지 크기 + 2개 → 정확히 2페이지(1페이지 가득 + 2페이지에 2개)
+    const total = PRODUCTS_PAGE_SIZE + 2
+    const firstOnPage2 = `상품 ${String(PRODUCTS_PAGE_SIZE).padStart(2, '0')}`
+    const many: StockStatusProductCard[] = Array.from({ length: total }, (_, i) => ({
+      productId: `p-${i}`,
+      productName: `상품 ${String(i).padStart(2, '0')}`,
+      optionCount: 1,
+      okOptionCount: 1,
+      lowOptionCount: 0,
+      outOptionCount: 0,
+      overOptionCount: 0,
+      brandId: 'b',
+      brandName: '브랜드',
+      groupId: 'g',
+      groupName: '그룹',
+    }))
+
+    render(
+      <StockStatusProducts
+        products={many}
+        brands={[]}
+        loading={false}
+        selectedProductId={null}
+        selectedBrandId={null}
+        selectedGroupId={null}
+        productQuery=""
+        pinnedProductIds={[]}
+        collapsed={false}
+        onSelectProduct={jest.fn()}
+        onToggleCollapsed={jest.fn()}
+        onTogglePinned={jest.fn()}
+        onBrandChange={jest.fn()}
+        onGroupChange={jest.fn()}
+        onSearchChange={jest.fn()}
+      />,
+      { wrapper: TooltipProvider }
+    )
+
+    // 1페이지엔 상품 00, 2페이지 첫 항목은 보이지 않음
+    expect(screen.getByText('1 / 2')).toBeInTheDocument()
+    expect(screen.getByText('상품 00')).toBeInTheDocument()
+    expect(screen.queryByText(firstOnPage2)).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '다음' }))
+
+    expect(screen.getByText('2 / 2')).toBeInTheDocument()
+    expect(screen.getByText(firstOnPage2)).toBeInTheDocument()
+    expect(screen.queryByText('상품 00')).not.toBeInTheDocument()
   })
 })

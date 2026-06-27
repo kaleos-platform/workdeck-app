@@ -160,10 +160,19 @@ export function StockStatusBoard() {
     [brandId, groupId, pinnedProductIds, productQuery, products]
   )
 
+  // 상품별 보기만 지원: 선택이 없거나(초기/필터 변경) 현재 목록에 없으면 첫 상품으로 폴백.
+  // URL은 오염하지 않고(effect 없이) 화면에서만 유효한 한 상품을 표시한다.
+  const effectiveProductId = useMemo(() => {
+    if (productId && visibleProducts.some((p) => p.productId === productId)) {
+      return productId
+    }
+    return visibleProducts[0]?.productId ?? null
+  }, [productId, visibleProducts])
+
   const visibleRows = useMemo(() => {
     const optionQuery = q.trim().toLowerCase()
     return scopedRows.filter((row) => {
-      if (productId && row.productId !== productId) return false
+      if (effectiveProductId && row.productId !== effectiveProductId) return false
       if (onlyLow && row.displayStatus !== 'LOW' && row.displayStatus !== 'OUT') return false
       if (!optionQuery) return true
       return [
@@ -174,11 +183,11 @@ export function StockStatusBoard() {
         ...Object.values(row.externalCodeByLocation),
       ].some((value) => value.toLowerCase().includes(optionQuery))
     })
-  }, [onlyLow, productId, q, scopedRows])
+  }, [onlyLow, effectiveProductId, q, scopedRows])
 
   const selectedProductName = useMemo(
-    () => products.find((product) => product.productId === productId)?.productName ?? null,
-    [productId, products]
+    () => products.find((product) => product.productId === effectiveProductId)?.productName ?? null,
+    [effectiveProductId, products]
   )
 
   return (
@@ -195,16 +204,16 @@ export function StockStatusBoard() {
         className={[
           'grid grid-cols-1 items-stretch gap-4',
           productsCollapsed
-            ? 'xl:grid-cols-[116px_minmax(0,1fr)]'
-            : 'xl:grid-cols-[360px_minmax(0,1fr)]',
-          'xl:h-[calc(100vh-18rem)]',
+            ? 'lg:grid-cols-[28px_minmax(0,1fr)]'
+            : 'lg:grid-cols-[360px_minmax(0,1fr)]',
+          'lg:h-[calc(100vh-13rem)]',
         ].join(' ')}
       >
         <StockStatusProducts
           products={visibleProducts}
           brands={data?.brands ?? []}
           loading={loading && !data}
-          selectedProductId={productId}
+          selectedProductId={effectiveProductId}
           selectedBrandId={brandId}
           selectedGroupId={groupId}
           productQuery={productQuery}
@@ -219,7 +228,7 @@ export function StockStatusBoard() {
         />
 
         <div className="min-h-0 min-w-0">
-          <div className="flex h-full min-h-0 flex-col gap-3">
+          <div className="flex h-full max-h-[60vh] min-h-0 flex-col gap-3 lg:max-h-none">
             <StockStatusMatrix
               rows={visibleRows}
               locations={data?.locations ?? []}
