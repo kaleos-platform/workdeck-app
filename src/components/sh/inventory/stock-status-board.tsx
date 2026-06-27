@@ -114,20 +114,17 @@ export function StockStatusBoard() {
     [updateParams]
   )
 
-  const handleClearFilters = useCallback(
-    () => {
-      setProductQuery('')
-      updateParams({
-        brandId: null,
-        groupId: null,
-        productId: null,
-        locationId: null,
-        q: null,
-        onlyLow: null,
-      })
-    },
-    [updateParams]
-  )
+  const handleClearFilters = useCallback(() => {
+    setProductQuery('')
+    updateParams({
+      brandId: null,
+      groupId: null,
+      productId: null,
+      locationId: null,
+      q: null,
+      onlyLow: null,
+    })
+  }, [updateParams])
 
   const handleProductSelect = useCallback(
     (newProductId: string | null) => updateParams({ productId: newProductId }),
@@ -147,7 +144,10 @@ export function StockStatusBoard() {
   const allRows = useMemo(() => data?.matrix.rows ?? [], [data?.matrix.rows])
   const scopedRows = useMemo(() => scopeStockStatusRows(allRows, locationId), [allRows, locationId])
 
-  const products = useMemo(() => buildStockStatusProducts(allRows, locationId), [allRows, locationId])
+  const products = useMemo(
+    () => buildStockStatusProducts(allRows, locationId),
+    [allRows, locationId]
+  )
 
   const visibleProducts = useMemo(
     () =>
@@ -192,11 +192,13 @@ export function StockStatusBoard() {
       />
 
       <div
-        className={
+        className={[
+          'grid grid-cols-1 items-stretch gap-4',
           productsCollapsed
-            ? 'grid grid-cols-1 gap-4 xl:grid-cols-[116px_minmax(0,1fr)]'
-            : 'grid grid-cols-1 gap-4 xl:grid-cols-[360px_minmax(0,1fr)]'
-        }
+            ? 'xl:grid-cols-[116px_minmax(0,1fr)]'
+            : 'xl:grid-cols-[360px_minmax(0,1fr)]',
+          'xl:h-[calc(100vh-18rem)]',
+        ].join(' ')}
       >
         <StockStatusProducts
           products={visibleProducts}
@@ -216,23 +218,25 @@ export function StockStatusBoard() {
           onSearchChange={setProductQuery}
         />
 
-        <div className="min-w-0">
-          <StockStatusMatrix
-            rows={visibleRows}
-            locations={data?.locations ?? []}
-            loading={loading && !data}
-            selectedLocationId={locationId}
-            selectedProductName={selectedProductName}
-            toolbar={
-              <StockStatusToolbar
-                q={q}
-                onlyLow={onlyLow}
-                onSearchChange={handleSearchChange}
-                onOnlyLowChange={handleOnlyLowChange}
-                onClearFilters={handleClearFilters}
-              />
-            }
-          />
+        <div className="min-h-0 min-w-0">
+          <div className="flex h-full min-h-0 flex-col gap-3">
+            <StockStatusMatrix
+              rows={visibleRows}
+              locations={data?.locations ?? []}
+              loading={loading && !data}
+              selectedLocationId={locationId}
+              selectedProductName={selectedProductName}
+              toolbar={
+                <StockStatusToolbar
+                  q={q}
+                  onlyLow={onlyLow}
+                  onSearchChange={handleSearchChange}
+                  onOnlyLowChange={handleOnlyLowChange}
+                  onClearFilters={handleClearFilters}
+                />
+              }
+            />
+          </div>
         </div>
       </div>
     </div>

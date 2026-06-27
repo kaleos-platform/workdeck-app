@@ -49,7 +49,7 @@ export function StockStatusMatrix({
     : locations
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="flex h-full min-h-0 flex-col overflow-hidden">
       <CardHeader className="gap-3">
         <CardTitle className="text-sm">{selectedProductName ?? '전체 상품'}</CardTitle>
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -66,7 +66,7 @@ export function StockStatusMatrix({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="min-h-0 flex-1 p-0">
         {loading ? (
           <div className="space-y-2 p-4">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -76,7 +76,7 @@ export function StockStatusMatrix({
         ) : rows.length === 0 ? (
           <p className="p-10 text-center text-sm text-muted-foreground">표시할 SKU가 없습니다</p>
         ) : (
-          <div className="max-h-[65vh] overflow-auto">
+          <div className="h-full min-h-0 overflow-auto">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead className="sticky top-0 z-20 bg-muted">
                 <tr className="border-b">
