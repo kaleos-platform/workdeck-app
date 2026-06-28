@@ -12,7 +12,7 @@ import { config } from 'dotenv'
 
 config({ path: path.resolve(process.cwd(), '.env.local') })
 
-const SAMPLE_DIR = '/Users/kaleos/projects/workdeck-app/docs/source_ref'
+const SAMPLE_DIR = path.resolve(process.cwd(), 'docs/finace-ops/source_ref')
 const BANK_FILE = path.join(SAMPLE_DIR, 'fianance_data_기업은행.csv')
 const CARD_FILE = path.join(SAMPLE_DIR, 'fianance_data_하나카드.csv')
 // 전용 throwaway space/user — 실 데이터(특히 운영 의식주의·실 유저)를 절대 건드리지 않도록 격리.
@@ -277,10 +277,15 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(learned).toBeGreaterThan(0)
   }, 20000)
 
-  // ⚠️ STALE: staging/commit이 분류완료 행만 커밋 + staged 행 delete로 모델 변경됨(임포트 무관).
-  // 이 테스트는 구 모델(임포트 전체 커밋 + COMMITTED 표시) 기준이라 새 동작에 맞춘 same-session-safe
-  // 재작성 필요. (공유 dev DB의 의식주의 space를 wipe하므로 현재 세션에서 실행하지 않음.)
-  test('staging/commit: 확정 거래 + 잔고 스냅샷 파생', async () => {
+  // staging/commit(신 모델): 분류완료(CLASSIFIED 비-DUP_SAME) 행만 확정 거래로 커밋 + staged 행 delete.
+  // 임포트 무관(importId 주면 한정). 확정 거래=source of truth, 영향 계좌 월말 잔고 스냅샷 파생.
+  test('staging/commit: 분류완료 행 확정 거래 + staged 삭제 + 잔고 스냅샷 파생', async () => {
+    // 커밋 대상(분류완료 비-DUP_SAME) 행 수 — 커밋 후 전부 삭제되어야 한다.
+    const committableBefore = await prisma.finStagedRow.count({
+      where: { importId, classStatus: 'CLASSIFIED', resolution: { not: 'DUP_SAME' } },
+    })
+    expect(committableBefore).toBeGreaterThan(0)
+
     const req = new NextRequest('http://localhost/api/finance/staging/commit', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -289,10 +294,15 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     const res = await call(stagingCommit(req))
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.committed).toBeGreaterThan(0)
+    expect(body.committed).toBe(committableBefore) // 분류완료 행만 커밋
 
     const txnCount = await prisma.finTransaction.count({ where: { spaceId: SPACE_ID, accountId } })
     expect(txnCount).toBe(body.committed)
+    // 신 모델: 커밋된 분류완료 행은 큐에서 제거(확정 거래=source of truth)
+    const remainingCommittable = await prisma.finStagedRow.count({
+      where: { importId, classStatus: 'CLASSIFIED', resolution: { not: 'DUP_SAME' } },
+    })
+    expect(remainingCommittable).toBe(0)
     // 은행 계좌 → 월별 잔고 스냅샷 존재
     const snaps = await prisma.finBalanceSnapshot.count({ where: { spaceId: SPACE_ID, accountId } })
     expect(snaps).toBeGreaterThan(0)

@@ -10,6 +10,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { toNum } from '@/lib/finance/serialize'
 import { cfActivityForCode, kifrsAccountName, CF_ACTIVITY_LABEL } from '@/lib/finance/kifrs-seed'
+import { signedAmount } from '@/lib/finance/aggregate'
 
 function parseDate(v: string | null): Date | null {
   if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return null
@@ -86,6 +87,8 @@ export async function GET(req: NextRequest) {
     const code = t.category?.code ?? null
     const division = t.isTransfer ? '이체' : t.direction === 'IN' ? '수입' : '지출'
     const cf = t.isTransfer ? '내부이체(제외)' : CF_ACTIVITY_LABEL[cfActivityForCode(code)]
+    // 취소거래(cancelFlag '취소')는 부호 반전으로 상계 — dashboard·cashflow와 동일 회계 처리.
+    const amount = signedAmount({ amount: toNum(t.amount), cancelFlag: t.cancelFlag })
     lines.push(
       [
         cell(ymd(t.txnDate)),
@@ -93,7 +96,7 @@ export async function GET(req: NextRequest) {
         cell(t.description ?? ''),
         cell(t.counterparty ?? ''),
         cell(division),
-        cell(Math.round(toNum(t.amount))),
+        cell(Math.round(amount)),
         cell(t.category?.name ?? '미분류'),
         cell(t.category?.parent?.name ?? ''),
         cell(code ?? ''),

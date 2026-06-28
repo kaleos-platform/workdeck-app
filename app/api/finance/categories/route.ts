@@ -87,6 +87,9 @@ export async function POST(req: NextRequest) {
   if (!name || typeof name !== 'string' || name.trim() === '') {
     return errorResponse('계정과목 이름이 필요합니다', 400)
   }
+  if (name.trim().length > 100) {
+    return errorResponse('이름은 100자 이내여야 합니다', 400)
+  }
 
   // 부모 카테고리 소유 검증
   const parent = await prisma.finCategory.findFirst({

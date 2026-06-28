@@ -55,6 +55,7 @@ type CategoryNode = {
   parentId: string | null
   name: string
   type: string
+  isActive: boolean
   children: CategoryNode[]
 }
 
