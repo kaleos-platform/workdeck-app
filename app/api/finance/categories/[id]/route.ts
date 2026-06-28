@@ -33,18 +33,28 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return errorResponse('이 계정과목은 이름을 변경할 수 없습니다', 400)
   }
 
+  // 이름 변경 시 공백 불가 + 길이 제한(빈 문자열로 덮어쓰기 방지)
+  if (name !== undefined) {
+    const trimmed = name.trim()
+    if (!trimmed) return errorResponse('이름을 입력해 주세요', 400)
+    if (trimmed.length > 100) return errorResponse('이름은 100자 이내여야 합니다', 400)
+  }
+
   // 상위 대분류 이동 검증: 같은 타입 + 대분류(루트 아님) + 자기참조 금지
   if (parentId !== undefined) {
     if (parentId === id) return errorResponse('자기 자신을 상위로 지정할 수 없습니다', 400)
     const newParent = await prisma.finCategory.findFirst({
       where: { id: parentId, spaceId },
-      select: { id: true, type: true, parentId: true },
+      select: { id: true, type: true, parentId: true, parent: { select: { parentId: true } } },
     })
     if (!newParent) return errorResponse('상위 대분류를 찾을 수 없습니다', 400)
     if (newParent.type !== existing.type) {
       return errorResponse('같은 구분(수입/지출) 내 대분류로만 이동할 수 있습니다', 400)
     }
-    if (newParent.parentId === null) {
+    // 대분류 = 루트의 직속 자식(부모가 루트). 루트(자기 parentId null)나 리프(부모가 그룹)
+    // 아래로는 이동 금지 — 운영 차트 2단계 구조 보존(리프-하위-리프 차단).
+    const isGroupTarget = newParent.parentId !== null && newParent.parent?.parentId === null
+    if (!isGroupTarget) {
       return errorResponse('대분류 아래로만 이동할 수 있습니다', 400)
     }
   }

@@ -72,6 +72,8 @@ export async function POST(req: NextRequest) {
     where: { spaceId, matchKey: normalizedKey, direction },
     select: { id: true },
   })
+  // 기존 규칙 갱신(덮어쓰기) vs 신규 생성 — 클라이언트가 토스트를 구분하도록 created 반환.
+  const created = !existing
   const rule = existing
     ? await prisma.finClassRule.update({
         where: { id: existing.id },
@@ -90,5 +92,5 @@ export async function POST(req: NextRequest) {
         include,
       })
 
-  return NextResponse.json({ rule }, { status: 201 })
+  return NextResponse.json({ rule, created }, { status: created ? 201 : 200 })
 }

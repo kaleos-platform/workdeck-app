@@ -219,10 +219,15 @@ function CategoryTree({
         {roots.map((root) => {
           const badge = categoryTypeBadge(root.type)
           const editable = root.type === 'INCOME' || root.type === 'EXPENSE'
-          // 같은 타입 대분류 목록(리프 상위 이동 옵션)
-          const groupOptions = root.children
-            .filter((c) => c.children.length > 0)
-            .map((c) => ({ id: c.id, name: c.name }))
+          // 같은 타입 대분류 목록(리프 상위 이동 옵션).
+          // editable 루트의 lvl1은 모두 대분류이므로 자식 유무와 무관하게 포함
+          // (빈 대분류도 이동 대상이 되도록). 단 비활성 대분류는 이동 대상에서 제외
+          // (그쪽으로 옮기면 분류 드롭다운에서 사라져 혼란). TRANSFER는 lvl1이 리프라 대상 없음.
+          const groupOptions = editable
+            ? root.children
+                .filter((c) => c.isActive !== false)
+                .map((c) => ({ id: c.id, name: c.name }))
+            : []
           return (
             <div key={root.id} className="space-y-1">
               <div className="flex items-center gap-2 border-b pb-1.5">
@@ -298,7 +303,11 @@ function Lvl1Row({
 }) {
   const [editOpen, setEditOpen] = useState(false)
   const hasChildren = node.children.length > 0
-  const canExpand = editable && hasChildren
+  // 대분류(그룹)냐 리프냐는 자식 유무가 아니라 루트 타입으로 결정한다.
+  // INCOME/EXPENSE(editable) 루트의 lvl1은 항상 대분류(빈 대분류 포함),
+  // TRANSFER 루트의 lvl1은 항상 이체 리프. 자식 0개인 신규 대분류가 리프로 오인되던 버그 방지.
+  const isGroup = editable
+  const canExpand = isGroup
   const usage = nodeUsage(node)
 
   async function handleDelete() {
@@ -356,15 +365,15 @@ function Lvl1Row({
         )}
         <UsageBadge count={usage} />
         <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-          {hasChildren && <span>하위 {node.children.length}</span>}
-          {/* 대분류: 이름변경 + 삭제 / 이체 리프: 편집·비활성·삭제(보호 아닐 때) */}
+          {isGroup && <span>하위 {node.children.length}</span>}
+          {/* 대분류·이체 리프 모두 편집·활성토글·삭제 노출(비활성 대분류도 되살릴 수 있도록). */}
           <RowActionButtons
-            canEdit={hasChildren || !node.isSystem}
-            editLabel={hasChildren ? '이름 변경' : '편집'}
+            canEdit={isGroup || !node.isSystem}
+            editLabel={isGroup ? '이름 변경' : '편집'}
             onEdit={() => setEditOpen(true)}
             isActive={node.isActive}
-            onToggle={!hasChildren ? () => void toggleActive() : undefined}
-            canDelete={hasChildren || !node.isSystem}
+            onToggle={() => void toggleActive()}
+            canDelete={isGroup || !node.isSystem}
             onDelete={() => void handleDelete()}
           />
         </div>
@@ -392,7 +401,7 @@ function Lvl1Row({
         open={editOpen}
         onOpenChange={setEditOpen}
         node={node}
-        isLeaf={!hasChildren}
+        isLeaf={!isGroup}
         parentGroups={groupOptions}
         onSaved={onChanged}
       />
@@ -499,7 +508,7 @@ function RowActionButtons({
   editLabel?: string
   onEdit: () => void
   isActive: boolean
-  /** 리프만 활성/비활성 토글. 대분류는 undefined로 생략. */
+  /** 활성/비활성 토글. 미전달 시 토글 버튼 생략. */
   onToggle?: () => void
   canDelete: boolean
   onDelete: () => void
@@ -592,9 +601,10 @@ function AddSubAccount({
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder={placeholder}
+        maxLength={100}
         className="h-8 max-w-56 text-sm"
         onKeyDown={(e) => {
-          if (e.key === 'Enter') void handleAdd()
+          if (e.key === 'Enter' && !saving) void handleAdd()
         }}
       />
       {isExpense && (
@@ -653,9 +663,10 @@ function AddGroup({ parentId, onChanged }: { parentId: string; onChanged: () => 
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="새 대분류 이름 (예: 물류·배송)"
+        maxLength={100}
         className="h-8 max-w-56 text-sm"
         onKeyDown={(e) => {
-          if (e.key === 'Enter') void handleAdd()
+          if (e.key === 'Enter' && !saving) void handleAdd()
         }}
       />
       <Button size="sm" variant="ghost" onClick={handleAdd} disabled={saving || !name.trim()}>
@@ -693,7 +704,8 @@ function ExportMappingDialog({
     setSaving(true)
     try {
       const toMap = items.filter((it) => mapping[it.id])
-      await Promise.all(
+      // fetch는 4xx/5xx에 throw하지 않으므로 각 응답을 검사 — 일부 실패 시 다운로드 중단.
+      const results = await Promise.all(
         toMap.map((it) =>
           fetch(`/api/finance/categories/${it.id}`, {
             method: 'PATCH',
@@ -702,10 +714,14 @@ function ExportMappingDialog({
           })
         )
       )
+      const failed = results.filter((r) => !r.ok).length
+      if (failed > 0) {
+        throw new Error(`${failed}건의 매핑 저장에 실패했습니다`)
+      }
       onOpenChange(false)
       await onMapped()
-    } catch {
-      toast.error('매핑 저장에 실패했습니다')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '매핑 저장에 실패했습니다')
     } finally {
       setSaving(false)
     }
@@ -800,7 +816,11 @@ function RuleManager({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '규칙 추가 실패')
-      toast.success('분류 규칙이 추가되었습니다')
+      toast.success(
+        data?.created === false
+          ? '기존 규칙을 변경했습니다(같은 키워드)'
+          : '분류 규칙이 추가되었습니다'
+      )
       setMatchKey('')
       setCategoryId('')
       onChanged()
