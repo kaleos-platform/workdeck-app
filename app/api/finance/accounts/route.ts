@@ -32,8 +32,9 @@ export async function POST(req: NextRequest) {
   const spaceId = resolved.space.id
 
   const body = await req.json().catch(() => ({}))
-  const { name, kind, institution, accountNumber, accountType, openingBalance } = body as {
+  const { name, holder, kind, institution, accountNumber, accountType, openingBalance } = body as {
     name?: string
+    holder?: string
     kind?: string
     institution?: string
     accountNumber?: string
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest) {
       data: {
         spaceId,
         name: name.trim(),
+        holder: holder?.trim() || null,
         kind: kind as AccountKind,
         institution: institution.trim(),
         accountNumber: accountNumber?.trim() ?? null,

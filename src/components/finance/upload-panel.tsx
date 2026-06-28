@@ -74,6 +74,7 @@ type Account = {
   name: string
   kind: string
   institution: string | null
+  holder: string | null
   accountNumber: string | null
 }
 
@@ -597,6 +598,7 @@ export function FinanceUploadPanel() {
                 <InlineAccountForm
                   prefill={{
                     name: previewRes.institution ?? previewRes.preview.preamble.holder ?? '',
+                    holder: previewRes.preview.preamble.holder ?? '',
                     kind,
                     institution: previewRes.institution ?? '',
                     accountNumber: previewRes.preview.preamble.accountNumber ?? '',
@@ -707,7 +709,13 @@ export function FinanceUploadPanel() {
 
 type InlineAccountFormProps = {
   /** 업로드 파일 정보에서 추출한 초기값 */
-  prefill: { name: string; kind: FinKind; institution: string; accountNumber: string }
+  prefill: {
+    name: string
+    holder: string
+    kind: FinKind
+    institution: string
+    accountNumber: string
+  }
   onCancel: () => void
   /** 등록 성공 시 생성된 계좌를 부모로 전달(후보 목록 추가 + 자동 선택) */
   onCreated: (account: Account) => void
@@ -715,6 +723,7 @@ type InlineAccountFormProps = {
 
 function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormProps) {
   const [name, setName] = useState(prefill.name)
+  const [holder, setHolder] = useState(prefill.holder)
   const [accKind, setAccKind] = useState<FinKind>(prefill.kind)
   const [institution, setInstitution] = useState(prefill.institution)
   const [accountNumber, setAccountNumber] = useState(prefill.accountNumber)
@@ -734,6 +743,7 @@ function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormPr
 
     const payload = {
       name: name.trim(),
+      holder: holder.trim() || undefined,
       kind: accKind,
       institution: institution.trim(),
       accountNumber: accountNumber.trim() || undefined,
@@ -755,6 +765,7 @@ function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormPr
           name: string
           kind: string
           institution: string | null
+          holder: string | null
           accountNumber: string | null
         }
       }
@@ -765,6 +776,7 @@ function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormPr
         name: data.account.name,
         kind: data.account.kind,
         institution: data.account.institution,
+        holder: data.account.holder,
         accountNumber: data.account.accountNumber,
       })
     } catch (err) {
@@ -791,6 +803,17 @@ function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormPr
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="예: 기업은행 사업용"
+            className="h-8 text-sm"
+          />
+        </div>
+
+        {/* 종류 */}
+        <div className="col-span-2 space-y-1">
+          <Label className="text-xs">예금주</Label>
+          <Input
+            value={holder}
+            onChange={(e) => setHolder(e.target.value)}
+            placeholder="예: 주식회사 워크덱"
             className="h-8 text-sm"
           />
         </div>

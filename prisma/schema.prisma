@@ -2573,6 +2573,7 @@ model FinAccount {
   id             String         @id @default(cuid())
   spaceId        String
   name           String
+  holder         String? // 실제 계좌 예금주명
   kind           FinAccountKind
   institution    String // 은행·카드사명
   accountNumber  String? // 마스킹 가능
