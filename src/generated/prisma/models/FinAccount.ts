@@ -38,6 +38,7 @@ export type FinAccountMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
+  holder: string | null
   kind: $Enums.FinAccountKind | null
   institution: string | null
   accountNumber: string | null
@@ -51,6 +52,7 @@ export type FinAccountMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
+  holder: string | null
   kind: $Enums.FinAccountKind | null
   institution: string | null
   accountNumber: string | null
@@ -64,6 +66,7 @@ export type FinAccountCountAggregateOutputType = {
   id: number
   spaceId: number
   name: number
+  holder: number
   kind: number
   institution: number
   accountNumber: number
@@ -87,6 +90,7 @@ export type FinAccountMinAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  holder?: true
   kind?: true
   institution?: true
   accountNumber?: true
@@ -100,6 +104,7 @@ export type FinAccountMaxAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  holder?: true
   kind?: true
   institution?: true
   accountNumber?: true
@@ -113,6 +118,7 @@ export type FinAccountCountAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  holder?: true
   kind?: true
   institution?: true
   accountNumber?: true
@@ -213,6 +219,7 @@ export type FinAccountGroupByOutputType = {
   id: string
   spaceId: string
   name: string
+  holder: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber: string | null
@@ -249,6 +256,7 @@ export type FinAccountWhereInput = {
   id?: Prisma.StringFilter<"FinAccount"> | string
   spaceId?: Prisma.StringFilter<"FinAccount"> | string
   name?: Prisma.StringFilter<"FinAccount"> | string
+  holder?: Prisma.StringNullableFilter<"FinAccount"> | string | null
   kind?: Prisma.EnumFinAccountKindFilter<"FinAccount"> | $Enums.FinAccountKind
   institution?: Prisma.StringFilter<"FinAccount"> | string
   accountNumber?: Prisma.StringNullableFilter<"FinAccount"> | string | null
@@ -268,6 +276,7 @@ export type FinAccountOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  holder?: Prisma.SortOrderInput | Prisma.SortOrder
   kind?: Prisma.SortOrder
   institution?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -291,6 +300,7 @@ export type FinAccountWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.FinAccountWhereInput | Prisma.FinAccountWhereInput[]
   spaceId?: Prisma.StringFilter<"FinAccount"> | string
   name?: Prisma.StringFilter<"FinAccount"> | string
+  holder?: Prisma.StringNullableFilter<"FinAccount"> | string | null
   kind?: Prisma.EnumFinAccountKindFilter<"FinAccount"> | $Enums.FinAccountKind
   institution?: Prisma.StringFilter<"FinAccount"> | string
   accountNumber?: Prisma.StringNullableFilter<"FinAccount"> | string | null
@@ -310,6 +320,7 @@ export type FinAccountOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  holder?: Prisma.SortOrderInput | Prisma.SortOrder
   kind?: Prisma.SortOrder
   institution?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -331,6 +342,7 @@ export type FinAccountScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"FinAccount"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"FinAccount"> | string
   name?: Prisma.StringWithAggregatesFilter<"FinAccount"> | string
+  holder?: Prisma.StringNullableWithAggregatesFilter<"FinAccount"> | string | null
   kind?: Prisma.EnumFinAccountKindWithAggregatesFilter<"FinAccount"> | $Enums.FinAccountKind
   institution?: Prisma.StringWithAggregatesFilter<"FinAccount"> | string
   accountNumber?: Prisma.StringNullableWithAggregatesFilter<"FinAccount"> | string | null
@@ -343,6 +355,7 @@ export type FinAccountScalarWhereWithAggregatesInput = {
 export type FinAccountCreateInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -362,6 +375,7 @@ export type FinAccountUncheckedCreateInput = {
   id?: string
   spaceId: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -379,6 +393,7 @@ export type FinAccountUncheckedCreateInput = {
 export type FinAccountUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -398,6 +413,7 @@ export type FinAccountUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -416,6 +432,7 @@ export type FinAccountCreateManyInput = {
   id?: string
   spaceId: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -428,6 +445,7 @@ export type FinAccountCreateManyInput = {
 export type FinAccountUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -441,6 +459,7 @@ export type FinAccountUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -469,6 +488,7 @@ export type FinAccountCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  holder?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   institution?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
@@ -486,6 +506,7 @@ export type FinAccountMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  holder?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   institution?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
@@ -499,6 +520,7 @@ export type FinAccountMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  holder?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   institution?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
@@ -643,6 +665,7 @@ export type FinAccountUpdateOneRequiredWithoutBalanceSnapshotsNestedInput = {
 export type FinAccountCreateWithoutSpaceInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -660,6 +683,7 @@ export type FinAccountCreateWithoutSpaceInput = {
 export type FinAccountUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -707,6 +731,7 @@ export type FinAccountScalarWhereInput = {
   id?: Prisma.StringFilter<"FinAccount"> | string
   spaceId?: Prisma.StringFilter<"FinAccount"> | string
   name?: Prisma.StringFilter<"FinAccount"> | string
+  holder?: Prisma.StringNullableFilter<"FinAccount"> | string | null
   kind?: Prisma.EnumFinAccountKindFilter<"FinAccount"> | $Enums.FinAccountKind
   institution?: Prisma.StringFilter<"FinAccount"> | string
   accountNumber?: Prisma.StringNullableFilter<"FinAccount"> | string | null
@@ -719,6 +744,7 @@ export type FinAccountScalarWhereInput = {
 export type FinAccountCreateWithoutMappingPresetsInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -737,6 +763,7 @@ export type FinAccountUncheckedCreateWithoutMappingPresetsInput = {
   id?: string
   spaceId: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -769,6 +796,7 @@ export type FinAccountUpdateToOneWithWhereWithoutMappingPresetsInput = {
 export type FinAccountUpdateWithoutMappingPresetsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -787,6 +815,7 @@ export type FinAccountUncheckedUpdateWithoutMappingPresetsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -803,6 +832,7 @@ export type FinAccountUncheckedUpdateWithoutMappingPresetsInput = {
 export type FinAccountCreateWithoutImportsInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -821,6 +851,7 @@ export type FinAccountUncheckedCreateWithoutImportsInput = {
   id?: string
   spaceId: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -853,6 +884,7 @@ export type FinAccountUpdateToOneWithWhereWithoutImportsInput = {
 export type FinAccountUpdateWithoutImportsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -871,6 +903,7 @@ export type FinAccountUncheckedUpdateWithoutImportsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -887,6 +920,7 @@ export type FinAccountUncheckedUpdateWithoutImportsInput = {
 export type FinAccountCreateWithoutStagedRowsInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -905,6 +939,7 @@ export type FinAccountUncheckedCreateWithoutStagedRowsInput = {
   id?: string
   spaceId: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -937,6 +972,7 @@ export type FinAccountUpdateToOneWithWhereWithoutStagedRowsInput = {
 export type FinAccountUpdateWithoutStagedRowsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -955,6 +991,7 @@ export type FinAccountUncheckedUpdateWithoutStagedRowsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -971,6 +1008,7 @@ export type FinAccountUncheckedUpdateWithoutStagedRowsInput = {
 export type FinAccountCreateWithoutTransactionsInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -989,6 +1027,7 @@ export type FinAccountUncheckedCreateWithoutTransactionsInput = {
   id?: string
   spaceId: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -1021,6 +1060,7 @@ export type FinAccountUpdateToOneWithWhereWithoutTransactionsInput = {
 export type FinAccountUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1039,6 +1079,7 @@ export type FinAccountUncheckedUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1055,6 +1096,7 @@ export type FinAccountUncheckedUpdateWithoutTransactionsInput = {
 export type FinAccountCreateWithoutBalanceSnapshotsInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -1073,6 +1115,7 @@ export type FinAccountUncheckedCreateWithoutBalanceSnapshotsInput = {
   id?: string
   spaceId: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -1105,6 +1148,7 @@ export type FinAccountUpdateToOneWithWhereWithoutBalanceSnapshotsInput = {
 export type FinAccountUpdateWithoutBalanceSnapshotsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1123,6 +1167,7 @@ export type FinAccountUncheckedUpdateWithoutBalanceSnapshotsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1139,6 +1184,7 @@ export type FinAccountUncheckedUpdateWithoutBalanceSnapshotsInput = {
 export type FinAccountCreateManySpaceInput = {
   id?: string
   name: string
+  holder?: string | null
   kind: $Enums.FinAccountKind
   institution: string
   accountNumber?: string | null
@@ -1151,6 +1197,7 @@ export type FinAccountCreateManySpaceInput = {
 export type FinAccountUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1168,6 +1215,7 @@ export type FinAccountUpdateWithoutSpaceInput = {
 export type FinAccountUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1185,6 +1233,7 @@ export type FinAccountUncheckedUpdateWithoutSpaceInput = {
 export type FinAccountUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
   institution?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1265,6 +1314,7 @@ export type FinAccountSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  holder?: boolean
   kind?: boolean
   institution?: boolean
   accountNumber?: boolean
@@ -1285,6 +1335,7 @@ export type FinAccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  holder?: boolean
   kind?: boolean
   institution?: boolean
   accountNumber?: boolean
@@ -1299,6 +1350,7 @@ export type FinAccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  holder?: boolean
   kind?: boolean
   institution?: boolean
   accountNumber?: boolean
@@ -1313,6 +1365,7 @@ export type FinAccountSelectScalar = {
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  holder?: boolean
   kind?: boolean
   institution?: boolean
   accountNumber?: boolean
@@ -1322,7 +1375,7 @@ export type FinAccountSelectScalar = {
   updatedAt?: boolean
 }
 
-export type FinAccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "kind" | "institution" | "accountNumber" | "accountType" | "openingBalance" | "createdAt" | "updatedAt", ExtArgs["result"]["finAccount"]>
+export type FinAccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "holder" | "kind" | "institution" | "accountNumber" | "accountType" | "openingBalance" | "createdAt" | "updatedAt", ExtArgs["result"]["finAccount"]>
 export type FinAccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   imports?: boolean | Prisma.FinAccount$importsArgs<ExtArgs>
@@ -1353,6 +1406,7 @@ export type $FinAccountPayload<ExtArgs extends runtime.Types.Extensions.Internal
     id: string
     spaceId: string
     name: string
+    holder: string | null
     kind: $Enums.FinAccountKind
     institution: string
     accountNumber: string | null
@@ -1792,6 +1846,7 @@ export interface FinAccountFieldRefs {
   readonly id: Prisma.FieldRef<"FinAccount", 'String'>
   readonly spaceId: Prisma.FieldRef<"FinAccount", 'String'>
   readonly name: Prisma.FieldRef<"FinAccount", 'String'>
+  readonly holder: Prisma.FieldRef<"FinAccount", 'String'>
   readonly kind: Prisma.FieldRef<"FinAccount", 'FinAccountKind'>
   readonly institution: Prisma.FieldRef<"FinAccount", 'String'>
   readonly accountNumber: Prisma.FieldRef<"FinAccount", 'String'>

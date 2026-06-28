@@ -31,6 +31,7 @@ type AccountKind = 'BANK' | 'CARD'
 interface Account {
   id: string
   name: string
+  holder: string | null
   kind: AccountKind
   institution: string
   accountNumber: string | null
@@ -65,6 +66,7 @@ interface CategoryNode {
 function emptyAccountForm() {
   return {
     name: '',
+    holder: '',
     kind: 'BANK' as AccountKind,
     institution: '',
     accountNumber: '',
@@ -109,6 +111,7 @@ function AccountsSection() {
     setEditingId(acct.id)
     setForm({
       name: acct.name,
+      holder: acct.holder ?? '',
       kind: acct.kind,
       institution: acct.institution,
       accountNumber: acct.accountNumber ?? '',
@@ -136,6 +139,7 @@ function AccountsSection() {
 
     const payload = {
       name: form.name.trim(),
+      holder: form.holder.trim() || null,
       kind: form.kind,
       institution: form.institution.trim(),
       accountNumber: form.accountNumber.trim() || undefined,
@@ -231,6 +235,7 @@ function AccountsSection() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {acct.institution}
+                    {acct.holder && ` · 예금주 ${acct.holder}`}
                     {acct.accountNumber && ` · ${acct.accountNumber}`}
                     {acct.openingBalance !== null && ` · 기초 ${formatWon(acct.openingBalance)}`}
                   </p>
@@ -271,6 +276,16 @@ function AccountsSection() {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder="예: 기업은행 사업용"
+                  className="h-8 text-sm"
+                />
+              </div>
+              {/* 예금주 */}
+              <div className="col-span-2 space-y-1">
+                <Label className="text-xs">예금주</Label>
+                <Input
+                  value={form.holder}
+                  onChange={(e) => setForm((f) => ({ ...f, holder: e.target.value }))}
+                  placeholder="예: 주식회사 워크덱"
                   className="h-8 text-sm"
                 />
               </div>

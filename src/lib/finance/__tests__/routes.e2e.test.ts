@@ -35,6 +35,11 @@ import { autoMapFinHeaders } from '@/lib/finance/automap'
 import { NextRequest } from 'next/server'
 
 import { POST as commitStaging } from '../../../../app/api/finance/imports/commit-staging/route'
+import {
+  GET as accountsGet,
+  POST as accountsPost,
+} from '../../../../app/api/finance/accounts/route'
+import { PATCH as accountPatch } from '../../../../app/api/finance/accounts/[id]/route'
 import { GET as stagingGet } from '../../../../app/api/finance/staging/route'
 import { PATCH as stagingPatch } from '../../../../app/api/finance/staging/[id]/route'
 import { POST as stagingCommit } from '../../../../app/api/finance/staging/commit/route'
@@ -164,6 +169,53 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     })
     expect(cats).toBeGreaterThan(10)
     expect(rules).toBeGreaterThan(5)
+  })
+
+  test('accounts CRUD: 계좌 이름과 예금주를 별도 저장·조회·수정', async () => {
+    const createReq = new NextRequest('http://localhost/api/finance/accounts', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: '기업은행 운영 구분명',
+        holder: '주식회사 워크덱',
+        kind: 'BANK',
+        institution: '기업은행',
+        accountNumber: 'holder-e2e-001',
+      }),
+    })
+    const createRes = await call(accountsPost(createReq))
+    expect(createRes.status).toBe(201)
+    const created = await createRes.json()
+    expect(created.account.name).toBe('기업은행 운영 구분명')
+    expect(created.account.holder).toBe('주식회사 워크덱')
+
+    const updateReq = new NextRequest(
+      `http://localhost/api/finance/accounts/${created.account.id}`,
+      {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ holder: '워크덱컴퍼니' }),
+      }
+    )
+    const updateRes = await call(
+      accountPatch(updateReq, { params: Promise.resolve({ id: created.account.id }) })
+    )
+    expect(updateRes.status).toBe(200)
+    const updated = await updateRes.json()
+    expect(updated.account.name).toBe('기업은행 운영 구분명')
+    expect(updated.account.holder).toBe('워크덱컴퍼니')
+
+    const listRes = await call(accountsGet())
+    expect(listRes.status).toBe(200)
+    const list = await listRes.json()
+    expect(
+      list.accounts.some(
+        (account: { id: string; name: string; holder: string | null }) =>
+          account.id === created.account.id &&
+          account.name === '기업은행 운영 구분명' &&
+          account.holder === '워크덱컴퍼니'
+      )
+    ).toBe(true)
   })
 
   test('commit-staging: 실제 은행 파일 파싱 → 분류 → 스테이징 (신규)', async () => {

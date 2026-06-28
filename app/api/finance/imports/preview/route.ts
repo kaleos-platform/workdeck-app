@@ -53,7 +53,14 @@ export async function POST(req: NextRequest) {
 
   const accounts = await prisma.finAccount.findMany({
     where: { spaceId },
-    select: { id: true, name: true, kind: true, institution: true, accountNumber: true },
+    select: {
+      id: true,
+      name: true,
+      kind: true,
+      institution: true,
+      holder: true,
+      accountNumber: true,
+    },
     orderBy: { createdAt: 'asc' },
   })
 

@@ -9340,6 +9340,7 @@ export const FinAccountScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
+  holder: 'holder',
   kind: 'kind',
   institution: 'institution',
   accountNumber: 'accountNumber',
