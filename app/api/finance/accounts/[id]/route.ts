@@ -11,8 +11,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params
   const body = await req.json().catch(() => ({}))
-  const { name, institution, accountNumber, accountType, openingBalance } = body as {
+  const { name, holder, institution, accountNumber, accountType, openingBalance } = body as {
     name?: string
+    holder?: string | null
     institution?: string
     accountNumber?: string
     accountType?: string
@@ -45,6 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       where: { id },
       data: {
         ...(name !== undefined && { name: name.trim() }),
+        ...(holder !== undefined && { holder: holder?.trim() || null }),
         ...(institution !== undefined && { institution: institution.trim() }),
         ...(accountNumber !== undefined && { accountNumber: accountNumber?.trim() ?? null }),
         ...(accountType !== undefined && { accountType: accountType?.trim() ?? null }),
