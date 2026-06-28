@@ -46,7 +46,10 @@ export function CategoryCombobox({
   disabled,
 }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false)
+  // 라벨은 전체 옵션에서 해석(비활성 항목에 이미 분류된 거래의 표시 보존).
   const selectedLabel = comboOptionLabel(options, value)
+  // 목록은 비활성 항목을 숨겨 새 선택을 막되, 현재 선택값은 유지(라벨·체크 표시).
+  const visibleOptions = options.filter((o) => o.isActive !== false || o.id === value)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -72,7 +75,7 @@ export function CategoryCombobox({
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>일치하는 계정과목이 없습니다</CommandEmpty>
-            {options.map((opt) => (
+            {visibleOptions.map((opt) => (
               <CommandItem
                 key={opt.id}
                 value={opt.id}
@@ -81,12 +84,24 @@ export function CategoryCombobox({
                   onChange(opt.id)
                   setOpen(false)
                 }}
-                className={cn('text-xs', opt.indent && 'pl-5')}
+                className={cn(
+                  'text-xs',
+                  opt.indent && 'pl-5',
+                  opt.isActive === false && 'opacity-60'
+                )}
               >
                 {opt.indent && (
                   <CornerDownRight className="size-3 shrink-0 text-muted-foreground" />
                 )}
                 <span className="min-w-0 flex-1 truncate">{opt.label}</span>
+                {opt.isActive === false && (
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 px-1.5 text-[10px] text-muted-foreground"
+                  >
+                    비활성
+                  </Badge>
+                )}
                 {opt.hint && (
                   <span className="shrink-0 text-[10px] text-muted-foreground">({opt.hint})</span>
                 )}
