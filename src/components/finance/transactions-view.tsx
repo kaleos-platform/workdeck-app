@@ -801,6 +801,8 @@ function StagingBulkBar({
               placeholder="일괄 분류"
               triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
               disabled={busy}
+              groupByType
+              defaultType="INCOME"
             />
           </div>
           <Button
@@ -907,6 +909,7 @@ function StagingRow({
               categoryTree={categoryTree}
               reloadCategories={reloadCategories}
               onSelect={(categoryId) => onClassify(row.id, categoryId)}
+              direction={row.direction}
             />
             {/* 규칙 힌트 */}
             {row.matchedRuleId && row.category && (
@@ -1253,6 +1256,8 @@ function TransactionsBulkBar({
               placeholder="일괄 분류"
               triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
               disabled={busy}
+              groupByType
+              defaultType="INCOME"
             />
           </div>
           <Button
@@ -1343,6 +1348,7 @@ function TransactionRow({
             categoryTree={categoryTree}
             reloadCategories={reloadCategories}
             onSelect={(categoryId) => onClassify(txn.id, categoryId)}
+            direction={txn.direction}
           />
           {txn.matchedRuleId && txn.category && (
             <span className="text-[10px] text-muted-foreground">규칙</span>
@@ -1372,12 +1378,15 @@ function CategorySelect({
   categoryTree,
   reloadCategories,
   onSelect,
+  direction,
 }: {
   value: string | null
   options: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onSelect: (categoryId: string) => void
+  /** 금액 방향 — 드롭다운 기본 탭(IN→수익, OUT→비용)을 정해 빠르게 찾게 한다. */
+  direction: 'IN' | 'OUT'
 }) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -1412,6 +1421,8 @@ function CategorySelect({
         onChange={onSelect}
         triggerClassName="h-7 w-44 text-xs"
         onAddNew={() => setDialogOpen(true)}
+        groupByType
+        defaultType={direction === 'IN' ? 'INCOME' : 'EXPENSE'}
       />
       <AddCategoryDialog
         open={dialogOpen}
@@ -1445,12 +1456,11 @@ function SuggestCell({
 }) {
   const [aiSuggestion, setAiSuggestion] = useState<SuggestionData | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
-  const [dismissed, setDismissed] = useState(false)
 
-  // AI가 있으면 AI 우선, 없으면(무시 안 했고 룰 있으면) 룰 자동 표시.
+  // AI가 있으면 AI 우선, 없으면 룰 자동 표시. (AI 칩의 ✕는 setAiSuggestion(null)로 룰/버튼 복귀)
   const active: (SuggestionData & { source: SuggestSource }) | null = aiSuggestion
     ? { source: 'ai', ...aiSuggestion }
-    : !dismissed && ruleSuggestion
+    : ruleSuggestion
       ? { source: 'rule', ...ruleSuggestion }
       : null
 
@@ -1501,17 +1511,17 @@ function SuggestCell({
             {aiLoading ? '…' : 'AI'}
           </button>
         )}
-        <button
-          type="button"
-          className="text-[10px] text-muted-foreground hover:text-foreground"
-          onClick={() => {
-            setAiSuggestion(null)
-            setDismissed(true)
-          }}
-          aria-label="무시"
-        >
-          ✕
-        </button>
+        {/* AI 추천 칩만 닫기 노출 — AI 결과를 취소하고 룰 추천/‘AI 추천’ 버튼으로 복귀. */}
+        {isAi && (
+          <button
+            type="button"
+            className="text-[10px] text-muted-foreground hover:text-foreground"
+            onClick={() => setAiSuggestion(null)}
+            aria-label="AI 추천 취소"
+          >
+            ✕
+          </button>
+        )}
       </div>
     )
   }
