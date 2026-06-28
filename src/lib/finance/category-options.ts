@@ -22,6 +22,8 @@ export type ComboOption = {
   label: string
   /** 하위면 상위명(breadcrumb), 상위면 null */
   hint?: string | null
+  /** 루트 계정과목 타입(수익/비용/이체 탭 필터 키). 미지정=탭 미적용. */
+  type?: FinCategoryType
   /** 상위에 표시할 그룹(수익/비용/이체) 배지 */
   badge?: { label: string; className: string } | null
   /** 하위 들여쓰기 여부 */
@@ -56,7 +58,8 @@ export function buildClassifyOptions(
   const out: ComboOption[] = []
   for (const root of tree) {
     if (!allow.has(root.type as FinCategoryType)) continue
-    const badge = categoryTypeBadge(root.type as FinCategoryType)
+    const rootType = root.type as FinCategoryType
+    const badge = categoryTypeBadge(rootType)
     // 대분류/리프 구분은 자식 유무가 아니라 루트 타입으로 결정한다.
     // TRANSFER: lvl1이 곧 분류 대상(리프). INCOME/EXPENSE: lvl1은 그룹이라 하위 리프만 타깃이며,
     // 자식 없는 빈 대분류는 분류 타깃이 되어선 안 된다(리프에만 분류하는 모델).
@@ -68,6 +71,7 @@ export function buildClassifyOptions(
           id: lvl1.id,
           label: lvl1.name,
           hint: null,
+          type: rootType,
           badge: { label: badge.label, className: badge.className },
           indent: false,
           isActive: lvl1.isActive,
@@ -83,6 +87,7 @@ export function buildClassifyOptions(
             id: sub.id,
             label: sub.name,
             hint: lvl1.name,
+            type: rootType,
             badge: { label: badge.label, className: badge.className },
             indent: true,
             isActive: groupActive && sub.isActive !== false,
