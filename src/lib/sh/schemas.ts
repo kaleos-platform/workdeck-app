@@ -402,6 +402,12 @@ export const productionRunSchema = z.object({
       }
     }),
   costs: z.array(productionRunCostSchema).max(50).default([]),
+  // 세트 기반 차수(연동 위치 세트 계획에서 생성) — listing(=세트)별 계획 세트수량.
+  // items(옵션별)는 이 세트들의 분해 결과. 비-세트 차수는 미전달(undefined).
+  sets: z
+    .array(z.object({ listingId: z.string().min(1), plannedSetQty: z.number().int().min(0) }))
+    .max(200)
+    .optional(),
 })
 export type ProductionRunInput = z.infer<typeof productionRunSchema>
 
@@ -458,13 +464,24 @@ export const productionRunStatusTransitionSchema = z
         })
       )
       .optional(),
+    // 세트 단위 입고 — 세트(listing)별 입고 세트수 + 입고 위치. 서버가 구성옵션으로 분해해
+    // allocations 를 만든다. 세트 기반 차수 전용. 값이 있으면 allocations 대신 이 분해를 쓴다.
+    setStockIns: z
+      .array(
+        z.object({
+          listingId: z.string().min(1),
+          locationId: z.string().min(1),
+          setQty: z.number().int().positive(),
+        })
+      )
+      .optional(),
   })
   .superRefine((v, ctx) => {
-    // 입고완료 시 allocations 키 자체는 있어야 함(빈 배열 = 전 옵션 미입고, 허용)
-    if (v.status === 'STOCKED_IN' && v.allocations === undefined) {
+    // 입고완료 시 allocations 또는 setStockIns 중 하나는 있어야 함(빈 배열 = 전 옵션 미입고, 허용)
+    if (v.status === 'STOCKED_IN' && v.allocations === undefined && v.setStockIns === undefined) {
       ctx.addIssue({
         code: 'custom',
-        message: '입고완료 전환 시 옵션별 입고 정보가 필요합니다',
+        message: '입고완료 전환 시 옵션별 또는 세트별 입고 정보가 필요합니다',
         path: ['allocations'],
       })
     }

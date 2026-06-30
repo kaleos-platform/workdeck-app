@@ -309,6 +309,7 @@ export type ProductionRunWhereInput = {
   stockInLocation?: Prisma.XOR<Prisma.InvStorageLocationNullableScalarRelationFilter, Prisma.InvStorageLocationWhereInput> | null
   reorderPlan?: Prisma.XOR<Prisma.ReorderPlanNullableScalarRelationFilter, Prisma.ReorderPlanWhereInput> | null
   items?: Prisma.ProductionRunItemListRelationFilter
+  sets?: Prisma.ProductionRunSetListRelationFilter
   costs?: Prisma.ProductionRunCostListRelationFilter
 }
 
@@ -334,6 +335,7 @@ export type ProductionRunOrderByWithRelationInput = {
   stockInLocation?: Prisma.InvStorageLocationOrderByWithRelationInput
   reorderPlan?: Prisma.ReorderPlanOrderByWithRelationInput
   items?: Prisma.ProductionRunItemOrderByRelationAggregateInput
+  sets?: Prisma.ProductionRunSetOrderByRelationAggregateInput
   costs?: Prisma.ProductionRunCostOrderByRelationAggregateInput
 }
 
@@ -363,6 +365,7 @@ export type ProductionRunWhereUniqueInput = Prisma.AtLeast<{
   stockInLocation?: Prisma.XOR<Prisma.InvStorageLocationNullableScalarRelationFilter, Prisma.InvStorageLocationWhereInput> | null
   reorderPlan?: Prisma.XOR<Prisma.ReorderPlanNullableScalarRelationFilter, Prisma.ReorderPlanWhereInput> | null
   items?: Prisma.ProductionRunItemListRelationFilter
+  sets?: Prisma.ProductionRunSetListRelationFilter
   costs?: Prisma.ProductionRunCostListRelationFilter
 }, "id" | "spaceId_runNo">
 
@@ -430,6 +433,7 @@ export type ProductionRunCreateInput = {
   stockInLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutProductionRunStockInsInput
   reorderPlan?: Prisma.ReorderPlanCreateNestedOneWithoutProductionRunsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
 
@@ -451,6 +455,7 @@ export type ProductionRunUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostUncheckedCreateNestedManyWithoutRunInput
 }
 
@@ -472,6 +477,7 @@ export type ProductionRunUpdateInput = {
   stockInLocation?: Prisma.InvStorageLocationUpdateOneWithoutProductionRunStockInsNestedInput
   reorderPlan?: Prisma.ReorderPlanUpdateOneWithoutProductionRunsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
 
@@ -493,6 +499,7 @@ export type ProductionRunUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput
 }
 
@@ -782,6 +789,20 @@ export type ProductionRunUpdateOneRequiredWithoutItemsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProductionRunUpdateToOneWithWhereWithoutItemsInput, Prisma.ProductionRunUpdateWithoutItemsInput>, Prisma.ProductionRunUncheckedUpdateWithoutItemsInput>
 }
 
+export type ProductionRunCreateNestedOneWithoutSetsInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCreateWithoutSetsInput, Prisma.ProductionRunUncheckedCreateWithoutSetsInput>
+  connectOrCreate?: Prisma.ProductionRunCreateOrConnectWithoutSetsInput
+  connect?: Prisma.ProductionRunWhereUniqueInput
+}
+
+export type ProductionRunUpdateOneRequiredWithoutSetsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCreateWithoutSetsInput, Prisma.ProductionRunUncheckedCreateWithoutSetsInput>
+  connectOrCreate?: Prisma.ProductionRunCreateOrConnectWithoutSetsInput
+  upsert?: Prisma.ProductionRunUpsertWithoutSetsInput
+  connect?: Prisma.ProductionRunWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductionRunUpdateToOneWithWhereWithoutSetsInput, Prisma.ProductionRunUpdateWithoutSetsInput>, Prisma.ProductionRunUncheckedUpdateWithoutSetsInput>
+}
+
 export type ProductionRunCreateNestedOneWithoutCostsInput = {
   create?: Prisma.XOR<Prisma.ProductionRunCreateWithoutCostsInput, Prisma.ProductionRunUncheckedCreateWithoutCostsInput>
   connectOrCreate?: Prisma.ProductionRunCreateOrConnectWithoutCostsInput
@@ -855,6 +876,7 @@ export type ProductionRunCreateWithoutSpaceInput = {
   stockInLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutProductionRunStockInsInput
   reorderPlan?: Prisma.ReorderPlanCreateNestedOneWithoutProductionRunsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
 
@@ -875,6 +897,7 @@ export type ProductionRunUncheckedCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostUncheckedCreateNestedManyWithoutRunInput
 }
 
@@ -943,6 +966,7 @@ export type ProductionRunCreateWithoutStockInLocationInput = {
   brand?: Prisma.BrandCreateNestedOneWithoutProductionRunsInput
   reorderPlan?: Prisma.ReorderPlanCreateNestedOneWithoutProductionRunsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
 
@@ -963,6 +987,7 @@ export type ProductionRunUncheckedCreateWithoutStockInLocationInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostUncheckedCreateNestedManyWithoutRunInput
 }
 
@@ -1009,6 +1034,7 @@ export type ProductionRunCreateWithoutBrandInput = {
   stockInLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutProductionRunStockInsInput
   reorderPlan?: Prisma.ReorderPlanCreateNestedOneWithoutProductionRunsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
 
@@ -1029,6 +1055,7 @@ export type ProductionRunUncheckedCreateWithoutBrandInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostUncheckedCreateNestedManyWithoutRunInput
 }
 
@@ -1075,6 +1102,7 @@ export type ProductionRunCreateWithoutItemsInput = {
   brand?: Prisma.BrandCreateNestedOneWithoutProductionRunsInput
   stockInLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutProductionRunStockInsInput
   reorderPlan?: Prisma.ReorderPlanCreateNestedOneWithoutProductionRunsInput
+  sets?: Prisma.ProductionRunSetCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
 
@@ -1095,6 +1123,7 @@ export type ProductionRunUncheckedCreateWithoutItemsInput = {
   reorderPlanId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostUncheckedCreateNestedManyWithoutRunInput
 }
 
@@ -1131,6 +1160,7 @@ export type ProductionRunUpdateWithoutItemsInput = {
   brand?: Prisma.BrandUpdateOneWithoutProductionRunsNestedInput
   stockInLocation?: Prisma.InvStorageLocationUpdateOneWithoutProductionRunStockInsNestedInput
   reorderPlan?: Prisma.ReorderPlanUpdateOneWithoutProductionRunsNestedInput
+  sets?: Prisma.ProductionRunSetUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
 
@@ -1151,6 +1181,107 @@ export type ProductionRunUncheckedUpdateWithoutItemsInput = {
   reorderPlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutRunNestedInput
+  costs?: Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput
+}
+
+export type ProductionRunCreateWithoutSetsInput = {
+  id?: string
+  runNo: string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  orderedConfirmedAt?: Date | string | null
+  stockedInAt?: Date | string | null
+  status?: $Enums.ProductionRunStatus
+  totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: $Enums.ProductionCostMode
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutProductionRunsInput
+  brand?: Prisma.BrandCreateNestedOneWithoutProductionRunsInput
+  stockInLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutProductionRunStockInsInput
+  reorderPlan?: Prisma.ReorderPlanCreateNestedOneWithoutProductionRunsInput
+  items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
+  costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
+}
+
+export type ProductionRunUncheckedCreateWithoutSetsInput = {
+  id?: string
+  spaceId: string
+  brandId?: string | null
+  runNo: string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  orderedConfirmedAt?: Date | string | null
+  stockedInAt?: Date | string | null
+  stockInLocationId?: string | null
+  status?: $Enums.ProductionRunStatus
+  totalCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: $Enums.ProductionCostMode
+  memo?: string | null
+  reorderPlanId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutRunInput
+  costs?: Prisma.ProductionRunCostUncheckedCreateNestedManyWithoutRunInput
+}
+
+export type ProductionRunCreateOrConnectWithoutSetsInput = {
+  where: Prisma.ProductionRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductionRunCreateWithoutSetsInput, Prisma.ProductionRunUncheckedCreateWithoutSetsInput>
+}
+
+export type ProductionRunUpsertWithoutSetsInput = {
+  update: Prisma.XOR<Prisma.ProductionRunUpdateWithoutSetsInput, Prisma.ProductionRunUncheckedUpdateWithoutSetsInput>
+  create: Prisma.XOR<Prisma.ProductionRunCreateWithoutSetsInput, Prisma.ProductionRunUncheckedCreateWithoutSetsInput>
+  where?: Prisma.ProductionRunWhereInput
+}
+
+export type ProductionRunUpdateToOneWithWhereWithoutSetsInput = {
+  where?: Prisma.ProductionRunWhereInput
+  data: Prisma.XOR<Prisma.ProductionRunUpdateWithoutSetsInput, Prisma.ProductionRunUncheckedUpdateWithoutSetsInput>
+}
+
+export type ProductionRunUpdateWithoutSetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  runNo?: Prisma.StringFieldUpdateOperationsInput | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stockedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
+  totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutProductionRunsNestedInput
+  brand?: Prisma.BrandUpdateOneWithoutProductionRunsNestedInput
+  stockInLocation?: Prisma.InvStorageLocationUpdateOneWithoutProductionRunStockInsNestedInput
+  reorderPlan?: Prisma.ReorderPlanUpdateOneWithoutProductionRunsNestedInput
+  items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
+  costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
+}
+
+export type ProductionRunUncheckedUpdateWithoutSetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  runNo?: Prisma.StringFieldUpdateOperationsInput | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  orderedConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stockedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stockInLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumProductionRunStatusFieldUpdateOperationsInput | $Enums.ProductionRunStatus
+  totalCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costMode?: Prisma.EnumProductionCostModeFieldUpdateOperationsInput | $Enums.ProductionCostMode
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reorderPlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput
 }
 
@@ -1172,6 +1303,7 @@ export type ProductionRunCreateWithoutCostsInput = {
   stockInLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutProductionRunStockInsInput
   reorderPlan?: Prisma.ReorderPlanCreateNestedOneWithoutProductionRunsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetCreateNestedManyWithoutRunInput
 }
 
 export type ProductionRunUncheckedCreateWithoutCostsInput = {
@@ -1192,6 +1324,7 @@ export type ProductionRunUncheckedCreateWithoutCostsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutRunInput
 }
 
 export type ProductionRunCreateOrConnectWithoutCostsInput = {
@@ -1228,6 +1361,7 @@ export type ProductionRunUpdateWithoutCostsInput = {
   stockInLocation?: Prisma.InvStorageLocationUpdateOneWithoutProductionRunStockInsNestedInput
   reorderPlan?: Prisma.ReorderPlanUpdateOneWithoutProductionRunsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUpdateManyWithoutRunNestedInput
 }
 
 export type ProductionRunUncheckedUpdateWithoutCostsInput = {
@@ -1248,6 +1382,7 @@ export type ProductionRunUncheckedUpdateWithoutCostsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutRunNestedInput
 }
 
 export type ProductionRunCreateWithoutReorderPlanInput = {
@@ -1267,6 +1402,7 @@ export type ProductionRunCreateWithoutReorderPlanInput = {
   brand?: Prisma.BrandCreateNestedOneWithoutProductionRunsInput
   stockInLocation?: Prisma.InvStorageLocationCreateNestedOneWithoutProductionRunStockInsInput
   items?: Prisma.ProductionRunItemCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostCreateNestedManyWithoutRunInput
 }
 
@@ -1287,6 +1423,7 @@ export type ProductionRunUncheckedCreateWithoutReorderPlanInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ProductionRunItemUncheckedCreateNestedManyWithoutRunInput
+  sets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutRunInput
   costs?: Prisma.ProductionRunCostUncheckedCreateNestedManyWithoutRunInput
 }
 
@@ -1351,6 +1488,7 @@ export type ProductionRunUpdateWithoutSpaceInput = {
   stockInLocation?: Prisma.InvStorageLocationUpdateOneWithoutProductionRunStockInsNestedInput
   reorderPlan?: Prisma.ReorderPlanUpdateOneWithoutProductionRunsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
 
@@ -1371,6 +1509,7 @@ export type ProductionRunUncheckedUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput
 }
 
@@ -1427,6 +1566,7 @@ export type ProductionRunUpdateWithoutStockInLocationInput = {
   brand?: Prisma.BrandUpdateOneWithoutProductionRunsNestedInput
   reorderPlan?: Prisma.ReorderPlanUpdateOneWithoutProductionRunsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
 
@@ -1447,6 +1587,7 @@ export type ProductionRunUncheckedUpdateWithoutStockInLocationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput
 }
 
@@ -1503,6 +1644,7 @@ export type ProductionRunUpdateWithoutBrandInput = {
   stockInLocation?: Prisma.InvStorageLocationUpdateOneWithoutProductionRunStockInsNestedInput
   reorderPlan?: Prisma.ReorderPlanUpdateOneWithoutProductionRunsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
 
@@ -1523,6 +1665,7 @@ export type ProductionRunUncheckedUpdateWithoutBrandInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput
 }
 
@@ -1579,6 +1722,7 @@ export type ProductionRunUpdateWithoutReorderPlanInput = {
   brand?: Prisma.BrandUpdateOneWithoutProductionRunsNestedInput
   stockInLocation?: Prisma.InvStorageLocationUpdateOneWithoutProductionRunStockInsNestedInput
   items?: Prisma.ProductionRunItemUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUpdateManyWithoutRunNestedInput
 }
 
@@ -1599,6 +1743,7 @@ export type ProductionRunUncheckedUpdateWithoutReorderPlanInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ProductionRunItemUncheckedUpdateManyWithoutRunNestedInput
+  sets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutRunNestedInput
   costs?: Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunNestedInput
 }
 
@@ -1627,11 +1772,13 @@ export type ProductionRunUncheckedUpdateManyWithoutReorderPlanInput = {
 
 export type ProductionRunCountOutputType = {
   items: number
+  sets: number
   costs: number
 }
 
 export type ProductionRunCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | ProductionRunCountOutputTypeCountItemsArgs
+  sets?: boolean | ProductionRunCountOutputTypeCountSetsArgs
   costs?: boolean | ProductionRunCountOutputTypeCountCostsArgs
 }
 
@@ -1650,6 +1797,13 @@ export type ProductionRunCountOutputTypeDefaultArgs<ExtArgs extends runtime.Type
  */
 export type ProductionRunCountOutputTypeCountItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ProductionRunItemWhereInput
+}
+
+/**
+ * ProductionRunCountOutputType without action
+ */
+export type ProductionRunCountOutputTypeCountSetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductionRunSetWhereInput
 }
 
 /**
@@ -1682,6 +1836,7 @@ export type ProductionRunSelect<ExtArgs extends runtime.Types.Extensions.Interna
   stockInLocation?: boolean | Prisma.ProductionRun$stockInLocationArgs<ExtArgs>
   reorderPlan?: boolean | Prisma.ProductionRun$reorderPlanArgs<ExtArgs>
   items?: boolean | Prisma.ProductionRun$itemsArgs<ExtArgs>
+  sets?: boolean | Prisma.ProductionRun$setsArgs<ExtArgs>
   costs?: boolean | Prisma.ProductionRun$costsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductionRunCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productionRun"]>
@@ -1758,6 +1913,7 @@ export type ProductionRunInclude<ExtArgs extends runtime.Types.Extensions.Intern
   stockInLocation?: boolean | Prisma.ProductionRun$stockInLocationArgs<ExtArgs>
   reorderPlan?: boolean | Prisma.ProductionRun$reorderPlanArgs<ExtArgs>
   items?: boolean | Prisma.ProductionRun$itemsArgs<ExtArgs>
+  sets?: boolean | Prisma.ProductionRun$setsArgs<ExtArgs>
   costs?: boolean | Prisma.ProductionRun$costsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductionRunCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1782,6 +1938,7 @@ export type $ProductionRunPayload<ExtArgs extends runtime.Types.Extensions.Inter
     stockInLocation: Prisma.$InvStorageLocationPayload<ExtArgs> | null
     reorderPlan: Prisma.$ReorderPlanPayload<ExtArgs> | null
     items: Prisma.$ProductionRunItemPayload<ExtArgs>[]
+    sets: Prisma.$ProductionRunSetPayload<ExtArgs>[]
     costs: Prisma.$ProductionRunCostPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -2200,6 +2357,7 @@ export interface Prisma__ProductionRunClient<T, Null = never, ExtArgs extends ru
   stockInLocation<T extends Prisma.ProductionRun$stockInLocationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRun$stockInLocationArgs<ExtArgs>>): Prisma.Prisma__InvStorageLocationClient<runtime.Types.Result.GetResult<Prisma.$InvStorageLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reorderPlan<T extends Prisma.ProductionRun$reorderPlanArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRun$reorderPlanArgs<ExtArgs>>): Prisma.Prisma__ReorderPlanClient<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   items<T extends Prisma.ProductionRun$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRun$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  sets<T extends Prisma.ProductionRun$setsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRun$setsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   costs<T extends Prisma.ProductionRun$costsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRun$costsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunCostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2720,6 +2878,30 @@ export type ProductionRun$itemsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.ProductionRunItemScalarFieldEnum | Prisma.ProductionRunItemScalarFieldEnum[]
+}
+
+/**
+ * ProductionRun.sets
+ */
+export type ProductionRun$setsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductionRunSet
+   */
+  select?: Prisma.ProductionRunSetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProductionRunSet
+   */
+  omit?: Prisma.ProductionRunSetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductionRunSetInclude<ExtArgs> | null
+  where?: Prisma.ProductionRunSetWhereInput
+  orderBy?: Prisma.ProductionRunSetOrderByWithRelationInput | Prisma.ProductionRunSetOrderByWithRelationInput[]
+  cursor?: Prisma.ProductionRunSetWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductionRunSetScalarFieldEnum | Prisma.ProductionRunSetScalarFieldEnum[]
 }
 
 /**

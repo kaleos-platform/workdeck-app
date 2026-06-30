@@ -8,6 +8,7 @@ export type ReorderPlan = {
   id: string
   planNo: string
   productName: string | null // 상품 단위 계획명. null = 레거시 전체-계획
+  locationId: string | null // 연동 위치 세트 계획이면 non-null
   status: ReorderPlanStatus
   windowDays: number
   finalizedAt: string | null
@@ -20,6 +21,41 @@ export type ReorderPlan = {
   totalFinalQty: number
   memo: string | null
   createdAt: string
+}
+
+// 연동 위치 (GET /api/sh/inventory/locations 응답의 개별 항목)
+export type ReorderLocation = {
+  id: string
+  name: string
+  type: string
+  externalSource: string | null
+  isActive: boolean
+}
+
+// 세트 발주 계획의 구성 옵션 분해 항목
+export type ReorderPlanSetItem = {
+  optionId: string
+  optionName: string
+  perSet: number
+}
+
+// 세트 단위 발주 데이터 (GET /api/sh/inventory/reorder/plan/[id] 응답의 sets[])
+export type ReorderPlanSet = {
+  id: string
+  listingId: string
+  listingName: string
+  currentSetStock: number
+  suggestedSetQty: number
+  finalSetQty: number
+  items: ReorderPlanSetItem[]
+}
+
+// PATCH /api/sh/inventory/reorder/plan/[id]/sets/[setId] 응답
+export type SetPatchResponse = {
+  setId: string
+  finalSetQty: number
+  totalFinalQty: number
+  optionFinalQty: Record<string, number>
 }
 
 // 발주 계획에 연결된 생산차수 요약 (재고 흐름 — 신뢰도와 무관)
@@ -95,6 +131,7 @@ export type PlanDetailResponse = {
   productInfo: ProductInfo[]
   productionRuns?: ProductionRunSummary[]
   accuracies?: PlanDetailAccuracy[]
+  sets?: ReorderPlanSet[] // 연동 위치 세트 계획이면 non-null
 }
 
 export type ReorderPlanAccuracy = {

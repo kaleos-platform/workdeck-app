@@ -36,6 +36,14 @@ export async function POST(req: NextRequest, { params }: Params) {
           },
         },
       },
+      // 세트 기반 차수면 세트별 구성(listing 라이브 조인) — 세트 단위 입고 분해용
+      sets: {
+        select: {
+          id: true,
+          listingId: true,
+          listing: { select: { items: { select: { optionId: true, quantity: true } } } },
+        },
+      },
     },
   })
   if (!existing) return errorResponse('생산 발주를 찾을 수 없습니다', 404)
@@ -59,9 +67,38 @@ export async function POST(req: NextRequest, { params }: Params) {
   // STOCKED_IN 전환: 옵션별 보관 위치 분배 INBOUND + 상태 + 타임스탬프 + 실입고량 기록
   // 실입고량은 발주 수량과 달라도 됨(양방향). 미입고 옵션은 분배 부재로 표현(stockedInQty=0).
   if (input.status === 'STOCKED_IN') {
-    const allocations = input.allocations ?? []
     if (existing.items.length === 0) {
       return errorResponse('입고할 옵션이 없습니다', 400)
+    }
+
+    // 세트 단위 입고: setStockIns → 구성옵션 allocations 분해 (서버 권위 = ProductListingItem).
+    // 값이 있으면 allocations 보다 우선. setStockInByListing 은 ProductionRunSet.stockedInSetQty 기록용.
+    let allocations = input.allocations ?? []
+    const setStockInByListing = new Map<string, number>()
+    const isSetStockIn = !!(input.setStockIns && input.setStockIns.length > 0)
+    if (isSetStockIn) {
+      const setByListingId = new Map(existing.sets.map((s) => [s.listingId, s]))
+      const allocMap = new Map<string, { optionId: string; locationId: string; quantity: number }>()
+      for (const si of input.setStockIns!) {
+        const set = setByListingId.get(si.listingId)
+        if (!set) {
+          return errorResponse('차수에 없는 세트가 입고에 포함되어 있습니다', 400)
+        }
+        setStockInByListing.set(
+          si.listingId,
+          (setStockInByListing.get(si.listingId) ?? 0) + si.setQty
+        )
+        for (const it of set.listing.items) {
+          const qty = si.setQty * it.quantity
+          if (qty <= 0) continue
+          const key = `${it.optionId}|${si.locationId}`
+          const entry = allocMap.get(key)
+          if (entry) entry.quantity += qty
+          else
+            allocMap.set(key, { optionId: it.optionId, locationId: si.locationId, quantity: qty })
+        }
+      }
+      allocations = Array.from(allocMap.values())
     }
 
     // 비활성 옵션 사전 차단
@@ -126,7 +163,8 @@ export async function POST(req: NextRequest, { params }: Params) {
           quantity: a.quantity,
           movementDate: input.transitionDate,
           reason,
-          referenceId: existing.id,
+          // 옵션×위치별 granular 추적키 — 차수·위치별 입고 내역 후속 조회/집계용 (P3.5).
+          referenceId: `prodrun:${existing.id}:${a.optionId}:${a.locationId}`,
         })
         movementResults.push({
           optionId: a.optionId,
@@ -160,6 +198,15 @@ export async function POST(req: NextRequest, { params }: Params) {
           data: { stockedInQty: allocSumByOptionId.get(it.optionId) ?? 0 },
         })
       ),
+      // 세트 단위 입고면 세트별 실입고 세트수 기록 (입고 안 된 세트 = 0)
+      ...(isSetStockIn
+        ? existing.sets.map((s) =>
+            prisma.productionRunSet.update({
+              where: { id: s.id },
+              data: { stockedInSetQty: setStockInByListing.get(s.listingId) ?? 0 },
+            })
+          )
+        : []),
     ])
 
     return NextResponse.json({
@@ -182,6 +229,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       prisma.productionRunItem.updateMany({
         where: { runId },
         data: { stockedInQty: null },
+      }),
+      prisma.productionRunSet.updateMany({
+        where: { runId },
+        data: { stockedInSetQty: null },
       }),
     ])
   } else {

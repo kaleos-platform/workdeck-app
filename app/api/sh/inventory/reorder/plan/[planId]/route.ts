@@ -53,6 +53,26 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
         },
         orderBy: { createdAt: 'desc' },
       },
+      // 세트 모드(locationId)일 때만 존재 — 세트별 라인 + 구성(listing 라이브 조인)
+      sets: {
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          listingId: true,
+          listingName: true,
+          currentSetStock: true,
+          suggestedSetQty: true,
+          finalSetQty: true,
+          listing: {
+            select: {
+              items: {
+                orderBy: { sortOrder: 'asc' },
+                select: { optionId: true, quantity: true, option: { select: { name: true } } },
+              },
+            },
+          },
+        },
+      },
     },
   })
 
@@ -104,6 +124,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       id: plan.id,
       planNo: plan.planNo,
       productName: plan.product ? (plan.product.name ?? plan.product.internalName ?? null) : null,
+      locationId: plan.locationId,
       status: plan.status,
       windowDays: plan.windowDays,
       finalizedAt: plan.finalizedAt,
@@ -150,6 +171,20 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       status: r.status,
       brandId: r.brandId,
       createdAt: r.createdAt,
+    })),
+    // 세트 모드 라인 (locationId 계획에서만 비어있지 않음). 구성은 listing 라이브 조인.
+    sets: plan.sets.map((s) => ({
+      id: s.id,
+      listingId: s.listingId,
+      listingName: s.listingName,
+      currentSetStock: s.currentSetStock,
+      suggestedSetQty: s.suggestedSetQty,
+      finalSetQty: s.finalSetQty,
+      items: s.listing.items.map((it) => ({
+        optionId: it.optionId,
+        optionName: it.option.name,
+        perSet: it.quantity,
+      })),
     })),
   })
 }

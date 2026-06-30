@@ -1,9 +1,17 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { CheckIcon, PackageIcon, PencilIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react'
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PackageIcon,
+  PencilIcon,
+  RotateCcwIcon,
+  Trash2Icon,
+} from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -36,6 +44,8 @@ import type {
   PlanDetailResponse,
   ReorderPlan,
   ReorderPlanItem,
+  ReorderPlanSet,
+  SetPatchResponse,
   ProductInfo,
   ProductionRunSummary,
   PlanDetailAccuracy,
@@ -288,6 +298,44 @@ function ColdStartCell({
   )
 }
 
+// 세트 최종수량 인라인 편집 셀 (onBlur / Enter 저장)
+function SetFinalQtyCell({
+  set,
+  readonly,
+  onSaved,
+}: {
+  set: ReorderPlanSet
+  readonly: boolean
+  onSaved: (setId: string, finalSetQty: number) => void
+}) {
+  const [value, setValue] = useState(String(set.finalSetQty))
+
+  const commit = () => {
+    const n = Number(value)
+    if (!Number.isFinite(n) || n < 0) return
+    if (n === set.finalSetQty) return
+    onSaved(set.id, n)
+  }
+
+  if (readonly) {
+    return <span className="tabular-nums">{set.finalSetQty}</span>
+  }
+
+  return (
+    <Input
+      type="number"
+      min={0}
+      className="h-7 w-20 text-right tabular-nums"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') commit()
+      }}
+    />
+  )
+}
+
 // 인라인 메모 편집 셀 (팝오버 형태)
 function UserNoteCell({
   item,
@@ -361,6 +409,10 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     initialData?.productionRuns ?? []
   )
   const [accuracies, setAccuracies] = useState<PlanDetailAccuracy[]>(initialData?.accuracies ?? [])
+  // 연동 위치 세트 계획 (locationId non-null일 때만 유효)
+  const [sets, setSets] = useState<ReorderPlanSet[]>(initialData?.sets ?? [])
+  // 펼쳐진 세트 행 (setId Set)
+  const [expandedSets, setExpandedSets] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(!initialData)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
@@ -406,6 +458,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       setProductInfo(data.productInfo)
       setProductionRuns(data.productionRuns ?? [])
       setAccuracies(data.accuracies ?? [])
+      setSets(data.sets ?? [])
       void fetchSuggestions(data.items.map((it) => it.optionId))
     } catch (err) {
       console.error(err)
@@ -451,6 +504,56 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       setApplyingSuggestion(null)
     }
   }, [])
+
+  // ── 세트 계획 핸들러 (locationId non-null) ───────────────────────────────────
+
+  // optionId → finalQty 빠른 조회 맵 (세트 구성옵션 발주량 표시용)
+  const itemFinalQtyMap = useMemo(
+    () => new Map(items.map((it) => [it.optionId, it.finalQty])),
+    [items]
+  )
+
+  // PATCH sets/{setId} → 응답으로 sets + items 즉시 갱신
+  const handlePatchSet = useCallback(
+    async (setId: string, finalSetQty: number) => {
+      try {
+        const res = await fetch(`/api/sh/inventory/reorder/plan/${planId}/sets/${setId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ finalSetQty }),
+        })
+        if (!res.ok) throw new Error('저장 실패')
+        const data = (await res.json()) as SetPatchResponse
+        // 세트 최종수량 갱신
+        setSets((prev) =>
+          prev.map((s) => (s.id === setId ? { ...s, finalSetQty: data.finalSetQty } : s))
+        )
+        // 구성 옵션별 발주량 갱신 (서버가 재분해한 값 사용)
+        setItems((prev) =>
+          prev.map((it) => {
+            const qty = data.optionFinalQty[it.optionId]
+            return qty !== undefined ? { ...it, finalQty: qty } : it
+          })
+        )
+      } catch (err) {
+        console.error(err)
+        toast.error('세트 수량 수정에 실패했습니다')
+      }
+    },
+    [planId]
+  )
+
+  // 세트 행 펼침/접힘 토글
+  const toggleSetExpand = (setId: string) => {
+    setExpandedSets((prev) => {
+      const next = new Set(prev)
+      if (next.has(setId)) next.delete(setId)
+      else next.add(setId)
+      return next
+    })
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
 
   const optionMap = useMemo(() => buildOptionMap(productInfo), [productInfo])
   const brandName = productInfo[0]?.brandName ?? null
@@ -598,6 +701,17 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     [items, optionMap, productInfo, plan?.productName]
   )
 
+  // 세트 계획 연계 프리필 — 세트(listing)·최종 세트수량 (옵션 items 와 평행 전달)
+  const runPrefillSets = useMemo(
+    () =>
+      sets.map((s) => ({
+        listingId: s.listingId,
+        listingName: s.listingName,
+        plannedSetQty: s.finalSetQty,
+      })),
+    [sets]
+  )
+
   // 초안으로 — 확정 계획을 수정하기 위해 새 DRAFT revision 생성 후 이동
   const handleRevert = async () => {
     setReverting(true)
@@ -667,6 +781,11 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             )}
             {brandName && <span className="text-xs text-muted-foreground">({brandName})</span>}
             <StatusBadge status={plan.status} />
+            {plan.locationId && (
+              <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                세트 계획
+              </Badge>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             예측 창 {plan.windowDays}일 · 제안 합계{' '}
@@ -761,8 +880,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
       )}
 
-      {/* 콜드스타트 전체 적용 패널 — 데이터부족 옵션 있을 때만 (주 경로) */}
-      {!readonly && coldStartCount > 0 && (
+      {/* 콜드스타트 전체 적용 패널 — 상품 계획 + 데이터부족 옵션 있을 때만 (주 경로) */}
+      {!readonly && coldStartCount > 0 && !plan.locationId && (
         <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50/50 px-4 py-3">
           <p className="text-xs font-medium text-amber-800">
             초기 예측 보정 · 데이터부족 {coldStartCount}개
@@ -834,158 +953,247 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           </div>
         ))}
 
-      {/* 아이템 테이블 */}
-      <div className="overflow-x-auto rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>옵션</TableHead>
-              <TableHead className="text-right">재고</TableHead>
-              <TableHead className="text-right">예측 일판매</TableHead>
-              <TableHead>모델</TableHead>
-              <TableHead className="text-right">리드타임</TableHead>
-              <TableHead className="text-right">안전재고</TableHead>
-              <TableHead className="text-right">제안수량</TableHead>
-              <TableHead className="text-right">라운딩 제안</TableHead>
-              <TableHead className="text-right">최종수량</TableHead>
-              <TableHead>메모</TableHead>
-              <TableHead className="w-8">근거</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.length === 0 ? (
+      {/* ── 세트 테이블 (locationId non-null) ── */}
+      {plan.locationId ? (
+        <div className="overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={colCount}
-                  className="py-10 text-center text-sm text-muted-foreground"
-                >
-                  발주 항목이 없습니다
-                </TableCell>
+                <TableHead className="w-8"></TableHead>
+                <TableHead>세트명</TableHead>
+                <TableHead className="text-right">현재 세트재고</TableHead>
+                <TableHead className="text-right">제안 세트수량</TableHead>
+                <TableHead className="text-right">최종 세트수량</TableHead>
               </TableRow>
-            ) : (
-              items.map((item) => {
-                const opt = optionMap.get(item.optionId)
-                const cold = isColdStart(item)
-                const onHandStock =
-                  typeof item.inputsSnapshot?.onHandStock === 'number'
-                    ? item.inputsSnapshot.onHandStock
-                    : null
-                const incomingQty =
-                  typeof item.inputsSnapshot?.incomingQty === 'number'
-                    ? item.inputsSnapshot.incomingQty
-                    : null
+            </TableHeader>
+            <TableBody>
+              {sets.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="py-10 text-center text-sm text-muted-foreground"
+                  >
+                    세트 항목이 없습니다
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sets.map((set) => {
+                  const isExpanded = expandedSets.has(set.id)
+                  return (
+                    <Fragment key={set.id}>
+                      {/* 세트 행 */}
+                      <TableRow>
+                        <TableCell className="w-8 px-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleSetExpand(set.id)}
+                            className="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground"
+                            aria-label={isExpanded ? '접기' : '구성옵션 펼치기'}
+                          >
+                            {isExpanded ? (
+                              <ChevronDownIcon className="h-4 w-4" />
+                            ) : (
+                              <ChevronRightIcon className="h-4 w-4" />
+                            )}
+                          </button>
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">{set.listingName}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {QTY.format(set.currentSetStock)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {set.suggestedSetQty}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <SetFinalQtyCell
+                            key={`sfq-${set.id}-${set.finalSetQty}`}
+                            set={set}
+                            readonly={readonly}
+                            onSaved={handlePatchSet}
+                          />
+                        </TableCell>
+                      </TableRow>
+                      {/* 펼침: 구성옵션 분해 */}
+                      {isExpanded &&
+                        set.items.map((si) => {
+                          const finalQty = itemFinalQtyMap.get(si.optionId) ?? 0
+                          return (
+                            <TableRow key={`${set.id}-${si.optionId}`} className="bg-muted/20">
+                              <TableCell className="w-8"></TableCell>
+                              <TableCell className="pl-6 text-xs text-muted-foreground">
+                                {si.optionName}
+                                <span className="ml-1.5 text-[10px]">· 세트당 {si.perSet}개</span>
+                              </TableCell>
+                              <TableCell></TableCell>
+                              <TableCell></TableCell>
+                              <TableCell className="text-right text-xs tabular-nums">
+                                <span className="font-medium">{QTY.format(finalQty)}</span>
+                                <span className="ml-1 text-[10px] text-muted-foreground">개</span>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                    </Fragment>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        /* ── 상품 계획 아이템 테이블 (기존 동작 보존) ── */
+        <div className="overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>옵션</TableHead>
+                <TableHead className="text-right">재고</TableHead>
+                <TableHead className="text-right">예측 일판매</TableHead>
+                <TableHead>모델</TableHead>
+                <TableHead className="text-right">리드타임</TableHead>
+                <TableHead className="text-right">안전재고</TableHead>
+                <TableHead className="text-right">제안수량</TableHead>
+                <TableHead className="text-right">라운딩 제안</TableHead>
+                <TableHead className="text-right">최종수량</TableHead>
+                <TableHead>메모</TableHead>
+                <TableHead className="w-8">근거</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={colCount}
+                    className="py-10 text-center text-sm text-muted-foreground"
+                  >
+                    발주 항목이 없습니다
+                  </TableCell>
+                </TableRow>
+              ) : (
+                items.map((item) => {
+                  const opt = optionMap.get(item.optionId)
+                  const cold = isColdStart(item)
+                  const onHandStock =
+                    typeof item.inputsSnapshot?.onHandStock === 'number'
+                      ? item.inputsSnapshot.onHandStock
+                      : null
+                  const incomingQty =
+                    typeof item.inputsSnapshot?.incomingQty === 'number'
+                      ? item.inputsSnapshot.incomingQty
+                      : null
 
-                return (
-                  <TableRow key={item.id}>
-                    <TableCell className="text-sm">
-                      <div className="flex items-center gap-1.5">
-                        <span>{opt?.optionName ?? '-'}</span>
-                        {opt?.optionDeleted && (
-                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
-                            삭제됨
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="text-sm">
+                        <div className="flex items-center gap-1.5">
+                          <span>{opt?.optionName ?? '-'}</span>
+                          {opt?.optionDeleted && (
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                              삭제됨
+                            </Badge>
+                          )}
+                        </div>
+                        {cold && (
+                          <Badge
+                            variant="outline"
+                            className="mt-0.5 border-amber-200 bg-amber-50 text-[10px] text-amber-700"
+                          >
+                            데이터부족
                           </Badge>
                         )}
-                      </div>
-                      {cold && (
-                        <Badge
-                          variant="outline"
-                          className="mt-0.5 border-amber-200 bg-amber-50 text-[10px] text-amber-700"
-                        >
-                          데이터부족
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      <div className="font-medium">{QTY.format(item.currentStock)}</div>
-                      {onHandStock !== null && incomingQty !== null && (
-                        <div className="text-[11px] text-muted-foreground">
-                          현재 {QTY.format(onHandStock)} · 입고예정 {QTY.format(incomingQty)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        <div className="font-medium">{QTY.format(item.currentStock)}</div>
+                        {onHandStock !== null && incomingQty !== null && (
+                          <div className="text-[11px] text-muted-foreground">
+                            현재 {QTY.format(onHandStock)} · 입고예정 {QTY.format(incomingQty)}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {cold ? (
+                          <ColdStartCell
+                            key={`cs-${item.id}-${item.inputsSnapshot?.coldStartInterview?.targetDailySales ?? ''}-${item.inputsSnapshot?.coldStartInterview?.seasonFactor ?? ''}`}
+                            item={item}
+                            readonly={readonly}
+                            onApply={handleCellApply}
+                          />
+                        ) : (
+                          <span className="tabular-nums">{item.dailyAvgForecast.toFixed(2)}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <ModelBadge model={item.forecastModel} />
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground tabular-nums">
+                        {item.leadTimeDays}일
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span className="text-muted-foreground">{item.safetyStockQty}</span>
+                          {(() => {
+                            const sug = suggestions.get(item.optionId)
+                            if (
+                              !sug ||
+                              sug.insufficient ||
+                              sug.suggestedSafetyStock === null ||
+                              sug.suggestedSafetyStock === item.safetyStockQty
+                            ) {
+                              return null
+                            }
+                            return (
+                              <button
+                                type="button"
+                                disabled={applyingSuggestion === item.optionId}
+                                onClick={() =>
+                                  handleApplySuggestion(item.optionId, sug.suggestedSafetyStock!)
+                                }
+                                title={`예측오차 ${sug.sampleCount}건 기반 권장 (현재 ${item.safetyStockQty})`}
+                                className="inline-flex items-center gap-0.5 rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+                              >
+                                →{sug.suggestedSafetyStock} 적용
+                              </button>
+                            )
+                          })()}
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {cold ? (
-                        <ColdStartCell
-                          key={`cs-${item.id}-${item.inputsSnapshot?.coldStartInterview?.targetDailySales ?? ''}-${item.inputsSnapshot?.coldStartInterview?.seasonFactor ?? ''}`}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">{item.suggestedQty}</TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {item.roundedSuggestedQty}
+                        <span className="ml-1 text-[10px] text-muted-foreground">
+                          ({item.roundUnit}단위)
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <FinalQtyCell
+                          key={`fq-${item.id}-${item.finalQty}`}
                           item={item}
                           readonly={readonly}
-                          onApply={handleCellApply}
+                          onSaved={handleFinalQtySaved}
                         />
-                      ) : (
-                        <span className="tabular-nums">{item.dailyAvgForecast.toFixed(2)}</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <ModelBadge model={item.forecastModel} />
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {item.leadTimeDays}일
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <span className="text-muted-foreground">{item.safetyStockQty}</span>
-                        {(() => {
-                          const sug = suggestions.get(item.optionId)
-                          if (
-                            !sug ||
-                            sug.insufficient ||
-                            sug.suggestedSafetyStock === null ||
-                            sug.suggestedSafetyStock === item.safetyStockQty
-                          ) {
-                            return null
-                          }
-                          return (
-                            <button
-                              type="button"
-                              disabled={applyingSuggestion === item.optionId}
-                              onClick={() =>
-                                handleApplySuggestion(item.optionId, sug.suggestedSafetyStock!)
-                              }
-                              title={`예측오차 ${sug.sampleCount}건 기반 권장 (현재 ${item.safetyStockQty})`}
-                              className="inline-flex items-center gap-0.5 rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50"
-                            >
-                              →{sug.suggestedSafetyStock} 적용
-                            </button>
-                          )
-                        })()}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">{item.suggestedQty}</TableCell>
-                    <TableCell className="text-right font-medium tabular-nums">
-                      {item.roundedSuggestedQty}
-                      <span className="ml-1 text-[10px] text-muted-foreground">
-                        ({item.roundUnit}단위)
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <FinalQtyCell
-                        key={`fq-${item.id}-${item.finalQty}`}
-                        item={item}
-                        readonly={readonly}
-                        onSaved={handleFinalQtySaved}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <UserNoteCell
-                        key={`note-${item.id}-${item.userNote ?? ''}`}
-                        item={item}
-                        readonly={readonly}
-                        onSaved={handleNoteSaved}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <ReorderPlanRationalePopover
-                        item={item}
-                        accuracy={accuracyByOption.get(item.optionId)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                      </TableCell>
+                      <TableCell>
+                        <UserNoteCell
+                          key={`note-${item.id}-${item.userNote ?? ''}`}
+                          item={item}
+                          readonly={readonly}
+                          onSaved={handleNoteSaved}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <ReorderPlanRationalePopover
+                          item={item}
+                          accuracy={accuracyByOption.get(item.optionId)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {/* 확정 확인 다이얼로그 */}
       <Dialog open={finalizeOpen} onOpenChange={setFinalizeOpen}>
@@ -1020,6 +1228,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         }}
         runId={editRunId ?? undefined}
         prefillItems={editRunId ? undefined : runPrefillItems}
+        prefillSets={editRunId ? undefined : runPrefillSets}
         reorderPlanId={editRunId ? undefined : planId}
         onSaved={() => {
           setRunFormOpen(false)

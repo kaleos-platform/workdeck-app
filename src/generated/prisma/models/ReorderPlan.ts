@@ -46,6 +46,7 @@ export type ReorderPlanMinAggregateOutputType = {
   windowDays: number | null
   createdById: string | null
   productId: string | null
+  locationId: string | null
   finalizedAt: Date | null
   confirmedAt: Date | null
   totalSuggestedQty: number | null
@@ -66,6 +67,7 @@ export type ReorderPlanMaxAggregateOutputType = {
   windowDays: number | null
   createdById: string | null
   productId: string | null
+  locationId: string | null
   finalizedAt: Date | null
   confirmedAt: Date | null
   totalSuggestedQty: number | null
@@ -86,6 +88,7 @@ export type ReorderPlanCountAggregateOutputType = {
   windowDays: number
   createdById: number
   productId: number
+  locationId: number
   finalizedAt: number
   confirmedAt: number
   biasAdjustApplied: number
@@ -121,6 +124,7 @@ export type ReorderPlanMinAggregateInputType = {
   windowDays?: true
   createdById?: true
   productId?: true
+  locationId?: true
   finalizedAt?: true
   confirmedAt?: true
   totalSuggestedQty?: true
@@ -141,6 +145,7 @@ export type ReorderPlanMaxAggregateInputType = {
   windowDays?: true
   createdById?: true
   productId?: true
+  locationId?: true
   finalizedAt?: true
   confirmedAt?: true
   totalSuggestedQty?: true
@@ -161,6 +166,7 @@ export type ReorderPlanCountAggregateInputType = {
   windowDays?: true
   createdById?: true
   productId?: true
+  locationId?: true
   finalizedAt?: true
   confirmedAt?: true
   biasAdjustApplied?: true
@@ -269,6 +275,7 @@ export type ReorderPlanGroupByOutputType = {
   windowDays: number
   createdById: string
   productId: string | null
+  locationId: string | null
   finalizedAt: Date | null
   confirmedAt: Date | null
   biasAdjustApplied: runtime.JsonValue | null
@@ -313,6 +320,7 @@ export type ReorderPlanWhereInput = {
   windowDays?: Prisma.IntFilter<"ReorderPlan"> | number
   createdById?: Prisma.StringFilter<"ReorderPlan"> | string
   productId?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
+  locationId?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
   finalizedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   biasAdjustApplied?: Prisma.JsonNullableFilter<"ReorderPlan">
@@ -327,9 +335,11 @@ export type ReorderPlanWhereInput = {
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   product?: Prisma.XOR<Prisma.InvProductNullableScalarRelationFilter, Prisma.InvProductWhereInput> | null
+  location?: Prisma.XOR<Prisma.InvStorageLocationNullableScalarRelationFilter, Prisma.InvStorageLocationWhereInput> | null
   sourcePlan?: Prisma.XOR<Prisma.ReorderPlanNullableScalarRelationFilter, Prisma.ReorderPlanWhereInput> | null
   revisions?: Prisma.ReorderPlanListRelationFilter
   items?: Prisma.ReorderPlanItemListRelationFilter
+  sets?: Prisma.ReorderPlanSetListRelationFilter
   accuracies?: Prisma.ReorderPlanAccuracyListRelationFilter
   productionRuns?: Prisma.ProductionRunListRelationFilter
 }
@@ -342,6 +352,7 @@ export type ReorderPlanOrderByWithRelationInput = {
   windowDays?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   productId?: Prisma.SortOrderInput | Prisma.SortOrder
+  locationId?: Prisma.SortOrderInput | Prisma.SortOrder
   finalizedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   biasAdjustApplied?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -356,9 +367,11 @@ export type ReorderPlanOrderByWithRelationInput = {
   space?: Prisma.SpaceOrderByWithRelationInput
   createdBy?: Prisma.UserOrderByWithRelationInput
   product?: Prisma.InvProductOrderByWithRelationInput
+  location?: Prisma.InvStorageLocationOrderByWithRelationInput
   sourcePlan?: Prisma.ReorderPlanOrderByWithRelationInput
   revisions?: Prisma.ReorderPlanOrderByRelationAggregateInput
   items?: Prisma.ReorderPlanItemOrderByRelationAggregateInput
+  sets?: Prisma.ReorderPlanSetOrderByRelationAggregateInput
   accuracies?: Prisma.ReorderPlanAccuracyOrderByRelationAggregateInput
   productionRuns?: Prisma.ProductionRunOrderByRelationAggregateInput
 }
@@ -375,6 +388,7 @@ export type ReorderPlanWhereUniqueInput = Prisma.AtLeast<{
   windowDays?: Prisma.IntFilter<"ReorderPlan"> | number
   createdById?: Prisma.StringFilter<"ReorderPlan"> | string
   productId?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
+  locationId?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
   finalizedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   biasAdjustApplied?: Prisma.JsonNullableFilter<"ReorderPlan">
@@ -389,9 +403,11 @@ export type ReorderPlanWhereUniqueInput = Prisma.AtLeast<{
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   product?: Prisma.XOR<Prisma.InvProductNullableScalarRelationFilter, Prisma.InvProductWhereInput> | null
+  location?: Prisma.XOR<Prisma.InvStorageLocationNullableScalarRelationFilter, Prisma.InvStorageLocationWhereInput> | null
   sourcePlan?: Prisma.XOR<Prisma.ReorderPlanNullableScalarRelationFilter, Prisma.ReorderPlanWhereInput> | null
   revisions?: Prisma.ReorderPlanListRelationFilter
   items?: Prisma.ReorderPlanItemListRelationFilter
+  sets?: Prisma.ReorderPlanSetListRelationFilter
   accuracies?: Prisma.ReorderPlanAccuracyListRelationFilter
   productionRuns?: Prisma.ProductionRunListRelationFilter
 }, "id" | "spaceId_planNo">
@@ -404,6 +420,7 @@ export type ReorderPlanOrderByWithAggregationInput = {
   windowDays?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   productId?: Prisma.SortOrderInput | Prisma.SortOrder
+  locationId?: Prisma.SortOrderInput | Prisma.SortOrder
   finalizedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   biasAdjustApplied?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -433,6 +450,7 @@ export type ReorderPlanScalarWhereWithAggregatesInput = {
   windowDays?: Prisma.IntWithAggregatesFilter<"ReorderPlan"> | number
   createdById?: Prisma.StringWithAggregatesFilter<"ReorderPlan"> | string
   productId?: Prisma.StringNullableWithAggregatesFilter<"ReorderPlan"> | string | null
+  locationId?: Prisma.StringNullableWithAggregatesFilter<"ReorderPlan"> | string | null
   finalizedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReorderPlan"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReorderPlan"> | Date | string | null
   biasAdjustApplied?: Prisma.JsonNullableWithAggregatesFilter<"ReorderPlan">
@@ -464,9 +482,11 @@ export type ReorderPlanCreateInput = {
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
   sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
   revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
@@ -479,6 +499,7 @@ export type ReorderPlanUncheckedCreateInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -492,6 +513,7 @@ export type ReorderPlanUncheckedCreateInput = {
   updatedAt?: Date | string
   revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
@@ -514,9 +536,11 @@ export type ReorderPlanUpdateInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
   revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
@@ -529,6 +553,7 @@ export type ReorderPlanUncheckedUpdateInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -542,6 +567,7 @@ export type ReorderPlanUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
@@ -554,6 +580,7 @@ export type ReorderPlanCreateManyInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -592,6 +619,7 @@ export type ReorderPlanUncheckedUpdateManyInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -633,6 +661,7 @@ export type ReorderPlanCountOrderByAggregateInput = {
   windowDays?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  locationId?: Prisma.SortOrder
   finalizedAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   biasAdjustApplied?: Prisma.SortOrder
@@ -660,6 +689,7 @@ export type ReorderPlanMaxOrderByAggregateInput = {
   windowDays?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  locationId?: Prisma.SortOrder
   finalizedAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   totalSuggestedQty?: Prisma.SortOrder
@@ -680,6 +710,7 @@ export type ReorderPlanMinOrderByAggregateInput = {
   windowDays?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  locationId?: Prisma.SortOrder
   finalizedAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   totalSuggestedQty?: Prisma.SortOrder
@@ -829,6 +860,48 @@ export type ReorderPlanUncheckedUpdateManyWithoutProductNestedInput = {
   deleteMany?: Prisma.ReorderPlanScalarWhereInput | Prisma.ReorderPlanScalarWhereInput[]
 }
 
+export type ReorderPlanCreateNestedManyWithoutLocationInput = {
+  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutLocationInput, Prisma.ReorderPlanUncheckedCreateWithoutLocationInput> | Prisma.ReorderPlanCreateWithoutLocationInput[] | Prisma.ReorderPlanUncheckedCreateWithoutLocationInput[]
+  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutLocationInput | Prisma.ReorderPlanCreateOrConnectWithoutLocationInput[]
+  createMany?: Prisma.ReorderPlanCreateManyLocationInputEnvelope
+  connect?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+}
+
+export type ReorderPlanUncheckedCreateNestedManyWithoutLocationInput = {
+  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutLocationInput, Prisma.ReorderPlanUncheckedCreateWithoutLocationInput> | Prisma.ReorderPlanCreateWithoutLocationInput[] | Prisma.ReorderPlanUncheckedCreateWithoutLocationInput[]
+  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutLocationInput | Prisma.ReorderPlanCreateOrConnectWithoutLocationInput[]
+  createMany?: Prisma.ReorderPlanCreateManyLocationInputEnvelope
+  connect?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+}
+
+export type ReorderPlanUpdateManyWithoutLocationNestedInput = {
+  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutLocationInput, Prisma.ReorderPlanUncheckedCreateWithoutLocationInput> | Prisma.ReorderPlanCreateWithoutLocationInput[] | Prisma.ReorderPlanUncheckedCreateWithoutLocationInput[]
+  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutLocationInput | Prisma.ReorderPlanCreateOrConnectWithoutLocationInput[]
+  upsert?: Prisma.ReorderPlanUpsertWithWhereUniqueWithoutLocationInput | Prisma.ReorderPlanUpsertWithWhereUniqueWithoutLocationInput[]
+  createMany?: Prisma.ReorderPlanCreateManyLocationInputEnvelope
+  set?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+  disconnect?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+  delete?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+  connect?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+  update?: Prisma.ReorderPlanUpdateWithWhereUniqueWithoutLocationInput | Prisma.ReorderPlanUpdateWithWhereUniqueWithoutLocationInput[]
+  updateMany?: Prisma.ReorderPlanUpdateManyWithWhereWithoutLocationInput | Prisma.ReorderPlanUpdateManyWithWhereWithoutLocationInput[]
+  deleteMany?: Prisma.ReorderPlanScalarWhereInput | Prisma.ReorderPlanScalarWhereInput[]
+}
+
+export type ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput = {
+  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutLocationInput, Prisma.ReorderPlanUncheckedCreateWithoutLocationInput> | Prisma.ReorderPlanCreateWithoutLocationInput[] | Prisma.ReorderPlanUncheckedCreateWithoutLocationInput[]
+  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutLocationInput | Prisma.ReorderPlanCreateOrConnectWithoutLocationInput[]
+  upsert?: Prisma.ReorderPlanUpsertWithWhereUniqueWithoutLocationInput | Prisma.ReorderPlanUpsertWithWhereUniqueWithoutLocationInput[]
+  createMany?: Prisma.ReorderPlanCreateManyLocationInputEnvelope
+  set?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+  disconnect?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+  delete?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+  connect?: Prisma.ReorderPlanWhereUniqueInput | Prisma.ReorderPlanWhereUniqueInput[]
+  update?: Prisma.ReorderPlanUpdateWithWhereUniqueWithoutLocationInput | Prisma.ReorderPlanUpdateWithWhereUniqueWithoutLocationInput[]
+  updateMany?: Prisma.ReorderPlanUpdateManyWithWhereWithoutLocationInput | Prisma.ReorderPlanUpdateManyWithWhereWithoutLocationInput[]
+  deleteMany?: Prisma.ReorderPlanScalarWhereInput | Prisma.ReorderPlanScalarWhereInput[]
+}
+
 export type ReorderPlanCreateNestedOneWithoutProductionRunsInput = {
   create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutProductionRunsInput, Prisma.ReorderPlanUncheckedCreateWithoutProductionRunsInput>
   connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutProductionRunsInput
@@ -907,6 +980,20 @@ export type ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput = {
   deleteMany?: Prisma.ReorderPlanScalarWhereInput | Prisma.ReorderPlanScalarWhereInput[]
 }
 
+export type ReorderPlanCreateNestedOneWithoutSetsInput = {
+  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutSetsInput, Prisma.ReorderPlanUncheckedCreateWithoutSetsInput>
+  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutSetsInput
+  connect?: Prisma.ReorderPlanWhereUniqueInput
+}
+
+export type ReorderPlanUpdateOneRequiredWithoutSetsNestedInput = {
+  create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutSetsInput, Prisma.ReorderPlanUncheckedCreateWithoutSetsInput>
+  connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutSetsInput
+  upsert?: Prisma.ReorderPlanUpsertWithoutSetsInput
+  connect?: Prisma.ReorderPlanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReorderPlanUpdateToOneWithWhereWithoutSetsInput, Prisma.ReorderPlanUpdateWithoutSetsInput>, Prisma.ReorderPlanUncheckedUpdateWithoutSetsInput>
+}
+
 export type ReorderPlanCreateNestedOneWithoutItemsInput = {
   create?: Prisma.XOR<Prisma.ReorderPlanCreateWithoutItemsInput, Prisma.ReorderPlanUncheckedCreateWithoutItemsInput>
   connectOrCreate?: Prisma.ReorderPlanCreateOrConnectWithoutItemsInput
@@ -952,9 +1039,11 @@ export type ReorderPlanCreateWithoutCreatedByInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
   sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
   revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
@@ -966,6 +1055,7 @@ export type ReorderPlanUncheckedCreateWithoutCreatedByInput = {
   status?: $Enums.ReorderPlanStatus
   windowDays: number
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -979,6 +1069,7 @@ export type ReorderPlanUncheckedCreateWithoutCreatedByInput = {
   updatedAt?: Date | string
   revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
@@ -1020,6 +1111,7 @@ export type ReorderPlanScalarWhereInput = {
   windowDays?: Prisma.IntFilter<"ReorderPlan"> | number
   createdById?: Prisma.StringFilter<"ReorderPlan"> | string
   productId?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
+  locationId?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
   finalizedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   biasAdjustApplied?: Prisma.JsonNullableFilter<"ReorderPlan">
@@ -1050,9 +1142,11 @@ export type ReorderPlanCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
   sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
   revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
@@ -1064,6 +1158,7 @@ export type ReorderPlanUncheckedCreateWithoutSpaceInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1077,6 +1172,7 @@ export type ReorderPlanUncheckedCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
@@ -1124,9 +1220,11 @@ export type ReorderPlanCreateWithoutProductInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
   sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
   revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
@@ -1138,6 +1236,7 @@ export type ReorderPlanUncheckedCreateWithoutProductInput = {
   status?: $Enums.ReorderPlanStatus
   windowDays: number
   createdById: string
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1151,6 +1250,7 @@ export type ReorderPlanUncheckedCreateWithoutProductInput = {
   updatedAt?: Date | string
   revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
@@ -1181,7 +1281,7 @@ export type ReorderPlanUpdateManyWithWhereWithoutProductInput = {
   data: Prisma.XOR<Prisma.ReorderPlanUpdateManyMutationInput, Prisma.ReorderPlanUncheckedUpdateManyWithoutProductInput>
 }
 
-export type ReorderPlanCreateWithoutProductionRunsInput = {
+export type ReorderPlanCreateWithoutLocationInput = {
   id?: string
   planNo: string
   status?: $Enums.ReorderPlanStatus
@@ -1202,10 +1302,12 @@ export type ReorderPlanCreateWithoutProductionRunsInput = {
   sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
   revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
 
-export type ReorderPlanUncheckedCreateWithoutProductionRunsInput = {
+export type ReorderPlanUncheckedCreateWithoutLocationInput = {
   id?: string
   spaceId: string
   planNo: string
@@ -1226,6 +1328,86 @@ export type ReorderPlanUncheckedCreateWithoutProductionRunsInput = {
   updatedAt?: Date | string
   revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
+  accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
+}
+
+export type ReorderPlanCreateOrConnectWithoutLocationInput = {
+  where: Prisma.ReorderPlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReorderPlanCreateWithoutLocationInput, Prisma.ReorderPlanUncheckedCreateWithoutLocationInput>
+}
+
+export type ReorderPlanCreateManyLocationInputEnvelope = {
+  data: Prisma.ReorderPlanCreateManyLocationInput | Prisma.ReorderPlanCreateManyLocationInput[]
+  skipDuplicates?: boolean
+}
+
+export type ReorderPlanUpsertWithWhereUniqueWithoutLocationInput = {
+  where: Prisma.ReorderPlanWhereUniqueInput
+  update: Prisma.XOR<Prisma.ReorderPlanUpdateWithoutLocationInput, Prisma.ReorderPlanUncheckedUpdateWithoutLocationInput>
+  create: Prisma.XOR<Prisma.ReorderPlanCreateWithoutLocationInput, Prisma.ReorderPlanUncheckedCreateWithoutLocationInput>
+}
+
+export type ReorderPlanUpdateWithWhereUniqueWithoutLocationInput = {
+  where: Prisma.ReorderPlanWhereUniqueInput
+  data: Prisma.XOR<Prisma.ReorderPlanUpdateWithoutLocationInput, Prisma.ReorderPlanUncheckedUpdateWithoutLocationInput>
+}
+
+export type ReorderPlanUpdateManyWithWhereWithoutLocationInput = {
+  where: Prisma.ReorderPlanScalarWhereInput
+  data: Prisma.XOR<Prisma.ReorderPlanUpdateManyMutationInput, Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationInput>
+}
+
+export type ReorderPlanCreateWithoutProductionRunsInput = {
+  id?: string
+  planNo: string
+  status?: $Enums.ReorderPlanStatus
+  windowDays: number
+  finalizedAt?: Date | string | null
+  confirmedAt?: Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty: number
+  totalFinalQty: number
+  memo?: string | null
+  supersededAt?: Date | string | null
+  supersededByPlanId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
+  createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
+  product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
+  sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
+  revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
+  items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
+  accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
+}
+
+export type ReorderPlanUncheckedCreateWithoutProductionRunsInput = {
+  id?: string
+  spaceId: string
+  planNo: string
+  status?: $Enums.ReorderPlanStatus
+  windowDays: number
+  createdById: string
+  productId?: string | null
+  locationId?: string | null
+  finalizedAt?: Date | string | null
+  confirmedAt?: Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty: number
+  totalFinalQty: number
+  memo?: string | null
+  supersededAt?: Date | string | null
+  supersededByPlanId?: string | null
+  sourcePlanId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
+  items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
 }
 
@@ -1263,9 +1445,11 @@ export type ReorderPlanUpdateWithoutProductionRunsInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
   revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
 }
 
@@ -1277,6 +1461,7 @@ export type ReorderPlanUncheckedUpdateWithoutProductionRunsInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1290,6 +1475,7 @@ export type ReorderPlanUncheckedUpdateWithoutProductionRunsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
 }
 
@@ -1311,8 +1497,10 @@ export type ReorderPlanCreateWithoutRevisionsInput = {
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
   sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
@@ -1325,6 +1513,7 @@ export type ReorderPlanUncheckedCreateWithoutRevisionsInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1337,6 +1526,7 @@ export type ReorderPlanUncheckedCreateWithoutRevisionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
@@ -1364,8 +1554,10 @@ export type ReorderPlanCreateWithoutSourcePlanInput = {
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
   revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
@@ -1378,6 +1570,7 @@ export type ReorderPlanUncheckedCreateWithoutSourcePlanInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1390,6 +1583,7 @@ export type ReorderPlanUncheckedCreateWithoutSourcePlanInput = {
   updatedAt?: Date | string
   revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
@@ -1433,8 +1627,10 @@ export type ReorderPlanUpdateWithoutRevisionsInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1447,6 +1643,7 @@ export type ReorderPlanUncheckedUpdateWithoutRevisionsInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1459,6 +1656,7 @@ export type ReorderPlanUncheckedUpdateWithoutRevisionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1479,6 +1677,126 @@ export type ReorderPlanUpdateManyWithWhereWithoutSourcePlanInput = {
   data: Prisma.XOR<Prisma.ReorderPlanUpdateManyMutationInput, Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanInput>
 }
 
+export type ReorderPlanCreateWithoutSetsInput = {
+  id?: string
+  planNo: string
+  status?: $Enums.ReorderPlanStatus
+  windowDays: number
+  finalizedAt?: Date | string | null
+  confirmedAt?: Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty: number
+  totalFinalQty: number
+  memo?: string | null
+  supersededAt?: Date | string | null
+  supersededByPlanId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
+  createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
+  product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
+  sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
+  revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
+  items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
+}
+
+export type ReorderPlanUncheckedCreateWithoutSetsInput = {
+  id?: string
+  spaceId: string
+  planNo: string
+  status?: $Enums.ReorderPlanStatus
+  windowDays: number
+  createdById: string
+  productId?: string | null
+  locationId?: string | null
+  finalizedAt?: Date | string | null
+  confirmedAt?: Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty: number
+  totalFinalQty: number
+  memo?: string | null
+  supersededAt?: Date | string | null
+  supersededByPlanId?: string | null
+  sourcePlanId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
+  items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
+}
+
+export type ReorderPlanCreateOrConnectWithoutSetsInput = {
+  where: Prisma.ReorderPlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReorderPlanCreateWithoutSetsInput, Prisma.ReorderPlanUncheckedCreateWithoutSetsInput>
+}
+
+export type ReorderPlanUpsertWithoutSetsInput = {
+  update: Prisma.XOR<Prisma.ReorderPlanUpdateWithoutSetsInput, Prisma.ReorderPlanUncheckedUpdateWithoutSetsInput>
+  create: Prisma.XOR<Prisma.ReorderPlanCreateWithoutSetsInput, Prisma.ReorderPlanUncheckedCreateWithoutSetsInput>
+  where?: Prisma.ReorderPlanWhereInput
+}
+
+export type ReorderPlanUpdateToOneWithWhereWithoutSetsInput = {
+  where?: Prisma.ReorderPlanWhereInput
+  data: Prisma.XOR<Prisma.ReorderPlanUpdateWithoutSetsInput, Prisma.ReorderPlanUncheckedUpdateWithoutSetsInput>
+}
+
+export type ReorderPlanUpdateWithoutSetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  planNo?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
+  windowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
+  totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supersededAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supersededByPlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
+  createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
+  product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
+  sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
+  revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
+  items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
+}
+
+export type ReorderPlanUncheckedUpdateWithoutSetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  planNo?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
+  windowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
+  totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supersededAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supersededByPlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
+  items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
+}
+
 export type ReorderPlanCreateWithoutItemsInput = {
   id?: string
   planNo: string
@@ -1497,8 +1815,10 @@ export type ReorderPlanCreateWithoutItemsInput = {
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
   sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
   revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
@@ -1511,6 +1831,7 @@ export type ReorderPlanUncheckedCreateWithoutItemsInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1523,6 +1844,7 @@ export type ReorderPlanUncheckedCreateWithoutItemsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
@@ -1561,8 +1883,10 @@ export type ReorderPlanUpdateWithoutItemsInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
   revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1575,6 +1899,7 @@ export type ReorderPlanUncheckedUpdateWithoutItemsInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1587,6 +1912,7 @@ export type ReorderPlanUncheckedUpdateWithoutItemsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1609,9 +1935,11 @@ export type ReorderPlanCreateWithoutAccuraciesInput = {
   space: Prisma.SpaceCreateNestedOneWithoutReorderPlansInput
   createdBy: Prisma.UserCreateNestedOneWithoutReorderPlansInput
   product?: Prisma.InvProductCreateNestedOneWithoutReorderPlansInput
+  location?: Prisma.InvStorageLocationCreateNestedOneWithoutReorderPlansInput
   sourcePlan?: Prisma.ReorderPlanCreateNestedOneWithoutRevisionsInput
   revisions?: Prisma.ReorderPlanCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutReorderPlanInput
 }
 
@@ -1623,6 +1951,7 @@ export type ReorderPlanUncheckedCreateWithoutAccuraciesInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1636,6 +1965,7 @@ export type ReorderPlanUncheckedCreateWithoutAccuraciesInput = {
   updatedAt?: Date | string
   revisions?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSourcePlanInput
   items?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutPlanInput
+  sets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutPlanInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutReorderPlanInput
 }
 
@@ -1673,9 +2003,11 @@ export type ReorderPlanUpdateWithoutAccuraciesInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
   revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
 
@@ -1687,6 +2019,7 @@ export type ReorderPlanUncheckedUpdateWithoutAccuraciesInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1700,6 +2033,7 @@ export type ReorderPlanUncheckedUpdateWithoutAccuraciesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
 
@@ -1710,6 +2044,7 @@ export type ReorderPlanCreateManyCreatedByInput = {
   status?: $Enums.ReorderPlanStatus
   windowDays: number
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1740,9 +2075,11 @@ export type ReorderPlanUpdateWithoutCreatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
   revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1754,6 +2091,7 @@ export type ReorderPlanUncheckedUpdateWithoutCreatedByInput = {
   status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1767,6 +2105,7 @@ export type ReorderPlanUncheckedUpdateWithoutCreatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1778,6 +2117,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutCreatedByInput = {
   status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1798,6 +2138,7 @@ export type ReorderPlanCreateManySpaceInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1828,9 +2169,11 @@ export type ReorderPlanUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
   revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1842,6 +2185,7 @@ export type ReorderPlanUncheckedUpdateWithoutSpaceInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1855,6 +2199,7 @@ export type ReorderPlanUncheckedUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1866,6 +2211,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutSpaceInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1886,6 +2232,7 @@ export type ReorderPlanCreateManyProductInput = {
   status?: $Enums.ReorderPlanStatus
   windowDays: number
   createdById: string
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1916,9 +2263,11 @@ export type ReorderPlanUpdateWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
   revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1930,6 +2279,7 @@ export type ReorderPlanUncheckedUpdateWithoutProductInput = {
   status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1943,6 +2293,7 @@ export type ReorderPlanUncheckedUpdateWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
@@ -1954,6 +2305,101 @@ export type ReorderPlanUncheckedUpdateManyWithoutProductInput = {
   status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
+  totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supersededAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supersededByPlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ReorderPlanCreateManyLocationInput = {
+  id?: string
+  spaceId: string
+  planNo: string
+  status?: $Enums.ReorderPlanStatus
+  windowDays: number
+  createdById: string
+  productId?: string | null
+  finalizedAt?: Date | string | null
+  confirmedAt?: Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty: number
+  totalFinalQty: number
+  memo?: string | null
+  supersededAt?: Date | string | null
+  supersededByPlanId?: string | null
+  sourcePlanId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ReorderPlanUpdateWithoutLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  planNo?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
+  windowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
+  totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supersededAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supersededByPlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
+  createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
+  product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  sourcePlan?: Prisma.ReorderPlanUpdateOneWithoutRevisionsNestedInput
+  revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
+  items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
+  accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
+}
+
+export type ReorderPlanUncheckedUpdateWithoutLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  planNo?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
+  windowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
+  totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supersededAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supersededByPlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
+  items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
+  accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
+}
+
+export type ReorderPlanUncheckedUpdateManyWithoutLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  planNo?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReorderPlanStatusFieldUpdateOperationsInput | $Enums.ReorderPlanStatus
+  windowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1975,6 +2421,7 @@ export type ReorderPlanCreateManySourcePlanInput = {
   windowDays: number
   createdById: string
   productId?: string | null
+  locationId?: string | null
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2005,8 +2452,10 @@ export type ReorderPlanUpdateWithoutSourcePlanInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutReorderPlansNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutReorderPlansNestedInput
   product?: Prisma.InvProductUpdateOneWithoutReorderPlansNestedInput
+  location?: Prisma.InvStorageLocationUpdateOneWithoutReorderPlansNestedInput
   revisions?: Prisma.ReorderPlanUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutReorderPlanNestedInput
 }
@@ -2019,6 +2468,7 @@ export type ReorderPlanUncheckedUpdateWithoutSourcePlanInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2031,6 +2481,7 @@ export type ReorderPlanUncheckedUpdateWithoutSourcePlanInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revisions?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSourcePlanNestedInput
   items?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutPlanNestedInput
+  sets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutPlanNestedInput
   accuracies?: Prisma.ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutReorderPlanNestedInput
 }
@@ -2043,6 +2494,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutSourcePlanInput = {
   windowDays?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2063,6 +2515,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutSourcePlanInput = {
 export type ReorderPlanCountOutputType = {
   revisions: number
   items: number
+  sets: number
   accuracies: number
   productionRuns: number
 }
@@ -2070,6 +2523,7 @@ export type ReorderPlanCountOutputType = {
 export type ReorderPlanCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   revisions?: boolean | ReorderPlanCountOutputTypeCountRevisionsArgs
   items?: boolean | ReorderPlanCountOutputTypeCountItemsArgs
+  sets?: boolean | ReorderPlanCountOutputTypeCountSetsArgs
   accuracies?: boolean | ReorderPlanCountOutputTypeCountAccuraciesArgs
   productionRuns?: boolean | ReorderPlanCountOutputTypeCountProductionRunsArgs
 }
@@ -2101,6 +2555,13 @@ export type ReorderPlanCountOutputTypeCountItemsArgs<ExtArgs extends runtime.Typ
 /**
  * ReorderPlanCountOutputType without action
  */
+export type ReorderPlanCountOutputTypeCountSetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReorderPlanSetWhereInput
+}
+
+/**
+ * ReorderPlanCountOutputType without action
+ */
 export type ReorderPlanCountOutputTypeCountAccuraciesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ReorderPlanAccuracyWhereInput
 }
@@ -2121,6 +2582,7 @@ export type ReorderPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   windowDays?: boolean
   createdById?: boolean
   productId?: boolean
+  locationId?: boolean
   finalizedAt?: boolean
   confirmedAt?: boolean
   biasAdjustApplied?: boolean
@@ -2135,9 +2597,11 @@ export type ReorderPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ReorderPlan$productArgs<ExtArgs>
+  location?: boolean | Prisma.ReorderPlan$locationArgs<ExtArgs>
   sourcePlan?: boolean | Prisma.ReorderPlan$sourcePlanArgs<ExtArgs>
   revisions?: boolean | Prisma.ReorderPlan$revisionsArgs<ExtArgs>
   items?: boolean | Prisma.ReorderPlan$itemsArgs<ExtArgs>
+  sets?: boolean | Prisma.ReorderPlan$setsArgs<ExtArgs>
   accuracies?: boolean | Prisma.ReorderPlan$accuraciesArgs<ExtArgs>
   productionRuns?: boolean | Prisma.ReorderPlan$productionRunsArgs<ExtArgs>
   _count?: boolean | Prisma.ReorderPlanCountOutputTypeDefaultArgs<ExtArgs>
@@ -2151,6 +2615,7 @@ export type ReorderPlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   windowDays?: boolean
   createdById?: boolean
   productId?: boolean
+  locationId?: boolean
   finalizedAt?: boolean
   confirmedAt?: boolean
   biasAdjustApplied?: boolean
@@ -2165,6 +2630,7 @@ export type ReorderPlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ReorderPlan$productArgs<ExtArgs>
+  location?: boolean | Prisma.ReorderPlan$locationArgs<ExtArgs>
   sourcePlan?: boolean | Prisma.ReorderPlan$sourcePlanArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlan"]>
 
@@ -2176,6 +2642,7 @@ export type ReorderPlanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   windowDays?: boolean
   createdById?: boolean
   productId?: boolean
+  locationId?: boolean
   finalizedAt?: boolean
   confirmedAt?: boolean
   biasAdjustApplied?: boolean
@@ -2190,6 +2657,7 @@ export type ReorderPlanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ReorderPlan$productArgs<ExtArgs>
+  location?: boolean | Prisma.ReorderPlan$locationArgs<ExtArgs>
   sourcePlan?: boolean | Prisma.ReorderPlan$sourcePlanArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlan"]>
 
@@ -2201,6 +2669,7 @@ export type ReorderPlanSelectScalar = {
   windowDays?: boolean
   createdById?: boolean
   productId?: boolean
+  locationId?: boolean
   finalizedAt?: boolean
   confirmedAt?: boolean
   biasAdjustApplied?: boolean
@@ -2214,14 +2683,16 @@ export type ReorderPlanSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ReorderPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "planNo" | "status" | "windowDays" | "createdById" | "productId" | "finalizedAt" | "confirmedAt" | "biasAdjustApplied" | "totalSuggestedQty" | "totalFinalQty" | "memo" | "supersededAt" | "supersededByPlanId" | "sourcePlanId" | "createdAt" | "updatedAt", ExtArgs["result"]["reorderPlan"]>
+export type ReorderPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "planNo" | "status" | "windowDays" | "createdById" | "productId" | "locationId" | "finalizedAt" | "confirmedAt" | "biasAdjustApplied" | "totalSuggestedQty" | "totalFinalQty" | "memo" | "supersededAt" | "supersededByPlanId" | "sourcePlanId" | "createdAt" | "updatedAt", ExtArgs["result"]["reorderPlan"]>
 export type ReorderPlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ReorderPlan$productArgs<ExtArgs>
+  location?: boolean | Prisma.ReorderPlan$locationArgs<ExtArgs>
   sourcePlan?: boolean | Prisma.ReorderPlan$sourcePlanArgs<ExtArgs>
   revisions?: boolean | Prisma.ReorderPlan$revisionsArgs<ExtArgs>
   items?: boolean | Prisma.ReorderPlan$itemsArgs<ExtArgs>
+  sets?: boolean | Prisma.ReorderPlan$setsArgs<ExtArgs>
   accuracies?: boolean | Prisma.ReorderPlan$accuraciesArgs<ExtArgs>
   productionRuns?: boolean | Prisma.ReorderPlan$productionRunsArgs<ExtArgs>
   _count?: boolean | Prisma.ReorderPlanCountOutputTypeDefaultArgs<ExtArgs>
@@ -2230,12 +2701,14 @@ export type ReorderPlanIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ReorderPlan$productArgs<ExtArgs>
+  location?: boolean | Prisma.ReorderPlan$locationArgs<ExtArgs>
   sourcePlan?: boolean | Prisma.ReorderPlan$sourcePlanArgs<ExtArgs>
 }
 export type ReorderPlanIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ReorderPlan$productArgs<ExtArgs>
+  location?: boolean | Prisma.ReorderPlan$locationArgs<ExtArgs>
   sourcePlan?: boolean | Prisma.ReorderPlan$sourcePlanArgs<ExtArgs>
 }
 
@@ -2245,9 +2718,11 @@ export type $ReorderPlanPayload<ExtArgs extends runtime.Types.Extensions.Interna
     space: Prisma.$SpacePayload<ExtArgs>
     createdBy: Prisma.$UserPayload<ExtArgs>
     product: Prisma.$InvProductPayload<ExtArgs> | null
+    location: Prisma.$InvStorageLocationPayload<ExtArgs> | null
     sourcePlan: Prisma.$ReorderPlanPayload<ExtArgs> | null
     revisions: Prisma.$ReorderPlanPayload<ExtArgs>[]
     items: Prisma.$ReorderPlanItemPayload<ExtArgs>[]
+    sets: Prisma.$ReorderPlanSetPayload<ExtArgs>[]
     accuracies: Prisma.$ReorderPlanAccuracyPayload<ExtArgs>[]
     productionRuns: Prisma.$ProductionRunPayload<ExtArgs>[]
   }
@@ -2259,6 +2734,7 @@ export type $ReorderPlanPayload<ExtArgs extends runtime.Types.Extensions.Interna
     windowDays: number
     createdById: string
     productId: string | null
+    locationId: string | null
     finalizedAt: Date | null
     confirmedAt: Date | null
     biasAdjustApplied: runtime.JsonValue | null
@@ -2667,9 +3143,11 @@ export interface Prisma__ReorderPlanClient<T, Null = never, ExtArgs extends runt
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   createdBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   product<T extends Prisma.ReorderPlan$productArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$productArgs<ExtArgs>>): Prisma.Prisma__InvProductClient<runtime.Types.Result.GetResult<Prisma.$InvProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  location<T extends Prisma.ReorderPlan$locationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$locationArgs<ExtArgs>>): Prisma.Prisma__InvStorageLocationClient<runtime.Types.Result.GetResult<Prisma.$InvStorageLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   sourcePlan<T extends Prisma.ReorderPlan$sourcePlanArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$sourcePlanArgs<ExtArgs>>): Prisma.Prisma__ReorderPlanClient<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   revisions<T extends Prisma.ReorderPlan$revisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$revisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   items<T extends Prisma.ReorderPlan$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  sets<T extends Prisma.ReorderPlan$setsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$setsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accuracies<T extends Prisma.ReorderPlan$accuraciesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$accuraciesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanAccuracyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productionRuns<T extends Prisma.ReorderPlan$productionRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReorderPlan$productionRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2708,6 +3186,7 @@ export interface ReorderPlanFieldRefs {
   readonly windowDays: Prisma.FieldRef<"ReorderPlan", 'Int'>
   readonly createdById: Prisma.FieldRef<"ReorderPlan", 'String'>
   readonly productId: Prisma.FieldRef<"ReorderPlan", 'String'>
+  readonly locationId: Prisma.FieldRef<"ReorderPlan", 'String'>
   readonly finalizedAt: Prisma.FieldRef<"ReorderPlan", 'DateTime'>
   readonly confirmedAt: Prisma.FieldRef<"ReorderPlan", 'DateTime'>
   readonly biasAdjustApplied: Prisma.FieldRef<"ReorderPlan", 'Json'>
@@ -3134,6 +3613,25 @@ export type ReorderPlan$productArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 /**
+ * ReorderPlan.location
+ */
+export type ReorderPlan$locationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvStorageLocation
+   */
+  select?: Prisma.InvStorageLocationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvStorageLocation
+   */
+  omit?: Prisma.InvStorageLocationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvStorageLocationInclude<ExtArgs> | null
+  where?: Prisma.InvStorageLocationWhereInput
+}
+
+/**
  * ReorderPlan.sourcePlan
  */
 export type ReorderPlan$sourcePlanArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3198,6 +3696,30 @@ export type ReorderPlan$itemsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.ReorderPlanItemScalarFieldEnum | Prisma.ReorderPlanItemScalarFieldEnum[]
+}
+
+/**
+ * ReorderPlan.sets
+ */
+export type ReorderPlan$setsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReorderPlanSet
+   */
+  select?: Prisma.ReorderPlanSetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReorderPlanSet
+   */
+  omit?: Prisma.ReorderPlanSetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReorderPlanSetInclude<ExtArgs> | null
+  where?: Prisma.ReorderPlanSetWhereInput
+  orderBy?: Prisma.ReorderPlanSetOrderByWithRelationInput | Prisma.ReorderPlanSetOrderByWithRelationInput[]
+  cursor?: Prisma.ReorderPlanSetWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReorderPlanSetScalarFieldEnum | Prisma.ReorderPlanSetScalarFieldEnum[]
 }
 
 /**

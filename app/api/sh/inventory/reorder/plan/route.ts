@@ -20,6 +20,7 @@ import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
+import { decomposeSetsToOptions, suggestSetQty, computeSetAvailable } from '@/lib/sh/set-plan-calc'
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7
@@ -74,53 +75,147 @@ export async function POST(req: NextRequest) {
   const spaceId = resolved.space.id
   const userId = resolved.user.id
 
-  // 요청 바디 — 발주 계획은 상품 단위이므로 productId 필수.
-  // selectedOptionIds: 비었거나 미전달이면 전체 옵션, 있으면 해당 옵션만 계획.
-  let body: { productId?: string; memo?: string; optionIds?: string[] } = {}
+  // 요청 바디 — 두 모드:
+  //  (A) 상품 단위: { productId, optionIds? } — 기존 동작.
+  //  (B) 연동 위치 세트: { locationId } — 연동 위치(예: 쿠팡 로켓그로스)의 대표 채널 세트(ProductListing,
+  //      구성 2개+)를 구성옵션으로 분해해 발주 계획을 만든다. productId·locationId 동시 지정 금지.
+  let body: { productId?: string; locationId?: string; memo?: string; optionIds?: string[] } = {}
   try {
     body = await req.json()
   } catch {
-    // 파싱 실패 시 빈 바디 → 아래 productId 검증에서 차단
+    // 파싱 실패 시 빈 바디 → 아래 검증에서 차단
   }
 
-  if (!body.productId) {
-    return errorResponse('발주 계획은 상품 단위로 생성합니다. 상품을 선택해주세요.', 422)
+  if (!body.productId && !body.locationId) {
+    return errorResponse('발주 계획은 상품 또는 연동 위치 단위로 생성합니다.', 422)
+  }
+  if (body.productId && body.locationId) {
+    return errorResponse('상품과 연동 위치는 동시에 선택할 수 없습니다.', 422)
   }
 
-  const selectedOptionIds =
-    Array.isArray(body.optionIds) && body.optionIds.length > 0 ? body.optionIds : null
-
-  // ── 1) 상품/옵션 로드 (단일 상품) ──────────────────────────────────────────
-  const productWhere: Record<string, unknown> = {
-    spaceId,
-    status: 'ACTIVE',
-    id: body.productId,
+  type PlanProduct = {
+    id: string
+    brandId: string | null
+    reorderRoundUnit: number | null
+    options: { id: string; safetyStockQty: number }[]
+    reorderConfig: { leadTimeDays: number; analysisWindowDays: number } | null
+  }
+  // 세트 스펙 (연동 위치 모드에서만) — listing(=세트)별 구성(optionId×perSet)
+  type SetSpec = {
+    listingId: string
+    listingName: string
+    sortOrder: number
+    items: { optionId: string; perSet: number }[]
   }
 
-  const products = await prisma.invProduct.findMany({
-    where: productWhere,
-    select: {
-      id: true,
-      brandId: true,
-      reorderRoundUnit: true,
-      options: {
-        // 선택 옵션이 지정되면 productId 스코프 내에서 해당 옵션만 (외부 ID 방어)
-        ...(selectedOptionIds ? { where: { id: { in: selectedOptionIds } } } : {}),
-        select: { id: true, safetyStockQty: true },
+  let products: PlanProduct[] = []
+  let setSpecs: SetSpec[] | null = null
+  const planLocationId = body.locationId ?? null
+
+  if (body.productId) {
+    // ── (A) 상품 단위 ───────────────────────────────────────────────────────
+    const selectedOptionIds =
+      Array.isArray(body.optionIds) && body.optionIds.length > 0 ? body.optionIds : null
+
+    products = await prisma.invProduct.findMany({
+      where: { spaceId, status: 'ACTIVE', id: body.productId },
+      select: {
+        id: true,
+        brandId: true,
+        reorderRoundUnit: true,
+        options: {
+          ...(selectedOptionIds ? { where: { id: { in: selectedOptionIds } } } : {}),
+          select: { id: true, safetyStockQty: true },
+        },
+        reorderConfig: { select: { leadTimeDays: true, analysisWindowDays: true } },
       },
-      reorderConfig: {
-        select: { leadTimeDays: true, analysisWindowDays: true },
+    })
+
+    if (products.length === 0) {
+      return errorResponse('선택한 상품을 찾을 수 없습니다 (활성 상태가 아니거나 권한 없음)', 422)
+    }
+    if (selectedOptionIds && products.every((p) => p.options.length === 0)) {
+      return errorResponse('선택된 옵션이 없습니다', 422)
+    }
+  } else {
+    // ── (B) 연동 위치 세트 ──────────────────────────────────────────────────
+    // 연동 위치 → externalSource 페어링 채널 → 대표 채널 → 세트(ProductListing, 구성 2개+)
+    const location = await prisma.invStorageLocation.findFirst({
+      where: { id: planLocationId!, spaceId },
+      select: { id: true, externalSource: true },
+    })
+    if (!location || !location.externalSource) {
+      return errorResponse('연동 위치를 찾을 수 없습니다 (externalSource 미설정)', 422)
+    }
+    const fulfillmentChannel = await prisma.channel.findFirst({
+      where: { spaceId, externalSource: location.externalSource },
+      select: { representativeChannelId: true },
+    })
+    const reprChannelId = fulfillmentChannel?.representativeChannelId
+    if (!reprChannelId) {
+      return errorResponse('연동 위치에 대표 채널이 연결되어 있지 않습니다.', 422)
+    }
+    const listings = await prisma.productListing.findMany({
+      where: { spaceId, channelId: reprChannelId, status: 'ACTIVE' },
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        searchName: true,
+        managementName: true,
+        items: { select: { optionId: true, quantity: true }, orderBy: { sortOrder: 'asc' } },
       },
-    },
-  })
+    })
+    // 세트 = 구성 2개 이상 (단일 구성은 묶음 아님)
+    const setListings = listings.filter((l) => l.items.length > 1)
+    if (setListings.length === 0) {
+      return errorResponse('이 연동 위치의 대표 채널에 세트 상품(구성 2개 이상)이 없습니다.', 422)
+    }
+    setSpecs = setListings.map((l, idx) => ({
+      listingId: l.id,
+      listingName: l.managementName?.trim() || l.searchName,
+      sortOrder: idx,
+      items: l.items.map((it) => ({ optionId: it.optionId, perSet: it.quantity })),
+    }))
 
-  if (products.length === 0) {
-    return errorResponse('선택한 상품을 찾을 수 없습니다 (활성 상태가 아니거나 권한 없음)', 422)
-  }
-
-  // 선택 옵션이 지정됐는데 매칭 옵션이 0개 → 빈 계획 방지
-  if (selectedOptionIds && products.every((p) => p.options.length === 0)) {
-    return errorResponse('선택된 옵션이 없습니다', 422)
+    // 구성옵션 union → 옵션을 product 단위로 그룹핑(예측 설정 로드)
+    const compOptionIds = Array.from(
+      new Set(setSpecs.flatMap((s) => s.items.map((i) => i.optionId)))
+    )
+    const options = await prisma.invProductOption.findMany({
+      where: { id: { in: compOptionIds }, product: { spaceId } },
+      select: {
+        id: true,
+        safetyStockQty: true,
+        product: {
+          select: {
+            id: true,
+            brandId: true,
+            reorderRoundUnit: true,
+            reorderConfig: { select: { leadTimeDays: true, analysisWindowDays: true } },
+          },
+        },
+      },
+    })
+    const byProduct = new Map<string, PlanProduct>()
+    for (const o of options) {
+      const p = o.product
+      let entry = byProduct.get(p.id)
+      if (!entry) {
+        entry = {
+          id: p.id,
+          brandId: p.brandId,
+          reorderRoundUnit: p.reorderRoundUnit,
+          options: [],
+          reorderConfig: p.reorderConfig,
+        }
+        byProduct.set(p.id, entry)
+      }
+      entry.options.push({ id: o.id, safetyStockQty: o.safetyStockQty })
+    }
+    products = Array.from(byProduct.values())
+    if (products.length === 0) {
+      return errorResponse('세트 구성 옵션을 찾을 수 없습니다.', 422)
+    }
   }
 
   const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
@@ -278,6 +373,46 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ── 5.5) 세트 모드: 옵션 제안량 → 세트 제안량(병목) → finalSetQty 분해 → 옵션 finalQty 재정의 ──
+  // 옵션별 forecast suggestedQty(순발주 필요량)를 병목으로 묶어 세트 제안수량을 만들고,
+  // finalSetQty(기본=제안)를 다시 옵션으로 분해해 옵션 finalQty 를 세트-정합하게 맞춘다.
+  let planSetsData: Array<{
+    listingId: string
+    listingName: string
+    currentSetStock: number
+    suggestedSetQty: number
+    finalSetQty: number
+    sortOrder: number
+  }> | null = null
+  let optionFinalQtyOverride: Map<string, number> | null = null
+  if (setSpecs) {
+    const suggestedByOption = new Map<string, number>()
+    const onHandByOption = new Map<string, number>()
+    for (const it of itemInputs) {
+      suggestedByOption.set(it.optionId, it.suggestedQty)
+      onHandByOption.set(it.optionId, it.onHandStock)
+    }
+    planSetsData = setSpecs.map((s) => {
+      const suggestedSetQty = suggestSetQty(s.items, suggestedByOption)
+      const currentSetStock = computeSetAvailable(s.items, onHandByOption)
+      return {
+        listingId: s.listingId,
+        listingName: s.listingName,
+        currentSetStock,
+        suggestedSetQty,
+        finalSetQty: suggestedSetQty,
+        sortOrder: s.sortOrder,
+      }
+    })
+    optionFinalQtyOverride = decomposeSetsToOptions(
+      setSpecs.map((s) => ({
+        listingId: s.listingId,
+        setQty: planSetsData!.find((p) => p.listingId === s.listingId)!.finalSetQty,
+        items: s.items,
+      }))
+    )
+  }
+
   // ── 6) LLM rationale 생성 (concurrency 제한) ─────────────────────────────
   // 옵션 수가 많을 때 LLM 동시 호출이 rate limit을 유발하므로 5건씩 제한
   const rationaleResults = await mapWithConcurrency(itemInputs, LLM_CONCURRENCY, (item) =>
@@ -300,16 +435,22 @@ export async function POST(req: NextRequest) {
       biasAdjustApplied[item.optionId] = item.biasAdjustFactor
     }
 
+    // 세트 모드: finalQty = 분해값 → totalFinalQty 도 의미값. 상품 모드: 기존대로 0(편집 시 갱신).
+    const totalFinalQty = optionFinalQtyOverride
+      ? itemInputs.reduce((s, i) => s + (optionFinalQtyOverride!.get(i.optionId) ?? 0), 0)
+      : 0
+
     const plan = await tx.reorderPlan.create({
       data: {
         spaceId,
         planNo,
-        productId: body.productId,
+        productId: body.productId ?? null,
+        locationId: planLocationId,
         status: 'DRAFT',
         windowDays: DEFAULT_WINDOW_DAYS,
         createdById: userId,
         totalSuggestedQty,
-        totalFinalQty: 0,
+        totalFinalQty,
         memo: body.memo ?? null,
         biasAdjustApplied,
       },
@@ -328,7 +469,10 @@ export async function POST(req: NextRequest) {
         safetyStockQty: item.safetyStockQty,
         suggestedQty: item.suggestedQty,
         roundedSuggestedQty: item.roundedSuggestedQty,
-        finalQty: item.roundedSuggestedQty,
+        // 세트 모드: 옵션 finalQty = 세트 분해값(세트-정합). 상품 모드: 기존 forecast 제안값.
+        finalQty: optionFinalQtyOverride
+          ? (optionFinalQtyOverride.get(item.optionId) ?? 0)
+          : item.roundedSuggestedQty,
         roundUnit: item.roundUnit,
         rationale: rationaleResults[idx],
         biasAdjustFactor: item.biasAdjustFactor,
@@ -348,6 +492,21 @@ export async function POST(req: NextRequest) {
         ),
       })),
     })
+
+    // 세트 모드: 세트별 라인 저장 (옵션 items 는 위에서 분해 저장됨)
+    if (planSetsData) {
+      await tx.reorderPlanSet.createMany({
+        data: planSetsData.map((s) => ({
+          planId: plan.id,
+          listingId: s.listingId,
+          listingName: s.listingName,
+          currentSetStock: s.currentSetStock,
+          suggestedSetQty: s.suggestedSetQty,
+          finalSetQty: s.finalSetQty,
+          sortOrder: s.sortOrder,
+        })),
+      })
+    }
 
     return plan.id
   }
@@ -377,6 +536,7 @@ export async function POST(req: NextRequest) {
     select: {
       id: true,
       planNo: true,
+      locationId: true,
       items: {
         select: {
           id: true,
@@ -391,6 +551,17 @@ export async function POST(req: NextRequest) {
           confidenceScore: true,
         },
       },
+      sets: {
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          listingId: true,
+          listingName: true,
+          currentSetStock: true,
+          suggestedSetQty: true,
+          finalSetQty: true,
+        },
+      },
     },
   })
 
@@ -399,10 +570,12 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     planId: created.id,
     planNo: created.planNo,
+    locationId: created.locationId,
     items: created.items.map((item) => ({
       ...item,
       dailyAvgForecast: Number(item.dailyAvgForecast),
       confidenceScore: item.confidenceScore ? Number(item.confidenceScore) : null,
     })),
+    sets: created.sets,
   })
 }

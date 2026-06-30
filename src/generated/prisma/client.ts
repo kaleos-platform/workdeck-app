@@ -320,6 +320,11 @@ export type ProductionRun = Prisma.ProductionRunModel
  */
 export type ProductionRunItem = Prisma.ProductionRunItemModel
 /**
+ * Model ProductionRunSet
+ * 
+ */
+export type ProductionRunSet = Prisma.ProductionRunSetModel
+/**
  * Model ProductionRunCost
  * 
  */
@@ -479,6 +484,11 @@ export type ImprovementRule = Prisma.ImprovementRuleModel
  * 
  */
 export type ReorderPlan = Prisma.ReorderPlanModel
+/**
+ * Model ReorderPlanSet
+ * 
+ */
+export type ReorderPlanSet = Prisma.ReorderPlanSetModel
 /**
  * Model ReorderPlanItem
  * 
