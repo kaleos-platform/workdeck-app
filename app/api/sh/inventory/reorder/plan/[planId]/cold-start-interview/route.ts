@@ -41,6 +41,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pla
       id: true,
       spaceId: true,
       status: true,
+      locationId: true,
+      productId: true,
+      _count: { select: { sets: true } },
       items: {
         select: {
           id: true,
@@ -64,6 +67,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pla
   }
   if (plan.status !== 'DRAFT') {
     return errorResponse('DRAFT 상태의 계획만 수정할 수 있습니다', 409)
+  }
+  // 레이어드 발주는 콜드스타트 단일레이어 공식이 합산 finalQty를 덮어써 세트 기여를 잃으므로 차단.
+  const isLayered = plan.locationId == null && plan.productId != null && plan._count.sets > 0
+  if (isLayered) {
+    return errorResponse(
+      '레이어드 발주(연동 세트 + 직접 배송) 계획은 콜드스타트 인터뷰를 지원하지 않습니다. 세트 수량/옵션 수량을 직접 조정하세요.',
+      409
+    )
   }
 
   // COLD_START 아이템만 추출

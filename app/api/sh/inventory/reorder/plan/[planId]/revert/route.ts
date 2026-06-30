@@ -24,6 +24,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
     where: { id: planId },
     include: {
       items: true,
+      sets: true, // 세트(위치/레이어드) 계획의 세트 라인 — 새 DRAFT로 복사해 세트 편집 보존
     },
   })
 
@@ -49,6 +50,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
         windowDays: plan.windowDays,
         createdById: plan.createdById,
         productId: plan.productId,
+        locationId: plan.locationId, // 위치 세트/레이어드 계획의 대상 위치 보존 (누락 시 평이 상품 플랜으로 강등)
         sourcePlanId: plan.id,
         biasAdjustApplied: plan.biasAdjustApplied ?? undefined,
         totalSuggestedQty: plan.totalSuggestedQty,
@@ -72,6 +74,18 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
             biasAdjustFactor: it.biasAdjustFactor,
             confidenceScore: it.confidenceScore,
             inputsSnapshot: it.inputsSnapshot ?? {},
+            directGrossQty: it.directGrossQty, // 레이어드 직접 GROSS 보존 (세트 PATCH 재계산용)
+          })),
+        },
+        // 세트 라인 복사 — 없으면 revert 후 세트 레이어 소실(세트 편집 불가)
+        sets: {
+          create: plan.sets.map((s) => ({
+            listingId: s.listingId,
+            listingName: s.listingName,
+            currentSetStock: s.currentSetStock,
+            suggestedSetQty: s.suggestedSetQty,
+            finalSetQty: s.finalSetQty,
+            sortOrder: s.sortOrder,
           })),
         },
       },

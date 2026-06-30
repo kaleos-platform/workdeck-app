@@ -9,6 +9,7 @@ export type ReorderPlan = {
   planNo: string
   productName: string | null // 상품 단위 계획명. null = 레거시 전체-계획
   locationId: string | null // 연동 위치 세트 계획이면 non-null
+  isLayered?: boolean // 레이어드(상품 + 로켓 세트 + 직접 배송) 계획이면 true
   status: ReorderPlanStatus
   windowDays: number
   finalizedAt: string | null
@@ -85,6 +86,10 @@ export type ReorderPlanItem = {
   userNote: string | null
   biasAdjustFactor: number
   confidenceScore: number | null
+  // 레이어드 분해 표시용 (비레이어드 = null). rocketSetGross = 세트분 GROSS(세트 finalSetQty에서 파생),
+  // directGross = 직접 배송 레이어 GROSS. 최종 finalQty = max(0, ceil(rocketSetGross + directGross + safety − currentStock)).
+  rocketSetGross?: number | null
+  directGross?: number | null
   // JSON 스냅샷 — 구조는 번스타인이 확정 예정
   inputsSnapshot: {
     profile?: 'FAST' | 'INTERMITTENT' | 'COLD_START'

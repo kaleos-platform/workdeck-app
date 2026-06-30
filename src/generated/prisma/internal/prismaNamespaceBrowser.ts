@@ -1635,6 +1635,7 @@ export const ReorderPlanItemScalarFieldEnum = {
   biasAdjustFactor: 'biasAdjustFactor',
   confidenceScore: 'confidenceScore',
   inputsSnapshot: 'inputsSnapshot',
+  directGrossQty: 'directGrossQty',
   confirmedDailyAvgForecast: 'confirmedDailyAvgForecast',
   confirmedLeadTimeDays: 'confirmedLeadTimeDays',
   confirmedSafetyStockQty: 'confirmedSafetyStockQty',

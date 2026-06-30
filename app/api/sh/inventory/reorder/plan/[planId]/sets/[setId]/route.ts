@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { decomposeSetsToOptions } from '@/lib/sh/set-plan-calc'
+import { decomposeSetsToOptions, computeLayeredFinalQty } from '@/lib/sh/set-plan-calc'
 
 const PatchSetSchema = z.object({
   finalSetQty: z.number().int().min(0),
@@ -36,6 +36,8 @@ export async function PATCH(
       id: true,
       spaceId: true,
       status: true,
+      locationId: true,
+      productId: true,
       sets: {
         select: {
           id: true,
@@ -59,7 +61,11 @@ export async function PATCH(
     return errorResponse('세트 라인을 찾을 수 없습니다', 404)
   }
 
-  // 전체 세트(편집 반영) → 옵션별 finalQty 재분해
+  // 레이어드 = 상품 계획(locationId 없음)인데 세트 라인 보유. 세트 옵션은 단일차감 공식으로,
+  // 비세트(직접전용) 옵션은 세트 편집과 무관하므로 그대로 둔다(위치 세트 모드는 기존 순수분해).
+  const isLayered = plan.locationId == null && plan.productId != null && plan.sets.length > 0
+
+  // 전체 세트(편집 반영) → 옵션별 세트분 GROSS(= rocketSetGross)
   const decomposed = decomposeSetsToOptions(
     plan.sets.map((s) => ({
       listingId: s.id,
@@ -68,22 +74,62 @@ export async function PATCH(
     }))
   )
 
-  const updatedAt = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     await tx.reorderPlanSet.update({
       where: { id: setId },
       data: { finalSetQty: body.finalSetQty },
     })
 
-    // 이 계획의 모든 옵션 라인 finalQty 를 분해값으로 갱신 (세트 미포함 옵션은 0)
-    const items = await tx.reorderPlanItem.findMany({
-      where: { planId },
-      select: { id: true, optionId: true },
-    })
+    const optionFinalQty: Record<string, number> = {}
     let totalFinalQty = 0
-    for (const it of items) {
-      const qty = decomposed.get(it.optionId) ?? 0
-      totalFinalQty += qty
-      await tx.reorderPlanItem.update({ where: { id: it.id }, data: { finalQty: qty } })
+
+    if (!isLayered) {
+      // 위치 세트 모드 (기존) — 모든 옵션 finalQty = 분해값 (세트 미포함 옵션은 0)
+      const items = await tx.reorderPlanItem.findMany({
+        where: { planId },
+        select: { id: true, optionId: true },
+      })
+      for (const it of items) {
+        const qty = decomposed.get(it.optionId) ?? 0
+        optionFinalQty[it.optionId] = qty
+        totalFinalQty += qty
+        await tx.reorderPlanItem.update({ where: { id: it.id }, data: { finalQty: qty } })
+      }
+    } else {
+      // 레이어드 — 세트 옵션만 단일차감 재계산, 비세트 옵션은 그대로.
+      const setOptionIds = new Set(
+        plan.sets.flatMap((s) => s.listing.items.map((it) => it.optionId))
+      )
+      const items = await tx.reorderPlanItem.findMany({
+        where: { planId },
+        select: {
+          id: true,
+          optionId: true,
+          finalQty: true,
+          safetyStockQty: true,
+          currentStock: true,
+          directGrossQty: true,
+        },
+      })
+      for (const it of items) {
+        let qty: number
+        if (setOptionIds.has(it.optionId)) {
+          const rocketSetGross = decomposed.get(it.optionId) ?? 0
+          const dGross = it.directGrossQty != null ? Number(it.directGrossQty) : 0
+          qty = computeLayeredFinalQty({
+            rocketContribution: rocketSetGross,
+            directGross: dGross,
+            safetyStockQty: it.safetyStockQty,
+            currentStock: it.currentStock,
+          })
+          await tx.reorderPlanItem.update({ where: { id: it.id }, data: { finalQty: qty } })
+        } else {
+          // 직접전용 옵션 — 세트 편집과 무관, 변경 없음
+          qty = it.finalQty
+        }
+        optionFinalQty[it.optionId] = qty
+        totalFinalQty += qty
+      }
     }
 
     const updated = await tx.reorderPlan.update({
@@ -91,14 +137,14 @@ export async function PATCH(
       data: { totalFinalQty },
       select: { updatedAt: true },
     })
-    return { totalFinalQty, updatedAt: updated.updatedAt }
+    return { totalFinalQty, optionFinalQty, updatedAt: updated.updatedAt }
   })
 
   return NextResponse.json({
     setId,
     finalSetQty: body.finalSetQty,
-    totalFinalQty: updatedAt.totalFinalQty,
+    totalFinalQty: result.totalFinalQty,
     // 옵션별 갱신된 finalQty (UI 즉시 반영용)
-    optionFinalQty: Object.fromEntries(decomposed),
+    optionFinalQty: result.optionFinalQty,
   })
 }

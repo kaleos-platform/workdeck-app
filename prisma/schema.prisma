@@ -2509,6 +2509,11 @@ model ReorderPlanItem {
   confidenceScore  Decimal? @db.Decimal(6, 4) // 예측 신뢰도 (0~1, null = 미산출)
   inputsSnapshot   Json // 예측 재현 가능 입력값 스냅샷 (초안 생성 당시 입력)
 
+  // 레이어드 발주(연동 세트 + 직접 배송) 전용 — 직접 배송 레이어 GROSS(현재고·안전재고 차감 전, float).
+  // 세트 수량 PATCH 시 단일차감(safety−stock 1회)을 재적용하려면 직접 레이어 gross를 보관해야 함.
+  // null = 비레이어드(일반 상품/위치 세트) 플랜.
+  directGrossQty Decimal? @db.Decimal(18, 4)
+
   // "예측 검증 시작"(확정) 시점에 동결한 예측 스냅샷 — 신뢰도 측정의 단일 진실원.
   // null = 미확정. accuracy는 live 값이 아니라 이 동결값을 읽어야 사후 수정에 오염 안 됨.
   confirmedDailyAvgForecast Decimal?               @db.Decimal(18, 4)

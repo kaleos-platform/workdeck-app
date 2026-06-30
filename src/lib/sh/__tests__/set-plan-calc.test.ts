@@ -2,6 +2,7 @@ import {
   decomposeSetsToOptions,
   suggestSetQty,
   computeSetAvailable,
+  computeLayeredFinalQty,
   type SetItem,
 } from '@/lib/sh/set-plan-calc'
 
@@ -101,5 +102,68 @@ describe('computeSetAvailable', () => {
   test('재고 누락 옵션은 0으로 간주 → 가용 0', () => {
     const stock = new Map([['black', 10]])
     expect(computeSetAvailable(BW, stock)).toBe(0)
+  })
+})
+
+describe('computeLayeredFinalQty (레이어드 단일차감)', () => {
+  test('세트분 + 직접분 합산 후 현재고·안전재고 1회 차감', () => {
+    // 세트분 30 + 직접분 10 + 안전 5 − 재고 12 = 33
+    expect(
+      computeLayeredFinalQty({
+        rocketContribution: 30,
+        directGross: 10,
+        safetyStockQty: 5,
+        currentStock: 12,
+      })
+    ).toBe(33)
+  })
+
+  test('이중차감 회귀 — 현재고는 합산에 한 번만 차감된다', () => {
+    // 합산 GROSS = 70+30 = 100, 안전 0, 재고 60.
+    // 단일차감(정답): ceil(100 + 0 − 60) = 40.
+    // 만약 레이어별로 60씩 두 번 뺐다면: (70−60)+(30−60) = 10−30 = −20 → max(0)=0.
+    // 40 이어야 함(0 이 아니라).
+    expect(
+      computeLayeredFinalQty({
+        rocketContribution: 70,
+        directGross: 30,
+        safetyStockQty: 0,
+        currentStock: 60,
+      })
+    ).toBe(40)
+  })
+
+  test('직접전용 옵션 — 세트 기여 0, 직접분만으로 발주', () => {
+    expect(
+      computeLayeredFinalQty({
+        rocketContribution: 0,
+        directGross: 8.2,
+        safetyStockQty: 2,
+        currentStock: 3,
+      })
+    ).toBe(8) // ceil(0 + 8.2 + 2 − 3) = ceil(7.2) = 8
+  })
+
+  test('재고가 수요를 모두 덮으면 0 (음수 방지)', () => {
+    expect(
+      computeLayeredFinalQty({
+        rocketContribution: 20,
+        directGross: 5,
+        safetyStockQty: 0,
+        currentStock: 100,
+      })
+    ).toBe(0)
+  })
+
+  test('ceil 은 합산 후 1회만 (float 직접분)', () => {
+    // ceil(10 + 0.7 + 0 − 0) = ceil(10.7) = 11 (각 항 올림이 아니라 합산 후 올림)
+    expect(
+      computeLayeredFinalQty({
+        rocketContribution: 10,
+        directGross: 0.7,
+        safetyStockQty: 0,
+        currentStock: 0,
+      })
+    ).toBe(11)
   })
 })

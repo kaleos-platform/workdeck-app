@@ -58,3 +58,24 @@ export function computeSetAvailable(items: SetItem[], optionStock: Map<string, n
     items.map((it) => ({ quantity: it.perSet, optionStock: optionStock.get(it.optionId) ?? 0 }))
   )
 }
+
+/**
+ * 레이어드 발주(연동 세트 + 직접 배송) 옵션 최종 발주량.
+ *   finalQty = max(0, ceil(rocketContribution + directGross + safetyStockQty − currentStock))
+ * 이중차감 방지가 핵심: 로켓·직접 레이어는 각각 GROSS(현재고·안전재고 차감 전)만 넘기고,
+ * 옵션 재고는 두 채널이 공유하는 단일 풀이므로 `safety − currentStock` 차감을 **여기서 1회만** 한다.
+ *   - rocketContribution = 세트 포함 옵션이면 세트분 GROSS(Σ setQty×perSet), 아니면 raw 로켓 GROSS.
+ *   - directGross = 직접 배송 레이어 GROSS (float 허용 — ceil은 합산 후 1회).
+ * POST 생성과 PATCH(세트 수량 편집) 재계산이 같은 공식을 쓰도록 공유한다.
+ */
+export function computeLayeredFinalQty(p: {
+  rocketContribution: number
+  directGross: number
+  safetyStockQty: number
+  currentStock: number
+}): number {
+  return Math.max(
+    0,
+    Math.ceil(p.rocketContribution + p.directGross + p.safetyStockQty - p.currentStock)
+  )
+}

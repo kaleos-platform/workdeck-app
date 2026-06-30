@@ -767,6 +767,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const totalFinalQty = items.reduce((sum, it) => sum + it.finalQty, 0)
   // 컬럼 수: 옵션 + 현재고 + 예측 + 모델 + 리드 + 안전 + 제안 + 라운딩 + 최종 + 메모 + 근거
   const colCount = 11
+  // 레이어드 = 상품 계획 + 로켓 세트(연동) + 직접 배송. 세트표와 옵션(최종)표를 함께 보여준다.
+  const isLayered = plan.isLayered === true
 
   return (
     <div className="space-y-4">
@@ -784,6 +786,11 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             {plan.locationId && (
               <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
                 세트 계획
+              </Badge>
+            )}
+            {isLayered && (
+              <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">
+                레이어드 발주
               </Badge>
             )}
           </div>
@@ -880,8 +887,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
       )}
 
-      {/* 콜드스타트 전체 적용 패널 — 상품 계획 + 데이터부족 옵션 있을 때만 (주 경로) */}
-      {!readonly && coldStartCount > 0 && !plan.locationId && (
+      {/* 콜드스타트 전체 적용 패널 — 평이 상품 계획 + 데이터부족 옵션 있을 때만 (레이어드 제외) */}
+      {!readonly && coldStartCount > 0 && !plan.locationId && !isLayered && (
         <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50/50 px-4 py-3">
           <p className="text-xs font-medium text-amber-800">
             초기 예측 보정 · 데이터부족 {coldStartCount}개
@@ -953,8 +960,16 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           </div>
         ))}
 
-      {/* ── 세트 테이블 (locationId non-null) ── */}
-      {plan.locationId ? (
+      {/* ── 세트 테이블 — 위치 세트 계획(locationId) 또는 레이어드(연동 세트 레이어) ── */}
+      {isLayered && (
+        <p className="text-sm font-medium">
+          연동 세트 발주{' '}
+          <span className="text-xs font-normal text-muted-foreground">
+            · 로켓 수요 → 세트 병목 (GROSS, 현재고 차감 전)
+          </span>
+        </p>
+      )}
+      {(plan.locationId || isLayered) && (
         <div className="overflow-x-auto rounded-md border">
           <Table>
             <TableHeader>
@@ -1040,8 +1055,18 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             </TableBody>
           </Table>
         </div>
-      ) : (
-        /* ── 상품 계획 아이템 테이블 (기존 동작 보존) ── */
+      )}
+
+      {/* ── 상품/레이어드 최종 옵션 테이블 (locationId 없을 때) ── */}
+      {isLayered && (
+        <p className="text-sm font-medium">
+          최종 발주{' '}
+          <span className="text-xs font-normal text-muted-foreground">
+            · 세트분 + 직접분 합산 후 현재고·안전재고 1회 차감
+          </span>
+        </p>
+      )}
+      {!plan.locationId && (
         <div className="overflow-x-auto rounded-md border">
           <Table>
             <TableHeader>
@@ -1101,6 +1126,13 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                             데이터부족
                           </Badge>
                         )}
+                        {isLayered &&
+                          (item.rocketSetGross != null || item.directGross != null) && (
+                            <div className="mt-0.5 text-[10px] text-muted-foreground">
+                              세트분 {QTY.format(Math.round(item.rocketSetGross ?? 0))} · 직접분{' '}
+                              {QTY.format(Math.round(item.directGross ?? 0))}
+                            </div>
+                          )}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
                         <div className="font-medium">{QTY.format(item.currentStock)}</div>
@@ -1228,7 +1260,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         }}
         runId={editRunId ?? undefined}
         prefillItems={editRunId ? undefined : runPrefillItems}
-        prefillSets={editRunId ? undefined : runPrefillSets}
+        prefillSets={editRunId || isLayered ? undefined : runPrefillSets}
         reorderPlanId={editRunId ? undefined : planId}
         onSaved={() => {
           setRunFormOpen(false)

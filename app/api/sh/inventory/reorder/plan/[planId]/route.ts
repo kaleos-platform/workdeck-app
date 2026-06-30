@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { decomposeSetsToOptions } from '@/lib/sh/set-plan-calc'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ planId: string }> }) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -80,6 +81,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
     return errorResponse('발주 계획을 찾을 수 없습니다', 404)
   }
 
+  // 레이어드 = 상품 계획(locationId 없음)인데 세트 라인이 있음. 세트 finalSetQty → 옵션 세트분 GROSS 파생.
+  const isLayered = plan.locationId == null && plan.productId != null && plan.sets.length > 0
+  const rocketSetGrossMap = isLayered
+    ? decomposeSetsToOptions(
+        plan.sets.map((s) => ({
+          listingId: s.listingId,
+          setQty: s.finalSetQty,
+          items: s.listing.items.map((it) => ({ optionId: it.optionId, perSet: it.quantity })),
+        }))
+      )
+    : new Map<string, number>()
+
   // productInfo: 상품 단위로 그룹핑하여 옵션 배열 형태로 재구성
   const productInfoMap = new Map<
     string,
@@ -125,6 +138,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       planNo: plan.planNo,
       productName: plan.product ? (plan.product.name ?? plan.product.internalName ?? null) : null,
       locationId: plan.locationId,
+      isLayered,
       status: plan.status,
       windowDays: plan.windowDays,
       finalizedAt: plan.finalizedAt,
@@ -158,6 +172,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       biasAdjustFactor: Number(item.biasAdjustFactor),
       confidenceScore: item.confidenceScore ? Number(item.confidenceScore) : null,
       inputsSnapshot: item.inputsSnapshot,
+      // 레이어드 분해 표시용 — 세트분 GROSS(sets에서 파생) + 직접 GROSS(컬럼). 비레이어드 = null.
+      rocketSetGross: isLayered ? (rocketSetGrossMap.get(item.optionId) ?? 0) : null,
+      directGross: item.directGrossQty != null ? Number(item.directGrossQty) : null,
     })),
     productInfo: Array.from(productInfoMap.values()),
     accuracies: plan.accuracies.map((a) => ({

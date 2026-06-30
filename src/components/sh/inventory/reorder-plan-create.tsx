@@ -121,8 +121,9 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
       setPickerOpen(false)
     }
     if (newMode === 'product') {
-      setPicked(null)
-      setPickerOpen(true)
+      // 선택했던 상품은 보존 — 피커는 아직 선택 전일 때만 자동으로 연다.
+      // (연동 위치 탭 갔다가 상품 탭으로 돌아와도 선택 상품이 유지되도록)
+      if (!picked) setPickerOpen(true)
       setSelectedLocationId('')
     }
     setMode(newMode)
