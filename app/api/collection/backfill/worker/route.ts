@@ -62,6 +62,8 @@ export async function GET(request: NextRequest) {
       id: true,
       workspaceId: true,
       days: true,
+      startDate: true,
+      endDate: true,
       status: true,
       claimedAt: true,
       claimedBy: true,
