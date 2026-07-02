@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Layers,
+  Minus,
   Pencil,
   Plus,
   Search,
@@ -569,23 +570,54 @@ export function ProductMatchDialog({
                     {manualItems.map((m) => (
                       <li
                         key={m.optionId}
-                        className="flex items-center gap-2 rounded-sm bg-primary/5 px-2 py-1.5"
+                        className="flex items-center gap-2 rounded-sm border border-primary/20 bg-primary/10 px-2 py-1.5"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{m.productName}</p>
                           <p className="truncate text-xs text-muted-foreground">{m.optionName}</p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-                          <Input
-                            type="number"
-                            min={1}
-                            value={m.quantity}
-                            onChange={(e) =>
-                              updateManualQty(m.optionId, Number(e.target.value) || 1)
-                            }
-                            className="h-8 w-14 [appearance:textfield] text-center text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                            title="1 주문당 수량"
-                          />
+                          <div className="flex items-center rounded-md border bg-background">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-7 rounded-r-none"
+                              onClick={() =>
+                                updateManualQty(m.optionId, m.quantity - 1)
+                              }
+                              disabled={submitting || m.quantity <= 1}
+                              title="수량 감소"
+                              aria-label="수량 감소"
+                            >
+                              <Minus className="h-3.5 w-3.5" />
+                            </Button>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={m.quantity}
+                              onChange={(e) =>
+                                updateManualQty(m.optionId, Number(e.target.value) || 1)
+                              }
+                              className="h-8 w-10 rounded-none border-0 text-center text-xs shadow-none focus-visible:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                              title="1 주문당 수량"
+                              aria-label="1 주문당 수량"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-7 rounded-l-none"
+                              onClick={() =>
+                                updateManualQty(m.optionId, m.quantity + 1)
+                              }
+                              disabled={submitting}
+                              title="수량 증가"
+                              aria-label="수량 증가"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                           <span>장 × {orderQty}개 =</span>
                           <span className="font-medium text-foreground">
                             {m.quantity * orderQty}개
