@@ -221,3 +221,67 @@ describe('세트 중복 과다집계 회귀 (레이어드 옵션=raw 집계, 세
     expect(computeSetAvailable(FIVE, finalByOption)).toBe(20) // min(floor(60/3)=20, floor(40/2)=20)
   })
 })
+
+// ── 위치 세트 모드 과다집계 회귀 (옵션 중심 통일) ──────────────────────────────
+// 실데이터(의식주의 로켓그로스 캡나시-M) 구조: 같은 사이즈 화이트/블랙 옵션이 2장·3장(2종)·5장
+// 4개 리스팅에 부분 겹침으로 공유된다. 위치 모드도 각 리스팅을 옵션 net 수요 전량 커버로
+// suggestSetQty 사이징 후 decomposeSetsToOptions 합산하면 공유 옵션이 ×N 과다집계된다.
+// → 옵션 자체 net 수요를 최종수량으로 쓰고(세트 되먹임 없음) 세트는 읽기전용 역산 표시.
+describe('위치 세트 모드 과다집계 회귀 (옵션=자체 수요, 세트 재-사이징 합산 금지)', () => {
+  // 캡나시 M 사이즈 4개 리스팅 (실 구성 반영) — 모두 whiteM/blackM 공유
+  const P2: SetItem[] = [
+    { optionId: 'whiteM', perSet: 1 },
+    { optionId: 'blackM', perSet: 1 },
+  ] // 2장 세트
+  const P3a: SetItem[] = [
+    { optionId: 'whiteM', perSet: 2 },
+    { optionId: 'blackM', perSet: 1 },
+  ] // 3장 #3
+  const P3b: SetItem[] = [
+    { optionId: 'whiteM', perSet: 1 },
+    { optionId: 'blackM', perSet: 2 },
+  ] // 3장 #4
+  const P5: SetItem[] = [
+    { optionId: 'whiteM', perSet: 3 },
+    { optionId: 'blackM', perSet: 2 },
+  ] // 5장 세트
+  const CAP_M = [
+    { listingId: 'cap2', items: P2 },
+    { listingId: 'cap3a', items: P3a },
+    { listingId: 'cap3b', items: P3b },
+    { listingId: 'cap5', items: P5 },
+  ]
+  // 옵션 자체 net 수요(loadOptionDemand 집계) — 저재고 가정으로 비-0(라이브는 재고가 마스킹)
+  const net = new Map<string, number>([
+    ['whiteM', 78],
+    ['blackM', 78],
+  ])
+
+  test('구 방식(세트별 병목 사이징 → 분해합산)은 공유 옵션을 ×N 과다집계 (버그 재현)', () => {
+    const decomposed = decomposeSetsToOptions(
+      CAP_M.map((s) => ({ listingId: s.listingId, setQty: suggestSetQty(s.items, net), items: s.items }))
+    )
+    // 4개 리스팅이 각각 whiteM/blackM 78 을 독립 커버 → 분해합산이 78 을 ×5 이상 초과
+    expect(decomposed.get('whiteM')!).toBeGreaterThanOrEqual(78 * 5)
+    expect(decomposed.get('blackM')!).toBeGreaterThanOrEqual(78 * 4)
+  })
+
+  test('신 방식 — 옵션 자체 수요 합은 구 방식 분해합산보다 크게 작다 (인플레이션 제거)', () => {
+    // 구 방식: 4개 리스팅 각각 78 커버 → 분해합산
+    const old = decomposeSetsToOptions(
+      CAP_M.map((s) => ({ listingId: s.listingId, setQty: suggestSetQty(s.items, net), items: s.items }))
+    )
+    const oldTotal = (old.get('whiteM') ?? 0) + (old.get('blackM') ?? 0)
+    // 신 방식: 옵션 finalQty = 옵션 자체 net 수요(세트 재-사이징 합산 없음)
+    const newTotal = (net.get('whiteM') ?? 0) + (net.get('blackM') ?? 0)
+    expect(newTotal).toBe(156) // 78 + 78
+    expect(oldTotal).toBeGreaterThan(newTotal * 4) // 분해합산이 자체수요를 4배 넘게 초과
+  })
+
+  test('세트 표시값 = 옵션 발주수량의 역산(min floor) — 읽기전용 참고', () => {
+    // 옵션 발주 whiteM=78 blackM=78 → 각 세트가 구성 가능한 완성 세트 수
+    expect(computeSetAvailable(P2, net)).toBe(78) // min(78/1, 78/1)
+    expect(computeSetAvailable(P3a, net)).toBe(39) // min(floor(78/2)=39, 78/1)
+    expect(computeSetAvailable(P5, net)).toBe(26) // min(floor(78/3)=26, floor(78/2)=39)
+  })
+})

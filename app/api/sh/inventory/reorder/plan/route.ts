@@ -20,12 +20,7 @@ import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
-import {
-  decomposeSetsToOptions,
-  suggestSetQty,
-  computeSetAvailable,
-  computeLayeredFinalQty,
-} from '@/lib/sh/set-plan-calc'
+import { computeSetAvailable, computeLayeredFinalQty } from '@/lib/sh/set-plan-calc'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 
 const DEFAULT_WINDOW_DAYS = 90
@@ -436,9 +431,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 5.5) 세트 모드: 옵션 제안량 → 세트 제안량(병목) → finalSetQty 분해 → 옵션 finalQty 재정의 ──
-  // 옵션별 forecast suggestedQty(순발주 필요량)를 병목으로 묶어 세트 제안수량을 만들고,
-  // finalSetQty(기본=제안)를 다시 옵션으로 분해해 옵션 finalQty 를 세트-정합하게 맞춘다.
+  // ── 5.5) 세트 모드: 옵션 수요가 진실, 세트는 옵션 발주수량의 역산 표시(파생) ──
+  // 위치·레이어드 공통 — 옵션 자체 수요를 최종수량으로 쓰고, 세트는 그로 구성 가능한 완성
+  // 세트 수(min floor = computeSetAvailable)를 읽기전용으로 역산해 보여준다. 세트를 개별
+  // 리스팅마다 옵션 전량 커버로 사이징해 합산하면 중복/부분겹침 세트의 공유 옵션이 ×N 과다집계됨.
   let planSetsData: Array<{
     listingId: string
     listingName: string
@@ -453,32 +449,33 @@ export async function POST(req: NextRequest) {
   let rocketGrossByOption: Map<string, number> | null = null
 
   if (setSpecs && !isLayered) {
-    // ── 위치 세트 모드 (기존) — net suggestedQty를 병목으로 묶고 분해 ──
-    const suggestedByOption = new Map<string, number>()
+    // ── 위치 세트 모드 (옵션 중심 통일) — 옵션 자체 net 수요가 진실. 세트는 읽기전용 역산 표시. ──
+    // 로켓그로스 판매 granularity 는 옵션(단품) 단위(InvLocationProductMap 대부분 단일옵션)라
+    // loadOptionDemand 옵션 집계수요가 곧 진짜 생산 필요량이다. 구현은 각 세트 리스팅을 옵션 전량
+    // 커버로 suggestSetQty 사이징 후 decomposeSetsToOptions 합산해 공유 옵션을 ×N 과다집계했다
+    // (실증 캡나시 화이트/M 78→273). → 옵션 finalQty = 옵션 자체 net 수요(roundedSuggestedQty,
+    // 상품 모드와 동일·단일 차감). 세트는 옵션 발주수량의 역산(min floor)일 뿐 되먹이지 않는다.
     const onHandByOption = new Map<string, number>()
+    for (const it of itemInputs) onHandByOption.set(it.optionId, it.onHandStock)
+
+    optionFinalQtyOverride = new Map<string, number>()
     for (const it of itemInputs) {
-      suggestedByOption.set(it.optionId, it.suggestedQty)
-      onHandByOption.set(it.optionId, it.onHandStock)
+      optionFinalQtyOverride.set(it.optionId, it.roundedSuggestedQty)
     }
+
+    // 세트 라인 = 옵션 발주수량의 역산(참고 표시). 발주로 구성 가능한 완성 세트 = min floor(finalQty/perSet).
     planSetsData = setSpecs.map((s) => {
-      const suggestedSetQty = suggestSetQty(s.items, suggestedByOption)
+      const backDerivedSetQty = computeSetAvailable(s.items, optionFinalQtyOverride!)
       const currentSetStock = computeSetAvailable(s.items, onHandByOption)
       return {
         listingId: s.listingId,
         listingName: s.listingName,
         currentSetStock,
-        suggestedSetQty,
-        finalSetQty: suggestedSetQty,
+        suggestedSetQty: backDerivedSetQty,
+        finalSetQty: backDerivedSetQty,
         sortOrder: s.sortOrder,
       }
     })
-    optionFinalQtyOverride = decomposeSetsToOptions(
-      setSpecs.map((s) => ({
-        listingId: s.listingId,
-        setQty: planSetsData!.find((p) => p.listingId === s.listingId)!.finalSetQty,
-        items: s.items,
-      }))
-    )
   } else if (setSpecs && isLayered) {
     // ── 레이어드 (상품 + 로켓 세트) — 옵션 수요가 진실. 세트는 발주 옵션의 역산 표시(파생). ──
     // 로켓 옵션 수요(loadOptionDemand)는 이미 전 세트 판매를 옵션으로 분해·집계한 값이므로,

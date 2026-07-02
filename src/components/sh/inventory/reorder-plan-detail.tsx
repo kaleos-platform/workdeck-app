@@ -45,7 +45,6 @@ import type {
   ReorderPlan,
   ReorderPlanItem,
   ReorderPlanSet,
-  SetPatchResponse,
   ProductInfo,
   ProductionRunSummary,
   PlanDetailAccuracy,
@@ -298,44 +297,6 @@ function ColdStartCell({
   )
 }
 
-// 세트 최종수량 인라인 편집 셀 (onBlur / Enter 저장)
-function SetFinalQtyCell({
-  set,
-  readonly,
-  onSaved,
-}: {
-  set: ReorderPlanSet
-  readonly: boolean
-  onSaved: (setId: string, finalSetQty: number) => void
-}) {
-  const [value, setValue] = useState(String(set.finalSetQty))
-
-  const commit = () => {
-    const n = Number(value)
-    if (!Number.isFinite(n) || n < 0) return
-    if (n === set.finalSetQty) return
-    onSaved(set.id, n)
-  }
-
-  if (readonly) {
-    return <span className="tabular-nums">{set.finalSetQty}</span>
-  }
-
-  return (
-    <Input
-      type="number"
-      min={0}
-      className="h-7 w-20 text-right tabular-nums"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') commit()
-      }}
-    />
-  )
-}
-
 // 인라인 메모 편집 셀 (팝오버 형태)
 function UserNoteCell({
   item,
@@ -528,36 +489,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     [itemFinalQtyMap]
   )
 
-  // PATCH sets/{setId} → 응답으로 sets + items 즉시 갱신
-  const handlePatchSet = useCallback(
-    async (setId: string, finalSetQty: number) => {
-      try {
-        const res = await fetch(`/api/sh/inventory/reorder/plan/${planId}/sets/${setId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ finalSetQty }),
-        })
-        if (!res.ok) throw new Error('저장 실패')
-        const data = (await res.json()) as SetPatchResponse
-        // 세트 최종수량 갱신
-        setSets((prev) =>
-          prev.map((s) => (s.id === setId ? { ...s, finalSetQty: data.finalSetQty } : s))
-        )
-        // 구성 옵션별 발주량 갱신 (서버가 재분해한 값 사용)
-        setItems((prev) =>
-          prev.map((it) => {
-            const qty = data.optionFinalQty[it.optionId]
-            return qty !== undefined ? { ...it, finalQty: qty } : it
-          })
-        )
-      } catch (err) {
-        console.error(err)
-        toast.error('세트 수량 수정에 실패했습니다')
-      }
-    },
-    [planId]
-  )
-
   // 세트 행 펼침/접힘 토글
   const toggleSetExpand = (setId: string) => {
     setExpandedSets((prev) => {
@@ -698,11 +629,17 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   }
 
   // 생산차수 생성 폼 프리필 — 계획 옵션·최종수량 자동 입력 (원가는 폼에서 사용자 입력)
+  // 위치 세트 계획은 멀티상품(로켓 위치에 캡나시·쿨핏·머드팬티 등 공존)이므로 상품명·브랜드는
+  // 아이템의 productId 로 조회한다(productInfo[0] 하드코딩 금지 — 전부 첫 상품으로 오라벨됨).
+  const productInfoById = useMemo(
+    () => new Map(productInfo.map((p) => [p.productId, p])),
+    [productInfo]
+  )
   const runPrefillItems = useMemo(
     () =>
       items.map((it) => {
         const opt = optionMap.get(it.optionId)
-        const pInfo = productInfo[0]
+        const pInfo = productInfoById.get(it.productId) ?? productInfo[0]
         return {
           optionId: it.optionId,
           optionName: opt?.optionName ?? '',
@@ -713,7 +650,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           quantity: it.finalQty,
         }
       }),
-    [items, optionMap, productInfo, plan?.productName]
+    [items, optionMap, productInfoById, productInfo, plan?.productName]
   )
 
   // 세트 계획 연계 프리필 — 세트(listing)·최종 세트수량 (옵션 items 와 평행 전달)
@@ -976,7 +913,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         ))}
 
       {/* ── 세트 테이블 — 위치 세트 계획(locationId) 또는 레이어드(연동 세트 레이어) ── */}
-      {isLayered && (
+      {(isLayered || plan.locationId) && (
         <p className="text-sm font-medium">
           연동 세트 환산{' '}
           <span className="text-xs font-normal text-muted-foreground">
@@ -1032,24 +969,16 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                           {QTY.format(set.currentSetStock)}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
-                          {isLayered ? backDerivedSetQty(set.items) : set.suggestedSetQty}
+                          {backDerivedSetQty(set.items)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {isLayered ? (
-                            <span
-                              className="tabular-nums text-muted-foreground"
-                              title="옵션 발주수량의 역산(참고) — 수정은 옵션 최종수량에서"
-                            >
-                              {backDerivedSetQty(set.items)}
-                            </span>
-                          ) : (
-                            <SetFinalQtyCell
-                              key={`sfq-${set.id}-${set.finalSetQty}`}
-                              set={set}
-                              readonly={readonly}
-                              onSaved={handlePatchSet}
-                            />
-                          )}
+                          {/* 위치·레이어드 두 세트 모드 모두 세트는 옵션 발주수량의 역산(읽기전용). */}
+                          <span
+                            className="tabular-nums text-muted-foreground"
+                            title="옵션 발주수량의 역산(참고) — 수정은 옵션 최종수량에서"
+                          >
+                            {backDerivedSetQty(set.items)}
+                          </span>
                         </TableCell>
                       </TableRow>
                       {/* 펼침: 구성옵션 분해 */}
@@ -1081,16 +1010,18 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
       )}
 
-      {/* ── 상품/레이어드 최종 옵션 테이블 (locationId 없을 때) ── */}
-      {isLayered && (
+      {/* ── 최종 옵션 테이블 — 전 모드 공통. 옵션 수요가 진실이므로 위치 세트 계획도 옵션 단위로 발주한다. ── */}
+      {(isLayered || plan.locationId) && (
         <p className="text-sm font-medium">
           최종 발주{' '}
           <span className="text-xs font-normal text-muted-foreground">
-            · 로켓분 + 직접분 합산 후 현재고·안전재고 1회 차감
+            {isLayered
+              ? '· 로켓분 + 직접분 합산 후 현재고·안전재고 1회 차감'
+              : '· 현재고·안전재고 차감 후 옵션별 최종 발주수량 (세트는 위 참고 표시)'}
           </span>
         </p>
       )}
-      {!plan.locationId && (
+      {(
         <div className="overflow-x-auto rounded-md border">
           <Table>
             <TableHeader>
@@ -1283,7 +1214,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         }}
         runId={editRunId ?? undefined}
         prefillItems={editRunId ? undefined : runPrefillItems}
-        prefillSets={editRunId || isLayered ? undefined : runPrefillSets}
+        prefillSets={editRunId || isLayered || plan.locationId ? undefined : runPrefillSets}
         reorderPlanId={editRunId ? undefined : planId}
         onSaved={() => {
           setRunFormOpen(false)
