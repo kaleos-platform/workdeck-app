@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { isYmdDateString, getDaysAgoStrKst } from '@/lib/date-range'
+
+// KST 기준 두 YYYY-MM-DD 사이 일수(포함). from ≤ to 전제.
+function daysInclusiveKst(from: string, to: string): number {
+  const f = new Date(`${from}T00:00:00+09:00`).getTime()
+  const t = new Date(`${to}T00:00:00+09:00`).getTime()
+  return Math.round((t - f) / 86_400_000) + 1
+}
 
 // 잡 1건 select (요약 필드 포함)
 const JOB_SELECT = {
   id: true,
   workspaceId: true,
   days: true,
+  startDate: true,
+  endDate: true,
   trigger: true,
   status: true,
   claimedAt: true,
@@ -70,7 +80,10 @@ export async function GET(request: NextRequest) {
  * POST /api/collection/backfill
  * 백필 잡 생성. PENDING/RUNNING 잡이 이미 있으면 409 반환.
  *
- * body: { days: number }  (1~120)
+ * body(둘 중 하나):
+ *   - { days: number }  (1~120) — 어제부터 역순 N일 수집.
+ *   - { startDate: 'YYYY-MM-DD', endDate: 'YYYY-MM-DD' } — 캘린더 특정 구간 수집.
+ *     (endDate ≤ 어제, 구간 ≤ 120일)
  */
 export async function POST(request: NextRequest) {
   const resolved = await resolveWorkspace()
@@ -85,10 +98,39 @@ export async function POST(request: NextRequest) {
   }
 
   const raw = body as Record<string, unknown>
-  const days = typeof raw.days === 'number' ? raw.days : Number(raw.days)
 
-  if (!Number.isInteger(days) || days < 1 || days > 120) {
-    return errorResponse('days 는 1~120 사이의 정수여야 합니다', 400)
+  // range 모드: startDate/endDate 중 하나라도 있으면 구간 잡으로 처리.
+  const hasRange = raw.startDate !== undefined || raw.endDate !== undefined
+  let days: number
+  let startDate: string | null = null
+  let endDate: string | null = null
+
+  if (hasRange) {
+    const start = typeof raw.startDate === 'string' ? raw.startDate : ''
+    const end = typeof raw.endDate === 'string' ? raw.endDate : ''
+    if (!isYmdDateString(start) || !isYmdDateString(end)) {
+      return errorResponse('startDate·endDate 는 YYYY-MM-DD 형식이어야 합니다', 400)
+    }
+    if (start > end) {
+      return errorResponse('startDate 는 endDate 보다 이전이거나 같아야 합니다', 400)
+    }
+    // 당일 VENDOR 데이터는 미확정 → 종료일은 어제까지만 허용.
+    const yesterday = getDaysAgoStrKst(1)
+    if (end > yesterday) {
+      return errorResponse('endDate 는 어제 이전이어야 합니다 (당일 데이터 미확정)', 400)
+    }
+    const len = daysInclusiveKst(start, end)
+    if (len > 120) {
+      return errorResponse('수집 구간은 최대 120일입니다', 400)
+    }
+    days = len
+    startDate = start
+    endDate = end
+  } else {
+    days = typeof raw.days === 'number' ? raw.days : Number(raw.days)
+    if (!Number.isInteger(days) || days < 1 || days > 120) {
+      return errorResponse('days 는 1~120 사이의 정수여야 합니다', 400)
+    }
   }
 
   // 60분 이상 RUNNING 상태인 잡은 stale로 간주해 FAILED 처리.
@@ -123,6 +165,7 @@ export async function POST(request: NextRequest) {
     data: {
       workspaceId: workspace.id,
       days,
+      ...(startDate && endDate && { startDate, endDate }),
     },
   })
 
