@@ -52,6 +52,8 @@ export type CoupangBackfillJobMinAggregateOutputType = {
   id: string | null
   workspaceId: string | null
   days: number | null
+  startDate: string | null
+  endDate: string | null
   trigger: string | null
   status: $Enums.CoupangBackfillStatus | null
   claimedAt: Date | null
@@ -73,6 +75,8 @@ export type CoupangBackfillJobMaxAggregateOutputType = {
   id: string | null
   workspaceId: string | null
   days: number | null
+  startDate: string | null
+  endDate: string | null
   trigger: string | null
   status: $Enums.CoupangBackfillStatus | null
   claimedAt: Date | null
@@ -94,6 +98,8 @@ export type CoupangBackfillJobCountAggregateOutputType = {
   id: number
   workspaceId: number
   days: number
+  startDate: number
+  endDate: number
   trigger: number
   status: number
   claimedAt: number
@@ -139,6 +145,8 @@ export type CoupangBackfillJobMinAggregateInputType = {
   id?: true
   workspaceId?: true
   days?: true
+  startDate?: true
+  endDate?: true
   trigger?: true
   status?: true
   claimedAt?: true
@@ -160,6 +168,8 @@ export type CoupangBackfillJobMaxAggregateInputType = {
   id?: true
   workspaceId?: true
   days?: true
+  startDate?: true
+  endDate?: true
   trigger?: true
   status?: true
   claimedAt?: true
@@ -181,6 +191,8 @@ export type CoupangBackfillJobCountAggregateInputType = {
   id?: true
   workspaceId?: true
   days?: true
+  startDate?: true
+  endDate?: true
   trigger?: true
   status?: true
   claimedAt?: true
@@ -289,6 +301,8 @@ export type CoupangBackfillJobGroupByOutputType = {
   id: string
   workspaceId: string
   days: number
+  startDate: string | null
+  endDate: string | null
   trigger: string
   status: $Enums.CoupangBackfillStatus
   claimedAt: Date | null
@@ -333,6 +347,8 @@ export type CoupangBackfillJobWhereInput = {
   id?: Prisma.StringFilter<"CoupangBackfillJob"> | string
   workspaceId?: Prisma.StringFilter<"CoupangBackfillJob"> | string
   days?: Prisma.IntFilter<"CoupangBackfillJob"> | number
+  startDate?: Prisma.StringNullableFilter<"CoupangBackfillJob"> | string | null
+  endDate?: Prisma.StringNullableFilter<"CoupangBackfillJob"> | string | null
   trigger?: Prisma.StringFilter<"CoupangBackfillJob"> | string
   status?: Prisma.EnumCoupangBackfillStatusFilter<"CoupangBackfillJob"> | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.DateTimeNullableFilter<"CoupangBackfillJob"> | Date | string | null
@@ -355,6 +371,8 @@ export type CoupangBackfillJobOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   days?: Prisma.SortOrder
+  startDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   trigger?: Prisma.SortOrder
   status?: Prisma.SortOrder
   claimedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -380,6 +398,8 @@ export type CoupangBackfillJobWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.CoupangBackfillJobWhereInput | Prisma.CoupangBackfillJobWhereInput[]
   workspaceId?: Prisma.StringFilter<"CoupangBackfillJob"> | string
   days?: Prisma.IntFilter<"CoupangBackfillJob"> | number
+  startDate?: Prisma.StringNullableFilter<"CoupangBackfillJob"> | string | null
+  endDate?: Prisma.StringNullableFilter<"CoupangBackfillJob"> | string | null
   trigger?: Prisma.StringFilter<"CoupangBackfillJob"> | string
   status?: Prisma.EnumCoupangBackfillStatusFilter<"CoupangBackfillJob"> | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.DateTimeNullableFilter<"CoupangBackfillJob"> | Date | string | null
@@ -402,6 +422,8 @@ export type CoupangBackfillJobOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   days?: Prisma.SortOrder
+  startDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   trigger?: Prisma.SortOrder
   status?: Prisma.SortOrder
   claimedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -431,6 +453,8 @@ export type CoupangBackfillJobScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"CoupangBackfillJob"> | string
   workspaceId?: Prisma.StringWithAggregatesFilter<"CoupangBackfillJob"> | string
   days?: Prisma.IntWithAggregatesFilter<"CoupangBackfillJob"> | number
+  startDate?: Prisma.StringNullableWithAggregatesFilter<"CoupangBackfillJob"> | string | null
+  endDate?: Prisma.StringNullableWithAggregatesFilter<"CoupangBackfillJob"> | string | null
   trigger?: Prisma.StringWithAggregatesFilter<"CoupangBackfillJob"> | string
   status?: Prisma.EnumCoupangBackfillStatusWithAggregatesFilter<"CoupangBackfillJob"> | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CoupangBackfillJob"> | Date | string | null
@@ -451,6 +475,8 @@ export type CoupangBackfillJobScalarWhereWithAggregatesInput = {
 export type CoupangBackfillJobCreateInput = {
   id?: string
   days: number
+  startDate?: string | null
+  endDate?: string | null
   trigger?: string
   status?: $Enums.CoupangBackfillStatus
   claimedAt?: Date | string | null
@@ -473,6 +499,8 @@ export type CoupangBackfillJobUncheckedCreateInput = {
   id?: string
   workspaceId: string
   days: number
+  startDate?: string | null
+  endDate?: string | null
   trigger?: string
   status?: $Enums.CoupangBackfillStatus
   claimedAt?: Date | string | null
@@ -493,6 +521,8 @@ export type CoupangBackfillJobUncheckedCreateInput = {
 export type CoupangBackfillJobUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   days?: Prisma.IntFieldUpdateOperationsInput | number
+  startDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trigger?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCoupangBackfillStatusFieldUpdateOperationsInput | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -515,6 +545,8 @@ export type CoupangBackfillJobUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   days?: Prisma.IntFieldUpdateOperationsInput | number
+  startDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trigger?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCoupangBackfillStatusFieldUpdateOperationsInput | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -536,6 +568,8 @@ export type CoupangBackfillJobCreateManyInput = {
   id?: string
   workspaceId: string
   days: number
+  startDate?: string | null
+  endDate?: string | null
   trigger?: string
   status?: $Enums.CoupangBackfillStatus
   claimedAt?: Date | string | null
@@ -556,6 +590,8 @@ export type CoupangBackfillJobCreateManyInput = {
 export type CoupangBackfillJobUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   days?: Prisma.IntFieldUpdateOperationsInput | number
+  startDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trigger?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCoupangBackfillStatusFieldUpdateOperationsInput | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -577,6 +613,8 @@ export type CoupangBackfillJobUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   days?: Prisma.IntFieldUpdateOperationsInput | number
+  startDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trigger?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCoupangBackfillStatusFieldUpdateOperationsInput | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -608,6 +646,8 @@ export type CoupangBackfillJobCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   days?: Prisma.SortOrder
+  startDate?: Prisma.SortOrder
+  endDate?: Prisma.SortOrder
   trigger?: Prisma.SortOrder
   status?: Prisma.SortOrder
   claimedAt?: Prisma.SortOrder
@@ -640,6 +680,8 @@ export type CoupangBackfillJobMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   days?: Prisma.SortOrder
+  startDate?: Prisma.SortOrder
+  endDate?: Prisma.SortOrder
   trigger?: Prisma.SortOrder
   status?: Prisma.SortOrder
   claimedAt?: Prisma.SortOrder
@@ -661,6 +703,8 @@ export type CoupangBackfillJobMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   days?: Prisma.SortOrder
+  startDate?: Prisma.SortOrder
+  endDate?: Prisma.SortOrder
   trigger?: Prisma.SortOrder
   status?: Prisma.SortOrder
   claimedAt?: Prisma.SortOrder
@@ -738,6 +782,8 @@ export type EnumCoupangBackfillStatusFieldUpdateOperationsInput = {
 export type CoupangBackfillJobCreateWithoutWorkspaceInput = {
   id?: string
   days: number
+  startDate?: string | null
+  endDate?: string | null
   trigger?: string
   status?: $Enums.CoupangBackfillStatus
   claimedAt?: Date | string | null
@@ -758,6 +804,8 @@ export type CoupangBackfillJobCreateWithoutWorkspaceInput = {
 export type CoupangBackfillJobUncheckedCreateWithoutWorkspaceInput = {
   id?: string
   days: number
+  startDate?: string | null
+  endDate?: string | null
   trigger?: string
   status?: $Enums.CoupangBackfillStatus
   claimedAt?: Date | string | null
@@ -808,6 +856,8 @@ export type CoupangBackfillJobScalarWhereInput = {
   id?: Prisma.StringFilter<"CoupangBackfillJob"> | string
   workspaceId?: Prisma.StringFilter<"CoupangBackfillJob"> | string
   days?: Prisma.IntFilter<"CoupangBackfillJob"> | number
+  startDate?: Prisma.StringNullableFilter<"CoupangBackfillJob"> | string | null
+  endDate?: Prisma.StringNullableFilter<"CoupangBackfillJob"> | string | null
   trigger?: Prisma.StringFilter<"CoupangBackfillJob"> | string
   status?: Prisma.EnumCoupangBackfillStatusFilter<"CoupangBackfillJob"> | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.DateTimeNullableFilter<"CoupangBackfillJob"> | Date | string | null
@@ -828,6 +878,8 @@ export type CoupangBackfillJobScalarWhereInput = {
 export type CoupangBackfillJobCreateManyWorkspaceInput = {
   id?: string
   days: number
+  startDate?: string | null
+  endDate?: string | null
   trigger?: string
   status?: $Enums.CoupangBackfillStatus
   claimedAt?: Date | string | null
@@ -848,6 +900,8 @@ export type CoupangBackfillJobCreateManyWorkspaceInput = {
 export type CoupangBackfillJobUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   days?: Prisma.IntFieldUpdateOperationsInput | number
+  startDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trigger?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCoupangBackfillStatusFieldUpdateOperationsInput | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -868,6 +922,8 @@ export type CoupangBackfillJobUpdateWithoutWorkspaceInput = {
 export type CoupangBackfillJobUncheckedUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   days?: Prisma.IntFieldUpdateOperationsInput | number
+  startDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trigger?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCoupangBackfillStatusFieldUpdateOperationsInput | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -888,6 +944,8 @@ export type CoupangBackfillJobUncheckedUpdateWithoutWorkspaceInput = {
 export type CoupangBackfillJobUncheckedUpdateManyWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   days?: Prisma.IntFieldUpdateOperationsInput | number
+  startDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trigger?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCoupangBackfillStatusFieldUpdateOperationsInput | $Enums.CoupangBackfillStatus
   claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -911,6 +969,8 @@ export type CoupangBackfillJobSelect<ExtArgs extends runtime.Types.Extensions.In
   id?: boolean
   workspaceId?: boolean
   days?: boolean
+  startDate?: boolean
+  endDate?: boolean
   trigger?: boolean
   status?: boolean
   claimedAt?: boolean
@@ -933,6 +993,8 @@ export type CoupangBackfillJobSelectCreateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   workspaceId?: boolean
   days?: boolean
+  startDate?: boolean
+  endDate?: boolean
   trigger?: boolean
   status?: boolean
   claimedAt?: boolean
@@ -955,6 +1017,8 @@ export type CoupangBackfillJobSelectUpdateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   workspaceId?: boolean
   days?: boolean
+  startDate?: boolean
+  endDate?: boolean
   trigger?: boolean
   status?: boolean
   claimedAt?: boolean
@@ -977,6 +1041,8 @@ export type CoupangBackfillJobSelectScalar = {
   id?: boolean
   workspaceId?: boolean
   days?: boolean
+  startDate?: boolean
+  endDate?: boolean
   trigger?: boolean
   status?: boolean
   claimedAt?: boolean
@@ -994,7 +1060,7 @@ export type CoupangBackfillJobSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CoupangBackfillJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "days" | "trigger" | "status" | "claimedAt" | "claimedBy" | "completedAt" | "collected" | "converted" | "duplicateRows" | "outboundCount" | "revenueSum" | "orderSum" | "salesQtySum" | "error" | "createdAt" | "updatedAt", ExtArgs["result"]["coupangBackfillJob"]>
+export type CoupangBackfillJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "days" | "startDate" | "endDate" | "trigger" | "status" | "claimedAt" | "claimedBy" | "completedAt" | "collected" | "converted" | "duplicateRows" | "outboundCount" | "revenueSum" | "orderSum" | "salesQtySum" | "error" | "createdAt" | "updatedAt", ExtArgs["result"]["coupangBackfillJob"]>
 export type CoupangBackfillJobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }
@@ -1014,6 +1080,8 @@ export type $CoupangBackfillJobPayload<ExtArgs extends runtime.Types.Extensions.
     id: string
     workspaceId: string
     days: number
+    startDate: string | null
+    endDate: string | null
     trigger: string
     status: $Enums.CoupangBackfillStatus
     claimedAt: Date | null
@@ -1456,6 +1524,8 @@ export interface CoupangBackfillJobFieldRefs {
   readonly id: Prisma.FieldRef<"CoupangBackfillJob", 'String'>
   readonly workspaceId: Prisma.FieldRef<"CoupangBackfillJob", 'String'>
   readonly days: Prisma.FieldRef<"CoupangBackfillJob", 'Int'>
+  readonly startDate: Prisma.FieldRef<"CoupangBackfillJob", 'String'>
+  readonly endDate: Prisma.FieldRef<"CoupangBackfillJob", 'String'>
   readonly trigger: Prisma.FieldRef<"CoupangBackfillJob", 'String'>
   readonly status: Prisma.FieldRef<"CoupangBackfillJob", 'CoupangBackfillStatus'>
   readonly claimedAt: Prisma.FieldRef<"CoupangBackfillJob", 'DateTime'>

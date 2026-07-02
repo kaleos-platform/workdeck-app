@@ -8236,6 +8236,8 @@ export const CoupangBackfillJobScalarFieldEnum = {
   id: 'id',
   workspaceId: 'workspaceId',
   days: 'days',
+  startDate: 'startDate',
+  endDate: 'endDate',
   trigger: 'trigger',
   status: 'status',
   claimedAt: 'claimedAt',

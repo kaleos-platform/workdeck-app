@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog'
 import { Database, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getDaysAgoStrKst, isYmdDateString } from '@/lib/date-range'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,8 @@ type BackfillStatus = 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED' | 'CANCELLED'
 type BackfillJob = {
   id: string
   days: number
+  startDate: string | null
+  endDate: string | null
   trigger: string // 'backfill' | 'scheduled'
   status: BackfillStatus
   claimedAt: string | null
@@ -57,6 +60,9 @@ type ListResponse = {
 
 const POLL_INTERVAL_MS = 5000
 const DEFAULT_DAYS = 90
+const MAX_RANGE_DAYS = 120
+// 퀵 프리셋 — 어제 종료 기준 최근 N일 구간.
+const RANGE_PRESETS = [7, 30, 90] as const
 const ACTIVE_STATUSES: BackfillStatus[] = ['PENDING', 'RUNNING']
 
 const STATUS_CONFIG: Record<BackfillStatus, { label: string; className: string }> = {
@@ -130,6 +136,19 @@ function won(v: string | number): string {
   return `${Math.round(n).toLocaleString('ko-KR')}원`
 }
 
+// KST 기준 두 YYYY-MM-DD 사이 일수(포함). from ≤ to 전제.
+function daysInclusive(from: string, to: string): number {
+  const f = new Date(`${from}T00:00:00+09:00`).getTime()
+  const t = new Date(`${to}T00:00:00+09:00`).getTime()
+  return Math.round((t - f) / 86_400_000) + 1
+}
+
+// 'YYYY-MM-DD' → 'MM/DD'
+function formatMonthDay(ymd: string): string {
+  const [, m, d] = ymd.split('-')
+  return `${m}/${d}`
+}
+
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
 export function SalesCollectionHistory() {
@@ -138,8 +157,17 @@ export function SalesCollectionHistory() {
   const [loading, setLoading] = useState(true)
 
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [daysInput, setDaysInput] = useState(String(DEFAULT_DAYS))
+  // 기본 구간: 최근 90일(어제 종료). 종료일은 당일 미확정으로 어제까지만.
+  const [fromInput, setFromInput] = useState(() => getDaysAgoStrKst(DEFAULT_DAYS))
+  const [toInput, setToInput] = useState(() => getDaysAgoStrKst(1))
   const [submitting, setSubmitting] = useState(false)
+
+  const yesterdayStr = getDaysAgoStrKst(1)
+
+  function applyPreset(days: number) {
+    setFromInput(getDaysAgoStrKst(days))
+    setToInput(getDaysAgoStrKst(1))
+  }
 
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -175,9 +203,22 @@ export function SalesCollectionHistory() {
   }, [hasActiveJob, fetchJobs])
 
   async function handleSubmit() {
-    const days = parseInt(daysInput, 10)
-    if (!Number.isInteger(days) || days < 1 || days > 120) {
-      toast.error('일수는 1~120 사이의 정수를 입력해 주세요')
+    const from = fromInput
+    const to = toInput
+    if (!isYmdDateString(from) || !isYmdDateString(to)) {
+      toast.error('시작일과 종료일을 올바르게 선택해 주세요')
+      return
+    }
+    if (from > to) {
+      toast.error('시작일은 종료일보다 이전이거나 같아야 합니다')
+      return
+    }
+    if (to > yesterdayStr) {
+      toast.error('종료일은 어제까지만 선택할 수 있습니다 (당일 데이터 미확정)')
+      return
+    }
+    if (daysInclusive(from, to) > MAX_RANGE_DAYS) {
+      toast.error(`수집 구간은 최대 ${MAX_RANGE_DAYS}일입니다`)
       return
     }
     setSubmitting(true)
@@ -185,7 +226,7 @@ export function SalesCollectionHistory() {
       const res = await fetch('/api/collection/backfill', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ days }),
+        body: JSON.stringify({ startDate: from, endDate: to }),
       })
       const data = await res.json().catch(() => ({}))
       if (res.status === 409) {
@@ -195,7 +236,7 @@ export function SalesCollectionHistory() {
         return
       }
       if (!res.ok) throw new Error((data as { message?: string }).message ?? '수집 시작 실패')
-      toast.success(`${days}일치 판매 데이터 수집을 시작했습니다`)
+      toast.success(`${from} ~ ${to} 판매 데이터 수집을 시작했습니다`)
       setDialogOpen(false)
       await fetchJobs()
     } catch (err) {
@@ -297,7 +338,11 @@ export function SalesCollectionHistory() {
                             {TRIGGER_CONFIG[job.trigger]?.label ?? job.trigger}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{job.days}일</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {job.startDate && job.endDate
+                            ? `${formatMonthDay(job.startDate)}~${formatMonthDay(job.endDate)}`
+                            : `${job.days}일`}
+                        </TableCell>
                         <TableCell className="text-muted-foreground">{duration}</TableCell>
                         <TableCell className="text-right">{won(job.revenueSum)}</TableCell>
                         <TableCell className="text-right">
@@ -346,24 +391,61 @@ export function SalesCollectionHistory() {
           <DialogHeader>
             <DialogTitle>과거 판매 데이터 수집</DialogTitle>
             <DialogDescription>
-              수집할 과거 일수를 입력하세요. 최대 120일까지 지원합니다.
+              수집할 기간을 선택하세요. 최대 {MAX_RANGE_DAYS}일까지, 종료일은 어제까지 가능합니다.
               {hasVendorData && ' 이미 수집된 날짜는 중복으로 처리되어 최신 값으로 갱신됩니다.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 py-2">
-            <Label htmlFor="sales-backfill-days">수집 일수 (1~120)</Label>
-            <Input
-              id="sales-backfill-days"
-              type="number"
-              min={1}
-              max={120}
-              value={daysInput}
-              onChange={(e) => setDaysInput(e.target.value)}
-              disabled={submitting}
-              placeholder="90"
-            />
+          <div className="space-y-3 py-2">
+            {/* 퀵 프리셋 — 어제 종료 기준 최근 N일 */}
+            <div className="flex flex-wrap gap-2">
+              {RANGE_PRESETS.map((n) => {
+                const active = fromInput === getDaysAgoStrKst(n) && toInput === yesterdayStr
+                return (
+                  <Button
+                    key={n}
+                    type="button"
+                    size="sm"
+                    variant={active ? 'default' : 'outline'}
+                    onClick={() => applyPreset(n)}
+                    disabled={submitting}
+                  >
+                    최근 {n}일
+                  </Button>
+                )
+              })}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="sales-backfill-from">시작일</Label>
+                <Input
+                  id="sales-backfill-from"
+                  type="date"
+                  max={yesterdayStr}
+                  value={fromInput}
+                  onChange={(e) => setFromInput(e.target.value)}
+                  disabled={submitting}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="sales-backfill-to">종료일</Label>
+                <Input
+                  id="sales-backfill-to"
+                  type="date"
+                  min={fromInput}
+                  max={yesterdayStr}
+                  value={toInput}
+                  onChange={(e) => setToInput(e.target.value)}
+                  disabled={submitting}
+                />
+              </div>
+            </div>
             <p className="text-xs text-muted-foreground">
-              쿠팡 VENDOR 판매 데이터를 수집합니다. 기간이 길수록 시간이 오래 걸립니다.
+              {isYmdDateString(fromInput) &&
+              isYmdDateString(toInput) &&
+              fromInput <= toInput &&
+              toInput <= yesterdayStr
+                ? `${daysInclusive(fromInput, toInput)}일치 쿠팡 VENDOR 판매 데이터를 수집합니다. 기간이 길수록 시간이 오래 걸립니다.`
+                : '쿠팡 VENDOR 판매 데이터를 수집합니다. 기간이 길수록 시간이 오래 걸립니다.'}
             </p>
           </div>
           <DialogFooter>

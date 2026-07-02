@@ -533,7 +533,10 @@ enum CoupangBackfillStatus {
 model CoupangBackfillJob {
   id            String                @id @default(cuid())
   workspaceId   String
-  days          Int // 과거 N일 (어제부터 역순)
+  days          Int // 과거 N일 (어제부터 역순). range 잡이면 endDate−startDate+1(포함).
+  // range 백필(캘린더 특정 구간). 둘 다 null이면 days 기반(어제부터 역순) 잡.
+  startDate     String? // 수집 시작일 KST YYYY-MM-DD (oldest)
+  endDate       String? // 수집 종료일 KST YYYY-MM-DD (newest, 보통 어제)
   trigger       String                @default("backfill") // backfill(UI 과거수집) | scheduled(매일 cron)
   status        CoupangBackfillStatus @default(PENDING)
   claimedAt     DateTime?
