@@ -46,6 +46,9 @@ type ClaimedBackfillJob = {
   id: string
   workspaceId: string
   days: number
+  // range 백필(캘린더 특정 구간). 둘 다 있으면 days 대신 이 구간을 수집.
+  startDate?: string | null
+  endDate?: string | null
   credential: {
     loginId: string
     encryptedPassword: string
@@ -201,8 +204,10 @@ export function startBackfillPoller(): void {
 
     if (!job) return
 
+    const rangeLabel =
+      job.startDate && job.endDate ? `${job.startDate}~${job.endDate}` : `${job.days}일`
     console.log(
-      `\n[backfill-poller] 잡 claim: ${job.id} (${job.days}일, workspace: ${job.workspaceId})`
+      `\n[backfill-poller] 잡 claim: ${job.id} (${rangeLabel}, workspace: ${job.workspaceId})`
     )
     isProcessing = true
 
@@ -215,6 +220,10 @@ export function startBackfillPoller(): void {
 
       const creds: BackfillCreds = { loginId: job.credential.loginId, password }
 
+      // range 잡이면 구간의 명시 날짜 목록을 만들어 runBackfill 에 넘긴다(days 무시).
+      const explicitDates =
+        job.startDate && job.endDate ? buildDateList(job.startDate, job.endDate) : undefined
+
       // Step 1: VENDOR 다운로드·업로드
       let result
       try {
@@ -226,7 +235,8 @@ export function startBackfillPoller(): void {
             console.log(`[backfill-poller] 진행 ${succeeded + failed}/${total} — ${date}`)
           },
           // 날짜 루프 사이 잡 상태를 확인해 CANCELLED 면 조기 종료(사용자 취소).
-          async () => (await fetchJobStatus(job.id)) === 'CANCELLED'
+          async () => (await fetchJobStatus(job.id)) === 'CANCELLED',
+          explicitDates
         )
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
