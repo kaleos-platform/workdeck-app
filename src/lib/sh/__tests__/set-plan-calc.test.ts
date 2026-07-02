@@ -167,3 +167,57 @@ describe('computeLayeredFinalQty (레이어드 단일차감)', () => {
     ).toBe(11)
   })
 })
+
+// ── 세트 중복 과다집계 회귀 ────────────────────────────────────────────────
+// 로켓 옵션 수요는 loadOptionDemand 가 이미 전 세트 판매를 옵션으로 분해·집계한 값이다.
+// 한 옵션이 여러 세트 리스팅에 공유될 때, 각 세트를 그 집계 수요 전량을 커버하도록 개별
+// suggestSetQty 로 사이징한 뒤 decomposeSetsToOptions 로 합산하면 공유 옵션이 ×N 부풀려진다.
+// → 레이어드 최종 옵션수량은 이 분해합산이 아니라 raw 집계 로켓 GROSS 를 로켓 기여로 써야 한다.
+describe('세트 중복 과다집계 회귀 (레이어드 옵션=raw 집계, 세트 재-사이징 합산 금지)', () => {
+  // 같은 옵션(black/white)을 공유하는 3개 중복 번들 리스팅
+  const OVERLAP = [
+    { listingId: 'pack2', items: BW }, // white1 black1
+    { listingId: 'pack5', items: FIVE }, // white3 black2
+    { listingId: 'pack2b', items: BW }, // white1 black1 (또다른 2장 SKU)
+  ]
+  // 집계 로켓 수요(옵션 단위, 이미 전 세트 판매 분해합산됨)
+  const rocketGrossNeed = new Map<string, number>([
+    ['white', 100],
+    ['black', 100],
+  ])
+
+  test('구 방식(세트별 병목 사이징 → 분해합산)은 집계 수요를 ×N 초과한다 (버그 재현)', () => {
+    const perListingSetQty = OVERLAP.map((s) => ({
+      listingId: s.listingId,
+      setQty: suggestSetQty(s.items, rocketGrossNeed),
+      items: s.items,
+    }))
+    const decomposed = decomposeSetsToOptions(perListingSetQty)
+    // 각 리스팅이 white/black 100 을 독립 커버 → 분해합산이 집계(100)를 크게 초과
+    expect(decomposed.get('white')!).toBeGreaterThan(100)
+    expect(decomposed.get('black')!).toBeGreaterThan(100)
+  })
+
+  test('신 방식 — 로켓 기여 = raw 집계 GROSS 그대로 (중복 세트 수와 무관)', () => {
+    // 옵션 최종 = raw 로켓 집계(100) + 직접(0) + 안전(0) − 재고(40) = 60. 세트 개수·중복과 무관.
+    for (const opt of ['white', 'black']) {
+      const finalQty = computeLayeredFinalQty({
+        rocketContribution: rocketGrossNeed.get(opt)!,
+        directGross: 0,
+        safetyStockQty: 0,
+        currentStock: 40,
+      })
+      expect(finalQty).toBe(60)
+    }
+  })
+
+  test('세트 표시값은 옵션 최종수량의 역산(min floor) — 참고용, 되먹임 없음', () => {
+    // 옵션 발주 white=60 black=40 → 각 세트가 구성 가능한 완성 세트 수
+    const finalByOption = new Map<string, number>([
+      ['white', 60],
+      ['black', 40],
+    ])
+    expect(computeSetAvailable(BW, finalByOption)).toBe(40) // min(60/1, 40/1)
+    expect(computeSetAvailable(FIVE, finalByOption)).toBe(20) // min(floor(60/3)=20, floor(40/2)=20)
+  })
+})

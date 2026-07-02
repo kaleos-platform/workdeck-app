@@ -2509,9 +2509,11 @@ model ReorderPlanItem {
   confidenceScore  Decimal? @db.Decimal(6, 4) // 예측 신뢰도 (0~1, null = 미산출)
   inputsSnapshot   Json // 예측 재현 가능 입력값 스냅샷 (초안 생성 당시 입력)
 
-  // 레이어드 발주(연동 세트 + 직접 배송) 전용 — 직접 배송 레이어 GROSS(현재고·안전재고 차감 전, float).
-  // 세트 수량 PATCH 시 단일차감(safety−stock 1회)을 재적용하려면 직접 레이어 gross를 보관해야 함.
+  // 레이어드 발주(연동 세트 + 직접 배송) 전용 — 레이어별 GROSS(현재고·안전재고 차감 전, float).
+  // 옵션 수요가 진실이므로 로켓/직접 raw GROSS를 각각 보관하고, 최종 = max(0, ceil(로켓+직접+safety−stock)).
+  // 세트는 발주 옵션의 역산 표시(파생)일 뿐 이 값으로 되먹이지 않는다(중복 세트 과다집계 방지).
   // null = 비레이어드(일반 상품/위치 세트) 플랜.
+  rocketGrossQty Decimal? @db.Decimal(18, 4)
   directGrossQty Decimal? @db.Decimal(18, 4)
 
   // "예측 검증 시작"(확정) 시점에 동결한 예측 스냅샷 — 신뢰도 측정의 단일 진실원.

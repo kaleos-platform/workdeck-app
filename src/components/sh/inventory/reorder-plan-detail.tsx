@@ -513,6 +513,21 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     [items]
   )
 
+  // 레이어드 세트 역산 — 옵션 최종수량으로 구성 가능한 완성 세트 수 = min floor(finalQty/perSet).
+  // 옵션 편집(FinalQtyCell) 즉시 반영되도록 itemFinalQtyMap 기준으로 라이브 계산(읽기전용 참고값).
+  const backDerivedSetQty = useCallback(
+    (setItems: { optionId: string; perSet: number }[]) => {
+      let min = Infinity
+      for (const si of setItems) {
+        const q = itemFinalQtyMap.get(si.optionId) ?? 0
+        const n = si.perSet > 0 ? Math.floor(q / si.perSet) : 0
+        if (n < min) min = n
+      }
+      return min === Infinity ? 0 : Math.max(0, min)
+    },
+    [itemFinalQtyMap]
+  )
+
   // PATCH sets/{setId} → 응답으로 sets + items 즉시 갱신
   const handlePatchSet = useCallback(
     async (setId: string, finalSetQty: number) => {
@@ -963,9 +978,9 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       {/* ── 세트 테이블 — 위치 세트 계획(locationId) 또는 레이어드(연동 세트 레이어) ── */}
       {isLayered && (
         <p className="text-sm font-medium">
-          연동 세트 발주{' '}
+          연동 세트 환산{' '}
           <span className="text-xs font-normal text-muted-foreground">
-            · 로켓 수요 → 세트 병목 (GROSS, 현재고 차감 전)
+            · 참고용 — 아래 옵션 발주수량으로 구성 가능한 완성 세트 수(수정은 옵션 최종수량에서)
           </span>
         </p>
       )}
@@ -1017,15 +1032,24 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                           {QTY.format(set.currentSetStock)}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
-                          {set.suggestedSetQty}
+                          {isLayered ? backDerivedSetQty(set.items) : set.suggestedSetQty}
                         </TableCell>
                         <TableCell className="text-right">
-                          <SetFinalQtyCell
-                            key={`sfq-${set.id}-${set.finalSetQty}`}
-                            set={set}
-                            readonly={readonly}
-                            onSaved={handlePatchSet}
-                          />
+                          {isLayered ? (
+                            <span
+                              className="tabular-nums text-muted-foreground"
+                              title="옵션 발주수량의 역산(참고) — 수정은 옵션 최종수량에서"
+                            >
+                              {backDerivedSetQty(set.items)}
+                            </span>
+                          ) : (
+                            <SetFinalQtyCell
+                              key={`sfq-${set.id}-${set.finalSetQty}`}
+                              set={set}
+                              readonly={readonly}
+                              onSaved={handlePatchSet}
+                            />
+                          )}
                         </TableCell>
                       </TableRow>
                       {/* 펼침: 구성옵션 분해 */}
@@ -1062,7 +1086,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         <p className="text-sm font-medium">
           최종 발주{' '}
           <span className="text-xs font-normal text-muted-foreground">
-            · 세트분 + 직접분 합산 후 현재고·안전재고 1회 차감
+            · 로켓분 + 직접분 합산 후 현재고·안전재고 1회 차감
           </span>
         </p>
       )}
@@ -1126,13 +1150,12 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                             데이터부족
                           </Badge>
                         )}
-                        {isLayered &&
-                          (item.rocketSetGross != null || item.directGross != null) && (
-                            <div className="mt-0.5 text-[10px] text-muted-foreground">
-                              세트분 {QTY.format(Math.round(item.rocketSetGross ?? 0))} · 직접분{' '}
-                              {QTY.format(Math.round(item.directGross ?? 0))}
-                            </div>
-                          )}
+                        {isLayered && (item.rocketGross != null || item.directGross != null) && (
+                          <div className="mt-0.5 text-[10px] text-muted-foreground">
+                            로켓분 {QTY.format(Math.round(item.rocketGross ?? 0))} · 직접분{' '}
+                            {QTY.format(Math.round(item.directGross ?? 0))}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
                         <div className="font-medium">{QTY.format(item.currentStock)}</div>

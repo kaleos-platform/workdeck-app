@@ -74,7 +74,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
             biasAdjustFactor: it.biasAdjustFactor,
             confidenceScore: it.confidenceScore,
             inputsSnapshot: it.inputsSnapshot ?? {},
-            directGrossQty: it.directGrossQty, // 레이어드 직접 GROSS 보존 (세트 PATCH 재계산용)
+            rocketGrossQty: it.rocketGrossQty, // 레이어드 로켓 raw GROSS 보존 (분해 표시)
+            directGrossQty: it.directGrossQty, // 레이어드 직접 raw GROSS 보존 (분해 표시)
           })),
         },
         // 세트 라인 복사 — 없으면 revert 후 세트 레이어 소실(세트 편집 불가)

@@ -448,9 +448,9 @@ export async function POST(req: NextRequest) {
     sortOrder: number
   }> | null = null
   let optionFinalQtyOverride: Map<string, number> | null = null
-  // 레이어드 전용 — 직접 레이어 GROSS(컬럼 저장용) + 로켓 세트분 GROSS(응답 표시용).
+  // 레이어드 전용 — 레이어별 raw GROSS(컬럼 저장 + 응답 분해 표시용).
   let directGrossByOption: Map<string, number> | null = null
-  let rocketSetGrossByOption: Map<string, number> | null = null
+  let rocketGrossByOption: Map<string, number> | null = null
 
   if (setSpecs && !isLayered) {
     // ── 위치 세트 모드 (기존) — net suggestedQty를 병목으로 묶고 분해 ──
@@ -480,8 +480,10 @@ export async function POST(req: NextRequest) {
       }))
     )
   } else if (setSpecs && isLayered) {
-    // ── 레이어드 (상품 + 로켓 세트) — 로켓/직접 GROSS 분리 → 세트 병목 + 직접 → 단일차감 ──
-    // 레이어별로는 현재고·안전재고 차감 전 GROSS만 계산. safety−currentStock 은 옵션 합산에 1회만.
+    // ── 레이어드 (상품 + 로켓 세트) — 옵션 수요가 진실. 세트는 발주 옵션의 역산 표시(파생). ──
+    // 로켓 옵션 수요(loadOptionDemand)는 이미 전 세트 판매를 옵션으로 분해·집계한 값이므로,
+    // 세트를 개별 리스팅마다 전량 커버하도록 재-사이징해 합산하면 공유 옵션이 ×N 부풀려진다(과다집계).
+    // → 로켓/직접 raw GROSS를 옵션 단위로 그대로 쓰고, safety−currentStock 은 옵션 합산에 1회만 차감한다.
     const rocketGrossNeed = new Map<string, number>()
     const directGross = new Map<string, number>()
     const onHandByOption = new Map<string, number>()
@@ -497,46 +499,38 @@ export async function POST(req: NextRequest) {
       onHandByOption.set(it.optionId, it.onHandStock)
     }
 
-    // 세트 레이어: 로켓 GROSS 병목 → 세트 GROSS 수량 (현재고 차감 없음, 세트 라인은 GROSS 표시)
-    const setOptionIds = new Set(setSpecs.flatMap((s) => s.items.map((i) => i.optionId)))
-    planSetsData = setSpecs.map((s) => {
-      const suggestedSetQty = suggestSetQty(s.items, rocketGrossNeed)
-      const currentSetStock = computeSetAvailable(s.items, onHandByOption)
-      return {
-        listingId: s.listingId,
-        listingName: s.listingName,
-        currentSetStock,
-        suggestedSetQty,
-        finalSetQty: suggestedSetQty,
-        sortOrder: s.sortOrder,
-      }
-    })
-    rocketSetGrossByOption = decomposeSetsToOptions(
-      setSpecs.map((s) => ({
-        listingId: s.listingId,
-        setQty: planSetsData!.find((p) => p.listingId === s.listingId)!.finalSetQty,
-        items: s.items,
-      }))
-    )
-
-    // 최종 옵션 = max(0, ceil(rocketContribution + directGross + safety − currentStock)). 차감 1회.
+    // 최종 옵션 = max(0, ceil(로켓 raw GROSS + 직접 raw GROSS + safety − currentStock)). 차감 1회.
     optionFinalQtyOverride = new Map<string, number>()
     directGrossByOption = new Map<string, number>()
+    rocketGrossByOption = new Map<string, number>()
     for (const it of itemInputs) {
-      // 세트 포함 옵션 = 세트분 GROSS(병목 인플레이션). 세트 미포함 옵션 = raw 로켓 GROSS(단품 로켓수요 누락 방지).
-      const rContribution = setOptionIds.has(it.optionId)
-        ? (rocketSetGrossByOption.get(it.optionId) ?? 0)
-        : (rocketGrossNeed.get(it.optionId) ?? 0)
+      const rGross = rocketGrossNeed.get(it.optionId) ?? 0
       const dGross = directGross.get(it.optionId) ?? 0
       const finalQty = computeLayeredFinalQty({
-        rocketContribution: rContribution,
+        rocketContribution: rGross,
         directGross: dGross,
         safetyStockQty: it.safetyStockQty,
         currentStock: it.currentStock,
       })
       optionFinalQtyOverride.set(it.optionId, finalQty)
       directGrossByOption.set(it.optionId, dGross)
+      rocketGrossByOption.set(it.optionId, rGross)
     }
+
+    // 세트 라인 = 발주 옵션수량의 역산(참고 표시). 이 발주로 구성 가능한 완성 세트 수 = min floor(finalQty/perSet).
+    // 세트는 옵션 finalQty 로 되먹이지 않는다(읽기전용 파생) — 중복 세트 과다집계 방지의 핵심.
+    planSetsData = setSpecs.map((s) => {
+      const backDerivedSetQty = computeSetAvailable(s.items, optionFinalQtyOverride!)
+      const currentSetStock = computeSetAvailable(s.items, onHandByOption)
+      return {
+        listingId: s.listingId,
+        listingName: s.listingName,
+        currentSetStock,
+        suggestedSetQty: backDerivedSetQty,
+        finalSetQty: backDerivedSetQty,
+        sortOrder: s.sortOrder,
+      }
+    })
   }
 
   // ── 6) LLM rationale 생성 (concurrency 제한) ─────────────────────────────
@@ -599,7 +593,8 @@ export async function POST(req: NextRequest) {
         finalQty: optionFinalQtyOverride
           ? (optionFinalQtyOverride.get(item.optionId) ?? 0)
           : item.roundedSuggestedQty,
-        // 레이어드: 직접 레이어 GROSS 보관(세트 PATCH 단일차감 재계산용). 비레이어드 = null.
+        // 레이어드: 로켓/직접 raw GROSS 보관(분해 표시 + 옵션 수정 시 참조). 비레이어드 = null.
+        rocketGrossQty: rocketGrossByOption?.get(item.optionId) ?? null,
         directGrossQty: directGrossByOption?.get(item.optionId) ?? null,
         roundUnit: item.roundUnit,
         rationale: rationaleResults[idx],
@@ -704,8 +699,8 @@ export async function POST(req: NextRequest) {
       ...item,
       dailyAvgForecast: Number(item.dailyAvgForecast),
       confidenceScore: item.confidenceScore ? Number(item.confidenceScore) : null,
-      // 레이어드 분해 표시용 (비레이어드 = null)
-      rocketSetGross: rocketSetGrossByOption?.get(item.optionId) ?? null,
+      // 레이어드 분해 표시용 (비레이어드 = null) — 로켓/직접 raw GROSS
+      rocketGross: rocketGrossByOption?.get(item.optionId) ?? null,
       directGross: directGrossByOption?.get(item.optionId) ?? null,
     })),
     sets: created.sets,

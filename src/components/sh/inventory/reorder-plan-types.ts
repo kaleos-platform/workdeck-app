@@ -86,9 +86,9 @@ export type ReorderPlanItem = {
   userNote: string | null
   biasAdjustFactor: number
   confidenceScore: number | null
-  // 레이어드 분해 표시용 (비레이어드 = null). rocketSetGross = 세트분 GROSS(세트 finalSetQty에서 파생),
-  // directGross = 직접 배송 레이어 GROSS. 최종 finalQty = max(0, ceil(rocketSetGross + directGross + safety − currentStock)).
-  rocketSetGross?: number | null
+  // 레이어드 분해 표시용 (비레이어드 = null). rocketGross = 로켓 raw GROSS, directGross = 직접 배송 raw GROSS.
+  // 최종 finalQty = max(0, ceil(rocketGross + directGross + safety − currentStock)). 세트는 옵션 발주의 역산 표시(파생).
+  rocketGross?: number | null
   directGross?: number | null
   // JSON 스냅샷 — 구조는 번스타인이 확정 예정
   inputsSnapshot: {

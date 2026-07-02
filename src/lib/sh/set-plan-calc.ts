@@ -64,9 +64,10 @@ export function computeSetAvailable(items: SetItem[], optionStock: Map<string, n
  *   finalQty = max(0, ceil(rocketContribution + directGross + safetyStockQty − currentStock))
  * 이중차감 방지가 핵심: 로켓·직접 레이어는 각각 GROSS(현재고·안전재고 차감 전)만 넘기고,
  * 옵션 재고는 두 채널이 공유하는 단일 풀이므로 `safety − currentStock` 차감을 **여기서 1회만** 한다.
- *   - rocketContribution = 세트 포함 옵션이면 세트분 GROSS(Σ setQty×perSet), 아니면 raw 로켓 GROSS.
- *   - directGross = 직접 배송 레이어 GROSS (float 허용 — ceil은 합산 후 1회).
- * POST 생성과 PATCH(세트 수량 편집) 재계산이 같은 공식을 쓰도록 공유한다.
+ *   - rocketContribution = raw 집계 로켓 GROSS(loadOptionDemand가 이미 전 세트 판매를 옵션으로 분해·집계).
+ *     세트를 리스팅마다 재-사이징해 decomposeSetsToOptions로 합산하면 공유 옵션이 ×N 부풀려지므로 금지.
+ *     세트 수량은 옵션 최종수량의 역산 표시(참고)일 뿐 이 값으로 되먹이지 않는다.
+ *   - directGross = 직접 배송 레이어 raw GROSS (float 허용 — ceil은 합산 후 1회).
  */
 export function computeLayeredFinalQty(p: {
   rocketContribution: number
