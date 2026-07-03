@@ -12,17 +12,11 @@ import { Check, CreditCard, Landmark, Pencil, Plus, Trash2, X } from 'lucide-rea
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 import { formatPercent, formatWon } from '@/components/finance/format'
+import { AccountFormDialog } from '@/components/finance/account-form-dialog'
+import { LiabilityFormDialog } from '@/components/finance/liability-form-dialog'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
@@ -63,25 +57,11 @@ interface CategoryNode {
 
 // ─── 섹션 A — 계좌(자산) ───────────────────────────────────────────────────────
 
-function emptyAccountForm() {
-  return {
-    name: '',
-    holder: '',
-    kind: 'BANK' as AccountKind,
-    institution: '',
-    accountNumber: '',
-    accountType: '',
-    openingBalance: '',
-  }
-}
-
 function AccountsSection() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(emptyAccountForm())
-  const [saving, setSaving] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -102,72 +82,13 @@ function AccountsSection() {
   }, [load])
 
   function startAdd() {
-    setEditingId(null)
-    setForm(emptyAccountForm())
-    setShowForm(true)
+    setEditingAccount(null)
+    setDialogOpen(true)
   }
 
   function startEdit(acct: Account) {
-    setEditingId(acct.id)
-    setForm({
-      name: acct.name,
-      holder: acct.holder ?? '',
-      kind: acct.kind,
-      institution: acct.institution,
-      accountNumber: acct.accountNumber ?? '',
-      accountType: acct.accountType ?? '',
-      openingBalance: acct.openingBalance !== null ? String(acct.openingBalance) : '',
-    })
-    setShowForm(true)
-  }
-
-  function cancelForm() {
-    setShowForm(false)
-    setEditingId(null)
-    setForm(emptyAccountForm())
-  }
-
-  async function handleSave() {
-    if (!form.name.trim()) {
-      toast.error('계좌 이름을 입력해 주세요')
-      return
-    }
-    if (!form.institution.trim()) {
-      toast.error('금융기관명을 입력해 주세요')
-      return
-    }
-
-    const payload = {
-      name: form.name.trim(),
-      holder: form.holder.trim() || null,
-      kind: form.kind,
-      institution: form.institution.trim(),
-      accountNumber: form.accountNumber.trim() || undefined,
-      accountType: form.accountType.trim() || undefined,
-      ...(form.openingBalance.trim() !== '' && {
-        openingBalance: Number(form.openingBalance),
-      }),
-    }
-
-    setSaving(true)
-    try {
-      const url = editingId ? `/api/finance/accounts/${editingId}` : '/api/finance/accounts'
-      const method = editingId ? 'PATCH' : 'POST'
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = (await res.json().catch(() => ({}))) as { message?: string }
-      if (!res.ok) throw new Error(data?.message ?? '저장 실패')
-      toast.success(editingId ? '계좌가 수정되었습니다' : '계좌가 추가되었습니다')
-      cancelForm()
-      await load()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장 실패')
-    } finally {
-      setSaving(false)
-    }
+    setEditingAccount(acct)
+    setDialogOpen(true)
   }
 
   async function handleDelete(acct: Account) {
@@ -196,19 +117,17 @@ function AccountsSection() {
             <CardTitle className="text-sm font-semibold">계좌 (자산)</CardTitle>
             <CardDescription className="text-xs">은행·카드 계좌를 관리합니다</CardDescription>
           </div>
-          {!showForm && (
-            <Button variant="outline" size="sm" onClick={startAdd} className="shrink-0">
-              <Plus className="mr-1 size-3.5" />
-              계좌 추가
-            </Button>
-          )}
+          <Button variant="outline" size="sm" onClick={startAdd} className="shrink-0">
+            <Plus className="mr-1 size-3.5" />
+            계좌 추가
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* 계좌 목록 */}
         {loading ? (
           <p className="text-xs text-muted-foreground">불러오는 중...</p>
-        ) : accounts.length === 0 && !showForm ? (
+        ) : accounts.length === 0 ? (
           <p className="text-xs text-muted-foreground">등록된 계좌가 없습니다</p>
         ) : (
           <div className="divide-y">
@@ -264,100 +183,12 @@ function AccountsSection() {
           </div>
         )}
 
-        {/* 추가/수정 인라인 폼 */}
-        {showForm && (
-          <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
-            <p className="text-sm font-medium">{editingId ? '계좌 수정' : '새 계좌 추가'}</p>
-            <div className="grid grid-cols-2 gap-3">
-              {/* 계좌 이름 */}
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">계좌 이름 *</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="예: 기업은행 사업용"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 예금주 */}
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">예금주</Label>
-                <Input
-                  value={form.holder}
-                  onChange={(e) => setForm((f) => ({ ...f, holder: e.target.value }))}
-                  placeholder="예: 주식회사 워크덱"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 종류 */}
-              <div className="space-y-1">
-                <Label className="text-xs">종류 *</Label>
-                <Select
-                  value={form.kind}
-                  onValueChange={(v) => setForm((f) => ({ ...f, kind: v as AccountKind }))}
-                  disabled={!!editingId}
-                >
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="BANK">은행</SelectItem>
-                    <SelectItem value="CARD">카드</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {/* 금융기관 */}
-              <div className="space-y-1">
-                <Label className="text-xs">금융기관 *</Label>
-                <Input
-                  value={form.institution}
-                  onChange={(e) => setForm((f) => ({ ...f, institution: e.target.value }))}
-                  placeholder="예: 기업은행"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 계좌번호 */}
-              <div className="space-y-1">
-                <Label className="text-xs">계좌번호</Label>
-                <Input
-                  value={form.accountNumber}
-                  onChange={(e) => setForm((f) => ({ ...f, accountNumber: e.target.value }))}
-                  placeholder="선택 입력"
-                  className="h-8 font-mono text-sm"
-                />
-              </div>
-              {/* 계좌 유형 */}
-              <div className="space-y-1">
-                <Label className="text-xs">계좌 유형</Label>
-                <Input
-                  value={form.accountType}
-                  onChange={(e) => setForm((f) => ({ ...f, accountType: e.target.value }))}
-                  placeholder="예: 보통예금"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 기초 잔액 */}
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">기초 잔액 (원)</Label>
-                <Input
-                  type="number"
-                  value={form.openingBalance}
-                  onChange={(e) => setForm((f) => ({ ...f, openingBalance: e.target.value }))}
-                  placeholder="선택 입력"
-                  className="h-8 text-sm"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={cancelForm}>
-                취소
-              </Button>
-              <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? '저장 중...' : editingId ? '수정' : '추가'}
-              </Button>
-            </div>
-          </div>
-        )}
+        <AccountFormDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          account={editingAccount}
+          onSaved={load}
+        />
       </CardContent>
     </Card>
   )
@@ -365,26 +196,11 @@ function AccountsSection() {
 
 // ─── 섹션 B — 부채 ────────────────────────────────────────────────────────────
 
-function emptyLiabilityForm() {
-  return {
-    name: '',
-    lender: '',
-    principal: '',
-    balance: '',
-    rate: '',
-    dueDate: '',
-    monthlyPayment: '',
-    memo: '',
-  }
-}
-
 function LiabilitiesSection() {
   const [liabilities, setLiabilities] = useState<Liability[]>([])
   const [loading, setLoading] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(emptyLiabilityForm())
-  const [saving, setSaving] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingLiability, setEditingLiability] = useState<Liability | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -405,83 +221,13 @@ function LiabilitiesSection() {
   }, [load])
 
   function startAdd() {
-    setEditingId(null)
-    setForm(emptyLiabilityForm())
-    setShowForm(true)
+    setEditingLiability(null)
+    setDialogOpen(true)
   }
 
   function startEdit(l: Liability) {
-    setEditingId(l.id)
-    setForm({
-      name: l.name,
-      lender: l.lender ?? '',
-      principal: String(l.principal),
-      balance: String(l.balance),
-      rate: l.rate ?? '',
-      dueDate: l.dueDate ?? '',
-      monthlyPayment: l.monthlyPayment !== null ? String(l.monthlyPayment) : '',
-      memo: l.memo ?? '',
-    })
-    setShowForm(true)
-  }
-
-  function cancelForm() {
-    setShowForm(false)
-    setEditingId(null)
-    setForm(emptyLiabilityForm())
-  }
-
-  async function handleSave() {
-    if (!form.name.trim()) {
-      toast.error('부채 이름을 입력해 주세요')
-      return
-    }
-    if (form.principal.trim() === '') {
-      toast.error('원금을 입력해 주세요')
-      return
-    }
-    if (form.balance.trim() === '') {
-      toast.error('잔액을 입력해 주세요')
-      return
-    }
-
-    const principal = Number(form.principal)
-    const balance = Number(form.balance)
-    if (!Number.isFinite(principal) || principal < 0) {
-      toast.error('원금이 올바르지 않습니다')
-      return
-    }
-    if (!Number.isFinite(balance) || balance < 0) {
-      toast.error('잔액이 올바르지 않습니다')
-      return
-    }
-
-    const payload: Record<string, unknown> = { name: form.name.trim(), principal, balance }
-    if (form.lender.trim()) payload.lender = form.lender.trim()
-    if (form.rate.trim()) payload.rate = form.rate.trim()
-    if (form.dueDate.trim()) payload.dueDate = form.dueDate.trim()
-    if (form.monthlyPayment.trim() !== '') payload.monthlyPayment = Number(form.monthlyPayment)
-    if (form.memo.trim()) payload.memo = form.memo.trim()
-
-    setSaving(true)
-    try {
-      const url = editingId ? `/api/finance/liabilities/${editingId}` : '/api/finance/liabilities'
-      const method = editingId ? 'PATCH' : 'POST'
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = (await res.json().catch(() => ({}))) as { message?: string }
-      if (!res.ok) throw new Error(data?.message ?? '저장 실패')
-      toast.success(editingId ? '부채가 수정되었습니다' : '부채가 추가되었습니다')
-      cancelForm()
-      await load()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장 실패')
-    } finally {
-      setSaving(false)
-    }
+    setEditingLiability(l)
+    setDialogOpen(true)
   }
 
   async function handleDelete(l: Liability) {
@@ -505,19 +251,17 @@ function LiabilitiesSection() {
             <CardTitle className="text-sm font-semibold">부채</CardTitle>
             <CardDescription className="text-xs">대출·부채 항목을 관리합니다</CardDescription>
           </div>
-          {!showForm && (
-            <Button variant="outline" size="sm" onClick={startAdd} className="shrink-0">
-              <Plus className="mr-1 size-3.5" />
-              부채 추가
-            </Button>
-          )}
+          <Button variant="outline" size="sm" onClick={startAdd} className="shrink-0">
+            <Plus className="mr-1 size-3.5" />
+            부채 추가
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* 부채 목록 */}
         {loading ? (
           <p className="text-xs text-muted-foreground">불러오는 중...</p>
-        ) : liabilities.length === 0 && !showForm ? (
+        ) : liabilities.length === 0 ? (
           <p className="text-xs text-muted-foreground">등록된 부채가 없습니다</p>
         ) : (
           <div className="divide-y">
@@ -582,105 +326,12 @@ function LiabilitiesSection() {
           </div>
         )}
 
-        {/* 추가/수정 인라인 폼 */}
-        {showForm && (
-          <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
-            <p className="text-sm font-medium">{editingId ? '부채 수정' : '새 부채 추가'}</p>
-            <div className="grid grid-cols-2 gap-3">
-              {/* 이름 */}
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">부채 이름 *</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="예: 기업은행 사업자대출"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 채권자 */}
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">채권자 (금융기관)</Label>
-                <Input
-                  value={form.lender}
-                  onChange={(e) => setForm((f) => ({ ...f, lender: e.target.value }))}
-                  placeholder="예: 기업은행"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 원금 */}
-              <div className="space-y-1">
-                <Label className="text-xs">원금 (원) *</Label>
-                <Input
-                  type="number"
-                  value={form.principal}
-                  onChange={(e) => setForm((f) => ({ ...f, principal: e.target.value }))}
-                  placeholder="100000000"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 잔액 */}
-              <div className="space-y-1">
-                <Label className="text-xs">현재 잔액 (원) *</Label>
-                <Input
-                  type="number"
-                  value={form.balance}
-                  onChange={(e) => setForm((f) => ({ ...f, balance: e.target.value }))}
-                  placeholder="80000000"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 이율 */}
-              <div className="space-y-1">
-                <Label className="text-xs">이율</Label>
-                <Input
-                  value={form.rate}
-                  onChange={(e) => setForm((f) => ({ ...f, rate: e.target.value }))}
-                  placeholder="예: 연 4.5%"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 만기일 */}
-              <div className="space-y-1">
-                <Label className="text-xs">만기일</Label>
-                <Input
-                  value={form.dueDate}
-                  onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
-                  placeholder="예: 2028-06"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 월 상환액 */}
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">월 상환액 (원)</Label>
-                <Input
-                  type="number"
-                  value={form.monthlyPayment}
-                  onChange={(e) => setForm((f) => ({ ...f, monthlyPayment: e.target.value }))}
-                  placeholder="선택 입력"
-                  className="h-8 text-sm"
-                />
-              </div>
-              {/* 메모 */}
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">메모</Label>
-                <Input
-                  value={form.memo}
-                  onChange={(e) => setForm((f) => ({ ...f, memo: e.target.value }))}
-                  placeholder="선택 입력"
-                  className="h-8 text-sm"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={cancelForm}>
-                취소
-              </Button>
-              <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? '저장 중...' : editingId ? '수정' : '추가'}
-              </Button>
-            </div>
-          </div>
-        )}
+        <LiabilityFormDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          liability={editingLiability}
+          onSaved={load}
+        />
       </CardContent>
     </Card>
   )
