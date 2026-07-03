@@ -51,14 +51,6 @@ export type ReorderPlanSet = {
   items: ReorderPlanSetItem[]
 }
 
-// PATCH /api/sh/inventory/reorder/plan/[id]/sets/[setId] 응답
-export type SetPatchResponse = {
-  setId: string
-  finalSetQty: number
-  totalFinalQty: number
-  optionFinalQty: Record<string, number>
-}
-
 // 발주 계획에 연결된 생산차수 요약 (재고 흐름 — 신뢰도와 무관)
 export type ProductionRunSummary = {
   id: string

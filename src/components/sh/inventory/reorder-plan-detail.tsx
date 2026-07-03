@@ -653,17 +653,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     [items, optionMap, productInfoById, productInfo, plan?.productName]
   )
 
-  // 세트 계획 연계 프리필 — 세트(listing)·최종 세트수량 (옵션 items 와 평행 전달)
-  const runPrefillSets = useMemo(
-    () =>
-      sets.map((s) => ({
-        listingId: s.listingId,
-        listingName: s.listingName,
-        plannedSetQty: s.finalSetQty,
-      })),
-    [sets]
-  )
-
   // 초안으로 — 확정 계획을 수정하기 위해 새 DRAFT revision 생성 후 이동
   const handleRevert = async () => {
     setReverting(true)
@@ -721,6 +710,10 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const colCount = 11
   // 레이어드 = 상품 계획 + 로켓 세트(연동) + 직접 배송. 세트표와 옵션(최종)표를 함께 보여준다.
   const isLayered = plan.isLayered === true
+  // 세트 모드 = 위치 세트 계획(locationId) 또는 레이어드(연동 세트 레이어). 세트 환산표를 함께 노출.
+  const isSetMode = isLayered || plan.locationId != null
+  // 멀티상품 = 위치 세트 계획은 한 로켓 위치에 여러 상품(캡나시·쿨핏 등)이 공존 → 옵션표에 상품명 표기.
+  const isMultiProduct = new Set(items.map((it) => it.productId)).size > 1
 
   return (
     <div className="space-y-4">
@@ -751,7 +744,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             <span className="font-medium tabular-nums">{plan.totalSuggestedQty}</span>개 · 최종 합계{' '}
             <span className="font-medium tabular-nums">{totalFinalQty}</span>개
           </p>
-          {!readonly && coldStartCount > 0 && (
+          {/* 힌트가 가리키는 "아래 패널"은 평이 상품 계획에서만 렌더되므로(세트/레이어드 제외) 게이트를 패널과 일치시킨다. */}
+          {!readonly && coldStartCount > 0 && !isSetMode && (
             <p className="text-xs text-amber-700">
               데이터 부족 옵션 {coldStartCount}개 — 아래 패널에서 목표 판매량을 설정해 초기 예측을
               보정하세요
@@ -839,8 +833,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
       )}
 
-      {/* 콜드스타트 전체 적용 패널 — 평이 상품 계획 + 데이터부족 옵션 있을 때만 (레이어드 제외) */}
-      {!readonly && coldStartCount > 0 && !plan.locationId && !isLayered && (
+      {/* 콜드스타트 전체 적용 패널 — 평이 상품 계획 + 데이터부족 옵션 있을 때만 (세트/레이어드 제외) */}
+      {!readonly && coldStartCount > 0 && !isSetMode && (
         <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50/50 px-4 py-3">
           <p className="text-xs font-medium text-amber-800">
             초기 예측 보정 · 데이터부족 {coldStartCount}개
@@ -913,7 +907,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         ))}
 
       {/* ── 세트 테이블 — 위치 세트 계획(locationId) 또는 레이어드(연동 세트 레이어) ── */}
-      {(isLayered || plan.locationId) && (
+      {isSetMode && (
         <p className="text-sm font-medium">
           연동 세트 환산{' '}
           <span className="text-xs font-normal text-muted-foreground">
@@ -921,7 +915,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           </span>
         </p>
       )}
-      {(plan.locationId || isLayered) && (
+      {isSetMode && (
         <div className="overflow-x-auto rounded-md border">
           <Table>
             <TableHeader>
@@ -929,15 +923,15 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                 <TableHead className="w-8"></TableHead>
                 <TableHead>세트명</TableHead>
                 <TableHead className="text-right">현재 세트재고</TableHead>
-                <TableHead className="text-right">제안 세트수량</TableHead>
-                <TableHead className="text-right">최종 세트수량</TableHead>
+                {/* 세트는 옵션 발주수량의 역산(읽기전용) — 제안=최종이라 단일 컬럼으로 표시. */}
+                <TableHead className="text-right">발주 세트수량(역산)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sets.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={4}
                     className="py-10 text-center text-sm text-muted-foreground"
                   >
                     세트 항목이 없습니다
@@ -968,9 +962,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                         <TableCell className="text-right tabular-nums">
                           {QTY.format(set.currentSetStock)}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {backDerivedSetQty(set.items)}
-                        </TableCell>
                         <TableCell className="text-right">
                           {/* 위치·레이어드 두 세트 모드 모두 세트는 옵션 발주수량의 역산(읽기전용). */}
                           <span
@@ -993,7 +984,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                                 <span className="ml-1.5 text-[10px]">· 세트당 {si.perSet}개</span>
                               </TableCell>
                               <TableCell></TableCell>
-                              <TableCell></TableCell>
                               <TableCell className="text-right text-xs tabular-nums">
                                 <span className="font-medium">{QTY.format(finalQty)}</span>
                                 <span className="ml-1 text-[10px] text-muted-foreground">개</span>
@@ -1011,7 +1001,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
       )}
 
       {/* ── 최종 옵션 테이블 — 전 모드 공통. 옵션 수요가 진실이므로 위치 세트 계획도 옵션 단위로 발주한다. ── */}
-      {(isLayered || plan.locationId) && (
+      {isSetMode && (
         <p className="text-sm font-medium">
           최종 발주{' '}
           <span className="text-xs font-normal text-muted-foreground">
@@ -1021,7 +1011,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           </span>
         </p>
       )}
-      {(
+      {
         <div className="overflow-x-auto rounded-md border">
           <Table>
             <TableHeader>
@@ -1065,6 +1055,12 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="text-sm">
+                        {/* 위치 세트 계획 등 멀티상품일 때 동명 옵션 구분 위해 상품명 표기 */}
+                        {isMultiProduct && (
+                          <div className="text-[10px] font-medium text-muted-foreground">
+                            {productInfoById.get(item.productId)?.productName ?? '-'}
+                          </div>
+                        )}
                         <div className="flex items-center gap-1.5">
                           <span>{opt?.optionName ?? '-'}</span>
                           {opt?.optionDeleted && (
@@ -1179,7 +1175,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             </TableBody>
           </Table>
         </div>
-      )}
+      }
 
       {/* 확정 확인 다이얼로그 */}
       <Dialog open={finalizeOpen} onOpenChange={setFinalizeOpen}>
@@ -1205,7 +1201,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </DialogContent>
       </Dialog>
 
-      {/* 생산차수 생성 폼 — 계획 옵션·수량 프리필 + 원가 직접 입력 */}
+      {/* 생산차수 생성 폼 — 계획 옵션·수량 프리필 + 원가 직접 입력.
+          옵션 중심 통일 — 세트는 옵션 발주수량의 역산 표시일 뿐 생산차수로 프리필하지 않는다(세트 과다집계 방지). */}
       <ProductionRunFormDialog
         open={runFormOpen}
         onOpenChange={(o) => {
@@ -1214,7 +1211,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         }}
         runId={editRunId ?? undefined}
         prefillItems={editRunId ? undefined : runPrefillItems}
-        prefillSets={editRunId || isLayered || plan.locationId ? undefined : runPrefillSets}
         reorderPlanId={editRunId ? undefined : planId}
         onSaved={() => {
           setRunFormOpen(false)
