@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { computeSetAvailable } from '@/lib/sh/set-plan-calc'
 
 type Params = { params: Promise<{ runId: string }> }
 
@@ -58,5 +59,38 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }
   })
 
-  return NextResponse.json({ layered: true, rocketLocation, options })
+  // 묶음 상품(세트) 기준 확인 뷰 — baseline(연동 위치 입고분)을 플랜 세트 구성으로 역산.
+  // 표시 전용(재고 write 아님) — 옵션 단위 입고는 그대로, 이 뷰로 "세트 몇 개분"을 구분 확인.
+  // 구성 옵션이 겹치는 여러 세트는 각각 대안적 환산(합산 아님) — over-count 없음.
+  const baselineStockByOption = new Map<string, number>()
+  for (const o of options) baselineStockByOption.set(o.optionId, o.baselineQty)
+  const planSets = await prisma.reorderPlanSet.findMany({
+    where: { planId: run.reorderPlanId },
+    orderBy: { sortOrder: 'asc' },
+    select: {
+      listingName: true,
+      listing: {
+        select: {
+          items: {
+            orderBy: { sortOrder: 'asc' },
+            select: { optionId: true, quantity: true, option: { select: { name: true } } },
+          },
+        },
+      },
+    },
+  })
+  const sets = planSets.map((s) => {
+    const items = s.listing.items.map((it) => ({
+      optionId: it.optionId,
+      perSet: it.quantity,
+      optionName: it.option.name,
+    }))
+    return {
+      listingName: s.listingName,
+      setQty: computeSetAvailable(items, baselineStockByOption),
+      items,
+    }
+  })
+
+  return NextResponse.json({ layered: true, rocketLocation, options, sets })
 }

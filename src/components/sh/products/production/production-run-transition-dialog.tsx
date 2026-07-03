@@ -89,6 +89,10 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
   const [setQtyByListing, setSetQtyByListing] = useState<Record<string, number>>({})
   // 레이어드 자동 분배 프리필됨(연동 위치 baseline + 사용자 위치 추가분) 여부 — 안내 표시용
   const [layeredSplit, setLayeredSplit] = useState(false)
+  // 묶음 상품(세트) 기준 확인 뷰 — baseline 을 세트 구성으로 역산(표시 전용)
+  const [baselineSets, setBaselineSets] = useState<
+    { listingName: string; setQty: number; items: { optionName: string; perSet: number }[] }[]
+  >([])
 
   const isStockIn = target === 'STOCKED_IN'
   // 세트 기반 차수면 세트 단위 입고 모드 (구성옵션 분배는 서버가 처리)
@@ -102,6 +106,7 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
     setSetQtyByListing({})
     setStockInLocationId('')
     setLayeredSplit(false)
+    setBaselineSets([])
   }, [open])
 
   // STOCKED_IN 일 때만 위치 로드 → 로드 후 옵션별 기본 1행(전체 수량 → 첫 위치) 초기화.
@@ -138,6 +143,7 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
           layered: boolean
           rocketLocation: { id: string; name: string } | null
           options: { optionId: string; baselineQty: number; additionalQty: number }[]
+          sets?: { listingName: string; setQty: number; items: { optionName: string; perSet: number }[] }[]
         }
         let split: Split | null = null
         try {
@@ -166,6 +172,7 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
             init[it.optionId] = rows
           }
           setLayeredSplit(true)
+          setBaselineSets((split.sets ?? []).filter((s) => s.setQty > 0))
         } else {
           // 기본: 옵션별 1행(전체 수량 → 첫 위치)
           for (const it of runItems ?? []) {
@@ -448,10 +455,35 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
               </Label>
 
               {layeredSplit && (
-                <p className="rounded-md border border-indigo-200 bg-indigo-50/50 px-3 py-2 text-xs text-indigo-700">
-                  연동 위치 발주(레이어드) — baseline 분은 연동 위치로, 추가분은 사용자 위치로 자동
-                  분배했습니다(묶음 상품 발주 기준). 실입고에 맞게 위치·수량을 조정하세요.
-                </p>
+                <div className="space-y-2 rounded-md border border-indigo-200 bg-indigo-50/50 px-3 py-2 text-xs text-indigo-700">
+                  <p>
+                    연동 위치 발주(레이어드) — baseline 분은 연동 위치로, 추가분은 사용자 위치로 자동
+                    분배했습니다. 실입고에 맞게 위치·수량을 조정하세요.
+                  </p>
+                  {baselineSets.length > 0 && (
+                    <div className="space-y-1 border-t border-indigo-200/70 pt-1.5">
+                      <p className="font-medium">묶음 상품(세트) 기준 확인 · 연동 위치 baseline</p>
+                      <ul className="space-y-0.5">
+                        {baselineSets.map((s, i) => (
+                          <li key={`${s.listingName}-${i}`} className="flex flex-wrap items-baseline gap-x-2">
+                            <span className="font-medium text-foreground">{s.listingName}</span>
+                            <span className="tabular-nums">{s.setQty}세트</span>
+                            <span className="text-indigo-600/80">
+                              (
+                              {s.items
+                                .map((it) => `${it.optionName}×${it.perSet}`)
+                                .join(' + ')}
+                              )
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-[10px] text-indigo-600/70">
+                        구성 옵션이 겹치는 세트는 각각 대안 환산입니다(합산 아님). 실제 입고는 옵션 단위.
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
 
               {loadingLocations && (

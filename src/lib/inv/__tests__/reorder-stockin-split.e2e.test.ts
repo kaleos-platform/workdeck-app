@@ -35,8 +35,12 @@ let rocketLocId = ''
 async function cleanup() {
   await prisma.productionRunItem.deleteMany({ where: { run: { spaceId: SPACE_ID } } })
   await prisma.productionRun.deleteMany({ where: { spaceId: SPACE_ID } })
+  await prisma.reorderPlanSet.deleteMany({ where: { plan: { spaceId: SPACE_ID } } })
   await prisma.reorderPlanItem.deleteMany({ where: { plan: { spaceId: SPACE_ID } } })
   await prisma.reorderPlan.deleteMany({ where: { spaceId: SPACE_ID } })
+  await prisma.productListingItem.deleteMany({ where: { listing: { spaceId: SPACE_ID } } })
+  await prisma.productListing.deleteMany({ where: { spaceId: SPACE_ID } })
+  await prisma.channel.deleteMany({ where: { spaceId: SPACE_ID } })
   await prisma.invProductOption.deleteMany({ where: { product: { spaceId: SPACE_ID } } })
   await prisma.invProduct.deleteMany({ where: { spaceId: SPACE_ID } })
   await prisma.invProductGroup.deleteMany({ where: { spaceId: SPACE_ID } })
@@ -99,6 +103,33 @@ d('GET /production-runs/[runId]/stockin-split — 레이어드 baseline/추가�
     })
     await planItem(plan.id, optAId, 30, 100) // baseline ceil(30)=30, 발주 100 → 추가 70
     await planItem(plan.id, optBId, 50, 20) // baseline min(20, ceil(50))=20, 추가 0
+    // 세트(묶음 상품) — 2장세트 {A×1, B×1} → baseline{A:30,B:20} 로 min(30,20)=20 세트
+    const channel = await prisma.channel.create({ data: { spaceId: SPACE_ID, name: 'E2E 대표채널' } })
+    const listing = await prisma.productListing.create({
+      data: {
+        spaceId: SPACE_ID,
+        channelId: channel.id,
+        searchName: '캡나시 2장세트',
+        displayName: '캡나시 2장세트',
+        items: {
+          create: [
+            { optionId: optAId, quantity: 1 },
+            { optionId: optBId, quantity: 1 },
+          ],
+        },
+      },
+    })
+    await prisma.reorderPlanSet.create({
+      data: {
+        planId: plan.id,
+        listingId: listing.id,
+        listingName: '캡나시 2장세트',
+        currentSetStock: 0,
+        suggestedSetQty: 20,
+        finalSetQty: 20,
+        sortOrder: 0,
+      },
+    })
     // 이 플랜에서 생성된 생산 차수 (발주수량 = finalQty)
     const run = await prisma.productionRun.create({
       data: {
@@ -129,8 +160,9 @@ d('GET /production-runs/[runId]/stockin-split — 레이어드 baseline/추가�
     const res = await GET(new NextRequest('http://localhost/x'), {
       params: Promise.resolve({ runId }),
     })
-    expect(res.status).toBe(200)
-    const json = await res.json()
+    expect(res).toBeDefined()
+    expect(res!.status).toBe(200)
+    const json = await res!.json()
     expect(json.layered).toBe(true)
     expect(json.rocketLocation?.id).toBe(rocketLocId)
 
@@ -142,5 +174,14 @@ d('GET /production-runs/[runId]/stockin-split — 레이어드 baseline/추가�
     )
     expect(byOpt.get(optAId)).toEqual({ optionId: optAId, baselineQty: 30, additionalQty: 70 })
     expect(byOpt.get(optBId)).toEqual({ optionId: optBId, baselineQty: 20, additionalQty: 0 })
+
+    // 묶음 상품(세트) 기준 확인 뷰 — baseline{A:30,B:20} 로 2장세트 {A×1,B×1} = 20세트
+    expect(Array.isArray(json.sets)).toBe(true)
+    const set = json.sets.find((s: { listingName: string }) => s.listingName === '캡나시 2장세트')
+    expect(set?.setQty).toBe(20)
+    expect(set?.items).toEqual([
+      { optionId: optAId, perSet: 1, optionName: 'A' },
+      { optionId: optBId, perSet: 1, optionName: 'B' },
+    ])
   })
 })
