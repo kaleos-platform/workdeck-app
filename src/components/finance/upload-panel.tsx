@@ -4,7 +4,7 @@
  * 재무 관리 Deck — 데이터 등록 패널 (단일 화면 업로드).
  * 파일 선택 → preview API → 컬럼 매핑 에디터 → commit-staging API.
  */
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle2, Info, Plus, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -15,6 +15,14 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -593,9 +601,9 @@ export function FinanceUploadPanel() {
                 </div>
               )}
 
-              {/* 인라인 계좌 등록 폼 — 파일 정보를 prefill */}
+              {/* 계좌 등록 다이얼로그 — 파일 정보를 prefill */}
               {showAccountForm && (
-                <InlineAccountForm
+                <AccountRegisterDialog
                   prefill={{
                     name: previewRes.institution ?? previewRes.preview.preamble.holder ?? '',
                     holder: previewRes.preview.preamble.holder ?? '',
@@ -705,9 +713,9 @@ export function FinanceUploadPanel() {
   )
 }
 
-// ─── 인라인 계좌 등록 폼 ───────────────────────────────────────────────────────
+// ─── 계좌 등록 다이얼로그 ───────────────────────────────────────────────────────
 
-type InlineAccountFormProps = {
+type AccountRegisterDialogProps = {
   /** 업로드 파일 정보에서 추출한 초기값 */
   prefill: {
     name: string
@@ -721,7 +729,7 @@ type InlineAccountFormProps = {
   onCreated: (account: Account) => void
 }
 
-function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormProps) {
+function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegisterDialogProps) {
   const [name, setName] = useState(prefill.name)
   const [holder, setHolder] = useState(prefill.holder)
   const [accKind, setAccKind] = useState<FinKind>(prefill.kind)
@@ -786,107 +794,126 @@ function InlineAccountForm({ prefill, onCancel, onCreated }: InlineAccountFormPr
     }
   }
 
+  function handleEnter(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      void handleSave()
+    }
+  }
+
   return (
-    <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-medium">새 계좌 등록</p>
-        <span className="text-xs text-muted-foreground">
-          파일 정보를 불러왔습니다 — 확인 후 등록하세요
-        </span>
-      </div>
+    <Dialog
+      open
+      onOpenChange={(o) => {
+        if (!o) onCancel()
+      }}
+    >
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>새 계좌 등록</DialogTitle>
+          <DialogDescription>파일 정보를 확인한 뒤 적재 계좌로 등록하세요.</DialogDescription>
+        </DialogHeader>
 
-      <div className="grid grid-cols-2 gap-3">
-        {/* 이름 */}
-        <div className="col-span-2 space-y-1">
-          <Label className="text-xs">계좌 이름 *</Label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="예: 기업은행 사업용"
-            className="h-8 text-sm"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          {/* 이름 */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-xs">계좌 이름 *</Label>
+            <Input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={handleEnter}
+              placeholder="예: 기업은행 사업용"
+              className="h-8 text-sm"
+            />
+          </div>
+
+          {/* 예금주 */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-xs">예금주</Label>
+            <Input
+              value={holder}
+              onChange={(e) => setHolder(e.target.value)}
+              onKeyDown={handleEnter}
+              placeholder="예: 주식회사 워크덱"
+              className="h-8 text-sm"
+            />
+          </div>
+
+          {/* 종류 */}
+          <div className="space-y-1">
+            <Label className="text-xs">종류 *</Label>
+            <Select value={accKind} onValueChange={(v) => setAccKind(v as FinKind)}>
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="BANK">은행</SelectItem>
+                <SelectItem value="CARD">카드</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 금융기관 */}
+          <div className="space-y-1">
+            <Label className="text-xs">금융기관 *</Label>
+            <Input
+              value={institution}
+              onChange={(e) => setInstitution(e.target.value)}
+              onKeyDown={handleEnter}
+              placeholder="예: 기업은행"
+              className="h-8 text-sm"
+            />
+          </div>
+
+          {/* 계좌번호 */}
+          <div className="space-y-1">
+            <Label className="text-xs">계좌번호</Label>
+            <Input
+              value={accountNumber}
+              onChange={(e) => setAccountNumber(e.target.value)}
+              onKeyDown={handleEnter}
+              placeholder="선택 입력"
+              className="h-8 font-mono text-sm"
+            />
+          </div>
+
+          {/* 계좌 유형 */}
+          <div className="space-y-1">
+            <Label className="text-xs">계좌 유형</Label>
+            <Input
+              value={accountType}
+              onChange={(e) => setAccountType(e.target.value)}
+              onKeyDown={handleEnter}
+              placeholder="예: 보통예금"
+              className="h-8 text-sm"
+            />
+          </div>
+
+          {/* 기초 잔액 */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-xs">기초 잔액 (원)</Label>
+            <Input
+              type="number"
+              value={openingBalance}
+              onChange={(e) => setOpeningBalance(e.target.value)}
+              onKeyDown={handleEnter}
+              placeholder="선택 입력"
+              className="h-8 text-sm"
+            />
+          </div>
         </div>
 
-        {/* 종류 */}
-        <div className="col-span-2 space-y-1">
-          <Label className="text-xs">예금주</Label>
-          <Input
-            value={holder}
-            onChange={(e) => setHolder(e.target.value)}
-            placeholder="예: 주식회사 워크덱"
-            className="h-8 text-sm"
-          />
-        </div>
-
-        {/* 종류 */}
-        <div className="space-y-1">
-          <Label className="text-xs">종류 *</Label>
-          <Select value={accKind} onValueChange={(v) => setAccKind(v as FinKind)}>
-            <SelectTrigger className="h-8 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="BANK">은행</SelectItem>
-              <SelectItem value="CARD">카드</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 금융기관 */}
-        <div className="space-y-1">
-          <Label className="text-xs">금융기관 *</Label>
-          <Input
-            value={institution}
-            onChange={(e) => setInstitution(e.target.value)}
-            placeholder="예: 기업은행"
-            className="h-8 text-sm"
-          />
-        </div>
-
-        {/* 계좌번호 */}
-        <div className="space-y-1">
-          <Label className="text-xs">계좌번호</Label>
-          <Input
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-            placeholder="선택 입력"
-            className="h-8 font-mono text-sm"
-          />
-        </div>
-
-        {/* 계좌 유형 */}
-        <div className="space-y-1">
-          <Label className="text-xs">계좌 유형</Label>
-          <Input
-            value={accountType}
-            onChange={(e) => setAccountType(e.target.value)}
-            placeholder="예: 보통예금"
-            className="h-8 text-sm"
-          />
-        </div>
-
-        {/* 기초 잔액 */}
-        <div className="col-span-2 space-y-1">
-          <Label className="text-xs">기초 잔액 (원)</Label>
-          <Input
-            type="number"
-            value={openingBalance}
-            onChange={(e) => setOpeningBalance(e.target.value)}
-            placeholder="선택 입력"
-            className="h-8 text-sm"
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onCancel} disabled={saving}>
-          취소
-        </Button>
-        <Button size="sm" onClick={handleSave} disabled={saving}>
-          {saving ? '등록 중...' : '계좌 등록'}
-        </Button>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel} disabled={saving}>
+            취소
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? '등록 중...' : '계좌 등록'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
