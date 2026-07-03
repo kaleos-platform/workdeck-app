@@ -187,9 +187,9 @@ model Workspace {
   analysisSchedule AnalysisSchedule?
 
   // 데이터 수집 관련
-  coupangCredential  CoupangCredential?
-  collectionSchedule CollectionSchedule?
-  collectionRuns     CollectionRun[]
+  coupangCredential   CoupangCredential?
+  collectionSchedule  CollectionSchedule?
+  collectionRuns      CollectionRun[]
   coupangBackfillJobs CoupangBackfillJob[]
 
   // 재고 관리
@@ -492,20 +492,20 @@ model DeckInstance {
 
 // 쿠팡 로그인 자격증명 (워크스페이스당 1개)
 model CoupangCredential {
-  id            String    @id @default(cuid())
-  workspaceId   String    @unique
-  loginId       String
-  loginPassword String
-  encryptionIv  String
-  isActive      Boolean   @default(true)
+  id                 String    @id @default(cuid())
+  workspaceId        String    @unique
+  loginId            String
+  loginPassword      String
+  encryptionIv       String
+  isActive           Boolean   @default(true)
   // 판매분석(VENDOR) 수집 허가 — isActive(크레덴셜 유효)와 의미 분리.
   // false 면 워커가 inventory_health 만 수집하고 VENDOR(로켓그로스 일별 판매)는 건너뛴다.
-  collectVendorSales Boolean @default(true)
-  lastLoginAt   DateTime?
-  lastError     String?
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  collectVendorSales Boolean   @default(true)
+  lastLoginAt        DateTime?
+  lastError          String?
+  workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }
 
 // 자동 수집 스케줄 (워크스페이스당 1개)
@@ -545,15 +545,15 @@ model CoupangBackfillJob {
   collected     Int                   @default(0) // 적재된 일자 수
   converted     Int                   @default(0) // OUTBOUND 변환된 일자 수
   // 이력 요약 (수집 결과 가시화) — 잡 전체 누적
-  duplicateRows Int     @default(0) // 중복으로 건너뛴 VENDOR 행 수
-  outboundCount Int     @default(0) // 생성/갱신된 OUTBOUND(재고차감) 이동 건수
-  revenueSum    Decimal @default(0) @db.Decimal(18, 2) // 매출 합
-  orderSum      Int     @default(0) // 주문 합
-  salesQtySum   Int     @default(0) // 판매량 합
-  error       String?
-  workspace   Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  duplicateRows Int                   @default(0) // 중복으로 건너뛴 VENDOR 행 수
+  outboundCount Int                   @default(0) // 생성/갱신된 OUTBOUND(재고차감) 이동 건수
+  revenueSum    Decimal               @default(0) @db.Decimal(18, 2) // 매출 합
+  orderSum      Int                   @default(0) // 주문 합
+  salesQtySum   Int                   @default(0) // 판매량 합
+  error         String?
+  workspace     Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 
   @@index([status, createdAt])
   @@index([workspaceId, status])
@@ -561,20 +561,20 @@ model CoupangBackfillJob {
 
 // 수집 실행 이력
 model CollectionRun {
-  id          String           @id @default(cuid())
-  workspaceId String
-  status      CollectionStatus @default(PENDING)
-  triggeredBy String
-  startedAt   DateTime?
-  completedAt DateTime?
-  error       String?
-  uploadId    String?
+  id               String           @id @default(cuid())
+  workspaceId      String
+  status           CollectionStatus @default(PENDING)
+  triggeredBy      String
+  startedAt        DateTime?
+  completedAt      DateTime?
+  error            String?
+  uploadId         String?
   // 수동 수집 작업 스코프 — 어떤 작업을 실행할지. 자동(scheduled)은 둘 다 true(전체).
   // 판매(VENDOR)는 수동 수집에서 항상 제외되므로 별도 필드 없음(자동 cron 전용).
-  collectAds       Boolean     @default(true) // 광고 데이터 수집
-  collectInventory Boolean     @default(true) // 재고현황(HEALTH) 수집
-  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime         @default(now())
+  collectAds       Boolean          @default(true) // 광고 데이터 수집
+  collectInventory Boolean          @default(true) // 재고현황(HEALTH) 수집
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt        DateTime         @default(now())
 
   @@index([workspaceId, status])
   @@index([workspaceId, createdAt])
@@ -760,15 +760,15 @@ model InventoryRecord {
 
   // vendor_item_metrics 전용
   fulfillmentType String? // 판매방식: "로켓그로스" | "판매자배송"
-  visitors       Int?
-  views          Int?
-  cartAdds       Int?
-  conversionRate Decimal? @db.Decimal(10, 4) // 구매전환율 %
-  itemWinnerRate Decimal? @db.Decimal(10, 4) // 아이템위너 비율 %
-  totalRevenue   Decimal? @db.Decimal(18, 2)
-  totalSales     Int?
-  totalCancelAmt Decimal? @db.Decimal(18, 2)
-  totalCancelled Int?
+  visitors        Int?
+  views           Int?
+  cartAdds        Int?
+  conversionRate  Decimal? @db.Decimal(10, 4) // 구매전환율 %
+  itemWinnerRate  Decimal? @db.Decimal(10, 4) // 아이템위너 비율 %
+  totalRevenue    Decimal? @db.Decimal(18, 2)
+  totalSales      Int?
+  totalCancelAmt  Decimal? @db.Decimal(18, 2)
+  totalCancelled  Int?
 
   // 보관기간별 재고
   stock1to30d    Int?
@@ -967,6 +967,7 @@ model InvStorageLocation {
   reconciliations       InvReconciliation[]
   settingsDefault       InvSettings[]           @relation("DefaultLocation")
   productionRunStockIns ProductionRun[]         @relation("ProductionRunStockInLocation")
+  reorderPlans          ReorderPlan[] // 연동위치 세트 발주 계획의 대상 위치
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1311,11 +1312,11 @@ model ChannelProductAliasFulfillment {
 
 // 컬럼 매핑 프리셋 (업로드 시 header name → field 매핑을 저장)
 model DelColumnMappingPreset {
-  id        String  @id @default(cuid())
-  spaceId   String
-  name      String
-  mapping   Json // Array<{ headerName: string; field: string }>
-  channelId String? // 프리셋 적용 시 배송 등록의 판매채널로 자동 입력될 채널
+  id                  String  @id @default(cuid())
+  spaceId             String
+  name                String
+  mapping             Json // Array<{ headerName: string; field: string }>
+  channelId           String? // 프리셋 적용 시 배송 등록의 판매채널로 자동 입력될 채널
   paymentIsOrderTotal Boolean @default(false) // 결제금액이 "주문 총액"(행마다 반복)이면 import 시 행 합산 안 함
 
   space   Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -1388,33 +1389,33 @@ model ChannelTypeDef {
 
 // 공용 판매 채널
 model Channel {
-  id                    String   @id @default(cuid())
-  spaceId               String
-  channelTypeDefId      String? // 마이그레이션 후 NOT NULL로 강제하기 전까지 nullable
-  name                  String
+  id                      String   @id @default(cuid())
+  spaceId                 String
+  channelTypeDefId        String? // 마이그레이션 후 NOT NULL로 강제하기 전까지 nullable
+  name                    String
   // 외부 데이터 소스 (예: 'coupang_rocket_growth'). 재고 위치(InvStorageLocation)와 동일
   // 패턴 — 위치·채널이 같은 외부 출처를 가리키고, 공간당 소스별 1개만 연결(1:1 페어링).
   // null = 통합재고 채널(판매자 직접 배송, 채널 재고 차감 관리).
   // non-null = 채널 자체 배송(연동) — 마켓 풀필먼트가 배송, 연동 데이터만 표시.
-  externalSource        String?
+  externalSource          String?
   // 채널 자체 배송(연동) 채널이 가리키는 대표 채널(통합재고). null이면 대표/일반 채널.
   // 연동 채널의 판매채널 상품 화면은 대표 채널 상품을 읽기전용으로 미러링한다.
   representativeChannelId String?
-  isActive              Boolean  @default(true)
-  useSimulation         Boolean  @default(true) // 가격 시뮬레이션 노출/필수입력 결정
-  adminUrl              String?
-  freeShipping          Boolean  @default(false)
-  freeShippingThreshold Decimal? @db.Decimal(18, 2) // 무료배송 최소 주문금액
-  usesMarketingBudget   Boolean  @default(false)
-  applyAdCost           Boolean  @default(false) // 시뮬레이션 시 광고비 자동 적용
-  shippingFee           Decimal? @db.Decimal(18, 2)
-  vatIncludedInFee      Boolean  @default(true)
-  paymentFeeIncluded    Boolean  @default(true) // 결제 수수료 포함 여부
-  paymentFeePct         Decimal? @db.Decimal(6, 4) // 결제 수수료율 (0~1)
-  requireOrderNumber    Boolean  @default(true)
-  requirePayment        Boolean  @default(true)
-  requireProducts       Boolean  @default(true)
-  sortOrder             Int      @default(0) // 사용자 정의 정렬 순서 (오름차순, 동률은 name asc)
+  isActive                Boolean  @default(true)
+  useSimulation           Boolean  @default(true) // 가격 시뮬레이션 노출/필수입력 결정
+  adminUrl                String?
+  freeShipping            Boolean  @default(false)
+  freeShippingThreshold   Decimal? @db.Decimal(18, 2) // 무료배송 최소 주문금액
+  usesMarketingBudget     Boolean  @default(false)
+  applyAdCost             Boolean  @default(false) // 시뮬레이션 시 광고비 자동 적용
+  shippingFee             Decimal? @db.Decimal(18, 2)
+  vatIncludedInFee        Boolean  @default(true)
+  paymentFeeIncluded      Boolean  @default(true) // 결제 수수료 포함 여부
+  paymentFeePct           Decimal? @db.Decimal(6, 4) // 결제 수수료율 (0~1)
+  requireOrderNumber      Boolean  @default(true)
+  requirePayment          Boolean  @default(true)
+  requireProducts         Boolean  @default(true)
+  sortOrder               Int      @default(0) // 사용자 정의 정렬 순서 (오름차순, 동률은 name asc)
 
   space                   Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channelTypeDef          ChannelTypeDef?          @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)
@@ -1501,6 +1502,7 @@ model ProductionRun {
   stockInLocation InvStorageLocation? @relation("ProductionRunStockInLocation", fields: [stockInLocationId], references: [id], onDelete: SetNull)
   reorderPlan     ReorderPlan?        @relation(fields: [reorderPlanId], references: [id], onDelete: SetNull)
   items           ProductionRunItem[]
+  sets            ProductionRunSet[] // 세트 기반 차수의 세트별 라인 (옵션 items 는 분해 결과)
   costs           ProductionRunCost[]
 
   createdAt DateTime @default(now())
@@ -1525,6 +1527,23 @@ model ProductionRunItem {
 
   @@unique([runId, optionId])
   @@index([optionId])
+}
+
+// 세트 기반 생산차수의 세트별 라인 — listing(=세트) 1개의 계획·입고 세트수량.
+// 옵션별 ProductionRunItem 은 이 세트들을 ProductListingItem 으로 분해한 결과.
+model ProductionRunSet {
+  id              String @id @default(cuid())
+  runId           String
+  listingId       String
+  listingName     String // 표시용 스냅샷 (listing 삭제/개명 대비)
+  plannedSetQty   Int // 계획된 세트 수량
+  stockedInSetQty Int? // 실제 입고된 세트 수량 합. null = 입고완료 전.
+
+  run     ProductionRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  listing ProductListing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+
+  @@unique([runId, listingId])
+  @@index([listingId])
 }
 
 model ProductionRunCost {
@@ -1681,31 +1700,33 @@ model SpaceOptionCodeAlias {
 // 배송 업로드 매칭의 기본 단위 — 한 listing은 여러 fulfillment(실제 출고 옵션·수량)로 펼쳐진다.
 
 model ProductListing {
-  id                String               @id @default(cuid())
-  spaceId           String
-  channelId         String
-  channelProductId  String? // 채널상품(ChannelProduct) 귀속 — null이면 단독 listing
-  internalCode      String? // 사용자 관리용 식별자 (선택)
-  searchName        String // 상품명(검색용) — 채널 리스팅 상단 노출
-  displayName       String // 상품명(노출용) — 상세 페이지 타이틀
-  managementName    String? // 상품명(관리용) — 내부 목록 표시 (없으면 searchName fallback)
-  keywords          Json                 @default("[]") // string[] — 사용자 확정 키워드
-  retailPrice       Decimal?             @db.Decimal(18, 2) // 판매가격 (소비자가는 구성품에서 자동 계산)
+  id               String               @id @default(cuid())
+  spaceId          String
+  channelId        String
+  channelProductId String? // 채널상품(ChannelProduct) 귀속 — null이면 단독 listing
+  internalCode     String? // 사용자 관리용 식별자 (선택)
+  searchName       String // 상품명(검색용) — 채널 리스팅 상단 노출
+  displayName      String // 상품명(노출용) — 상세 페이지 타이틀
+  managementName   String? // 상품명(관리용) — 내부 목록 표시 (없으면 searchName fallback)
+  keywords         Json                 @default("[]") // string[] — 사용자 확정 키워드
+  retailPrice      Decimal?             @db.Decimal(18, 2) // 판매가격 (소비자가는 구성품에서 자동 계산)
   // 채널 재고 (세트 단위) — 차감형 잔량.
   // null이면 기능 off: 채널-품절 판정·자동 차감 모두 안 함 (가용재고만으로 판정).
   // 값이 있으면 MANUAL 배치 완료(출고) 시 DelOrderItem.quantity만큼 자동 차감.
   // 차감만 존재 — 입고/증가 조정은 사용자가 수동으로 한다. 음수 허용(오버셀 진실 반영).
-  channelStock      Int?
-  status            ProductListingStatus @default(ACTIVE)
-  memo              String?
+  channelStock     Int?
+  status           ProductListingStatus @default(ACTIVE)
+  memo             String?
 
-  space          Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  channel        Channel                @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  channelProduct ChannelProduct?        @relation(fields: [channelProductId], references: [id], onDelete: SetNull)
-  items          ProductListingItem[]
-  aliases        ChannelProductAlias[]
-  delItems       DelOrderItem[]
-  stockMovements ChannelStockMovement[]
+  space             Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel           Channel                @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelProduct    ChannelProduct?        @relation(fields: [channelProductId], references: [id], onDelete: SetNull)
+  items             ProductListingItem[]
+  aliases           ChannelProductAlias[]
+  delItems          DelOrderItem[]
+  stockMovements    ChannelStockMovement[]
+  reorderPlanSets   ReorderPlanSet[] // 세트 발주 계획에서 이 listing(=세트)을 참조
+  productionRunSets ProductionRunSet[] // 세트 생산차수에서 이 listing(=세트)을 참조
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2404,7 +2425,10 @@ model ReorderPlan {
   status      ReorderPlanStatus @default(DRAFT)
   windowDays  Int // 예측 분석 기간 (일)
   createdById String
-  productId   String? // 상품 단위 계획. null = 레거시 전체-계획
+  productId   String? // 상품 단위 계획. null = 레거시 전체-계획 또는 연동위치 세트 계획
+  // 연동 위치(예: 쿠팡 로켓그로스) 세트 기반 계획. 값이 있으면 세트 계획이며 productId 는 null.
+  // productId·locationId 동시 non-null 금지(앱 레벨 검증).
+  locationId  String?
 
   finalizedAt       DateTime? // (레거시) 확정 전환 시점 — confirmedAt 으로 대체 중
   confirmedAt       DateTime? // "예측 검증 시작" 시점 = 예측 동결점 = 신뢰도 평가 앵커
@@ -2419,15 +2443,17 @@ model ReorderPlan {
   supersededByPlanId String? // 대체한 새 계획 id
   sourcePlanId       String? // 이 계획이 어느 확정 계획에서 revert되어 파생됐는지
 
-  space     Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  createdBy User        @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  product   InvProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  space     Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy User                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  product   InvProduct?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+  location  InvStorageLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
 
   // self-relation: source(확정 원본) ← revisions(파생 초안)
   sourcePlan ReorderPlan?  @relation("PlanRevision", fields: [sourcePlanId], references: [id], onDelete: SetNull)
   revisions  ReorderPlan[] @relation("PlanRevision")
 
   items          ReorderPlanItem[]
+  sets           ReorderPlanSet[] // 연동위치 세트 계획의 세트별 라인 (옵션 items 는 분해 결과)
   accuracies     ReorderPlanAccuracy[]
   productionRuns ProductionRun[] // "생산차수 생성" 액션으로 brandId별 분할 생성 가능 (1:N)
 
@@ -2437,9 +2463,29 @@ model ReorderPlan {
   @@unique([spaceId, planNo])
   @@index([spaceId, status])
   @@index([spaceId, productId])
+  @@index([spaceId, locationId])
   @@index([spaceId, confirmedAt])
   @@index([sourcePlanId])
   @@index([createdById])
+}
+
+// 세트 기반 발주 계획의 세트별 라인 — listing(=세트) 1개의 제안·최종 세트수량.
+// 옵션별 ReorderPlanItem 은 이 세트들을 ProductListingItem 으로 분해한 결과(공유 옵션은 Σ 합산).
+model ReorderPlanSet {
+  id              String @id @default(cuid())
+  planId          String
+  listingId       String
+  listingName     String // 표시용 스냅샷
+  currentSetStock Int // 계획 생성 시점 세트 가용재고(파이프라인) 스냅샷
+  suggestedSetQty Int // 병목 환산 제안 세트수량
+  finalSetQty     Int // 사용자 확정 세트수량
+  sortOrder       Int    @default(0)
+
+  plan    ReorderPlan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  listing ProductListing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+
+  @@unique([planId, listingId])
+  @@index([listingId])
 }
 
 // 발주 계획 옵션별 라인 — 옵션 1개의 예측 결과 및 최종 수량
@@ -2465,6 +2511,13 @@ model ReorderPlanItem {
   biasAdjustFactor Decimal  @db.Decimal(6, 4) // 적용된 bias 보정 계수 (1.0 = 보정 없음)
   confidenceScore  Decimal? @db.Decimal(6, 4) // 예측 신뢰도 (0~1, null = 미산출)
   inputsSnapshot   Json // 예측 재현 가능 입력값 스냅샷 (초안 생성 당시 입력)
+
+  // 레이어드 발주(연동 세트 + 직접 배송) 전용 — 레이어별 GROSS(현재고·안전재고 차감 전, float).
+  // 옵션 수요가 진실이므로 로켓/직접 raw GROSS를 각각 보관하고, 최종 = max(0, ceil(로켓+직접+safety−stock)).
+  // 세트는 발주 옵션의 역산 표시(파생)일 뿐 이 값으로 되먹이지 않는다(중복 세트 과다집계 방지).
+  // null = 비레이어드(일반 상품/위치 세트) 플랜.
+  rocketGrossQty Decimal? @db.Decimal(18, 4)
+  directGrossQty Decimal? @db.Decimal(18, 4)
 
   // "예측 검증 시작"(확정) 시점에 동결한 예측 스냅샷 — 신뢰도 측정의 단일 진실원.
   // null = 미확정. accuracy는 live 값이 아니라 이 동결값을 읽어야 사후 수정에 오염 안 됨.

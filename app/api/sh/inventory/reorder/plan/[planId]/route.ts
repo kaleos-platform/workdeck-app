@@ -53,12 +53,35 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
         },
         orderBy: { createdAt: 'desc' },
       },
+      // 세트 모드(locationId)일 때만 존재 — 세트별 라인 + 구성(listing 라이브 조인)
+      sets: {
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          listingId: true,
+          listingName: true,
+          currentSetStock: true,
+          suggestedSetQty: true,
+          finalSetQty: true,
+          listing: {
+            select: {
+              items: {
+                orderBy: { sortOrder: 'asc' },
+                select: { optionId: true, quantity: true, option: { select: { name: true } } },
+              },
+            },
+          },
+        },
+      },
     },
   })
 
   if (!plan || plan.spaceId !== spaceId) {
     return errorResponse('발주 계획을 찾을 수 없습니다', 404)
   }
+
+  // 레이어드 = 상품 계획(locationId 없음)인데 세트 라인이 있음. 옵션 수요가 진실 — 로켓/직접 raw GROSS는 컬럼에서.
+  const isLayered = plan.locationId == null && plan.productId != null && plan.sets.length > 0
 
   // productInfo: 상품 단위로 그룹핑하여 옵션 배열 형태로 재구성
   const productInfoMap = new Map<
@@ -104,6 +127,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       id: plan.id,
       planNo: plan.planNo,
       productName: plan.product ? (plan.product.name ?? plan.product.internalName ?? null) : null,
+      locationId: plan.locationId,
+      isLayered,
       status: plan.status,
       windowDays: plan.windowDays,
       finalizedAt: plan.finalizedAt,
@@ -137,6 +162,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       biasAdjustFactor: Number(item.biasAdjustFactor),
       confidenceScore: item.confidenceScore ? Number(item.confidenceScore) : null,
       inputsSnapshot: item.inputsSnapshot,
+      // 레이어드 분해 표시용 — 로켓/직접 raw GROSS(컬럼). 비레이어드 = null.
+      rocketGross: item.rocketGrossQty != null ? Number(item.rocketGrossQty) : null,
+      directGross: item.directGrossQty != null ? Number(item.directGrossQty) : null,
     })),
     productInfo: Array.from(productInfoMap.values()),
     accuracies: plan.accuracies.map((a) => ({
@@ -150,6 +178,20 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       status: r.status,
       brandId: r.brandId,
       createdAt: r.createdAt,
+    })),
+    // 세트 모드 라인 (locationId 계획에서만 비어있지 않음). 구성은 listing 라이브 조인.
+    sets: plan.sets.map((s) => ({
+      id: s.id,
+      listingId: s.listingId,
+      listingName: s.listingName,
+      currentSetStock: s.currentSetStock,
+      suggestedSetQty: s.suggestedSetQty,
+      finalSetQty: s.finalSetQty,
+      items: s.listing.items.map((it) => ({
+        optionId: it.optionId,
+        optionName: it.option.name,
+        perSet: it.quantity,
+      })),
     })),
   })
 }

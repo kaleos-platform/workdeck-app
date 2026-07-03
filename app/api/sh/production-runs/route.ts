@@ -79,6 +79,22 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+        // 세트 기반 차수의 세트 라인 (세트 단위 입고 UI·이력용)
+        sets: {
+          select: {
+            id: true,
+            listingId: true,
+            listingName: true,
+            plannedSetQty: true,
+            stockedInSetQty: true,
+          },
+        },
+        // 입고 위치 (세트 입고 breakdown 표시 + FC 이관 게이팅: externalSource=null 이면 자체창고)
+        stockInLocation: { select: { id: true, name: true, externalSource: true } },
+        // 연계 발주 계획의 대상 연동 위치 (FC 이관 목적지 프리필)
+        reorderPlan: {
+          select: { locationId: true, location: { select: { id: true, name: true } } },
+        },
       },
     }),
     prisma.productionRun.count({ where }),
@@ -126,6 +142,18 @@ export async function GET(req: NextRequest) {
       orderedConfirmedAt: run.orderedConfirmedAt ? run.orderedConfirmedAt.toISOString() : null,
       stockedInAt: run.stockedInAt ? run.stockedInAt.toISOString() : null,
       stockInLocationId: run.stockInLocationId,
+      // 입고 위치 상세 (세트 breakdown 표시 + FC 이관 게이팅용)
+      stockInLocation: run.stockInLocation
+        ? {
+            id: run.stockInLocation.id,
+            name: run.stockInLocation.name,
+            externalSource: run.stockInLocation.externalSource,
+          }
+        : null,
+      // 연계 발주 계획의 대상 연동 위치 (FC 이관 목적지 기본값)
+      planLocation: run.reorderPlan?.location
+        ? { id: run.reorderPlan.location.id, name: run.reorderPlan.location.name }
+        : null,
       totalCost: totalCostNum,
       costMode: run.costMode,
       memo: run.memo,
@@ -140,6 +168,14 @@ export async function GET(req: NextRequest) {
         productName: it.option.product.internalName ?? it.option.product.name,
         quantity: it.quantity,
         stockedInQty: it.stockedInQty,
+      })),
+      // 세트 라인 (세트 기반 차수만 비어있지 않음)
+      sets: run.sets.map((s) => ({
+        id: s.id,
+        listingId: s.listingId,
+        listingName: s.listingName,
+        plannedSetQty: s.plannedSetQty,
+        stockedInSetQty: s.stockedInSetQty,
       })),
       updatedAt: run.updatedAt.toISOString(),
     }
@@ -242,6 +278,23 @@ export async function POST(req: NextRequest) {
     if (!plan) return errorResponse('연계 발주 계획을 찾을 수 없습니다', 400)
   }
 
+  // 세트(listing) 소속 검증 + 이름 스냅샷 (다른 space의 listingId 주입 방어, 0 세트는 제외)
+  const setInputs = (input.sets ?? []).filter((s) => s.plannedSetQty > 0)
+  const setNameById = new Map<string, string>()
+  if (setInputs.length > 0) {
+    const listingIds = Array.from(new Set(setInputs.map((s) => s.listingId)))
+    const listings = await prisma.productListing.findMany({
+      where: { id: { in: listingIds }, spaceId: resolved.space.id },
+      select: { id: true, searchName: true, managementName: true },
+    })
+    if (listings.length !== listingIds.length) {
+      return errorResponse('일부 세트(listing)를 찾을 수 없습니다', 400)
+    }
+    for (const l of listings) {
+      setNameById.set(l.id, l.managementName?.trim() || l.searchName)
+    }
+  }
+
   try {
     const created = await prisma.$transaction(async (tx) => {
       const run = await tx.productionRun.create({
@@ -266,6 +319,17 @@ export async function POST(req: NextRequest) {
           quantity: it.quantity,
         })),
       })
+
+      if (setInputs.length > 0) {
+        await tx.productionRunSet.createMany({
+          data: setInputs.map((s) => ({
+            runId: run.id,
+            listingId: s.listingId,
+            listingName: setNameById.get(s.listingId) ?? '',
+            plannedSetQty: s.plannedSetQty,
+          })),
+        })
+      }
 
       if (costsData.length > 0) {
         await tx.productionRunCost.createMany({

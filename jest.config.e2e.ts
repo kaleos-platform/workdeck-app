@@ -12,7 +12,7 @@ const base = createJestConfig({
     '^@/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  testMatch: ['**/__tests__/**/routes.e2e.test.ts'],
+  testMatch: ['**/__tests__/**/*.e2e.test.ts'],
 })
 
 export default async () => {

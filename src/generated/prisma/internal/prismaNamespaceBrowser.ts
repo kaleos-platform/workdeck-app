@@ -107,6 +107,7 @@ export const ModelName = {
   ChannelFeeRate: 'ChannelFeeRate',
   ProductionRun: 'ProductionRun',
   ProductionRunItem: 'ProductionRunItem',
+  ProductionRunSet: 'ProductionRunSet',
   ProductionRunCost: 'ProductionRunCost',
   PricingScenario: 'PricingScenario',
   PricingScenarioChannel: 'PricingScenarioChannel',
@@ -139,6 +140,7 @@ export const ModelName = {
   IdeationProduct: 'IdeationProduct',
   ImprovementRule: 'ImprovementRule',
   ReorderPlan: 'ReorderPlan',
+  ReorderPlanSet: 'ReorderPlanSet',
   ReorderPlanItem: 'ReorderPlanItem',
   ReorderPlanAccuracy: 'ReorderPlanAccuracy',
   FinAccount: 'FinAccount',
@@ -1046,6 +1048,18 @@ export const ProductionRunItemScalarFieldEnum = {
 export type ProductionRunItemScalarFieldEnum = (typeof ProductionRunItemScalarFieldEnum)[keyof typeof ProductionRunItemScalarFieldEnum]
 
 
+export const ProductionRunSetScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  listingId: 'listingId',
+  listingName: 'listingName',
+  plannedSetQty: 'plannedSetQty',
+  stockedInSetQty: 'stockedInSetQty'
+} as const
+
+export type ProductionRunSetScalarFieldEnum = (typeof ProductionRunSetScalarFieldEnum)[keyof typeof ProductionRunSetScalarFieldEnum]
+
+
 export const ProductionRunCostScalarFieldEnum = {
   id: 'id',
   runId: 'runId',
@@ -1573,6 +1587,7 @@ export const ReorderPlanScalarFieldEnum = {
   windowDays: 'windowDays',
   createdById: 'createdById',
   productId: 'productId',
+  locationId: 'locationId',
   finalizedAt: 'finalizedAt',
   confirmedAt: 'confirmedAt',
   biasAdjustApplied: 'biasAdjustApplied',
@@ -1587,6 +1602,20 @@ export const ReorderPlanScalarFieldEnum = {
 } as const
 
 export type ReorderPlanScalarFieldEnum = (typeof ReorderPlanScalarFieldEnum)[keyof typeof ReorderPlanScalarFieldEnum]
+
+
+export const ReorderPlanSetScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  listingId: 'listingId',
+  listingName: 'listingName',
+  currentSetStock: 'currentSetStock',
+  suggestedSetQty: 'suggestedSetQty',
+  finalSetQty: 'finalSetQty',
+  sortOrder: 'sortOrder'
+} as const
+
+export type ReorderPlanSetScalarFieldEnum = (typeof ReorderPlanSetScalarFieldEnum)[keyof typeof ReorderPlanSetScalarFieldEnum]
 
 
 export const ReorderPlanItemScalarFieldEnum = {
@@ -1608,6 +1637,8 @@ export const ReorderPlanItemScalarFieldEnum = {
   biasAdjustFactor: 'biasAdjustFactor',
   confidenceScore: 'confidenceScore',
   inputsSnapshot: 'inputsSnapshot',
+  rocketGrossQty: 'rocketGrossQty',
+  directGrossQty: 'directGrossQty',
   confirmedDailyAvgForecast: 'confirmedDailyAvgForecast',
   confirmedLeadTimeDays: 'confirmedLeadTimeDays',
   confirmedSafetyStockQty: 'confirmedSafetyStockQty',

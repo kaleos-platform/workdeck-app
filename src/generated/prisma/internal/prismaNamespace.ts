@@ -440,6 +440,7 @@ export const ModelName = {
   ChannelFeeRate: 'ChannelFeeRate',
   ProductionRun: 'ProductionRun',
   ProductionRunItem: 'ProductionRunItem',
+  ProductionRunSet: 'ProductionRunSet',
   ProductionRunCost: 'ProductionRunCost',
   PricingScenario: 'PricingScenario',
   PricingScenarioChannel: 'PricingScenarioChannel',
@@ -472,6 +473,7 @@ export const ModelName = {
   IdeationProduct: 'IdeationProduct',
   ImprovementRule: 'ImprovementRule',
   ReorderPlan: 'ReorderPlan',
+  ReorderPlanSet: 'ReorderPlanSet',
   ReorderPlanItem: 'ReorderPlanItem',
   ReorderPlanAccuracy: 'ReorderPlanAccuracy',
   FinAccount: 'FinAccount',
@@ -498,7 +500,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4646,6 +4648,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ProductionRunSet: {
+      payload: Prisma.$ProductionRunSetPayload<ExtArgs>
+      fields: Prisma.ProductionRunSetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProductionRunSetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProductionRunSetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>
+        }
+        findFirst: {
+          args: Prisma.ProductionRunSetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProductionRunSetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>
+        }
+        findMany: {
+          args: Prisma.ProductionRunSetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>[]
+        }
+        create: {
+          args: Prisma.ProductionRunSetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>
+        }
+        createMany: {
+          args: Prisma.ProductionRunSetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProductionRunSetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>[]
+        }
+        delete: {
+          args: Prisma.ProductionRunSetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>
+        }
+        update: {
+          args: Prisma.ProductionRunSetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProductionRunSetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProductionRunSetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProductionRunSetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProductionRunSetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductionRunSetPayload>
+        }
+        aggregate: {
+          args: Prisma.ProductionRunSetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProductionRunSet>
+        }
+        groupBy: {
+          args: Prisma.ProductionRunSetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProductionRunSetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProductionRunSetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProductionRunSetCountAggregateOutputType> | number
+        }
+      }
+    }
     ProductionRunCost: {
       payload: Prisma.$ProductionRunCostPayload<ExtArgs>
       fields: Prisma.ProductionRunCostFieldRefs
@@ -7014,6 +7090,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReorderPlanSet: {
+      payload: Prisma.$ReorderPlanSetPayload<ExtArgs>
+      fields: Prisma.ReorderPlanSetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReorderPlanSetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReorderPlanSetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>
+        }
+        findFirst: {
+          args: Prisma.ReorderPlanSetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReorderPlanSetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>
+        }
+        findMany: {
+          args: Prisma.ReorderPlanSetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>[]
+        }
+        create: {
+          args: Prisma.ReorderPlanSetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>
+        }
+        createMany: {
+          args: Prisma.ReorderPlanSetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReorderPlanSetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>[]
+        }
+        delete: {
+          args: Prisma.ReorderPlanSetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>
+        }
+        update: {
+          args: Prisma.ReorderPlanSetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReorderPlanSetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReorderPlanSetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReorderPlanSetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReorderPlanSetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReorderPlanSetPayload>
+        }
+        aggregate: {
+          args: Prisma.ReorderPlanSetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReorderPlanSet>
+        }
+        groupBy: {
+          args: Prisma.ReorderPlanSetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReorderPlanSetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReorderPlanSetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReorderPlanSetCountAggregateOutputType> | number
+        }
+      }
+    }
     ReorderPlanItem: {
       payload: Prisma.$ReorderPlanItemPayload<ExtArgs>
       fields: Prisma.ReorderPlanItemFieldRefs
@@ -8745,6 +8895,18 @@ export const ProductionRunItemScalarFieldEnum = {
 export type ProductionRunItemScalarFieldEnum = (typeof ProductionRunItemScalarFieldEnum)[keyof typeof ProductionRunItemScalarFieldEnum]
 
 
+export const ProductionRunSetScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  listingId: 'listingId',
+  listingName: 'listingName',
+  plannedSetQty: 'plannedSetQty',
+  stockedInSetQty: 'stockedInSetQty'
+} as const
+
+export type ProductionRunSetScalarFieldEnum = (typeof ProductionRunSetScalarFieldEnum)[keyof typeof ProductionRunSetScalarFieldEnum]
+
+
 export const ProductionRunCostScalarFieldEnum = {
   id: 'id',
   runId: 'runId',
@@ -9272,6 +9434,7 @@ export const ReorderPlanScalarFieldEnum = {
   windowDays: 'windowDays',
   createdById: 'createdById',
   productId: 'productId',
+  locationId: 'locationId',
   finalizedAt: 'finalizedAt',
   confirmedAt: 'confirmedAt',
   biasAdjustApplied: 'biasAdjustApplied',
@@ -9286,6 +9449,20 @@ export const ReorderPlanScalarFieldEnum = {
 } as const
 
 export type ReorderPlanScalarFieldEnum = (typeof ReorderPlanScalarFieldEnum)[keyof typeof ReorderPlanScalarFieldEnum]
+
+
+export const ReorderPlanSetScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  listingId: 'listingId',
+  listingName: 'listingName',
+  currentSetStock: 'currentSetStock',
+  suggestedSetQty: 'suggestedSetQty',
+  finalSetQty: 'finalSetQty',
+  sortOrder: 'sortOrder'
+} as const
+
+export type ReorderPlanSetScalarFieldEnum = (typeof ReorderPlanSetScalarFieldEnum)[keyof typeof ReorderPlanSetScalarFieldEnum]
 
 
 export const ReorderPlanItemScalarFieldEnum = {
@@ -9307,6 +9484,8 @@ export const ReorderPlanItemScalarFieldEnum = {
   biasAdjustFactor: 'biasAdjustFactor',
   confidenceScore: 'confidenceScore',
   inputsSnapshot: 'inputsSnapshot',
+  rocketGrossQty: 'rocketGrossQty',
+  directGrossQty: 'directGrossQty',
   confirmedDailyAvgForecast: 'confirmedDailyAvgForecast',
   confirmedLeadTimeDays: 'confirmedLeadTimeDays',
   confirmedSafetyStockQty: 'confirmedSafetyStockQty',
@@ -10503,6 +10682,7 @@ export type GlobalOmitConfig = {
   channelFeeRate?: Prisma.ChannelFeeRateOmit
   productionRun?: Prisma.ProductionRunOmit
   productionRunItem?: Prisma.ProductionRunItemOmit
+  productionRunSet?: Prisma.ProductionRunSetOmit
   productionRunCost?: Prisma.ProductionRunCostOmit
   pricingScenario?: Prisma.PricingScenarioOmit
   pricingScenarioChannel?: Prisma.PricingScenarioChannelOmit
@@ -10535,6 +10715,7 @@ export type GlobalOmitConfig = {
   ideationProduct?: Prisma.IdeationProductOmit
   improvementRule?: Prisma.ImprovementRuleOmit
   reorderPlan?: Prisma.ReorderPlanOmit
+  reorderPlanSet?: Prisma.ReorderPlanSetOmit
   reorderPlanItem?: Prisma.ReorderPlanItemOmit
   reorderPlanAccuracy?: Prisma.ReorderPlanAccuracyOmit
   finAccount?: Prisma.FinAccountOmit

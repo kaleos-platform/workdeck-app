@@ -448,6 +448,125 @@ export async function processMovement(
   })
 }
 
+// 세트 조립·이관 — 구성옵션 여러 건을 한 출발지→도착지로 단일 트랜잭션에 모두 TRANSFER.
+// processMovement(자체 트랜잭션 N건, best-effort)와 달리 all-or-nothing: 어느 옵션이든
+// 출발지 재고가 요청량보다 적으면 어떤 write 도 하기 전에 전부 차단(조립 가능 초과 방지).
+// components.quantity 는 이미 세트수×구성수량으로 합산된 옵션별 총 이관량.
+export type SetTransferComponent = { optionId: string; quantity: number }
+
+export type SetTransferInput = {
+  components: SetTransferComponent[]
+  fromLocationId: string
+  toLocationId: string
+  movementDate: string
+  reason?: string
+  referenceId?: string
+}
+
+export async function processSetTransfer(
+  spaceId: string,
+  input: SetTransferInput
+): Promise<{
+  movements: InvMovement[]
+  transferred: Array<{ optionId: string; quantity: number; fromAfter: number }>
+}> {
+  if (!input.fromLocationId || !input.toLocationId) {
+    throw new MovementError('출발지·도착지 위치가 필요합니다', 400)
+  }
+  if (input.fromLocationId === input.toLocationId) {
+    throw new MovementError('출발지와 도착지가 동일할 수 없습니다', 400)
+  }
+
+  // 옵션별 합산(같은 옵션이 여러 세트에 걸쳐 있을 수 있음) + 양수 정수만
+  const demand = new Map<string, number>()
+  for (const c of input.components) {
+    if (!c.optionId) continue
+    if (!Number.isInteger(c.quantity) || c.quantity <= 0) continue
+    demand.set(c.optionId, (demand.get(c.optionId) ?? 0) + c.quantity)
+  }
+  if (demand.size === 0) {
+    throw new MovementError('이관할 구성옵션이 없습니다', 400)
+  }
+
+  const movementDate = parseDate(input.movementDate, 'movementDate')
+
+  return await prisma.$transaction(async (tx) => {
+    await assertLocationInSpace(tx, spaceId, input.fromLocationId, '출발 보관 장소')
+    await assertLocationInSpace(tx, spaceId, input.toLocationId, '도착 보관 장소')
+
+    // 결정론적 잠금 순서((optionId, locationId) 전역 정렬)로 데드락 최소화
+    const lockPairs: Array<{ optionId: string; locationId: string }> = []
+    for (const optionId of demand.keys()) {
+      lockPairs.push({ optionId, locationId: input.fromLocationId })
+      lockPairs.push({ optionId, locationId: input.toLocationId })
+    }
+    lockPairs.sort((a, b) =>
+      a.optionId === b.optionId
+        ? a.locationId.localeCompare(b.locationId)
+        : a.optionId.localeCompare(b.optionId)
+    )
+    for (const p of lockPairs) {
+      await lockStockLevel(tx, p.optionId, p.locationId)
+    }
+
+    // 옵션 검증 + 조립 가능 초과 사전 차단 (어떤 write 도 하기 전에 전부 검사)
+    const shortfalls: string[] = []
+    const sourceByOption = new Map<
+      string,
+      { stockId: string | null; before: number; optionName: string }
+    >()
+    for (const [optionId, qty] of demand) {
+      const option = await assertOptionInSpace(tx, spaceId, optionId)
+      const src = await tx.invStockLevel.findUnique({
+        where: { optionId_locationId: { optionId, locationId: input.fromLocationId } },
+      })
+      const before = src?.quantity ?? 0
+      sourceByOption.set(optionId, { stockId: src?.id ?? null, before, optionName: option.name })
+      if (qty > before) {
+        shortfalls.push(`${option.name} (필요 ${qty}, 보유 ${before})`)
+      }
+    }
+    if (shortfalls.length > 0) {
+      throw new MovementError(
+        `자체창고 재고가 부족해 조립할 수 없습니다: ${shortfalls.join(', ')}`,
+        400
+      )
+    }
+
+    // 전부 통과 → from 차감 + to 가산 + movement 생성 (음수 재고 발생 없음)
+    const movements: InvMovement[] = []
+    const transferred: Array<{ optionId: string; quantity: number; fromAfter: number }> = []
+    for (const [optionId, qty] of demand) {
+      const src = sourceByOption.get(optionId)!
+      const fromAfter = src.before - qty
+      if (src.stockId) {
+        await tx.invStockLevel.update({ where: { id: src.stockId }, data: { quantity: fromAfter } })
+      } else {
+        await tx.invStockLevel.create({
+          data: { spaceId, optionId, locationId: input.fromLocationId, quantity: fromAfter },
+        })
+      }
+      await upsertStockLevel(tx, spaceId, optionId, input.toLocationId, qty)
+      const movement = await tx.invMovement.create({
+        data: {
+          spaceId,
+          optionId,
+          locationId: input.fromLocationId,
+          toLocationId: input.toLocationId,
+          type: 'TRANSFER',
+          quantity: qty,
+          movementDate,
+          reason: input.reason?.trim() || null,
+          referenceId: input.referenceId ?? null,
+        },
+      })
+      movements.push(movement)
+      transferred.push({ optionId, quantity: qty, fromAfter })
+    }
+    return { movements, transferred }
+  })
+}
+
 /**
  * 이동 효과를 stock에 반대 부호로 적용해 재고 원상복구.
  * 트랜잭션 내에서 호출, lockStockLevel은 호출 측이 미리 잡고 호출하는 것을 가정.

@@ -8,6 +8,8 @@ export type ReorderPlan = {
   id: string
   planNo: string
   productName: string | null // 상품 단위 계획명. null = 레거시 전체-계획
+  locationId: string | null // 연동 위치 세트 계획이면 non-null
+  isLayered?: boolean // 레이어드(상품 + 로켓 세트 + 직접 배송) 계획이면 true
   status: ReorderPlanStatus
   windowDays: number
   finalizedAt: string | null
@@ -20,6 +22,33 @@ export type ReorderPlan = {
   totalFinalQty: number
   memo: string | null
   createdAt: string
+}
+
+// 연동 위치 (GET /api/sh/inventory/locations 응답의 개별 항목)
+export type ReorderLocation = {
+  id: string
+  name: string
+  type: string
+  externalSource: string | null
+  isActive: boolean
+}
+
+// 세트 발주 계획의 구성 옵션 분해 항목
+export type ReorderPlanSetItem = {
+  optionId: string
+  optionName: string
+  perSet: number
+}
+
+// 세트 단위 발주 데이터 (GET /api/sh/inventory/reorder/plan/[id] 응답의 sets[])
+export type ReorderPlanSet = {
+  id: string
+  listingId: string
+  listingName: string
+  currentSetStock: number
+  suggestedSetQty: number
+  finalSetQty: number
+  items: ReorderPlanSetItem[]
 }
 
 // 발주 계획에 연결된 생산차수 요약 (재고 흐름 — 신뢰도와 무관)
@@ -49,6 +78,10 @@ export type ReorderPlanItem = {
   userNote: string | null
   biasAdjustFactor: number
   confidenceScore: number | null
+  // 레이어드 분해 표시용 (비레이어드 = null). rocketGross = 로켓 raw GROSS, directGross = 직접 배송 raw GROSS.
+  // 최종 finalQty = max(0, ceil(rocketGross + directGross + safety − currentStock)). 세트는 옵션 발주의 역산 표시(파생).
+  rocketGross?: number | null
+  directGross?: number | null
   // JSON 스냅샷 — 구조는 번스타인이 확정 예정
   inputsSnapshot: {
     profile?: 'FAST' | 'INTERMITTENT' | 'COLD_START'
@@ -95,6 +128,7 @@ export type PlanDetailResponse = {
   productInfo: ProductInfo[]
   productionRuns?: ProductionRunSummary[]
   accuracies?: PlanDetailAccuracy[]
+  sets?: ReorderPlanSet[] // 연동 위치 세트 계획이면 non-null
 }
 
 export type ReorderPlanAccuracy = {

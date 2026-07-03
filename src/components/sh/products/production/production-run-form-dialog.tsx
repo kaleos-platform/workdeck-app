@@ -231,6 +231,13 @@ export type PrefillItem = {
   quantity: number
 }
 
+// 세트 계획에서 생성 시 세트(listing)·세트수량 자동 입력용 (옵션 items 와 평행)
+export type PrefillSet = {
+  listingId: string
+  listingName: string
+  plannedSetQty: number
+}
+
 type Props = {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -238,6 +245,8 @@ type Props = {
   onSaved: () => void
   // 신규 모드에서 옵션·수량 프리필 (발주 계획 연계)
   prefillItems?: PrefillItem[]
+  // 신규 모드에서 세트·세트수량 프리필 (연동 위치 세트 계획 연계)
+  prefillSets?: PrefillSet[]
   // 연계 발주 계획 id (POST 시 링크)
   reorderPlanId?: string
 }
@@ -250,6 +259,7 @@ export function ProductionRunFormDialog({
   runId,
   onSaved,
   prefillItems,
+  prefillSets,
   reorderPlanId,
 }: Props) {
   const isEdit = !!runId
@@ -266,6 +276,9 @@ export function ProductionRunFormDialog({
 
   // ── 옵션 목록 (productId 기준 그룹핑)
   const [optionItems, setOptionItems] = useState<OptionItem[]>([])
+
+  // ── 세트 계획 연계 (읽기 표시 + POST sets 전송용)
+  const [planSets, setPlanSets] = useState<PrefillSet[]>([])
 
   // ── 원가 탭
   const [costMode, setCostMode] = useState<CostMode>('TOTAL')
@@ -287,6 +300,7 @@ export function ProductionRunFormDialog({
     setStockedInAt('')
     setCreatedAt('')
     setOptionItems([])
+    setPlanSets([])
     setCostMode('TOTAL')
     setTotalCostItems([newTotalCostItem()])
     setCostRows([newCostRow()])
@@ -396,6 +410,10 @@ export function ProductionRunFormDialog({
             stockedInQty: null,
           }))
         )
+      }
+      // 세트 계획 연계 프리필 (옵션 items 와 평행 — 0 세트는 제외)
+      if (prefillSets && prefillSets.length > 0) {
+        setPlanSets(prefillSets.filter((s) => s.plannedSetQty > 0))
       }
       // 차수 번호 자동 채번
       let cancelled = false
@@ -558,6 +576,15 @@ export function ProductionRunFormDialog({
       items: validItems.map((it) => ({ optionId: it.optionId, quantity: it.quantity })),
       // 발주 계획 연계 (신규 모드만)
       ...(!isEdit && reorderPlanId ? { reorderPlanId } : {}),
+      // 세트 계획 연계 — 세트(listing)별 계획 세트수량 (신규 모드만)
+      ...(!isEdit && planSets.length > 0
+        ? {
+            sets: planSets.map((s) => ({
+              listingId: s.listingId,
+              plannedSetQty: s.plannedSetQty,
+            })),
+          }
+        : {}),
     }
 
     // 편집 모드: 단계별 상태/일자 (재고 입고는 트리거하지 않음 — 메타데이터만)
@@ -719,6 +746,29 @@ export function ProductionRunFormDialog({
                   </div>
                 )}
               </section>
+
+              {/* ── 세트 구성 요약 (연동 위치 세트 계획 연계 시) ───────── */}
+              {planSets.length > 0 && (
+                <section className="space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    세트 구성{' '}
+                    <span className="ml-1 text-xs font-normal text-muted-foreground">
+                      아래 옵션 수량은 세트를 분해한 결과입니다
+                    </span>
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {planSets.map((s) => (
+                      <span
+                        key={s.listingId}
+                        className="inline-flex items-center gap-1 rounded-md border bg-muted/30 px-2 py-1 text-xs"
+                      >
+                        <span className="font-medium">{s.listingName}</span>
+                        <span className="text-muted-foreground">×{s.plannedSetQty} 세트</span>
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* ── 섹션 2: 발주 상품·옵션 ───────────────────────────── */}
               <section className="space-y-3">

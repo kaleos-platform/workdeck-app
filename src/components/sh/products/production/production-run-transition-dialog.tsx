@@ -44,12 +44,22 @@ type RunItem = {
   quantity: number
 }
 
+// 세트 기반 차수의 세트 라인 (있으면 세트 단위 입고 모드)
+type RunSet = {
+  id: string
+  listingId: string
+  listingName: string
+  plannedSetQty: number
+  stockedInSetQty: number | null
+}
+
 type RunSummary = {
   id: string
   runNo: string
   totalQuantity: number
   itemCount: number
   items: RunItem[]
+  sets?: RunSet[]
 }
 
 // 옵션별 분배 행 — 한 옵션을 여러 위치로 나눠 입고할 때 각 행이 위치+수량 1건.
@@ -74,43 +84,108 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
   const [saving, setSaving] = useState(false)
   // 옵션ID → 분배 행 목록
   const [allocByOption, setAllocByOption] = useState<Record<string, AllocRow[]>>({})
+  // 세트 단위 입고 모드 — 단일 입고 위치 + listingId → 입고 세트수
+  const [stockInLocationId, setStockInLocationId] = useState('')
+  const [setQtyByListing, setSetQtyByListing] = useState<Record<string, number>>({})
+  // 레이어드 자동 분배 프리필됨(연동 위치 baseline + 사용자 위치 추가분) 여부 — 안내 표시용
+  const [layeredSplit, setLayeredSplit] = useState(false)
+  // 묶음 상품(세트) 기준 확인 뷰 — baseline 을 세트 구성으로 역산(표시 전용)
+  const [baselineSets, setBaselineSets] = useState<
+    { listingName: string; setQty: number; items: { optionName: string; perSet: number }[] }[]
+  >([])
 
   const isStockIn = target === 'STOCKED_IN'
+  // 세트 기반 차수면 세트 단위 입고 모드 (구성옵션 분배는 서버가 처리)
+  const isSetRun = isStockIn && (run?.sets?.length ?? 0) > 0
 
   // 다이얼로그 열릴 때 초기화
   useEffect(() => {
     if (!open) return
     setTransitionDate(todayYMD())
     setAllocByOption({})
+    setSetQtyByListing({})
+    setStockInLocationId('')
+    setLayeredSplit(false)
+    setBaselineSets([])
   }, [open])
 
   // STOCKED_IN 일 때만 위치 로드 → 로드 후 옵션별 기본 1행(전체 수량 → 첫 위치) 초기화.
   // deps 를 run.id 로 고정해 부모 재렌더(run 객체 신규 생성)로 사용자 입력이 초기화되는 것을 막는다.
   const runId = run?.id
   const runItems = run?.items
+  const runSets = run?.sets
   useEffect(() => {
     if (!open || !isStockIn || !runId) return
     let cancelled = false
     setLoadingLocations(true)
-    fetch('/api/sh/inventory/locations?isActive=true')
-      .then((r) => r.json())
-      .then((d: { locations?: Location[] }) => {
+    setLayeredSplit(false)
+    ;(async () => {
+      try {
+        const d: { locations?: Location[] } = await fetch(
+          '/api/sh/inventory/locations?isActive=true'
+        ).then((r) => r.json())
         if (cancelled) return
         const list = d.locations ?? []
         setLocations(list)
         const firstLoc = list[0]?.id ?? ''
+
+        if ((runSets?.length ?? 0) > 0) {
+          // 세트 모드: 단일 입고 위치 + 세트별 입고세트수(기본=발주 세트수)
+          setStockInLocationId(firstLoc)
+          const initSet: Record<string, number> = {}
+          for (const s of runSets ?? []) initSet[s.listingId] = s.plannedSetQty
+          setSetQtyByListing(initSet)
+          return
+        }
+
+        // 옵션 모드 — 레이어드 차수면 서버 분할(baseline/추가분)로 연동 위치·사용자 위치 2행 자동 프리필.
+        type Split = {
+          layered: boolean
+          rocketLocation: { id: string; name: string } | null
+          options: { optionId: string; baselineQty: number; additionalQty: number }[]
+          sets?: { listingName: string; setQty: number; items: { optionName: string; perSet: number }[] }[]
+        }
+        let split: Split | null = null
+        try {
+          split = await fetch(`/api/sh/production-runs/${runId}/stockin-split`).then((r) =>
+            r.ok ? (r.json() as Promise<Split>) : null
+          )
+        } catch {
+          split = null
+        }
+        if (cancelled) return
+
         const init: Record<string, AllocRow[]> = {}
-        for (const it of runItems ?? []) {
-          init[it.optionId] = [{ locationId: firstLoc, quantity: it.quantity }]
+        if (split?.layered && split.rocketLocation) {
+          const rocketId = split.rocketLocation.id
+          // 추가분 기본 목적지 = 로켓 위치가 아닌 첫 위치(없으면 첫 위치)
+          const otherLoc = list.find((l) => l.id !== rocketId)?.id ?? firstLoc
+          const byOpt = new Map(split.options.map((o) => [o.optionId, o]))
+          for (const it of runItems ?? []) {
+            const s = byOpt.get(it.optionId)
+            const rows: AllocRow[] = []
+            if (s && s.baselineQty > 0) rows.push({ locationId: rocketId, quantity: s.baselineQty })
+            const additional = s ? s.additionalQty : it.quantity
+            if (additional > 0 || rows.length === 0) {
+              rows.push({ locationId: otherLoc, quantity: additional })
+            }
+            init[it.optionId] = rows
+          }
+          setLayeredSplit(true)
+          setBaselineSets((split.sets ?? []).filter((s) => s.setQty > 0))
+        } else {
+          // 기본: 옵션별 1행(전체 수량 → 첫 위치)
+          for (const it of runItems ?? []) {
+            init[it.optionId] = [{ locationId: firstLoc, quantity: it.quantity }]
+          }
         }
         setAllocByOption(init)
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) toast.error('보관 위치를 불러올 수 없습니다')
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoadingLocations(false)
-      })
+      }
+    })()
     return () => {
       cancelled = true
     }
@@ -177,7 +252,12 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
         toast.error('활성화된 보관 위치가 없습니다')
         return
       }
-      if (!allValid) {
+      if (isSetRun) {
+        if (!stockInLocationId) {
+          toast.error('입고 위치를 선택하세요')
+          return
+        }
+      } else if (!allValid) {
         toast.error('입고 행의 위치와 수량(1개 이상)을 확인하세요')
         return
       }
@@ -190,17 +270,28 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
         transitionDate,
       }
       if (isStockIn) {
-        // quantity 0 행은 "그 위치 미배정" → 제외 (서버 Zod .positive() 와 일치, allValid 와 동일 술어)
-        const allocations = run.items.flatMap((it) =>
-          (allocByOption[it.optionId] ?? [])
-            .filter((r) => r.quantity > 0)
-            .map((r) => ({
-              optionId: it.optionId,
-              locationId: r.locationId,
-              quantity: r.quantity,
+        if (isSetRun) {
+          // 세트 단위: setQty>0 세트만 → 단일 위치로 setStockIns (서버가 구성옵션 분해)
+          body.setStockIns = (run.sets ?? [])
+            .filter((s) => (setQtyByListing[s.listingId] ?? 0) > 0)
+            .map((s) => ({
+              listingId: s.listingId,
+              locationId: stockInLocationId,
+              setQty: setQtyByListing[s.listingId],
             }))
-        )
-        body.allocations = allocations
+        } else {
+          // quantity 0 행은 "그 위치 미배정" → 제외 (서버 Zod .positive() 와 일치, allValid 와 동일 술어)
+          const allocations = run.items.flatMap((it) =>
+            (allocByOption[it.optionId] ?? [])
+              .filter((r) => r.quantity > 0)
+              .map((r) => ({
+                optionId: it.optionId,
+                locationId: r.locationId,
+                quantity: r.quantity,
+              }))
+          )
+          body.allocations = allocations
+        }
       }
 
       const res = await fetch(`/api/sh/production-runs/${run.id}/transition`, {
@@ -234,11 +325,13 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
             {run.runNo} · {STATUS_LABEL[target]} 전환
           </DialogTitle>
           <DialogDescription>
-            {isStockIn
-              ? `옵션 ${run.itemCount}개 · 발주 ${run.totalQuantity.toLocaleString('ko-KR')}개. 실제 입고 수량은 발주와 달라도 됩니다(부족·초과·미입고 가능).`
-              : target === 'PLANNED'
-                ? '계획중 상태로 되돌립니다. 기존 발주완료·입고완료 일자는 이력으로 유지됩니다.'
-                : '전환 일자를 확인하고 상태를 변경합니다.'}
+            {isSetRun
+              ? `세트 ${run.sets?.length ?? 0}종. 세트 단위로 입고하면 구성옵션으로 자동 분해됩니다. 실제 입고 세트수는 발주와 달라도 됩니다(부족·초과·미입고 가능).`
+              : isStockIn
+                ? `옵션 ${run.itemCount}개 · 발주 ${run.totalQuantity.toLocaleString('ko-KR')}개. 실제 입고 수량은 발주와 달라도 됩니다(부족·초과·미입고 가능).`
+                : target === 'PLANNED'
+                  ? '계획중 상태로 되돌립니다. 기존 발주완료·입고완료 일자는 이력으로 유지됩니다.'
+                  : '전환 일자를 확인하고 상태를 변경합니다.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -258,11 +351,140 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
             </div>
           )}
 
-          {isStockIn && (
+          {/* ── 세트 단위 입고 (세트 기반 차수) ── */}
+          {isSetRun && (
+            <div className="space-y-3">
+              {loadingLocations && (
+                <p className="text-xs text-muted-foreground">보관 위치를 불러오는 중...</p>
+              )}
+              {noLocations && (
+                <p className="text-xs text-destructive">
+                  활성화된 보관 위치가 없습니다. 재고 설정에서 위치를 먼저 추가하세요.
+                </p>
+              )}
+              {!loadingLocations && locations.length > 0 && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label>
+                      입고 위치<span className="ml-0.5 text-destructive">*</span>
+                    </Label>
+                    <Select value={stockInLocationId} onValueChange={setStockInLocationId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="입고 위치 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {locations.map((loc) => (
+                          <SelectItem key={loc.id} value={loc.id}>
+                            {loc.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      자체창고·연동위치 모두 선택 가능. 세트수는 구성옵션으로 자동 분해되어
+                      입고됩니다.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label>
+                      세트별 입고 수량<span className="ml-0.5 text-destructive">*</span>
+                    </Label>
+                    <div className="max-h-[44vh] space-y-2 overflow-y-auto pr-1">
+                      {(run.sets ?? []).map((s) => {
+                        const qty = setQtyByListing[s.listingId] ?? 0
+                        const diff = qty - s.plannedSetQty
+                        const diffLabel =
+                          diff === 0
+                            ? '일치'
+                            : diff > 0
+                              ? `초과 +${diff.toLocaleString('ko-KR')}`
+                              : `부족 ${diff.toLocaleString('ko-KR')}`
+                        const diffClass =
+                          diff === 0
+                            ? 'text-muted-foreground'
+                            : diff > 0
+                              ? 'text-blue-600 dark:text-blue-400'
+                              : 'text-amber-600 dark:text-amber-400'
+                        return (
+                          <div
+                            key={s.listingId}
+                            className="flex items-center justify-between gap-2 rounded-md border border-border p-2.5"
+                          >
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-medium">{s.listingName}</div>
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">
+                                  발주 {s.plannedSetQty.toLocaleString('ko-KR')}세트
+                                </span>
+                                <span className={`ml-1.5 font-medium ${diffClass}`}>
+                                  ({diffLabel})
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              <Input
+                                type="number"
+                                min={0}
+                                className="w-24"
+                                value={Number.isFinite(qty) ? qty : ''}
+                                onChange={(e) =>
+                                  setSetQtyByListing((prev) => ({
+                                    ...prev,
+                                    [s.listingId]:
+                                      e.target.value === '' ? 0 : Number(e.target.value),
+                                  }))
+                                }
+                              />
+                              <span className="text-xs text-muted-foreground">세트</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {isStockIn && !isSetRun && (
             <div className="space-y-1.5">
               <Label>
                 옵션별 보관 위치<span className="ml-0.5 text-destructive">*</span>
               </Label>
+
+              {layeredSplit && (
+                <div className="space-y-2 rounded-md border border-indigo-200 bg-indigo-50/50 px-3 py-2 text-xs text-indigo-700">
+                  <p>
+                    연동 위치 발주(레이어드) — baseline 분은 연동 위치로, 추가분은 사용자 위치로 자동
+                    분배했습니다. 실입고에 맞게 위치·수량을 조정하세요.
+                  </p>
+                  {baselineSets.length > 0 && (
+                    <div className="space-y-1 border-t border-indigo-200/70 pt-1.5">
+                      <p className="font-medium">묶음 상품(세트) 기준 확인 · 연동 위치 baseline</p>
+                      <ul className="space-y-0.5">
+                        {baselineSets.map((s, i) => (
+                          <li key={`${s.listingName}-${i}`} className="flex flex-wrap items-baseline gap-x-2">
+                            <span className="font-medium text-foreground">{s.listingName}</span>
+                            <span className="tabular-nums">{s.setQty}세트</span>
+                            <span className="text-indigo-600/80">
+                              (
+                              {s.items
+                                .map((it) => `${it.optionName}×${it.perSet}`)
+                                .join(' + ')}
+                              )
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-[10px] text-indigo-600/70">
+                        구성 옵션이 겹치는 세트는 각각 대안 환산입니다(합산 아님). 실제 입고는 옵션 단위.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {loadingLocations && (
                 <p className="text-xs text-muted-foreground">보관 위치를 불러오는 중...</p>
@@ -382,7 +604,11 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
           <Button
             onClick={handleSubmit}
             disabled={
-              saving || (isStockIn && (loadingLocations || locations.length === 0 || !allValid))
+              saving ||
+              (isStockIn &&
+                (loadingLocations ||
+                  locations.length === 0 ||
+                  (isSetRun ? !stockInLocationId : !allValid)))
             }
           >
             {saving ? '처리 중...' : '확인'}

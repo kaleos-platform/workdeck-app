@@ -1,11 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import {
   ArrowDown,
+  ArrowRightLeft,
   ArrowUp,
   ArrowUpDown,
   ChevronDown,
+  ChevronRight,
   Edit2,
   Plus,
   Search,
@@ -52,6 +54,7 @@ import {
   ProductionRunTransitionDialog,
   type TransitionTarget,
 } from './production-run-transition-dialog'
+import { SetTransferDialog, type TransferRun } from './set-transfer-dialog'
 import {
   PRODUCTION_STATUS_LABEL,
   PRODUCTION_STATUS_ORDER,
@@ -95,6 +98,18 @@ type RunRow = {
     quantity: number
     stockedInQty: number | null
   }>
+  // 세트 기반 차수의 세트 라인 (연동 위치 세트 계획에서 생성된 차수만 비어있지 않음)
+  sets: Array<{
+    id: string
+    listingId: string
+    listingName: string
+    plannedSetQty: number
+    stockedInSetQty: number | null
+  }>
+  // 입고 위치 상세 (externalSource=null 이면 자체창고 → FC 이관 대상)
+  stockInLocation: { id: string; name: string; externalSource: string | null } | null
+  // 연계 발주 계획의 대상 연동 위치 (FC 이관 목적지 기본값)
+  planLocation: { id: string; name: string } | null
   updatedAt: string
 }
 
@@ -249,6 +264,100 @@ function SortableHead({
   )
 }
 
+// ─── 세트 입고 breakdown (펼침 detail) ───────────────────────────────────────
+
+function SetBreakdown({
+  run,
+  canTransfer,
+  onTransfer,
+}: {
+  run: RunRow
+  canTransfer: boolean
+  onTransfer: () => void
+}) {
+  const stockedIn = run.status === 'STOCKED_IN'
+  const loc = run.stockInLocation
+  const isConnectedLoc = loc?.externalSource != null
+
+  return (
+    <div className="space-y-2.5 pl-6">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">세트 구성 {run.sets.length}종</span>
+          {stockedIn && loc && (
+            <span className="flex items-center gap-1">
+              · 입고 위치 <span className="font-medium text-foreground">{loc.name}</span>
+              {isConnectedLoc ? (
+                <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+                  연동
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="h-4 px-1.5 text-[10px]">
+                  자체창고
+                </Badge>
+              )}
+            </span>
+          )}
+        </div>
+        {canTransfer && (
+          <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={onTransfer}>
+            <ArrowRightLeft className="size-3.5" />
+            FC로 세트 이관
+          </Button>
+        )}
+      </div>
+
+      <div className="grid gap-1.5">
+        {run.sets.map((s) => {
+          const stocked = s.stockedInSetQty
+          const diff = stocked != null ? stocked - s.plannedSetQty : null
+          return (
+            <div
+              key={s.id}
+              className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-background px-3 py-1.5 text-sm"
+            >
+              <span className="min-w-0 truncate font-medium">{s.listingName}</span>
+              <div className="flex shrink-0 items-center gap-3 text-xs">
+                <span className="text-muted-foreground">
+                  발주 {s.plannedSetQty.toLocaleString('ko-KR')}세트
+                </span>
+                {stocked != null ? (
+                  <span className="font-medium">
+                    입고 {stocked.toLocaleString('ko-KR')}세트
+                    {diff != null && diff !== 0 && (
+                      <span
+                        className={
+                          diff > 0
+                            ? 'ml-1 text-blue-600 dark:text-blue-400'
+                            : 'ml-1 text-amber-600 dark:text-amber-400'
+                        }
+                      >
+                        (
+                        {diff > 0
+                          ? `+${diff.toLocaleString('ko-KR')}`
+                          : diff.toLocaleString('ko-KR')}
+                        )
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">미입고</span>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {canTransfer && (
+        <p className="text-xs text-muted-foreground">
+          자체창고에 입고된 세트입니다. 구성옵션을 조립해 연동 위치(FC)로 이관할 수 있습니다.
+        </p>
+      )}
+    </div>
+  )
+}
+
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 export function ProductionRunsTable() {
@@ -285,6 +394,20 @@ export function ProductionRunsTable() {
   const [transitionRun, setTransitionRun] = useState<RunRow | null>(null)
   const [transitionTarget, setTransitionTarget] = useState<TransitionTarget | null>(null)
   const [transitionOpen, setTransitionOpen] = useState(false)
+
+  // 세트 breakdown 펼침 + FC 이관 다이얼로그
+  const [expandedRuns, setExpandedRuns] = useState<Set<string>>(new Set())
+  const [transferRun, setTransferRun] = useState<TransferRun | null>(null)
+  const [transferOpen, setTransferOpen] = useState(false)
+
+  function toggleExpand(runId: string) {
+    setExpandedRuns((prev) => {
+      const next = new Set(prev)
+      if (next.has(runId)) next.delete(runId)
+      else next.add(runId)
+      return next
+    })
+  }
 
   // 브랜드 목록 로드 (최초 1회)
   useEffect(() => {
@@ -566,82 +689,140 @@ export function ProductionRunsTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              runs.map((run) => (
-                <TableRow
-                  key={run.id}
-                  className="cursor-pointer hover:bg-muted/40"
-                  onClick={() => {
-                    setEditRunId(run.id)
-                    setFormOpen(true)
-                  }}
-                >
-                  <TableCell>
-                    <p className="font-medium">{run.runNo}</p>
-                  </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <StatusTransitionMenu
-                      run={run}
-                      onSelect={(target) => {
-                        setTransitionRun(run)
-                        setTransitionTarget(target)
-                        setTransitionOpen(true)
+              runs.map((run) => {
+                const isSetRun = run.sets.length > 0
+                const expanded = expandedRuns.has(run.id)
+                // FC 이관 가능 = 세트 차수 + 입고완료 + 자체창고(externalSource=null)에 입고됨
+                const canTransfer =
+                  isSetRun &&
+                  run.status === 'STOCKED_IN' &&
+                  run.stockInLocation != null &&
+                  run.stockInLocation.externalSource == null
+                return (
+                  <Fragment key={run.id}>
+                    <TableRow
+                      className="cursor-pointer hover:bg-muted/40"
+                      onClick={() => {
+                        setEditRunId(run.id)
+                        setFormOpen(true)
                       }}
-                    />
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {run.orderedConfirmedAt ? fmtDate(run.orderedConfirmedAt) : '-'}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {run.stockedInAt ? fmtDate(run.stockedInAt) : '-'}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {run.dueAt ? fmtDate(run.dueAt) : '-'}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {run.brand?.name ?? '-'}
-                  </TableCell>
-                  <TableCell>
-                    <ProductChips products={run.products} />
-                  </TableCell>
-                  <TableCell className="max-w-[160px] truncate text-sm text-muted-foreground">
-                    {run.memo ?? '-'}
-                  </TableCell>
-                  <TableCell className="text-right text-sm">
-                    {run.totalQuantity.toLocaleString('ko-KR')}
-                  </TableCell>
-                  <TableCell className="text-right text-sm">
-                    {run.totalCost != null ? fmtKRW(run.totalCost) : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <div
-                      className="flex items-center justify-end gap-1"
-                      onClick={(e) => e.stopPropagation()}
                     >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        aria-label={`${run.runNo} 편집`}
-                        onClick={() => {
-                          setEditRunId(run.id)
-                          setFormOpen(true)
-                        }}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        aria-label={`${run.runNo} 삭제`}
-                        onClick={() => setDeleteTarget(run)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {isSetRun ? (
+                            <button
+                              type="button"
+                              className="-ml-1 inline-flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+                              aria-label={expanded ? '세트 내역 접기' : '세트 내역 펼치기'}
+                              aria-expanded={expanded}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleExpand(run.id)
+                              }}
+                            >
+                              {expanded ? (
+                                <ChevronDown className="size-4" />
+                              ) : (
+                                <ChevronRight className="size-4" />
+                              )}
+                            </button>
+                          ) : (
+                            <span className="inline-block w-4 shrink-0" />
+                          )}
+                          <p className="font-medium">{run.runNo}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <StatusTransitionMenu
+                          run={run}
+                          onSelect={(target) => {
+                            setTransitionRun(run)
+                            setTransitionTarget(target)
+                            setTransitionOpen(true)
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {run.orderedConfirmedAt ? fmtDate(run.orderedConfirmedAt) : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {run.stockedInAt ? fmtDate(run.stockedInAt) : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {run.dueAt ? fmtDate(run.dueAt) : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {run.brand?.name ?? '-'}
+                      </TableCell>
+                      <TableCell>
+                        <ProductChips products={run.products} />
+                      </TableCell>
+                      <TableCell className="max-w-[160px] truncate text-sm text-muted-foreground">
+                        {run.memo ?? '-'}
+                      </TableCell>
+                      <TableCell className="text-right text-sm">
+                        {run.totalQuantity.toLocaleString('ko-KR')}
+                      </TableCell>
+                      <TableCell className="text-right text-sm">
+                        {run.totalCost != null ? fmtKRW(run.totalCost) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          className="flex items-center justify-end gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label={`${run.runNo} 편집`}
+                            onClick={() => {
+                              setEditRunId(run.id)
+                              setFormOpen(true)
+                            }}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            aria-label={`${run.runNo} 삭제`}
+                            onClick={() => setDeleteTarget(run)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+
+                    {isSetRun && expanded && (
+                      <TableRow className="bg-muted/20 hover:bg-muted/20">
+                        <TableCell colSpan={11} className="py-3">
+                          <SetBreakdown
+                            run={run}
+                            canTransfer={canTransfer}
+                            onTransfer={() => {
+                              if (!run.stockInLocation) return
+                              setTransferRun({
+                                id: run.id,
+                                runNo: run.runNo,
+                                sets: run.sets,
+                                fromLocation: {
+                                  id: run.stockInLocation.id,
+                                  name: run.stockInLocation.name,
+                                },
+                                planLocationId: run.planLocation?.id ?? null,
+                              })
+                              setTransferOpen(true)
+                            }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                )
+              })
             )}
           </TableBody>
         </Table>
@@ -712,9 +893,21 @@ export function ProductionRunsTable() {
                   optionName: it.optionName,
                   quantity: it.quantity,
                 })),
+                sets: transitionRun.sets,
               }
             : null
         }
+        onSaved={loadRuns}
+      />
+
+      {/* 세트 조립·FC 이관 다이얼로그 */}
+      <SetTransferDialog
+        open={transferOpen}
+        onOpenChange={(v) => {
+          setTransferOpen(v)
+          if (!v) setTransferRun(null)
+        }}
+        run={transferRun}
         onSaved={loadRuns}
       />
 
