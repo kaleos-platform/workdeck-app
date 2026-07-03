@@ -6,7 +6,7 @@
  */
 import { useCallback, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, CheckCircle2, Info, Plus, Upload, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, FileSpreadsheet, Info, Plus, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -382,53 +382,69 @@ export function FinanceUploadPanel() {
     <div className="space-y-6">
       {/* 파일 선택 영역 */}
       <Card>
-        <CardContent className="pt-6">
-          <div
-            className={cn(
-              'flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-8 py-10 text-center transition-colors',
-              dragOver ? 'border-primary/60 bg-primary/5' : 'border-border',
-              previewing && 'opacity-60'
-            )}
-            onDragOver={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setDragOver(true)
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setDragOver(false)
-              const f = e.dataTransfer.files?.[0]
-              if (f && !previewing) void handleFile(f)
-            }}
-          >
-            <Upload className="mb-3 size-8 text-muted-foreground/50" />
-            {file && previewRes ? (
-              <div className="space-y-1">
-                <p className="text-sm font-medium">{file.name}</p>
+        <CardContent className={cn(file ? 'py-3' : 'pt-6')}>
+          {!file ? (
+            // 빈 상태: 큰 드롭존 (드래그&드롭)
+            <div
+              className={cn(
+                'flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-8 py-10 text-center transition-colors',
+                dragOver ? 'border-primary/60 bg-primary/5' : 'border-border',
+                previewing && 'opacity-60'
+              )}
+              onDragOver={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setDragOver(true)
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setDragOver(false)
+                const f = e.dataTransfer.files?.[0]
+                if (f && !previewing) void handleFile(f)
+              }}
+            >
+              <Upload className="mb-3 size-8 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">
+                {previewing ? '파일 분석 중...' : '파일을 드래그하거나 선택하세요'}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Excel(.xlsx, .xls) 또는 CSV</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => fileRef.current?.click()}
+                disabled={previewing}
+              >
+                파일 선택
+              </Button>
+            </div>
+          ) : (
+            // 파일 선택됨: 컴팩트 상태 바
+            <div className="flex items-center gap-3">
+              <FileSpreadsheet className="size-5 shrink-0 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{file.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  총 {previewRes.preview.totalRows}건 · {previewRes.preview.activeSheet}
+                  {previewing
+                    ? '분석 중...'
+                    : previewRes
+                      ? `총 ${previewRes.preview.totalRows}건 · ${previewRes.preview.activeSheet}`
+                      : '분석에 실패했습니다 — 다시 시도해 주세요'}
                 </p>
               </div>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  {previewing ? '파일 분석 중...' : '파일을 드래그하거나 선택하세요'}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">Excel(.xlsx, .xls) 또는 CSV</p>
-              </>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={() => fileRef.current?.click()}
-              disabled={previewing}
-            >
-              {file ? '다른 파일 선택' : '파일 선택'}
-            </Button>
-          </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => fileRef.current?.click()}
+                disabled={previewing}
+              >
+                다른 파일 선택
+              </Button>
+            </div>
+          )}
           <input
             ref={fileRef}
             type="file"
