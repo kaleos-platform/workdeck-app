@@ -361,10 +361,14 @@ export async function POST(req: NextRequest) {
   // ── 4) 직전 입고분 자동 정산(lazy) + 정산된 계획의 bias 로드 ──────────────
   // cron 대신 발주 계획 생성 시점에 입고 완료된 FINALIZED 계획을 즉시 정산한다.
   // 정산 실패는 무시하고 진행 → bias가 없으면 computeBiasAdjust(null)=1.0 폴백.
-  try {
-    await settleEligiblePlans(spaceId)
-  } catch {
-    // 정산 실패가 발주 계획 생성을 막지 않도록 무시
+  // dryRun(미리보기)은 write side-effect 금지 — 위저드가 상품선택·토글마다 호출하므로 settle 반복 write 방지.
+  // 실제 생성 시에만 정산. settle 이 seconds 내 새 eligible 을 만들 일은 사실상 없어 미리보기 정합에 영향 없음.
+  if (!body.dryRun) {
+    try {
+      await settleEligiblePlans(spaceId)
+    } catch {
+      // 정산 실패가 발주 계획 생성을 막지 않도록 무시
+    }
   }
 
   // ACTIVE accuracy가 채워진 가장 최근 확정 계획의 bias를 사용.

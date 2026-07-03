@@ -165,7 +165,13 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     try {
       const optionFinalOverrides: Record<string, number> = {}
       for (const o of preview.options) {
-        const v = Number(finalByOption[o.optionId])
+        const raw = finalByOption[o.optionId]
+        // 빈값/무효 입력은 미리보기 기본값으로 폴백(빈칸 = 0 지정으로 오인 방지).
+        if (raw == null || raw.trim() === '') {
+          optionFinalOverrides[o.optionId] = o.finalQty
+          continue
+        }
+        const v = Number(raw)
         optionFinalOverrides[o.optionId] = Number.isFinite(v) && v >= 0 ? Math.floor(v) : o.finalQty
       }
       const res = await fetch('/api/sh/inventory/reorder/plan', {
