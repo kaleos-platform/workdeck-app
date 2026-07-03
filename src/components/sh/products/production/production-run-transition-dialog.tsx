@@ -87,6 +87,8 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
   // 세트 단위 입고 모드 — 단일 입고 위치 + listingId → 입고 세트수
   const [stockInLocationId, setStockInLocationId] = useState('')
   const [setQtyByListing, setSetQtyByListing] = useState<Record<string, number>>({})
+  // 레이어드 자동 분배 프리필됨(연동 위치 baseline + 사용자 위치 추가분) 여부 — 안내 표시용
+  const [layeredSplit, setLayeredSplit] = useState(false)
 
   const isStockIn = target === 'STOCKED_IN'
   // 세트 기반 차수면 세트 단위 입고 모드 (구성옵션 분배는 서버가 처리)
@@ -99,6 +101,7 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
     setAllocByOption({})
     setSetQtyByListing({})
     setStockInLocationId('')
+    setLayeredSplit(false)
   }, [open])
 
   // STOCKED_IN 일 때만 위치 로드 → 로드 후 옵션별 기본 1행(전체 수량 → 첫 위치) 초기화.
@@ -110,34 +113,72 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
     if (!open || !isStockIn || !runId) return
     let cancelled = false
     setLoadingLocations(true)
-    fetch('/api/sh/inventory/locations?isActive=true')
-      .then((r) => r.json())
-      .then((d: { locations?: Location[] }) => {
+    setLayeredSplit(false)
+    ;(async () => {
+      try {
+        const d: { locations?: Location[] } = await fetch(
+          '/api/sh/inventory/locations?isActive=true'
+        ).then((r) => r.json())
         if (cancelled) return
         const list = d.locations ?? []
         setLocations(list)
         const firstLoc = list[0]?.id ?? ''
+
         if ((runSets?.length ?? 0) > 0) {
           // 세트 모드: 단일 입고 위치 + 세트별 입고세트수(기본=발주 세트수)
           setStockInLocationId(firstLoc)
           const initSet: Record<string, number> = {}
           for (const s of runSets ?? []) initSet[s.listingId] = s.plannedSetQty
           setSetQtyByListing(initSet)
+          return
+        }
+
+        // 옵션 모드 — 레이어드 차수면 서버 분할(baseline/추가분)로 연동 위치·사용자 위치 2행 자동 프리필.
+        type Split = {
+          layered: boolean
+          rocketLocation: { id: string; name: string } | null
+          options: { optionId: string; baselineQty: number; additionalQty: number }[]
+        }
+        let split: Split | null = null
+        try {
+          split = await fetch(`/api/sh/production-runs/${runId}/stockin-split`).then((r) =>
+            r.ok ? (r.json() as Promise<Split>) : null
+          )
+        } catch {
+          split = null
+        }
+        if (cancelled) return
+
+        const init: Record<string, AllocRow[]> = {}
+        if (split?.layered && split.rocketLocation) {
+          const rocketId = split.rocketLocation.id
+          // 추가분 기본 목적지 = 로켓 위치가 아닌 첫 위치(없으면 첫 위치)
+          const otherLoc = list.find((l) => l.id !== rocketId)?.id ?? firstLoc
+          const byOpt = new Map(split.options.map((o) => [o.optionId, o]))
+          for (const it of runItems ?? []) {
+            const s = byOpt.get(it.optionId)
+            const rows: AllocRow[] = []
+            if (s && s.baselineQty > 0) rows.push({ locationId: rocketId, quantity: s.baselineQty })
+            const additional = s ? s.additionalQty : it.quantity
+            if (additional > 0 || rows.length === 0) {
+              rows.push({ locationId: otherLoc, quantity: additional })
+            }
+            init[it.optionId] = rows
+          }
+          setLayeredSplit(true)
         } else {
-          // 옵션 모드: 옵션별 기본 1행(전체 수량 → 첫 위치)
-          const init: Record<string, AllocRow[]> = {}
+          // 기본: 옵션별 1행(전체 수량 → 첫 위치)
           for (const it of runItems ?? []) {
             init[it.optionId] = [{ locationId: firstLoc, quantity: it.quantity }]
           }
-          setAllocByOption(init)
         }
-      })
-      .catch(() => {
+        setAllocByOption(init)
+      } catch {
         if (!cancelled) toast.error('보관 위치를 불러올 수 없습니다')
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoadingLocations(false)
-      })
+      }
+    })()
     return () => {
       cancelled = true
     }
@@ -405,6 +446,13 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
               <Label>
                 옵션별 보관 위치<span className="ml-0.5 text-destructive">*</span>
               </Label>
+
+              {layeredSplit && (
+                <p className="rounded-md border border-indigo-200 bg-indigo-50/50 px-3 py-2 text-xs text-indigo-700">
+                  연동 위치 발주(레이어드) — baseline 분은 연동 위치로, 추가분은 사용자 위치로 자동
+                  분배했습니다(묶음 상품 발주 기준). 실입고에 맞게 위치·수량을 조정하세요.
+                </p>
+              )}
 
               {loadingLocations && (
                 <p className="text-xs text-muted-foreground">보관 위치를 불러오는 중...</p>
