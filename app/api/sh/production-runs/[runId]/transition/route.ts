@@ -71,14 +71,25 @@ export async function POST(req: NextRequest, { params }: Params) {
       return errorResponse('입고할 옵션이 없습니다', 400)
     }
 
-    // 세트 단위 입고: setStockIns → 구성옵션 allocations 분해 (서버 권위 = ProductListingItem).
-    // 값이 있으면 allocations 보다 우선. setStockInByListing 은 ProductionRunSet.stockedInSetQty 기록용.
-    let allocations = input.allocations ?? []
+    // 세트 단위 입고(setStockIns) + 옵션별 위치 입고(allocations)를 **병합**한다.
+    // 레이어드/위치 세트 발주: baseline 분은 세트(묶음 상품)로 연동 위치에, 추가분은 옵션으로
+    // 사용자 지정 위치에 **동시** 입고. setStockIns 는 ProductListingItem(서버 권위)로 구성옵션 분해 후
+    // allocations 와 옵션×위치 키로 합산. (구: setStockIns 가 allocations 를 덮어써 둘 중 하나만 가능했음)
     const setStockInByListing = new Map<string, number>()
     const isSetStockIn = !!(input.setStockIns && input.setStockIns.length > 0)
+    const allocMap = new Map<string, { optionId: string; locationId: string; quantity: number }>()
+    const mergeAlloc = (optionId: string, locationId: string, quantity: number) => {
+      if (quantity <= 0) return
+      const key = `${optionId}|${locationId}`
+      const entry = allocMap.get(key)
+      if (entry) entry.quantity += quantity
+      else allocMap.set(key, { optionId, locationId, quantity })
+    }
+    // (1) 명시적 옵션 allocations(추가분) 먼저 반영
+    for (const a of input.allocations ?? []) mergeAlloc(a.optionId, a.locationId, a.quantity)
+    // (2) 세트 분해분(baseline) 합산
     if (isSetStockIn) {
       const setByListingId = new Map(existing.sets.map((s) => [s.listingId, s]))
-      const allocMap = new Map<string, { optionId: string; locationId: string; quantity: number }>()
       for (const si of input.setStockIns!) {
         const set = setByListingId.get(si.listingId)
         if (!set) {
@@ -89,17 +100,11 @@ export async function POST(req: NextRequest, { params }: Params) {
           (setStockInByListing.get(si.listingId) ?? 0) + si.setQty
         )
         for (const it of set.listing.items) {
-          const qty = si.setQty * it.quantity
-          if (qty <= 0) continue
-          const key = `${it.optionId}|${si.locationId}`
-          const entry = allocMap.get(key)
-          if (entry) entry.quantity += qty
-          else
-            allocMap.set(key, { optionId: it.optionId, locationId: si.locationId, quantity: qty })
+          mergeAlloc(it.optionId, si.locationId, si.setQty * it.quantity)
         }
       }
-      allocations = Array.from(allocMap.values())
     }
+    const allocations = Array.from(allocMap.values())
 
     // 비활성 옵션 사전 차단
     const inactive = existing.items.find((it) => it.option.product.status !== 'ACTIVE')
