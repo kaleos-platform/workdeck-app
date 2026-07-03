@@ -80,7 +80,19 @@ export async function POST(req: NextRequest) {
   //  (A) 상품 단위: { productId, optionIds? } — 기존 동작.
   //  (B) 연동 위치 세트: { locationId } — 연동 위치(예: 쿠팡 로켓그로스)의 대표 채널 세트(ProductListing,
   //      구성 2개+)를 구성옵션으로 분해해 발주 계획을 만든다. productId·locationId 동시 지정 금지.
-  let body: { productId?: string; locationId?: string; memo?: string; optionIds?: string[] } = {}
+  // 생성 위저드용 확장(상품 모드 전용):
+  //  - dryRun: persist 없이 계산 결과만 반환(미리보기). 실제 생성과 동일 코드 경로라 drift 없음.
+  //  - excludeRocketLayer: 적격 상품이라도 레이어드 감지 skip → 평이 상품 플랜 강제.
+  //  - optionFinalOverrides: 옵션별 최종수량 수동 지정(위저드 편집). baseline floor 적용 후 반영.
+  let body: {
+    productId?: string
+    locationId?: string
+    memo?: string
+    optionIds?: string[]
+    dryRun?: boolean
+    excludeRocketLayer?: boolean
+    optionFinalOverrides?: Record<string, number>
+  } = {}
   try {
     body = await req.json()
   } catch {
@@ -146,10 +158,13 @@ export async function POST(req: NextRequest) {
     // 구성옵션이 전부 이 상품 옵션인 "단일상품 세트"만 적격. 없으면 평이 상품 플랜으로 폴백(하위호환).
     // isActive: true 로 demand 소스(loadOptionDemand는 활성 채널만 로켓 수요 태깅)와 채널 id 정합 보장.
     // 비활성 로켓 채널이면 탐지 실패 → 평이 상품 플랜(로켓 수요도 어차피 없음).
-    const rocketChannel = await prisma.channel.findFirst({
-      where: { spaceId, externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH, isActive: true },
-      select: { id: true, representativeChannelId: true },
-    })
+    // 위저드에서 "연동 위치 포함" 해제(excludeRocketLayer) 시 감지 skip → 평이 상품 플랜.
+    const rocketChannel = body.excludeRocketLayer
+      ? null
+      : await prisma.channel.findFirst({
+          where: { spaceId, externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH, isActive: true },
+          select: { id: true, representativeChannelId: true },
+        })
     if (rocketChannel?.representativeChannelId) {
       const productOptionIds = new Set(products.flatMap((p) => p.options.map((o) => o.id)))
       const listings = await prisma.productListing.findMany({
@@ -521,6 +536,87 @@ export async function POST(req: NextRequest) {
     }
 
     planSetsData = buildReadOnlySetLines(optionFinalQtyOverride, onHandByOption)
+  }
+
+  // ── 5.6) 위저드 편집분(optionFinalOverrides) 반영 — 세트 역산·totalFinalQty·persist 정합 ──
+  // 옵션별 최종수량 수동 지정(≥0). override 없는 옵션은 기존 계산값 유지.
+  // 강제 floor(최종≥baseline) 없음 — 레이어드 최종은 재고 차감 후 net이라 재고가 수요를 덮으면
+  // final < baseline 이 정상(과발주 방지). Phase 2 입고 분배는 min/max 로 분할한다:
+  //   로켓 세트분 = min(final, baseline), 추가분(위치 입고) = max(0, final − baseline).
+  if (body.optionFinalOverrides) {
+    if (!optionFinalQtyOverride) optionFinalQtyOverride = new Map<string, number>()
+    for (const it of itemInputs) {
+      const ov = body.optionFinalOverrides[it.optionId]
+      if (ov == null) {
+        if (!optionFinalQtyOverride.has(it.optionId)) {
+          optionFinalQtyOverride.set(it.optionId, it.roundedSuggestedQty)
+        }
+        continue
+      }
+      optionFinalQtyOverride.set(it.optionId, Math.max(0, Math.floor(ov)))
+    }
+    // 세트 역산(planSetsData)을 override된 최종수량으로 재계산 (표시 정합)
+    if (setSpecs) {
+      const onHandByOption = new Map<string, number>()
+      for (const it of itemInputs) onHandByOption.set(it.optionId, it.onHandStock)
+      planSetsData = buildReadOnlySetLines(optionFinalQtyOverride, onHandByOption)
+    }
+  }
+
+  // ── 5.7) dryRun 미리보기 — persist·LLM 없이 계산 결과만 반환(생성 위저드 시드) ──
+  // 실제 생성과 동일 코드 경로(수요·예측·레이어드 산식)라 미리보기 == 생성 플랜 by construction.
+  if (body.dryRun) {
+    const optMeta = await prisma.invProductOption.findMany({
+      where: { id: { in: optionIds }, product: { spaceId } },
+      select: { id: true, name: true, sku: true, product: { select: { name: true } } },
+    })
+    const metaById = new Map(optMeta.map((o) => [o.id, o]))
+    let locationName: string | null = null
+    if (setSpecs != null) {
+      const rocketLoc = await prisma.invStorageLocation.findFirst({
+        where: { spaceId, externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH, isActive: true },
+        select: { name: true },
+      })
+      locationName = rocketLoc?.name ?? '로켓그로스'
+    }
+    return NextResponse.json({
+      dryRun: true,
+      isLayered,
+      qualifies: setSpecs != null,
+      locationName,
+      options: itemInputs.map((it) => {
+        const m = metaById.get(it.optionId)
+        return {
+          optionId: it.optionId,
+          productId: it.productId,
+          optionName: m?.name ?? '',
+          sku: m?.sku ?? null,
+          productName: m?.product?.name ?? '',
+          currentStock: it.currentStock,
+          onHandStock: it.onHandStock,
+          incomingQty: it.incomingQty,
+          safetyStockQty: it.safetyStockQty,
+          dailyAvgForecast: it.forecastResult.dailyAvg,
+          forecastModel: it.forecastResult.model,
+          leadTimeDays: it.leadTimeDays,
+          suggestedQty: it.suggestedQty,
+          roundedSuggestedQty: it.roundedSuggestedQty,
+          // 레이어드: 옵션별 로켓 baseline(정수 올림) + 직접 GROSS. 비레이어드 = null.
+          rocketBaselineQty: rocketGrossByOption ? Math.ceil(rocketGrossByOption.get(it.optionId) ?? 0) : null,
+          directGrossQty: directGrossByOption ? (directGrossByOption.get(it.optionId) ?? 0) : null,
+          finalQty: optionFinalQtyOverride
+            ? (optionFinalQtyOverride.get(it.optionId) ?? 0)
+            : it.roundedSuggestedQty,
+        }
+      }),
+      sets: (planSetsData ?? []).map((s) => ({
+        listingId: s.listingId,
+        listingName: s.listingName,
+        currentSetStock: s.currentSetStock,
+        finalSetQty: s.finalSetQty,
+        items: setSpecs?.find((ss) => ss.listingId === s.listingId)?.items ?? [],
+      })),
+    })
   }
 
   // ── 6) LLM rationale 생성 (concurrency 제한) ─────────────────────────────

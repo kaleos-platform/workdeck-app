@@ -1,150 +1,188 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeft, MapPinIcon, PackageIcon, PlusIcon } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckIcon,
+  Loader2,
+  MapPinIcon,
+  PackageIcon,
+  PlusIcon,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { OptionPickerDialog } from '@/components/sh/products/listings/option-picker-dialog'
-import { ReorderTable } from '@/components/sh/inventory/reorder-table'
-import type { ReorderLocation } from '@/components/sh/inventory/reorder-plan-types'
 
-type PickedProduct = {
+// dryRun 미리보기(POST /reorder/plan { dryRun:true }) 응답 — 생성과 동일 코드 경로라 drift 없음.
+type PreviewOption = {
+  optionId: string
   productId: string
+  optionName: string
+  sku: string | null
   productName: string
-  brandName: string | null
+  currentStock: number
+  safetyStockQty: number
+  dailyAvgForecast: number
+  leadTimeDays: number
+  roundedSuggestedQty: number
+  rocketBaselineQty: number | null // 레이어드 옵션별 로켓 baseline(floor). 비레이어드 = null.
+  finalQty: number // 기본 최종수량 = baseline + 추가
 }
+type PreviewSet = {
+  listingId: string
+  listingName: string
+  currentSetStock: number
+  finalSetQty: number
+  items: { optionId: string; perSet: number }[]
+}
+type Preview = {
+  isLayered: boolean
+  qualifies: boolean // 상품이 연동 위치 로켓 세트로 팔림
+  locationName: string | null
+  options: PreviewOption[]
+  sets: PreviewSet[]
+}
+
+type PickedProduct = { productId: string; productName: string; brandName: string | null }
+// 상품 선택 후 순차 단계. 'rocket' = 연동 위치 발주 확인, 'options' = 옵션별 최종 발주.
+type Step = 'rocket' | 'options'
+
+const QTY = new Intl.NumberFormat('ko-KR')
 
 type Props = {
   /** 생성 모드 진입 시 상품 선택 팝업을 자동으로 연다 */
   autoOpen?: boolean
-  /** 목록으로 복귀 (모드 토글 추가로 다이얼로그 닫기 시엔 호출 안 됨 — 부모의 "목록으로" 버튼 사용) */
+  /** (호환) 부모의 "계획 목록으로" 버튼 사용 — 여기선 호출하지 않음 */
   onCancel?: () => void
 }
 
-type Mode = 'product' | 'location'
-
 /**
- * 발주 계획 생성 플로우.
+ * 발주 계획 생성 — 상품 우선 순차 위저드 (Funnel 3-step).
  *
- * 모드 A — 상품:
- *   1) OptionPickerDialog 상품 선택 (autoOpen이면 자동 열림)
- *   2) 선택 후 ReorderTable(단일상품 모드) 표시
- *   3) ReorderTable 내 "발주 계획 생성" 버튼 → POST { productId } → 상세 이동
+ * ① 상품 선택 (OptionPickerDialog)
+ * ② 연동 위치 발주 확인 — 자동 감지된 로켓 세트 baseline 표시(읽기전용) + 포함 여부 체크
+ * ③ 옵션별 최종 발주 — 최종 = baseline + 추가(전체 판매 근거), 옵션별 편집(floor: 최종 ≥ baseline)
+ *    → POST 생성 → 상세. 생산 등록은 상세의 "생산차수 생성"(기존).
  *
- * 모드 B — 연동 위치:
- *   1) GET /api/sh/inventory/locations → externalSource 있는 위치 드롭다운
- *   2) "세트 발주 계획 생성" 버튼 → POST { locationId } → 상세 이동
- *   3) 실패(422 등)는 sonner 에러 토스트
+ * 미리보기는 POST { dryRun:true } 로 생성과 동일 계산을 받아 표시값=생성값 정합.
  */
 export function ReorderPlanCreate({ autoOpen = true }: Props) {
   const router = useRouter()
-  const [mode, setMode] = useState<Mode>('product')
-
-  // ── 상품 모드 상태 ──────────────────────────────────────────────────────────
   const [pickerOpen, setPickerOpen] = useState(autoOpen)
   const [picked, setPicked] = useState<PickedProduct | null>(null)
-  // 상품 선택 직후 picker가 onOpenChange(false)를 발화할 때 stale 방지용
-  const justPickedRef = useRef(false)
-  // 모드 전환으로 picker를 닫을 때 의도적 닫힘 구분용
-  const modeChangingRef = useRef(false)
+  const [step, setStep] = useState<Step>('rocket')
 
-  // ── 연동 위치 모드 상태 ─────────────────────────────────────────────────────
-  const [locations, setLocations] = useState<ReorderLocation[]>([])
-  const [loadingLocations, setLoadingLocations] = useState(false)
-  const [selectedLocationId, setSelectedLocationId] = useState('')
+  const [preview, setPreview] = useState<Preview | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [includeRocket, setIncludeRocket] = useState(true)
+  // 옵션별 편집 최종수량(문자열 — 입력 중 빈값 허용). 미리보기 로드 시 finalQty 로 초기화.
+  const [finalByOption, setFinalByOption] = useState<Record<string, string>>({})
   const [creating, setCreating] = useState(false)
 
-  // 연동 위치 목록 로드 (externalSource != null 만)
-  useEffect(() => {
-    if (mode !== 'location') return
-    setLoadingLocations(true)
-    fetch('/api/sh/inventory/locations?isActive=true')
-      .then((res) => res.json())
-      .then((data: { locations: ReorderLocation[] }) => {
-        setLocations(data.locations.filter((l) => l.externalSource != null))
+  // ── dryRun 미리보기 로드 ────────────────────────────────────────────────────
+  const fetchPreview = async (productId: string, excludeRocket: boolean) => {
+    setPreviewLoading(true)
+    try {
+      const res = await fetch('/api/sh/inventory/reorder/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, dryRun: true, excludeRocketLayer: excludeRocket }),
       })
-      .catch((err) => {
-        console.error(err)
-        toast.error('연동 위치 목록을 불러오지 못했습니다')
-      })
-      .finally(() => setLoadingLocations(false))
-  }, [mode])
+      if (!res.ok) {
+        const b = (await res.json().catch(() => ({}))) as { message?: string }
+        throw new Error(b.message ?? '미리보기 실패')
+      }
+      const data = (await res.json()) as Preview
+      setPreview(data)
+      const init: Record<string, string> = {}
+      for (const o of data.options) init[o.optionId] = String(o.finalQty)
+      setFinalByOption(init)
+    } catch (err) {
+      console.error(err)
+      toast.error(err instanceof Error ? err.message : '미리보기를 불러오지 못했습니다')
+      setPreview(null)
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
 
-  // 상품 선택 완료
+  // ── 상품 선택 완료 → 미리보기 로드 → Step ② ─────────────────────────────────
   const handlePickProduct = (
     productId: string,
     opts: Array<{ productName: string; brandName: string | null }>
   ) => {
     const first = opts[0]
-    justPickedRef.current = true
     setPicked({
       productId,
       productName: first?.productName ?? '',
       brandName: first?.brandName ?? null,
     })
     setPickerOpen(false)
+    setStep('rocket')
+    setIncludeRocket(true)
+    void fetchPreview(productId, false)
   }
 
-  // 팝업 닫힘: 모드 전환이나 상품 선택 직후는 무시, 그 외에는 닫힌 상태로만 유지
-  // (onCancel 호출 제거 — 부모의 "계획 목록으로" 버튼으로 복귀)
-  const handlePickerOpenChange = (open: boolean) => {
-    setPickerOpen(open)
-    if (open) {
-      justPickedRef.current = false
-      return
-    }
-    if (modeChangingRef.current) {
-      modeChangingRef.current = false
-      return
-    }
-    if (justPickedRef.current) {
-      justPickedRef.current = false
-    }
-    // 닫혀도 모드 토글 + "상품 선택" 버튼 노출 — onCancel 호출 안 함
+  const resetToPicker = () => {
+    setPicked(null)
+    setPreview(null)
+    setFinalByOption({})
+    setStep('rocket')
+    setPickerOpen(true)
   }
 
-  // 모드 전환
-  const handleModeChange = (newMode: Mode) => {
-    if (newMode === mode) return
-    if (newMode === 'location' && pickerOpen) {
-      // 모달 다이얼로그를 먼저 닫아야 함 — 의도적 닫기 플래그 설정
-      modeChangingRef.current = true
-      setPickerOpen(false)
-    }
-    if (newMode === 'product') {
-      // 선택했던 상품은 보존 — 피커는 아직 선택 전일 때만 자동으로 연다.
-      // (연동 위치 탭 갔다가 상품 탭으로 돌아와도 선택 상품이 유지되도록)
-      if (!picked) setPickerOpen(true)
-      setSelectedLocationId('')
-    }
-    setMode(newMode)
+  // 연동 위치 포함 토글 → 미리보기 재계산(레이어드 on/off 로 최종수량 달라짐)
+  const handleToggleRocket = (checked: boolean) => {
+    if (!picked) return
+    setIncludeRocket(checked)
+    void fetchPreview(picked.productId, !checked)
   }
 
-  // 세트 발주 계획 생성 (연동 위치 모드)
-  const handleCreateLocationPlan = async () => {
-    if (!selectedLocationId) return
+  // 빈값/음수 정리(≥0). baseline 미만도 허용 — 재고가 수요를 덮으면 final < baseline 이 정상.
+  const clampFinal = (raw: string): string => {
+    const n = Number(raw)
+    if (!Number.isFinite(n) || raw.trim() === '') return raw
+    return String(Math.max(0, Math.floor(n)))
+  }
+
+  // ── 발주 계획 생성 ──────────────────────────────────────────────────────────
+  const handleCreate = async () => {
+    if (!picked || !preview) return
     setCreating(true)
     try {
+      const optionFinalOverrides: Record<string, number> = {}
+      for (const o of preview.options) {
+        const v = Number(finalByOption[o.optionId])
+        optionFinalOverrides[o.optionId] = Number.isFinite(v) && v >= 0 ? Math.floor(v) : o.finalQty
+      }
       const res = await fetch('/api/sh/inventory/reorder/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locationId: selectedLocationId }),
+        body: JSON.stringify({
+          productId: picked.productId,
+          excludeRocketLayer: !includeRocket,
+          optionFinalOverrides,
+        }),
       })
       if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { message?: string }
-        throw new Error(body.message ?? '생성 실패')
+        const b = (await res.json().catch(() => ({}))) as { message?: string }
+        throw new Error(b.message ?? '생성 실패')
       }
       const data = (await res.json()) as { planId: string }
-      toast.success('세트 발주 계획 초안이 생성되었습니다')
+      toast.success('발주 계획 초안이 생성되었습니다')
       router.push(`/d/seller-ops/inventory/reorder/plans/${data.planId}`)
     } catch (err) {
       console.error(err)
@@ -154,122 +192,57 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     }
   }
 
-  // ── 모드 토글 UI ────────────────────────────────────────────────────────────
-  const modeToggle = (
-    <div className="flex w-fit items-center gap-1 rounded-md border bg-muted/30 p-1">
-      <button
-        type="button"
-        onClick={() => handleModeChange('product')}
-        className={`inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-          mode === 'product'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        <PackageIcon className="h-3.5 w-3.5" />
-        상품
-      </button>
-      <button
-        type="button"
-        onClick={() => handleModeChange('location')}
-        className={`inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-          mode === 'location'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        <MapPinIcon className="h-3.5 w-3.5" />
-        연동 위치
-      </button>
-    </div>
+  // ── 스텝 인디케이터 ─────────────────────────────────────────────────────────
+  const currentStepNo = !picked ? 1 : step === 'rocket' ? 2 : 3
+  const stepIndicator = (
+    <ol className="flex items-center gap-2 text-sm">
+      {[
+        { no: 1, label: '상품 선택' },
+        { no: 2, label: '연동 위치 발주' },
+        { no: 3, label: '옵션별 발주' },
+      ].map((s, i) => {
+        const active = s.no === currentStepNo
+        const done = s.no < currentStepNo
+        return (
+          <li key={s.no} className="flex items-center gap-2">
+            <span
+              className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+                active
+                  ? 'bg-primary text-primary-foreground'
+                  : done
+                    ? 'bg-primary/15 text-primary'
+                    : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {done ? <CheckIcon className="h-3.5 w-3.5" /> : s.no}
+            </span>
+            <span className={active ? 'font-medium' : 'text-muted-foreground'}>{s.label}</span>
+            {i < 2 && <span className="mx-1 h-px w-6 bg-border" />}
+          </li>
+        )
+      })}
+    </ol>
   )
 
-  // ── 연동 위치 모드 ──────────────────────────────────────────────────────────
-  if (mode === 'location') {
-    return (
-      <div className="space-y-4">
-        {modeToggle}
-        <div className="space-y-3 rounded-md border bg-card px-4 py-4">
-          <div>
-            <p className="text-sm font-medium">연동 위치 선택</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              세트 상품(ProductListing)이 등록된 연동 위치를 선택하면 세트 단위 발주 계획이
-              생성됩니다.
-            </p>
-          </div>
-          <Select
-            value={selectedLocationId}
-            onValueChange={setSelectedLocationId}
-            disabled={loadingLocations}
-          >
-            <SelectTrigger className="w-full max-w-sm">
-              <SelectValue placeholder={loadingLocations ? '불러오는 중...' : '연동 위치 선택'} />
-            </SelectTrigger>
-            <SelectContent>
-              {locations.length === 0 && !loadingLocations ? (
-                <div className="px-3 py-2 text-xs text-muted-foreground">
-                  연동된 위치가 없습니다
-                </div>
-              ) : (
-                locations.map((loc) => (
-                  <SelectItem key={loc.id} value={loc.id}>
-                    <span>{loc.name}</span>
-                    {loc.externalSource && (
-                      <span className="ml-1.5 text-[10px] text-muted-foreground">
-                        ({loc.externalSource})
-                      </span>
-                    )}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={handleCreateLocationPlan}
-            disabled={!selectedLocationId || creating}
-            className="gap-1.5"
-          >
-            <PlusIcon className="h-3.5 w-3.5" />
-            {creating ? '생성 중...' : '세트 발주 계획 생성'}
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  // ── 상품 모드: 상품 미선택 + 팝업 닫힘 → 선택 버튼 표시 ───────────────────
-  if (!picked && !pickerOpen) {
-    return (
-      <div className="space-y-4">
-        {modeToggle}
-        <div className="flex flex-col items-center gap-3 rounded-md border border-dashed bg-muted/20 py-10">
-          <p className="text-sm text-muted-foreground">
-            상품을 선택해 옵션별 예측 수량을 확인하세요
-          </p>
-          <Button variant="outline" className="gap-1.5" onClick={() => setPickerOpen(true)}>
-            <PackageIcon className="h-3.5 w-3.5" />
-            상품 선택
-          </Button>
-        </div>
-        <OptionPickerDialog
-          open={false}
-          onOpenChange={handlePickerOpenChange}
-          mode="product-with-all-options"
-          onPickProduct={handlePickProduct}
-          contextLabel="발주 계획"
-        />
-      </div>
-    )
-  }
-
-  // ── 상품 모드: 상품 미선택 + 팝업 열림 (autoOpen 초기 상태) ──────────────
+  // ── Step ① 상품 미선택 ──────────────────────────────────────────────────────
   if (!picked) {
     return (
       <div className="space-y-4">
-        {modeToggle}
+        {stepIndicator}
+        {!pickerOpen && (
+          <div className="flex flex-col items-center gap-3 rounded-md border border-dashed bg-muted/20 py-10">
+            <p className="text-sm text-muted-foreground">
+              상품을 선택하면 연동 위치 발주부터 순차로 계획합니다
+            </p>
+            <Button variant="outline" className="gap-1.5" onClick={() => setPickerOpen(true)}>
+              <PackageIcon className="h-3.5 w-3.5" />
+              상품 선택
+            </Button>
+          </div>
+        )}
         <OptionPickerDialog
           open={pickerOpen}
-          onOpenChange={handlePickerOpenChange}
+          onOpenChange={setPickerOpen}
           mode="product-with-all-options"
           onPickProduct={handlePickProduct}
           contextLabel="발주 계획"
@@ -278,33 +251,216 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     )
   }
 
-  // ── 상품 모드: 상품 선택 완료 → ReorderTable ────────────────────────────────
+  const productHeader = (
+    <div className="flex items-center justify-between rounded-md border bg-muted/30 px-4 py-3">
+      <div className="min-w-0">
+        <div className="truncate text-base font-semibold">{picked.productName}</div>
+        {picked.brandName && <div className="text-xs text-muted-foreground">{picked.brandName}</div>}
+      </div>
+      <Button variant="outline" size="sm" className="gap-1.5" onClick={resetToPicker}>
+        <ArrowLeft className="h-3.5 w-3.5" />
+        다른 상품 선택
+      </Button>
+    </div>
+  )
+
+  const loadingBlock = (
+    <div className="flex items-center justify-center gap-2 rounded-md border py-12 text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      수요·예측 미리보기를 불러오는 중...
+    </div>
+  )
+
+  // ── Step ② 연동 위치 발주 확인 ──────────────────────────────────────────────
+  if (step === 'rocket') {
+    return (
+      <div className="space-y-4">
+        {stepIndicator}
+        {productHeader}
+        {previewLoading || !preview ? (
+          loadingBlock
+        ) : preview.qualifies ? (
+          <div className="space-y-3 rounded-md border border-indigo-200 bg-indigo-50/40 px-4 py-4">
+            <div className="flex items-start gap-2">
+              <MapPinIcon className="mt-0.5 h-4 w-4 text-indigo-600" />
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">
+                  연동 위치 <span className="text-indigo-700">[{preview.locationName}]</span> 에서
+                  세트 {preview.sets.length}개로 판매됩니다
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  연동 위치 세트 수요를 옵션별 1차 발주 수량(baseline)으로 잡습니다. 다음 단계에서
+                  전체 판매량 근거로 추가 발주를 계획합니다.
+                </p>
+              </div>
+            </div>
+
+            <label className="flex w-fit items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
+              <Checkbox
+                checked={includeRocket}
+                onCheckedChange={(v) => handleToggleRocket(v === true)}
+              />
+              연동 위치 발주 포함 (레이어드)
+            </label>
+
+            {includeRocket && (
+              <div className="overflow-x-auto rounded-md border bg-background">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>옵션</TableHead>
+                      <TableHead className="text-right">1차 발주 수량 (baseline)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {preview.options.map((o) => (
+                      <TableRow key={o.optionId}>
+                        <TableCell className="text-sm">{o.optionName}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {QTY.format(o.rocketBaselineQty ?? 0)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-md border bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
+            연동 위치 세트 판매가 감지되지 않았습니다 → 일반 발주로 진행합니다.
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button
+            className="gap-1.5"
+            disabled={previewLoading || !preview}
+            onClick={() => setStep('options')}
+          >
+            옵션별 발주
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Step ③ 옵션별 최종 발주 ─────────────────────────────────────────────────
+  const options = preview?.options ?? []
+  const isMultiProduct = new Set(options.map((o) => o.productId)).size > 1
+  const showBaseline = includeRocket && !!preview?.qualifies
+  const totalFinal = options.reduce((s, o) => {
+    const v = Number(finalByOption[o.optionId])
+    return s + (Number.isFinite(v) ? v : 0)
+  }, 0)
+
   return (
     <div className="space-y-4">
-      {modeToggle}
-      <div className="flex items-center justify-between rounded-md border bg-muted/30 px-4 py-3">
-        <div className="min-w-0">
-          <div className="truncate text-base font-semibold">{picked.productName}</div>
-          {picked.brandName && (
-            <div className="text-xs text-muted-foreground">{picked.brandName}</div>
-          )}
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          onClick={() => {
-            setPicked(null)
-            setPickerOpen(true)
-          }}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          다른 상품 선택
-        </Button>
+      {stepIndicator}
+      {productHeader}
+
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium">
+          최종 발주{' '}
+          <span className="text-xs font-normal text-muted-foreground">
+            {showBaseline
+              ? '· 연동 위치 baseline(참고) + 전체 판매량 근거 최종 발주 (옵션별 편집)'
+              : '· 전체 판매량 기반 옵션별 발주 수량 (옵션별 편집)'}
+          </span>
+        </p>
+        <p className="text-xs text-muted-foreground">
+          최종 합계 <span className="font-medium tabular-nums">{QTY.format(totalFinal)}</span>개
+        </p>
       </div>
 
-      {/* 단일상품 모드: 내장 "발주 계획 생성" 버튼이 productId로 POST */}
-      <ReorderTable productId={picked.productId} />
+      {previewLoading || !preview ? (
+        loadingBlock
+      ) : (
+        <div className="overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>옵션</TableHead>
+                {showBaseline && <TableHead className="text-right">연동 위치 baseline</TableHead>}
+                <TableHead className="text-right">전체 판매 일평균</TableHead>
+                <TableHead className="text-right">재고</TableHead>
+                <TableHead className="text-right">안전재고</TableHead>
+                <TableHead className="text-right">최종수량</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {options.map((o) => (
+                <TableRow key={o.optionId}>
+                  <TableCell className="text-sm">
+                    {isMultiProduct && (
+                      <div className="text-[10px] font-medium text-muted-foreground">
+                        {o.productName}
+                      </div>
+                    )}
+                    <span>{o.optionName}</span>
+                  </TableCell>
+                  {showBaseline && (
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {QTY.format(o.rocketBaselineQty ?? 0)}
+                    </TableCell>
+                  )}
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {o.dailyAvgForecast.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {QTY.format(o.currentStock)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {QTY.format(o.safetyStockQty)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Input
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      className="ml-auto h-8 w-24 text-right tabular-nums"
+                      value={finalByOption[o.optionId] ?? ''}
+                      onChange={(e) =>
+                        setFinalByOption((prev) => ({ ...prev, [o.optionId]: e.target.value }))
+                      }
+                      onBlur={(e) =>
+                        setFinalByOption((prev) => ({
+                          ...prev,
+                          [o.optionId]: clampFinal(e.target.value),
+                        }))
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {showBaseline && (
+        <p className="text-[11px] text-muted-foreground">
+          · 입고 시 baseline 분(min(최종, baseline))은 세트(묶음 상품)로 연동 위치에, 추가분(최종 −
+          baseline)은 위치 지정 입고로 처리됩니다. (재고가 수요를 덮으면 최종이 baseline보다 작을 수
+          있습니다.)
+        </p>
+      )}
+
+      <div className="flex items-center justify-between">
+        <Button variant="outline" className="gap-1.5" onClick={() => setStep('rocket')}>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          연동 위치
+        </Button>
+        <Button
+          className="gap-1.5"
+          disabled={creating || previewLoading || !preview || options.length === 0}
+          onClick={handleCreate}
+        >
+          <PlusIcon className="h-3.5 w-3.5" />
+          {creating ? '생성 중...' : '발주 계획 생성'}
+        </Button>
+      </div>
     </div>
   )
 }
