@@ -97,6 +97,22 @@ function verifyDownloadedFile(buffer: Buffer, fileName: string, dateTo: string):
  * Step 1(레코드 생성)을 건너뛰고 기존 runId로 Step 2~9 실행
  */
 export async function runCollectionForRun(runId: string): Promise<void> {
+  // 봇차단(BOT_BLOCKED) 쿨다운 중이면 수동 재시도도 실행하지 않는다 — 재로그인은 Akamai
+  // 차단을 풀지 못하고 오히려 악화시키므로(2026-07-03: 사용자 수동 재시도 연타가 격상 연료였음).
+  // 단 CREDENTIAL_INVALID 쿨다운은 우회 허용 — 사용자가 비번을 고친 뒤 즉시 재시도하는 정상 흐름.
+  const cd = getLoginCooldown()
+  if (cd.active && cd.reason === 'BOT_BLOCKED') {
+    const mins = Math.ceil(cd.remainingMs / 60000)
+    const msg = `Akamai 봇 차단 쿨다운 중(~${mins}분) — 지금 재시도는 차단을 악화시킵니다. 잠시 후 자동 재시도됩니다.`
+    console.warn(`[manual] ${msg} (runId: ${runId})`)
+    try {
+      await updateCollectionRun(runId, { status: 'FAILED', error: msg.slice(0, 500) })
+    } catch (updateError) {
+      console.error('[manual] 상태 업데이트 실패:', updateError)
+    }
+    return
+  }
+
   let downloadedFilePath: string | null = null
 
   try {
