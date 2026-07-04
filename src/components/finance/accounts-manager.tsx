@@ -33,7 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import type { FinCategoryType } from '@/generated/prisma/enums'
+import type { FinCategoryType, FinFlowRole } from '@/generated/prisma/enums'
 import { categoryTypeBadge } from '@/components/finance/format'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
 import { buildClassifyOptions, type ComboOption } from '@/lib/finance/category-options'
@@ -48,6 +48,7 @@ type Category = {
   alias: string | null
   type: FinCategoryType
   groupLabel: string | null
+  flowRole: FinFlowRole | null
   isSystem: boolean
   isActive: boolean
   sortOrder: number

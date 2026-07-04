@@ -2587,6 +2587,15 @@ enum FinCategoryType {
   TRANSFER
 }
 
+// 손익 흐름도(현금흐름 상세 Sankey) 역할 — level-1 대분류에만 부여.
+// 미태그 수입=기타수익, 미태그 지출=판매관리비(OPEX)로 취급.
+enum FinFlowRole {
+  MERCH_SALES // 상품매출 (매출총이익 = 상품매출 − 매출원가)
+  COGS // 매출원가
+  OPEX // 영업비용(판매관리비)
+  FINANCING_COST // 금융비용
+}
+
 enum FinClassRuleMatchType {
   EXACT // 정정 학습 — 정규화된 적요/가맹점 완전 일치 (고신뢰 = 자동분류)
   KEYWORD // 시드/부분 키워드 포함 매칭 (저신뢰 = 검토 제안)
@@ -2681,6 +2690,7 @@ model FinCategory {
   alias      String?
   type       FinCategoryType
   groupLabel String? // 변동비/고정비/마케팅비 등 사용자 그룹
+  flowRole   FinFlowRole? // 손익 흐름도 역할 (대분류에만 부여)
   isSystem   Boolean         @default(false)
   isActive   Boolean         @default(true)
   sortOrder  Int             @default(0)

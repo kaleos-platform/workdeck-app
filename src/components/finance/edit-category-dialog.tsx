@@ -30,7 +30,23 @@ export type EditNode = {
   name: string
   type: string
   groupLabel: string | null
+  flowRole: string | null
   parentId: string | null
+}
+
+// 손익 흐름도 역할 옵션 — 대분류(수입/지출)에만 노출.
+// 미지정: 수입=기타수익, 지출=판매관리비(OPEX)로 흐름도가 처리한다.
+const FLOW_ROLE_OPTIONS: Record<'INCOME' | 'EXPENSE', { value: string; label: string }[]> = {
+  INCOME: [
+    { value: 'none', label: '미지정 (기타수익)' },
+    { value: 'MERCH_SALES', label: '상품매출' },
+  ],
+  EXPENSE: [
+    { value: 'none', label: '미지정 (판매관리비)' },
+    { value: 'COGS', label: '매출원가' },
+    { value: 'OPEX', label: '영업비용(판관비)' },
+    { value: 'FINANCING_COST', label: '금융비용' },
+  ],
 }
 
 export function EditCategoryDialog({
@@ -53,15 +69,22 @@ export function EditCategoryDialog({
   const [name, setName] = useState('')
   const [groupLabel, setGroupLabel] = useState('')
   const [parentId, setParentId] = useState('')
+  const [flowRole, setFlowRole] = useState('none')
   const [saving, setSaving] = useState(false)
 
   const isExpenseLeaf = isLeaf && node?.type === 'EXPENSE'
+  // 대분류(수입/지출)면 흐름도 역할 노출.
+  const flowRoleOptions =
+    !isLeaf && (node?.type === 'INCOME' || node?.type === 'EXPENSE')
+      ? FLOW_ROLE_OPTIONS[node.type]
+      : null
 
   useEffect(() => {
     if (node && open) {
       setName(node.name)
       setGroupLabel(node.groupLabel ?? '')
       setParentId(node.parentId ?? '')
+      setFlowRole(node.flowRole ?? 'none')
     }
   }, [node, open])
 
@@ -78,6 +101,7 @@ export function EditCategoryDialog({
       const body: Record<string, unknown> = { name: trimmed }
       if (isExpenseLeaf) body.groupLabel = groupLabel || null
       if (isLeaf && parentId && parentId !== node!.parentId) body.parentId = parentId
+      if (flowRoleOptions) body.flowRole = flowRole === 'none' ? null : flowRole
 
       const res = await fetch(`/api/finance/categories/${node!.id}`, {
         method: 'PATCH',
@@ -102,7 +126,9 @@ export function EditCategoryDialog({
         <DialogHeader>
           <DialogTitle>{isLeaf ? '항목 편집' : '대분류 편집'}</DialogTitle>
           <DialogDescription>
-            {isLeaf ? '이름·원가 성격·상위 대분류를 수정합니다.' : '대분류 이름을 수정합니다.'}
+            {isLeaf
+              ? '이름·원가 성격·상위 대분류를 수정합니다.'
+              : '대분류 이름·손익 흐름도 역할을 수정합니다.'}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
@@ -135,6 +161,27 @@ export function EditCategoryDialog({
                   <SelectItem value="변동">변동비</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {flowRoleOptions && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">손익 흐름도 역할</Label>
+              <Select value={flowRole} onValueChange={setFlowRole}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {flowRoleOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                현금흐름 상세의 흐름도(Sankey) 손익 계층 분류에 사용됩니다.
+              </p>
             </div>
           )}
 

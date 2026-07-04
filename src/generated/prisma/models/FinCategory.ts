@@ -43,6 +43,7 @@ export type FinCategoryMinAggregateOutputType = {
   alias: string | null
   type: $Enums.FinCategoryType | null
   groupLabel: string | null
+  flowRole: $Enums.FinFlowRole | null
   isSystem: boolean | null
   isActive: boolean | null
   sortOrder: number | null
@@ -59,6 +60,7 @@ export type FinCategoryMaxAggregateOutputType = {
   alias: string | null
   type: $Enums.FinCategoryType | null
   groupLabel: string | null
+  flowRole: $Enums.FinFlowRole | null
   isSystem: boolean | null
   isActive: boolean | null
   sortOrder: number | null
@@ -75,6 +77,7 @@ export type FinCategoryCountAggregateOutputType = {
   alias: number
   type: number
   groupLabel: number
+  flowRole: number
   isSystem: number
   isActive: number
   sortOrder: number
@@ -101,6 +104,7 @@ export type FinCategoryMinAggregateInputType = {
   alias?: true
   type?: true
   groupLabel?: true
+  flowRole?: true
   isSystem?: true
   isActive?: true
   sortOrder?: true
@@ -117,6 +121,7 @@ export type FinCategoryMaxAggregateInputType = {
   alias?: true
   type?: true
   groupLabel?: true
+  flowRole?: true
   isSystem?: true
   isActive?: true
   sortOrder?: true
@@ -133,6 +138,7 @@ export type FinCategoryCountAggregateInputType = {
   alias?: true
   type?: true
   groupLabel?: true
+  flowRole?: true
   isSystem?: true
   isActive?: true
   sortOrder?: true
@@ -236,6 +242,7 @@ export type FinCategoryGroupByOutputType = {
   alias: string | null
   type: $Enums.FinCategoryType
   groupLabel: string | null
+  flowRole: $Enums.FinFlowRole | null
   isSystem: boolean
   isActive: boolean
   sortOrder: number
@@ -275,6 +282,7 @@ export type FinCategoryWhereInput = {
   alias?: Prisma.StringNullableFilter<"FinCategory"> | string | null
   type?: Prisma.EnumFinCategoryTypeFilter<"FinCategory"> | $Enums.FinCategoryType
   groupLabel?: Prisma.StringNullableFilter<"FinCategory"> | string | null
+  flowRole?: Prisma.EnumFinFlowRoleNullableFilter<"FinCategory"> | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFilter<"FinCategory"> | boolean
   isActive?: Prisma.BoolFilter<"FinCategory"> | boolean
   sortOrder?: Prisma.IntFilter<"FinCategory"> | number
@@ -297,6 +305,7 @@ export type FinCategoryOrderByWithRelationInput = {
   alias?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   groupLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  flowRole?: Prisma.SortOrderInput | Prisma.SortOrder
   isSystem?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -323,6 +332,7 @@ export type FinCategoryWhereUniqueInput = Prisma.AtLeast<{
   alias?: Prisma.StringNullableFilter<"FinCategory"> | string | null
   type?: Prisma.EnumFinCategoryTypeFilter<"FinCategory"> | $Enums.FinCategoryType
   groupLabel?: Prisma.StringNullableFilter<"FinCategory"> | string | null
+  flowRole?: Prisma.EnumFinFlowRoleNullableFilter<"FinCategory"> | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFilter<"FinCategory"> | boolean
   isActive?: Prisma.BoolFilter<"FinCategory"> | boolean
   sortOrder?: Prisma.IntFilter<"FinCategory"> | number
@@ -345,6 +355,7 @@ export type FinCategoryOrderByWithAggregationInput = {
   alias?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   groupLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  flowRole?: Prisma.SortOrderInput | Prisma.SortOrder
   isSystem?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -369,6 +380,7 @@ export type FinCategoryScalarWhereWithAggregatesInput = {
   alias?: Prisma.StringNullableWithAggregatesFilter<"FinCategory"> | string | null
   type?: Prisma.EnumFinCategoryTypeWithAggregatesFilter<"FinCategory"> | $Enums.FinCategoryType
   groupLabel?: Prisma.StringNullableWithAggregatesFilter<"FinCategory"> | string | null
+  flowRole?: Prisma.EnumFinFlowRoleNullableWithAggregatesFilter<"FinCategory"> | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolWithAggregatesFilter<"FinCategory"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"FinCategory"> | boolean
   sortOrder?: Prisma.IntWithAggregatesFilter<"FinCategory"> | number
@@ -383,6 +395,7 @@ export type FinCategoryCreateInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -405,6 +418,7 @@ export type FinCategoryUncheckedCreateInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -423,6 +437,7 @@ export type FinCategoryUpdateInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -445,6 +460,7 @@ export type FinCategoryUncheckedUpdateInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -465,6 +481,7 @@ export type FinCategoryCreateManyInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -479,6 +496,7 @@ export type FinCategoryUpdateManyMutationInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -495,6 +513,7 @@ export type FinCategoryUncheckedUpdateManyInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -532,6 +551,7 @@ export type FinCategoryCountOrderByAggregateInput = {
   alias?: Prisma.SortOrder
   type?: Prisma.SortOrder
   groupLabel?: Prisma.SortOrder
+  flowRole?: Prisma.SortOrder
   isSystem?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -552,6 +572,7 @@ export type FinCategoryMaxOrderByAggregateInput = {
   alias?: Prisma.SortOrder
   type?: Prisma.SortOrder
   groupLabel?: Prisma.SortOrder
+  flowRole?: Prisma.SortOrder
   isSystem?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -568,6 +589,7 @@ export type FinCategoryMinOrderByAggregateInput = {
   alias?: Prisma.SortOrder
   type?: Prisma.SortOrder
   groupLabel?: Prisma.SortOrder
+  flowRole?: Prisma.SortOrder
   isSystem?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -648,6 +670,10 @@ export type FinCategoryUncheckedCreateNestedManyWithoutParentInput = {
 
 export type EnumFinCategoryTypeFieldUpdateOperationsInput = {
   set?: $Enums.FinCategoryType
+}
+
+export type NullableEnumFinFlowRoleFieldUpdateOperationsInput = {
+  set?: $Enums.FinFlowRole | null
 }
 
 export type FinCategoryUpdateOneWithoutChildrenNestedInput = {
@@ -741,6 +767,7 @@ export type FinCategoryCreateWithoutSpaceInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -761,6 +788,7 @@ export type FinCategoryUncheckedCreateWithoutSpaceInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -810,6 +838,7 @@ export type FinCategoryScalarWhereInput = {
   alias?: Prisma.StringNullableFilter<"FinCategory"> | string | null
   type?: Prisma.EnumFinCategoryTypeFilter<"FinCategory"> | $Enums.FinCategoryType
   groupLabel?: Prisma.StringNullableFilter<"FinCategory"> | string | null
+  flowRole?: Prisma.EnumFinFlowRoleNullableFilter<"FinCategory"> | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFilter<"FinCategory"> | boolean
   isActive?: Prisma.BoolFilter<"FinCategory"> | boolean
   sortOrder?: Prisma.IntFilter<"FinCategory"> | number
@@ -824,6 +853,7 @@ export type FinCategoryCreateWithoutChildrenInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -845,6 +875,7 @@ export type FinCategoryUncheckedCreateWithoutChildrenInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -867,6 +898,7 @@ export type FinCategoryCreateWithoutParentInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -887,6 +919,7 @@ export type FinCategoryUncheckedCreateWithoutParentInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -926,6 +959,7 @@ export type FinCategoryUpdateWithoutChildrenInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -947,6 +981,7 @@ export type FinCategoryUncheckedUpdateWithoutChildrenInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -980,6 +1015,7 @@ export type FinCategoryCreateWithoutClassRulesInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -1001,6 +1037,7 @@ export type FinCategoryUncheckedCreateWithoutClassRulesInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -1034,6 +1071,7 @@ export type FinCategoryUpdateWithoutClassRulesInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1055,6 +1093,7 @@ export type FinCategoryUncheckedUpdateWithoutClassRulesInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1072,6 +1111,7 @@ export type FinCategoryCreateWithoutStagedRowsInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -1093,6 +1133,7 @@ export type FinCategoryUncheckedCreateWithoutStagedRowsInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -1126,6 +1167,7 @@ export type FinCategoryUpdateWithoutStagedRowsInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1147,6 +1189,7 @@ export type FinCategoryUncheckedUpdateWithoutStagedRowsInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1164,6 +1207,7 @@ export type FinCategoryCreateWithoutTransactionsInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -1185,6 +1229,7 @@ export type FinCategoryUncheckedCreateWithoutTransactionsInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -1218,6 +1263,7 @@ export type FinCategoryUpdateWithoutTransactionsInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1239,6 +1285,7 @@ export type FinCategoryUncheckedUpdateWithoutTransactionsInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1257,6 +1304,7 @@ export type FinCategoryCreateManySpaceInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -1271,6 +1319,7 @@ export type FinCategoryUpdateWithoutSpaceInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1291,6 +1340,7 @@ export type FinCategoryUncheckedUpdateWithoutSpaceInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1310,6 +1360,7 @@ export type FinCategoryUncheckedUpdateManyWithoutSpaceInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1325,6 +1376,7 @@ export type FinCategoryCreateManyParentInput = {
   alias?: string | null
   type: $Enums.FinCategoryType
   groupLabel?: string | null
+  flowRole?: $Enums.FinFlowRole | null
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -1339,6 +1391,7 @@ export type FinCategoryUpdateWithoutParentInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1359,6 +1412,7 @@ export type FinCategoryUncheckedUpdateWithoutParentInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1378,6 +1432,7 @@ export type FinCategoryUncheckedUpdateManyWithoutParentInput = {
   alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumFinCategoryTypeFieldUpdateOperationsInput | $Enums.FinCategoryType
   groupLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flowRole?: Prisma.NullableEnumFinFlowRoleFieldUpdateOperationsInput | $Enums.FinFlowRole | null
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1452,6 +1507,7 @@ export type FinCategorySelect<ExtArgs extends runtime.Types.Extensions.InternalA
   alias?: boolean
   type?: boolean
   groupLabel?: boolean
+  flowRole?: boolean
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -1475,6 +1531,7 @@ export type FinCategorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   alias?: boolean
   type?: boolean
   groupLabel?: boolean
+  flowRole?: boolean
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -1493,6 +1550,7 @@ export type FinCategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   alias?: boolean
   type?: boolean
   groupLabel?: boolean
+  flowRole?: boolean
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -1511,6 +1569,7 @@ export type FinCategorySelectScalar = {
   alias?: boolean
   type?: boolean
   groupLabel?: boolean
+  flowRole?: boolean
   isSystem?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -1518,7 +1577,7 @@ export type FinCategorySelectScalar = {
   updatedAt?: boolean
 }
 
-export type FinCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "parentId" | "name" | "code" | "alias" | "type" | "groupLabel" | "isSystem" | "isActive" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["finCategory"]>
+export type FinCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "parentId" | "name" | "code" | "alias" | "type" | "groupLabel" | "flowRole" | "isSystem" | "isActive" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["finCategory"]>
 export type FinCategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   parent?: boolean | Prisma.FinCategory$parentArgs<ExtArgs>
@@ -1556,6 +1615,7 @@ export type $FinCategoryPayload<ExtArgs extends runtime.Types.Extensions.Interna
     alias: string | null
     type: $Enums.FinCategoryType
     groupLabel: string | null
+    flowRole: $Enums.FinFlowRole | null
     isSystem: boolean
     isActive: boolean
     sortOrder: number
@@ -1998,6 +2058,7 @@ export interface FinCategoryFieldRefs {
   readonly alias: Prisma.FieldRef<"FinCategory", 'String'>
   readonly type: Prisma.FieldRef<"FinCategory", 'FinCategoryType'>
   readonly groupLabel: Prisma.FieldRef<"FinCategory", 'String'>
+  readonly flowRole: Prisma.FieldRef<"FinCategory", 'FinFlowRole'>
   readonly isSystem: Prisma.FieldRef<"FinCategory", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"FinCategory", 'Boolean'>
   readonly sortOrder: Prisma.FieldRef<"FinCategory", 'Int'>
