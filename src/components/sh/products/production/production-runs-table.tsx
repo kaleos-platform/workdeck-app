@@ -588,6 +588,14 @@ export function ProductionRunsTable() {
                 onSort={handleSort}
               />
               <SortableHead
+                field="memo"
+                label="메모"
+                className="w-[280px]"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+              <SortableHead
                 field="status"
                 label="상태"
                 className="w-[80px]"
@@ -630,14 +638,6 @@ export function ProductionRunsTable() {
               <SortableHead
                 field="productName"
                 label="포함 상품"
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSort={handleSort}
-              />
-              <SortableHead
-                field="memo"
-                label="메모"
-                className="w-[160px]"
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
@@ -732,6 +732,12 @@ export function ProductionRunsTable() {
                           <p className="font-medium">{run.runNo}</p>
                         </div>
                       </TableCell>
+                      <TableCell
+                        className="max-w-[280px] truncate text-sm text-muted-foreground"
+                        title={run.memo ?? undefined}
+                      >
+                        {run.memo ?? '-'}
+                      </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <StatusTransitionMenu
                           run={run}
@@ -756,9 +762,6 @@ export function ProductionRunsTable() {
                       </TableCell>
                       <TableCell>
                         <ProductChips products={run.products} />
-                      </TableCell>
-                      <TableCell className="max-w-[160px] truncate text-sm text-muted-foreground">
-                        {run.memo ?? '-'}
                       </TableCell>
                       <TableCell className="text-right text-sm">
                         {run.totalQuantity.toLocaleString('ko-KR')}
