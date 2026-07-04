@@ -50,6 +50,9 @@ const REPORT_URLS = {
 const SCREENSHOT_DIR = path.resolve('.screenshots')
 const DEFAULT_TIMEOUT = 30_000
 const DOWNLOAD_TIMEOUT = 120_000
+// 로그인 폼(password 필드) 렌더 대기 상한. Akamai 가 폼 없는 Access Denied 페이지를
+// 서빙하면 이 시간 내 미표시로 판정해 분류된 LoginError 로 전환한다(무분류 30초 타임아웃 방지).
+const LOGIN_FORM_TIMEOUT = 15_000
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────────
 
@@ -204,8 +207,20 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
     }
   }
 
-  // PW 입력
-  await page.locator('input[type="password"]').first().fill(credentials.password)
+  // PW 입력 — 먼저 로그인 폼(password 필드)이 렌더링됐는지 확인한다.
+  // Akamai 가 Access Denied(폼 없는) 페이지를 서빙하면 여기서 raw 30초 TimeoutError 대신
+  // 분류된 LoginError 로 던져야 쿨다운/전용 알림/재시도 억제가 동작한다. (2026-07-03 회고)
+  const pwField = page.locator('input[type="password"]').first()
+  const formShown = await pwField
+    .waitFor({ state: 'visible', timeout: LOGIN_FORM_TIMEOUT })
+    .then(() => true)
+    .catch(() => false)
+  if (!formShown) {
+    await saveScreenshot(page, 'login-noform')
+    const reason = await classifyLoginFailure(page)
+    throw new LoginError(reason, `로그인 실패 — ${reasonLabel(reason)} (로그인 폼 미표시)`)
+  }
+  await pwField.fill(credentials.password)
 
   // 로그인 버튼
   const loginBtn = page
