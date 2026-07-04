@@ -9561,6 +9561,7 @@ export const FinCategoryScalarFieldEnum = {
   alias: 'alias',
   type: 'type',
   groupLabel: 'groupLabel',
+  flowRole: 'flowRole',
   isSystem: 'isSystem',
   isActive: 'isActive',
   sortOrder: 'sortOrder',
@@ -10431,6 +10432,20 @@ export type EnumFinCategoryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'FinCategoryType[]'
  */
 export type ListEnumFinCategoryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinCategoryType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'FinFlowRole'
+ */
+export type EnumFinFlowRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinFlowRole'>
+    
+
+
+/**
+ * Reference to a field of type 'FinFlowRole[]'
+ */
+export type ListEnumFinFlowRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinFlowRole[]'>
     
 
 

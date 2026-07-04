@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { FinFlowRole } from '@/generated/prisma/enums'
+
+/** 흐름도 역할 문자열 검증 — 유효 enum 값이면 반환, 'none'/빈값이면 null, 그 외 undefined(무시). */
+function parseFlowRole(v: unknown): FinFlowRole | null | undefined {
+  if (v === null || v === '' || v === 'none') return null
+  if (typeof v === 'string' && v in FinFlowRole) return v as FinFlowRole
+  return undefined
+}
 
 // 수정: alias/groupLabel/isActive는 isSystem 무관하게 허용, name은 isSystem=true 금지
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -20,6 +28,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     /** 회계용 내보내기 단계의 K-IFRS 매핑 코드 */
     code?: string | null
   }
+  // 흐름도 역할(대분류에 부여) — 'flowRole' 키가 body에 있을 때만 반영.
+  const hasFlowRole = 'flowRole' in (body as Record<string, unknown>)
+  const flowRole = hasFlowRole ? parseFlowRole((body as { flowRole?: unknown }).flowRole) : undefined
 
   // spaceId 소유 검증
   const existing = await prisma.finCategory.findFirst({
@@ -69,6 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(isActive !== undefined && { isActive }),
         ...(parentId !== undefined && { parentId }),
         ...(code !== undefined && { code: code && code.trim() ? code.trim() : null }),
+        ...(flowRole !== undefined && { flowRole }),
       },
     })
     return NextResponse.json({ category })

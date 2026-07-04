@@ -430,6 +430,16 @@ export const FinCategoryType = {
 export type FinCategoryType = (typeof FinCategoryType)[keyof typeof FinCategoryType]
 
 
+export const FinFlowRole = {
+  MERCH_SALES: 'MERCH_SALES',
+  COGS: 'COGS',
+  OPEX: 'OPEX',
+  FINANCING_COST: 'FINANCING_COST'
+} as const
+
+export type FinFlowRole = (typeof FinFlowRole)[keyof typeof FinFlowRole]
+
+
 export const FinClassRuleMatchType = {
   EXACT: 'EXACT',
   KEYWORD: 'KEYWORD'

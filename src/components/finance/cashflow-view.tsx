@@ -14,12 +14,14 @@ import {
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import { formatWon, formatPercent } from '@/components/finance/format'
+import { FinanceCashflowSankey } from '@/components/finance/cashflow-sankey'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
 type Grain = 'month' | 'quarter' | 'year'
 type GroupBy = 'category' | 'subaccount'
+type ViewMode = 'table' | 'flow'
 
 interface CashflowRow {
   key: string
@@ -118,6 +120,7 @@ function SegmentGroup<T extends string>({
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 export function FinanceCashflowView() {
+  const [view, setView] = useState<ViewMode>('table')
   const [grain, setGrain] = useState<Grain>('month')
   const [groupBy, setGroupBy] = useState<GroupBy>('category')
   const [data, setData] = useState<CashflowData | null>(null)
@@ -156,6 +159,15 @@ export function FinanceCashflowView() {
     <div className="space-y-4">
       {/* 컨트롤 바 */}
       <div className="flex flex-wrap items-center gap-3">
+        <SegmentGroup<ViewMode>
+          label="보기"
+          options={[
+            { value: 'table', label: '테이블' },
+            { value: 'flow', label: '흐름도' },
+          ]}
+          value={view}
+          onChange={setView}
+        />
         <SegmentGroup<Grain>
           label="기간"
           options={[
@@ -166,19 +178,24 @@ export function FinanceCashflowView() {
           value={grain}
           onChange={handleGrainChange}
         />
-        <SegmentGroup<GroupBy>
-          label="구분"
-          options={[
-            { value: 'category', label: '계정과목' },
-            { value: 'subaccount', label: '사용자 계정' },
-          ]}
-          value={groupBy}
-          onChange={handleGroupByChange}
-        />
+        {/* 구분(계정과목/사용자계정)은 테이블 뷰에서만 — 흐름도는 대분류 기준 롤업 고정 */}
+        {view === 'table' && (
+          <SegmentGroup<GroupBy>
+            label="구분"
+            options={[
+              { value: 'category', label: '계정과목' },
+              { value: 'subaccount', label: '사용자 계정' },
+            ]}
+            value={groupBy}
+            onChange={handleGroupByChange}
+          />
+        )}
       </div>
 
-      {/* 테이블 영역 */}
-      {loading ? (
+      {/* 본문: 흐름도 or 테이블 */}
+      {view === 'flow' ? (
+        <FinanceCashflowSankey grain={grain} />
+      ) : loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
       ) : !data || (data.incomeRows.length === 0 && data.expenseRows.length === 0) ? (
         <EmptyState />

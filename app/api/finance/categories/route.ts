@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
+import { FinFlowRole } from '@/generated/prisma/enums'
+
+/** 흐름도 역할 문자열 검증 — 유효 enum 값이면 반환, 'none'/빈값이면 null, 그 외 undefined(무시). */
+function parseFlowRole(v: unknown): FinFlowRole | null | undefined {
+  if (v === null || v === '' || v === 'none') return null
+  if (typeof v === 'string' && v in FinFlowRole) return v as FinFlowRole
+  return undefined
+}
 
 // 트리 노드 타입
 type CategoryNode = {
@@ -13,6 +21,7 @@ type CategoryNode = {
   alias: string | null
   type: string
   groupLabel: string | null
+  flowRole: string | null
   isSystem: boolean
   isActive: boolean
   sortOrder: number
@@ -41,6 +50,7 @@ export async function GET() {
       alias: true,
       type: true,
       groupLabel: true,
+      flowRole: true,
       isSystem: true,
       isActive: true,
       sortOrder: true,
@@ -82,6 +92,7 @@ export async function POST(req: NextRequest) {
     alias?: string
     groupLabel?: string
   }
+  const flowRole = parseFlowRole((body as { flowRole?: unknown }).flowRole)
 
   if (!parentId) return errorResponse('parentId가 필요합니다', 400)
   if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -118,6 +129,7 @@ export async function POST(req: NextRequest) {
         sortOrder: nextSortOrder,
         alias: alias ?? null,
         groupLabel: groupLabel ?? null,
+        ...(flowRole !== undefined && { flowRole }),
       },
     })
     return NextResponse.json({ category }, { status: 201 })
