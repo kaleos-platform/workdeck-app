@@ -1714,6 +1714,7 @@ export const FinCategoryScalarFieldEnum = {
   alias: 'alias',
   type: 'type',
   groupLabel: 'groupLabel',
+  flowRole: 'flowRole',
   isSystem: 'isSystem',
   isActive: 'isActive',
   sortOrder: 'sortOrder',

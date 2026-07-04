@@ -45,6 +45,7 @@ import { PATCH as stagingPatch } from '../../../../app/api/finance/staging/[id]/
 import { POST as stagingCommit } from '../../../../app/api/finance/staging/commit/route'
 import { GET as dashboardGet } from '../../../../app/api/finance/dashboard/route'
 import { GET as cashflowGet } from '../../../../app/api/finance/cashflow/route'
+import { GET as sankeyGet } from '../../../../app/api/finance/cashflow/sankey/route'
 
 const d = RUN ? describe : describe.skip
 
@@ -453,6 +454,160 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(cf.totals.expense.values[ym]).toBe(dash.kpi.expense)
     expect(cf.totals.income.values[ym] ?? 0).toBe(0)
   }, 20000)
+
+  // ── 손익 흐름도(Sankey) ─────────────────────────────────────────────────────
+  /** 지정 flowRole 대분류의 리프 id. null이면 flowRole 미태그(기타) 대분류의 리프. */
+  async function leafUnderFlowRole(
+    role: 'MERCH_SALES' | 'COGS' | 'OPEX' | 'FINANCING_COST' | null,
+    type: 'INCOME' | 'EXPENSE'
+  ): Promise<string> {
+    // level-1 대분류 = 부모가 루트(parent.parentId === null). 리프도 flowRole null이라 이 조건 필수.
+    const parent = await prisma.finCategory.findFirst({
+      where: { spaceId: SPACE_ID, type, flowRole: role, parent: { parentId: null } },
+      select: { id: true },
+    })
+    if (!parent) throw new Error(`flowRole=${role} type=${type} 대분류 없음`)
+    const leaf = await prisma.finCategory.findFirst({
+      where: { spaceId: SPACE_ID, parentId: parent.id },
+      select: { id: true },
+    })
+    if (!leaf) throw new Error(`flowRole=${role} 대분류의 리프 없음`)
+    return leaf.id
+  }
+
+  async function makeTxn(
+    ym: string,
+    direction: 'IN' | 'OUT',
+    amount: number,
+    categoryId: string,
+    key: string,
+    cancelFlag: string | null = null
+  ): Promise<void> {
+    const [y, m] = ym.split('-').map(Number)
+    await prisma.finTransaction.create({
+      data: {
+        spaceId: SPACE_ID,
+        accountId,
+        txnDate: new Date(y, m - 1, 15),
+        direction,
+        amount,
+        categoryId,
+        cancelFlag,
+        classStatus: 'CLASSIFIED',
+        isTransfer: false,
+        identityKey: key,
+        contentHash: key,
+      },
+    })
+  }
+
+  test('sankey: 손익 워터폴 + net 불변식 + 노드 균형', async () => {
+    const ym = '2024-03' // 샘플 데이터와 겹치지 않는 격리 월
+    const merchLeaf = await leafUnderFlowRole('MERCH_SALES', 'INCOME')
+    const cogsLeaf = await leafUnderFlowRole('COGS', 'EXPENSE')
+    const opexLeaf = await leafUnderFlowRole('OPEX', 'EXPENSE')
+    const finLeaf = await leafUnderFlowRole('FINANCING_COST', 'EXPENSE')
+    const otherLeaf = await leafUnderFlowRole(null, 'INCOME') // 기타수입(미태그)
+
+    await makeTxn(ym, 'IN', 1_000_000, merchLeaf, 'sk-merch')
+    await makeTxn(ym, 'IN', 50_000, otherLeaf, 'sk-other')
+    await makeTxn(ym, 'OUT', 400_000, cogsLeaf, 'sk-cogs')
+    await makeTxn(ym, 'OUT', 200_000, opexLeaf, 'sk-opex')
+    await makeTxn(ym, 'OUT', 30_000, finLeaf, 'sk-fin')
+
+    const res = await call(
+      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&from=${ym}&to=${ym}`))
+    )
+    expect(res.status).toBe(200)
+    const body = await res.json()
+
+    expect(body.renderable).toBe(true)
+    // 손익 계층 값
+    expect(body.totals.totalIncome).toBe(1_050_000)
+    expect(body.totals.merchSales).toBe(1_000_000)
+    expect(body.totals.cogs).toBe(400_000)
+    expect(body.totals.grossProfit).toBe(600_000) // 매출총이익 = 상품매출 − 매출원가
+    expect(body.totals.opex).toBe(200_000)
+    expect(body.totals.operatingProfit).toBe(450_000) // 600k + 50k − 200k
+    expect(body.totals.financingCost).toBe(30_000)
+    expect(body.totals.net).toBe(420_000) // 1,050k − 400k − 200k − 30k
+
+    // 핵심 불변식: Sankey net == cashflow 테이블 net (같은 기간)
+    const cfRes = await call(
+      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&from=${ym}&to=${ym}`))
+    )
+    const cf = await cfRes.json()
+    expect(body.totals.net).toBe(cf.totals.net.values[ym])
+
+    // 노드 균형: 중간 노드는 inflow == outflow
+    const nodes: { name: string }[] = body.nodes
+    const links: { source: number; target: number; value: number }[] = body.links
+    const inflow = (i: number) =>
+      links.filter((l) => l.target === i).reduce((a, l) => a + l.value, 0)
+    const outflow = (i: number) =>
+      links.filter((l) => l.source === i).reduce((a, l) => a + l.value, 0)
+    nodes.forEach((_, i) => {
+      const isSource = links.some((l) => l.source === i)
+      const isTarget = links.some((l) => l.target === i)
+      if (isSource && isTarget) {
+        expect(Math.abs(inflow(i) - outflow(i))).toBeLessThan(1) // 반올림 허용
+      }
+    })
+
+    // 정리(다음 테스트 격리)
+    await prisma.finTransaction.deleteMany({
+      where: { spaceId: SPACE_ID, identityKey: { startsWith: 'sk-' } },
+    })
+  }, 30000)
+
+  test('sankey: 음수 기타수익(취소·환불)에도 net == 테이블 net (불변식 유지)', async () => {
+    const ym = '2024-04'
+    const merchLeaf = await leafUnderFlowRole('MERCH_SALES', 'INCOME')
+    const otherLeaf = await leafUnderFlowRole(null, 'INCOME')
+    await makeTxn(ym, 'IN', 1_000_000, merchLeaf, 'skneg-merch')
+    // 취소 income(cancelFlag='취소') → signedAmount 음수 → 기타수익 버킷 음수
+    await makeTxn(ym, 'IN', 50_000, otherLeaf, 'skneg-cancel', '취소')
+
+    const res = await call(
+      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&from=${ym}&to=${ym}`))
+    )
+    const body = await res.json()
+
+    // 총계·net은 전체(음수 포함) 기준 — 테이블과 반드시 일치
+    expect(body.totals.totalIncome).toBe(950_000)
+    expect(body.totals.net).toBe(950_000)
+    const cfRes = await call(
+      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&from=${ym}&to=${ym}`))
+    )
+    const cf = await cfRes.json()
+    expect(body.totals.net).toBe(cf.totals.net.values[ym])
+    // 음수 버킷이 있으면 흐름도는 못 그림(균형 깨짐 방지)
+    expect(body.renderable).toBe(false)
+
+    await prisma.finTransaction.deleteMany({
+      where: { spaceId: SPACE_ID, identityKey: { startsWith: 'skneg-' } },
+    })
+  }, 30000)
+
+  test('sankey: 적자(매출원가>상품매출) 기간은 renderable:false', async () => {
+    const ym = '2024-02'
+    const merchLeaf = await leafUnderFlowRole('MERCH_SALES', 'INCOME')
+    const cogsLeaf = await leafUnderFlowRole('COGS', 'EXPENSE')
+    await makeTxn(ym, 'IN', 100_000, merchLeaf, 'skloss-merch')
+    await makeTxn(ym, 'OUT', 200_000, cogsLeaf, 'skloss-cogs')
+
+    const res = await call(
+      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&from=${ym}&to=${ym}`))
+    )
+    const body = await res.json()
+    expect(body.renderable).toBe(false)
+    expect(typeof body.reason).toBe('string')
+    expect(body.totals.grossProfit).toBe(-100_000)
+
+    await prisma.finTransaction.deleteMany({
+      where: { spaceId: SPACE_ID, identityKey: { startsWith: 'skloss-' } },
+    })
+  }, 30000)
 
   test('카드 파일 파싱 smoke (하나카드)', async () => {
     if (!fs.existsSync(CARD_FILE)) return

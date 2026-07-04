@@ -11,6 +11,23 @@ export function formatWon(n: number | null | undefined): string {
   return `${sign}₩${Math.abs(Math.round(n)).toLocaleString('ko-KR')}`
 }
 
+/**
+ * 축약 원화(흐름도 라벨용): ₩1.08억 / ₩6,720만 / ₩720.
+ * ≥1억 → 억(소수 2자리), ≥1만 → 만(정수), 그 외 정수. 음수 앞 부호.
+ */
+export function formatWonShort(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n)) return '-'
+  const sign = n < 0 ? '-' : ''
+  const abs = Math.abs(n)
+  if (abs >= 100_000_000) {
+    return `${sign}₩${(abs / 100_000_000).toFixed(2)}억`
+  }
+  if (abs >= 10_000) {
+    return `${sign}₩${Math.round(abs / 10_000).toLocaleString('ko-KR')}만`
+  }
+  return `${sign}₩${Math.round(abs).toLocaleString('ko-KR')}`
+}
+
 /** 부호 강조 포맷(증감용): +₩1,234 / -₩1,234. */
 export function formatSignedWon(n: number | null | undefined): string {
   if (n == null) return '-'

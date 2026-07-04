@@ -16,7 +16,7 @@
  * 키워드(kw)는 검색/AI 컨텍스트용 — `opts.withRules`가 true일 때만 SEED 분류 규칙으로 등록(기본 false).
  */
 import { prisma } from '@/lib/prisma'
-import type { FinCategoryType, FinTxnDirection } from '@/generated/prisma/enums'
+import type { FinCategoryType, FinTxnDirection, FinFlowRole } from '@/generated/prisma/enums'
 
 /** 적요/가맹점/키워드 정규화 — 공백 정리 + 소문자(라틴 가맹점 대비). */
 export function normalizeFinKey(raw: string): string {
@@ -41,6 +41,8 @@ type SeedNode = {
   alias?: string
   /** 고정/변동 원가 성격 → FinCategory.groupLabel (비용관리 축). */
   costNature?: '고정' | '변동'
+  /** 손익 흐름도 역할 → FinCategory.flowRole (대분류에만 지정). */
+  flowRole?: FinFlowRole
   /** 검색·AI 컨텍스트용 키워드(withRules=true일 때만 규칙 등록). */
   kw?: string[]
   /** 하위 노드(있으면 구조 그룹, 없으면 리프). */
@@ -68,6 +70,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
     children: [
       {
         name: '매출',
+        flowRole: 'MERCH_SALES',
         children: [
           {
             name: '온라인 판매정산',
@@ -94,6 +97,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
     children: [
       {
         name: '상품원가',
+        flowRole: 'COGS',
         children: [
           {
             name: '상품 매입·사입',
@@ -105,6 +109,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
       },
       {
         name: '물류·배송',
+        flowRole: 'OPEX',
         children: [
           {
             name: '택배비',
@@ -123,6 +128,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
       },
       {
         name: '판매·결제 수수료',
+        flowRole: 'OPEX',
         children: [
           {
             name: '판매채널 수수료',
@@ -140,6 +146,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
       },
       {
         name: '마케팅·광고',
+        flowRole: 'OPEX',
         children: [
           {
             name: '광고비',
@@ -153,6 +160,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
       },
       {
         name: '인건비',
+        flowRole: 'OPEX',
         children: [
           { name: '급여', code: '5400', costNature: '고정', kw: ['급여', '급여이체', '임금'] },
           {
@@ -171,6 +179,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
       },
       {
         name: '업무지원·외주',
+        flowRole: 'OPEX',
         children: [
           { name: '세무·회계', code: '5200', costNature: '고정', kw: ['세무', '회계', '기장'] },
           {
@@ -186,6 +195,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
       },
       {
         name: '사무·운영',
+        flowRole: 'OPEX',
         children: [
           { name: '임차료', code: '5410', costNature: '고정', kw: ['임대료', '임차', '월세'] },
           { name: '소모품·비품', code: '5440', costNature: '변동', kw: ['소모품', '비품', '문구'] },
@@ -200,6 +210,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
       },
       {
         name: '세금·공과',
+        flowRole: 'OPEX',
         children: [
           {
             name: '세금·공과금',
@@ -211,6 +222,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
       },
       {
         name: '금융비용',
+        flowRole: 'FINANCING_COST',
         children: [
           {
             name: '대출이자',
@@ -334,6 +346,7 @@ async function seedChildren(
       alias: node.alias ?? null,
       type: rootType,
       groupLabel: node.costNature ?? null,
+      flowRole: node.flowRole ?? null,
       // 루트만 보호. 모든 리프·대분류는 편집·삭제 가능(net-off는 type 기준이라 이체 리프도 안전).
       isSystem: false,
       sortOrder: order++,
@@ -369,6 +382,7 @@ async function upsertCategory(
     type: FinCategoryType
     alias?: string | null
     groupLabel?: string | null
+    flowRole?: FinFlowRole | null
     isSystem: boolean
     sortOrder: number
   }
@@ -387,6 +401,7 @@ async function upsertCategory(
       alias: data.alias ?? null,
       type: data.type,
       groupLabel: data.groupLabel ?? null,
+      flowRole: data.flowRole ?? null,
       isSystem: data.isSystem,
       sortOrder: data.sortOrder,
     },

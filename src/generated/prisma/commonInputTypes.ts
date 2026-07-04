@@ -1119,6 +1119,13 @@ export type EnumFinCategoryTypeFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumFinCategoryTypeFilter<$PrismaModel> | $Enums.FinCategoryType
 }
 
+export type EnumFinFlowRoleNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinFlowRole | Prisma.EnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.FinFlowRole[] | Prisma.ListEnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.FinFlowRole[] | Prisma.ListEnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumFinFlowRoleNullableFilter<$PrismaModel> | $Enums.FinFlowRole | null
+}
+
 export type EnumFinCategoryTypeWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.FinCategoryType | Prisma.EnumFinCategoryTypeFieldRefInput<$PrismaModel>
   in?: $Enums.FinCategoryType[] | Prisma.ListEnumFinCategoryTypeFieldRefInput<$PrismaModel>
@@ -1127,6 +1134,16 @@ export type EnumFinCategoryTypeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFinCategoryTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFinCategoryTypeFilter<$PrismaModel>
+}
+
+export type EnumFinFlowRoleNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinFlowRole | Prisma.EnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.FinFlowRole[] | Prisma.ListEnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.FinFlowRole[] | Prisma.ListEnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumFinFlowRoleNullableWithAggregatesFilter<$PrismaModel> | $Enums.FinFlowRole | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFinFlowRoleNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFinFlowRoleNullableFilter<$PrismaModel>
 }
 
 export type EnumFinClassRuleMatchTypeFilter<$PrismaModel = never> = {
@@ -2318,6 +2335,13 @@ export type NestedEnumFinCategoryTypeFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumFinCategoryTypeFilter<$PrismaModel> | $Enums.FinCategoryType
 }
 
+export type NestedEnumFinFlowRoleNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinFlowRole | Prisma.EnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.FinFlowRole[] | Prisma.ListEnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.FinFlowRole[] | Prisma.ListEnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumFinFlowRoleNullableFilter<$PrismaModel> | $Enums.FinFlowRole | null
+}
+
 export type NestedEnumFinCategoryTypeWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.FinCategoryType | Prisma.EnumFinCategoryTypeFieldRefInput<$PrismaModel>
   in?: $Enums.FinCategoryType[] | Prisma.ListEnumFinCategoryTypeFieldRefInput<$PrismaModel>
@@ -2326,6 +2350,16 @@ export type NestedEnumFinCategoryTypeWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFinCategoryTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFinCategoryTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumFinFlowRoleNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinFlowRole | Prisma.EnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.FinFlowRole[] | Prisma.ListEnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.FinFlowRole[] | Prisma.ListEnumFinFlowRoleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumFinFlowRoleNullableWithAggregatesFilter<$PrismaModel> | $Enums.FinFlowRole | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFinFlowRoleNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFinFlowRoleNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumFinClassRuleMatchTypeFilter<$PrismaModel = never> = {
