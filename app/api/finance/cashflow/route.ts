@@ -1,28 +1,25 @@
 /**
  * GET /api/finance/cashflow
- * 현금흐름 상세(테이블 우선) — 기간 컬럼별 수입/지출을 계정과목 또는 사용자 하위계정 단위로 집계.
+ * 현금흐름 상세(테이블 우선) — 기간 컬럼별 수입/지출을 리프(운영 항목) 단위로 집계(+ 상위 대분류 메타).
  * 수입 섹션 / 지출 섹션 / 순현금흐름 + 직전 기간 대비 증감%.
  *
- * query: grain?(month|quarter|year, 기본 month), from?(YYYY-MM), to?(YYYY-MM),
- *        groupBy?(category|subaccount, 기본 category)
+ * query: grain?(month|quarter|year, 기본 month),
+ *        periods?(콤마 구분 버킷키, 예 2026-01,2026-06 — 비연속 다중선택 가능. 없으면 직전월까지 기본 N개)
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, round2 } from '@/lib/finance/serialize'
-import { ymOf, addMonths, monthList, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
+import { ymOf, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
+import {
+  bucketOf,
+  bucketMonthRange,
+  defaultSelectedPeriods,
+  normalizeSelectedPeriods,
+  type Grain,
+} from '@/lib/finance/periods'
 import type { FinFlowRole } from '@/generated/prisma/enums'
-
-type Grain = 'month' | 'quarter' | 'year'
-
-/** ym("YYYY-MM") → 버킷 키(grain별). */
-function bucketOf(ym: string, grain: Grain): string {
-  const [y, m] = ym.split('-').map(Number)
-  if (grain === 'year') return `${y}`
-  if (grain === 'quarter') return `${y}-Q${Math.floor((m - 1) / 3) + 1}`
-  return ym
-}
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
@@ -37,22 +34,16 @@ export async function GET(req: NextRequest) {
     sp.get('grain') === 'quarter' ? 'quarter' : sp.get('grain') === 'year' ? 'year' : 'month'
 
   const nowYm = ymOf(new Date())
-  const defaultFrom =
-    grain === 'year'
-      ? `${Number(nowYm.slice(0, 4)) - 2}-01`
-      : addMonths(nowYm, grain === 'quarter' ? -11 : -5)
-  const from = /^\d{4}-\d{2}$/.test(sp.get('from') ?? '') ? sp.get('from')! : defaultFrom
-  const to = /^\d{4}-\d{2}$/.test(sp.get('to') ?? '') ? sp.get('to')! : nowYm
+  // 표시 버킷 = periods 파라미터(검증·정렬·캡) 또는 기본값(직전월까지 최근 N). 항상 오름차순.
+  const requested = sp.get('periods')?.split(',') ?? []
+  const buckets = normalizeSelectedPeriods(requested, grain) ?? defaultSelectedPeriods(grain, nowYm)
+  const bucketSet = new Set(buckets)
 
-  const months = monthList(from <= to ? from : to, from <= to ? to : from)
-  // 순서 보존 버킷 목록
-  const buckets: string[] = []
-  for (const m of months) {
-    const b = bucketOf(m, grain)
-    if (!buckets.includes(b)) buckets.push(b)
-  }
-
-  const { gte, lt } = rangeBounds(months[0], months[months.length - 1])
+  // 조회 월 범위 = 선택 버킷들이 포함하는 최소~최대 월.
+  const monthEdges = buckets.map((b) => bucketMonthRange(b, grain))
+  const fromYm = monthEdges.reduce((a, e) => (e.firstYm < a ? e.firstYm : a), monthEdges[0].firstYm)
+  const toYm = monthEdges.reduce((a, e) => (e.lastYm > a ? e.lastYm : a), monthEdges[0].lastYm)
+  const { gte, lt } = rangeBounds(fromYm, toYm)
 
   const [txns, categories] = await Promise.all([
     prisma.finTransaction.findMany({
@@ -120,6 +111,8 @@ export async function GET(req: NextRequest) {
   for (const t of txns) {
     if (t.isTransfer) continue
     const bucket = bucketOf(ymOf(t.txnDate), grain)
+    // 비연속 선택 시 갭 기간(예: 1·5월만 선택했는데 3월 거래)은 미시드 버킷 → 건너뜀(NaN 방지).
+    if (!bucketSet.has(bucket)) continue
     const amt = signedAmount({ amount: toNum(t.amount), cancelFlag: t.cancelFlag })
 
     // 섹션은 현금 방향(IN=수입 / OUT=지출) 기준 — 대시보드 집계와 동일.
@@ -192,8 +185,8 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     grain,
-    from,
-    to,
+    from: fromYm,
+    to: toYm,
     buckets,
     incomeRows: incomeRows.map((r) => ({ ...r, changePct: changePct(r.values) })),
     expenseRows: expenseRows.map((r) => ({ ...r, changePct: changePct(r.values) })),

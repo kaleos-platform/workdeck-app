@@ -409,7 +409,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
 
   test('cashflow: 기간 버킷 + 수입/지출 행', async () => {
     const req = new NextRequest(
-      `http://localhost/api/finance/cashflow?grain=month&from=${anchorMonth}&to=${anchorMonth}`
+      `http://localhost/api/finance/cashflow?grain=month&periods=${anchorMonth}`
     )
     const res = await call(cashflowGet(req))
     expect(res.status).toBe(200)
@@ -428,7 +428,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'OUT', 300_000, cogsLeaf, 'cf-cogs')
 
     const res = await call(
-      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&from=${ym}&to=${ym}`))
+      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`))
     )
     const body = await res.json()
 
@@ -450,6 +450,62 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
       where: { spaceId: SPACE_ID, identityKey: { startsWith: 'cf-' } },
     })
   }, 30000)
+
+  test('cashflow periods: 비연속 선택 → 그 버킷만 + 갭 기간 거래 미포함(NaN 없음)', async () => {
+    const anyLeaf = await leafUnderFlowRole('MERCH_SALES', 'INCOME')
+    // 1월·3월·5월 거래 생성. 1·5월만 선택하면 3월은 집계 제외되어야 함.
+    await makeTxn('2024-01', 'IN', 100_000, anyLeaf, 'per-jan')
+    await makeTxn('2024-03', 'IN', 999_000, anyLeaf, 'per-mar') // 갭(미선택)
+    await makeTxn('2024-05', 'IN', 200_000, anyLeaf, 'per-may')
+
+    const res = await call(
+      cashflowGet(
+        new NextRequest('http://localhost/api/finance/cashflow?grain=month&periods=2024-01,2024-05')
+      )
+    )
+    const body = await res.json()
+    expect(body.buckets).toEqual(['2024-01', '2024-05']) // 비연속, 오름차순
+    expect(body.totals.income.values['2024-01']).toBe(100_000)
+    expect(body.totals.income.values['2024-05']).toBe(200_000)
+    // 갭(3월)은 어떤 버킷에도 없음 + NaN 없음
+    expect(body.totals.income.values['2024-03']).toBeUndefined()
+    for (const v of Object.values(body.totals.income.values as Record<string, number>)) {
+      expect(Number.isNaN(v)).toBe(false)
+    }
+    // 3월 999,000이 새어들어오지 않았는지(합 = 30만)
+    const sum = Object.values(body.totals.income.values as Record<string, number>).reduce((a, b) => a + b, 0)
+    expect(sum).toBe(300_000)
+
+    await prisma.finTransaction.deleteMany({
+      where: { spaceId: SPACE_ID, identityKey: { startsWith: 'per-' } },
+    })
+  }, 30000)
+
+  test('cashflow 기본(periods 없음): 직전월까지 최근 6개, 현재월 미포함', async () => {
+    const res = await call(
+      cashflowGet(new NextRequest('http://localhost/api/finance/cashflow?grain=month'))
+    )
+    const body = await res.json()
+    expect(body.buckets.length).toBe(6)
+    // 오름차순
+    expect([...body.buckets].sort()).toEqual(body.buckets)
+    // 현재월(로컬) 미포함
+    const now = new Date()
+    const curYm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    expect(body.buckets).not.toContain(curYm)
+  }, 20000)
+
+  test('sankey 기본: 직전월 단일 기간', async () => {
+    const res = await call(
+      sankeyGet(new NextRequest('http://localhost/api/finance/cashflow/sankey?grain=month'))
+    )
+    const body = await res.json()
+    const now = new Date()
+    const curYm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    // period.from/to = 직전월(현재월 아님)
+    expect(body.period.to).not.toBe(curYm)
+    expect(body.period.from).toBe(body.period.to)
+  }, 20000)
 
   test('Fix2: 방향-type 충돌 거래는 대시보드·현금흐름 모두 지출로 집계', async () => {
     const ym = '2025-09'
@@ -478,7 +534,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
 
     const cfRes = await call(
       cashflowGet(
-        new NextRequest(`http://localhost/api/finance/cashflow?grain=month&from=${ym}&to=${ym}`)
+        new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`)
       )
     )
     const cf = await cfRes.json()
@@ -566,7 +622,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
 
     // 핵심 불변식: Sankey net == cashflow 테이블 net (같은 기간)
     const cfRes = await call(
-      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&from=${ym}&to=${ym}`))
+      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`))
     )
     const cf = await cfRes.json()
     expect(body.totals.net).toBe(cf.totals.net.values[ym])
@@ -609,7 +665,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(body.totals.totalIncome).toBe(950_000)
     expect(body.totals.net).toBe(950_000)
     const cfRes = await call(
-      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&from=${ym}&to=${ym}`))
+      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`))
     )
     const cf = await cfRes.json()
     expect(body.totals.net).toBe(cf.totals.net.values[ym])

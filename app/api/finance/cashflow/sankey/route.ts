@@ -19,7 +19,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, round2 } from '@/lib/finance/serialize'
-import { ymOf, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
+import { ymOf, addMonths, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
 import type { FinFlowRole } from '@/generated/prisma/enums'
 
 type Grain = 'month' | 'quarter' | 'year'
@@ -49,8 +49,9 @@ export async function GET(req: NextRequest) {
   const grain: Grain =
     sp.get('grain') === 'quarter' ? 'quarter' : sp.get('grain') === 'year' ? 'year' : 'month'
 
-  const nowYm = ymOf(new Date())
-  const def = defaultPeriod(grain, nowYm)
+  // 기준은 직전월(진행 중인 현재월은 데이터 불완전 → 제외).
+  const anchorYm = addMonths(ymOf(new Date()), -1)
+  const def = defaultPeriod(grain, anchorYm)
   const from = /^\d{4}-\d{2}$/.test(sp.get('from') ?? '') ? sp.get('from')! : def.from
   const to = /^\d{4}-\d{2}$/.test(sp.get('to') ?? '') ? sp.get('to')! : def.to
   const lo = from <= to ? from : to

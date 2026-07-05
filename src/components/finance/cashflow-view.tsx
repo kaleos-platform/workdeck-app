@@ -1,8 +1,9 @@
 'use client'
 
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { Pin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -15,18 +16,46 @@ import {
 import { cn } from '@/lib/utils'
 import { formatWon, formatPercent, flowRoleBadge } from '@/components/finance/format'
 import { FinanceCashflowSankey } from '@/components/finance/cashflow-sankey'
+import { CashflowPeriodPicker } from '@/components/finance/cashflow-period-picker'
 import {
   buildCashflowGroups,
   type CashflowLeaf,
   type CashflowGroup,
   type DisplayMode,
 } from '@/lib/finance/cashflow-grouping'
+import { ymOf } from '@/lib/finance/aggregate'
+import { defaultSelectedPeriods, type Grain } from '@/lib/finance/periods'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
-type Grain = 'month' | 'quarter' | 'year'
 type ViewMode = 'table' | 'flow'
+
+// 표시 컬럼(기간) — 핀이면 계정과목 옆 sticky. 고정폭이라 left offset 정확.
+const ACCOUNT_W = 220
+const PERIOD_W = 132
+interface DisplayColumn {
+  bucket: string
+  pinned: boolean
+  left: number
+}
+
+/** data.buckets(오름차순)를 핀/비핀으로 파티션 → 핀은 계정과목 옆으로 이동 + left 부여.
+ *  핀셋을 직접 순회하지 않으므로 피커에서 해제된 버킷은 자연 탈락. */
+function buildDisplayColumns(buckets: string[], pinned: Set<string>): DisplayColumn[] {
+  const pinnedCols = buckets.filter((b) => pinned.has(b))
+  const unpinned = buckets.filter((b) => !pinned.has(b))
+  return [
+    ...pinnedCols.map((bucket, i) => ({ bucket, pinned: true, left: ACCOUNT_W + i * PERIOD_W })),
+    ...unpinned.map((bucket) => ({ bucket, pinned: false, left: 0 })),
+  ]
+}
+
+/** 핀 컬럼 셀의 sticky className/style(행 배경색 필수). */
+function pinCell(col: DisplayColumn, rowBg: string): { className: string; style?: CSSProperties } {
+  if (!col.pinned) return { className: '' }
+  return { className: cn('sticky z-10', rowBg), style: { left: col.left } }
+}
 
 // 리프 행 = 그룹핑 유틸의 CashflowLeaf와 동일 구조(라우트가 리프 단위로 내려줌).
 type CashflowRow = CashflowLeaf
@@ -121,13 +150,20 @@ export function FinanceCashflowView() {
   const [view, setView] = useState<ViewMode>('table')
   const [grain, setGrain] = useState<Grain>('month')
   const [displayMode, setDisplayMode] = useState<DisplayMode>('group')
+  // 표시 기간(오름차순) — 기본은 직전월까지 최근 N. grain 변경 시 리셋.
+  const [selectedPeriods, setSelectedPeriods] = useState<string[]>(() =>
+    defaultSelectedPeriods('month', ymOf(new Date()))
+  )
+  const [pinnedPeriods, setPinnedPeriods] = useState<Set<string>>(new Set())
   const [data, setData] = useState<CashflowData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const load = useCallback(async (g: Grain) => {
+  const load = useCallback(async (g: Grain, periods: string[]) => {
+    if (periods.length === 0) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/finance/cashflow?grain=${g}`)
+      const qs = new URLSearchParams({ grain: g, periods: periods.join(',') })
+      const res = await fetch(`/api/finance/cashflow?${qs}`)
       if (!res.ok) throw new Error('현금흐름 데이터 조회 실패')
       const json: CashflowData = await res.json()
       setData(json)
@@ -139,8 +175,24 @@ export function FinanceCashflowView() {
   }, [])
 
   useEffect(() => {
-    void load(grain)
-  }, [load, grain])
+    void load(grain, selectedPeriods)
+  }, [load, grain, selectedPeriods])
+
+  // grain 변경: 기본 기간으로 리셋 + 핀 초기화.
+  function handleGrainChange(g: Grain) {
+    setGrain(g)
+    setSelectedPeriods(defaultSelectedPeriods(g, ymOf(new Date())))
+    setPinnedPeriods(new Set())
+  }
+
+  function togglePin(bucket: string) {
+    setPinnedPeriods((prev) => {
+      const next = new Set(prev)
+      if (next.has(bucket)) next.delete(bucket)
+      else next.add(bucket)
+      return next
+    })
+  }
 
   return (
     <div className="space-y-4">
@@ -163,20 +215,27 @@ export function FinanceCashflowView() {
             { value: 'year', label: '연도별' },
           ]}
           value={grain}
-          onChange={setGrain}
+          onChange={handleGrainChange}
         />
-        {/* 표시 모드는 테이블 뷰에서만 — 흐름도는 대분류 롤업 고정 */}
+        {/* 테이블 뷰: 기간 다중선택 + 표시 모드 */}
         {view === 'table' && (
-          <SegmentGroup<DisplayMode>
-            label="표시"
-            options={[
-              { value: 'group', label: '대분류' },
-              { value: 'hierarchy', label: '대분류+하위' },
-              { value: 'leaf', label: '하위만' },
-            ]}
-            value={displayMode}
-            onChange={setDisplayMode}
-          />
+          <>
+            <CashflowPeriodPicker
+              grain={grain}
+              selected={selectedPeriods}
+              onChange={setSelectedPeriods}
+            />
+            <SegmentGroup<DisplayMode>
+              label="표시"
+              options={[
+                { value: 'group', label: '대분류' },
+                { value: 'hierarchy', label: '대분류+하위' },
+                { value: 'leaf', label: '하위만' },
+              ]}
+              value={displayMode}
+              onChange={setDisplayMode}
+            />
+          </>
         )}
       </div>
 
@@ -188,7 +247,12 @@ export function FinanceCashflowView() {
       ) : !data || (data.incomeRows.length === 0 && data.expenseRows.length === 0) ? (
         <EmptyState />
       ) : (
-        <CashflowTable data={data} mode={displayMode} />
+        <CashflowTable
+          data={data}
+          mode={displayMode}
+          pinnedPeriods={pinnedPeriods}
+          onTogglePin={togglePin}
+        />
       )}
     </div>
   )
@@ -208,11 +272,24 @@ function EmptyState() {
 }
 
 // ─── 테이블 ───────────────────────────────────────────────────────────────────
+// 첫 컬럼(계정과목) sticky. 핀한 기간 컬럼은 계정과목 옆에 sticky 고정(고정폭 w-[220px]/w-[132px]라 offset 정확).
 
-function CashflowTable({ data, mode }: { data: CashflowData; mode: DisplayMode }) {
+function CashflowTable({
+  data,
+  mode,
+  pinnedPeriods,
+  onTogglePin,
+}: {
+  data: CashflowData
+  mode: DisplayMode
+  pinnedPeriods: Set<string>
+  onTogglePin: (bucket: string) => void
+}) {
   const { buckets, incomeRows, expenseRows, totals } = data
   const incomeGroups = buildCashflowGroups(incomeRows, buckets, mode)
   const expenseGroups = buildCashflowGroups(expenseRows, buckets, mode)
+  const columns = buildDisplayColumns(buckets, pinnedPeriods)
+  const colSpan = columns.length + 2
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
@@ -220,16 +297,35 @@ function CashflowTable({ data, mode }: { data: CashflowData; mode: DisplayMode }
         {/* 헤더 */}
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            {/* 첫 컬럼: sticky */}
-            <TableHead className="sticky left-0 z-20 min-w-[200px] bg-card px-4 py-3 text-xs font-medium">
+            <TableHead className="sticky left-0 z-40 w-[220px] bg-card px-4 py-3 text-xs font-medium">
               계정과목
             </TableHead>
-            {buckets.map((b) => (
-              <TableHead key={b} className="min-w-[120px] px-3 py-3 text-right text-xs font-medium">
-                {b}
+            {columns.map((col) => (
+              <TableHead
+                key={col.bucket}
+                className={cn(
+                  'w-[132px] px-3 py-3 text-right text-xs font-medium',
+                  col.pinned && 'sticky z-30 bg-card'
+                )}
+                style={col.pinned ? { left: col.left } : undefined}
+              >
+                <div className="flex items-center justify-end gap-1">
+                  <span className="tabular-nums">{col.bucket}</span>
+                  <button
+                    type="button"
+                    onClick={() => onTogglePin(col.bucket)}
+                    title={col.pinned ? '고정 해제' : '컬럼 고정'}
+                    className={cn(
+                      'shrink-0 hover:text-foreground',
+                      col.pinned ? 'text-foreground' : 'text-muted-foreground/40'
+                    )}
+                  >
+                    <Pin className={cn('size-3.5', col.pinned && 'fill-current')} />
+                  </button>
+                </div>
               </TableHead>
             ))}
-            <TableHead className="min-w-[80px] px-3 py-3 text-right text-xs font-medium text-muted-foreground">
+            <TableHead className="w-[84px] px-3 py-3 text-right text-xs font-medium text-muted-foreground">
               증감%
             </TableHead>
           </TableRow>
@@ -237,30 +333,58 @@ function CashflowTable({ data, mode }: { data: CashflowData; mode: DisplayMode }
 
         <TableBody>
           {/* ── 수입 섹션 ── */}
-          <SectionLabelRow label="수입" colSpan={buckets.length + 2} />
-          <SectionBody section="수입" groups={incomeGroups} buckets={buckets} mode={mode} />
-          <TotalRow
-            label="수입 합계"
-            entry={totals.income}
-            buckets={buckets}
-            className="bg-muted/40 font-semibold"
-          />
+          <SectionLabelRow label="수입" colSpan={colSpan} />
+          <SectionBody section="수입" groups={incomeGroups} columns={columns} mode={mode} />
+          <TotalRow label="수입 합계" entry={totals.income} columns={columns} rowBg="bg-muted/40" />
 
           {/* ── 지출 섹션 ── */}
-          <SectionLabelRow label="지출" colSpan={buckets.length + 2} />
-          <SectionBody section="지출" groups={expenseGroups} buckets={buckets} mode={mode} />
-          <TotalRow
-            label="지출 합계"
-            entry={totals.expense}
-            buckets={buckets}
-            className="bg-muted/40 font-semibold"
-          />
+          <SectionLabelRow label="지출" colSpan={colSpan} />
+          <SectionBody section="지출" groups={expenseGroups} columns={columns} mode={mode} />
+          <TotalRow label="지출 합계" entry={totals.expense} columns={columns} rowBg="bg-muted/40" />
 
           {/* ── 순현금흐름 ── */}
-          <NetRow entry={totals.net} buckets={buckets} />
+          <NetRow entry={totals.net} columns={columns} />
         </TableBody>
       </Table>
     </div>
+  )
+}
+
+// ─── 기간 셀 묶음(핀 sticky 처리 공유) ────────────────────────────────────────
+
+function PeriodCells({
+  columns,
+  values,
+  rowBg,
+  cellClass,
+  valueClassFn,
+}: {
+  columns: DisplayColumn[]
+  values: Record<string, number>
+  rowBg: string
+  cellClass?: string
+  valueClassFn?: (v: number) => string
+}) {
+  return (
+    <>
+      {columns.map((col) => {
+        const p = pinCell(col, rowBg)
+        return (
+          <TableCell
+            key={col.bucket}
+            className={cn(
+              'w-[132px] px-3 text-right font-mono text-sm tabular-nums',
+              cellClass,
+              valueClassFn?.(values[col.bucket]),
+              p.className
+            )}
+            style={p.style}
+          >
+            {formatWon(values[col.bucket])}
+          </TableCell>
+        )
+      })}
+    </>
   )
 }
 
@@ -269,22 +393,22 @@ function CashflowTable({ data, mode }: { data: CashflowData; mode: DisplayMode }
 function SectionBody({
   section,
   groups,
-  buckets,
+  columns,
   mode,
 }: {
   section: '수입' | '지출'
   groups: CashflowGroup[]
-  buckets: string[]
+  columns: DisplayColumn[]
   mode: DisplayMode
 }) {
   return (
     <>
       {groups.map((g, gi) => (
         <Fragment key={g.key}>
-          <GroupRow group={g} buckets={buckets} colorIdx={gi} section={section} mode={mode} />
+          <GroupRow group={g} columns={columns} colorIdx={gi} section={section} mode={mode} />
           {mode !== 'group' &&
             g.leaves.map((leaf) => (
-              <DataRow key={leaf.key} row={leaf} buckets={buckets} indent />
+              <DataRow key={leaf.key} row={leaf} columns={columns} indent />
             ))}
         </Fragment>
       ))}
@@ -296,38 +420,39 @@ function SectionBody({
 
 function GroupRow({
   group,
-  buckets,
+  columns,
   colorIdx,
   section,
   mode,
 }: {
   group: CashflowGroup
-  buckets: string[]
+  columns: DisplayColumn[]
   colorIdx: number
   section: '수입' | '지출'
   mode: DisplayMode
 }) {
   const dotClass = CHART_BG_CLASSES[colorIdx % CHART_BG_CLASSES.length]
-  // leaf 모드는 서브그룹("수입 · 매출"), 그 외는 대분류명 + flowRole 뱃지.
   const label = mode === 'leaf' ? `${section} · ${group.label}` : group.label
   const leafType = group.leaves[0]?.type ?? (section === '수입' ? 'INCOME' : 'EXPENSE')
   const badge = mode !== 'leaf' && group.flowRole ? flowRoleBadge(group.flowRole, leafType) : null
-  // group 모드는 단독 행(강조 약), hierarchy/leaf는 헤더(약한 배경).
   const isHeader = mode !== 'group'
+  const rowBg = isHeader ? 'bg-muted/20' : 'bg-card'
 
   return (
     <TableRow className={cn(isHeader && 'bg-muted/20')}>
-      <TableCell className={cn('sticky left-0 z-10 px-4', isHeader ? 'bg-muted/20' : 'bg-card')}>
-        <div className="flex items-center gap-2">
+      <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4', rowBg)}>
+        <div className="flex min-w-0 items-center gap-2">
           <span
             className={cn('inline-block size-2 shrink-0 rounded-full', dotClass)}
             aria-hidden="true"
           />
-          <span className="text-sm font-medium">{label}</span>
+          <span className="truncate text-sm font-medium" title={label}>
+            {label}
+          </span>
           {badge && (
             <span
               className={cn(
-                'rounded border px-1.5 py-0.5 text-[10px] font-medium',
+                'shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-medium',
                 badge.className
               )}
             >
@@ -337,14 +462,10 @@ function GroupRow({
         </div>
       </TableCell>
 
-      {buckets.map((b) => (
-        <TableCell key={b} className="px-3 text-right font-mono text-sm font-medium tabular-nums">
-          {formatWon(group.values[b])}
-        </TableCell>
-      ))}
+      <PeriodCells columns={columns} values={group.values} rowBg={rowBg} cellClass="font-medium" />
 
       <TableCell
-        className={cn('px-3 text-right text-xs tabular-nums', changePctClass(group.changePct))}
+        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(group.changePct))}
       >
         {formatPercent(group.changePct, { sign: true })}
       </TableCell>
@@ -359,7 +480,7 @@ function SectionLabelRow({ label, colSpan }: { label: string; colSpan: number })
     <TableRow className="hover:bg-transparent">
       <TableCell
         colSpan={colSpan}
-        className="sticky left-0 z-10 bg-muted/50 px-4 py-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="sticky left-0 z-20 bg-muted/50 px-4 py-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
       >
         {label}
       </TableCell>
@@ -371,19 +492,17 @@ function SectionLabelRow({ label, colSpan }: { label: string; colSpan: number })
 
 function DataRow({
   row,
-  buckets,
+  columns,
   indent = false,
 }: {
   row: CashflowRow
-  buckets: string[]
-  /** 그룹 하위 리프 — 들여쓰기 + 색점 대신 계층 마커. */
+  columns: DisplayColumn[]
   indent?: boolean
 }) {
   return (
     <TableRow>
-      {/* sticky 첫 컬럼 */}
-      <TableCell className="sticky left-0 z-10 bg-card px-4">
-        <div className={cn('flex items-center gap-2', indent && 'pl-6')}>
+      <TableCell className="sticky left-0 z-20 w-[220px] bg-card px-4">
+        <div className={cn('flex min-w-0 items-center gap-2', indent && 'pl-6')}>
           {indent ? (
             <span className="text-xs text-muted-foreground" aria-hidden="true">
               └
@@ -391,23 +510,19 @@ function DataRow({
           ) : (
             <span className="inline-block size-2 shrink-0 rounded-full bg-chart-1" aria-hidden="true" />
           )}
-          <span className="text-sm">{row.name}</span>
+          <span className="truncate text-sm" title={row.name}>
+            {row.name}
+          </span>
           {row.groupLabel && (
-            <span className="text-xs text-muted-foreground">({row.groupLabel})</span>
+            <span className="shrink-0 text-xs text-muted-foreground">({row.groupLabel})</span>
           )}
         </div>
       </TableCell>
 
-      {/* 버킷 금액 */}
-      {buckets.map((b) => (
-        <TableCell key={b} className="px-3 text-right font-mono text-sm tabular-nums">
-          {formatWon(row.values[b])}
-        </TableCell>
-      ))}
+      <PeriodCells columns={columns} values={row.values} rowBg="bg-card" />
 
-      {/* 증감% */}
       <TableCell
-        className={cn('px-3 text-right text-xs tabular-nums', changePctClass(row.changePct))}
+        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(row.changePct))}
       >
         {formatPercent(row.changePct, { sign: true })}
       </TableCell>
@@ -420,27 +535,22 @@ function DataRow({
 function TotalRow({
   label,
   entry,
-  buckets,
-  className,
+  columns,
+  rowBg,
 }: {
   label: string
   entry: CashflowTotalEntry
-  buckets: string[]
-  className?: string
+  columns: DisplayColumn[]
+  rowBg: string
 }) {
   return (
-    <TableRow className={cn('hover:bg-muted/40', className)}>
-      {/* sticky 첫 컬럼 */}
-      <TableCell className={cn('sticky left-0 z-10 px-4 text-sm', className)}>{label}</TableCell>
+    <TableRow className={cn('font-semibold hover:bg-muted/40', rowBg)}>
+      <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4 text-sm', rowBg)}>{label}</TableCell>
 
-      {buckets.map((b) => (
-        <TableCell key={b} className="px-3 text-right font-mono text-sm tabular-nums">
-          {formatWon(entry.values[b])}
-        </TableCell>
-      ))}
+      <PeriodCells columns={columns} values={entry.values} rowBg={rowBg} />
 
       <TableCell
-        className={cn('px-3 text-right text-xs tabular-nums', changePctClass(entry.changePct))}
+        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(entry.changePct))}
       >
         {formatPercent(entry.changePct, { sign: true })}
       </TableCell>
@@ -450,28 +560,23 @@ function TotalRow({
 
 // ─── 순현금흐름 행 ────────────────────────────────────────────────────────────
 
-function NetRow({ entry, buckets }: { entry: CashflowTotalEntry; buckets: string[] }) {
+function NetRow({ entry, columns }: { entry: CashflowTotalEntry; columns: DisplayColumn[] }) {
   return (
     <TableRow className="border-t-2 bg-muted/30 font-semibold hover:bg-muted/60">
-      {/* sticky 첫 컬럼 */}
-      <TableCell className="sticky left-0 z-10 bg-muted/30 px-4 py-3 text-sm font-semibold">
+      <TableCell className="sticky left-0 z-20 w-[220px] bg-muted/30 px-4 py-3 text-sm font-semibold">
         순현금흐름
       </TableCell>
 
-      {buckets.map((b) => (
-        <TableCell
-          key={b}
-          className={cn(
-            'px-3 py-3 text-right font-mono text-sm font-semibold tabular-nums',
-            netValueClass(entry.values[b])
-          )}
-        >
-          {formatWon(entry.values[b])}
-        </TableCell>
-      ))}
+      <PeriodCells
+        columns={columns}
+        values={entry.values}
+        rowBg="bg-muted/30"
+        cellClass="py-3 font-semibold"
+        valueClassFn={netValueClass}
+      />
 
       <TableCell
-        className={cn('px-3 py-3 text-right text-xs tabular-nums', changePctClass(entry.changePct))}
+        className={cn('w-[84px] px-3 py-3 text-right text-xs tabular-nums', changePctClass(entry.changePct))}
       >
         {formatPercent(entry.changePct, { sign: true })}
       </TableCell>
