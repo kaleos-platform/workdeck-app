@@ -408,6 +408,95 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(after?.contentHash).toBe('changed')
   }, 30000)
 
+  test('Fix B: DUP_OVERWRITE("유지" 명시)는 사용자 계정과목을 덮어씀', async () => {
+    // Fix A가 건드린 첫 거래와 겹치지 않도록 두 번째 거래를 사용
+    const txns = await prisma.finTransaction.findMany({
+      where: { spaceId: SPACE_ID, accountId },
+      select: { id: true, identityKey: true, direction: true, amount: true, txnDate: true },
+      orderBy: { txnDate: 'asc' },
+      take: 2,
+    })
+    const target = txns[1] ?? txns[0]
+    await prisma.finTransaction.update({
+      where: { id: target.id },
+      data: {
+        categoryId: expenseLeafId,
+        classStatus: 'CLASSIFIED',
+        description: '원래적요B',
+        contentHash: 'origB',
+      },
+    })
+
+    // 사용자가 "유지"(DUP_OVERWRITE) 선택 + 다른 계정과목 지정
+    const imp = await prisma.finImport.create({
+      data: {
+        spaceId: SPACE_ID,
+        accountId,
+        fileName: 'fixB',
+        institution: '기업은행',
+        kind: 'BANK',
+        status: 'DRAFT',
+        totalRows: 1,
+      },
+      select: { id: true },
+    })
+    // 임포트 직후 상태(중복·미분류)로 스테이징 행 생성
+    const staged = await prisma.finStagedRow.create({
+      data: {
+        importId: imp.id,
+        spaceId: SPACE_ID,
+        accountId,
+        raw: {},
+        txnDate: target.txnDate,
+        direction: target.direction,
+        amount: target.amount,
+        description: '변경된적요B',
+        categoryId: null,
+        classStatus: 'UNCLASSIFIED',
+        identityKey: target.identityKey,
+        contentHash: 'changedB',
+        resolution: 'DUP_SAME',
+      },
+      select: { id: true },
+    })
+
+    // 실제 사용자 흐름: ① "유지" 클릭(resolution PATCH) → ② 계정과목 변경(categoryId PATCH)
+    const patch = (payload: object) =>
+      call(
+        stagingPatch(
+          new NextRequest(`http://localhost/api/finance/staging/${staged.id}`, {
+            method: 'PATCH',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+          }),
+          { params: Promise.resolve({ id: staged.id }) }
+        )
+      )
+    expect((await patch({ resolution: 'DUP_OVERWRITE' })).status).toBe(200)
+    expect((await patch({ categoryId: incomeLeafId })).status).toBe(200)
+
+    // 계정과목 PATCH 후에도 resolution 이 DUP_OVERWRITE 로 보존돼야 함(회귀 가드)
+    const mid = await prisma.finStagedRow.findUnique({
+      where: { id: staged.id },
+      select: { resolution: true, classStatus: true },
+    })
+    expect(mid?.resolution).toBe('DUP_OVERWRITE')
+    expect(mid?.classStatus).toBe('CLASSIFIED')
+
+    const req = new NextRequest('http://localhost/api/finance/staging/commit', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ importId: imp.id }),
+    })
+    const res = await call(stagingCommit(req))
+    expect(res.status).toBe(200)
+
+    const after = await prisma.finTransaction.findUnique({ where: { id: target.id } })
+    expect(after?.categoryId).toBe(incomeLeafId) // 덮어쓰기(income으로 변경됨)
+    expect(after?.description).toBe('변경된적요B') // 콘텐츠도 갱신
+    expect(after?.contentHash).toBe('changedB')
+  }, 30000)
+
   test('dashboard: KPI + 계좌 스냅샷 집계', async () => {
     const req = new NextRequest(
       `http://localhost/api/finance/dashboard?period=month&anchor=${anchorMonth}`
@@ -444,7 +533,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'OUT', 300_000, cogsLeaf, 'cf-cogs')
 
     const res = await call(
-      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`))
+      cashflowGet(
+        new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`)
+      )
     )
     const body = await res.json()
 
@@ -456,10 +547,15 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
       expect(r).toHaveProperty('flowRole')
     }
     // 매출 리프 행이 flowRole=MERCH_SALES로 실렸는지.
-    const merchRow = body.incomeRows.find((r: { values: Record<string, number> }) => r.values[ym] === 800_000)
+    const merchRow = body.incomeRows.find(
+      (r: { values: Record<string, number> }) => r.values[ym] === 800_000
+    )
     expect(merchRow?.flowRole).toBe('MERCH_SALES')
     // 리프를 parentId로 합산 == 섹션 total.
-    const incomeSum = body.incomeRows.reduce((a: number, r: { values: Record<string, number> }) => a + (r.values[ym] ?? 0), 0)
+    const incomeSum = body.incomeRows.reduce(
+      (a: number, r: { values: Record<string, number> }) => a + (r.values[ym] ?? 0),
+      0
+    )
     expect(Math.round(incomeSum)).toBe(Math.round(body.totals.income.values[ym]))
 
     await prisma.finTransaction.deleteMany({
@@ -489,7 +585,10 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
       expect(Number.isNaN(v)).toBe(false)
     }
     // 3월 999,000이 새어들어오지 않았는지(합 = 30만)
-    const sum = Object.values(body.totals.income.values as Record<string, number>).reduce((a, b) => a + b, 0)
+    const sum = Object.values(body.totals.income.values as Record<string, number>).reduce(
+      (a, b) => a + b,
+      0
+    )
     expect(sum).toBe(300_000)
 
     await prisma.finTransaction.deleteMany({
@@ -529,7 +628,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'IN', 700_000, merchLeaf, 'skp-merch')
 
     const res = await call(
-      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`))
+      sankeyGet(
+        new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`)
+      )
     )
     const body = await res.json()
     expect(body.period.from).toBe(ym)
@@ -539,7 +640,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
 
     // 무효 period → 기본(직전월) 폴백
     const res2 = await call(
-      sankeyGet(new NextRequest('http://localhost/api/finance/cashflow/sankey?grain=month&period=bad'))
+      sankeyGet(
+        new NextRequest('http://localhost/api/finance/cashflow/sankey?grain=month&period=bad')
+      )
     )
     const body2 = await res2.json()
     const now = new Date()
@@ -648,7 +751,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'OUT', 30_000, finLeaf, 'sk-fin')
 
     const res = await call(
-      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`))
+      sankeyGet(
+        new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`)
+      )
     )
     expect(res.status).toBe(200)
     const body = await res.json()
@@ -666,7 +771,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
 
     // 핵심 불변식: Sankey net == cashflow 테이블 net (같은 기간)
     const cfRes = await call(
-      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`))
+      cashflowGet(
+        new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`)
+      )
     )
     const cf = await cfRes.json()
     expect(body.totals.net).toBe(cf.totals.net.values[ym])
@@ -701,7 +808,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'IN', 50_000, otherLeaf, 'skneg-cancel', '취소')
 
     const res = await call(
-      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`))
+      sankeyGet(
+        new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`)
+      )
     )
     const body = await res.json()
 
@@ -709,7 +818,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(body.totals.totalIncome).toBe(950_000)
     expect(body.totals.net).toBe(950_000)
     const cfRes = await call(
-      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`))
+      cashflowGet(
+        new NextRequest(`http://localhost/api/finance/cashflow?grain=month&periods=${ym}`)
+      )
     )
     const cf = await cfRes.json()
     expect(body.totals.net).toBe(cf.totals.net.values[ym])
@@ -729,7 +840,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'OUT', 200_000, cogsLeaf, 'skloss-cogs')
 
     const res = await call(
-      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`))
+      sankeyGet(
+        new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`)
+      )
     )
     const body = await res.json()
     expect(body.renderable).toBe(false)
