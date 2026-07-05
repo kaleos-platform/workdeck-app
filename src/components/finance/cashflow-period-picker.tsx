@@ -42,6 +42,7 @@ export function CashflowPeriodPicker({
 
   function toggle(bucket: string) {
     if (selected.includes(bucket)) {
+      if (selected.length <= 1) return // 최소 1개 유지(빈 선택 방지)
       onChange(selected.filter((b) => b !== bucket))
     } else {
       if (selected.length >= max) return // 캡 초과 방지
@@ -81,7 +82,8 @@ export function CashflowPeriodPicker({
         <div className="max-h-64 overflow-y-auto p-1">
           {options.map((bucket) => {
             const checked = selected.includes(bucket)
-            const disabled = !checked && selected.length >= max
+            const disabled =
+              (!checked && selected.length >= max) || (checked && selected.length <= 1)
             return (
               <label
                 key={bucket}

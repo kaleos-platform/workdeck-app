@@ -33,7 +33,7 @@ type ViewMode = 'table' | 'flow'
 
 // 표시 컬럼(기간) — 핀이면 계정과목 옆 sticky. 고정폭이라 left offset 정확.
 const ACCOUNT_W = 220
-const PERIOD_W = 132
+const PERIOD_W = 160
 interface DisplayColumn {
   bucket: string
   pinned: boolean
@@ -272,7 +272,7 @@ function EmptyState() {
 }
 
 // ─── 테이블 ───────────────────────────────────────────────────────────────────
-// 첫 컬럼(계정과목) sticky. 핀한 기간 컬럼은 계정과목 옆에 sticky 고정(고정폭 w-[220px]/w-[132px]라 offset 정확).
+// 첫 컬럼(계정과목) sticky. 핀한 기간 컬럼은 계정과목 옆에 sticky 고정(고정폭 w-[220px]/w-[160px]라 offset 정확).
 
 function CashflowTable({
   data,
@@ -293,7 +293,7 @@ function CashflowTable({
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
-      <Table>
+      <Table className="w-auto table-fixed">
         {/* 헤더 */}
         <TableHeader>
           <TableRow className="hover:bg-transparent">
@@ -304,7 +304,7 @@ function CashflowTable({
               <TableHead
                 key={col.bucket}
                 className={cn(
-                  'w-[132px] px-3 py-3 text-right text-xs font-medium',
+                  'w-[160px] px-3 py-3 text-right text-xs font-medium',
                   col.pinned && 'sticky z-30 bg-card'
                 )}
                 style={col.pinned ? { left: col.left } : undefined}
@@ -373,7 +373,7 @@ function PeriodCells({
           <TableCell
             key={col.bucket}
             className={cn(
-              'w-[132px] px-3 text-right font-mono text-sm tabular-nums',
+              'w-[160px] px-3 text-right font-mono text-sm tabular-nums',
               cellClass,
               valueClassFn?.(values[col.bucket]),
               p.className
