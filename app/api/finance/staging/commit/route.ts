@@ -149,6 +149,22 @@ export async function POST(req: NextRequest) {
             create: { spaceId, accountId, yearMonth: ym, balance, source: 'DERIVED' },
           })
         }
+
+        // 계좌 기준(현재) 잔액 갱신 — 최신 일자 거래후잔액을 기준잔액으로.
+        // 가드: 기준일 이후 데이터일 때만(오래된 파일 재업로드가 최신 잔액을 되돌리지 않도록).
+        const latest = withBalance[withBalance.length - 1]
+        if (latest?.balanceAfter != null) {
+          const acct = await tx.finAccount.findUnique({
+            where: { id: accountId },
+            select: { currentBalanceAsOf: true },
+          })
+          if (!acct?.currentBalanceAsOf || latest.txnDate > acct.currentBalanceAsOf) {
+            await tx.finAccount.update({
+              where: { id: accountId },
+              data: { currentBalance: latest.balanceAfter, currentBalanceAsOf: latest.txnDate },
+            })
+          }
+        }
       }
     },
     { timeout: 30000, maxWait: 10000 }

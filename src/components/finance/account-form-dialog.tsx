@@ -36,6 +36,8 @@ export interface Account {
   accountNumber: string | null
   accountType: string | null
   openingBalance: number | null
+  currentBalance: number | null
+  currentBalanceAsOf: string | null
 }
 
 interface AccountFormDialogProps {
@@ -56,6 +58,8 @@ function emptyForm() {
     accountNumber: '',
     accountType: '',
     openingBalance: '',
+    currentBalance: '',
+    currentBalanceAsOf: '',
   }
 }
 
@@ -68,6 +72,9 @@ function toFormState(account: Account) {
     accountNumber: account.accountNumber ?? '',
     accountType: account.accountType ?? '',
     openingBalance: account.openingBalance !== null ? String(account.openingBalance) : '',
+    currentBalance: account.currentBalance !== null ? String(account.currentBalance) : '',
+    // ISO → 'YYYY-MM-DD' (date input용)
+    currentBalanceAsOf: account.currentBalanceAsOf ? account.currentBalanceAsOf.slice(0, 10) : '',
   }
 }
 
@@ -97,6 +104,11 @@ export function AccountFormDialog({
       toast.error('금융기관명을 입력해 주세요')
       return
     }
+    // 현재 잔액을 입력했으면 기준일도 함께 입력해야 한다.
+    if (form.currentBalance.trim() !== '' && form.currentBalanceAsOf.trim() === '') {
+      toast.error('현재 잔액의 기준일을 입력해 주세요')
+      return
+    }
 
     const payload = {
       name: form.name.trim(),
@@ -107,6 +119,10 @@ export function AccountFormDialog({
       accountType: form.accountType.trim() || undefined,
       ...(form.openingBalance.trim() !== '' && {
         openingBalance: Number(form.openingBalance),
+      }),
+      ...(form.currentBalance.trim() !== '' && {
+        currentBalance: Number(form.currentBalance),
+        currentBalanceAsOf: form.currentBalanceAsOf,
       }),
     }
 
@@ -228,7 +244,30 @@ export function AccountFormDialog({
               value={form.openingBalance}
               onChange={(e) => setForm((f) => ({ ...f, openingBalance: e.target.value }))}
               onKeyDown={handleEnter}
+              placeholder="거래 이전 시작 잔액 (선택)"
+              className="h-8 text-sm"
+            />
+          </div>
+
+          {/* 현재 잔액 + 기준일 — 은행 거래 확정 시 자동 갱신되며, 여기서 수동 지정도 가능 */}
+          <div className="space-y-1">
+            <Label className="text-xs">현재 잔액 (원)</Label>
+            <Input
+              type="number"
+              value={form.currentBalance}
+              onChange={(e) => setForm((f) => ({ ...f, currentBalance: e.target.value }))}
+              onKeyDown={handleEnter}
               placeholder="선택 입력"
+              className="h-8 text-sm"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">기준일</Label>
+            <Input
+              type="date"
+              value={form.currentBalanceAsOf}
+              onChange={(e) => setForm((f) => ({ ...f, currentBalanceAsOf: e.target.value }))}
+              onKeyDown={handleEnter}
               className="h-8 text-sm"
             />
           </div>
