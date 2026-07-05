@@ -12,6 +12,7 @@ import { prisma } from '@/lib/prisma'
 import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, round2 } from '@/lib/finance/serialize'
 import { ymOf, addMonths, monthList, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
+import type { FinFlowRole } from '@/generated/prisma/enums'
 
 type Grain = 'month' | 'quarter' | 'year'
 
@@ -34,7 +35,6 @@ export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams
   const grain: Grain =
     sp.get('grain') === 'quarter' ? 'quarter' : sp.get('grain') === 'year' ? 'year' : 'month'
-  const groupBy = sp.get('groupBy') === 'subaccount' ? 'subaccount' : 'category'
 
   const nowYm = ymOf(new Date())
   const defaultFrom =
@@ -68,17 +68,17 @@ export async function GET(req: NextRequest) {
     }),
     prisma.finCategory.findMany({
       where: { spaceId },
-      select: { id: true, name: true, type: true, parentId: true, groupLabel: true },
+      select: { id: true, name: true, type: true, parentId: true, groupLabel: true, flowRole: true },
     }),
   ])
 
   const catById = new Map(categories.map((c) => [c.id, c]))
   const rootIds = new Set(categories.filter((c) => c.parentId === null).map((c) => c.id))
 
-  /** 카테고리의 level-1 조상(루트의 직계 자식)을 반환. */
+  /** 카테고리의 level-1 조상(루트의 직계 자식) — 상위 대분류. flowRole 포함. */
   function levelOne(
     catId: string
-  ): { id: string; name: string; type: string; groupLabel: string | null } | null {
+  ): { id: string; name: string; flowRole: FinFlowRole | null } | null {
     let cur = catById.get(catId)
     if (!cur) return null
     let parentId = cur.parentId
@@ -88,27 +88,30 @@ export async function GET(req: NextRequest) {
       cur = next
       parentId = cur.parentId
     }
-    return { id: cur.id, name: cur.name, type: cur.type, groupLabel: cur.groupLabel }
+    return { id: cur.id, name: cur.name, flowRole: cur.flowRole }
   }
 
+  // 행 = 리프(운영 항목) 단위. 각 행에 상위 대분류(parentId/parentName/flowRole)를 첨부해
+  // 프론트가 대분류/계층/하위만 3모드를 파생한다. 미분류는 parentId=null.
   type Row = {
     key: string
     name: string
     type: 'INCOME' | 'EXPENSE'
     groupLabel: string | null
+    parentId: string | null
+    parentName: string
+    flowRole: FinFlowRole | null
     values: Record<string, number>
   }
   const rowMap = new Map<string, Row>()
 
   const ensureRow = (
     key: string,
-    name: string,
-    type: 'INCOME' | 'EXPENSE',
-    groupLabel: string | null
+    seed: Omit<Row, 'values'>
   ) => {
     let r = rowMap.get(key)
     if (!r) {
-      r = { key, name, type, groupLabel, values: Object.fromEntries(buckets.map((b) => [b, 0])) }
+      r = { ...seed, values: Object.fromEntries(buckets.map((b) => [b, 0])) }
       rowMap.set(key, r)
     }
     return r
@@ -124,25 +127,38 @@ export async function GET(req: NextRequest) {
     // 두 화면이 같은 수입/지출 총액을 내도록 한다. key에 섹션을 접두해 동일 계정과목이
     // IN·OUT 둘 다 가질 때 각 섹션에 별도 행으로 분리한다.
     const type: 'INCOME' | 'EXPENSE' = t.direction === 'IN' ? 'INCOME' : 'EXPENSE'
-    let key: string
-    let name: string
-    let groupLabel: string | null = null
 
-    const node = t.categoryId
-      ? groupBy === 'subaccount'
-        ? catById.get(t.categoryId)
-        : levelOne(t.categoryId)
-      : null
-    if (node) {
-      key = `${type}:${node.id}`
-      name = node.name
-      groupLabel = 'groupLabel' in node ? (node.groupLabel ?? null) : null
+    // 리프(운영 항목) 그대로를 행으로, 상위 대분류(levelOne)를 메타로 첨부.
+    const leaf = t.categoryId ? catById.get(t.categoryId) : null
+    const parent = t.categoryId ? levelOne(t.categoryId) : null
+
+    let key: string
+    let seed: Omit<Row, 'values'>
+    if (leaf) {
+      key = `${type}:${leaf.id}`
+      seed = {
+        key,
+        name: leaf.name,
+        type,
+        groupLabel: leaf.groupLabel ?? null,
+        parentId: parent?.id ?? leaf.id,
+        parentName: parent?.name ?? leaf.name,
+        flowRole: parent?.flowRole ?? null,
+      }
     } else {
       key = `__none_${type}`
-      name = '미분류'
+      seed = {
+        key,
+        name: '미분류',
+        type,
+        groupLabel: null,
+        parentId: null,
+        parentName: '미분류',
+        flowRole: null,
+      }
     }
 
-    const row = ensureRow(key, name, type, groupLabel)
+    const row = ensureRow(key, seed)
     row.values[bucket] += amt
   }
 
@@ -176,7 +192,6 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     grain,
-    groupBy,
     from,
     to,
     buckets,
