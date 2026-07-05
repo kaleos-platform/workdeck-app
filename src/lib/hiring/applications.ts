@@ -11,6 +11,7 @@ import {
 import { decryptPii } from '@/lib/del/encryption'
 import {
   uploadApplicantFile,
+  removeApplicantFiles,
   ALLOWED_APPLICANT_MIME,
   MAX_APPLICANT_FILE_BYTES,
 } from '@/lib/hiring/storage'
@@ -123,24 +124,35 @@ export async function createPublicApplication(params: {
     select: { id: true, uuid: true },
   })
 
-  // 첨부 업로드 + 메타 저장
-  for (const f of files) {
-    const { path } = await uploadApplicantFile({
-      spaceId: posting.spaceId,
-      applicationId: application.id,
-      data: f.data,
-      mimeType: f.mimeType,
-    })
-    await prisma.hiringApplicationFile.create({
-      data: {
+  // 첨부 업로드 + 메타 저장 — 중간 실패 시 지원서 행·기업로드 파일을 보상 삭제해
+  // "첨부 일부만 남은 지원서"가 생기지 않게 한다.
+  const uploadedPaths: string[] = []
+  try {
+    for (const f of files) {
+      const { path } = await uploadApplicantFile({
         spaceId: posting.spaceId,
         applicationId: application.id,
-        fileName: f.fileName.slice(0, 200),
-        filePath: path,
+        data: f.data,
         mimeType: f.mimeType,
-        sizeBytes: f.data.byteLength,
-      },
-    })
+      })
+      uploadedPaths.push(path)
+      await prisma.hiringApplicationFile.create({
+        data: {
+          spaceId: posting.spaceId,
+          applicationId: application.id,
+          fileName: f.fileName.slice(0, 200),
+          filePath: path,
+          mimeType: f.mimeType,
+          sizeBytes: f.data.byteLength,
+        },
+      })
+    }
+  } catch (err) {
+    await Promise.allSettled([
+      removeApplicantFiles(uploadedPaths),
+      prisma.hiringApplication.delete({ where: { id: application.id } }),
+    ])
+    throw err instanceof Error ? err : new Error('첨부 업로드에 실패했습니다')
   }
 
   return { uuid: application.uuid, id: application.id }

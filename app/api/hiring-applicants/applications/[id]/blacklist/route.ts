@@ -2,7 +2,7 @@
 // 전화번호는 서버에서만 복호화해 buildBlacklistPhone 으로 enc/hash 생성(평문 미노출).
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { decryptApplicationPii, buildBlacklistPhone } from '@/lib/hiring/pii'
 import { z } from 'zod'
 
@@ -13,6 +13,9 @@ const schema = z.object({ reason: z.string().max(500).optional() })
 export async function POST(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('hiring-applicants')
   if ('error' in resolved) return resolved.error
+
+  const roleError = assertRole(resolved.role, 'ADMIN')
+  if (roleError) return roleError
   const { id } = await params
 
   const body = await req.json().catch(() => ({}))

@@ -16,12 +16,25 @@ import type { ApplicationEntryValue } from '@/lib/hiring/pii'
 
 export const runtime = 'nodejs'
 
+/**
+ * 신뢰 가능한 클라이언트 IP 추출.
+ * XFF 첫 값은 클라이언트가 임의 주입 가능(스푸핑) — 신뢰 순서:
+ * 1) x-vercel-forwarded-for (Vercel 플랫폼이 세팅, 클라이언트 위조 불가)
+ * 2) XFF 마지막 값(가장 가까운 신뢰 프록시가 기록한 실제 접속 IP)
+ * 3) x-real-ip
+ */
 function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
-  )
+  const vercel = req.headers.get('x-vercel-forwarded-for')
+  if (vercel) return vercel.split(',')[0]!.trim()
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) {
+    const parts = xff
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    if (parts.length > 0) return parts[parts.length - 1]!
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown'
 }
 
 export async function POST(req: NextRequest) {
@@ -75,6 +88,17 @@ export async function POST(req: NextRequest) {
   }
   if (posting.status !== 'ACTIVE') {
     return errorResponse('마감된 공고입니다', 410)
+  }
+
+  // DB 백스톱 캡 — 인메모리 리미터는 서버리스 인스턴스별로 리셋되므로
+  // 공고당 시간당 접수 상한을 DB 카운트로 강제한다(스푸핑·콜드스타트 무관).
+  // TODO(스케일): 정밀 IP 단위 제한이 필요해지면 Upstash/Redis 공유 스토어로 승격.
+  const POSTING_HOURLY_CAP = 60
+  const recentCount = await prisma.hiringApplication.count({
+    where: { postingId: posting.id, createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } },
+  })
+  if (recentCount >= POSTING_HOURLY_CAP) {
+    return errorResponse('접수가 몰리고 있습니다. 잠시 후 다시 시도해 주세요', 429)
   }
 
   // 부문·매장은 해당 공고 소속 값만 허용(타 공고/공간 값 주입 차단)

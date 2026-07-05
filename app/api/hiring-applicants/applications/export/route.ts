@@ -3,7 +3,7 @@
 import { NextRequest } from 'next/server'
 import * as XLSX from 'xlsx'
 import { prisma } from '@/lib/prisma'
-import { resolveDeckContext } from '@/lib/api-helpers'
+import { resolveDeckContext, assertRole, errorResponse } from '@/lib/api-helpers'
 import { decryptApplicationPii, type ApplicationEntryValue } from '@/lib/hiring/pii'
 import { STAGE_LABELS, PROCESS_STAGE_LABELS } from '@/lib/hiring/applications'
 import type { HiringApplicationStage } from '@/generated/prisma/client'
@@ -12,9 +12,14 @@ export const runtime = 'nodejs'
 
 const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
 
+const EXPORT_ROW_CAP = 2000
+
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('hiring-applicants')
   if ('error' in resolved) return resolved.error
+
+  const roleError = assertRole(resolved.role, 'ADMIN')
+  if (roleError) return roleError
   const spaceId = resolved.space.id
 
   const sp = req.nextUrl.searchParams
@@ -44,7 +49,16 @@ export async function GET(req: NextRequest) {
     },
     orderBy: { createdAt: 'desc' },
     include: { posting: { select: { title: true } } },
+    // 전량 복호화 export 는 가장 무거운 연산 — 상한으로 메모리/지연 폭주 방지.
+    // 초과 시 기간 필터로 나눠 받도록 안내한다.
+    take: EXPORT_ROW_CAP + 1,
   })
+  if (applications.length > EXPORT_ROW_CAP) {
+    return errorResponse(
+      `한 번에 내보낼 수 있는 최대 건수(${EXPORT_ROW_CAP.toLocaleString()}건)를 초과했습니다. 기간을 나눠 내보내 주세요`,
+      400
+    )
+  }
 
   // 커스텀 항목 라벨 수집(컬럼 헤더 안정화)
   const customLabels = new Map<string, string>()

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { updatePostingSchema } from '@/lib/validations/hiring-posts'
 import { getPostingDetail } from '@/lib/hiring/postings'
@@ -60,6 +60,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('hiring-posts')
   if ('error' in resolved) return resolved.error
+
+  const roleError = assertRole(resolved.role, 'ADMIN')
+  if (roleError) return roleError
   const { id } = await params
 
   const existing = await prisma.hiringPosting.findFirst({

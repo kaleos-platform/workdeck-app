@@ -1,7 +1,7 @@
 // 블랙리스트 활성 토글/삭제 — 쓰기 권한 + spaceId 스코프.
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { blacklistUpdateSchema } from '@/lib/validations/hiring-applicants'
 
 type Params = { params: Promise<{ id: string }> }
@@ -9,6 +9,9 @@ type Params = { params: Promise<{ id: string }> }
 export async function PATCH(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('hiring-applicants')
   if ('error' in resolved) return resolved.error
+
+  const roleError = assertRole(resolved.role, 'ADMIN')
+  if (roleError) return roleError
   const { id } = await params
 
   const body = await req.json().catch(() => null)
@@ -26,6 +29,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('hiring-applicants')
   if ('error' in resolved) return resolved.error
+
+  const roleError = assertRole(resolved.role, 'ADMIN')
+  if (roleError) return roleError
   const { id } = await params
 
   const result = await prisma.hiringBlacklist.deleteMany({
