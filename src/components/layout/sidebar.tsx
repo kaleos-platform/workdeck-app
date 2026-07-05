@@ -27,6 +27,12 @@ import {
   Landmark,
   PanelLeftClose,
   PanelLeftOpen,
+  Briefcase,
+  Store,
+  Tags,
+  Users,
+  UserX,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -76,6 +82,15 @@ import {
   FINANCE_UPLOAD_PATH,
   FINANCE_ACCOUNTS_PATH,
   FINANCE_BALANCES_PATH,
+  HIRING_POSTS_HOME_PATH,
+  HIRING_POSTS_POSTINGS_PATH,
+  HIRING_POSTS_TEMPLATES_PATH,
+  HIRING_POSTS_STORES_PATH,
+  HIRING_POSTS_POSITIONS_PATH,
+  HIRING_APPLICANTS_HOME_PATH,
+  HIRING_APPLICANTS_LIST_PATH,
+  HIRING_APPLICANTS_BLACKLIST_PATH,
+  HIRING_APPLICANTS_TEMPLATES_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -151,6 +166,22 @@ const FINANCE_FLAT_ROUTES = [
   { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
   { label: '계정과목 관리', icon: FolderTree, href: FINANCE_ACCOUNTS_PATH },
   { label: '계좌 관리', icon: Landmark, href: FINANCE_BALANCES_PATH },
+]
+
+// ─── 채용 관리 평탄 메뉴 데이터 (도메인 탭 금지 규칙 준수) ─────────────────────
+const HIRING_POSTS_FLAT_ROUTES = [
+  { label: '홈', icon: Home, href: HIRING_POSTS_HOME_PATH },
+  { label: '공고 관리', icon: Briefcase, href: HIRING_POSTS_POSTINGS_PATH },
+  { label: '상세 템플릿', icon: FileText, href: HIRING_POSTS_TEMPLATES_PATH },
+  { label: '매장 관리', icon: Store, href: HIRING_POSTS_STORES_PATH },
+  { label: '직무 관리', icon: Tags, href: HIRING_POSTS_POSITIONS_PATH },
+]
+
+const HIRING_APPLICANTS_FLAT_ROUTES = [
+  { label: '홈', icon: Home, href: HIRING_APPLICANTS_HOME_PATH },
+  { label: '지원자', icon: Users, href: HIRING_APPLICANTS_LIST_PATH },
+  { label: '블랙리스트', icon: UserX, href: HIRING_APPLICANTS_BLACKLIST_PATH },
+  { label: '메시지 템플릿', icon: MessageSquare, href: HIRING_APPLICANTS_TEMPLATES_PATH },
 ]
 
 const COUPANG_MAIN_ROUTES = [
@@ -260,6 +291,8 @@ export function Sidebar({
   const isSellerHubSidebar = variant === 'seller-hub'
   const isSalesContentSidebar = variant === 'sales-content'
   const isFinanceSidebar = variant === 'finance'
+  const isHiringPostsSidebar = variant === 'hiring-posts'
+  const isHiringApplicantsSidebar = variant === 'hiring-applicants'
   const isMyDeckMode = mode === 'my-deck'
   const meta = DECK_META[variant]
   const BrandIcon = meta.icon
@@ -523,6 +556,50 @@ export function Sidebar({
           <div className="space-y-0.5">
             {FINANCE_FLAT_ROUTES.map((route) => {
               const isHomeRoute = route.href === FINANCE_DASHBOARD_PATH
+              const isActive = isHomeRoute
+                ? pathname === route.href
+                : pathname === route.href || pathname.startsWith(`${route.href}/`)
+              return (
+                <RailLink
+                  key={route.href}
+                  href={route.href}
+                  icon={route.icon}
+                  label={route.label}
+                  isActive={isActive}
+                  collapsed={collapsed}
+                  size="sm"
+                />
+              )
+            })}
+          </div>
+        )}
+
+        {isHiringPostsSidebar && (
+          <div className="space-y-0.5">
+            {HIRING_POSTS_FLAT_ROUTES.map((route) => {
+              const isHomeRoute = route.href === HIRING_POSTS_HOME_PATH
+              const isActive = isHomeRoute
+                ? pathname === route.href
+                : pathname === route.href || pathname.startsWith(`${route.href}/`)
+              return (
+                <RailLink
+                  key={route.href}
+                  href={route.href}
+                  icon={route.icon}
+                  label={route.label}
+                  isActive={isActive}
+                  collapsed={collapsed}
+                  size="sm"
+                />
+              )
+            })}
+          </div>
+        )}
+
+        {isHiringApplicantsSidebar && (
+          <div className="space-y-0.5">
+            {HIRING_APPLICANTS_FLAT_ROUTES.map((route) => {
+              const isHomeRoute = route.href === HIRING_APPLICANTS_HOME_PATH
               const isActive = isHomeRoute
                 ? pathname === route.href
                 : pathname === route.href || pathname.startsWith(`${route.href}/`)
