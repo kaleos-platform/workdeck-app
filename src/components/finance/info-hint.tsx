@@ -25,7 +25,9 @@ export function InfoHint({ content, className }: { content: ReactNode; className
             <Info className="size-3.5" />
           </button>
         </TooltipTrigger>
-        <TooltipContent className="max-w-[260px] text-xs leading-relaxed">{content}</TooltipContent>
+        <TooltipContent className="max-w-[240px] p-2.5 text-left leading-relaxed break-keep [text-wrap:wrap]">
+          {content}
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   )

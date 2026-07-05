@@ -343,36 +343,26 @@ function FlowRoleInline({
     }
   }
 
-  if (type === 'INCOME') {
-    // 매출 ⇄ 기타 토글
-    return (
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          className={cn(chip, 'cursor-pointer hover:opacity-80')}
-          onClick={() => void patch(flowRole === 'MERCH_SALES' ? null : 'MERCH_SALES')}
-          title="클릭해 매출/기타 전환"
-        >
-          {flowRoleLabel(flowRole, 'INCOME')}
-        </button>
-        <InfoHint content={INCOME_FLOW_GUIDE} />
-      </div>
-    )
-  }
+  // 수입/지출 모두 드롭다운으로 통일(선택지가 명시적으로 보이도록).
+  const OPTS: { role: FinFlowRole | null; label: string }[] =
+    type === 'INCOME'
+      ? [
+          { role: 'MERCH_SALES', label: '매출' },
+          { role: null, label: '기타' },
+        ]
+      : [
+          { role: null, label: '미지정' },
+          { role: 'COGS', label: '매출원가' },
+          { role: 'OPEX', label: '영업비용' },
+          { role: 'FINANCING_COST', label: '금융비용' },
+        ]
 
-  // 지출: 4택 드롭다운
-  const OPTS: { role: FinFlowRole | null; label: string }[] = [
-    { role: null, label: '미지정' },
-    { role: 'COGS', label: '매출원가' },
-    { role: 'OPEX', label: '영업비용' },
-    { role: 'FINANCING_COST', label: '금융비용' },
-  ]
   return (
     <div className="flex items-center gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" className={cn(chip, 'cursor-pointer hover:opacity-80')}>
-            {flowRoleLabel(flowRole, 'EXPENSE')} ▾
+            {flowRoleLabel(flowRole, type)} ▾
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -383,7 +373,7 @@ function FlowRoleInline({
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      <InfoHint content={EXPENSE_FLOW_GUIDE} />
+      <InfoHint content={type === 'INCOME' ? INCOME_FLOW_GUIDE : EXPENSE_FLOW_GUIDE} />
     </div>
   )
 }
