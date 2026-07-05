@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -13,24 +13,23 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { formatWon, formatPercent } from '@/components/finance/format'
+import { formatWon, formatPercent, flowRoleBadge } from '@/components/finance/format'
 import { FinanceCashflowSankey } from '@/components/finance/cashflow-sankey'
+import {
+  buildCashflowGroups,
+  type CashflowLeaf,
+  type CashflowGroup,
+  type DisplayMode,
+} from '@/lib/finance/cashflow-grouping'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
 type Grain = 'month' | 'quarter' | 'year'
-type GroupBy = 'category' | 'subaccount'
 type ViewMode = 'table' | 'flow'
 
-interface CashflowRow {
-  key: string
-  name: string
-  type: 'INCOME' | 'EXPENSE'
-  groupLabel: string | null
-  values: Record<string, number>
-  changePct: number | null
-}
+// 리프 행 = 그룹핑 유틸의 CashflowLeaf와 동일 구조(라우트가 리프 단위로 내려줌).
+type CashflowRow = CashflowLeaf
 
 interface CashflowTotalEntry {
   values: Record<string, number>
@@ -39,7 +38,6 @@ interface CashflowTotalEntry {
 
 interface CashflowData {
   grain: Grain
-  groupBy: GroupBy
   from: string
   to: string
   buckets: string[]
@@ -122,15 +120,14 @@ function SegmentGroup<T extends string>({
 export function FinanceCashflowView() {
   const [view, setView] = useState<ViewMode>('table')
   const [grain, setGrain] = useState<Grain>('month')
-  const [groupBy, setGroupBy] = useState<GroupBy>('category')
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('group')
   const [data, setData] = useState<CashflowData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const load = useCallback(async (g: Grain, gb: GroupBy) => {
+  const load = useCallback(async (g: Grain) => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ grain: g, groupBy: gb })
-      const res = await fetch(`/api/finance/cashflow?${params.toString()}`)
+      const res = await fetch(`/api/finance/cashflow?grain=${g}`)
       if (!res.ok) throw new Error('현금흐름 데이터 조회 실패')
       const json: CashflowData = await res.json()
       setData(json)
@@ -142,18 +139,8 @@ export function FinanceCashflowView() {
   }, [])
 
   useEffect(() => {
-    void load(grain, groupBy)
-  }, [load, grain, groupBy])
-
-  // grain 변경 핸들러
-  function handleGrainChange(g: Grain) {
-    setGrain(g)
-  }
-
-  // groupBy 변경 핸들러
-  function handleGroupByChange(gb: GroupBy) {
-    setGroupBy(gb)
-  }
+    void load(grain)
+  }, [load, grain])
 
   return (
     <div className="space-y-4">
@@ -176,18 +163,19 @@ export function FinanceCashflowView() {
             { value: 'year', label: '연도별' },
           ]}
           value={grain}
-          onChange={handleGrainChange}
+          onChange={setGrain}
         />
-        {/* 구분(계정과목/사용자계정)은 테이블 뷰에서만 — 흐름도는 대분류 기준 롤업 고정 */}
+        {/* 표시 모드는 테이블 뷰에서만 — 흐름도는 대분류 롤업 고정 */}
         {view === 'table' && (
-          <SegmentGroup<GroupBy>
-            label="구분"
+          <SegmentGroup<DisplayMode>
+            label="표시"
             options={[
-              { value: 'category', label: '계정과목' },
-              { value: 'subaccount', label: '사용자 계정' },
+              { value: 'group', label: '대분류' },
+              { value: 'hierarchy', label: '대분류+하위' },
+              { value: 'leaf', label: '하위만' },
             ]}
-            value={groupBy}
-            onChange={handleGroupByChange}
+            value={displayMode}
+            onChange={setDisplayMode}
           />
         )}
       </div>
@@ -200,7 +188,7 @@ export function FinanceCashflowView() {
       ) : !data || (data.incomeRows.length === 0 && data.expenseRows.length === 0) ? (
         <EmptyState />
       ) : (
-        <CashflowTable data={data} />
+        <CashflowTable data={data} mode={displayMode} />
       )}
     </div>
   )
@@ -221,8 +209,10 @@ function EmptyState() {
 
 // ─── 테이블 ───────────────────────────────────────────────────────────────────
 
-function CashflowTable({ data }: { data: CashflowData }) {
+function CashflowTable({ data, mode }: { data: CashflowData; mode: DisplayMode }) {
   const { buckets, incomeRows, expenseRows, totals } = data
+  const incomeGroups = buildCashflowGroups(incomeRows, buckets, mode)
+  const expenseGroups = buildCashflowGroups(expenseRows, buckets, mode)
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
@@ -231,7 +221,7 @@ function CashflowTable({ data }: { data: CashflowData }) {
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             {/* 첫 컬럼: sticky */}
-            <TableHead className="sticky left-0 z-20 min-w-[180px] bg-card px-4 py-3 text-xs font-medium">
+            <TableHead className="sticky left-0 z-20 min-w-[200px] bg-card px-4 py-3 text-xs font-medium">
               계정과목
             </TableHead>
             {buckets.map((b) => (
@@ -248,12 +238,7 @@ function CashflowTable({ data }: { data: CashflowData }) {
         <TableBody>
           {/* ── 수입 섹션 ── */}
           <SectionLabelRow label="수입" colSpan={buckets.length + 2} />
-
-          {incomeRows.map((row, idx) => (
-            <DataRow key={row.key} row={row} buckets={buckets} colorIdx={idx} />
-          ))}
-
-          {/* 수입 합계 */}
+          <SectionBody section="수입" groups={incomeGroups} buckets={buckets} mode={mode} />
           <TotalRow
             label="수입 합계"
             entry={totals.income}
@@ -263,12 +248,7 @@ function CashflowTable({ data }: { data: CashflowData }) {
 
           {/* ── 지출 섹션 ── */}
           <SectionLabelRow label="지출" colSpan={buckets.length + 2} />
-
-          {expenseRows.map((row, idx) => (
-            <DataRow key={row.key} row={row} buckets={buckets} colorIdx={idx} />
-          ))}
-
-          {/* 지출 합계 */}
+          <SectionBody section="지출" groups={expenseGroups} buckets={buckets} mode={mode} />
           <TotalRow
             label="지출 합계"
             entry={totals.expense}
@@ -281,6 +261,94 @@ function CashflowTable({ data }: { data: CashflowData }) {
         </TableBody>
       </Table>
     </div>
+  )
+}
+
+// ─── 섹션 본문: 모드별 그룹/하위 렌더 ─────────────────────────────────────────
+
+function SectionBody({
+  section,
+  groups,
+  buckets,
+  mode,
+}: {
+  section: '수입' | '지출'
+  groups: CashflowGroup[]
+  buckets: string[]
+  mode: DisplayMode
+}) {
+  return (
+    <>
+      {groups.map((g, gi) => (
+        <Fragment key={g.key}>
+          <GroupRow group={g} buckets={buckets} colorIdx={gi} section={section} mode={mode} />
+          {mode !== 'group' &&
+            g.leaves.map((leaf) => (
+              <DataRow key={leaf.key} row={leaf} buckets={buckets} indent />
+            ))}
+        </Fragment>
+      ))}
+    </>
+  )
+}
+
+// ─── 그룹 행(대분류 / 서브그룹 헤더) ──────────────────────────────────────────
+
+function GroupRow({
+  group,
+  buckets,
+  colorIdx,
+  section,
+  mode,
+}: {
+  group: CashflowGroup
+  buckets: string[]
+  colorIdx: number
+  section: '수입' | '지출'
+  mode: DisplayMode
+}) {
+  const dotClass = CHART_BG_CLASSES[colorIdx % CHART_BG_CLASSES.length]
+  // leaf 모드는 서브그룹("수입 · 매출"), 그 외는 대분류명 + flowRole 뱃지.
+  const label = mode === 'leaf' ? `${section} · ${group.label}` : group.label
+  const leafType = group.leaves[0]?.type ?? (section === '수입' ? 'INCOME' : 'EXPENSE')
+  const badge = mode !== 'leaf' && group.flowRole ? flowRoleBadge(group.flowRole, leafType) : null
+  // group 모드는 단독 행(강조 약), hierarchy/leaf는 헤더(약한 배경).
+  const isHeader = mode !== 'group'
+
+  return (
+    <TableRow className={cn(isHeader && 'bg-muted/20')}>
+      <TableCell className={cn('sticky left-0 z-10 px-4', isHeader ? 'bg-muted/20' : 'bg-card')}>
+        <div className="flex items-center gap-2">
+          <span
+            className={cn('inline-block size-2 shrink-0 rounded-full', dotClass)}
+            aria-hidden="true"
+          />
+          <span className="text-sm font-medium">{label}</span>
+          {badge && (
+            <span
+              className={cn(
+                'rounded border px-1.5 py-0.5 text-[10px] font-medium',
+                badge.className
+              )}
+            >
+              {badge.label}
+            </span>
+          )}
+        </div>
+      </TableCell>
+
+      {buckets.map((b) => (
+        <TableCell key={b} className="px-3 text-right font-mono text-sm font-medium tabular-nums">
+          {formatWon(group.values[b])}
+        </TableCell>
+      ))}
+
+      <TableCell
+        className={cn('px-3 text-right text-xs tabular-nums', changePctClass(group.changePct))}
+      >
+        {formatPercent(group.changePct, { sign: true })}
+      </TableCell>
+    </TableRow>
   )
 }
 
@@ -304,23 +372,25 @@ function SectionLabelRow({ label, colSpan }: { label: string; colSpan: number })
 function DataRow({
   row,
   buckets,
-  colorIdx,
+  indent = false,
 }: {
   row: CashflowRow
   buckets: string[]
-  colorIdx: number
+  /** 그룹 하위 리프 — 들여쓰기 + 색점 대신 계층 마커. */
+  indent?: boolean
 }) {
-  const dotClass = CHART_BG_CLASSES[colorIdx % CHART_BG_CLASSES.length]
-
   return (
     <TableRow>
       {/* sticky 첫 컬럼 */}
       <TableCell className="sticky left-0 z-10 bg-card px-4">
-        <div className="flex items-center gap-2">
-          <span
-            className={cn('inline-block size-2 shrink-0 rounded-full', dotClass)}
-            aria-hidden="true"
-          />
+        <div className={cn('flex items-center gap-2', indent && 'pl-6')}>
+          {indent ? (
+            <span className="text-xs text-muted-foreground" aria-hidden="true">
+              └
+            </span>
+          ) : (
+            <span className="inline-block size-2 shrink-0 rounded-full bg-chart-1" aria-hidden="true" />
+          )}
           <span className="text-sm">{row.name}</span>
           {row.groupLabel && (
             <span className="text-xs text-muted-foreground">({row.groupLabel})</span>

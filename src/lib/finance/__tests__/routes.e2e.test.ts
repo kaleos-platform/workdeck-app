@@ -419,6 +419,38 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(body.totals).toBeDefined()
   }, 20000)
 
+  test('cashflow: 리프 단위 행 + 대분류 메타(parentId/parentName/flowRole) + 합산 정합', async () => {
+    // 매출 대분류(MERCH_SALES) 리프에 수입, COGS 리프에 지출 생성.
+    const ym = '2024-05'
+    const merchLeaf = await leafUnderFlowRole('MERCH_SALES', 'INCOME')
+    const cogsLeaf = await leafUnderFlowRole('COGS', 'EXPENSE')
+    await makeTxn(ym, 'IN', 800_000, merchLeaf, 'cf-merch')
+    await makeTxn(ym, 'OUT', 300_000, cogsLeaf, 'cf-cogs')
+
+    const res = await call(
+      cashflowGet(new NextRequest(`http://localhost/api/finance/cashflow?grain=month&from=${ym}&to=${ym}`))
+    )
+    const body = await res.json()
+
+    // 행은 리프 단위 + 상위 대분류 메타를 실어야 함.
+    const rows = [...body.incomeRows, ...body.expenseRows]
+    for (const r of rows) {
+      expect(r).toHaveProperty('parentId')
+      expect(r).toHaveProperty('parentName')
+      expect(r).toHaveProperty('flowRole')
+    }
+    // 매출 리프 행이 flowRole=MERCH_SALES로 실렸는지.
+    const merchRow = body.incomeRows.find((r: { values: Record<string, number> }) => r.values[ym] === 800_000)
+    expect(merchRow?.flowRole).toBe('MERCH_SALES')
+    // 리프를 parentId로 합산 == 섹션 total.
+    const incomeSum = body.incomeRows.reduce((a: number, r: { values: Record<string, number> }) => a + (r.values[ym] ?? 0), 0)
+    expect(Math.round(incomeSum)).toBe(Math.round(body.totals.income.values[ym]))
+
+    await prisma.finTransaction.deleteMany({
+      where: { spaceId: SPACE_ID, identityKey: { startsWith: 'cf-' } },
+    })
+  }, 30000)
+
   test('Fix2: 방향-type 충돌 거래는 대시보드·현금흐름 모두 지출로 집계', async () => {
     const ym = '2025-09'
     await prisma.finTransaction.create({

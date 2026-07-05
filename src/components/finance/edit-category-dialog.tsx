@@ -24,6 +24,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { InfoHint } from '@/components/finance/info-hint'
+import { FLOW_ROLE_GUIDE, COST_NATURE_GUIDE } from '@/components/finance/format'
 
 export type EditNode = {
   id: string
@@ -47,6 +49,16 @@ const FLOW_ROLE_OPTIONS: Record<'INCOME' | 'EXPENSE', { value: string; label: st
     { value: 'OPEX', label: '영업비용(판관비)' },
     { value: 'FINANCING_COST', label: '금융비용' },
   ],
+}
+
+/** flowRole 옵션 값 → 안내 텍스트(옵션 아래 보조 설명). */
+function flowOptionGuide(value: string, type: 'INCOME' | 'EXPENSE'): string {
+  if (value === 'MERCH_SALES') return FLOW_ROLE_GUIDE.MERCH_SALES
+  if (value === 'COGS') return FLOW_ROLE_GUIDE.COGS
+  if (value === 'OPEX') return FLOW_ROLE_GUIDE.OPEX
+  if (value === 'FINANCING_COST') return FLOW_ROLE_GUIDE.FINANCING_COST
+  // none
+  return type === 'INCOME' ? FLOW_ROLE_GUIDE.OTHER_INCOME : '별도 지정 안 함 — 판매관리비로 집계됩니다.'
 }
 
 export function EditCategoryDialog({
@@ -147,7 +159,21 @@ export function EditCategoryDialog({
 
           {isExpenseLeaf && (
             <div className="space-y-1.5">
-              <Label className="text-xs">원가 성격</Label>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs">원가 성격</Label>
+                <InfoHint
+                  content={
+                    <div className="space-y-1">
+                      <p>
+                        <span className="font-semibold">고정비</span> — {COST_NATURE_GUIDE.고정}
+                      </p>
+                      <p>
+                        <span className="font-semibold">변동비</span> — {COST_NATURE_GUIDE.변동}
+                      </p>
+                    </div>
+                  }
+                />
+              </div>
               <Select
                 value={groupLabel || 'none'}
                 onValueChange={(v) => setGroupLabel(v === 'none' ? '' : v)}
@@ -161,20 +187,44 @@ export function EditCategoryDialog({
                   <SelectItem value="변동">변동비</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-[11px] text-muted-foreground">
+                현금흐름 상세 &lsquo;하위만&rsquo; 보기에서 고정/변동 그룹으로 분류됩니다.
+              </p>
             </div>
           )}
 
           {flowRoleOptions && (
             <div className="space-y-1.5">
-              <Label className="text-xs">손익 흐름도 역할</Label>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs">손익 분류 (흐름도)</Label>
+                <InfoHint
+                  content={
+                    <div className="space-y-1">
+                      {flowRoleOptions
+                        .filter((o) => o.value !== 'none')
+                        .map((o) => (
+                          <p key={o.value}>
+                            <span className="font-semibold">{o.label}</span> —{' '}
+                            {flowOptionGuide(o.value, node!.type as 'INCOME' | 'EXPENSE')}
+                          </p>
+                        ))}
+                    </div>
+                  }
+                />
+              </div>
               <Select value={flowRole} onValueChange={setFlowRole}>
-                <SelectTrigger className="h-9 text-sm">
+                <SelectTrigger className="h-auto min-h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {flowRoleOptions.map((o) => (
                     <SelectItem key={o.value} value={o.value}>
-                      {o.label}
+                      <span className="flex flex-col items-start">
+                        <span>{o.label}</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {flowOptionGuide(o.value, node!.type as 'INCOME' | 'EXPENSE')}
+                        </span>
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -33,8 +33,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { FinCategoryType, FinFlowRole } from '@/generated/prisma/enums'
-import { categoryTypeBadge } from '@/components/finance/format'
+import {
+  categoryTypeBadge,
+  flowRoleBadge,
+  flowRoleLabel,
+  FLOW_ROLE_GUIDE,
+  COST_NATURE_GUIDE,
+} from '@/components/finance/format'
+import { InfoHint } from '@/components/finance/info-hint'
+import { cn } from '@/lib/utils'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
 import { buildClassifyOptions, type ComboOption } from '@/lib/finance/category-options'
 import { EditCategoryDialog } from '@/components/finance/edit-category-dialog'
@@ -273,6 +287,97 @@ function CategoryTree({
 }
 
 /** 사용 여부 배지(거래 있으면 '사용 중', 정확 건수는 툴팁). */
+// 손익 분류 안내(툴팁 콘텐츠).
+const INCOME_FLOW_GUIDE = (
+  <div className="space-y-1">
+    <p>
+      <span className="font-semibold">매출</span> — {FLOW_ROLE_GUIDE.MERCH_SALES}
+    </p>
+    <p>
+      <span className="font-semibold">기타</span> — {FLOW_ROLE_GUIDE.OTHER_INCOME}
+    </p>
+  </div>
+)
+const EXPENSE_FLOW_GUIDE = (
+  <div className="space-y-1">
+    <p>
+      <span className="font-semibold">매출원가</span> — {FLOW_ROLE_GUIDE.COGS}
+    </p>
+    <p>
+      <span className="font-semibold">영업비용</span> — {FLOW_ROLE_GUIDE.OPEX}
+    </p>
+    <p>
+      <span className="font-semibold">금융비용</span> — {FLOW_ROLE_GUIDE.FINANCING_COST}
+    </p>
+  </div>
+)
+
+// 대분류 손익 분류 인라인 컨트롤: 수익=매출/기타 토글, 지출=4택 드롭다운. PATCH flowRole.
+function FlowRoleInline({
+  categoryId,
+  type,
+  flowRole,
+  onChanged,
+}: {
+  categoryId: string
+  type: 'INCOME' | 'EXPENSE'
+  flowRole: FinFlowRole | null
+  onChanged: () => void
+}) {
+  const badge = flowRoleBadge(flowRole, type)
+  const chip = cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', badge.className)
+
+  async function patch(role: FinFlowRole | null) {
+    try {
+      const res = await fetch(`/api/finance/categories/${categoryId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flowRole: role }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '변경 실패')
+      toast.success('손익 분류를 변경했습니다')
+      onChanged()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '변경 실패')
+    }
+  }
+
+  // 수입/지출 모두 드롭다운으로 통일(선택지가 명시적으로 보이도록).
+  const OPTS: { role: FinFlowRole | null; label: string }[] =
+    type === 'INCOME'
+      ? [
+          { role: 'MERCH_SALES', label: '매출' },
+          { role: null, label: '기타' },
+        ]
+      : [
+          { role: null, label: '미지정' },
+          { role: 'COGS', label: '매출원가' },
+          { role: 'OPEX', label: '영업비용' },
+          { role: 'FINANCING_COST', label: '금융비용' },
+        ]
+
+  return (
+    <div className="flex items-center gap-1">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" className={cn(chip, 'cursor-pointer hover:opacity-80')}>
+            {flowRoleLabel(flowRole, type)} ▾
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          {OPTS.map((o) => (
+            <DropdownMenuItem key={o.label} onClick={() => void patch(o.role)}>
+              {o.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <InfoHint content={type === 'INCOME' ? INCOME_FLOW_GUIDE : EXPENSE_FLOW_GUIDE} />
+    </div>
+  )
+}
+
 function UsageBadge({ count }: { count: number }) {
   if (count <= 0) return null
   return (
@@ -365,6 +470,14 @@ function Lvl1Row({
           </Badge>
         )}
         <UsageBadge count={usage} />
+        {isGroup && (node.type === 'INCOME' || node.type === 'EXPENSE') && (
+          <FlowRoleInline
+            categoryId={node.id}
+            type={node.type}
+            flowRole={node.flowRole}
+            onChanged={onChanged}
+          />
+        )}
         <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
           {isGroup && <span>하위 {node.children.length}</span>}
           {/* 대분류·이체 리프 모두 편집·활성토글·삭제 노출(비활성 대분류도 되살릴 수 있도록). */}
@@ -609,19 +722,33 @@ function AddSubAccount({
         }}
       />
       {isExpense && (
-        <Select
-          value={groupLabel || 'none'}
-          onValueChange={(v) => setGroupLabel(v === 'none' ? '' : v)}
-        >
-          <SelectTrigger className="h-8 w-24 text-xs">
-            <SelectValue placeholder="성격" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">미지정</SelectItem>
-            <SelectItem value="고정">고정비</SelectItem>
-            <SelectItem value="변동">변동비</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1">
+          <Select
+            value={groupLabel || 'none'}
+            onValueChange={(v) => setGroupLabel(v === 'none' ? '' : v)}
+          >
+            <SelectTrigger className="h-8 w-24 text-xs">
+              <SelectValue placeholder="성격" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">미지정</SelectItem>
+              <SelectItem value="고정">고정비</SelectItem>
+              <SelectItem value="변동">변동비</SelectItem>
+            </SelectContent>
+          </Select>
+          <InfoHint
+            content={
+              <div className="space-y-1">
+                <p>
+                  <span className="font-semibold">고정비</span> — {COST_NATURE_GUIDE.고정}
+                </p>
+                <p>
+                  <span className="font-semibold">변동비</span> — {COST_NATURE_GUIDE.변동}
+                </p>
+              </div>
+            }
+          />
+        </div>
       )}
       <Button size="sm" variant="outline" onClick={handleAdd} disabled={saving || !name.trim()}>
         <Plus className="mr-1 size-3.5" />
