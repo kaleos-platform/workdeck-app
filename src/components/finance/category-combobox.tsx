@@ -40,6 +40,12 @@ type CategoryComboboxProps = {
   groupByType?: boolean
   /** 오픈 시 기본 활성 탭. 선택값이 있으면 그 타입을 우선. (IN→INCOME, OUT→EXPENSE) */
   defaultType?: FinCategoryType
+  /**
+   * 금액 방향과 어긋나는 타입을 선택 불가로 막는다(오분류 방지).
+   * OUT(지출) → '수익'(INCOME) 비활성, IN(수입) → '비용'(EXPENSE) 비활성. '이체'는 항상 허용.
+   * 탭 비활성 + 목록/검색에서도 제외(검색으로 우회 선택 차단). 이미 분류된 현재 값은 라벨 보존을 위해 유지.
+   */
+  blockType?: FinCategoryType | null
 }
 
 /**
@@ -59,19 +65,27 @@ export function CategoryCombobox({
   disabled,
   groupByType,
   defaultType,
+  blockType,
 }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   // 선택값의 타입을 우선 활성 탭으로(이미 분류된 행 재오픈 시 해당 탭). 없으면 방향 기본/수익.
   const selectedOption = value ? options.find((o) => o.id === value) : undefined
-  const [activeType, setActiveType] = React.useState<FinCategoryType>(
-    selectedOption?.type ?? defaultType ?? 'INCOME'
-  )
+  // 방향과 어긋나 막힌 타입이 기본 탭이면 허용 탭으로 대체(OUT→비용, IN→수익, 그 외 첫 허용).
+  const resolveInitialType = React.useCallback((): FinCategoryType => {
+    const pref = selectedOption?.type ?? defaultType ?? 'INCOME'
+    if (pref !== blockType) return pref
+    return TYPE_TABS.find((t) => t.type !== blockType)?.type ?? pref
+  }, [selectedOption?.type, defaultType, blockType])
+  const [activeType, setActiveType] = React.useState<FinCategoryType>(resolveInitialType)
 
   // 라벨은 전체 옵션에서 해석(비활성 항목에 이미 분류된 거래의 표시 보존).
   const selectedLabel = comboOptionLabel(options, value)
   // 목록은 비활성 항목을 숨겨 새 선택을 막되, 현재 선택값은 유지(라벨·체크 표시).
-  const base = options.filter((o) => o.isActive !== false || o.id === value)
+  // 방향과 어긋난 타입(blockType)은 목록·검색에서도 제외해 검색 우회 선택을 막는다(현재 값은 유지).
+  const base = options.filter(
+    (o) => (o.isActive !== false && o.type !== blockType) || o.id === value
+  )
   // groupByType + 검색어 없음 → 활성 탭만. 검색 중엔 전 타입 교차 검색(탭 필터 우회).
   const visibleOptions =
     groupByType && !query.trim() ? base.filter((o) => o.type === activeType) : base
@@ -83,7 +97,7 @@ export function CategoryCombobox({
         setOpen(next)
         // 오픈 시 동기적으로 탭/검색 리셋(useEffect는 한 프레임 깜빡임을 유발).
         if (next) {
-          setActiveType(selectedOption?.type ?? defaultType ?? 'INCOME')
+          setActiveType(resolveInitialType())
           setQuery('')
         }
       }}
@@ -109,24 +123,33 @@ export function CategoryCombobox({
         <Command>
           {groupByType && (
             <div className="flex gap-1 border-b p-1">
-              {TYPE_TABS.map((t) => (
-                <button
-                  key={t.type}
-                  type="button"
-                  onClick={() => {
-                    setActiveType(t.type)
-                    setQuery('')
-                  }}
-                  className={cn(
-                    'flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors',
-                    activeType === t.type
-                      ? 'bg-accent text-foreground'
-                      : 'text-muted-foreground hover:bg-accent/50'
-                  )}
-                >
-                  {t.label}
-                </button>
-              ))}
+              {TYPE_TABS.map((t) => {
+                const blocked = t.type === blockType
+                return (
+                  <button
+                    key={t.type}
+                    type="button"
+                    disabled={blocked}
+                    aria-disabled={blocked}
+                    title={blocked ? '금액 방향과 맞지 않는 분류입니다' : undefined}
+                    onClick={() => {
+                      if (blocked) return
+                      setActiveType(t.type)
+                      setQuery('')
+                    }}
+                    className={cn(
+                      'flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors',
+                      blocked
+                        ? 'cursor-not-allowed text-muted-foreground/40'
+                        : activeType === t.type
+                          ? 'bg-accent text-foreground'
+                          : 'text-muted-foreground hover:bg-accent/50'
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                )
+              })}
             </div>
           )}
           <CommandInput placeholder={searchPlaceholder} value={query} onValueChange={setQuery} />
