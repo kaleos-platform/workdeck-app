@@ -109,7 +109,10 @@ export async function POST(req: NextRequest) {
           matchedRuleId: s.matchedRuleId,
           isTransfer,
         }
-        const preserve = classifiedKeys.has(`${s.accountId}|${s.identityKey}`)
+        // 재임포트 자동분류(DUP_CHANGED 포함)가 사용자 분류를 덮어쓰지 않도록 보존.
+        // 단, 사용자가 "유지"로 명시 선택한 중복(DUP_OVERWRITE)은 덮어쓰기 의도이므로 분류를 반영한다.
+        const preserve =
+          classifiedKeys.has(`${s.accountId}|${s.identityKey}`) && s.resolution !== 'DUP_OVERWRITE'
         await tx.finTransaction.upsert({
           where: {
             spaceId_accountId_identityKey: {

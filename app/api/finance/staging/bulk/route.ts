@@ -2,7 +2,7 @@
  * POST /api/finance/staging/bulk
  * 선택한 스테이징 행들을 일괄 처리한다.
  *   - categoryId → CLASSIFIED + categoryId (일괄은 자동 학습 안 함 — 이질적 선택의 규칙 폭증 방지)
- *   - resolution → 중복 처리(NEW=유지, DUP_SAME=제외, DUP_CHANGED=변경반영)
+ *   - resolution → 중복 처리(NEW=유지, DUP_SAME=제외, DUP_CHANGED=자동반영, DUP_OVERWRITE=유지·덮어쓰기)
  * 보안: 서버에서 spaceId 스코프로만 갱신(클라이언트 id 신뢰 안 함).
  */
 import { NextRequest, NextResponse } from 'next/server'
@@ -10,7 +10,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
-const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED']
+const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED', 'DUP_OVERWRITE']
 
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
