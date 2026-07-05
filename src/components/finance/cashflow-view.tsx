@@ -293,7 +293,7 @@ function CashflowTable({
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
-      <Table className="w-auto table-fixed">
+      <Table className="w-max table-fixed">
         {/* 헤더 */}
         <TableHeader>
           <TableRow className="hover:bg-transparent">
