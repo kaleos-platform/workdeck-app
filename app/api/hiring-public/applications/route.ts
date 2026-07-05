@@ -131,8 +131,18 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // referrer: 클라이언트 payload 우선, 없으면 Referer 헤더
-  const referrer = payload.referrer ?? req.headers.get('referer') ?? null
+  // referrer: 클라이언트 payload(document.referrer) 우선, 없으면 Referer 헤더.
+  // 자기 도메인(내부 이동) referrer는 유입 잡보드 판별에 무의미 — null 처리.
+  const rawReferrer = payload.referrer ?? req.headers.get('referer') ?? null
+  const referrer = (() => {
+    if (!rawReferrer) return null
+    try {
+      const host = new URL(rawReferrer).host
+      return host === req.nextUrl.host ? null : rawReferrer
+    } catch {
+      return rawReferrer
+    }
+  })()
 
   try {
     const result = await createPublicApplication({
