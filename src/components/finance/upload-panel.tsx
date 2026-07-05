@@ -633,13 +633,15 @@ export function FinanceUploadPanel() {
                       <SelectContent>
                         <SelectItem value={NONE_ACCOUNT}>계좌 선택</SelectItem>
                         {previewRes.accounts.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            <span>{a.name}</span>
-                            {a.institution && (
-                              <span className="ml-1.5 text-xs text-muted-foreground">
-                                · {a.institution}
-                              </span>
-                            )}
+                          <SelectItem key={a.id} value={a.id} className="text-sm">
+                            <span className="flex items-center gap-1.5">
+                              {[a.institution, a.name].filter(Boolean).join(' ')}
+                              {a.accountNumber && (
+                                <span className="text-xs text-muted-foreground">
+                                  · {a.accountNumber}
+                                </span>
+                              )}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
