@@ -378,7 +378,7 @@ export function TransactionsView() {
     }
   }
 
-  // 중복 처리: 유지 → NEW, 제외 → DUP_SAME
+  // 중복 처리: 유지 → DUP_OVERWRITE(확정 시 계정과목 덮어쓰기), 제외 → DUP_SAME
   const handleDupResolution = async (rowId: string, resolution: FinStagedResolution) => {
     try {
       const res = await fetch(`/api/finance/staging/${rowId}`, {
@@ -758,6 +758,7 @@ function StagingPanel({
                 <TableHead className="w-28">출처</TableHead>
                 <TableHead>적요</TableHead>
                 <TableHead className="w-28 text-right">금액</TableHead>
+                <TableHead className="w-28 text-right">거래후잔액</TableHead>
                 <TableHead className="w-44">계정과목</TableHead>
                 <TableHead className="w-24">상태</TableHead>
                 <TableHead className="w-28">중복 처리</TableHead>
@@ -887,7 +888,7 @@ function StagingBulkBar({
             size="sm"
             variant="ghost"
             className={floatingActionButtonClass}
-            onClick={() => void run(() => onResolution('NEW'))}
+            onClick={() => void run(() => onResolution('DUP_OVERWRITE'))}
             disabled={busy}
           >
             유지
@@ -921,7 +922,10 @@ function StagingRow({
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
 }) {
-  const isDup = row.resolution === 'DUP_SAME' || row.resolution === 'DUP_CHANGED'
+  const isDup =
+    row.resolution === 'DUP_SAME' ||
+    row.resolution === 'DUP_CHANGED' ||
+    row.resolution === 'DUP_OVERWRITE'
   const statusBadge = classStatusBadge(row.classStatus)
 
   return (
@@ -964,6 +968,11 @@ function StagingRow({
           {row.direction === 'OUT' ? '-' : '+'}
           {formatWon(row.amount)}
         </span>
+      </TableCell>
+
+      {/* 거래후잔액 (은행 임포트만 존재, 없으면 —) */}
+      <TableCell className="text-right font-mono text-xs text-muted-foreground">
+        {row.balanceAfter != null ? formatWon(row.balanceAfter) : '—'}
       </TableCell>
 
       {/* 계정과목 inline Select (+ 계정과목 추가 팝업) + 미분류 시 AI 추천 */}
@@ -1014,7 +1023,7 @@ function StagingRow({
               <Button
                 size="xs"
                 variant="outline"
-                onClick={() => onDupResolution(row.id, 'DUP_CHANGED')}
+                onClick={() => onDupResolution(row.id, 'DUP_OVERWRITE')}
                 className="h-6 px-2 text-xs"
               >
                 유지
@@ -1024,7 +1033,7 @@ function StagingRow({
                 <Button
                   size="xs"
                   variant="outline"
-                  onClick={() => onDupResolution(row.id, 'DUP_CHANGED')}
+                  onClick={() => onDupResolution(row.id, 'DUP_OVERWRITE')}
                   className="h-6 px-2 text-xs"
                 >
                   유지
@@ -1280,6 +1289,7 @@ function TransactionsPanel({
                 <TableHead className="w-28">출처</TableHead>
                 <TableHead>적요</TableHead>
                 <TableHead className="w-28 text-right">금액</TableHead>
+                <TableHead className="w-28 text-right">거래후잔액</TableHead>
                 <TableHead className="w-44">계정과목</TableHead>
                 <TableHead className="w-24">상태</TableHead>
               </TableRow>
@@ -1527,6 +1537,11 @@ function TransactionRow({
           {txn.direction === 'OUT' ? '-' : '+'}
           {formatWon(txn.amount)}
         </span>
+      </TableCell>
+
+      {/* 거래후잔액 (은행 임포트만 존재, 없으면 —) */}
+      <TableCell className="text-right font-mono text-xs text-muted-foreground">
+        {txn.balanceAfter != null ? formatWon(txn.balanceAfter) : '—'}
       </TableCell>
 
       {/* 계정과목 inline Select (+ 계정과목 추가 팝업) */}

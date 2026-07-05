@@ -2,7 +2,7 @@
  * PATCH /api/finance/staging/[id]
  * 스테이징 행의 분류/중복 처리를 갱신한다.
  *   - categoryId 지정 → 분류 확정(CLASSIFIED). learn !== false 면 EXACT 규칙 학습(동일 적요 자동분류).
- *   - resolution 지정 → 중복 처리(NEW=유지/반영, DUP_SAME=제외, DUP_CHANGED=변경반영).
+ *   - resolution 지정 → 중복 처리(NEW=유지/반영, DUP_SAME=제외, DUP_CHANGED=자동반영, DUP_OVERWRITE=유지·덮어쓰기).
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
@@ -10,7 +10,7 @@ import { prisma } from '@/lib/prisma'
 import { learnRule, matchKeyOf } from '@/lib/finance/classify'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
-const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED']
+const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED', 'DUP_OVERWRITE']
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const resolved = await resolveDeckContext('finance')

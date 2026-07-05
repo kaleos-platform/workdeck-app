@@ -2625,7 +2625,8 @@ enum FinClassStatus {
 enum FinStagedResolution {
   NEW
   DUP_SAME // identity 일치 + content 동일 → 건너뜀
-  DUP_CHANGED // identity 일치 + content 상이 → 변경 반영 여부 사용자 판단
+  DUP_CHANGED // identity 일치 + content 상이 → 자동 content 반영(분류는 기존 사용자 분류 보존)
+  DUP_OVERWRITE // 사용자가 "유지" 명시 선택 → 확정 시 계정과목/분류까지 덮어쓰기
 }
 
 enum FinSnapshotSource {
