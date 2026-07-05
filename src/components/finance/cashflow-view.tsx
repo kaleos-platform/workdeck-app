@@ -23,8 +23,15 @@ import {
   type CashflowGroup,
   type DisplayMode,
 } from '@/lib/finance/cashflow-grouping'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ymOf } from '@/lib/finance/aggregate'
-import { defaultSelectedPeriods, type Grain } from '@/lib/finance/periods'
+import { defaultSelectedPeriods, availablePeriods, bucketLabel, type Grain } from '@/lib/finance/periods'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
@@ -155,6 +162,8 @@ export function FinanceCashflowView() {
     defaultSelectedPeriods('month', ymOf(new Date()))
   )
   const [pinnedPeriods, setPinnedPeriods] = useState<Set<string>>(new Set())
+  // 흐름도 단일 기간(버킷키) — 기본 최신(직전월이 속한 버킷).
+  const [flowPeriod, setFlowPeriod] = useState<string>(() => availablePeriods('month', ymOf(new Date()))[0])
   const [data, setData] = useState<CashflowData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -178,11 +187,12 @@ export function FinanceCashflowView() {
     void load(grain, selectedPeriods)
   }, [load, grain, selectedPeriods])
 
-  // grain 변경: 기본 기간으로 리셋 + 핀 초기화.
+  // grain 변경: 테이블 기본 기간·핀 초기화 + 흐름도 기간을 해당 grain 최신으로 리셋.
   function handleGrainChange(g: Grain) {
     setGrain(g)
     setSelectedPeriods(defaultSelectedPeriods(g, ymOf(new Date())))
     setPinnedPeriods(new Set())
+    setFlowPeriod(availablePeriods(g, ymOf(new Date()))[0])
   }
 
   function togglePin(bucket: string) {
@@ -237,11 +247,26 @@ export function FinanceCashflowView() {
             />
           </>
         )}
+        {/* 흐름도 뷰: 단일 기간 선택 */}
+        {view === 'flow' && (
+          <Select value={flowPeriod} onValueChange={setFlowPeriod}>
+            <SelectTrigger size="sm" className="h-8 w-[140px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-64">
+              {availablePeriods(grain, ymOf(new Date())).map((b) => (
+                <SelectItem key={b} value={b} className="text-xs">
+                  {bucketLabel(b, grain)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* 본문: 흐름도 or 테이블 */}
       {view === 'flow' ? (
-        <FinanceCashflowSankey grain={grain} />
+        <FinanceCashflowSankey grain={grain} period={flowPeriod} />
       ) : loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
       ) : !data || (data.incomeRows.length === 0 && data.expenseRows.length === 0) ? (
