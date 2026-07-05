@@ -24,6 +24,17 @@ export const DEFAULT_COUNT: Record<Grain, number> = { month: 6, quarter: 4, year
 /** 피커 선택 후보 목록 윈도우(얼마나 과거까지 고를 수 있나). */
 const WINDOW: Record<Grain, number> = { month: 24, quarter: 16, year: 10 }
 
+/** 버킷 키 → 한국어 표시 라벨. month "2026-05"→"2026년 5월", quarter "2026-Q1"→"2026년 1분기", year "2025"→"2025년". */
+export function bucketLabel(bucket: string, grain: Grain): string {
+  if (grain === 'year') return `${bucket}년`
+  if (grain === 'quarter') {
+    const [y, q] = bucket.split('-Q')
+    return `${y}년 ${q}분기`
+  }
+  const [y, m] = bucket.split('-')
+  return `${y}년 ${Number(m)}월`
+}
+
 /** grain별 버킷 키 형식 검증. */
 export function isValidBucket(bucket: string, grain: Grain): boolean {
   if (grain === 'year') return /^\d{4}$/.test(bucket)

@@ -127,14 +127,15 @@ function SummaryChip({ label, value, color }: { label: string; value: number; co
   )
 }
 
-export function FinanceCashflowSankey({ grain }: { grain: Grain }) {
+export function FinanceCashflowSankey({ grain, period }: { grain: Grain; period: string }) {
   const [data, setData] = useState<SankeyData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const load = useCallback(async (g: Grain) => {
+  const load = useCallback(async (g: Grain, p: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/finance/cashflow/sankey?grain=${g}`)
+      const qs = new URLSearchParams({ grain: g, period: p })
+      const res = await fetch(`/api/finance/cashflow/sankey?${qs}`)
       if (!res.ok) throw new Error('흐름도 데이터 조회 실패')
       const json: SankeyData = await res.json()
       setData(json)
@@ -146,8 +147,8 @@ export function FinanceCashflowSankey({ grain }: { grain: Grain }) {
   }, [])
 
   useEffect(() => {
-    void load(grain)
-  }, [load, grain])
+    void load(grain, period)
+  }, [load, grain, period])
 
   if (loading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>

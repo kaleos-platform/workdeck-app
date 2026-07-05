@@ -3,6 +3,7 @@
  */
 import {
   bucketOf,
+  bucketLabel,
   availablePeriods,
   defaultSelectedPeriods,
   normalizeSelectedPeriods,
@@ -71,6 +72,15 @@ describe('normalizeSelectedPeriods', () => {
   })
   test('유효 없으면 null', () => {
     expect(normalizeSelectedPeriods(['bad', ''], 'month')).toBeNull()
+  })
+})
+
+describe('bucketLabel', () => {
+  test('grain별 한국어 라벨', () => {
+    expect(bucketLabel('2026-05', 'month')).toBe('2026년 5월')
+    expect(bucketLabel('2026-12', 'month')).toBe('2026년 12월')
+    expect(bucketLabel('2026-Q1', 'quarter')).toBe('2026년 1분기')
+    expect(bucketLabel('2025', 'year')).toBe('2025년')
   })
 })
 
