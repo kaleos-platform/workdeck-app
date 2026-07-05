@@ -270,6 +270,7 @@ export type FinAccountWhereInput = {
   stagedRows?: Prisma.FinStagedRowListRelationFilter
   balanceSnapshots?: Prisma.FinBalanceSnapshotListRelationFilter
   mappingPresets?: Prisma.FinMappingPresetListRelationFilter
+  liabilities?: Prisma.FinLiabilityListRelationFilter
 }
 
 export type FinAccountOrderByWithRelationInput = {
@@ -290,6 +291,7 @@ export type FinAccountOrderByWithRelationInput = {
   stagedRows?: Prisma.FinStagedRowOrderByRelationAggregateInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotOrderByRelationAggregateInput
   mappingPresets?: Prisma.FinMappingPresetOrderByRelationAggregateInput
+  liabilities?: Prisma.FinLiabilityOrderByRelationAggregateInput
 }
 
 export type FinAccountWhereUniqueInput = Prisma.AtLeast<{
@@ -314,6 +316,7 @@ export type FinAccountWhereUniqueInput = Prisma.AtLeast<{
   stagedRows?: Prisma.FinStagedRowListRelationFilter
   balanceSnapshots?: Prisma.FinBalanceSnapshotListRelationFilter
   mappingPresets?: Prisma.FinMappingPresetListRelationFilter
+  liabilities?: Prisma.FinLiabilityListRelationFilter
 }, "id" | "spaceId_accountNumber">
 
 export type FinAccountOrderByWithAggregationInput = {
@@ -369,6 +372,7 @@ export type FinAccountCreateInput = {
   stagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountUncheckedCreateInput = {
@@ -388,6 +392,7 @@ export type FinAccountUncheckedCreateInput = {
   stagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountUpdateInput = {
@@ -407,6 +412,7 @@ export type FinAccountUpdateInput = {
   stagedRows?: Prisma.FinStagedRowUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountUncheckedUpdateInput = {
@@ -426,6 +432,7 @@ export type FinAccountUncheckedUpdateInput = {
   stagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountCreateManyInput = {
@@ -590,6 +597,22 @@ export type EnumFinAccountKindFieldUpdateOperationsInput = {
   set?: $Enums.FinAccountKind
 }
 
+export type FinAccountCreateNestedOneWithoutLiabilitiesInput = {
+  create?: Prisma.XOR<Prisma.FinAccountCreateWithoutLiabilitiesInput, Prisma.FinAccountUncheckedCreateWithoutLiabilitiesInput>
+  connectOrCreate?: Prisma.FinAccountCreateOrConnectWithoutLiabilitiesInput
+  connect?: Prisma.FinAccountWhereUniqueInput
+}
+
+export type FinAccountUpdateOneWithoutLiabilitiesNestedInput = {
+  create?: Prisma.XOR<Prisma.FinAccountCreateWithoutLiabilitiesInput, Prisma.FinAccountUncheckedCreateWithoutLiabilitiesInput>
+  connectOrCreate?: Prisma.FinAccountCreateOrConnectWithoutLiabilitiesInput
+  upsert?: Prisma.FinAccountUpsertWithoutLiabilitiesInput
+  disconnect?: Prisma.FinAccountWhereInput | boolean
+  delete?: Prisma.FinAccountWhereInput | boolean
+  connect?: Prisma.FinAccountWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FinAccountUpdateToOneWithWhereWithoutLiabilitiesInput, Prisma.FinAccountUpdateWithoutLiabilitiesInput>, Prisma.FinAccountUncheckedUpdateWithoutLiabilitiesInput>
+}
+
 export type FinAccountCreateNestedOneWithoutMappingPresetsInput = {
   create?: Prisma.XOR<Prisma.FinAccountCreateWithoutMappingPresetsInput, Prisma.FinAccountUncheckedCreateWithoutMappingPresetsInput>
   connectOrCreate?: Prisma.FinAccountCreateOrConnectWithoutMappingPresetsInput
@@ -678,6 +701,7 @@ export type FinAccountCreateWithoutSpaceInput = {
   stagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountUncheckedCreateWithoutSpaceInput = {
@@ -696,6 +720,7 @@ export type FinAccountUncheckedCreateWithoutSpaceInput = {
   stagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountCreateOrConnectWithoutSpaceInput = {
@@ -741,6 +766,98 @@ export type FinAccountScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"FinAccount"> | Date | string
 }
 
+export type FinAccountCreateWithoutLiabilitiesInput = {
+  id?: string
+  name: string
+  holder?: string | null
+  kind: $Enums.FinAccountKind
+  institution: string
+  accountNumber?: string | null
+  accountType?: string | null
+  openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
+  imports?: Prisma.FinImportCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.FinTransactionCreateNestedManyWithoutAccountInput
+  stagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutAccountInput
+  balanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutAccountInput
+  mappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutDefaultAccountInput
+}
+
+export type FinAccountUncheckedCreateWithoutLiabilitiesInput = {
+  id?: string
+  spaceId: string
+  name: string
+  holder?: string | null
+  kind: $Enums.FinAccountKind
+  institution: string
+  accountNumber?: string | null
+  accountType?: string | null
+  openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutAccountInput
+  stagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutAccountInput
+  balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutAccountInput
+  mappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutDefaultAccountInput
+}
+
+export type FinAccountCreateOrConnectWithoutLiabilitiesInput = {
+  where: Prisma.FinAccountWhereUniqueInput
+  create: Prisma.XOR<Prisma.FinAccountCreateWithoutLiabilitiesInput, Prisma.FinAccountUncheckedCreateWithoutLiabilitiesInput>
+}
+
+export type FinAccountUpsertWithoutLiabilitiesInput = {
+  update: Prisma.XOR<Prisma.FinAccountUpdateWithoutLiabilitiesInput, Prisma.FinAccountUncheckedUpdateWithoutLiabilitiesInput>
+  create: Prisma.XOR<Prisma.FinAccountCreateWithoutLiabilitiesInput, Prisma.FinAccountUncheckedCreateWithoutLiabilitiesInput>
+  where?: Prisma.FinAccountWhereInput
+}
+
+export type FinAccountUpdateToOneWithWhereWithoutLiabilitiesInput = {
+  where?: Prisma.FinAccountWhereInput
+  data: Prisma.XOR<Prisma.FinAccountUpdateWithoutLiabilitiesInput, Prisma.FinAccountUncheckedUpdateWithoutLiabilitiesInput>
+}
+
+export type FinAccountUpdateWithoutLiabilitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
+  institution?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
+  imports?: Prisma.FinImportUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.FinTransactionUpdateManyWithoutAccountNestedInput
+  stagedRows?: Prisma.FinStagedRowUpdateManyWithoutAccountNestedInput
+  balanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutAccountNestedInput
+  mappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutDefaultAccountNestedInput
+}
+
+export type FinAccountUncheckedUpdateWithoutLiabilitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  holder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kind?: Prisma.EnumFinAccountKindFieldUpdateOperationsInput | $Enums.FinAccountKind
+  institution?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutAccountNestedInput
+  stagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutAccountNestedInput
+  balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutAccountNestedInput
+  mappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutDefaultAccountNestedInput
+}
+
 export type FinAccountCreateWithoutMappingPresetsInput = {
   id?: string
   name: string
@@ -757,6 +874,7 @@ export type FinAccountCreateWithoutMappingPresetsInput = {
   transactions?: Prisma.FinTransactionCreateNestedManyWithoutAccountInput
   stagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutAccountInput
+  liabilities?: Prisma.FinLiabilityCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountUncheckedCreateWithoutMappingPresetsInput = {
@@ -775,6 +893,7 @@ export type FinAccountUncheckedCreateWithoutMappingPresetsInput = {
   transactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutAccountInput
   stagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutAccountInput
+  liabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountCreateOrConnectWithoutMappingPresetsInput = {
@@ -809,6 +928,7 @@ export type FinAccountUpdateWithoutMappingPresetsInput = {
   transactions?: Prisma.FinTransactionUpdateManyWithoutAccountNestedInput
   stagedRows?: Prisma.FinStagedRowUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountUncheckedUpdateWithoutMappingPresetsInput = {
@@ -827,6 +947,7 @@ export type FinAccountUncheckedUpdateWithoutMappingPresetsInput = {
   transactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutAccountNestedInput
   stagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountCreateWithoutImportsInput = {
@@ -845,6 +966,7 @@ export type FinAccountCreateWithoutImportsInput = {
   stagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountUncheckedCreateWithoutImportsInput = {
@@ -863,6 +985,7 @@ export type FinAccountUncheckedCreateWithoutImportsInput = {
   stagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountCreateOrConnectWithoutImportsInput = {
@@ -897,6 +1020,7 @@ export type FinAccountUpdateWithoutImportsInput = {
   stagedRows?: Prisma.FinStagedRowUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountUncheckedUpdateWithoutImportsInput = {
@@ -915,6 +1039,7 @@ export type FinAccountUncheckedUpdateWithoutImportsInput = {
   stagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountCreateWithoutStagedRowsInput = {
@@ -933,6 +1058,7 @@ export type FinAccountCreateWithoutStagedRowsInput = {
   transactions?: Prisma.FinTransactionCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountUncheckedCreateWithoutStagedRowsInput = {
@@ -951,6 +1077,7 @@ export type FinAccountUncheckedCreateWithoutStagedRowsInput = {
   transactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountCreateOrConnectWithoutStagedRowsInput = {
@@ -985,6 +1112,7 @@ export type FinAccountUpdateWithoutStagedRowsInput = {
   transactions?: Prisma.FinTransactionUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountUncheckedUpdateWithoutStagedRowsInput = {
@@ -1003,6 +1131,7 @@ export type FinAccountUncheckedUpdateWithoutStagedRowsInput = {
   transactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountCreateWithoutTransactionsInput = {
@@ -1021,6 +1150,7 @@ export type FinAccountCreateWithoutTransactionsInput = {
   stagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountUncheckedCreateWithoutTransactionsInput = {
@@ -1039,6 +1169,7 @@ export type FinAccountUncheckedCreateWithoutTransactionsInput = {
   stagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutAccountInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountCreateOrConnectWithoutTransactionsInput = {
@@ -1073,6 +1204,7 @@ export type FinAccountUpdateWithoutTransactionsInput = {
   stagedRows?: Prisma.FinStagedRowUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountUncheckedUpdateWithoutTransactionsInput = {
@@ -1091,6 +1223,7 @@ export type FinAccountUncheckedUpdateWithoutTransactionsInput = {
   stagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountCreateWithoutBalanceSnapshotsInput = {
@@ -1109,6 +1242,7 @@ export type FinAccountCreateWithoutBalanceSnapshotsInput = {
   transactions?: Prisma.FinTransactionCreateNestedManyWithoutAccountInput
   stagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountUncheckedCreateWithoutBalanceSnapshotsInput = {
@@ -1127,6 +1261,7 @@ export type FinAccountUncheckedCreateWithoutBalanceSnapshotsInput = {
   transactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutAccountInput
   stagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutAccountInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutDefaultAccountInput
+  liabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type FinAccountCreateOrConnectWithoutBalanceSnapshotsInput = {
@@ -1161,6 +1296,7 @@ export type FinAccountUpdateWithoutBalanceSnapshotsInput = {
   transactions?: Prisma.FinTransactionUpdateManyWithoutAccountNestedInput
   stagedRows?: Prisma.FinStagedRowUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountUncheckedUpdateWithoutBalanceSnapshotsInput = {
@@ -1179,6 +1315,7 @@ export type FinAccountUncheckedUpdateWithoutBalanceSnapshotsInput = {
   transactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutAccountNestedInput
   stagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountCreateManySpaceInput = {
@@ -1210,6 +1347,7 @@ export type FinAccountUpdateWithoutSpaceInput = {
   stagedRows?: Prisma.FinStagedRowUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountUncheckedUpdateWithoutSpaceInput = {
@@ -1228,6 +1366,7 @@ export type FinAccountUncheckedUpdateWithoutSpaceInput = {
   stagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutAccountNestedInput
   balanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutAccountNestedInput
   mappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutDefaultAccountNestedInput
+  liabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type FinAccountUncheckedUpdateManyWithoutSpaceInput = {
@@ -1254,6 +1393,7 @@ export type FinAccountCountOutputType = {
   stagedRows: number
   balanceSnapshots: number
   mappingPresets: number
+  liabilities: number
 }
 
 export type FinAccountCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1262,6 +1402,7 @@ export type FinAccountCountOutputTypeSelect<ExtArgs extends runtime.Types.Extens
   stagedRows?: boolean | FinAccountCountOutputTypeCountStagedRowsArgs
   balanceSnapshots?: boolean | FinAccountCountOutputTypeCountBalanceSnapshotsArgs
   mappingPresets?: boolean | FinAccountCountOutputTypeCountMappingPresetsArgs
+  liabilities?: boolean | FinAccountCountOutputTypeCountLiabilitiesArgs
 }
 
 /**
@@ -1309,6 +1450,13 @@ export type FinAccountCountOutputTypeCountMappingPresetsArgs<ExtArgs extends run
   where?: Prisma.FinMappingPresetWhereInput
 }
 
+/**
+ * FinAccountCountOutputType without action
+ */
+export type FinAccountCountOutputTypeCountLiabilitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FinLiabilityWhereInput
+}
+
 
 export type FinAccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1328,6 +1476,7 @@ export type FinAccountSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   stagedRows?: boolean | Prisma.FinAccount$stagedRowsArgs<ExtArgs>
   balanceSnapshots?: boolean | Prisma.FinAccount$balanceSnapshotsArgs<ExtArgs>
   mappingPresets?: boolean | Prisma.FinAccount$mappingPresetsArgs<ExtArgs>
+  liabilities?: boolean | Prisma.FinAccount$liabilitiesArgs<ExtArgs>
   _count?: boolean | Prisma.FinAccountCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["finAccount"]>
 
@@ -1383,6 +1532,7 @@ export type FinAccountInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   stagedRows?: boolean | Prisma.FinAccount$stagedRowsArgs<ExtArgs>
   balanceSnapshots?: boolean | Prisma.FinAccount$balanceSnapshotsArgs<ExtArgs>
   mappingPresets?: boolean | Prisma.FinAccount$mappingPresetsArgs<ExtArgs>
+  liabilities?: boolean | Prisma.FinAccount$liabilitiesArgs<ExtArgs>
   _count?: boolean | Prisma.FinAccountCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type FinAccountIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1401,6 +1551,7 @@ export type $FinAccountPayload<ExtArgs extends runtime.Types.Extensions.Internal
     stagedRows: Prisma.$FinStagedRowPayload<ExtArgs>[]
     balanceSnapshots: Prisma.$FinBalanceSnapshotPayload<ExtArgs>[]
     mappingPresets: Prisma.$FinMappingPresetPayload<ExtArgs>[]
+    liabilities: Prisma.$FinLiabilityPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1814,6 +1965,7 @@ export interface Prisma__FinAccountClient<T, Null = never, ExtArgs extends runti
   stagedRows<T extends Prisma.FinAccount$stagedRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinAccount$stagedRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinStagedRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   balanceSnapshots<T extends Prisma.FinAccount$balanceSnapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinAccount$balanceSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinBalanceSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   mappingPresets<T extends Prisma.FinAccount$mappingPresetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinAccount$mappingPresetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinMappingPresetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  liabilities<T extends Prisma.FinAccount$liabilitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinAccount$liabilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinLiabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2367,6 +2519,30 @@ export type FinAccount$mappingPresetsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.FinMappingPresetScalarFieldEnum | Prisma.FinMappingPresetScalarFieldEnum[]
+}
+
+/**
+ * FinAccount.liabilities
+ */
+export type FinAccount$liabilitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FinLiability
+   */
+  select?: Prisma.FinLiabilitySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FinLiability
+   */
+  omit?: Prisma.FinLiabilityOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FinLiabilityInclude<ExtArgs> | null
+  where?: Prisma.FinLiabilityWhereInput
+  orderBy?: Prisma.FinLiabilityOrderByWithRelationInput | Prisma.FinLiabilityOrderByWithRelationInput[]
+  cursor?: Prisma.FinLiabilityWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FinLiabilityScalarFieldEnum | Prisma.FinLiabilityScalarFieldEnum[]
 }
 
 /**

@@ -17,6 +17,16 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+// Radix SelectItem은 빈 문자열 value를 허용하지 않으므로 "연결 안 함"에 센티넬 사용
+const NO_ACCOUNT = '__none__'
 
 export interface Liability {
   id: string
@@ -28,6 +38,14 @@ export interface Liability {
   dueDate: string | null
   monthlyPayment: number | null
   memo: string | null
+  accountId: string | null
+}
+
+/** 부채 폼의 계좌 선택용 최소 계좌 정보 */
+export interface LiabilityAccountOption {
+  id: string
+  name: string
+  institution: string
 }
 
 interface LiabilityFormDialogProps {
@@ -35,6 +53,8 @@ interface LiabilityFormDialogProps {
   onOpenChange: (open: boolean) => void
   /** null = 추가, 레코드 = 수정 */
   liability: Liability | null
+  /** 대출 계좌로 지정 가능한 계좌 목록 (부모가 보유) */
+  accounts: LiabilityAccountOption[]
   /** 저장 성공 후 목록 재조회 콜백 */
   onSaved: () => void
 }
@@ -49,6 +69,7 @@ function emptyForm() {
     dueDate: '',
     monthlyPayment: '',
     memo: '',
+    accountId: NO_ACCOUNT,
   }
 }
 
@@ -62,6 +83,7 @@ function toFormState(l: Liability) {
     dueDate: l.dueDate ?? '',
     monthlyPayment: l.monthlyPayment !== null ? String(l.monthlyPayment) : '',
     memo: l.memo ?? '',
+    accountId: l.accountId ?? NO_ACCOUNT,
   }
 }
 
@@ -69,6 +91,7 @@ export function LiabilityFormDialog({
   open,
   onOpenChange,
   liability,
+  accounts,
   onSaved,
 }: LiabilityFormDialogProps) {
   const [form, setForm] = useState(emptyForm())
@@ -113,6 +136,8 @@ export function LiabilityFormDialog({
     if (form.dueDate.trim()) payload.dueDate = form.dueDate.trim()
     if (form.monthlyPayment.trim() !== '') payload.monthlyPayment = Number(form.monthlyPayment)
     if (form.memo.trim()) payload.memo = form.memo.trim()
+    // 연결 계좌 — 항상 전송(수정 시 연결 해제 반영). 센티넬은 null로 변환.
+    payload.accountId = form.accountId === NO_ACCOUNT ? null : form.accountId
 
     setSaving(true)
     try {
@@ -231,6 +256,29 @@ export function LiabilityFormDialog({
               placeholder="선택 입력"
               className="h-8 text-sm"
             />
+          </div>
+          {/* 연결 계좌 (대출 계좌 지정) */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-xs">연결 계좌 (대출 계좌 지정)</Label>
+            <Select
+              value={form.accountId}
+              onValueChange={(v) => setForm((f) => ({ ...f, accountId: v }))}
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="연결 안 함" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_ACCOUNT}>연결 안 함</SelectItem>
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name} · {a.institution}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">
+              계좌를 선택하면 계좌 목록에 &lsquo;대출 계좌&rsquo; 표시가 붙습니다.
+            </p>
           </div>
           {/* 메모 */}
           <div className="col-span-2 space-y-1">

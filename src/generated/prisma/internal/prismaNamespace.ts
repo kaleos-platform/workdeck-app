@@ -9545,6 +9545,7 @@ export const FinLiabilityScalarFieldEnum = {
   dueDate: 'dueDate',
   monthlyPayment: 'monthlyPayment',
   memo: 'memo',
+  accountId: 'accountId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
