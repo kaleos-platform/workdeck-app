@@ -2677,9 +2677,12 @@ model FinLiability {
   monthlyPayment Decimal? @db.Decimal(18, 2)
   memo           String?
   accountId      String? // 대출 계좌로 지정한 FinAccount (선택)
+  // 이 시점까지의 연결 상환 거래는 balance 에 이미 반영됨(워터마크). 이후 상환은 "감지" 대상.
+  balanceAsOf    DateTime?
 
-  space   Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  account FinAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  space        Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  account      FinAccount?      @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  repayments   FinTransaction[] // 이 부채에 귀속된 상환 거래
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2835,6 +2838,7 @@ model FinTransaction {
   counterparty  String?
   memo          String?
   categoryId    String?
+  liabilityId   String? // 상환으로 귀속된 부채 (선택)
   isTransfer    Boolean         @default(false)
   classStatus   FinClassStatus  @default(UNCLASSIFIED)
   matchedRuleId String? // soft ref
@@ -2843,10 +2847,11 @@ model FinTransaction {
   identityKey   String // 안정 키 — BANK: account+date+dir+amount, CARD: 승인번호+이용일+취소구분
   contentHash   String // 가변 필드 해시 — 변경 감지용
 
-  space    Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  account  FinAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  import   FinImport?   @relation(fields: [importId], references: [id], onDelete: SetNull)
-  category FinCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  space     Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  account   FinAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  import    FinImport?    @relation(fields: [importId], references: [id], onDelete: SetNull)
+  category  FinCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  liability FinLiability? @relation(fields: [liabilityId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2854,6 +2859,7 @@ model FinTransaction {
   @@unique([spaceId, accountId, identityKey])
   @@index([spaceId, txnDate])
   @@index([spaceId, categoryId])
+  @@index([liabilityId])
 }
 
 // 계좌 × 월말 잔고 스냅샷 (대시보드 sparkline·재무상태). 거래 없는 달은 직전 스냅샷 이월.
