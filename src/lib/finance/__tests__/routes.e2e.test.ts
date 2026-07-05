@@ -308,6 +308,22 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     const snaps = await prisma.finBalanceSnapshot.count({ where: { spaceId: SPACE_ID, accountId } })
     expect(snaps).toBeGreaterThan(0)
 
+    // 계좌 기준(현재) 잔액 자동 갱신 — 최신 일자 거래의 balanceAfter/txnDate
+    const latestTxn = await prisma.finTransaction.findFirst({
+      where: { spaceId: SPACE_ID, accountId, balanceAfter: { not: null } },
+      select: { balanceAfter: true, txnDate: true },
+      orderBy: { txnDate: 'desc' },
+    })
+    const acctAfter = await prisma.finAccount.findUnique({
+      where: { id: accountId },
+      select: { currentBalance: true, currentBalanceAsOf: true },
+    })
+    if (latestTxn) {
+      expect(acctAfter?.currentBalance).not.toBeNull()
+      expect(Number(acctAfter!.currentBalance)).toBe(Number(latestTxn.balanceAfter))
+      expect(acctAfter?.currentBalanceAsOf?.getTime()).toBe(latestTxn.txnDate.getTime())
+    }
+
     const first = await prisma.finTransaction.findFirst({
       where: { spaceId: SPACE_ID, accountId },
       select: { txnDate: true },
@@ -741,5 +757,81 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(res.status).toBe(201)
     const body = await res.json()
     expect(body.counts.total).toBeGreaterThan(0)
+  }, 30000)
+
+  // 기준(현재) 잔액 date-gated 갱신: 과거 데이터는 미갱신, 더 최신 데이터만 갱신.
+  test('기준잔액 가드: 기준일 이전은 미갱신, 이후만 갱신', async () => {
+    // 먼 미래 일자 사용 — 다른 테스트가 만든 거래보다 항상 최신이도록(글로벌 max 보장).
+    const anchor = new Date('2099-06-15T00:00:00.000Z')
+    const marker = 424242
+    // 기준일=anchor, 잔액=marker로 강제 세팅
+    await prisma.finAccount.update({
+      where: { id: accountId },
+      data: { currentBalance: marker, currentBalanceAsOf: anchor },
+    })
+
+    const commitOne = async (
+      fileName: string,
+      txnDate: Date,
+      balanceAfter: number,
+      key: string
+    ) => {
+      const imp = await prisma.finImport.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId,
+          fileName,
+          institution: '기업은행',
+          kind: 'BANK',
+          status: 'DRAFT',
+          totalRows: 1,
+        },
+        select: { id: true },
+      })
+      await prisma.finStagedRow.create({
+        data: {
+          importId: imp.id,
+          spaceId: SPACE_ID,
+          accountId,
+          raw: {},
+          txnDate,
+          direction: 'IN',
+          amount: 1000,
+          balanceAfter,
+          description: key,
+          categoryId: incomeLeafId,
+          classStatus: 'CLASSIFIED',
+          identityKey: key,
+          contentHash: key,
+          resolution: 'NEW',
+        },
+      })
+      const req = new NextRequest('http://localhost/api/finance/staging/commit', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ importId: imp.id }),
+      })
+      const res = await call(stagingCommit(req))
+      expect(res.status).toBe(200)
+    }
+
+    // 1) 기준일 이전(과거) 거래 → currentBalance 미갱신(마커 유지)
+    await commitOne('guard-old', new Date('2099-06-14T00:00:00.000Z'), 111, 'guard-old-1')
+    const afterOld = await prisma.finAccount.findUnique({
+      where: { id: accountId },
+      select: { currentBalance: true, currentBalanceAsOf: true },
+    })
+    expect(Number(afterOld!.currentBalance)).toBe(marker)
+    expect(afterOld!.currentBalanceAsOf!.getTime()).toBe(anchor.getTime())
+
+    // 2) 기준일 이후(최신) 거래 → currentBalance 갱신
+    const newer = new Date('2099-06-20T00:00:00.000Z')
+    await commitOne('guard-new', newer, 777, 'guard-new-1')
+    const afterNew = await prisma.finAccount.findUnique({
+      where: { id: accountId },
+      select: { currentBalance: true, currentBalanceAsOf: true },
+    })
+    expect(Number(afterNew!.currentBalance)).toBe(777)
+    expect(afterNew!.currentBalanceAsOf!.getTime()).toBe(newer.getTime())
   }, 30000)
 })

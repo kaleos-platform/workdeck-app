@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { toNumOrNull } from '@/lib/finance/serialize'
 import { previewFinanceFile } from '@/lib/finance/parser'
 import {
   detectKind,
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
   })
   const matchedPreset = findBestPreset(presets as PresetLike[], preview.headers)
 
-  const accounts = await prisma.finAccount.findMany({
+  const accountRows = await prisma.finAccount.findMany({
     where: { spaceId },
     select: {
       id: true,
@@ -60,9 +61,17 @@ export async function POST(req: NextRequest) {
       institution: true,
       holder: true,
       accountNumber: true,
+      openingBalance: true,
+      currentBalance: true,
+      currentBalanceAsOf: true,
     },
     orderBy: { createdAt: 'asc' },
   })
+  const accounts = accountRows.map((a) => ({
+    ...a,
+    openingBalance: toNumOrNull(a.openingBalance),
+    currentBalance: toNumOrNull(a.currentBalance),
+  }))
 
   return NextResponse.json({
     fileName: file.name,
