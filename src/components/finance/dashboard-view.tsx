@@ -32,8 +32,17 @@ import {
 } from '@/components/finance/format'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 import Link from 'next/link'
+import { Pencil, Trash2, Plus } from 'lucide-react'
 import { AccountDialog } from '@/components/finance/account-dialog'
-import { LiabilityDialog } from '@/components/finance/liability-dialog'
+import {
+  LiabilityFormDialog,
+  type Liability as LiabilityFormData,
+  type LiabilityAccountOption,
+} from '@/components/finance/liability-form-dialog'
+import {
+  LiabilityRepaymentApplyDialog,
+  type RepaymentApplyTarget,
+} from '@/components/finance/liability-repayment-apply-dialog'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
@@ -60,6 +69,14 @@ interface LiabilityItem {
   dueDate: string | null
   monthlyPayment: number | null
   repaymentRate: number
+  // 백엔드 Phase 3 신규 필드
+  accountId: string | null
+  memo: string | null
+  pending: {
+    count: number
+    sum: number
+    throughDate: string | null
+  }
 }
 
 interface TrendPoint {
@@ -204,9 +221,16 @@ export function DashboardView() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // 계좌·부채 관리 다이얼로그
+  // 계좌 관리 다이얼로그
   const [accountDialogOpen, setAccountDialogOpen] = useState(false)
-  const [liabilityDialogOpen, setLiabilityDialogOpen] = useState(false)
+
+  // 부채 추가/수정 다이얼로그
+  const [liabilityFormOpen, setLiabilityFormOpen] = useState(false)
+  const [editingLiability, setEditingLiability] = useState<LiabilityFormData | null>(null)
+
+  // 잔액 반영 다이얼로그
+  const [applyOpen, setApplyOpen] = useState(false)
+  const [applyTarget, setApplyTarget] = useState<RepaymentApplyTarget | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -226,6 +250,63 @@ export function DashboardView() {
   useEffect(() => {
     void load()
   }, [load])
+
+  // 부채 추가 버튼 — 폼 초기화 후 열기
+  function startAddLiability() {
+    setEditingLiability(null)
+    setLiabilityFormOpen(true)
+  }
+
+  // 부채 수정 버튼 — LiabilityItem을 LiabilityFormData로 변환
+  function startEditLiability(l: LiabilityItem) {
+    setEditingLiability({
+      id: l.id,
+      name: l.name,
+      lender: l.lender,
+      principal: l.principal,
+      balance: l.balance,
+      rate: l.rate,
+      dueDate: l.dueDate,
+      monthlyPayment: l.monthlyPayment,
+      memo: l.memo,
+      accountId: l.accountId,
+    })
+    setLiabilityFormOpen(true)
+  }
+
+  // 부채 삭제
+  async function handleDeleteLiability(l: LiabilityItem) {
+    if (!confirm(`"${l.name}"을(를) 삭제하시겠습니까?`)) return
+    try {
+      const res = await fetch(`/api/finance/liabilities/${l.id}`, { method: 'DELETE' })
+      const data = (await res.json().catch(() => ({}))) as { message?: string }
+      if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
+      toast.success('부채가 삭제되었습니다')
+      void load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '삭제 실패')
+    }
+  }
+
+  // 잔액 반영 버튼 — 대상 세팅 후 다이얼로그 열기
+  function startApply(l: LiabilityItem) {
+    setApplyTarget({
+      id: l.id,
+      name: l.name,
+      balance: l.balance,
+      pending: l.pending,
+    })
+    setApplyOpen(true)
+  }
+
+  // 계좌 목록 → LiabilityAccountOption 변환
+  const liabilityAccountOptions: LiabilityAccountOption[] = (data?.accountSnapshots ?? []).map(
+    (a) => ({
+      id: a.id,
+      name: a.name,
+      institution: a.institution ?? '',
+    })
+  )
 
   // period 전환 시 anchor 초기화
   function handlePeriodChange(next: 'month' | 'year') {
@@ -583,8 +664,9 @@ export function DashboardView() {
             <CardHeader>
               <CardTitle>부채 현황</CardTitle>
               <CardAction>
-                <Button variant="outline" size="sm" onClick={() => setLiabilityDialogOpen(true)}>
-                  관리
+                <Button variant="outline" size="sm" onClick={startAddLiability}>
+                  <Plus className="mr-1 size-3.5" />
+                  부채 추가
                 </Button>
               </CardAction>
             </CardHeader>
@@ -601,6 +683,7 @@ export function DashboardView() {
                   <div className="divide-y">
                     {data.liabilities.map((l) => (
                       <div key={l.id} className="space-y-2 py-3">
+                        {/* 부채 이름 + 잔액 + 수정/삭제 버튼 */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0">
                             <span className="text-sm font-medium">{l.name}</span>
@@ -608,10 +691,47 @@ export function DashboardView() {
                               <span className="ml-2 text-xs text-muted-foreground">{l.lender}</span>
                             )}
                           </div>
-                          <span className="font-mono text-sm font-semibold text-red-600 tabular-nums dark:text-red-400">
-                            {formatWon(l.balance)}
-                          </span>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <span className="font-mono text-sm font-semibold text-red-600 tabular-nums dark:text-red-400">
+                              {formatWon(l.balance)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={() => startEditLiability(l)}
+                              aria-label="수정"
+                            >
+                              <Pencil className="size-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={() => void handleDeleteLiability(l)}
+                              aria-label="삭제"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
                         </div>
+
+                        {/* 감지된 상환 배지 + 잔액 반영 버튼 */}
+                        {l.pending.count > 0 && (
+                          <div className="flex items-center justify-between gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 dark:border-emerald-800 dark:bg-emerald-950/40">
+                            <span className="text-xs text-emerald-700 dark:text-emerald-400">
+                              상환 {l.pending.count}건 감지 · {formatWon(l.pending.sum)}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-6 border-emerald-300 px-2 text-[11px] text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900"
+                              onClick={() => startApply(l)}
+                            >
+                              잔액 반영
+                            </Button>
+                          </div>
+                        )}
+
                         <Progress
                           value={Math.round(l.repaymentRate * 100)}
                           className={`h-1.5 ${
@@ -643,11 +763,21 @@ export function DashboardView() {
         onChanged={load}
       />
 
-      {/* 부채 관리 다이얼로그 */}
-      <LiabilityDialog
-        open={liabilityDialogOpen}
-        onOpenChange={setLiabilityDialogOpen}
-        onChanged={load}
+      {/* 부채 추가/수정 다이얼로그 */}
+      <LiabilityFormDialog
+        open={liabilityFormOpen}
+        onOpenChange={setLiabilityFormOpen}
+        liability={editingLiability}
+        accounts={liabilityAccountOptions}
+        onSaved={load}
+      />
+
+      {/* 잔액 반영 다이얼로그 */}
+      <LiabilityRepaymentApplyDialog
+        open={applyOpen}
+        onOpenChange={setApplyOpen}
+        liability={applyTarget}
+        onSaved={load}
       />
     </div>
   )

@@ -74,9 +74,11 @@ export async function GET(req: NextRequest) {
         classStatus: true,
         matchedRuleId: true,
         categoryId: true,
+        liabilityId: true,
         category: {
           select: { id: true, name: true, type: true, parent: { select: { name: true } } },
         },
+        liability: { select: { id: true, name: true } },
         account: { select: { id: true, name: true, kind: true } },
       },
     }),

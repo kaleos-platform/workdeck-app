@@ -484,7 +484,8 @@ export type FinClassStatus = (typeof FinClassStatus)[keyof typeof FinClassStatus
 export const FinStagedResolution = {
   NEW: 'NEW',
   DUP_SAME: 'DUP_SAME',
-  DUP_CHANGED: 'DUP_CHANGED'
+  DUP_CHANGED: 'DUP_CHANGED',
+  DUP_OVERWRITE: 'DUP_OVERWRITE'
 } as const
 
 export type FinStagedResolution = (typeof FinStagedResolution)[keyof typeof FinStagedResolution]

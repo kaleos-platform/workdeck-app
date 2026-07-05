@@ -11,7 +11,7 @@ import { toNum, toNumOrNull } from '@/lib/finance/serialize'
 import { loadRuleSuggestContext, ruleSuggestionFor } from '@/lib/finance/rule-suggest'
 import type { Prisma } from '@/generated/prisma/client'
 
-const DUP = ['DUP_SAME', 'DUP_CHANGED'] as const
+const DUP = ['DUP_SAME', 'DUP_CHANGED', 'DUP_OVERWRITE'] as const
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
