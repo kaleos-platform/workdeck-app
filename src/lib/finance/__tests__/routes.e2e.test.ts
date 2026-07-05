@@ -507,6 +507,34 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(body.period.from).toBe(body.period.to)
   }, 20000)
 
+  test('sankey period: 특정 기간 선택 → 그 기간 집계 + 라벨', async () => {
+    const ym = '2024-06'
+    const merchLeaf = await leafUnderFlowRole('MERCH_SALES', 'INCOME')
+    await makeTxn(ym, 'IN', 700_000, merchLeaf, 'skp-merch')
+
+    const res = await call(
+      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`))
+    )
+    const body = await res.json()
+    expect(body.period.from).toBe(ym)
+    expect(body.period.to).toBe(ym)
+    expect(body.period.label).toBe('2024년 6월')
+    expect(body.totals.totalIncome).toBe(700_000) // 그 기간 집계
+
+    // 무효 period → 기본(직전월) 폴백
+    const res2 = await call(
+      sankeyGet(new NextRequest('http://localhost/api/finance/cashflow/sankey?grain=month&period=bad'))
+    )
+    const body2 = await res2.json()
+    const now = new Date()
+    const curYm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    expect(body2.period.to).not.toBe(curYm)
+
+    await prisma.finTransaction.deleteMany({
+      where: { spaceId: SPACE_ID, identityKey: { startsWith: 'skp-' } },
+    })
+  }, 30000)
+
   test('Fix2: 방향-type 충돌 거래는 대시보드·현금흐름 모두 지출로 집계', async () => {
     const ym = '2025-09'
     await prisma.finTransaction.create({
@@ -604,7 +632,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'OUT', 30_000, finLeaf, 'sk-fin')
 
     const res = await call(
-      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&from=${ym}&to=${ym}`))
+      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`))
     )
     expect(res.status).toBe(200)
     const body = await res.json()
@@ -657,7 +685,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'IN', 50_000, otherLeaf, 'skneg-cancel', '취소')
 
     const res = await call(
-      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&from=${ym}&to=${ym}`))
+      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`))
     )
     const body = await res.json()
 
@@ -685,7 +713,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     await makeTxn(ym, 'OUT', 200_000, cogsLeaf, 'skloss-cogs')
 
     const res = await call(
-      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&from=${ym}&to=${ym}`))
+      sankeyGet(new NextRequest(`http://localhost/api/finance/cashflow/sankey?grain=month&period=${ym}`))
     )
     const body = await res.json()
     expect(body.renderable).toBe(false)

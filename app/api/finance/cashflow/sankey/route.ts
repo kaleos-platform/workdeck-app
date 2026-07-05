@@ -9,8 +9,8 @@
  * 섹션(수입/지출)은 테이블과 동일하게 거래 방향(IN/OUT)이 진실 원본 —
  * 이 덕분에 순현금흐름(terminal) == 테이블 net이 구조적으로 보장된다.
  *
- * 단일 기간: grain(month|quarter|year)에 따라 가장 최신 버킷(이번 달/분기/올해)을 기본 집계.
- *  from/to(YYYY-MM)로 특정 기간 지정 가능(테스트·명시 조회).
+ * 단일 기간: grain(month|quarter|year). 기본은 직전월이 속한 버킷. `period`(버킷키, 예 2026-05/
+ *  2026-Q1/2025)로 특정 기간 지정 가능. 유효하지 않으면 기본(직전월)으로 폴백.
  *
  * recharts Sankey는 음수 링크를 못 그리므로, 적자·비정상 기간은 renderable:false로 반환한다.
  */
@@ -20,23 +20,8 @@ import { prisma } from '@/lib/prisma'
 import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, round2 } from '@/lib/finance/serialize'
 import { ymOf, addMonths, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
+import { bucketOf, bucketMonthRange, bucketLabel, isValidBucket, type Grain } from '@/lib/finance/periods'
 import type { FinFlowRole } from '@/generated/prisma/enums'
-
-type Grain = 'month' | 'quarter' | 'year'
-
-/** grain별 최신 단일 기간의 [from, to] 월 범위와 표시 라벨. */
-function defaultPeriod(grain: Grain, nowYm: string): { from: string; to: string; label: string } {
-  const [y, m] = nowYm.split('-').map(Number)
-  if (grain === 'year') {
-    return { from: `${y}-01`, to: nowYm, label: `${y}년` }
-  }
-  if (grain === 'quarter') {
-    const q = Math.floor((m - 1) / 3)
-    const qStart = q * 3 + 1
-    return { from: `${y}-${String(qStart).padStart(2, '0')}`, to: nowYm, label: `${y}년 ${q + 1}분기` }
-  }
-  return { from: nowYm, to: nowYm, label: `${y}년 ${m}월` }
-}
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
@@ -49,14 +34,14 @@ export async function GET(req: NextRequest) {
   const grain: Grain =
     sp.get('grain') === 'quarter' ? 'quarter' : sp.get('grain') === 'year' ? 'year' : 'month'
 
-  // 기준은 직전월(진행 중인 현재월은 데이터 불완전 → 제외).
-  const anchorYm = addMonths(ymOf(new Date()), -1)
-  const def = defaultPeriod(grain, anchorYm)
-  const from = /^\d{4}-\d{2}$/.test(sp.get('from') ?? '') ? sp.get('from')! : def.from
-  const to = /^\d{4}-\d{2}$/.test(sp.get('to') ?? '') ? sp.get('to')! : def.to
-  const lo = from <= to ? from : to
-  const hi = from <= to ? to : from
-  const periodLabel = lo === def.from && hi === def.to ? def.label : `${lo} ~ ${hi}`
+  // 표시 버킷 = period 파라미터(검증) 또는 기본(직전월이 속한 버킷). 진행 중인 현재월 제외.
+  const reqPeriod = sp.get('period') ?? ''
+  const defaultBucket = bucketOf(addMonths(ymOf(new Date()), -1), grain)
+  const bucket = isValidBucket(reqPeriod, grain) ? reqPeriod : defaultBucket
+  const { firstYm, lastYm } = bucketMonthRange(bucket, grain)
+  const periodLabel = bucketLabel(bucket, grain)
+  const lo = firstYm
+  const hi = lastYm
 
   const { gte, lt } = rangeBounds(lo, hi)
 
