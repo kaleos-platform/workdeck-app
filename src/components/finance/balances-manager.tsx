@@ -2,13 +2,18 @@
 
 /**
  * 계좌 관리 페이지 메인 매니저
- * 섹션 A: 계좌(자산) CRUD — GET/POST/PATCH/DELETE /api/finance/accounts
- * 섹션 B: 부채 CRUD — GET/POST/PATCH/DELETE /api/finance/liabilities
- * 섹션 C: 자산·부채 계정과목 관리 — GET/POST/PATCH/DELETE /api/finance/categories
+ * 상단 2패널: 자산(계좌) | 부채 (나란히)
+ *   - 자산: 계좌 CRUD — GET/POST/PATCH/DELETE /api/finance/accounts
+ *   - 부채: 부채 CRUD — GET/POST/PATCH/DELETE /api/finance/liabilities
+ *           부채는 등록된 계좌를 "대출 계좌"로 연결 가능 → 자산 패널에 배지 표시
+ * 하단: 자산·부채 계정과목 관리 (전체 폭) — GET/POST/PATCH/DELETE /api/finance/categories
+ *
+ * accounts·liabilities 상태는 부모가 보유하고 공유 reload로 갱신한다.
+ * (부채 저장 시 계좌 목록의 "대출 계좌" 배지를 즉시 반영하기 위함)
  */
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Check, CreditCard, Landmark, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { Check, CreditCard, Landmark, Pencil, Plus, Trash2, Wallet, X } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,6 +48,7 @@ interface Liability {
   dueDate: string | null
   monthlyPayment: number | null
   memo: string | null
+  accountId: string | null
 }
 
 interface CategoryNode {
@@ -55,31 +61,20 @@ interface CategoryNode {
   children: CategoryNode[]
 }
 
-// ─── 섹션 A — 계좌(자산) ───────────────────────────────────────────────────────
+// ─── 패널 A — 자산(계좌) ───────────────────────────────────────────────────────
 
-function AccountsSection() {
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [loading, setLoading] = useState(false)
+interface AssetsPanelProps {
+  accounts: Account[]
+  loading: boolean
+  /** 대출 연결된 계좌 id 집합 (배지 표시용) */
+  linkedAccountIds: Set<string>
+  /** 계좌·부채 목록 재조회 */
+  onReload: () => Promise<void>
+}
+
+function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPanelProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/finance/accounts')
-      if (!res.ok) throw new Error('계좌 조회 실패')
-      const data = (await res.json()) as { accounts: Account[] }
-      setAccounts(data.accounts)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '조회 실패')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void load()
-  }, [load])
 
   function startAdd() {
     setEditingAccount(null)
@@ -103,7 +98,7 @@ function AccountsSection() {
       if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
       const cnt = data.deletedTransactions ?? 0
       toast.success(`계좌가 삭제되었습니다${cnt > 0 ? ` (거래 ${cnt}건 포함)` : ''}`)
-      await load()
+      await onReload()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제 실패')
     }
@@ -114,7 +109,7 @@ function AccountsSection() {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-sm font-semibold">계좌 (자산)</CardTitle>
+            <CardTitle className="text-sm font-semibold">자산 (계좌)</CardTitle>
             <CardDescription className="text-xs">은행·카드 계좌를 관리합니다</CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={startAdd} className="shrink-0">
@@ -131,55 +126,64 @@ function AccountsSection() {
           <p className="text-xs text-muted-foreground">등록된 계좌가 없습니다</p>
         ) : (
           <div className="divide-y">
-            {accounts.map((acct) => (
-              <div key={acct.id} className="flex items-center gap-3 py-2.5">
-                {acct.kind === 'BANK' ? (
-                  <Landmark className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
-                ) : (
-                  <CreditCard className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium">{acct.name}</span>
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]',
-                        acct.kind === 'BANK'
-                          ? 'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400'
-                          : 'border-amber-200 text-amber-700 dark:border-amber-800 dark:text-amber-400'
+            {accounts.map((acct) => {
+              const isLoan = linkedAccountIds.has(acct.id)
+              return (
+                <div key={acct.id} className="flex items-center gap-3 py-2.5">
+                  {acct.kind === 'BANK' ? (
+                    <Landmark className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                  ) : (
+                    <CreditCard className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-sm font-medium">{acct.name}</span>
+                      <span
+                        className={cn(
+                          'inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]',
+                          acct.kind === 'BANK'
+                            ? 'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400'
+                            : 'border-amber-200 text-amber-700 dark:border-amber-800 dark:text-amber-400'
+                        )}
+                      >
+                        {acct.kind === 'BANK' ? '은행' : '카드'}
+                      </span>
+                      {isLoan && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full border border-red-200 px-1.5 py-0 text-[10px] text-red-700 dark:border-red-800 dark:text-red-400">
+                          <Wallet className="size-2.5" />
+                          대출 계좌
+                        </span>
                       )}
-                    >
-                      {acct.kind === 'BANK' ? '은행' : '카드'}
-                    </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {acct.institution}
+                      {acct.holder && ` · 예금주 ${acct.holder}`}
+                      {acct.accountNumber && ` · ${acct.accountNumber}`}
+                      {acct.openingBalance !== null && ` · 기초 ${formatWon(acct.openingBalance)}`}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {acct.institution}
-                    {acct.holder && ` · 예금주 ${acct.holder}`}
-                    {acct.accountNumber && ` · ${acct.accountNumber}`}
-                    {acct.openingBalance !== null && ` · 기초 ${formatWon(acct.openingBalance)}`}
-                  </p>
+                  <div className="flex shrink-0 gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => startEdit(acct)}
+                      aria-label="수정"
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => handleDelete(acct)}
+                      aria-label="삭제"
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex shrink-0 gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={() => startEdit(acct)}
-                    aria-label="수정"
-                  >
-                    <Pencil className="size-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={() => handleDelete(acct)}
-                    aria-label="삭제"
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
@@ -187,38 +191,32 @@ function AccountsSection() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           account={editingAccount}
-          onSaved={load}
+          onSaved={onReload}
         />
       </CardContent>
     </Card>
   )
 }
 
-// ─── 섹션 B — 부채 ────────────────────────────────────────────────────────────
+// ─── 패널 B — 부채 ────────────────────────────────────────────────────────────
 
-function LiabilitiesSection() {
-  const [liabilities, setLiabilities] = useState<Liability[]>([])
-  const [loading, setLoading] = useState(false)
+interface LiabilitiesPanelProps {
+  liabilities: Liability[]
+  accounts: Account[]
+  loading: boolean
+  /** 계좌·부채 목록 재조회 */
+  onReload: () => Promise<void>
+}
+
+function LiabilitiesPanel({ liabilities, accounts, loading, onReload }: LiabilitiesPanelProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingLiability, setEditingLiability] = useState<Liability | null>(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/finance/liabilities')
-      if (!res.ok) throw new Error('부채 조회 실패')
-      const data = (await res.json()) as { liabilities: Liability[] }
-      setLiabilities(data.liabilities)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '조회 실패')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void load()
-  }, [load])
+  const accountNameById = useMemo(() => new Map(accounts.map((a) => [a.id, a.name])), [accounts])
+  const accountOptions = useMemo(
+    () => accounts.map((a) => ({ id: a.id, name: a.name, institution: a.institution })),
+    [accounts]
+  )
 
   function startAdd() {
     setEditingLiability(null)
@@ -237,7 +235,7 @@ function LiabilitiesSection() {
       const data = (await res.json().catch(() => ({}))) as { message?: string }
       if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
       toast.success('부채가 삭제되었습니다')
-      await load()
+      await onReload()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제 실패')
     }
@@ -269,6 +267,7 @@ function LiabilitiesSection() {
               const repaidRatio = l.principal > 0 ? (l.principal - l.balance) / l.principal : 0
               const progressPct = Math.min(100, Math.max(0, repaidRatio * 100))
               const isGood = repaidRatio >= 0.6
+              const linkedName = l.accountId ? accountNameById.get(l.accountId) : undefined
 
               return (
                 <div key={l.id} className="py-3">
@@ -287,6 +286,7 @@ function LiabilitiesSection() {
                         </span>
                         {l.rate && ` · ${l.rate}`}
                         {l.dueDate && ` · 만기 ${l.dueDate}`}
+                        {linkedName && ` · 대출계좌 ${linkedName}`}
                       </p>
                     </div>
                     <div className="flex shrink-0 gap-1">
@@ -330,7 +330,8 @@ function LiabilitiesSection() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           liability={editingLiability}
-          onSaved={load}
+          accounts={accountOptions}
+          onSaved={onReload}
         />
       </CardContent>
     </Card>
@@ -622,10 +623,69 @@ function CategoriesSection() {
 // ─── 메인 내보내기 ─────────────────────────────────────────────────────────────
 
 export function FinanceBalancesManager() {
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [liabilities, setLiabilities] = useState<Liability[]>([])
+  const [accountsLoading, setAccountsLoading] = useState(false)
+  const [liabilitiesLoading, setLiabilitiesLoading] = useState(false)
+
+  const loadAccounts = useCallback(async () => {
+    setAccountsLoading(true)
+    try {
+      const res = await fetch('/api/finance/accounts')
+      if (!res.ok) throw new Error('계좌 조회 실패')
+      const data = (await res.json()) as { accounts: Account[] }
+      setAccounts(data.accounts)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '조회 실패')
+    } finally {
+      setAccountsLoading(false)
+    }
+  }, [])
+
+  const loadLiabilities = useCallback(async () => {
+    setLiabilitiesLoading(true)
+    try {
+      const res = await fetch('/api/finance/liabilities')
+      if (!res.ok) throw new Error('부채 조회 실패')
+      const data = (await res.json()) as { liabilities: Liability[] }
+      setLiabilities(data.liabilities)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '조회 실패')
+    } finally {
+      setLiabilitiesLoading(false)
+    }
+  }, [])
+
+  // 계좌·부채는 서로 연결(대출 계좌)되어 있어 항상 함께 재조회한다.
+  const reloadAll = useCallback(async () => {
+    await Promise.all([loadAccounts(), loadLiabilities()])
+  }, [loadAccounts, loadLiabilities])
+
+  useEffect(() => {
+    void reloadAll()
+  }, [reloadAll])
+
+  const linkedAccountIds = useMemo(
+    () => new Set(liabilities.map((l) => l.accountId).filter((id): id is string => id !== null)),
+    [liabilities]
+  )
+
   return (
     <div className="space-y-6">
-      <AccountsSection />
-      <LiabilitiesSection />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <AssetsPanel
+          accounts={accounts}
+          loading={accountsLoading}
+          linkedAccountIds={linkedAccountIds}
+          onReload={reloadAll}
+        />
+        <LiabilitiesPanel
+          liabilities={liabilities}
+          accounts={accounts}
+          loading={liabilitiesLoading}
+          onReload={reloadAll}
+        />
+      </div>
       <CategoriesSection />
     </div>
   )

@@ -31,16 +31,18 @@ export async function POST(req: NextRequest) {
   const spaceId = resolved.space.id
 
   const body = await req.json().catch(() => ({}))
-  const { name, lender, principal, balance, rate, dueDate, monthlyPayment, memo } = body as {
-    name?: string
-    lender?: string
-    principal?: number
-    balance?: number
-    rate?: string
-    dueDate?: string
-    monthlyPayment?: number
-    memo?: string
-  }
+  const { name, lender, principal, balance, rate, dueDate, monthlyPayment, memo, accountId } =
+    body as {
+      name?: string
+      lender?: string
+      principal?: number
+      balance?: number
+      rate?: string
+      dueDate?: string
+      monthlyPayment?: number
+      memo?: string
+      accountId?: string | null
+    }
 
   if (!name || typeof name !== 'string' || name.trim() === '') {
     return errorResponse('부채 이름이 필요합니다', 400)
@@ -50,6 +52,16 @@ export async function POST(req: NextRequest) {
   }
   if (balance == null || typeof balance !== 'number') {
     return errorResponse('잔액(balance)이 필요합니다', 400)
+  }
+
+  // 연결 계좌 검증 — 빈 값은 미연결, 값이 있으면 같은 space 소유 계좌여야 함
+  const normalizedAccountId = accountId?.trim() ? accountId.trim() : null
+  if (normalizedAccountId) {
+    const account = await prisma.finAccount.findFirst({
+      where: { id: normalizedAccountId, spaceId },
+      select: { id: true },
+    })
+    if (!account) return errorResponse('연결할 계좌를 찾을 수 없습니다', 400)
   }
 
   const liability = await prisma.finLiability.create({
@@ -63,6 +75,7 @@ export async function POST(req: NextRequest) {
       dueDate: dueDate ?? null,
       monthlyPayment: monthlyPayment ?? null,
       memo: memo?.trim() ?? null,
+      accountId: normalizedAccountId,
     },
   })
 
