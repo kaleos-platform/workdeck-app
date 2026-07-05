@@ -9548,6 +9548,7 @@ export const FinLiabilityScalarFieldEnum = {
   monthlyPayment: 'monthlyPayment',
   memo: 'memo',
   accountId: 'accountId',
+  balanceAsOf: 'balanceAsOf',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -9663,6 +9664,7 @@ export const FinTransactionScalarFieldEnum = {
   counterparty: 'counterparty',
   memo: 'memo',
   categoryId: 'categoryId',
+  liabilityId: 'liabilityId',
   isTransfer: 'isTransfer',
   classStatus: 'classStatus',
   matchedRuleId: 'matchedRuleId',

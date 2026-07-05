@@ -111,6 +111,9 @@ type Transaction = {
   categoryId: string | null
   category: { id: string; name: string; type: string; parent: { name: string } | null } | null
   account: { id: string; name: string; kind: FinAccountKind }
+  /** 연결된 부채 상환 정보 */
+  liabilityId: string | null
+  liability: { id: string; name: string } | null
 }
 
 type TransactionSummary = {
@@ -475,6 +478,26 @@ export function TransactionsView() {
     [loadTransactions]
   )
 
+  // 확정 거래 부채 상환 일괄 연결/해제
+  const handleTxnBulkLinkLiability = useCallback(
+    async (ids: string[], liabilityId: string | null) => {
+      try {
+        const res = await fetch('/api/finance/transactions/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids, liabilityId }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.message ?? '연결 실패')
+        toast.success(liabilityId ? '부채 상환으로 연결했습니다' : '부채 연결이 해제되었습니다')
+        void loadTransactions()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '연결 실패')
+      }
+    },
+    [loadTransactions]
+  )
+
   // 필터 검색 실행
   const handleTxnSearch = useCallback(() => {
     void loadTransactions()
@@ -542,6 +565,7 @@ export function TransactionsView() {
           onClassify={handleTxnClassify}
           onBulkClassify={handleTxnBulkClassify}
           onBulkDelete={handleTxnBulkDelete}
+          onBulkLinkLiability={handleTxnBulkLinkLiability}
         />
       </TabsContent>
 
@@ -1054,6 +1078,7 @@ function TransactionsPanel({
   onClassify,
   onBulkClassify,
   onBulkDelete,
+  onBulkLinkLiability,
 }: {
   rows: Transaction[]
   total: number
@@ -1081,6 +1106,7 @@ function TransactionsPanel({
   onClassify: (txnId: string, categoryId: string) => void
   onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
   onBulkDelete: (ids: string[]) => Promise<void>
+  onBulkLinkLiability: (ids: string[], liabilityId: string | null) => Promise<void>
 }) {
   // 다중 선택 — selectedInView가 현재 행으로 스코프하므로 필터/조회 후 자연히 정리된다.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -1111,6 +1137,31 @@ function TransactionsPanel({
     await onBulkDelete(selectedInView)
     setDeleteOpen(false)
     clearSelection()
+  }
+  const runBulkLinkLiability = async (liabilityId: string | null) => {
+    await onBulkLinkLiability(selectedInView, liabilityId)
+    clearSelection()
+  }
+  const handleUnlinkLiability = async (txnId: string) => {
+    await onBulkLinkLiability([txnId], null)
+  }
+
+  // 부채 목록 — 연결 드롭다운용 (첫 렌더 시 로드)
+  const [liabilities, setLiabilities] = useState<{ id: string; name: string }[]>([])
+  const [liabilitiesLoaded, setLiabilitiesLoaded] = useState(false)
+
+  async function loadLiabilities() {
+    if (liabilitiesLoaded) return
+    try {
+      const res = await fetch('/api/finance/liabilities')
+      if (!res.ok) return
+      const data = (await res.json()) as { liabilities: { id: string; name: string }[] }
+      setLiabilities(data.liabilities ?? [])
+    } catch {
+      // 조용히 실패
+    } finally {
+      setLiabilitiesLoaded(true)
+    }
   }
 
   return (
@@ -1254,6 +1305,7 @@ function TransactionsPanel({
                   categoryTree={categoryTree}
                   reloadCategories={reloadCategories}
                   onClassify={onClassify}
+                  onUnlinkLiability={handleUnlinkLiability}
                 />
               ))}
             </TableBody>
@@ -1261,12 +1313,15 @@ function TransactionsPanel({
         </div>
       )}
 
-      {/* 다중 선택 일괄 처리 바 — 계정과목 분류 / 삭제 */}
+      {/* 다중 선택 일괄 처리 바 — 계정과목 분류 / 부채 연결 / 삭제 */}
       <TransactionsBulkBar
         selectedCount={selectedInView.length}
         leafTargets={leafTargets}
         blockType={uniformBlockType(rows, selectedIds)}
+        liabilities={liabilities}
         onClassify={runBulkClassify}
+        onLinkLiability={runBulkLinkLiability}
+        onLoadLiabilities={loadLiabilities}
         onDeleteRequest={() => setDeleteOpen(true)}
         onClear={clearSelection}
       />
@@ -1301,18 +1356,28 @@ function TransactionsBulkBar({
   selectedCount,
   leafTargets,
   blockType,
+  liabilities,
   onClassify,
+  onLinkLiability,
+  onLoadLiabilities,
   onDeleteRequest,
   onClear,
 }: {
   selectedCount: number
   leafTargets: ComboOption[]
   blockType: FinCategoryType | null
+  liabilities: { id: string; name: string }[]
   onClassify: (categoryId: string) => Promise<void>
+  onLinkLiability: (liabilityId: string | null) => Promise<void>
+  onLoadLiabilities: () => Promise<void>
   onDeleteRequest: () => void
   onClear: () => void
 }) {
   const [busy, setBusy] = useState(false)
+  // 상환 연결 Select는 "액션 트리거"라 선택 후 플레이스홀더로 복귀해야 함.
+  // Radix SelectItem이 빈 문자열 value를 허용하지 않으므로 센티넬 사용.
+  const LINK_PLACEHOLDER = '__lp__'
+  const [linkSelectVal, setLinkSelectVal] = useState(LINK_PLACEHOLDER)
   const run = async (fn: () => Promise<void>) => {
     setBusy(true)
     try {
@@ -1341,6 +1406,44 @@ function TransactionsBulkBar({
               defaultType={blockType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
               blockType={blockType}
             />
+          </div>
+          {/* 부채 상환 연결 */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-background/70">상환 연결</span>
+            <Select
+              value={linkSelectVal}
+              onValueChange={(v) => {
+                if (!v || v === LINK_PLACEHOLDER) return
+                setLinkSelectVal(LINK_PLACEHOLDER) // 선택 후 플레이스홀더로 복귀
+                void run(() => onLinkLiability(v === '__unlink__' ? null : v))
+              }}
+              onOpenChange={(open) => {
+                if (open) void onLoadLiabilities()
+              }}
+            >
+              <SelectTrigger
+                className="h-8 w-40 border-background/20 bg-background/10 text-xs text-background"
+                disabled={busy}
+              >
+                <SelectValue placeholder="부채 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {liabilities.length === 0 ? (
+                  <SelectItem value="__empty__" disabled>
+                    등록된 부채 없음
+                  </SelectItem>
+                ) : (
+                  liabilities.map((lb) => (
+                    <SelectItem key={lb.id} value={lb.id} className="text-xs">
+                      {lb.name}
+                    </SelectItem>
+                  ))
+                )}
+                <SelectItem value="__unlink__" className="text-xs text-muted-foreground">
+                  연결 해제
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button
             type="button"
@@ -1371,6 +1474,7 @@ function TransactionRow({
   categoryTree,
   reloadCategories,
   onClassify,
+  onUnlinkLiability,
 }: {
   txn: Transaction
   selected: boolean
@@ -1379,6 +1483,7 @@ function TransactionRow({
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onClassify: (txnId: string, categoryId: string) => void
+  onUnlinkLiability: (txnId: string) => Promise<void>
 }) {
   const statusBadge = classStatusBadge(txn.classStatus)
 
@@ -1400,11 +1505,24 @@ function TransactionRow({
         </span>
       </TableCell>
 
-      {/* 적요 */}
+      {/* 적요 + 부채 연결 배지 */}
       <TableCell>
         <span className="block max-w-[280px] truncate text-xs" title={txn.description ?? ''}>
           {txn.description ?? txn.counterparty ?? '-'}
         </span>
+        {txn.liability && (
+          <span className="mt-0.5 inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0 text-[10px] text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
+            상환→{txn.liability.name}
+            <button
+              type="button"
+              onClick={() => void onUnlinkLiability(txn.id)}
+              aria-label="부채 연결 해제"
+              className="ml-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900"
+            >
+              <X className="size-2.5" />
+            </button>
+          </span>
+        )}
       </TableCell>
 
       {/* 금액 */}
