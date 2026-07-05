@@ -510,6 +510,9 @@ export function ProductionRunFormDialog({
   const breakdownTotal = costRows.reduce((s, r) => s + calcRowAmount(r), 0)
   const totalCostSum = totalCostItems.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0)
 
+  // ── 입고완료 차수면 발주/입고/차이 컬럼 표시 (입고는 표시 전용)
+  const showStockCols = status === 'STOCKED_IN'
+
   // ── 옵션 요약 (총 수량 표시)
   const positiveOptionCount = optionItems.filter((it) => it.quantity > 0).length
   const optionTotalQty = optionItems.reduce((s, it) => s + (it.quantity || 0), 0)
@@ -826,68 +829,102 @@ export function ProductionRunFormDialog({
                           </Button>
                         </div>
 
+                        {/* 컬럼 헤더 (입고완료 차수 — 발주/입고/차이 정렬 표시) */}
+                        {showStockCols && (
+                          <div className="mb-1 flex items-center gap-2 px-1 text-[11px] font-medium text-muted-foreground">
+                            <span className="min-w-0 flex-1" />
+                            <span className="w-20 shrink-0 text-right">발주</span>
+                            <span className="w-16 shrink-0 text-right">입고</span>
+                            <span className="w-16 shrink-0 text-right">차이</span>
+                            <span className="w-7 shrink-0" />
+                          </div>
+                        )}
+
                         {/* 옵션 행 */}
                         <div className="space-y-1.5">
-                          {g.options.map((opt) => (
-                            <div
-                              key={opt.optionId}
-                              className="flex items-center gap-2 rounded px-1 py-1"
-                            >
-                              <span className="min-w-0 flex-1 truncate text-sm">
-                                {opt.optionName}
-                                {opt.sku && (
-                                  <span className="ml-1.5 text-xs text-muted-foreground">
-                                    {opt.sku}
+                          {g.options.map((opt) => {
+                            const received =
+                              showStockCols && opt.stockedInQty != null ? opt.stockedInQty : null
+                            // 차이 = 입고 − 발주 (초과 +파랑 / 부족 −주황)
+                            const diff = received != null ? received - opt.quantity : null
+                            return (
+                              <div
+                                key={opt.optionId}
+                                className="flex items-center gap-2 rounded px-1 py-1"
+                              >
+                                <span className="min-w-0 flex-1 truncate text-sm">
+                                  {opt.optionName}
+                                  {opt.sku && (
+                                    <span className="ml-1.5 text-xs text-muted-foreground">
+                                      {opt.sku}
+                                    </span>
+                                  )}
+                                  {opt.totalStock > 0 && (
+                                    <span className="ml-1.5 text-xs text-muted-foreground">
+                                      재고 {opt.totalStock.toLocaleString('ko-KR')}
+                                    </span>
+                                  )}
+                                </span>
+                                {/* 발주 (STOCKED_IN 이면 입고/차이 컬럼과 정렬 — Input 자체 w-20) */}
+                                <div className="flex shrink-0 items-center gap-1">
+                                  {!showStockCols && (
+                                    <Label
+                                      htmlFor={`qty-${opt.optionId}`}
+                                      className="text-xs text-muted-foreground"
+                                    >
+                                      발주
+                                    </Label>
+                                  )}
+                                  <Input
+                                    id={`qty-${opt.optionId}`}
+                                    type="number"
+                                    min={0}
+                                    value={String(opt.quantity)}
+                                    onChange={(e) => updateQuantity(opt.optionId, e.target.value)}
+                                    className="h-7 w-20 text-right text-sm"
+                                  />
+                                </div>
+                                {/* 입고 (표시 전용) */}
+                                {showStockCols && (
+                                  <span
+                                    className="w-16 shrink-0 text-right text-sm font-medium tabular-nums"
+                                    title="실제 입고 수량"
+                                  >
+                                    {received != null ? received.toLocaleString('ko-KR') : '—'}
                                   </span>
                                 )}
-                              </span>
-                              {opt.totalStock > 0 && (
-                                <span className="shrink-0 text-xs text-muted-foreground">
-                                  재고 {opt.totalStock.toLocaleString('ko-KR')}
-                                </span>
-                              )}
-                              <div className="flex shrink-0 items-center gap-1">
-                                <Label
-                                  htmlFor={`qty-${opt.optionId}`}
-                                  className="text-xs text-muted-foreground"
+                                {/* 차이 (입고 − 발주) */}
+                                {showStockCols && (
+                                  <span
+                                    className={`w-16 shrink-0 text-right text-sm font-medium tabular-nums ${
+                                      diff == null || diff === 0
+                                        ? 'text-muted-foreground'
+                                        : diff > 0
+                                          ? 'text-blue-600 dark:text-blue-400'
+                                          : 'text-amber-600 dark:text-amber-400'
+                                    }`}
+                                    title="입고 − 발주"
+                                  >
+                                    {diff == null
+                                      ? '—'
+                                      : diff > 0
+                                        ? `+${diff.toLocaleString('ko-KR')}`
+                                        : diff.toLocaleString('ko-KR')}
+                                  </span>
+                                )}
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                                  aria-label={`${opt.optionName} 제거`}
+                                  onClick={() => removeOption(opt.optionId)}
                                 >
-                                  발주
-                                </Label>
-                                <Input
-                                  id={`qty-${opt.optionId}`}
-                                  type="number"
-                                  min={0}
-                                  value={String(opt.quantity)}
-                                  onChange={(e) => updateQuantity(opt.optionId, e.target.value)}
-                                  className="h-7 w-20 text-right text-sm"
-                                />
+                                  <X className="h-3.5 w-3.5" />
+                                </Button>
                               </div>
-                              {status === 'STOCKED_IN' && opt.stockedInQty != null && (
-                                <span
-                                  className={`shrink-0 text-xs font-medium ${
-                                    opt.stockedInQty === opt.quantity
-                                      ? 'text-muted-foreground'
-                                      : opt.stockedInQty > opt.quantity
-                                        ? 'text-blue-600 dark:text-blue-400'
-                                        : 'text-amber-600 dark:text-amber-400'
-                                  }`}
-                                  title="실제 입고 수량"
-                                >
-                                  입고 {opt.stockedInQty.toLocaleString('ko-KR')}
-                                </span>
-                              )}
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                                aria-label={`${opt.optionName} 제거`}
-                                onClick={() => removeOption(opt.optionId)}
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     ))}

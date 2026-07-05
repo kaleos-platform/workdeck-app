@@ -230,14 +230,22 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         },
       })
 
-      // items 교체
+      // items 교체 — 발주 수량만 수정하고 실제 입고 수량(stockedInQty)은 유지.
+      // 발주와 입고의 차이를 관리하려면 발주 수량 변경 시에도 기존 입고 값이 보존되어야 한다.
       if (input.items) {
+        const prevItems = await tx.productionRunItem.findMany({
+          where: { runId },
+          select: { optionId: true, stockedInQty: true },
+        })
+        const stockedByOption = new Map(prevItems.map((p) => [p.optionId, p.stockedInQty]))
         await tx.productionRunItem.deleteMany({ where: { runId } })
         await tx.productionRunItem.createMany({
           data: input.items.map((it) => ({
             runId,
             optionId: it.optionId,
             quantity: it.quantity,
+            // 기존 옵션은 입고 수량 유지, 신규 옵션은 null(미입고)
+            stockedInQty: stockedByOption.get(it.optionId) ?? null,
           })),
         })
       }
