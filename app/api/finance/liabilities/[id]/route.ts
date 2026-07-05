@@ -11,16 +11,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params
   const body = await req.json().catch(() => ({}))
-  const { name, lender, principal, balance, rate, dueDate, monthlyPayment, memo } = body as {
-    name?: string
-    lender?: string
-    principal?: number
-    balance?: number
-    rate?: string
-    dueDate?: string
-    monthlyPayment?: number | null
-    memo?: string
-  }
+  const { name, lender, principal, balance, rate, dueDate, monthlyPayment, memo, accountId } =
+    body as {
+      name?: string
+      lender?: string
+      principal?: number
+      balance?: number
+      rate?: string
+      dueDate?: string
+      monthlyPayment?: number | null
+      memo?: string
+      accountId?: string | null
+    }
 
   // spaceId 소유 검증
   const existing = await prisma.finLiability.findFirst({
@@ -28,6 +30,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     select: { id: true },
   })
   if (!existing) return errorResponse('부채를 찾을 수 없습니다', 404)
+
+  // 연결 계좌 검증 — accountId가 요청에 포함된 경우에만 처리(빈 값=연결 해제)
+  let normalizedAccountId: string | null | undefined = undefined
+  if (accountId !== undefined) {
+    normalizedAccountId = accountId?.trim() ? accountId.trim() : null
+    if (normalizedAccountId) {
+      const account = await prisma.finAccount.findFirst({
+        where: { id: normalizedAccountId, spaceId },
+        select: { id: true },
+      })
+      if (!account) return errorResponse('연결할 계좌를 찾을 수 없습니다', 400)
+    }
+  }
 
   const liability = await prisma.finLiability.update({
     where: { id },
@@ -40,6 +55,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(dueDate !== undefined && { dueDate }),
       ...(monthlyPayment !== undefined && { monthlyPayment }),
       ...(memo !== undefined && { memo: memo?.trim() ?? null }),
+      ...(normalizedAccountId !== undefined && { accountId: normalizedAccountId }),
     },
   })
 

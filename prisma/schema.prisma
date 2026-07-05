@@ -2651,6 +2651,7 @@ model FinAccount {
   stagedRows       FinStagedRow[]
   balanceSnapshots FinBalanceSnapshot[]
   mappingPresets   FinMappingPreset[]
+  liabilities      FinLiability[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2671,13 +2672,16 @@ model FinLiability {
   dueDate        String? // "2027-03" 등
   monthlyPayment Decimal? @db.Decimal(18, 2)
   memo           String?
+  accountId      String? // 대출 계좌로 지정한 FinAccount (선택)
 
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space   Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  account FinAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([spaceId])
+  @@index([accountId])
 }
 
 // 계정과목 트리 (표준 K-IFRS 시드 + 사용자 하위계정). 분류 타깃 = leaf.

@@ -49,6 +49,7 @@ export type FinLiabilityMinAggregateOutputType = {
   dueDate: string | null
   monthlyPayment: runtime.Decimal | null
   memo: string | null
+  accountId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -64,6 +65,7 @@ export type FinLiabilityMaxAggregateOutputType = {
   dueDate: string | null
   monthlyPayment: runtime.Decimal | null
   memo: string | null
+  accountId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -79,6 +81,7 @@ export type FinLiabilityCountAggregateOutputType = {
   dueDate: number
   monthlyPayment: number
   memo: number
+  accountId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -108,6 +111,7 @@ export type FinLiabilityMinAggregateInputType = {
   dueDate?: true
   monthlyPayment?: true
   memo?: true
+  accountId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -123,6 +127,7 @@ export type FinLiabilityMaxAggregateInputType = {
   dueDate?: true
   monthlyPayment?: true
   memo?: true
+  accountId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -138,6 +143,7 @@ export type FinLiabilityCountAggregateInputType = {
   dueDate?: true
   monthlyPayment?: true
   memo?: true
+  accountId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -240,6 +246,7 @@ export type FinLiabilityGroupByOutputType = {
   dueDate: string | null
   monthlyPayment: runtime.Decimal | null
   memo: string | null
+  accountId: string | null
   createdAt: Date
   updatedAt: Date
   _count: FinLiabilityCountAggregateOutputType | null
@@ -278,9 +285,11 @@ export type FinLiabilityWhereInput = {
   dueDate?: Prisma.StringNullableFilter<"FinLiability"> | string | null
   monthlyPayment?: Prisma.DecimalNullableFilter<"FinLiability"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: Prisma.StringNullableFilter<"FinLiability"> | string | null
+  accountId?: Prisma.StringNullableFilter<"FinLiability"> | string | null
   createdAt?: Prisma.DateTimeFilter<"FinLiability"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinLiability"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  account?: Prisma.XOR<Prisma.FinAccountNullableScalarRelationFilter, Prisma.FinAccountWhereInput> | null
 }
 
 export type FinLiabilityOrderByWithRelationInput = {
@@ -294,9 +303,11 @@ export type FinLiabilityOrderByWithRelationInput = {
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   monthlyPayment?: Prisma.SortOrderInput | Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
+  accountId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
+  account?: Prisma.FinAccountOrderByWithRelationInput
 }
 
 export type FinLiabilityWhereUniqueInput = Prisma.AtLeast<{
@@ -313,9 +324,11 @@ export type FinLiabilityWhereUniqueInput = Prisma.AtLeast<{
   dueDate?: Prisma.StringNullableFilter<"FinLiability"> | string | null
   monthlyPayment?: Prisma.DecimalNullableFilter<"FinLiability"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: Prisma.StringNullableFilter<"FinLiability"> | string | null
+  accountId?: Prisma.StringNullableFilter<"FinLiability"> | string | null
   createdAt?: Prisma.DateTimeFilter<"FinLiability"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinLiability"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  account?: Prisma.XOR<Prisma.FinAccountNullableScalarRelationFilter, Prisma.FinAccountWhereInput> | null
 }, "id">
 
 export type FinLiabilityOrderByWithAggregationInput = {
@@ -329,6 +342,7 @@ export type FinLiabilityOrderByWithAggregationInput = {
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   monthlyPayment?: Prisma.SortOrderInput | Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
+  accountId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.FinLiabilityCountOrderByAggregateInput
@@ -352,6 +366,7 @@ export type FinLiabilityScalarWhereWithAggregatesInput = {
   dueDate?: Prisma.StringNullableWithAggregatesFilter<"FinLiability"> | string | null
   monthlyPayment?: Prisma.DecimalNullableWithAggregatesFilter<"FinLiability"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: Prisma.StringNullableWithAggregatesFilter<"FinLiability"> | string | null
+  accountId?: Prisma.StringNullableWithAggregatesFilter<"FinLiability"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"FinLiability"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"FinLiability"> | Date | string
 }
@@ -369,6 +384,7 @@ export type FinLiabilityCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinLiabilitiesInput
+  account?: Prisma.FinAccountCreateNestedOneWithoutLiabilitiesInput
 }
 
 export type FinLiabilityUncheckedCreateInput = {
@@ -382,6 +398,7 @@ export type FinLiabilityUncheckedCreateInput = {
   dueDate?: string | null
   monthlyPayment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -399,6 +416,7 @@ export type FinLiabilityUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinLiabilitiesNestedInput
+  account?: Prisma.FinAccountUpdateOneWithoutLiabilitiesNestedInput
 }
 
 export type FinLiabilityUncheckedUpdateInput = {
@@ -412,6 +430,7 @@ export type FinLiabilityUncheckedUpdateInput = {
   dueDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   monthlyPayment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -427,6 +446,7 @@ export type FinLiabilityCreateManyInput = {
   dueDate?: string | null
   monthlyPayment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -456,6 +476,7 @@ export type FinLiabilityUncheckedUpdateManyInput = {
   dueDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   monthlyPayment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -481,6 +502,7 @@ export type FinLiabilityCountOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   monthlyPayment?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  accountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -502,6 +524,7 @@ export type FinLiabilityMaxOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   monthlyPayment?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  accountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -517,6 +540,7 @@ export type FinLiabilityMinOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   monthlyPayment?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  accountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -569,6 +593,48 @@ export type FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput = {
   deleteMany?: Prisma.FinLiabilityScalarWhereInput | Prisma.FinLiabilityScalarWhereInput[]
 }
 
+export type FinLiabilityCreateNestedManyWithoutAccountInput = {
+  create?: Prisma.XOR<Prisma.FinLiabilityCreateWithoutAccountInput, Prisma.FinLiabilityUncheckedCreateWithoutAccountInput> | Prisma.FinLiabilityCreateWithoutAccountInput[] | Prisma.FinLiabilityUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.FinLiabilityCreateOrConnectWithoutAccountInput | Prisma.FinLiabilityCreateOrConnectWithoutAccountInput[]
+  createMany?: Prisma.FinLiabilityCreateManyAccountInputEnvelope
+  connect?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+}
+
+export type FinLiabilityUncheckedCreateNestedManyWithoutAccountInput = {
+  create?: Prisma.XOR<Prisma.FinLiabilityCreateWithoutAccountInput, Prisma.FinLiabilityUncheckedCreateWithoutAccountInput> | Prisma.FinLiabilityCreateWithoutAccountInput[] | Prisma.FinLiabilityUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.FinLiabilityCreateOrConnectWithoutAccountInput | Prisma.FinLiabilityCreateOrConnectWithoutAccountInput[]
+  createMany?: Prisma.FinLiabilityCreateManyAccountInputEnvelope
+  connect?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+}
+
+export type FinLiabilityUpdateManyWithoutAccountNestedInput = {
+  create?: Prisma.XOR<Prisma.FinLiabilityCreateWithoutAccountInput, Prisma.FinLiabilityUncheckedCreateWithoutAccountInput> | Prisma.FinLiabilityCreateWithoutAccountInput[] | Prisma.FinLiabilityUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.FinLiabilityCreateOrConnectWithoutAccountInput | Prisma.FinLiabilityCreateOrConnectWithoutAccountInput[]
+  upsert?: Prisma.FinLiabilityUpsertWithWhereUniqueWithoutAccountInput | Prisma.FinLiabilityUpsertWithWhereUniqueWithoutAccountInput[]
+  createMany?: Prisma.FinLiabilityCreateManyAccountInputEnvelope
+  set?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+  disconnect?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+  delete?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+  connect?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+  update?: Prisma.FinLiabilityUpdateWithWhereUniqueWithoutAccountInput | Prisma.FinLiabilityUpdateWithWhereUniqueWithoutAccountInput[]
+  updateMany?: Prisma.FinLiabilityUpdateManyWithWhereWithoutAccountInput | Prisma.FinLiabilityUpdateManyWithWhereWithoutAccountInput[]
+  deleteMany?: Prisma.FinLiabilityScalarWhereInput | Prisma.FinLiabilityScalarWhereInput[]
+}
+
+export type FinLiabilityUncheckedUpdateManyWithoutAccountNestedInput = {
+  create?: Prisma.XOR<Prisma.FinLiabilityCreateWithoutAccountInput, Prisma.FinLiabilityUncheckedCreateWithoutAccountInput> | Prisma.FinLiabilityCreateWithoutAccountInput[] | Prisma.FinLiabilityUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.FinLiabilityCreateOrConnectWithoutAccountInput | Prisma.FinLiabilityCreateOrConnectWithoutAccountInput[]
+  upsert?: Prisma.FinLiabilityUpsertWithWhereUniqueWithoutAccountInput | Prisma.FinLiabilityUpsertWithWhereUniqueWithoutAccountInput[]
+  createMany?: Prisma.FinLiabilityCreateManyAccountInputEnvelope
+  set?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+  disconnect?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+  delete?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+  connect?: Prisma.FinLiabilityWhereUniqueInput | Prisma.FinLiabilityWhereUniqueInput[]
+  update?: Prisma.FinLiabilityUpdateWithWhereUniqueWithoutAccountInput | Prisma.FinLiabilityUpdateWithWhereUniqueWithoutAccountInput[]
+  updateMany?: Prisma.FinLiabilityUpdateManyWithWhereWithoutAccountInput | Prisma.FinLiabilityUpdateManyWithWhereWithoutAccountInput[]
+  deleteMany?: Prisma.FinLiabilityScalarWhereInput | Prisma.FinLiabilityScalarWhereInput[]
+}
+
 export type FinLiabilityCreateWithoutSpaceInput = {
   id?: string
   name: string
@@ -581,6 +647,7 @@ export type FinLiabilityCreateWithoutSpaceInput = {
   memo?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  account?: Prisma.FinAccountCreateNestedOneWithoutLiabilitiesInput
 }
 
 export type FinLiabilityUncheckedCreateWithoutSpaceInput = {
@@ -593,6 +660,7 @@ export type FinLiabilityUncheckedCreateWithoutSpaceInput = {
   dueDate?: string | null
   monthlyPayment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -637,8 +705,65 @@ export type FinLiabilityScalarWhereInput = {
   dueDate?: Prisma.StringNullableFilter<"FinLiability"> | string | null
   monthlyPayment?: Prisma.DecimalNullableFilter<"FinLiability"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: Prisma.StringNullableFilter<"FinLiability"> | string | null
+  accountId?: Prisma.StringNullableFilter<"FinLiability"> | string | null
   createdAt?: Prisma.DateTimeFilter<"FinLiability"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinLiability"> | Date | string
+}
+
+export type FinLiabilityCreateWithoutAccountInput = {
+  id?: string
+  name: string
+  lender?: string | null
+  principal: runtime.Decimal | runtime.DecimalJsLike | number | string
+  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rate?: string | null
+  dueDate?: string | null
+  monthlyPayment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutFinLiabilitiesInput
+}
+
+export type FinLiabilityUncheckedCreateWithoutAccountInput = {
+  id?: string
+  spaceId: string
+  name: string
+  lender?: string | null
+  principal: runtime.Decimal | runtime.DecimalJsLike | number | string
+  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rate?: string | null
+  dueDate?: string | null
+  monthlyPayment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type FinLiabilityCreateOrConnectWithoutAccountInput = {
+  where: Prisma.FinLiabilityWhereUniqueInput
+  create: Prisma.XOR<Prisma.FinLiabilityCreateWithoutAccountInput, Prisma.FinLiabilityUncheckedCreateWithoutAccountInput>
+}
+
+export type FinLiabilityCreateManyAccountInputEnvelope = {
+  data: Prisma.FinLiabilityCreateManyAccountInput | Prisma.FinLiabilityCreateManyAccountInput[]
+  skipDuplicates?: boolean
+}
+
+export type FinLiabilityUpsertWithWhereUniqueWithoutAccountInput = {
+  where: Prisma.FinLiabilityWhereUniqueInput
+  update: Prisma.XOR<Prisma.FinLiabilityUpdateWithoutAccountInput, Prisma.FinLiabilityUncheckedUpdateWithoutAccountInput>
+  create: Prisma.XOR<Prisma.FinLiabilityCreateWithoutAccountInput, Prisma.FinLiabilityUncheckedCreateWithoutAccountInput>
+}
+
+export type FinLiabilityUpdateWithWhereUniqueWithoutAccountInput = {
+  where: Prisma.FinLiabilityWhereUniqueInput
+  data: Prisma.XOR<Prisma.FinLiabilityUpdateWithoutAccountInput, Prisma.FinLiabilityUncheckedUpdateWithoutAccountInput>
+}
+
+export type FinLiabilityUpdateManyWithWhereWithoutAccountInput = {
+  where: Prisma.FinLiabilityScalarWhereInput
+  data: Prisma.XOR<Prisma.FinLiabilityUpdateManyMutationInput, Prisma.FinLiabilityUncheckedUpdateManyWithoutAccountInput>
 }
 
 export type FinLiabilityCreateManySpaceInput = {
@@ -651,6 +776,7 @@ export type FinLiabilityCreateManySpaceInput = {
   dueDate?: string | null
   monthlyPayment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -667,6 +793,7 @@ export type FinLiabilityUpdateWithoutSpaceInput = {
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  account?: Prisma.FinAccountUpdateOneWithoutLiabilitiesNestedInput
 }
 
 export type FinLiabilityUncheckedUpdateWithoutSpaceInput = {
@@ -679,12 +806,74 @@ export type FinLiabilityUncheckedUpdateWithoutSpaceInput = {
   dueDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   monthlyPayment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinLiabilityUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  lender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  principal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  monthlyPayment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FinLiabilityCreateManyAccountInput = {
+  id?: string
+  spaceId: string
+  name: string
+  lender?: string | null
+  principal: runtime.Decimal | runtime.DecimalJsLike | number | string
+  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rate?: string | null
+  dueDate?: string | null
+  monthlyPayment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type FinLiabilityUpdateWithoutAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  lender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  principal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  monthlyPayment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutFinLiabilitiesNestedInput
+}
+
+export type FinLiabilityUncheckedUpdateWithoutAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  lender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  principal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  monthlyPayment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FinLiabilityUncheckedUpdateManyWithoutAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   lender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   principal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -710,9 +899,11 @@ export type FinLiabilitySelect<ExtArgs extends runtime.Types.Extensions.Internal
   dueDate?: boolean
   monthlyPayment?: boolean
   memo?: boolean
+  accountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinLiability$accountArgs<ExtArgs>
 }, ExtArgs["result"]["finLiability"]>
 
 export type FinLiabilitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -726,9 +917,11 @@ export type FinLiabilitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   dueDate?: boolean
   monthlyPayment?: boolean
   memo?: boolean
+  accountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinLiability$accountArgs<ExtArgs>
 }, ExtArgs["result"]["finLiability"]>
 
 export type FinLiabilitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -742,9 +935,11 @@ export type FinLiabilitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   dueDate?: boolean
   monthlyPayment?: boolean
   memo?: boolean
+  accountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinLiability$accountArgs<ExtArgs>
 }, ExtArgs["result"]["finLiability"]>
 
 export type FinLiabilitySelectScalar = {
@@ -758,25 +953,30 @@ export type FinLiabilitySelectScalar = {
   dueDate?: boolean
   monthlyPayment?: boolean
   memo?: boolean
+  accountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FinLiabilityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "lender" | "principal" | "balance" | "rate" | "dueDate" | "monthlyPayment" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["finLiability"]>
+export type FinLiabilityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "lender" | "principal" | "balance" | "rate" | "dueDate" | "monthlyPayment" | "memo" | "accountId" | "createdAt" | "updatedAt", ExtArgs["result"]["finLiability"]>
 export type FinLiabilityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinLiability$accountArgs<ExtArgs>
 }
 export type FinLiabilityIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinLiability$accountArgs<ExtArgs>
 }
 export type FinLiabilityIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinLiability$accountArgs<ExtArgs>
 }
 
 export type $FinLiabilityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "FinLiability"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
+    account: Prisma.$FinAccountPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -789,6 +989,7 @@ export type $FinLiabilityPayload<ExtArgs extends runtime.Types.Extensions.Intern
     dueDate: string | null
     monthlyPayment: runtime.Decimal | null
     memo: string | null
+    accountId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["finLiability"]>
@@ -1186,6 +1387,7 @@ readonly fields: FinLiabilityFieldRefs;
 export interface Prisma__FinLiabilityClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  account<T extends Prisma.FinLiability$accountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinLiability$accountArgs<ExtArgs>>): Prisma.Prisma__FinAccountClient<runtime.Types.Result.GetResult<Prisma.$FinAccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1225,6 +1427,7 @@ export interface FinLiabilityFieldRefs {
   readonly dueDate: Prisma.FieldRef<"FinLiability", 'String'>
   readonly monthlyPayment: Prisma.FieldRef<"FinLiability", 'Decimal'>
   readonly memo: Prisma.FieldRef<"FinLiability", 'String'>
+  readonly accountId: Prisma.FieldRef<"FinLiability", 'String'>
   readonly createdAt: Prisma.FieldRef<"FinLiability", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"FinLiability", 'DateTime'>
 }
@@ -1620,6 +1823,25 @@ export type FinLiabilityDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many FinLiabilities to delete.
    */
   limit?: number
+}
+
+/**
+ * FinLiability.account
+ */
+export type FinLiability$accountArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FinAccount
+   */
+  select?: Prisma.FinAccountSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FinAccount
+   */
+  omit?: Prisma.FinAccountOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FinAccountInclude<ExtArgs> | null
+  where?: Prisma.FinAccountWhereInput
 }
 
 /**
