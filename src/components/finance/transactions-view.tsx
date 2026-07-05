@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus, Trash2, Sparkles, Tag } from 'lucide-react'
+import { Plus, Trash2, Sparkles, Tag, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -139,7 +139,15 @@ export function TransactionsView() {
   const leafTargets = useMemo(() => buildClassifyOptions(categoryTree), [categoryTree])
 
   // 계좌 목록 (전체 거래 출처 필터)
-  const [accounts, setAccounts] = useState<{ id: string; name: string; kind: FinAccountKind }[]>([])
+  const [accounts, setAccounts] = useState<
+    {
+      id: string
+      name: string
+      kind: FinAccountKind
+      institution: string | null
+      accountNumber: string | null
+    }[]
+  >([])
 
   // 스테이징 상태
   const [stagingRows, setStagingRows] = useState<StagedRow[]>([])
@@ -166,10 +174,8 @@ export function TransactionsView() {
   // 필터 (전체 거래) — 'all'은 파라미터 미포함 센티넬
   const [filterQ, setFilterQ] = useState('')
   const [filterAccountId, setFilterAccountId] = useState('')
+  const [filterCategoryId, setFilterCategoryId] = useState('')
   const [filterDirection, setFilterDirection] = useState<'all' | 'IN' | 'OUT'>('all')
-  const [filterClassStatus, setFilterClassStatus] = useState<
-    'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED'
-  >('all')
 
   // 메인 탭 — 초기값은 로드 후 결정
   const [mainTab, setMainTab] = useState<'staging' | 'transactions'>('staging')
@@ -206,11 +212,21 @@ export function TransactionsView() {
       if (!res.ok) return
       const data = await res.json()
       setAccounts(
-        (data.accounts ?? []).map((a: { id: string; name: string; kind: FinAccountKind }) => ({
-          id: a.id,
-          name: a.name,
-          kind: a.kind,
-        }))
+        (data.accounts ?? []).map(
+          (a: {
+            id: string
+            name: string
+            kind: FinAccountKind
+            institution: string | null
+            accountNumber: string | null
+          }) => ({
+            id: a.id,
+            name: a.name,
+            kind: a.kind,
+            institution: a.institution ?? null,
+            accountNumber: a.accountNumber ?? null,
+          })
+        )
       )
     } catch {
       // 조용히 실패
@@ -247,8 +263,8 @@ export function TransactionsView() {
       const params = new URLSearchParams()
       if (filterQ) params.set('q', filterQ)
       if (filterAccountId) params.set('accountId', filterAccountId)
+      if (filterCategoryId) params.set('categoryId', filterCategoryId)
       if (filterDirection !== 'all') params.set('direction', filterDirection)
-      if (filterClassStatus !== 'all') params.set('classStatus', filterClassStatus)
       const res = await fetch(`/api/finance/transactions?${params}`)
       if (!res.ok) throw new Error('거래 내역 조회 실패')
       const data = await res.json()
@@ -260,7 +276,7 @@ export function TransactionsView() {
     } finally {
       setTxnLoading(false)
     }
-  }, [filterQ, filterAccountId, filterDirection, filterClassStatus])
+  }, [filterQ, filterAccountId, filterCategoryId, filterDirection])
 
   // 초기 로드
   useEffect(() => {
@@ -512,16 +528,16 @@ export function TransactionsView() {
           loading={txnLoading}
           filterQ={filterQ}
           filterAccountId={filterAccountId}
+          filterCategoryId={filterCategoryId}
           filterDirection={filterDirection}
-          filterClassStatus={filterClassStatus}
           accounts={accounts}
           leafTargets={leafTargets}
           categoryTree={categoryTree}
           reloadCategories={loadCategories}
           onFilterQChange={setFilterQ}
           onFilterAccountIdChange={setFilterAccountId}
+          onFilterCategoryIdChange={setFilterCategoryId}
           onFilterDirectionChange={setFilterDirection}
-          onFilterClassStatusChange={setFilterClassStatus}
           onSearch={handleTxnSearch}
           onClassify={handleTxnClassify}
           onBulkClassify={handleTxnBulkClassify}
@@ -1015,16 +1031,16 @@ function TransactionsPanel({
   loading,
   filterQ,
   filterAccountId,
+  filterCategoryId,
   filterDirection,
-  filterClassStatus,
   accounts,
   leafTargets,
   categoryTree,
   reloadCategories,
   onFilterQChange,
   onFilterAccountIdChange,
+  onFilterCategoryIdChange,
   onFilterDirectionChange,
-  onFilterClassStatusChange,
   onSearch,
   onClassify,
   onBulkClassify,
@@ -1036,16 +1052,22 @@ function TransactionsPanel({
   loading: boolean
   filterQ: string
   filterAccountId: string
+  filterCategoryId: string
   filterDirection: 'all' | 'IN' | 'OUT'
-  filterClassStatus: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED'
-  accounts: { id: string; name: string; kind: FinAccountKind }[]
+  accounts: {
+    id: string
+    name: string
+    kind: FinAccountKind
+    institution: string | null
+    accountNumber: string | null
+  }[]
   leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onFilterQChange: (v: string) => void
   onFilterAccountIdChange: (v: string) => void
+  onFilterCategoryIdChange: (v: string) => void
   onFilterDirectionChange: (v: 'all' | 'IN' | 'OUT') => void
-  onFilterClassStatusChange: (v: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED') => void
   onSearch: () => void
   onClassify: (txnId: string, categoryId: string) => void
   onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
@@ -1084,8 +1106,8 @@ function TransactionsPanel({
 
   return (
     <div className="space-y-3">
-      {/* 필터 바 */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* 필터 바 — 각 컨트롤 앞에 필드 라벨을 붙여 무엇을 거르는지 명시 */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Input
           value={filterQ}
           onChange={(e) => onFilterQChange(e.target.value)}
@@ -1096,52 +1118,71 @@ function TransactionsPanel({
           className="h-8 max-w-52 text-xs"
         />
         {accounts.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">계좌</span>
+            <Select
+              value={filterAccountId || 'all'}
+              onValueChange={(v) => onFilterAccountIdChange(v === 'all' ? '' : v)}
+            >
+              <SelectTrigger className="h-8 w-52 text-xs">
+                <SelectValue placeholder="전체 계좌" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 계좌</SelectItem>
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id} className="text-xs">
+                    <span className="flex items-center gap-1.5">
+                      {[a.institution, a.name].filter(Boolean).join(' ')}
+                      {a.accountNumber && (
+                        <span className="text-muted-foreground">· {a.accountNumber}</span>
+                      )}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">계정과목</span>
+          <CategoryCombobox
+            options={leafTargets}
+            value={filterCategoryId || null}
+            onChange={onFilterCategoryIdChange}
+            groupByType
+            defaultType="EXPENSE"
+            placeholder="전체 계정과목"
+            searchPlaceholder="계정과목 검색..."
+            triggerClassName="h-8 w-44 text-xs"
+          />
+          {filterCategoryId && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => onFilterCategoryIdChange('')}
+              className="h-8 w-8 shrink-0 text-muted-foreground"
+              aria-label="계정과목 필터 해제"
+            >
+              <X className="size-3.5" />
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">방향</span>
           <Select
-            value={filterAccountId || 'all'}
-            onValueChange={(v) => onFilterAccountIdChange(v === 'all' ? '' : v)}
+            value={filterDirection}
+            onValueChange={(v) => onFilterDirectionChange(v as 'all' | 'IN' | 'OUT')}
           >
-            <SelectTrigger className="h-8 w-36 text-xs">
-              <SelectValue placeholder="출처" />
+            <SelectTrigger className="h-8 w-24 text-xs">
+              <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체 출처</SelectItem>
-              {accounts.map((a) => (
-                <SelectItem key={a.id} value={a.id} className="text-xs">
-                  {a.name}
-                </SelectItem>
-              ))}
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="IN">수입</SelectItem>
+              <SelectItem value="OUT">지출</SelectItem>
             </SelectContent>
           </Select>
-        )}
-        <Select
-          value={filterDirection}
-          onValueChange={(v) => onFilterDirectionChange(v as 'all' | 'IN' | 'OUT')}
-        >
-          <SelectTrigger className="h-8 w-24 text-xs">
-            <SelectValue placeholder="방향" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">전체</SelectItem>
-            <SelectItem value="IN">수입</SelectItem>
-            <SelectItem value="OUT">지출</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={filterClassStatus}
-          onValueChange={(v) =>
-            onFilterClassStatusChange(v as 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED')
-          }
-        >
-          <SelectTrigger className="h-8 w-28 text-xs">
-            <SelectValue placeholder="분류 상태" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">전체</SelectItem>
-            <SelectItem value="CLASSIFIED">분류완료</SelectItem>
-            <SelectItem value="REVIEW">검토 필요</SelectItem>
-            <SelectItem value="UNCLASSIFIED">미분류</SelectItem>
-          </SelectContent>
-        </Select>
+        </div>
         <Button size="sm" variant="outline" onClick={onSearch} className="h-8">
           검색
         </Button>
