@@ -46,7 +46,12 @@ import {
   buildParentOptions,
   type ComboOption,
 } from '@/lib/finance/category-options'
-import type { FinAccountKind, FinClassStatus, FinStagedResolution } from '@/generated/prisma/enums'
+import type {
+  FinAccountKind,
+  FinCategoryType,
+  FinClassStatus,
+  FinStagedResolution,
+} from '@/generated/prisma/enums'
 
 // ─── 타입 정의 ───────────────────────────────────────────────────────────────
 
@@ -753,6 +758,7 @@ function StagingPanel({
       <StagingBulkBar
         selectedCount={selectedInView.length}
         leafTargets={leafTargets}
+        blockType={uniformBlockType(rows, selectedIds)}
         onClassify={runBulkClassify}
         onResolution={runBulkResolution}
         onClear={clearSelection}
@@ -763,15 +769,35 @@ function StagingPanel({
 
 // ─── 다중 선택 일괄 처리 바 ────────────────────────────────────────────────────
 
+/**
+ * 선택 행의 금액 방향이 하나로 일치할 때만 어긋난 타입을 막는다(OUT→수익 차단, IN→비용 차단).
+ * 방향이 섞였거나 선택이 없으면 null(제한 없음) — 일괄 분류는 혼합 선택을 허용하므로 과도 차단 방지.
+ */
+function uniformBlockType(
+  rows: { id: string; direction: 'IN' | 'OUT' }[],
+  selectedIds: Set<string>
+): FinCategoryType | null {
+  let dir: 'IN' | 'OUT' | null = null
+  for (const r of rows) {
+    if (!selectedIds.has(r.id)) continue
+    if (dir === null) dir = r.direction
+    else if (dir !== r.direction) return null
+  }
+  if (dir === null) return null
+  return dir === 'OUT' ? 'INCOME' : 'EXPENSE'
+}
+
 function StagingBulkBar({
   selectedCount,
   leafTargets,
+  blockType,
   onClassify,
   onResolution,
   onClear,
 }: {
   selectedCount: number
   leafTargets: ComboOption[]
+  blockType: FinCategoryType | null
   onClassify: (categoryId: string) => Promise<void>
   onResolution: (resolution: FinStagedResolution) => Promise<void>
   onClear: () => void
@@ -802,7 +828,8 @@ function StagingBulkBar({
               triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
               disabled={busy}
               groupByType
-              defaultType="INCOME"
+              defaultType={blockType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
+              blockType={blockType}
             />
           </div>
           <Button
@@ -1187,6 +1214,7 @@ function TransactionsPanel({
       <TransactionsBulkBar
         selectedCount={selectedInView.length}
         leafTargets={leafTargets}
+        blockType={uniformBlockType(rows, selectedIds)}
         onClassify={runBulkClassify}
         onDeleteRequest={() => setDeleteOpen(true)}
         onClear={clearSelection}
@@ -1221,12 +1249,14 @@ function TransactionsPanel({
 function TransactionsBulkBar({
   selectedCount,
   leafTargets,
+  blockType,
   onClassify,
   onDeleteRequest,
   onClear,
 }: {
   selectedCount: number
   leafTargets: ComboOption[]
+  blockType: FinCategoryType | null
   onClassify: (categoryId: string) => Promise<void>
   onDeleteRequest: () => void
   onClear: () => void
@@ -1257,7 +1287,8 @@ function TransactionsBulkBar({
               triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
               disabled={busy}
               groupByType
-              defaultType="INCOME"
+              defaultType={blockType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
+              blockType={blockType}
             />
           </div>
           <Button
@@ -1423,6 +1454,7 @@ function CategorySelect({
         onAddNew={() => setDialogOpen(true)}
         groupByType
         defaultType={direction === 'IN' ? 'INCOME' : 'EXPENSE'}
+        blockType={direction === 'IN' ? 'EXPENSE' : 'INCOME'}
       />
       <AddCategoryDialog
         open={dialogOpen}
