@@ -2644,6 +2644,10 @@ model FinAccount {
   accountNumber  String? // 마스킹 가능
   accountType    String? // 입출금/보통예금/법인카드 등
   openingBalance Decimal?       @db.Decimal(18, 2)
+  // 기준(현재) 잔액 — 표시용. 은행 거래 확정 시 마지막 일자 거래후잔액으로 자동 갱신(기준일 이후일 때만).
+  // 대시보드 잔액 계산(월별 스냅샷)에는 관여하지 않는다.
+  currentBalance     Decimal?  @db.Decimal(18, 2)
+  currentBalanceAsOf DateTime?
 
   space            Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   imports          FinImport[]

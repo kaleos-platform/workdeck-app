@@ -9527,6 +9527,8 @@ export const FinAccountScalarFieldEnum = {
   accountNumber: 'accountNumber',
   accountType: 'accountType',
   openingBalance: 'openingBalance',
+  currentBalance: 'currentBalance',
+  currentBalanceAsOf: 'currentBalanceAsOf',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
