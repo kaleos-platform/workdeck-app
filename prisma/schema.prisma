@@ -444,6 +444,11 @@ model Space {
   finStagedRows       FinStagedRow[]
   finTransactions     FinTransaction[]
   finBalanceSnapshots FinBalanceSnapshot[]
+
+  // ─── 블로그 운영 Deck (Blog Ops) ───
+  boProducts  BoProduct[]
+  boIdeations BoIdeation[]
+  boMaterials BoMaterial[]
 }
 
 // 공간 멤버십 + 역할
@@ -2870,4 +2875,96 @@ model FinBalanceSnapshot {
   @@unique([spaceId, accountId, yearMonth])
   @@index([spaceId])
   @@index([accountId])
+}
+
+// ─── 블로그 운영 Deck (Blog Ops) ──────────────────────────────────────────────
+
+enum BoCrawlStatus {
+  NONE
+  PENDING
+  DONE
+  FAILED
+}
+
+enum BoMaterialStatus {
+  PROPOSED
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+// 블로그 소재 발굴 대상 제품. 홈페이지 크롤 결과·AI 소구점 분석의 기준점.
+model BoProduct {
+  id             String        @id @default(cuid())
+  spaceId        String
+  name           String
+  category       String? // B2B / B2C
+  oneLinerPitch  String?
+  homepageUrl    String?
+  crawledText    String?
+  crawledAt      DateTime?
+  crawlStatus    BoCrawlStatus @default(NONE)
+  targetCustomer String?
+  features       Json          @default("[]") // [{ name: string, description: string }]
+  ctaUrl         String?
+  customFields   Json          @default("[]") // [{ key: string, value: string }]
+  isActive       Boolean       @default(true)
+
+  space     Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  ideations BoIdeation[]
+  materials BoMaterial[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// AI 소구점 발굴 실행 단위. 한 번의 생성 호출 결과를 appealPoints Json으로 보관.
+model BoIdeation {
+  id              String  @id @default(cuid())
+  spaceId         String
+  userId          String?
+  productId       String
+  userPromptInput String?
+  appealPoints    Json    @default("[]") // [{ point, evidence, targetPain, priority }]
+  providerName    String?
+  providerModel   String?
+  latencyMs       Int?
+  promptTraceHash String?
+
+  space     Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product   BoProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  materials BoMaterial[]
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId, createdAt])
+  @@index([productId])
+}
+
+// 블로그 포스팅 소재. 소구점 하나를 특정 앵글로 풀어낸 글 골격.
+model BoMaterial {
+  id               String           @id @default(cuid())
+  spaceId          String
+  productId        String
+  ideationId       String?
+  title            String
+  appealPoint      String
+  angle            String
+  outline          Json             @default("[]") // [{ section: string, description: string }]
+  targetKeyword    String?
+  status           BoMaterialStatus @default(PROPOSED)
+  approvedByUserId String?
+  approvedAt       DateTime?
+
+  space    Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product  BoProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ideation BoIdeation? @relation(fields: [ideationId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([productId])
 }

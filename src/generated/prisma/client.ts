@@ -544,3 +544,18 @@ export type FinTransaction = Prisma.FinTransactionModel
  * 
  */
 export type FinBalanceSnapshot = Prisma.FinBalanceSnapshotModel
+/**
+ * Model BoProduct
+ * 
+ */
+export type BoProduct = Prisma.BoProductModel
+/**
+ * Model BoIdeation
+ * 
+ */
+export type BoIdeation = Prisma.BoIdeationModel
+/**
+ * Model BoMaterial
+ * 
+ */
+export type BoMaterial = Prisma.BoMaterialModel

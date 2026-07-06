@@ -496,3 +496,23 @@ export const FinSnapshotSource = {
 } as const
 
 export type FinSnapshotSource = (typeof FinSnapshotSource)[keyof typeof FinSnapshotSource]
+
+
+export const BoCrawlStatus = {
+  NONE: 'NONE',
+  PENDING: 'PENDING',
+  DONE: 'DONE',
+  FAILED: 'FAILED'
+} as const
+
+export type BoCrawlStatus = (typeof BoCrawlStatus)[keyof typeof BoCrawlStatus]
+
+
+export const BoMaterialStatus = {
+  PROPOSED: 'PROPOSED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type BoMaterialStatus = (typeof BoMaterialStatus)[keyof typeof BoMaterialStatus]

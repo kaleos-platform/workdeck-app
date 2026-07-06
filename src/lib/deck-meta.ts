@@ -4,6 +4,7 @@ import {
   ShoppingBag,
   Sparkles,
   Landmark,
+  PenSquare,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -11,9 +12,16 @@ import {
   SELLER_HUB_BASE_PATH,
   SALES_CONTENT_BASE_PATH,
   FINANCE_DASHBOARD_PATH,
+  BLOG_OPS_HOME_PATH,
 } from './deck-routes'
 
-export type DeckVariant = 'workdeck' | 'coupang-ads' | 'seller-hub' | 'sales-content' | 'finance'
+export type DeckVariant =
+  | 'workdeck'
+  | 'coupang-ads'
+  | 'seller-hub'
+  | 'sales-content'
+  | 'finance'
+  | 'blog-ops'
 
 export type DeckMeta = {
   name: string
@@ -51,6 +59,12 @@ export const DECK_META: Record<DeckVariant, DeckMeta> = {
     href: FINANCE_DASHBOARD_PATH,
     icon: Landmark,
     gradient: 'from-emerald-500 to-teal-600',
+  },
+  'blog-ops': {
+    name: '블로그 운영',
+    href: BLOG_OPS_HOME_PATH,
+    icon: PenSquare,
+    gradient: 'from-sky-500 to-cyan-600',
   },
   workdeck: {
     name: 'Workdeck',

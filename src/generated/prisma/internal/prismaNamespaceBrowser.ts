@@ -151,7 +151,10 @@ export const ModelName = {
   FinImport: 'FinImport',
   FinStagedRow: 'FinStagedRow',
   FinTransaction: 'FinTransaction',
-  FinBalanceSnapshot: 'FinBalanceSnapshot'
+  FinBalanceSnapshot: 'FinBalanceSnapshot',
+  BoProduct: 'BoProduct',
+  BoIdeation: 'BoIdeation',
+  BoMaterial: 'BoMaterial'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1840,6 +1843,65 @@ export const FinBalanceSnapshotScalarFieldEnum = {
 } as const
 
 export type FinBalanceSnapshotScalarFieldEnum = (typeof FinBalanceSnapshotScalarFieldEnum)[keyof typeof FinBalanceSnapshotScalarFieldEnum]
+
+
+export const BoProductScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  category: 'category',
+  oneLinerPitch: 'oneLinerPitch',
+  homepageUrl: 'homepageUrl',
+  crawledText: 'crawledText',
+  crawledAt: 'crawledAt',
+  crawlStatus: 'crawlStatus',
+  targetCustomer: 'targetCustomer',
+  features: 'features',
+  ctaUrl: 'ctaUrl',
+  customFields: 'customFields',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoProductScalarFieldEnum = (typeof BoProductScalarFieldEnum)[keyof typeof BoProductScalarFieldEnum]
+
+
+export const BoIdeationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  productId: 'productId',
+  userPromptInput: 'userPromptInput',
+  appealPoints: 'appealPoints',
+  providerName: 'providerName',
+  providerModel: 'providerModel',
+  latencyMs: 'latencyMs',
+  promptTraceHash: 'promptTraceHash',
+  createdAt: 'createdAt'
+} as const
+
+export type BoIdeationScalarFieldEnum = (typeof BoIdeationScalarFieldEnum)[keyof typeof BoIdeationScalarFieldEnum]
+
+
+export const BoMaterialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  productId: 'productId',
+  ideationId: 'ideationId',
+  title: 'title',
+  appealPoint: 'appealPoint',
+  angle: 'angle',
+  outline: 'outline',
+  targetKeyword: 'targetKeyword',
+  status: 'status',
+  approvedByUserId: 'approvedByUserId',
+  approvedAt: 'approvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoMaterialScalarFieldEnum = (typeof BoMaterialScalarFieldEnum)[keyof typeof BoMaterialScalarFieldEnum]
 
 
 export const SortOrder = {
