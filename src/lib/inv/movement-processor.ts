@@ -567,6 +567,78 @@ export async function processSetTransfer(
   })
 }
 
+// 생산 입고 등 다건 INBOUND를 호출자 트랜잭션 안에서 all-or-nothing 처리.
+// 자체 트랜잭션을 열지 않고 호출자의 tx 를 받아 원자성은 호출자가 보장한다.
+// 결정론적 잠금 순서(optionId → locationId)로 동시 요청 간 데드락을 최소화한다.
+export type BatchInboundItem = {
+  optionId: string
+  locationId: string
+  quantity: number
+  reason?: string
+  referenceId?: string
+}
+
+export async function applyBatchInbound(
+  tx: Tx,
+  spaceId: string,
+  items: BatchInboundItem[],
+  movementDate: Date
+): Promise<Array<{ optionId: string; locationId: string; stockLevelAfter: number }>> {
+  if (items.length === 0) return []
+
+  for (const item of items) {
+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+      throw new MovementError('INBOUND 수량은 양수여야 합니다', 400)
+    }
+  }
+
+  // distinct optionId / locationId 검증 (중복 호출 방지)
+  const seenOptions = new Set<string>()
+  const seenLocations = new Set<string>()
+  for (const item of items) {
+    if (!seenOptions.has(item.optionId)) {
+      await assertOptionInSpace(tx, spaceId, item.optionId)
+      seenOptions.add(item.optionId)
+    }
+    if (!seenLocations.has(item.locationId)) {
+      await assertLocationInSpace(tx, spaceId, item.locationId)
+      seenLocations.add(item.locationId)
+    }
+  }
+
+  // 결정론적 잠금: distinct (optionId, locationId) 쌍을 optionId 우선, 같으면 locationId 정렬
+  const distinctPairs = Array.from(
+    new Map(items.map((it) => [`${it.optionId}|${it.locationId}`, it])).values()
+  )
+  distinctPairs.sort((a, b) =>
+    a.optionId === b.optionId
+      ? a.locationId.localeCompare(b.locationId)
+      : a.optionId.localeCompare(b.optionId)
+  )
+  for (const p of distinctPairs) {
+    await lockStockLevel(tx, p.optionId, p.locationId)
+  }
+
+  const results: Array<{ optionId: string; locationId: string; stockLevelAfter: number }> = []
+  for (const item of items) {
+    const after = await upsertStockLevel(tx, spaceId, item.optionId, item.locationId, item.quantity)
+    await tx.invMovement.create({
+      data: {
+        spaceId,
+        optionId: item.optionId,
+        locationId: item.locationId,
+        type: 'INBOUND',
+        quantity: item.quantity,
+        movementDate,
+        reason: item.reason?.trim() || null,
+        referenceId: item.referenceId ?? null,
+      },
+    })
+    results.push({ optionId: item.optionId, locationId: item.locationId, stockLevelAfter: after })
+  }
+  return results
+}
+
 /**
  * 이동 효과를 stock에 반대 부호로 적용해 재고 원상복구.
  * 트랜잭션 내에서 호출, lockStockLevel은 호출 측이 미리 잡고 호출하는 것을 가정.
