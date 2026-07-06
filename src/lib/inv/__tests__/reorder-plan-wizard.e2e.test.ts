@@ -90,6 +90,7 @@ d('POST /reorder/plan — dryRun · optionFinalOverrides (dev DB)', () => {
   test('dryRun — persist 없이 옵션 계산 결과 반환(평이 상품 qualifies=false)', async () => {
     const before = await prisma.reorderPlan.count({ where: { spaceId: SPACE_ID } })
     const res = await POST(post({ productId, dryRun: true }))
+    if (!res) throw new Error('응답 없음')
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.dryRun).toBe(true)
@@ -112,6 +113,7 @@ d('POST /reorder/plan — dryRun · optionFinalOverrides (dev DB)', () => {
     const res = await POST(
       post({ productId, optionFinalOverrides: { [optAId]: 77, [optBId]: 33 } })
     )
+    if (!res) throw new Error('응답 없음')
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.planId).toBeTruthy()

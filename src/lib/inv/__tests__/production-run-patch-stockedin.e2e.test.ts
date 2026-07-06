@@ -107,6 +107,7 @@ d('PATCH /production-runs/[runId] — 발주 수정 시 입고 수량 보존 (de
       }),
       { params: Promise.resolve({ runId }) }
     )
+    if (!res) throw new Error('응답 없음')
     expect(res.status).toBe(200)
 
     const items = await prisma.productionRunItem.findMany({
