@@ -105,6 +105,10 @@ export async function DELETE(
       const campaignTargetResult = await tx.campaignTarget.deleteMany({
         where: { workspaceId: workspace.id, campaignId },
       })
+      // 캠페인에 연결된 ProductStatus 고아 행 정리
+      const productStatusResult = await tx.productStatus.deleteMany({
+        where: { workspaceId: workspace.id, campaignId },
+      })
 
       return {
         adRecords: adRecordResult.count,
@@ -113,6 +117,7 @@ export async function DELETE(
         campaignMetas: campaignMetaResult.count,
         keywordStatuses: keywordStatusResult.count,
         campaignTargets: campaignTargetResult.count,
+        productStatuses: productStatusResult.count,
       }
     })
 
