@@ -321,12 +321,12 @@ export async function POST(req: NextRequest) {
   // 단일 방식 → xlsx 그대로 응답
   if (generated.length === 1) {
     const file = generated[0]
-    const filename = encodeURIComponent(file.filename)
+    // RFC 5987: ASCII 폴백 + filename* UTF-8 인코딩으로 한글 파일명 정상 노출
     return new NextResponse(new Uint8Array(file.buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': `attachment; filename="delivery.xlsx"; filename*=UTF-8''${encodeURIComponent(file.filename)}`,
       },
     })
   }
@@ -346,12 +346,13 @@ export async function POST(req: NextRequest) {
     zip.file(name, f.buffer)
   }
   const zipBuffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
-  const zipName = encodeURIComponent(`${batchId}_배송파일.zip`)
+  // RFC 5987: ASCII 폴백 + filename* UTF-8 인코딩으로 한글 파일명 정상 노출
+  const zipRawName = `${batchId}_배송파일.zip`
   return new NextResponse(new Uint8Array(zipBuffer), {
     status: 200,
     headers: {
       'Content-Type': 'application/zip',
-      'Content-Disposition': `attachment; filename="${zipName}"`,
+      'Content-Disposition': `attachment; filename="delivery.zip"; filename*=UTF-8''${encodeURIComponent(zipRawName)}`,
     },
   })
 }
