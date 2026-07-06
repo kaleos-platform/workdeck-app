@@ -444,6 +444,17 @@ model Space {
   finStagedRows       FinStagedRow[]
   finTransactions     FinTransaction[]
   finBalanceSnapshots FinBalanceSnapshot[]
+
+  // ─── 채용 관리 Deck (Hiring) ───
+  hiringStores           HiringStore[]
+  hiringPositions        HiringPosition[]
+  hiringPostings         HiringPosting[]
+  hiringPostingPositions HiringPostingPosition[]
+  hiringContents         HiringContent[]
+  hiringDetailTemplates  HiringDetailTemplate[]
+  hiringApplications     HiringApplication[]
+  hiringBlacklists       HiringBlacklist[]
+  hiringMessageTemplates HiringMessageTemplate[]
 }
 
 // 공간 멤버십 + 역할
@@ -2636,18 +2647,18 @@ enum FinSnapshotSource {
 
 // 금융 계좌 (은행 계좌 / 카드). 파일 업로드 시 preamble에서 자동 감지 후 사용자 확인.
 model FinAccount {
-  id             String         @id @default(cuid())
-  spaceId        String
-  name           String
-  holder         String? // 실제 계좌 예금주명
-  kind           FinAccountKind
-  institution    String // 은행·카드사명
-  accountNumber  String? // 마스킹 가능
-  accountType    String? // 입출금/보통예금/법인카드 등
-  openingBalance Decimal?       @db.Decimal(18, 2)
+  id                 String         @id @default(cuid())
+  spaceId            String
+  name               String
+  holder             String? // 실제 계좌 예금주명
+  kind               FinAccountKind
+  institution        String // 은행·카드사명
+  accountNumber      String? // 마스킹 가능
+  accountType        String? // 입출금/보통예금/법인카드 등
+  openingBalance     Decimal?       @db.Decimal(18, 2)
   // 기준(현재) 잔액 — 표시용. 은행 거래 확정 시 마지막 일자 거래후잔액으로 자동 갱신(기준일 이후일 때만).
   // 대시보드 잔액 계산(월별 스냅샷)에는 관여하지 않는다.
-  currentBalance     Decimal?  @db.Decimal(18, 2)
+  currentBalance     Decimal?       @db.Decimal(18, 2)
   currentBalanceAsOf DateTime?
 
   space            Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -2881,4 +2892,395 @@ model FinBalanceSnapshot {
   @@unique([spaceId, accountId, yearMonth])
   @@index([spaceId])
   @@index([accountId])
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// 채용 관리 Deck (Hiring) — 공고 제작(hiring-posts) + 지원자 관리(hiring-applicants)
+// 두 deck이 이 스키마를 공유한다. PII는 DelOrder 선례(*Enc + *Iv, AES-256-CBC)
+// + 매칭용 HMAC-SHA256 해시(*Hash, 키: HIRING_HMAC_KEY) 컬럼을 병행한다.
+// 암복호화/해시는 src/lib/hiring/pii.ts 의 write-path 유틸에서만 수행 (Prisma 훅 없음).
+// ════════════════════════════════════════════════════════════════════════════
+
+enum HiringPostingStatus {
+  DRAFT // 작성 중 (임시저장)
+  ACTIVE // 발행됨 — 공개 URL 라이브
+  CLOSED // 마감
+  ARCHIVED // 보관 (목록 기본 제외)
+}
+
+enum HiringJobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCER
+  INTERN
+}
+
+enum HiringPayFrequency {
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  PER_TASK
+  TBD
+}
+
+// 지원 상태머신 1축: 최종 결과
+enum HiringApplicationStage {
+  HIRING // 진행 중
+  ACCEPTED // 합격
+  REJECTED // 불합격
+}
+
+// 지원 상태머신 2축: 채용 단계
+enum HiringProcessStage {
+  APPLIED // 서류 접수
+  INTERVIEW // 면접
+  JOB_OFFER // 처우 협의/최종 제안
+}
+
+enum HiringContentSourceType {
+  POSTING_DETAIL // 공고 상세 블록
+  DETAIL_TEMPLATE // 재사용 템플릿 블록
+}
+
+enum HiringNotificationType {
+  INTERVIEW
+  JOB_OFFER
+  ACCEPTED
+  REJECTED
+}
+
+// 매장/지점 (opening Store — 테넌트 아님, Space 하위 기준정보)
+model HiringStore {
+  id            String  @id @default(cuid())
+  spaceId       String
+  name          String
+  roadAddress   String? // 도로명 주소
+  detailAddress String? // 상세 주소
+  zipcode       String?
+  isActive      Boolean @default(true)
+
+  space             Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  postingStores     HiringPostingStore[]
+  applicationStores HiringApplicationStore[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// 직무 (opening Position — category는 문자열 스냅샷으로 단순화, 별도 taxonomy 테이블 없음)
+model HiringPosition {
+  id       String  @id @default(cuid())
+  spaceId  String
+  name     String
+  category String? // 직군 분류 (자유 문자열)
+  isActive Boolean @default(true)
+
+  space            Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  postingPositions HiringPostingPosition[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// 채용 공고 (opening Posting)
+model HiringPosting {
+  id      String              @id @default(cuid())
+  spaceId String
+  uuid    String              @unique @default(uuid()) // 공개 URL 키 (/p/{uuid})
+  title   String
+  status  HiringPostingStatus @default(DRAFT)
+
+  // 상세 본문: 섹션 블록 JSON (posting_title/company_intro/positions/stores/manager/content/image …)
+  detail Json?
+
+  // ⚠️ 이름 주의: HiringPosting.applicationEntries = 지원서 "폼 스키마" 정의,
+  //    HiringApplication.applicationEntries = 지원자가 제출한 "값". (opening 유래 동명이의)
+  applicationEntries Json?
+
+  // 담당자 연락처 (PII — 지원자 알림 발신 표기용)
+  managerNameEnc  String?
+  managerNameIv   String?
+  managerPhoneEnc String?
+  managerPhoneIv  String?
+
+  closingDate         DateTime? // 마감일 (지나면 CLOSED 처리 — 후속 cron)
+  publishedAt         DateTime?
+  notificationEnabled Boolean   @default(true)
+  authorUserId        String? // 작성자 (Supabase user id — 관계 미연결 스냅샷)
+
+  space        Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  positions    HiringPostingPosition[]
+  stores       HiringPostingStore[]
+  managers     HiringPostingManager[]
+  contents     HiringContent[]
+  applications HiringApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([spaceId, createdAt])
+}
+
+// 공고 × 직무 상세 (근무조건 스냅샷 — opening PostingPosition)
+model HiringPostingPosition {
+  id         String  @id @default(cuid())
+  spaceId    String
+  postingId  String
+  positionId String?
+  name       String // 직무명 스냅샷
+
+  jobType      HiringJobType?
+  payFrequency HiringPayFrequency?
+  payAmount    Int? // 급여 (원)
+  workDays     Json? // 근무 요일 int[] (0=일 … 6=토)
+  workStartAt  String? // "HH:mm"
+  workEndAt    String? // "HH:mm"
+  headcount    Int? // 모집 인원
+  experience   String? // 경력 요건 (자유 문자열)
+  education    String? // 학력 요건
+
+  jobDescription          String? // 담당 업무
+  requiredQualifications  String?
+  preferredQualifications String?
+
+  posting      HiringPosting       @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  position     HiringPosition?     @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  applications HiringApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  space     Space    @relation(fields: [spaceId], references: [id])
+
+  @@index([postingId])
+  @@index([spaceId])
+}
+
+// 공고 × 매장 조인
+model HiringPostingStore {
+  id        String @id @default(cuid())
+  postingId String
+  storeId   String
+
+  posting HiringPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  store   HiringStore   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([postingId, storeId])
+}
+
+// 공고 × 알림 담당자 (workdeck User id — SpaceMember 전제)
+model HiringPostingManager {
+  id        String @id @default(cuid())
+  postingId String
+  userId    String
+
+  posting HiringPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+
+  @@unique([postingId, userId])
+}
+
+// 공고 상세 리치 블록 (Excalidraw 캔버스 — data JSON + export 이미지 storage 키)
+model HiringContent {
+  id          String                  @id @default(cuid())
+  spaceId     String
+  sourceType  HiringContentSourceType
+  postingId   String? // sourceType=POSTING_DETAIL 일 때
+  templateId  String? // sourceType=DETAIL_TEMPLATE 일 때
+  contentType String                  @default("excalidraw")
+  data        Json? // excalidraw scene JSON
+  imagePath   String? // hiring-assets 버킷 내 export PNG 경로
+  sortOrder   Int                     @default(0)
+
+  space    Space                 @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  posting  HiringPosting?        @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  template HiringDetailTemplate? @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postingId])
+  @@index([templateId])
+  @@index([spaceId])
+}
+
+// 재사용 상세 템플릿
+model HiringDetailTemplate {
+  id        String  @id @default(cuid())
+  spaceId   String
+  name      String
+  data      Json? // 섹션 블록 JSON
+  imagePath String? // 대표 이미지 storage 경로
+
+  space    Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  contents HiringContent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// 지원서 (opening Application — 지원자는 비인증 익명 레코드)
+model HiringApplication {
+  id                String  @id @default(cuid())
+  spaceId           String
+  postingId         String
+  postingPositionId String?
+  uuid              String  @unique @default(uuid()) // 내부/공개 참조 키
+
+  // 제출값 JSON — 표준 PII 항목(name/phone/email/address)은 값 제거 후 아래 enc 컬럼으로 이동,
+  // 커스텀 항목만 값 유지. (src/lib/hiring/pii.ts 참조)
+  applicationEntries Json?
+
+  // PII (AES enc + iv, 매칭 필요한 것만 HMAC hash)
+  nameEnc             String?
+  nameIv              String?
+  nameHash            String?
+  maskedName          String? // 목록 표시용 마스킹 이름 (홍*동)
+  phoneEnc            String?
+  phoneIv             String?
+  phoneHash           String? // 중복판정·블랙리스트 매칭 키
+  phoneLastDigitsHash String? // 뒷 4자리 검색
+  emailEnc            String?
+  emailIv             String?
+  emailHash           String?
+  addressEnc          String?
+  addressIv           String?
+
+  stage       HiringApplicationStage @default(HIRING)
+  hiringStage HiringProcessStage     @default(APPLIED)
+
+  referrer           String? // 유입 잡보드 (jobkorea/saramin/albamon/wanted …)
+  directRegistration Boolean @default(false) // 고용주 직접 등록
+  duplicated         Boolean @default(false) // phoneHash 중복 감지
+  memo               String?
+
+  privacyAgreedAt DateTime?
+  canceledAt      DateTime?
+  deletedAt       DateTime? // 소프트 삭제
+
+  space           Space                           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  posting         HiringPosting                   @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  postingPosition HiringPostingPosition?          @relation(fields: [postingPositionId], references: [id], onDelete: SetNull)
+  stores          HiringApplicationStore[]
+  files           HiringApplicationFile[]
+  comments        HiringComment[]
+  notifications   HiringApplicationNotification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, stage])
+  @@index([spaceId, createdAt])
+  @@index([postingId])
+  @@index([spaceId, phoneHash])
+}
+
+// 지원 × 매장 조인 (지원자가 선택한 근무 희망 매장)
+model HiringApplicationStore {
+  id            String @id @default(cuid())
+  applicationId String
+  storeId       String
+
+  application HiringApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  store       HiringStore       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, storeId])
+}
+
+// 지원자 첨부 파일 (이력서 등 — hiring-files 비공개 버킷, 서명 URL 접근만)
+model HiringApplicationFile {
+  id            String @id @default(cuid())
+  spaceId       String
+  applicationId String
+  fileName      String // 원본 파일명
+  filePath      String // 비공개 버킷 내 경로
+  mimeType      String
+  sizeBytes     Int
+
+  application HiringApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([applicationId])
+  @@index([spaceId])
+}
+
+// 지원서 내부 메모 (고용주 팀 코멘트)
+model HiringComment {
+  id            String    @id @default(cuid())
+  spaceId       String
+  applicationId String
+  userId        String // 작성자 (Supabase user id)
+  content       String
+  editedAt      DateTime?
+  deletedAt     DateTime?
+
+  application HiringApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([applicationId])
+}
+
+// 지원자 상태 알림 (uuid + tokenHash 로 30일 공개 열람)
+model HiringApplicationNotification {
+  id            String                 @id @default(cuid())
+  spaceId       String
+  applicationId String
+  senderUserId  String? // 발송한 담당자
+  notiType      HiringNotificationType
+  detailMessage String?
+  uuid          String                 @unique
+  tokenHash     String // 원문 토큰은 저장하지 않음 — HMAC 해시만 (상수시간 비교)
+  tokenExpireAt DateTime
+  sentAt        DateTime?
+
+  application HiringApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([applicationId])
+}
+
+// 블랙리스트 (phoneHash 매칭)
+model HiringBlacklist {
+  id        String  @id @default(cuid())
+  spaceId   String
+  phoneEnc  String
+  phoneIv   String
+  phoneHash String
+  reason    String?
+  isActive  Boolean @default(true)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, phoneHash])
+}
+
+// 지원자 알림 메시지 템플릿
+model HiringMessageTemplate {
+  id         String    @id @default(cuid())
+  spaceId    String
+  title      String
+  content    String
+  lastUsedAt DateTime?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
 }

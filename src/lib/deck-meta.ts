@@ -4,6 +4,8 @@ import {
   ShoppingBag,
   Sparkles,
   Landmark,
+  Briefcase,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -11,9 +13,18 @@ import {
   SELLER_HUB_BASE_PATH,
   SALES_CONTENT_BASE_PATH,
   FINANCE_DASHBOARD_PATH,
+  HIRING_POSTS_HOME_PATH,
+  HIRING_APPLICANTS_HOME_PATH,
 } from './deck-routes'
 
-export type DeckVariant = 'workdeck' | 'coupang-ads' | 'seller-hub' | 'sales-content' | 'finance'
+export type DeckVariant =
+  | 'workdeck'
+  | 'coupang-ads'
+  | 'seller-hub'
+  | 'sales-content'
+  | 'finance'
+  | 'hiring-posts'
+  | 'hiring-applicants'
 
 export type DeckMeta = {
   name: string
@@ -51,6 +62,18 @@ export const DECK_META: Record<DeckVariant, DeckMeta> = {
     href: FINANCE_DASHBOARD_PATH,
     icon: Landmark,
     gradient: 'from-emerald-500 to-teal-600',
+  },
+  'hiring-posts': {
+    name: '공고 제작',
+    href: HIRING_POSTS_HOME_PATH,
+    icon: Briefcase,
+    gradient: 'from-sky-500 to-blue-700',
+  },
+  'hiring-applicants': {
+    name: '지원자 관리',
+    href: HIRING_APPLICANTS_HOME_PATH,
+    icon: Users,
+    gradient: 'from-rose-500 to-pink-700',
   },
   workdeck: {
     name: 'Workdeck',

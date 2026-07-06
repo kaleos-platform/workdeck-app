@@ -106,3 +106,42 @@ export const FINANCE_TRANSACTIONS_PATH = `${FINANCE_BASE_PATH}/transactions`
 export const FINANCE_UPLOAD_PATH = `${FINANCE_BASE_PATH}/upload`
 export const FINANCE_ACCOUNTS_PATH = `${FINANCE_BASE_PATH}/accounts`
 export const FINANCE_BALANCES_PATH = `${FINANCE_BASE_PATH}/balances`
+
+// ─── 채용 관리 ① 공고 제작 (Hiring Posts) ─────────────────────────────────────
+export const HIRING_POSTS_DECK_ID = 'hiring-posts'
+export const HIRING_POSTS_BASE_PATH = '/d/hiring-posts'
+export const HIRING_POSTS_HOME_PATH = `${HIRING_POSTS_BASE_PATH}/home`
+export const HIRING_POSTS_POSTINGS_PATH = `${HIRING_POSTS_BASE_PATH}/postings`
+export const HIRING_POSTS_TEMPLATES_PATH = `${HIRING_POSTS_BASE_PATH}/templates`
+export const HIRING_POSTS_STORES_PATH = `${HIRING_POSTS_BASE_PATH}/settings/stores`
+export const HIRING_POSTS_POSITIONS_PATH = `${HIRING_POSTS_BASE_PATH}/settings/positions`
+
+export function getHiringPostingPath(id: string): string {
+  return `${HIRING_POSTS_POSTINGS_PATH}/${id}`
+}
+
+export function getHiringPostingBuildPath(id: string, step?: string): string {
+  const base = `${HIRING_POSTS_POSTINGS_PATH}/${id}/build`
+  return step ? `${base}/${step}` : base
+}
+
+// ─── 채용 관리 ② 지원자 관리 (Hiring Applicants) ──────────────────────────────
+export const HIRING_APPLICANTS_DECK_ID = 'hiring-applicants'
+export const HIRING_APPLICANTS_BASE_PATH = '/d/hiring-applicants'
+export const HIRING_APPLICANTS_HOME_PATH = `${HIRING_APPLICANTS_BASE_PATH}/home`
+export const HIRING_APPLICANTS_LIST_PATH = `${HIRING_APPLICANTS_BASE_PATH}/applications`
+export const HIRING_APPLICANTS_BLACKLIST_PATH = `${HIRING_APPLICANTS_BASE_PATH}/blacklist`
+export const HIRING_APPLICANTS_TEMPLATES_PATH = `${HIRING_APPLICANTS_BASE_PATH}/message-templates`
+
+export function getHiringApplicationPath(id: string): string {
+  return `${HIRING_APPLICANTS_LIST_PATH}/${id}`
+}
+
+// ─── 채용 공개 (무인증) ────────────────────────────────────────────────────────
+export function getHiringPublicPostingPath(uuid: string): string {
+  return `/p/${uuid}`
+}
+
+export function getHiringPublicApplyPath(uuid: string): string {
+  return `/p/${uuid}/apply`
+}

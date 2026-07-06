@@ -522,3 +522,78 @@ export type FinTransaction = Prisma.FinTransactionModel
  * 
  */
 export type FinBalanceSnapshot = Prisma.FinBalanceSnapshotModel
+/**
+ * Model HiringStore
+ * 
+ */
+export type HiringStore = Prisma.HiringStoreModel
+/**
+ * Model HiringPosition
+ * 
+ */
+export type HiringPosition = Prisma.HiringPositionModel
+/**
+ * Model HiringPosting
+ * 
+ */
+export type HiringPosting = Prisma.HiringPostingModel
+/**
+ * Model HiringPostingPosition
+ * 
+ */
+export type HiringPostingPosition = Prisma.HiringPostingPositionModel
+/**
+ * Model HiringPostingStore
+ * 
+ */
+export type HiringPostingStore = Prisma.HiringPostingStoreModel
+/**
+ * Model HiringPostingManager
+ * 
+ */
+export type HiringPostingManager = Prisma.HiringPostingManagerModel
+/**
+ * Model HiringContent
+ * 
+ */
+export type HiringContent = Prisma.HiringContentModel
+/**
+ * Model HiringDetailTemplate
+ * 
+ */
+export type HiringDetailTemplate = Prisma.HiringDetailTemplateModel
+/**
+ * Model HiringApplication
+ * 
+ */
+export type HiringApplication = Prisma.HiringApplicationModel
+/**
+ * Model HiringApplicationStore
+ * 
+ */
+export type HiringApplicationStore = Prisma.HiringApplicationStoreModel
+/**
+ * Model HiringApplicationFile
+ * 
+ */
+export type HiringApplicationFile = Prisma.HiringApplicationFileModel
+/**
+ * Model HiringComment
+ * 
+ */
+export type HiringComment = Prisma.HiringCommentModel
+/**
+ * Model HiringApplicationNotification
+ * 
+ */
+export type HiringApplicationNotification = Prisma.HiringApplicationNotificationModel
+/**
+ * Model HiringBlacklist
+ * 
+ */
+export type HiringBlacklist = Prisma.HiringBlacklistModel
+/**
+ * Model HiringMessageTemplate
+ * 
+ */
+export type HiringMessageTemplate = Prisma.HiringMessageTemplateModel
