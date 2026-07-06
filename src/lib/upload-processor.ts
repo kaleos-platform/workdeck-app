@@ -92,12 +92,17 @@ export async function processUpload(params: {
 
   const { periodStart, periodEnd } = detectPeriod(rows)
 
+  // 업로드 파일에 포함된 캠페인 ID 목록 (중복 감지·삭제·삽입 경로 모두 공유)
+  const campaignIds = [...new Set(rows.map((r) => r.campaignId))]
+
   // ── 첫 번째 요청: 중복 감지 단계 ──
   if (overwrite === null) {
+    // campaignId 필터 포함: 업로드 파일과 무관한 다른 캠페인 기간 데이터는 제외
     const existingCount = await prisma.adRecord.count({
       where: {
         workspaceId,
         date: { gte: periodStart, lte: periodEnd },
+        campaignId: { in: campaignIds },
       },
     })
 
@@ -115,7 +120,6 @@ export async function processUpload(params: {
 
   // DB 연결 폭주 방지를 위해 청크를 순차 처리한다.
   const CHUNK_SIZE = 2000
-  const campaignIds = [...new Set(rows.map((r) => r.campaignId))]
 
   // 삽입용 행 사전 준비 (reportId 는 트랜잭션 내 업로드 이력 생성 후 채운다)
   const baseRows = rows.map((row) => ({

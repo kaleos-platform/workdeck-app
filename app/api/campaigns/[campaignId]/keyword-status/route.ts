@@ -46,6 +46,10 @@ export async function POST(
   if (!Array.isArray(body.keywords) || body.keywords.length === 0) {
     return errorResponse('keywords 배열이 필요합니다', 400)
   }
+  // 배열 크기 상한: 단일 요청에서 지나치게 많은 upsert 방지
+  if (body.keywords.length > 1000) {
+    return errorResponse('키워드는 한 번에 최대 1000개까지 처리할 수 있습니다', 400)
+  }
 
   const keywords = body.keywords.filter((k): k is string => typeof k === 'string')
   const removedMemo = typeof body.removedMemo === 'string' ? body.removedMemo : null
