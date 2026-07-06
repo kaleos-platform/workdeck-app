@@ -1,11 +1,12 @@
 'use client'
 
-import { Fragment, useCallback, useEffect, useState, type CSSProperties } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Pin, X } from 'lucide-react'
+import { Pin, X, Search, ArrowUp, ArrowDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -769,6 +770,36 @@ function monthRangeToDays(from: string, to: string): { fromDay: string; toDay: s
   return { fromDay: `${from}-01`, toDay: `${to}-${String(lastDay).padStart(2, '0')}` }
 }
 
+/** 패널 정렬 칩(일자/금액) — 활성 시 방향 화살표. */
+function PanelSortChip({
+  label,
+  active,
+  dir,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  dir: 'asc' | 'desc'
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-0.5 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors',
+        active
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+      )}
+    >
+      {label}
+      {active &&
+        (dir === 'asc' ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />)}
+    </button>
+  )
+}
+
 /**
  * 선택된 계정과목/대분류의 거래내역(읽기 전용). 정확 계정과목 id(들) + 방향 + 기간 + 이체 제외로
  * 조회해 현금흐름 행 값과 대사되게 한다. 미분류만/혼합은 uncategorized로 처리.
@@ -786,6 +817,41 @@ function CashflowTxnPanel({
 }) {
   const [data, setData] = useState<PanelData | null>(null)
   const [loading, setLoading] = useState(true)
+  // 검색·정렬(클라이언트) — 스코프된 조회 결과(≤300)를 즉시 필터/정렬.
+  const [search, setSearch] = useState('')
+  const [sortField, setSortField] = useState<'date' | 'amount'>('date')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  // 대상 계정과목이 바뀌면 검색어 초기화(정렬은 유지).
+  useEffect(() => {
+    setSearch('')
+  }, [selected.key])
+
+  const toggleSort = (f: 'date' | 'amount') => {
+    if (sortField === f) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else {
+      setSortField(f)
+      setSortDir('desc')
+    }
+  }
+
+  const visibleRows = useMemo(() => {
+    if (!data) return []
+    const q = search.trim().toLowerCase()
+    const filtered = q
+      ? data.rows.filter(
+          (r) =>
+            (r.description ?? '').toLowerCase().includes(q) ||
+            (r.counterparty ?? '').toLowerCase().includes(q)
+        )
+      : data.rows
+    const dir = sortDir === 'asc' ? 1 : -1
+    return [...filtered].sort((a, b) =>
+      sortField === 'amount'
+        ? (a.amount - b.amount) * dir
+        : (new Date(a.txnDate).getTime() - new Date(b.txnDate).getTime()) * dir
+    )
+  }, [data, search, sortField, sortDir])
 
   const load = useCallback(
     async (signal: AbortSignal) => {
@@ -824,7 +890,14 @@ function CashflowTxnPanel({
   }, [load])
 
   const isIncome = selected.direction === 'IN'
-  const sum = data ? (isIncome ? data.summary.incomeTotal : data.summary.expenseTotal) : 0
+  // 검색 중이면 합계도 필터 결과(visibleRows) 기준 — 건수와 정합. 미검색 시 서버 전체 합계(대사용).
+  const sum = !data
+    ? 0
+    : search.trim()
+      ? visibleRows.reduce((s, r) => s + r.amount, 0)
+      : isIncome
+        ? data.summary.incomeTotal
+        : data.summary.expenseTotal
 
   return (
     <div className="w-full shrink-0 rounded-xl border bg-card shadow-sm lg:sticky lg:top-4 lg:flex lg:h-[calc(100vh-5rem)] lg:w-[360px] lg:flex-col">
@@ -849,7 +922,10 @@ function CashflowTxnPanel({
           </div>
           <p className="text-xs text-muted-foreground">
             {from} ~ {to}
-            {data && ` · 총 ${data.total.toLocaleString('ko-KR')}건`}
+            {data &&
+              (search.trim()
+                ? ` · ${visibleRows.length.toLocaleString('ko-KR')}건`
+                : ` · 총 ${data.total.toLocaleString('ko-KR')}건`)}
           </p>
         </div>
         <Button
@@ -879,15 +955,47 @@ function CashflowTxnPanel({
         </div>
       )}
 
+      {/* 검색 + 정렬 */}
+      {data && data.rows.length > 0 && (
+        <div className="shrink-0 space-y-2 border-b px-3 py-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="적요·가맹점 검색"
+              className="h-8 pl-7 text-xs"
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-muted-foreground">정렬</span>
+            <PanelSortChip
+              label="일자"
+              active={sortField === 'date'}
+              dir={sortDir}
+              onClick={() => toggleSort('date')}
+            />
+            <PanelSortChip
+              label="금액"
+              active={sortField === 'amount'}
+              dir={sortDir}
+              onClick={() => toggleSort('amount')}
+            />
+          </div>
+        </div>
+      )}
+
       {/* 목록 — lg에선 패널 잔여 높이를 채우고 내부 스크롤(패널 자체는 sticky 고정) */}
       <div className="max-h-[60vh] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
         {loading ? (
           <p className="py-8 text-center text-sm text-muted-foreground">불러오는 중...</p>
         ) : !data || data.rows.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">거래 내역이 없습니다</p>
+        ) : visibleRows.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">검색 결과가 없습니다</p>
         ) : (
           <ul className="divide-y">
-            {data.rows.map((txn) => {
+            {visibleRows.map((txn) => {
               const status = classStatusBadge(txn.classStatus)
               return (
                 <li key={txn.id} className="px-4 py-2.5">

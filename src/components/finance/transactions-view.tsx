@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus, Trash2, Sparkles, Tag, X } from 'lucide-react'
+import { Plus, Trash2, Sparkles, Tag, X, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -133,6 +133,16 @@ function fmtDate(iso: string): string {
 
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
+// 전체 거래 정렬 가능한 컬럼 키(API sort 파라미터와 1:1).
+type TxnSortField =
+  | 'txnDate'
+  | 'account'
+  | 'description'
+  | 'amount'
+  | 'balanceAfter'
+  | 'category'
+  | 'classStatus'
+
 export function TransactionsView() {
   const searchParams = useSearchParams()
   const importIdParam = searchParams.get('importId') ?? undefined
@@ -179,6 +189,11 @@ export function TransactionsView() {
   const [filterAccountId, setFilterAccountId] = useState('')
   const [filterCategoryId, setFilterCategoryId] = useState('')
   const [filterDirection, setFilterDirection] = useState<'all' | 'IN' | 'OUT'>('all')
+  // 정렬(전체 거래) — 컬럼 헤더 클릭. 서버사이드(전체 데이터셋 정확).
+  const [txnSort, setTxnSort] = useState<{ field: TxnSortField; order: 'asc' | 'desc' }>({
+    field: 'txnDate',
+    order: 'desc',
+  })
 
   // 메인 탭 — 초기값은 로드 후 결정
   const [mainTab, setMainTab] = useState<'staging' | 'transactions'>('staging')
@@ -268,6 +283,8 @@ export function TransactionsView() {
       if (filterAccountId) params.set('accountId', filterAccountId)
       if (filterCategoryId) params.set('categoryId', filterCategoryId)
       if (filterDirection !== 'all') params.set('direction', filterDirection)
+      params.set('sort', txnSort.field)
+      params.set('order', txnSort.order)
       const res = await fetch(`/api/finance/transactions?${params}`)
       if (!res.ok) throw new Error('거래 내역 조회 실패')
       const data = await res.json()
@@ -279,7 +296,7 @@ export function TransactionsView() {
     } finally {
       setTxnLoading(false)
     }
-  }, [filterQ, filterAccountId, filterCategoryId, filterDirection])
+  }, [filterQ, filterAccountId, filterCategoryId, filterDirection, txnSort.field, txnSort.order])
 
   // 초기 로드
   useEffect(() => {
@@ -303,6 +320,26 @@ export function TransactionsView() {
       void loadTransactions()
     }
   }, [mainTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 정렬 변경 시 재조회(전체 거래 탭에서만). 필터는 검색 버튼으로 명시 조회하지만 정렬은 즉시 반영.
+  useEffect(() => {
+    if (mainTab === 'transactions') {
+      void loadTransactions()
+    }
+  }, [txnSort.field, txnSort.order]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 컬럼 헤더 클릭: 같은 컬럼이면 방향 토글, 다른 컬럼이면 기본 방향(일자·금액·잔액=desc, 텍스트=asc).
+  const handleTxnSort = useCallback((field: TxnSortField) => {
+    setTxnSort((prev) =>
+      prev.field === field
+        ? { field, order: prev.order === 'asc' ? 'desc' : 'asc' }
+        : {
+            field,
+            order:
+              field === 'txnDate' || field === 'amount' || field === 'balanceAfter' ? 'desc' : 'asc',
+          }
+    )
+  }, [])
 
   // 스테이징 하위 탭 변경
   const handleStagingTabChange = (tab: string) => {
@@ -562,6 +599,8 @@ export function TransactionsView() {
           onFilterCategoryIdChange={setFilterCategoryId}
           onFilterDirectionChange={setFilterDirection}
           onSearch={handleTxnSearch}
+          sort={txnSort}
+          onSort={handleTxnSort}
           onClassify={handleTxnClassify}
           onBulkClassify={handleTxnBulkClassify}
           onBulkDelete={handleTxnBulkDelete}
@@ -1057,6 +1096,49 @@ function StagingRow({
 
 // ─── 전체 거래 패널 ───────────────────────────────────────────────────────────
 
+// ─── 정렬 가능한 컬럼 헤더 ─────────────────────────────────────────────────────
+
+function SortHeader({
+  label,
+  field,
+  sort,
+  onSort,
+  className,
+  align = 'left',
+}: {
+  label: string
+  field: TxnSortField
+  sort: { field: TxnSortField; order: 'asc' | 'desc' }
+  onSort: (field: TxnSortField) => void
+  className?: string
+  align?: 'left' | 'right'
+}) {
+  const active = sort.field === field
+  return (
+    <TableHead className={className}>
+      <button
+        type="button"
+        onClick={() => onSort(field)}
+        className={`inline-flex w-full items-center gap-1 hover:text-foreground ${
+          align === 'right' ? 'justify-end' : ''
+        }`}
+        aria-label={`${label} 정렬`}
+      >
+        <span>{label}</span>
+        {active ? (
+          sort.order === 'asc' ? (
+            <ArrowUp className="size-3" />
+          ) : (
+            <ArrowDown className="size-3" />
+          )
+        ) : (
+          <ChevronsUpDown className="size-3 text-muted-foreground/40" />
+        )}
+      </button>
+    </TableHead>
+  )
+}
+
 function TransactionsPanel({
   rows,
   total,
@@ -1075,6 +1157,8 @@ function TransactionsPanel({
   onFilterCategoryIdChange,
   onFilterDirectionChange,
   onSearch,
+  sort,
+  onSort,
   onClassify,
   onBulkClassify,
   onBulkDelete,
@@ -1088,6 +1172,8 @@ function TransactionsPanel({
   filterAccountId: string
   filterCategoryId: string
   filterDirection: 'all' | 'IN' | 'OUT'
+  sort: { field: TxnSortField; order: 'asc' | 'desc' }
+  onSort: (field: TxnSortField) => void
   accounts: {
     id: string
     name: string
@@ -1285,13 +1371,13 @@ function TransactionsPanel({
                     aria-label="전체 선택"
                   />
                 </TableHead>
-                <TableHead className="w-24">날짜</TableHead>
-                <TableHead className="w-28">출처</TableHead>
-                <TableHead>적요</TableHead>
-                <TableHead className="w-28 text-right">금액</TableHead>
-                <TableHead className="w-28 text-right">거래후잔액</TableHead>
-                <TableHead className="w-44">계정과목</TableHead>
-                <TableHead className="w-24">상태</TableHead>
+                <SortHeader label="날짜" field="txnDate" sort={sort} onSort={onSort} className="w-24" />
+                <SortHeader label="출처" field="account" sort={sort} onSort={onSort} className="w-28" />
+                <SortHeader label="적요" field="description" sort={sort} onSort={onSort} />
+                <SortHeader label="금액" field="amount" sort={sort} onSort={onSort} className="w-28" align="right" />
+                <SortHeader label="거래후잔액" field="balanceAfter" sort={sort} onSort={onSort} className="w-28" align="right" />
+                <SortHeader label="계정과목" field="category" sort={sort} onSort={onSort} className="w-44" />
+                <SortHeader label="상태" field="classStatus" sort={sort} onSort={onSort} className="w-24" />
               </TableRow>
             </TableHeader>
             <TableBody>
