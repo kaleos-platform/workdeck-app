@@ -273,6 +273,8 @@ export type BoPostWhereInput = {
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   material?: Prisma.XOR<Prisma.BoMaterialScalarRelationFilter, Prisma.BoMaterialWhereInput>
   versions?: Prisma.BoPostVersionListRelationFilter
+  variants?: Prisma.BoPostVariantListRelationFilter
+  deployments?: Prisma.BoDeploymentListRelationFilter
 }
 
 export type BoPostOrderByWithRelationInput = {
@@ -296,6 +298,8 @@ export type BoPostOrderByWithRelationInput = {
   space?: Prisma.SpaceOrderByWithRelationInput
   material?: Prisma.BoMaterialOrderByWithRelationInput
   versions?: Prisma.BoPostVersionOrderByRelationAggregateInput
+  variants?: Prisma.BoPostVariantOrderByRelationAggregateInput
+  deployments?: Prisma.BoDeploymentOrderByRelationAggregateInput
 }
 
 export type BoPostWhereUniqueInput = Prisma.AtLeast<{
@@ -322,6 +326,8 @@ export type BoPostWhereUniqueInput = Prisma.AtLeast<{
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   material?: Prisma.XOR<Prisma.BoMaterialScalarRelationFilter, Prisma.BoMaterialWhereInput>
   versions?: Prisma.BoPostVersionListRelationFilter
+  variants?: Prisma.BoPostVariantListRelationFilter
+  deployments?: Prisma.BoDeploymentListRelationFilter
 }, "id">
 
 export type BoPostOrderByWithAggregationInput = {
@@ -389,6 +395,8 @@ export type BoPostCreateInput = {
   space: Prisma.SpaceCreateNestedOneWithoutBoPostsInput
   material: Prisma.BoMaterialCreateNestedOneWithoutPostsInput
   versions?: Prisma.BoPostVersionCreateNestedManyWithoutPostInput
+  variants?: Prisma.BoPostVariantCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentCreateNestedManyWithoutPostInput
 }
 
 export type BoPostUncheckedCreateInput = {
@@ -410,6 +418,8 @@ export type BoPostUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   versions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutPostInput
+  variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type BoPostUpdateInput = {
@@ -431,6 +441,8 @@ export type BoPostUpdateInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoPostsNestedInput
   material?: Prisma.BoMaterialUpdateOneRequiredWithoutPostsNestedInput
   versions?: Prisma.BoPostVersionUpdateManyWithoutPostNestedInput
+  variants?: Prisma.BoPostVariantUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUpdateManyWithoutPostNestedInput
 }
 
 export type BoPostUncheckedUpdateInput = {
@@ -452,6 +464,8 @@ export type BoPostUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   versions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutPostNestedInput
+  variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type BoPostCreateManyInput = {
@@ -685,6 +699,34 @@ export type BoPostUpdateOneRequiredWithoutVersionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BoPostUpdateToOneWithWhereWithoutVersionsInput, Prisma.BoPostUpdateWithoutVersionsInput>, Prisma.BoPostUncheckedUpdateWithoutVersionsInput>
 }
 
+export type BoPostCreateNestedOneWithoutVariantsInput = {
+  create?: Prisma.XOR<Prisma.BoPostCreateWithoutVariantsInput, Prisma.BoPostUncheckedCreateWithoutVariantsInput>
+  connectOrCreate?: Prisma.BoPostCreateOrConnectWithoutVariantsInput
+  connect?: Prisma.BoPostWhereUniqueInput
+}
+
+export type BoPostUpdateOneRequiredWithoutVariantsNestedInput = {
+  create?: Prisma.XOR<Prisma.BoPostCreateWithoutVariantsInput, Prisma.BoPostUncheckedCreateWithoutVariantsInput>
+  connectOrCreate?: Prisma.BoPostCreateOrConnectWithoutVariantsInput
+  upsert?: Prisma.BoPostUpsertWithoutVariantsInput
+  connect?: Prisma.BoPostWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BoPostUpdateToOneWithWhereWithoutVariantsInput, Prisma.BoPostUpdateWithoutVariantsInput>, Prisma.BoPostUncheckedUpdateWithoutVariantsInput>
+}
+
+export type BoPostCreateNestedOneWithoutDeploymentsInput = {
+  create?: Prisma.XOR<Prisma.BoPostCreateWithoutDeploymentsInput, Prisma.BoPostUncheckedCreateWithoutDeploymentsInput>
+  connectOrCreate?: Prisma.BoPostCreateOrConnectWithoutDeploymentsInput
+  connect?: Prisma.BoPostWhereUniqueInput
+}
+
+export type BoPostUpdateOneRequiredWithoutDeploymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.BoPostCreateWithoutDeploymentsInput, Prisma.BoPostUncheckedCreateWithoutDeploymentsInput>
+  connectOrCreate?: Prisma.BoPostCreateOrConnectWithoutDeploymentsInput
+  upsert?: Prisma.BoPostUpsertWithoutDeploymentsInput
+  connect?: Prisma.BoPostWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BoPostUpdateToOneWithWhereWithoutDeploymentsInput, Prisma.BoPostUpdateWithoutDeploymentsInput>, Prisma.BoPostUncheckedUpdateWithoutDeploymentsInput>
+}
+
 export type BoPostCreateWithoutSpaceInput = {
   id?: string
   userId?: string | null
@@ -703,6 +745,8 @@ export type BoPostCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   material: Prisma.BoMaterialCreateNestedOneWithoutPostsInput
   versions?: Prisma.BoPostVersionCreateNestedManyWithoutPostInput
+  variants?: Prisma.BoPostVariantCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentCreateNestedManyWithoutPostInput
 }
 
 export type BoPostUncheckedCreateWithoutSpaceInput = {
@@ -723,6 +767,8 @@ export type BoPostUncheckedCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   versions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutPostInput
+  variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type BoPostCreateOrConnectWithoutSpaceInput = {
@@ -792,6 +838,8 @@ export type BoPostCreateWithoutMaterialInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoPostsInput
   versions?: Prisma.BoPostVersionCreateNestedManyWithoutPostInput
+  variants?: Prisma.BoPostVariantCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentCreateNestedManyWithoutPostInput
 }
 
 export type BoPostUncheckedCreateWithoutMaterialInput = {
@@ -812,6 +860,8 @@ export type BoPostUncheckedCreateWithoutMaterialInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   versions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutPostInput
+  variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type BoPostCreateOrConnectWithoutMaterialInput = {
@@ -858,6 +908,8 @@ export type BoPostCreateWithoutVersionsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoPostsInput
   material: Prisma.BoMaterialCreateNestedOneWithoutPostsInput
+  variants?: Prisma.BoPostVariantCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentCreateNestedManyWithoutPostInput
 }
 
 export type BoPostUncheckedCreateWithoutVersionsInput = {
@@ -878,6 +930,8 @@ export type BoPostUncheckedCreateWithoutVersionsInput = {
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type BoPostCreateOrConnectWithoutVersionsInput = {
@@ -914,6 +968,8 @@ export type BoPostUpdateWithoutVersionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoPostsNestedInput
   material?: Prisma.BoMaterialUpdateOneRequiredWithoutPostsNestedInput
+  variants?: Prisma.BoPostVariantUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUpdateManyWithoutPostNestedInput
 }
 
 export type BoPostUncheckedUpdateWithoutVersionsInput = {
@@ -934,6 +990,216 @@ export type BoPostUncheckedUpdateWithoutVersionsInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutPostNestedInput
+}
+
+export type BoPostCreateWithoutVariantsInput = {
+  id?: string
+  userId?: string | null
+  title: string
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  bodyMarkdown?: string | null
+  status?: $Enums.BoPostStatus
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ctaUrl?: string | null
+  publishApprovedByUserId?: string | null
+  publishApprovedAt?: Date | string | null
+  generationTraceHash?: string | null
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutBoPostsInput
+  material: Prisma.BoMaterialCreateNestedOneWithoutPostsInput
+  versions?: Prisma.BoPostVersionCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentCreateNestedManyWithoutPostInput
+}
+
+export type BoPostUncheckedCreateWithoutVariantsInput = {
+  id?: string
+  spaceId: string
+  userId?: string | null
+  materialId: string
+  title: string
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  bodyMarkdown?: string | null
+  status?: $Enums.BoPostStatus
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ctaUrl?: string | null
+  publishApprovedByUserId?: string | null
+  publishApprovedAt?: Date | string | null
+  generationTraceHash?: string | null
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  versions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutPostInput
+  deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutPostInput
+}
+
+export type BoPostCreateOrConnectWithoutVariantsInput = {
+  where: Prisma.BoPostWhereUniqueInput
+  create: Prisma.XOR<Prisma.BoPostCreateWithoutVariantsInput, Prisma.BoPostUncheckedCreateWithoutVariantsInput>
+}
+
+export type BoPostUpsertWithoutVariantsInput = {
+  update: Prisma.XOR<Prisma.BoPostUpdateWithoutVariantsInput, Prisma.BoPostUncheckedUpdateWithoutVariantsInput>
+  create: Prisma.XOR<Prisma.BoPostCreateWithoutVariantsInput, Prisma.BoPostUncheckedCreateWithoutVariantsInput>
+  where?: Prisma.BoPostWhereInput
+}
+
+export type BoPostUpdateToOneWithWhereWithoutVariantsInput = {
+  where?: Prisma.BoPostWhereInput
+  data: Prisma.XOR<Prisma.BoPostUpdateWithoutVariantsInput, Prisma.BoPostUncheckedUpdateWithoutVariantsInput>
+}
+
+export type BoPostUpdateWithoutVariantsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  bodyMarkdown?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBoPostStatusFieldUpdateOperationsInput | $Enums.BoPostStatus
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ctaUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishApprovedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishApprovedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  generationTraceHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutBoPostsNestedInput
+  material?: Prisma.BoMaterialUpdateOneRequiredWithoutPostsNestedInput
+  versions?: Prisma.BoPostVersionUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUpdateManyWithoutPostNestedInput
+}
+
+export type BoPostUncheckedUpdateWithoutVariantsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  materialId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  bodyMarkdown?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBoPostStatusFieldUpdateOperationsInput | $Enums.BoPostStatus
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ctaUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishApprovedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishApprovedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  generationTraceHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutPostNestedInput
+}
+
+export type BoPostCreateWithoutDeploymentsInput = {
+  id?: string
+  userId?: string | null
+  title: string
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  bodyMarkdown?: string | null
+  status?: $Enums.BoPostStatus
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ctaUrl?: string | null
+  publishApprovedByUserId?: string | null
+  publishApprovedAt?: Date | string | null
+  generationTraceHash?: string | null
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutBoPostsInput
+  material: Prisma.BoMaterialCreateNestedOneWithoutPostsInput
+  versions?: Prisma.BoPostVersionCreateNestedManyWithoutPostInput
+  variants?: Prisma.BoPostVariantCreateNestedManyWithoutPostInput
+}
+
+export type BoPostUncheckedCreateWithoutDeploymentsInput = {
+  id?: string
+  spaceId: string
+  userId?: string | null
+  materialId: string
+  title: string
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  bodyMarkdown?: string | null
+  status?: $Enums.BoPostStatus
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ctaUrl?: string | null
+  publishApprovedByUserId?: string | null
+  publishApprovedAt?: Date | string | null
+  generationTraceHash?: string | null
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  versions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutPostInput
+  variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutPostInput
+}
+
+export type BoPostCreateOrConnectWithoutDeploymentsInput = {
+  where: Prisma.BoPostWhereUniqueInput
+  create: Prisma.XOR<Prisma.BoPostCreateWithoutDeploymentsInput, Prisma.BoPostUncheckedCreateWithoutDeploymentsInput>
+}
+
+export type BoPostUpsertWithoutDeploymentsInput = {
+  update: Prisma.XOR<Prisma.BoPostUpdateWithoutDeploymentsInput, Prisma.BoPostUncheckedUpdateWithoutDeploymentsInput>
+  create: Prisma.XOR<Prisma.BoPostCreateWithoutDeploymentsInput, Prisma.BoPostUncheckedCreateWithoutDeploymentsInput>
+  where?: Prisma.BoPostWhereInput
+}
+
+export type BoPostUpdateToOneWithWhereWithoutDeploymentsInput = {
+  where?: Prisma.BoPostWhereInput
+  data: Prisma.XOR<Prisma.BoPostUpdateWithoutDeploymentsInput, Prisma.BoPostUncheckedUpdateWithoutDeploymentsInput>
+}
+
+export type BoPostUpdateWithoutDeploymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  bodyMarkdown?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBoPostStatusFieldUpdateOperationsInput | $Enums.BoPostStatus
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ctaUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishApprovedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishApprovedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  generationTraceHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutBoPostsNestedInput
+  material?: Prisma.BoMaterialUpdateOneRequiredWithoutPostsNestedInput
+  versions?: Prisma.BoPostVersionUpdateManyWithoutPostNestedInput
+  variants?: Prisma.BoPostVariantUpdateManyWithoutPostNestedInput
+}
+
+export type BoPostUncheckedUpdateWithoutDeploymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  materialId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  bodyMarkdown?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBoPostStatusFieldUpdateOperationsInput | $Enums.BoPostStatus
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ctaUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishApprovedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishApprovedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  generationTraceHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutPostNestedInput
+  variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type BoPostCreateManySpaceInput = {
@@ -973,6 +1239,8 @@ export type BoPostUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   material?: Prisma.BoMaterialUpdateOneRequiredWithoutPostsNestedInput
   versions?: Prisma.BoPostVersionUpdateManyWithoutPostNestedInput
+  variants?: Prisma.BoPostVariantUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUpdateManyWithoutPostNestedInput
 }
 
 export type BoPostUncheckedUpdateWithoutSpaceInput = {
@@ -993,6 +1261,8 @@ export type BoPostUncheckedUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   versions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutPostNestedInput
+  variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type BoPostUncheckedUpdateManyWithoutSpaceInput = {
@@ -1051,6 +1321,8 @@ export type BoPostUpdateWithoutMaterialInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoPostsNestedInput
   versions?: Prisma.BoPostVersionUpdateManyWithoutPostNestedInput
+  variants?: Prisma.BoPostVariantUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUpdateManyWithoutPostNestedInput
 }
 
 export type BoPostUncheckedUpdateWithoutMaterialInput = {
@@ -1071,6 +1343,8 @@ export type BoPostUncheckedUpdateWithoutMaterialInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   versions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutPostNestedInput
+  variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutPostNestedInput
+  deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type BoPostUncheckedUpdateManyWithoutMaterialInput = {
@@ -1099,10 +1373,14 @@ export type BoPostUncheckedUpdateManyWithoutMaterialInput = {
 
 export type BoPostCountOutputType = {
   versions: number
+  variants: number
+  deployments: number
 }
 
 export type BoPostCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   versions?: boolean | BoPostCountOutputTypeCountVersionsArgs
+  variants?: boolean | BoPostCountOutputTypeCountVariantsArgs
+  deployments?: boolean | BoPostCountOutputTypeCountDeploymentsArgs
 }
 
 /**
@@ -1120,6 +1398,20 @@ export type BoPostCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
  */
 export type BoPostCountOutputTypeCountVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.BoPostVersionWhereInput
+}
+
+/**
+ * BoPostCountOutputType without action
+ */
+export type BoPostCountOutputTypeCountVariantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BoPostVariantWhereInput
+}
+
+/**
+ * BoPostCountOutputType without action
+ */
+export type BoPostCountOutputTypeCountDeploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BoDeploymentWhereInput
 }
 
 
@@ -1144,6 +1436,8 @@ export type BoPostSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   material?: boolean | Prisma.BoMaterialDefaultArgs<ExtArgs>
   versions?: boolean | Prisma.BoPost$versionsArgs<ExtArgs>
+  variants?: boolean | Prisma.BoPost$variantsArgs<ExtArgs>
+  deployments?: boolean | Prisma.BoPost$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.BoPostCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["boPost"]>
 
@@ -1216,6 +1510,8 @@ export type BoPostInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   material?: boolean | Prisma.BoMaterialDefaultArgs<ExtArgs>
   versions?: boolean | Prisma.BoPost$versionsArgs<ExtArgs>
+  variants?: boolean | Prisma.BoPost$variantsArgs<ExtArgs>
+  deployments?: boolean | Prisma.BoPost$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.BoPostCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BoPostIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1233,6 +1529,8 @@ export type $BoPostPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     space: Prisma.$SpacePayload<ExtArgs>
     material: Prisma.$BoMaterialPayload<ExtArgs>
     versions: Prisma.$BoPostVersionPayload<ExtArgs>[]
+    variants: Prisma.$BoPostVariantPayload<ExtArgs>[]
+    deployments: Prisma.$BoDeploymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1649,6 +1947,8 @@ export interface Prisma__BoPostClient<T, Null = never, ExtArgs extends runtime.T
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   material<T extends Prisma.BoMaterialDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoMaterialDefaultArgs<ExtArgs>>): Prisma.Prisma__BoMaterialClient<runtime.Types.Result.GetResult<Prisma.$BoMaterialPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   versions<T extends Prisma.BoPost$versionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoPost$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  variants<T extends Prisma.BoPost$variantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoPost$variantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostVariantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deployments<T extends Prisma.BoPost$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoPost$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoDeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2112,6 +2412,54 @@ export type BoPost$versionsArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.BoPostVersionScalarFieldEnum | Prisma.BoPostVersionScalarFieldEnum[]
+}
+
+/**
+ * BoPost.variants
+ */
+export type BoPost$variantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BoPostVariant
+   */
+  select?: Prisma.BoPostVariantSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BoPostVariant
+   */
+  omit?: Prisma.BoPostVariantOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BoPostVariantInclude<ExtArgs> | null
+  where?: Prisma.BoPostVariantWhereInput
+  orderBy?: Prisma.BoPostVariantOrderByWithRelationInput | Prisma.BoPostVariantOrderByWithRelationInput[]
+  cursor?: Prisma.BoPostVariantWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BoPostVariantScalarFieldEnum | Prisma.BoPostVariantScalarFieldEnum[]
+}
+
+/**
+ * BoPost.deployments
+ */
+export type BoPost$deploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BoDeployment
+   */
+  select?: Prisma.BoDeploymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BoDeployment
+   */
+  omit?: Prisma.BoDeploymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BoDeploymentInclude<ExtArgs> | null
+  where?: Prisma.BoDeploymentWhereInput
+  orderBy?: Prisma.BoDeploymentOrderByWithRelationInput | Prisma.BoDeploymentOrderByWithRelationInput[]
+  cursor?: Prisma.BoDeploymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BoDeploymentScalarFieldEnum | Prisma.BoDeploymentScalarFieldEnum[]
 }
 
 /**

@@ -529,3 +529,42 @@ export const BoPostStatus = {
 } as const
 
 export type BoPostStatus = (typeof BoPostStatus)[keyof typeof BoPostStatus]
+
+
+export const BoPlatform = {
+  NAVER_BLOG: 'NAVER_BLOG',
+  TISTORY: 'TISTORY',
+  OWN_HOMEPAGE: 'OWN_HOMEPAGE'
+} as const
+
+export type BoPlatform = (typeof BoPlatform)[keyof typeof BoPlatform]
+
+
+export const BoPublisherMode = {
+  MANUAL: 'MANUAL',
+  BROWSER: 'BROWSER'
+} as const
+
+export type BoPublisherMode = (typeof BoPublisherMode)[keyof typeof BoPublisherMode]
+
+
+export const BoVariantStatus = {
+  GENERATING: 'GENERATING',
+  READY: 'READY',
+  EDITED: 'EDITED',
+  FAILED: 'FAILED'
+} as const
+
+export type BoVariantStatus = (typeof BoVariantStatus)[keyof typeof BoVariantStatus]
+
+
+export const BoDeploymentStatus = {
+  PENDING: 'PENDING',
+  PUBLISHING: 'PUBLISHING',
+  PUBLISHED: 'PUBLISHED',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED',
+  EXPORTED: 'EXPORTED'
+} as const
+
+export type BoDeploymentStatus = (typeof BoDeploymentStatus)[keyof typeof BoDeploymentStatus]

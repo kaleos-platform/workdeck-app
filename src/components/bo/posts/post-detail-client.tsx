@@ -8,6 +8,7 @@ import { BoEditor } from '@/components/bo/editor/editor'
 import { PostStatusBadge } from './post-status-badge'
 import { StatusActionBar } from './status-action-bar'
 import { VersionPanel } from './version-panel'
+import { VariantsTabPanel } from '@/components/bo/variants/variants-tab-panel'
 import type { BoPostStatus } from './post-status-badge'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
@@ -79,6 +80,7 @@ export function PostDetailClient({ post: initialPost, versions: initialVersions 
   const [doc, setDoc] = useState<unknown>(initialPost.doc)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [showVersions, setShowVersions] = useState(false)
+  const [showVariants, setShowVariants] = useState(false)
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -227,6 +229,13 @@ export function PostDetailClient({ post: initialPost, versions: initialVersions 
           >
             {showVersions ? '버전 숨기기' : `버전 ${versions.length}개`}
           </button>
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => setShowVariants((v) => !v)}
+          >
+            {showVariants ? '채널 변형 숨기기' : '채널 변형'}
+          </button>
         </div>
       </div>
 
@@ -282,6 +291,14 @@ export function PostDetailClient({ post: initialPost, versions: initialVersions 
             versions={versions}
             onRestored={() => void handleRestored()}
           />
+        </div>
+      )}
+
+      {/* 채널 변형 패널 */}
+      {showVariants && (
+        <div className="space-y-2 rounded-md border p-4">
+          <p className="text-xs font-medium text-muted-foreground">채널 변형</p>
+          <VariantsTabPanel postId={post.id} postStatus={post.status} />
         </div>
       )}
     </div>

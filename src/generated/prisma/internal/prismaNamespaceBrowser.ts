@@ -156,7 +156,10 @@ export const ModelName = {
   BoIdeation: 'BoIdeation',
   BoMaterial: 'BoMaterial',
   BoPost: 'BoPost',
-  BoPostVersion: 'BoPostVersion'
+  BoPostVersion: 'BoPostVersion',
+  BoChannel: 'BoChannel',
+  BoPostVariant: 'BoPostVariant',
+  BoDeployment: 'BoDeployment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1942,6 +1945,58 @@ export const BoPostVersionScalarFieldEnum = {
 } as const
 
 export type BoPostVersionScalarFieldEnum = (typeof BoPostVersionScalarFieldEnum)[keyof typeof BoPostVersionScalarFieldEnum]
+
+
+export const BoChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  platform: 'platform',
+  name: 'name',
+  formatProfile: 'formatProfile',
+  publisherMode: 'publisherMode',
+  config: 'config',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoChannelScalarFieldEnum = (typeof BoChannelScalarFieldEnum)[keyof typeof BoChannelScalarFieldEnum]
+
+
+export const BoPostVariantScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postId: 'postId',
+  channelId: 'channelId',
+  title: 'title',
+  doc: 'doc',
+  exportedMarkdown: 'exportedMarkdown',
+  exportedHtml: 'exportedHtml',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoPostVariantScalarFieldEnum = (typeof BoPostVariantScalarFieldEnum)[keyof typeof BoPostVariantScalarFieldEnum]
+
+
+export const BoDeploymentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postId: 'postId',
+  variantId: 'variantId',
+  channelId: 'channelId',
+  status: 'status',
+  platformUrl: 'platformUrl',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoDeploymentScalarFieldEnum = (typeof BoDeploymentScalarFieldEnum)[keyof typeof BoDeploymentScalarFieldEnum]
 
 
 export const SortOrder = {

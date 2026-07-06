@@ -247,6 +247,76 @@ export function buildBoSectionRegenPrompt(
 
 // ─── 섹션 렌더러 ─────────────────────────────────────────────────────────────
 
+// ─── 채널 변형 생성 프롬프트 ─────────────────────────────────────────────────
+
+export interface BoVariantPostCtx {
+  title: string
+  bodyMarkdown: string
+}
+
+export interface BoVariantFormatProfile {
+  toneGuide: string
+  structureGuide: string
+  lengthRange: { min: number; max: number }
+  headingStyle: string
+  forbiddenExpressions: string[]
+  ctaStyle: string
+}
+
+export interface BoVariantPromptBuilt {
+  system: string
+  messages: TextMessage[]
+}
+
+/**
+ * 마스터 포스트를 채널 포맷에 맞게 변환하는 프롬프트.
+ * AI는 { title, body } JSON을 반환한다. body는 마크다운 형식.
+ */
+export function buildBoVariantPrompt(
+  post: BoVariantPostCtx,
+  profile: BoVariantFormatProfile,
+  platform: string
+): BoVariantPromptBuilt {
+  const systemLines: string[] = []
+
+  systemLines.push(`당신은 블로그 채널 변형 편집자다.`)
+  systemLines.push(`마스터 포스트를 ${platform} 채널 포맷에 맞게 재작성한다.`)
+  systemLines.push('')
+  systemLines.push('[채널 포맷 프로필]')
+  systemLines.push(`- 말투: ${profile.toneGuide}`)
+  systemLines.push(`- 구조: ${profile.structureGuide}`)
+  systemLines.push(
+    `- 목표 분량: ${profile.lengthRange.min}~${profile.lengthRange.max}자 (한국어 기준)`
+  )
+  systemLines.push(`- 소제목 스타일: ${profile.headingStyle}`)
+  systemLines.push(`- CTA 스타일: ${profile.ctaStyle}`)
+  if (profile.forbiddenExpressions.length > 0) {
+    systemLines.push(`- 금지 표현: ${profile.forbiddenExpressions.join(', ')}`)
+  }
+  systemLines.push('')
+  systemLines.push('[작성 규칙]')
+  systemLines.push('1. 마스터 포스트의 핵심 정보와 사실은 유지하되 채널 포맷에 맞게 재작성한다.')
+  systemLines.push('2. 제목도 채널 톤에 맞게 자연스럽게 조정할 수 있다.')
+  systemLines.push('3. 반드시 순수 JSON만 반환한다. 마크다운·설명·코드블록 감싸기 금지.')
+  systemLines.push('형식: {"title":"...","body":"...(마크다운 본문)..."}')
+
+  const system = systemLines.join('\n')
+
+  const userLines: string[] = []
+  userLines.push('[마스터 포스트]')
+  userLines.push(`제목: ${post.title}`)
+  userLines.push('')
+  userLines.push(post.bodyMarkdown)
+  userLines.push('')
+  userLines.push('위 포스트를 채널 포맷에 맞게 변환해 주세요.')
+
+  const messages: TextMessage[] = [{ role: 'user', content: userLines.join('\n') }]
+
+  return { system, messages }
+}
+
+// ─── 섹션 렌더러 ─────────────────────────────────────────────────────────────
+
 function renderProduct(p: BoProductCtx): string {
   const lines = ['[상품 정보]', `- 상품명: ${p.name}`]
   if (p.category) lines.push(`- 카테고리: ${p.category}`)

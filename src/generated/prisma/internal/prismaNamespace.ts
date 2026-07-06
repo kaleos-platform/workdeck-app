@@ -489,7 +489,10 @@ export const ModelName = {
   BoIdeation: 'BoIdeation',
   BoMaterial: 'BoMaterial',
   BoPost: 'BoPost',
-  BoPostVersion: 'BoPostVersion'
+  BoPostVersion: 'BoPostVersion',
+  BoChannel: 'BoChannel',
+  BoPostVariant: 'BoPostVariant',
+  BoDeployment: 'BoDeployment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -505,7 +508,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -8353,6 +8356,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BoChannel: {
+      payload: Prisma.$BoChannelPayload<ExtArgs>
+      fields: Prisma.BoChannelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BoChannelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BoChannelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>
+        }
+        findFirst: {
+          args: Prisma.BoChannelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BoChannelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>
+        }
+        findMany: {
+          args: Prisma.BoChannelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>[]
+        }
+        create: {
+          args: Prisma.BoChannelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>
+        }
+        createMany: {
+          args: Prisma.BoChannelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BoChannelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>[]
+        }
+        delete: {
+          args: Prisma.BoChannelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>
+        }
+        update: {
+          args: Prisma.BoChannelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>
+        }
+        deleteMany: {
+          args: Prisma.BoChannelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BoChannelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BoChannelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>[]
+        }
+        upsert: {
+          args: Prisma.BoChannelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelPayload>
+        }
+        aggregate: {
+          args: Prisma.BoChannelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBoChannel>
+        }
+        groupBy: {
+          args: Prisma.BoChannelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoChannelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BoChannelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoChannelCountAggregateOutputType> | number
+        }
+      }
+    }
+    BoPostVariant: {
+      payload: Prisma.$BoPostVariantPayload<ExtArgs>
+      fields: Prisma.BoPostVariantFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BoPostVariantFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BoPostVariantFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>
+        }
+        findFirst: {
+          args: Prisma.BoPostVariantFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BoPostVariantFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>
+        }
+        findMany: {
+          args: Prisma.BoPostVariantFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>[]
+        }
+        create: {
+          args: Prisma.BoPostVariantCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>
+        }
+        createMany: {
+          args: Prisma.BoPostVariantCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BoPostVariantCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>[]
+        }
+        delete: {
+          args: Prisma.BoPostVariantDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>
+        }
+        update: {
+          args: Prisma.BoPostVariantUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>
+        }
+        deleteMany: {
+          args: Prisma.BoPostVariantDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BoPostVariantUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BoPostVariantUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>[]
+        }
+        upsert: {
+          args: Prisma.BoPostVariantUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoPostVariantPayload>
+        }
+        aggregate: {
+          args: Prisma.BoPostVariantAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBoPostVariant>
+        }
+        groupBy: {
+          args: Prisma.BoPostVariantGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoPostVariantGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BoPostVariantCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoPostVariantCountAggregateOutputType> | number
+        }
+      }
+    }
+    BoDeployment: {
+      payload: Prisma.$BoDeploymentPayload<ExtArgs>
+      fields: Prisma.BoDeploymentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BoDeploymentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BoDeploymentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>
+        }
+        findFirst: {
+          args: Prisma.BoDeploymentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BoDeploymentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>
+        }
+        findMany: {
+          args: Prisma.BoDeploymentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>[]
+        }
+        create: {
+          args: Prisma.BoDeploymentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>
+        }
+        createMany: {
+          args: Prisma.BoDeploymentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BoDeploymentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>[]
+        }
+        delete: {
+          args: Prisma.BoDeploymentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>
+        }
+        update: {
+          args: Prisma.BoDeploymentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>
+        }
+        deleteMany: {
+          args: Prisma.BoDeploymentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BoDeploymentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BoDeploymentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>[]
+        }
+        upsert: {
+          args: Prisma.BoDeploymentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoDeploymentPayload>
+        }
+        aggregate: {
+          args: Prisma.BoDeploymentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBoDeployment>
+        }
+        groupBy: {
+          args: Prisma.BoDeploymentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoDeploymentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BoDeploymentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoDeploymentCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -10161,6 +10386,58 @@ export const BoPostVersionScalarFieldEnum = {
 export type BoPostVersionScalarFieldEnum = (typeof BoPostVersionScalarFieldEnum)[keyof typeof BoPostVersionScalarFieldEnum]
 
 
+export const BoChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  platform: 'platform',
+  name: 'name',
+  formatProfile: 'formatProfile',
+  publisherMode: 'publisherMode',
+  config: 'config',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoChannelScalarFieldEnum = (typeof BoChannelScalarFieldEnum)[keyof typeof BoChannelScalarFieldEnum]
+
+
+export const BoPostVariantScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postId: 'postId',
+  channelId: 'channelId',
+  title: 'title',
+  doc: 'doc',
+  exportedMarkdown: 'exportedMarkdown',
+  exportedHtml: 'exportedHtml',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoPostVariantScalarFieldEnum = (typeof BoPostVariantScalarFieldEnum)[keyof typeof BoPostVariantScalarFieldEnum]
+
+
+export const BoDeploymentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postId: 'postId',
+  variantId: 'variantId',
+  channelId: 'channelId',
+  status: 'status',
+  platformUrl: 'platformUrl',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoDeploymentScalarFieldEnum = (typeof BoDeploymentScalarFieldEnum)[keyof typeof BoDeploymentScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -11061,6 +11338,62 @@ export type EnumBoPostStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 export type ListEnumBoPostStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoPostStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'BoPlatform'
+ */
+export type EnumBoPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoPlatform'>
+    
+
+
+/**
+ * Reference to a field of type 'BoPlatform[]'
+ */
+export type ListEnumBoPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoPlatform[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BoPublisherMode'
+ */
+export type EnumBoPublisherModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoPublisherMode'>
+    
+
+
+/**
+ * Reference to a field of type 'BoPublisherMode[]'
+ */
+export type ListEnumBoPublisherModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoPublisherMode[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BoVariantStatus'
+ */
+export type EnumBoVariantStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoVariantStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BoVariantStatus[]'
+ */
+export type ListEnumBoVariantStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoVariantStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BoDeploymentStatus'
+ */
+export type EnumBoDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoDeploymentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BoDeploymentStatus[]'
+ */
+export type ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoDeploymentStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -11262,6 +11595,9 @@ export type GlobalOmitConfig = {
   boMaterial?: Prisma.BoMaterialOmit
   boPost?: Prisma.BoPostOmit
   boPostVersion?: Prisma.BoPostVersionOmit
+  boChannel?: Prisma.BoChannelOmit
+  boPostVariant?: Prisma.BoPostVariantOmit
+  boDeployment?: Prisma.BoDeploymentOmit
 }
 
 /* Types for Logging */

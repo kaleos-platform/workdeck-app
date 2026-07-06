@@ -451,6 +451,9 @@ model Space {
   boMaterials     BoMaterial[]
   boPosts         BoPost[]
   boPostVersions  BoPostVersion[]
+  boChannels      BoChannel[]
+  boPostVariants  BoPostVariant[]
+  boDeployments   BoDeployment[]
 }
 
 // 공간 멤버십 + 역할
@@ -2982,6 +2985,33 @@ enum BoPostStatus {
   ARCHIVED
 }
 
+enum BoPlatform {
+  NAVER_BLOG
+  TISTORY
+  OWN_HOMEPAGE
+}
+
+enum BoPublisherMode {
+  MANUAL
+  BROWSER
+}
+
+enum BoVariantStatus {
+  GENERATING
+  READY
+  EDITED
+  FAILED
+}
+
+enum BoDeploymentStatus {
+  PENDING
+  PUBLISHING
+  PUBLISHED
+  FAILED
+  CANCELED
+  EXPORTED
+}
+
 // 블로그 포스트. 소재(BoMaterial)를 기반으로 AI가 생성한 실제 글 본문.
 model BoPost {
   id                      String        @id @default(cuid())
@@ -3000,9 +3030,11 @@ model BoPost {
   generationTraceHash     String?
   errorMessage            String?
 
-  space    Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  material BoMaterial     @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  versions BoPostVersion[]
+  space       Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  material    BoMaterial      @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  versions    BoPostVersion[]
+  variants    BoPostVariant[]
+  deployments BoDeployment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3029,4 +3061,76 @@ model BoPostVersion {
 
   @@unique([postId, versionNumber])
   @@index([spaceId, createdAt])
+}
+
+// 블로그 배포 채널. 플랫폼(네이버·티스토리·자사 홈페이지)별 설정을 보관한다.
+model BoChannel {
+  id            String          @id @default(cuid())
+  spaceId       String
+  platform      BoPlatform
+  name          String
+  formatProfile Json            @default("{}")
+  publisherMode BoPublisherMode @default(MANUAL)
+  config        Json?
+  isActive      Boolean         @default(true)
+
+  space       Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  variants    BoPostVariant[]
+  deployments BoDeployment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, platform, name])
+  @@index([spaceId])
+}
+
+// 포스트 × 채널별 변형. 채널 포맷에 맞춰 변환된 제목·본문·내보내기 결과를 보관한다.
+model BoPostVariant {
+  id               String          @id @default(cuid())
+  spaceId          String
+  postId           String
+  channelId        String
+  title            String
+  doc              Json
+  exportedMarkdown String?
+  exportedHtml     String?
+  status           BoVariantStatus @default(GENERATING)
+  errorMessage     String?
+
+  space       Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  post        BoPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  channel     BoChannel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  deployments BoDeployment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([postId, channelId])
+  @@index([spaceId])
+}
+
+// 포스트 배포 이력. 변형 1건을 채널에 게시한 실행 단위.
+model BoDeployment {
+  id           String             @id @default(cuid())
+  spaceId      String
+  postId       String
+  variantId    String
+  channelId    String
+  status       BoDeploymentStatus @default(PENDING)
+  platformUrl  String?
+  errorCode    String?
+  errorMessage String?
+  publishedAt  DateTime?
+
+  space   Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  post    BoPost        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  variant BoPostVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  channel BoChannel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([postId])
 }

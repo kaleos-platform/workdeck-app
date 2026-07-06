@@ -569,3 +569,18 @@ export type BoPost = Prisma.BoPostModel
  * 
  */
 export type BoPostVersion = Prisma.BoPostVersionModel
+/**
+ * Model BoChannel
+ * 
+ */
+export type BoChannel = Prisma.BoChannelModel
+/**
+ * Model BoPostVariant
+ * 
+ */
+export type BoPostVariant = Prisma.BoPostVariantModel
+/**
+ * Model BoDeployment
+ * 
+ */
+export type BoDeployment = Prisma.BoDeploymentModel
