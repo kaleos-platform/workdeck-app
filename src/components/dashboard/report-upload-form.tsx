@@ -314,7 +314,7 @@ export function ReportUploadForm({ onComplete }: { onComplete?: () => void } = {
 
     for (const entry of pending) {
       try {
-        // 다중 파일: 중복 시 자동으로 overwrite=false 적용
+        // 다중 파일: 중복 확인 없이 자동 진행 (겹치는 기간 데이터는 교체됨)
         await processOneFile(entry.id, 'false')
       } catch {
         // 파일별 오류는 updateFile로 이미 처리됨
@@ -479,7 +479,7 @@ export function ReportUploadForm({ onComplete }: { onComplete?: () => void } = {
               <li>Excel (.xlsx) 및 CSV (.csv) 형식의 파일을 업로드할 수 있습니다</li>
               <li>여러 파일을 동시에 선택하여 일괄 업로드할 수 있습니다</li>
               <li>
-                동일 기간 데이터 재업로드 시 덮어쓰기 또는 중복 제외 저장을 선택할 수 있습니다
+                동일 기간 데이터 재업로드 시 기존 데이터는 이 파일 내용으로 교체됩니다
               </li>
             </ul>
           </CardContent>
@@ -579,7 +579,7 @@ export function ReportUploadForm({ onComplete }: { onComplete?: () => void } = {
               중복 데이터 발견
             </DialogTitle>
             <DialogDescription className="pt-2">
-              중복 행이 발견되었습니다. 덮어쓰기 또는 중복 제외 저장 중 하나를 선택하세요.
+              업로드 기간과 겹치는 기존 데이터가 이 파일 내용으로 교체됩니다. 계속하시겠습니까?
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 text-sm">
@@ -604,9 +604,6 @@ export function ReportUploadForm({ onComplete }: { onComplete?: () => void } = {
           <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => setSingleDuplicate(null)}>
               취소
-            </Button>
-            <Button variant="outline" onClick={() => handleConfirmSingle('false')}>
-              중복 제외 저장
             </Button>
             <Button onClick={() => handleConfirmSingle('true')}>덮어쓰기</Button>
           </DialogFooter>
