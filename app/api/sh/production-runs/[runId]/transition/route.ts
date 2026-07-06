@@ -59,6 +59,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     return errorResponse(`이미 ${input.status} 상태입니다`, 409)
   }
 
+  // 입고 완료(STOCKED_IN)는 종료 상태 — ORDERED/PLANNED 로 되돌리는 역행 전환을 차단한다.
+  // 되돌려도 이미 반영된 INBOUND 재고는 역산되지 않고(그 사이 판매·이동으로 소비됐을 수 있어
+  // 맹목적 역산은 재고를 음수로 만든다), 재전환 시 INBOUND 가 재실행돼 재고가 이중 계상된다.
+  // 정정이 필요하면 재고 조정(ADJUSTMENT)으로 처리한다.
+  if (existing.status === 'STOCKED_IN') {
+    return errorResponse('이미 입고 완료된 차수는 되돌릴 수 없습니다. 재고 조정으로 처리하세요', 409)
+  }
+
   const transitionDate = new Date(input.transitionDate)
   if (isNaN(transitionDate.getTime())) {
     return errorResponse('전환 일자가 올바르지 않습니다', 400)
