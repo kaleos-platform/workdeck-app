@@ -390,7 +390,13 @@ function CashflowTable({
   const colSpan = columns.length + 2
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm">
+    <div
+      className={cn(
+        'w-max rounded-xl border bg-card shadow-sm',
+        // 미선택(패널 없음): flex-1 래퍼 안에서 표를 가운데로. 표가 넓으면 overflow-x-auto가 스크롤(mx-auto 무효).
+        selectedKey === null && 'mx-auto'
+      )}
+    >
       <Table className="w-max table-fixed">
         {/* 헤더 */}
         <TableHeader>
