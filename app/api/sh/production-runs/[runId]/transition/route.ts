@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productionRunStatusTransitionSchema } from '@/lib/sh/schemas'
-import { processMovement, MovementError } from '@/lib/inv/movement-processor'
+import { applyBatchInbound, MovementError } from '@/lib/inv/movement-processor'
 
 type Params = { params: Promise<{ runId: string }> }
 
@@ -57,6 +57,14 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   if (input.status === existing.status) {
     return errorResponse(`이미 ${input.status} 상태입니다`, 409)
+  }
+
+  // 입고 완료(STOCKED_IN)는 종료 상태 — ORDERED/PLANNED 로 되돌리는 역행 전환을 차단한다.
+  // 되돌려도 이미 반영된 INBOUND 재고는 역산되지 않고(그 사이 판매·이동으로 소비됐을 수 있어
+  // 맹목적 역산은 재고를 음수로 만든다), 재전환 시 INBOUND 가 재실행돼 재고가 이중 계상된다.
+  // 정정이 필요하면 재고 조정(ADJUSTMENT)으로 처리한다.
+  if (existing.status === 'STOCKED_IN') {
+    return errorResponse('이미 입고 완료된 차수는 되돌릴 수 없습니다. 재고 조정으로 처리하세요', 409)
   }
 
   const transitionDate = new Date(input.transitionDate)
@@ -146,73 +154,71 @@ export async function POST(req: NextRequest, { params }: Params) {
       if (!loc.isActive) return errorResponse(`비활성화된 보관 위치입니다: ${loc.name}`, 400)
     }
 
-    // ── 분배별 INBOUND 처리 (movement-processor 가 자체 트랜잭션) ──
-    // 주의: movement N건이 각자 트랜잭션 후 마지막에 status/실입고량 갱신하는 best-effort 구조.
-    // 부분실패 노출 구조는 1차와 동일. 선검증으로 흔한 에러는 write 전 차단.
+    // ── INBOUND + 상태 갱신을 단일 트랜잭션으로 원자화 ──
+    // claim → applyBatchInbound → item/set 갱신이 하나의 tx 안에서 all-or-nothing 처리됨.
+    // 상태 선점(updateMany where status=existing.status)으로 동시 요청을 직렬화해 이중 입고를 방지한다.
     const brandPart = existing.brand?.name ? ` · ${existing.brand.name}` : ''
-    const movementResults: Array<{
-      optionId: string
-      locationId: string
-      stockLevelAfter: number
-    }> = []
-    try {
-      for (const a of allocations) {
-        const it = itemByOptionId.get(a.optionId)!
-        const loc = locationById.get(a.locationId)!
-        const productName = it.option.product.internalName ?? it.option.product.name
-        const reason = `생산 입고 - 차수 ${existing.runNo}${brandPart} · ${productName} / ${it.option.name} · ${a.quantity}개 · 위치 ${loc.name} · 입고일 ${input.transitionDate}`
-        const result = await processMovement(resolved.space.id, {
-          type: 'INBOUND',
-          optionId: a.optionId,
-          locationId: a.locationId,
-          quantity: a.quantity,
-          movementDate: input.transitionDate,
-          reason,
-          // 옵션×위치별 granular 추적키 — 차수·위치별 입고 내역 후속 조회/집계용 (P3.5).
-          referenceId: `prodrun:${existing.id}:${a.optionId}:${a.locationId}`,
-        })
-        movementResults.push({
-          optionId: a.optionId,
-          locationId: a.locationId,
-          stockLevelAfter: result.stockLevelAfter,
-        })
+    const batchItems = allocations.map((a) => {
+      const it = itemByOptionId.get(a.optionId)!
+      const loc = locationById.get(a.locationId)!
+      const productName = it.option.product.internalName ?? it.option.product.name
+      return {
+        optionId: a.optionId,
+        locationId: a.locationId,
+        quantity: a.quantity,
+        reason: `생산 입고 - 차수 ${existing.runNo}${brandPart} · ${productName} / ${it.option.name} · ${a.quantity}개 · 위치 ${loc.name} · 입고일 ${input.transitionDate}`,
+        // 옵션×위치별 granular 추적키 — 차수·위치별 입고 내역 후속 조회/집계용 (P3.5).
+        referenceId: `prodrun:${existing.id}:${a.optionId}:${a.locationId}`,
       }
+    })
+
+    let movementResults: Array<{ optionId: string; locationId: string; stockLevelAfter: number }>
+    try {
+      movementResults = await prisma.$transaction(
+        async (tx) => {
+          // 상태 선점 — 읽어온 상태가 그대로일 때만 STOCKED_IN 으로 전환
+          const claimed = await tx.productionRun.updateMany({
+            where: { id: runId, status: existing.status },
+            data: {
+              status: 'STOCKED_IN',
+              stockedInAt: transitionDate,
+              completedAt: transitionDate, // 레거시 호환
+              stockInLocationId: distinctLocationIds.length === 1 ? distinctLocationIds[0] : null,
+            },
+          })
+          if (claimed.count !== 1) {
+            throw new MovementError('차수 상태가 이미 변경되었습니다. 새로고침 후 다시 시도하세요', 409)
+          }
+
+          const results = await applyBatchInbound(tx, resolved.space.id, batchItems, transitionDate)
+
+          // 모든 옵션에 실입고량 기록 (분배 없는 옵션 = 0)
+          for (const it of existing.items) {
+            await tx.productionRunItem.update({
+              where: { id: it.id },
+              data: { stockedInQty: allocSumByOptionId.get(it.optionId) ?? 0 },
+            })
+          }
+          // 세트 단위 입고면 세트별 실입고 세트수 기록 (입고 안 된 세트 = 0)
+          if (isSetStockIn) {
+            for (const s of existing.sets) {
+              await tx.productionRunSet.update({
+                where: { id: s.id },
+                data: { stockedInSetQty: setStockInByListing.get(s.listingId) ?? 0 },
+              })
+            }
+          }
+
+          return results
+        },
+        { maxWait: 10_000, timeout: 60_000 }
+      )
     } catch (e) {
       if (e instanceof MovementError) {
-        return errorResponse(`재고 입고 실패: ${e.message}`, e.status)
+        return errorResponse(e.message, e.status)
       }
       throw e
     }
-
-    // 상태 + 타임스탬프 + 위치 + 옵션별 실입고량 갱신 (트랜잭션 묶음)
-    // stockInLocationId: 분배 위치가 1개면 그 값, 0/2개 이상이면 null (단일 FK라 분할/미입고 표현 불가)
-    await prisma.$transaction([
-      prisma.productionRun.update({
-        where: { id: runId },
-        data: {
-          status: 'STOCKED_IN',
-          stockedInAt: transitionDate,
-          completedAt: transitionDate, // 레거시 호환
-          stockInLocationId: distinctLocationIds.length === 1 ? distinctLocationIds[0] : null,
-        },
-      }),
-      // 모든 옵션에 실입고량 기록 (분배 없는 옵션 = 0)
-      ...existing.items.map((it) =>
-        prisma.productionRunItem.update({
-          where: { id: it.id },
-          data: { stockedInQty: allocSumByOptionId.get(it.optionId) ?? 0 },
-        })
-      ),
-      // 세트 단위 입고면 세트별 실입고 세트수 기록 (입고 안 된 세트 = 0)
-      ...(isSetStockIn
-        ? existing.sets.map((s) =>
-            prisma.productionRunSet.update({
-              where: { id: s.id },
-              data: { stockedInSetQty: setStockInByListing.get(s.listingId) ?? 0 },
-            })
-          )
-        : []),
-    ])
 
     return NextResponse.json({
       run: { id: runId, status: 'STOCKED_IN' },

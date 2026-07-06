@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { calculateROAS } from '@/lib/metrics-calculator'
 import { parsePureProductName, parseOptionName } from '@/lib/product-name-parser'
 import { cacheCoupangAdsData } from '@/lib/coupang-ads/cache'
+import { isYmdDateString, getLastNDaysRangeKst } from '@/lib/date-range'
 
 type Params = { params: Promise<{ campaignId: string }> }
 
@@ -41,30 +42,25 @@ export async function GET(req: NextRequest, { params }: Params) {
   let currentStart: Date
   let currentEnd: Date
 
-  if (fromParam && toParam) {
-    currentStart = new Date(fromParam)
-    currentStart.setHours(0, 0, 0, 0)
-    currentEnd = new Date(toParam)
-    currentEnd.setHours(23, 59, 59, 999)
+  // AdRecord.date 는 KST 자정(T00:00:00+09:00)으로 저장되므로 경계도 KST 기준으로 계산한다.
+  // (서버 로컬=UTC 기준 setHours 를 쓰면 조회 구간이 KST 하루만큼 어긋난다.)
+  if (fromParam && toParam && isYmdDateString(fromParam) && isYmdDateString(toParam)) {
+    currentStart = new Date(fromParam + 'T00:00:00+09:00')
+    currentEnd = new Date(toParam + 'T23:59:59+09:00')
   } else {
     const period = Math.min(90, Math.max(1, Number(searchParams.get('period') ?? 7)))
-    const now = new Date()
-    currentEnd = new Date(now)
-    currentEnd.setHours(23, 59, 59, 999)
-    currentStart = new Date(now)
-    currentStart.setDate(currentStart.getDate() - period + 1)
-    currentStart.setHours(0, 0, 0, 0)
+    const { from, to } = getLastNDaysRangeKst(period)
+    currentStart = new Date(from + 'T00:00:00+09:00')
+    currentEnd = new Date(to + 'T23:59:59+09:00')
   }
 
   const periodMs = currentEnd.getTime() - currentStart.getTime()
   const periodDays = Math.round(periodMs / (1000 * 60 * 60 * 24)) + 1
 
-  const previousEnd = new Date(currentStart)
-  previousEnd.setDate(previousEnd.getDate() - 1)
-  previousEnd.setHours(23, 59, 59, 999)
-  const previousStart = new Date(previousEnd)
-  previousStart.setDate(previousStart.getDate() - periodDays + 1)
-  previousStart.setHours(0, 0, 0, 0)
+  // 직전 동일 길이 구간 (currentStart 직전). KST 는 DST 가 없어 인스턴트 산술로 안전하게 계산한다.
+  const DAY_MS = 24 * 60 * 60 * 1000
+  const previousEnd = new Date(currentStart.getTime() - 1)
+  const previousStart = new Date(currentStart.getTime() - periodDays * DAY_MS)
 
   const baseWhere = {
     workspaceId: resolved.workspace.id,
