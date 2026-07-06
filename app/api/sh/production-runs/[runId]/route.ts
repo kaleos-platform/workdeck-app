@@ -279,9 +279,15 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const run = await prisma.productionRun.findFirst({
     where: { id: runId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, status: true },
   })
   if (!run) return errorResponse('생산 발주를 찾을 수 없습니다', 404)
+
+  // STOCKED_IN 차수는 삭제 불가 — 입고 재고를 역산하면 그 사이 소비된 재고가 음수가 될 위험이 있음.
+  // transition 역행 차단(감사 High #8/#9)과 동일 정책: 재고 조정으로 정정.
+  if (run.status === 'STOCKED_IN') {
+    return errorResponse('입고 완료된 차수는 삭제할 수 없습니다. 재고 조정 후 진행하세요', 409)
+  }
 
   // items/costs는 onDelete: Cascade로 자동 삭제
   await prisma.productionRun.delete({ where: { id: runId } })
