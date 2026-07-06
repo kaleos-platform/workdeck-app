@@ -3,6 +3,8 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { crawlHomepage, CrawlError } from '@/lib/bo/crawler'
 
+export const maxDuration = 60
+
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const resolved = await resolveDeckContext('blog-ops')
   if ('error' in resolved) return resolved.error

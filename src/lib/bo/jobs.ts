@@ -53,6 +53,7 @@ export async function reapStaleBoClaims(maxAgeMs: number = STALE_CLAIM_MS): Prom
 }
 
 // SELECT ... FOR UPDATE SKIP LOCKED 로 단일 BoJob 를 원자적으로 점유.
+// $transaction 안에서 실행되므로 SKIP LOCKED 락이 updateMany 까지 유지된다.
 // 동시 워커가 같은 job 을 잡는 레이스를 방지한다.
 export async function claimNextBoJob(params: {
   workerId: string
@@ -60,37 +61,39 @@ export async function claimNextBoJob(params: {
 }): Promise<BoJob | null> {
   const kinds = params.kinds
 
-  const ids = (
-    await prisma.$queryRawUnsafe<{ id: string }[]>(
-      `SELECT "id" FROM "BoJob"
-       WHERE "status" = 'PENDING'
-         AND "scheduledAt" <= NOW()
-         ${kinds && kinds.length > 0 ? `AND "kind" = ANY($2::text[]::"BoJobKind"[])` : ''}
-       ORDER BY "scheduledAt" ASC
-       FOR UPDATE SKIP LOCKED
-       LIMIT $1`,
-      1,
-      ...(kinds && kinds.length > 0 ? [kinds] : [])
-    )
-  ).map((r) => r.id)
+  return prisma.$transaction(async (tx) => {
+    const ids = (
+      await tx.$queryRawUnsafe<{ id: string }[]>(
+        `SELECT "id" FROM "BoJob"
+         WHERE "status" = 'PENDING'
+           AND "scheduledAt" <= NOW()
+           ${kinds && kinds.length > 0 ? `AND "kind" = ANY($2::text[]::"BoJobKind"[])` : ''}
+         ORDER BY "scheduledAt" ASC
+         FOR UPDATE SKIP LOCKED
+         LIMIT $1`,
+        1,
+        ...(kinds && kinds.length > 0 ? [kinds] : [])
+      )
+    ).map((r) => r.id)
 
-  if (ids.length === 0) return null
+    if (ids.length === 0) return null
 
-  const claimed = await prisma.boJob.updateMany({
-    where: { id: { in: ids }, status: 'PENDING' },
-    data: {
-      status: 'CLAIMED',
-      claimedBy: params.workerId,
-      claimedAt: new Date(),
-      attempts: { increment: 1 },
-    },
+    const claimed = await tx.boJob.updateMany({
+      where: { id: { in: ids }, status: 'PENDING' },
+      data: {
+        status: 'CLAIMED',
+        claimedBy: params.workerId,
+        claimedAt: new Date(),
+        attempts: { increment: 1 },
+      },
+    })
+    if (claimed.count === 0) return null
+
+    const jobs = await tx.boJob.findMany({
+      where: { id: { in: ids }, status: 'CLAIMED', claimedBy: params.workerId },
+    })
+    return jobs[0] ?? null
   })
-  if (claimed.count === 0) return null
-
-  const jobs = await prisma.boJob.findMany({
-    where: { id: { in: ids }, status: 'CLAIMED', claimedBy: params.workerId },
-  })
-  return jobs[0] ?? null
 }
 
 /** CLAIMED 상태에서만 COMPLETED 로 종료. 이미 종료된 job 의 중복 보고는 무시. */
@@ -137,7 +140,8 @@ export async function failBoJob(
   return { updated: result.count > 0, finalized: shouldFinalize }
 }
 
-// 워커가 보고할 수 있는 에러코드
+// 워커가 보고할 수 있는 에러코드 — tistory-browser, naver-blog-browser 등 퍼블리셔가 보내는
+// 모든 코드를 포함해야 complete API 의 zod 검증을 통과한다.
 export const BO_WORKER_ERROR_CODES = [
   'AUTH_FAILED',
   'RATE_LIMITED',
@@ -145,10 +149,19 @@ export const BO_WORKER_ERROR_CODES = [
   'PLATFORM_ERROR',
   'NOT_IMPLEMENTED',
   'NETWORK',
+  // 브라우저 퍼블리셔 전용 코드
+  'LOGIN_EXPIRED', // 세션 만료 — 자격증명 재등록 필요, 재시도 불필요
+  'EDITOR_NOT_FOUND', // 에디터 DOM 미검출 — 플랫폼 구조 변경, 재시도 불필요
+  'PUBLISH_FAILED', // 발행 버튼 실패 — 일시 오류, 재시도 가능
+  'URL_CAPTURE_FAILED', // 발행 후 URL 미추출 — 포스트가 발행됐을 수 있어 맹목적 재시도 금지
 ] as const
 export type BoWorkerErrorCode = (typeof BO_WORKER_ERROR_CODES)[number]
 
-const RETRYABLE_ERROR_CODES = new Set<BoWorkerErrorCode>(['NETWORK', 'PLATFORM_ERROR'])
+const RETRYABLE_ERROR_CODES = new Set<BoWorkerErrorCode>([
+  'NETWORK',
+  'PLATFORM_ERROR',
+  'PUBLISH_FAILED', // 일시적 에디터 오류 — 재시도 허용
+])
 
 export function isBoRetryableErrorCode(errorCode: string | null | undefined): boolean {
   if (!errorCode) return true

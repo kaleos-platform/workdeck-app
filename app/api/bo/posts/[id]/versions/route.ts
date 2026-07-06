@@ -71,6 +71,11 @@ export async function POST(req: NextRequest, { params }: Params) {
     })
     if (!targetVersion) return { notFound: 'version' as const }
 
+    // PUBLISHED/ARCHIVED 상태에서는 복원 불가
+    if (currentPost.status === 'PUBLISHED' || currentPost.status === 'ARCHIVED') {
+      return { terminalState: true as const }
+    }
+
     // 복원 직전 현재 상태를 스냅샷으로 보존
     await createBoPostVersion(tx, currentPost, '복원 직전 자동 저장', resolved.user.id)
 
@@ -95,6 +100,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     return txResult.notFound === 'post'
       ? errorResponse('포스트를 찾을 수 없습니다', 404)
       : errorResponse('버전을 찾을 수 없습니다', 404)
+  }
+
+  if ('terminalState' in txResult) {
+    return errorResponse('게시됨 또는 보관된 포스트는 버전을 복원할 수 없습니다', 400)
   }
 
   return NextResponse.json(txResult)

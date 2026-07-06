@@ -30,6 +30,19 @@ export async function POST(_req: NextRequest, { params }: Params) {
     return errorResponse('FAILED 상태의 배포만 재시도할 수 있습니다', 422)
   }
 
+  // 이미 진행 중인 PUBLISH job 이 있으면 중복 큐 등록 방지 (상태 리셋 전에 확인)
+  const inflightJob = await prisma.boJob.findFirst({
+    where: {
+      targetId: deployment.id,
+      kind: 'PUBLISH',
+      status: { in: ['PENDING', 'CLAIMED'] },
+    },
+    select: { id: true },
+  })
+  if (inflightJob) {
+    return errorResponse('이미 처리 중인 발행 작업이 있습니다', 409)
+  }
+
   // 배포 상태를 PENDING 으로 리셋
   await prisma.boDeployment.update({
     where: { id },

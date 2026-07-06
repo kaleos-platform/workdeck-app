@@ -1,4 +1,7 @@
 import dns from 'dns/promises'
+import http from 'node:http'
+import https from 'node:https'
+import type { IncomingMessage } from 'node:http'
 import { isIP, isIPv4, isIPv6 } from 'net'
 
 // ─── 오류 타입 ─────────────────────────────────────────────────────────────────
@@ -70,17 +73,19 @@ export function isBlockedIp(ip: string): boolean {
   return true // 알 수 없는 형식은 차단
 }
 
-// 호스트명을 DNS로 조회해 모든 IP가 공개망인지 확인
-async function assertPublicHost(hostname: string): Promise<void> {
+// 호스트명을 DNS로 조회해 모든 IP를 검증한 후 반환.
+// SSRF 방어의 1단계 — 2단계는 makePinnedLookup 으로 연결 시점에도 재검사.
+async function resolveAndValidateIps(hostname: string): Promise<string[]> {
   // 이미 IP 리터럴이면 바로 검사
   if (isIP(hostname)) {
     if (isBlockedIp(hostname)) {
       throw new CrawlError('BLOCKED_HOST', `차단된 IP 주소입니다: ${hostname}`)
     }
-    return
+    return [hostname]
   }
 
-  // DNS A + AAAA 조회 — resolve는 모든 레코드를 반환
+  // DNS A + AAAA 조회 — resolve4/resolve6 은 시스템 resolver 를 거치지 않아
+  // /etc/hosts 조작 우회를 막는다.
   const [v4Results, v6Results] = await Promise.allSettled([
     dns.resolve4(hostname),
     dns.resolve6(hostname),
@@ -98,6 +103,63 @@ async function assertPublicHost(hostname: string): Promise<void> {
     if (isBlockedIp(ip)) {
       throw new CrawlError('BLOCKED_HOST', `차단된 호스트입니다: ${hostname} → ${ip}`)
     }
+  }
+
+  return ips
+}
+
+// 연결 시점 DNS 핀 고정용 lookup 함수.
+// validatedIps 에 있는 IP 만 반환하고 isBlockedIp 를 한 번 더 실행해 TOCTOU 를 막는다.
+// autoSelectFamily: false 와 함께 사용해 단일 주소 콜백 형태(address, family)를 보장한다.
+function makePinnedLookup(
+  validatedIps: string[]
+): (
+  hostname: string,
+  options: unknown,
+  callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void
+) => void {
+  return function pinnedLookup(_hostname, _options, callback) {
+    for (const ip of validatedIps) {
+      if (!isBlockedIp(ip)) {
+        callback(null, ip, isIPv6(ip) ? 6 : 4)
+        return
+      }
+    }
+    const err = Object.assign(new Error('차단된 호스트: 안전한 주소가 없습니다'), {
+      code: 'ENOTFOUND',
+    }) as NodeJS.ErrnoException
+    callback(err, '', 0)
+  }
+}
+
+// IncomingMessage 를 fetch Response 와 호환되는 최소 인터페이스로 래핑.
+type PinnedResponse = {
+  status: number
+  ok: boolean
+  headers: { get(name: string): string | null }
+  text(): Promise<string>
+}
+
+function wrapIncomingMessage(incoming: IncomingMessage): PinnedResponse {
+  const status = incoming.statusCode ?? 0
+  return {
+    status,
+    ok: status >= 200 && status < 300,
+    headers: {
+      get(name: string): string | null {
+        const v = incoming.headers[name.toLowerCase()]
+        if (!v) return null
+        return Array.isArray(v) ? (v[0] ?? null) : v
+      },
+    },
+    text(): Promise<string> {
+      return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = []
+        incoming.on('data', (chunk: Buffer) => chunks.push(chunk))
+        incoming.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+        incoming.on('error', reject)
+      })
+    },
   }
 }
 
@@ -142,8 +204,13 @@ export type CrawlResult = {
   fetchedAt: Date
 }
 
-// 리다이렉트를 직접 처리해 SSRF 방어 (Location 헤더도 검증)
-async function fetchWithSsrfGuard(url: string, remainingRedirects: number): Promise<Response> {
+// 리다이렉트를 직접 처리해 SSRF 방어 (Location 헤더도 hop 마다 재검증).
+// fetch() 대신 node:http/https 를 사용해 DNS 해석을 핀 고정한다 —
+// fetch() 는 connect 시점에 DNS 를 재조회하므로 DNS 리바인딩 TOCTOU 위험이 있다.
+async function fetchWithSsrfGuard(
+  url: string,
+  remainingRedirects: number
+): Promise<PinnedResponse> {
   let parsed: URL
   try {
     parsed = new URL(url)
@@ -155,29 +222,44 @@ async function fetchWithSsrfGuard(url: string, remainingRedirects: number): Prom
     throw new CrawlError('INVALID_URL', 'http/https URL만 허용합니다')
   }
 
-  await assertPublicHost(parsed.hostname)
+  // 1단계: DNS 조회 + 전체 IP 목록 검증
+  const validatedIps = await resolveAndValidateIps(parsed.hostname)
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
-  let res: Response
-  try {
-    res = await fetch(url, {
-      redirect: 'manual',
-      signal: controller.signal,
-      headers: { 'User-Agent': USER_AGENT },
-    })
-  } catch (err) {
-    throw new CrawlError(
-      'FETCH_FAILED',
-      `가져오기 실패: ${err instanceof Error ? err.message : String(err)}`
-    )
-  } finally {
-    clearTimeout(timer)
-  }
+  const port = parsed.port ? parseInt(parsed.port, 10) : parsed.protocol === 'https:' ? 443 : 80
+  const path = (parsed.pathname || '/') + parsed.search
 
-  // 3xx 리다이렉트 처리
+  const incoming = await new Promise<IncomingMessage>((resolve, reject) => {
+    // autoSelectFamily: false — lookup 콜백을 단일 주소 형태(address, family)로 고정
+    const reqOptions = {
+      hostname: parsed.hostname,
+      port,
+      path,
+      method: 'GET' as const,
+      headers: { 'User-Agent': USER_AGENT },
+      lookup: makePinnedLookup(validatedIps) as never,
+      autoSelectFamily: false,
+    }
+    const lib = parsed.protocol === 'https:' ? https : http
+    const req = lib.request(reqOptions, resolve)
+    req.on('error', (err: Error) => {
+      if (controller.signal.aborted) {
+        reject(new CrawlError('FETCH_FAILED', '요청 타임아웃'))
+      } else {
+        reject(new CrawlError('FETCH_FAILED', `가져오기 실패: ${err.message}`))
+      }
+    })
+    controller.signal.addEventListener('abort', () => req.destroy())
+    req.end()
+  }).finally(() => clearTimeout(timer))
+
+  const res = wrapIncomingMessage(incoming)
+
+  // 3xx 리다이렉트 처리 — 각 hop 을 resolveAndValidateIps 로 재검증
   if (res.status >= 300 && res.status < 400) {
+    incoming.resume() // 소켓 누수 방지 — 본문 폐기
     if (remainingRedirects <= 0) {
       throw new CrawlError('FETCH_FAILED', '리다이렉트 한도를 초과했습니다')
     }
@@ -185,7 +267,7 @@ async function fetchWithSsrfGuard(url: string, remainingRedirects: number): Prom
     if (!location) {
       throw new CrawlError('FETCH_FAILED', '리다이렉트 Location 헤더가 없습니다')
     }
-    // 상대 경로 → 절대 경로 변환
+    // 상대 경로 → 절대 경로 변환 후 재귀 — 새 hostname 도 재검증됨
     const nextUrl = new URL(location, url).toString()
     return fetchWithSsrfGuard(nextUrl, remainingRedirects - 1)
   }

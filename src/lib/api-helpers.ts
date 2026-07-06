@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getUser } from '@/hooks/use-user'
@@ -8,12 +9,21 @@ export function errorResponse(message: string, status: number, extra?: Record<st
   return NextResponse.json({ message, ...extra }, { status })
 }
 
+// 길이 검사 후 상수 시간 문자열 비교 — 타이밍 사이드채널 방지
+function timingSafeEqualString(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a, 'utf8')
+  const bBuf = Buffer.from(b, 'utf8')
+  if (aBuf.length !== bBuf.length) return false
+  return crypto.timingSafeEqual(aBuf, bBuf)
+}
+
 /** x-worker-api-key 헤더가 유효한지 확인 (request 객체 없이 headers()로) */
 async function isWorkerAuthenticated(): Promise<boolean> {
   const h = await headers()
   const apiKey = h.get('x-worker-api-key')
   const expected = process.env.WORKER_API_KEY
-  return !!(expected && apiKey && apiKey === expected)
+  if (!expected || !apiKey) return false
+  return timingSafeEqualString(apiKey, expected)
 }
 
 // 인증 + 워크스페이스 소유권 검증 (세션 또는 worker key)
@@ -138,7 +148,7 @@ export function assertSameSpace(sourceSpaceId: string, targetSpaceId: string) {
 export function resolveWorkerAuth(request: NextRequest) {
   const apiKey = request.headers.get('x-worker-api-key')
   const expected = process.env.WORKER_API_KEY
-  if (!expected || !apiKey || apiKey !== expected) {
+  if (!expected || !apiKey || !timingSafeEqualString(apiKey, expected)) {
     return { error: errorResponse('워커 인증에 실패했습니다', 401) }
   }
   return { authenticated: true as const }

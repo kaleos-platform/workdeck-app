@@ -35,6 +35,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { status: newStatus, ...fieldUpdates } = parsed.data
 
+  // ARCHIVED 상태에서는 필드 편집 불가
+  const hasFieldEdits = Object.keys(fieldUpdates).some(
+    (k) => (fieldUpdates as Record<string, unknown>)[k] !== undefined
+  )
+  if (hasFieldEdits && existing.status === 'ARCHIVED') {
+    return errorResponse('보관된 소재는 필드를 편집할 수 없습니다', 400)
+  }
+
   // 상태 전환 유효성 검증
   if (newStatus && newStatus !== existing.status) {
     try {

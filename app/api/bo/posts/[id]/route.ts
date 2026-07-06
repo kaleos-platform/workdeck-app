@@ -73,6 +73,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   // ── 콘텐츠 편집 ──────────────────────────────────────────────────────────────
   if (isContentEdit) {
+    // PUBLISHED/ARCHIVED 상태에서는 제목·본문 편집 불가
+    if (existing.status === 'PUBLISHED' || existing.status === 'ARCHIVED') {
+      return errorResponse('게시됨 또는 보관된 포스트는 내용을 편집할 수 없습니다', 400)
+    }
+
     // PUBLISH_APPROVED 상태에서 편집 시 자동으로 IN_REVIEW로 회귀
     const nextStatus: BoPostStatus =
       existing.status === 'PUBLISH_APPROVED' ? 'IN_REVIEW' : (existing.status as BoPostStatus)

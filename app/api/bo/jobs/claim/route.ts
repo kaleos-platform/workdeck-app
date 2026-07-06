@@ -82,18 +82,23 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // context 필드 — worker contracts.ts BoPublishContext 와 1:1 대응
       return NextResponse.json({
         job,
-        deployment: {
-          id: deployment.id,
-          status: 'PUBLISHING',
-          postId: deployment.postId,
-          variantId: deployment.variantId,
-          channelId: deployment.channelId,
-          variant: deployment.variant,
-          channel: deployment.channel,
+        context: {
+          deployment: {
+            id: deployment.id,
+          },
+          variant: {
+            title: deployment.variant?.title ?? '',
+            doc: deployment.variant?.doc ?? null,
+          },
+          channel: {
+            platform: deployment.channel?.platform ?? '',
+            config: deployment.channel?.config ?? {},
+          },
+          credential,
         },
-        credential,
       })
     }
   }
