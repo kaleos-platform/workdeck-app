@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { isYmdDateString } from '@/lib/date-range'
 import { prisma } from '@/lib/prisma'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
@@ -18,10 +19,14 @@ export async function GET(req: NextRequest) {
     return errorResponse('from, to 쿼리 파라미터가 필요합니다', 400)
   }
 
-  const from = new Date(fromParam)
-  const to = new Date(toParam)
-  // to는 해당 날짜 끝까지 포함
-  to.setHours(23, 59, 59, 999)
+  // YYYY-MM-DD 형식 사전 검증 (Invalid Date 생성 방지)
+  if (!isYmdDateString(fromParam) || !isYmdDateString(toParam)) {
+    return errorResponse('날짜 형식이 올바르지 않습니다 (YYYY-MM-DD)', 400)
+  }
+
+  // KST 경계로 파싱: from = 해당일 00:00:00 KST, to = 해당일 23:59:59 KST
+  const from = new Date(fromParam + 'T00:00:00+09:00')
+  const to = new Date(toParam + 'T23:59:59+09:00')
 
   if (isNaN(from.getTime()) || isNaN(to.getTime())) {
     return errorResponse('날짜 형식이 올바르지 않습니다 (YYYY-MM-DD)', 400)
@@ -137,7 +142,8 @@ export async function GET(req: NextRequest) {
   }
 
   // 현재 기간 집계 (MTD 비교는 sales-summary 가 담당. 이 라우트는 차트·채널 분해용)
-  const currentPeriodDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  // to가 23:59:59 KST이므로 ceil이 이미 포함 일수를 정확히 반환 — +1 불필요
+  const currentPeriodDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
   const prevFrom = new Date(from)
   prevFrom.setDate(prevFrom.getDate() - currentPeriodDays)
   const prevTo = new Date(to)
