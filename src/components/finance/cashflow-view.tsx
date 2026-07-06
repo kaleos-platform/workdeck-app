@@ -205,7 +205,7 @@ function SegmentGroup<T extends string>({
 export function FinanceCashflowView() {
   const [view, setView] = useState<ViewMode>('table')
   const [grain, setGrain] = useState<Grain>('month')
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('group')
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('hierarchy')
   // 표시 기간(오름차순) — 기본은 직전월까지 최근 N. grain 변경 시 리셋.
   const [selectedPeriods, setSelectedPeriods] = useState<string[]>(() =>
     defaultSelectedPeriods('month', ymOf(new Date()))
@@ -821,9 +821,9 @@ function CashflowTxnPanel({
   const sum = data ? (isIncome ? data.summary.incomeTotal : data.summary.expenseTotal) : 0
 
   return (
-    <div className="w-full shrink-0 rounded-xl border bg-card shadow-sm lg:w-[360px]">
+    <div className="w-full shrink-0 rounded-xl border bg-card shadow-sm lg:sticky lg:top-4 lg:flex lg:h-[calc(100vh-5rem)] lg:w-[360px] lg:flex-col">
       {/* 헤더 */}
-      <div className="flex items-start justify-between gap-2 border-b px-4 py-3">
+      <div className="flex shrink-0 items-start justify-between gap-2 border-b px-4 py-3">
         <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-2">
             <Badge
@@ -859,7 +859,7 @@ function CashflowTxnPanel({
 
       {/* 합계 */}
       {data && (
-        <div className="flex items-center justify-between border-b px-4 py-2 text-xs">
+        <div className="flex shrink-0 items-center justify-between border-b px-4 py-2 text-xs">
           <span className="text-muted-foreground">합계</span>
           <span
             className={cn(
@@ -873,8 +873,8 @@ function CashflowTxnPanel({
         </div>
       )}
 
-      {/* 목록 */}
-      <div className="max-h-[70vh] overflow-y-auto">
+      {/* 목록 — lg에선 패널 잔여 높이를 채우고 내부 스크롤(패널 자체는 sticky 고정) */}
+      <div className="max-h-[60vh] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
         {loading ? (
           <p className="py-8 text-center text-sm text-muted-foreground">불러오는 중...</p>
         ) : !data || data.rows.length === 0 ? (
