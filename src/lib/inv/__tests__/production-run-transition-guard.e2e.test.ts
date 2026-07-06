@@ -54,12 +54,15 @@ d('POST /production-runs/[runId]/transition — STOCKED_IN 역행 차단 (dev DB
     await prisma.space.create({
       data: { id: SPACE_ID, name: 'E2E TransitionGuard', type: 'PERSONAL' },
     })
-    await prisma.user.create({ data: { id: USER_ID, email: 'e2e-transition-guard@throwaway.test' } })
+    await prisma.user.create({
+      data: { id: USER_ID, email: 'e2e-transition-guard@throwaway.test' },
+    })
     const group = await prisma.invProductGroup.create({ data: { spaceId: SPACE_ID, name: '기본' } })
     const product = await prisma.invProduct.create({
       data: { spaceId: SPACE_ID, name: 'E2E 역행상품', groupId: group.id, status: 'ACTIVE' },
     })
-    optAId = (await prisma.invProductOption.create({ data: { productId: product.id, name: 'A' } })).id
+    optAId = (await prisma.invProductOption.create({ data: { productId: product.id, name: 'A' } }))
+      .id
     const run = await prisma.productionRun.create({
       data: {
         spaceId: SPACE_ID,
@@ -82,9 +85,9 @@ d('POST /production-runs/[runId]/transition — STOCKED_IN 역행 차단 (dev DB
   })
 
   test('STOCKED_IN → ORDERED 되돌리기는 409, 상태·입고량 불변', async () => {
-    const res = await POST(postReq({ status: 'ORDERED', transitionDate: '2026-07-06' }), {
+    const res = (await POST(postReq({ status: 'ORDERED', transitionDate: '2026-07-06' }), {
       params: Promise.resolve({ runId }),
-    })
+    }))!
     expect(res.status).toBe(409)
 
     const run = await prisma.productionRun.findUnique({ where: { id: runId } })
@@ -94,9 +97,9 @@ d('POST /production-runs/[runId]/transition — STOCKED_IN 역행 차단 (dev DB
   })
 
   test('STOCKED_IN → PLANNED 되돌리기는 409, 입고량 clear 안 됨', async () => {
-    const res = await POST(postReq({ status: 'PLANNED', transitionDate: '2026-07-06' }), {
+    const res = (await POST(postReq({ status: 'PLANNED', transitionDate: '2026-07-06' }), {
       params: Promise.resolve({ runId }),
-    })
+    }))!
     expect(res.status).toBe(409)
 
     const item = await prisma.productionRunItem.findFirst({ where: { runId } })

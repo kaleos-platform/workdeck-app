@@ -82,8 +82,10 @@ d('STOCKED_IN 전환 원자성 (dev DB)', () => {
     const product = await prisma.invProduct.create({
       data: { spaceId: SPACE_ID, name: 'E2E 원자상품', groupId: group.id, status: 'ACTIVE' },
     })
-    optAId = (await prisma.invProductOption.create({ data: { productId: product.id, name: 'A' } })).id
-    optBId = (await prisma.invProductOption.create({ data: { productId: product.id, name: 'B' } })).id
+    optAId = (await prisma.invProductOption.create({ data: { productId: product.id, name: 'A' } }))
+      .id
+    optBId = (await prisma.invProductOption.create({ data: { productId: product.id, name: 'B' } }))
+      .id
     const loc = await prisma.invStorageLocation.create({
       data: { spaceId: SPACE_ID, name: 'E2E 창고', type: 'OWN' },
     })
@@ -93,12 +95,15 @@ d('STOCKED_IN 전환 원자성 (dev DB)', () => {
     await prisma.space.create({
       data: { id: SPACE2_ID, name: 'E2E StockinAtomic Space2', type: 'PERSONAL' },
     })
-    const group2 = await prisma.invProductGroup.create({ data: { spaceId: SPACE2_ID, name: '기본' } })
+    const group2 = await prisma.invProductGroup.create({
+      data: { spaceId: SPACE2_ID, name: '기본' },
+    })
     const product2 = await prisma.invProduct.create({
       data: { spaceId: SPACE2_ID, name: 'E2E 외부상품', groupId: group2.id, status: 'ACTIVE' },
     })
-    alienOptId = (await prisma.invProductOption.create({ data: { productId: product2.id, name: 'X' } })).id
-
+    alienOptId = (
+      await prisma.invProductOption.create({ data: { productId: product2.id, name: 'X' } })
+    ).id
     ;(resolveDeckContext as jest.Mock).mockResolvedValue({
       space: { id: SPACE_ID, name: 'E2E StockinAtomic' },
       user: { id: USER_ID },
@@ -134,7 +139,7 @@ d('STOCKED_IN 전환 원자성 (dev DB)', () => {
   })
 
   test('정상 전환: ORDERED → STOCKED_IN, StockLevel·InvMovement·stockedInQty 검증', async () => {
-    const res = await POST(
+    const res = (await POST(
       postReq({
         status: 'STOCKED_IN',
         transitionDate: '2026-07-07',
@@ -144,7 +149,7 @@ d('STOCKED_IN 전환 원자성 (dev DB)', () => {
         ],
       }),
       { params: Promise.resolve({ runId }) }
-    )
+    ))!
     expect(res.status).toBe(200)
 
     const body = await res.json()

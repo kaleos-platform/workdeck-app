@@ -497,3 +497,73 @@ export const FinSnapshotSource = {
 } as const
 
 export type FinSnapshotSource = (typeof FinSnapshotSource)[keyof typeof FinSnapshotSource]
+
+
+export const HiringPostingStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  CLOSED: 'CLOSED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type HiringPostingStatus = (typeof HiringPostingStatus)[keyof typeof HiringPostingStatus]
+
+
+export const HiringJobType = {
+  FULL_TIME: 'FULL_TIME',
+  PART_TIME: 'PART_TIME',
+  CONTRACT: 'CONTRACT',
+  FREELANCER: 'FREELANCER',
+  INTERN: 'INTERN'
+} as const
+
+export type HiringJobType = (typeof HiringJobType)[keyof typeof HiringJobType]
+
+
+export const HiringPayFrequency = {
+  HOURLY: 'HOURLY',
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY',
+  YEARLY: 'YEARLY',
+  PER_TASK: 'PER_TASK',
+  TBD: 'TBD'
+} as const
+
+export type HiringPayFrequency = (typeof HiringPayFrequency)[keyof typeof HiringPayFrequency]
+
+
+export const HiringApplicationStage = {
+  HIRING: 'HIRING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type HiringApplicationStage = (typeof HiringApplicationStage)[keyof typeof HiringApplicationStage]
+
+
+export const HiringProcessStage = {
+  APPLIED: 'APPLIED',
+  INTERVIEW: 'INTERVIEW',
+  JOB_OFFER: 'JOB_OFFER'
+} as const
+
+export type HiringProcessStage = (typeof HiringProcessStage)[keyof typeof HiringProcessStage]
+
+
+export const HiringContentSourceType = {
+  POSTING_DETAIL: 'POSTING_DETAIL',
+  DETAIL_TEMPLATE: 'DETAIL_TEMPLATE'
+} as const
+
+export type HiringContentSourceType = (typeof HiringContentSourceType)[keyof typeof HiringContentSourceType]
+
+
+export const HiringNotificationType = {
+  INTERVIEW: 'INTERVIEW',
+  JOB_OFFER: 'JOB_OFFER',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type HiringNotificationType = (typeof HiringNotificationType)[keyof typeof HiringNotificationType]

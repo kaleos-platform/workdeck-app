@@ -1282,6 +1282,125 @@ export type EnumFinSnapshotSourceWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumFinSnapshotSourceFilter<$PrismaModel>
 }
 
+export type EnumHiringPostingStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringPostingStatus | Prisma.EnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringPostingStatus[] | Prisma.ListEnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringPostingStatus[] | Prisma.ListEnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringPostingStatusFilter<$PrismaModel> | $Enums.HiringPostingStatus
+}
+
+export type EnumHiringPostingStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringPostingStatus | Prisma.EnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringPostingStatus[] | Prisma.ListEnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringPostingStatus[] | Prisma.ListEnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringPostingStatusWithAggregatesFilter<$PrismaModel> | $Enums.HiringPostingStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringPostingStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringPostingStatusFilter<$PrismaModel>
+}
+
+export type EnumHiringJobTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringJobType | Prisma.EnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.HiringJobType[] | Prisma.ListEnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.HiringJobType[] | Prisma.ListEnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumHiringJobTypeNullableFilter<$PrismaModel> | $Enums.HiringJobType | null
+}
+
+export type EnumHiringPayFrequencyNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringPayFrequency | Prisma.EnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  in?: $Enums.HiringPayFrequency[] | Prisma.ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.HiringPayFrequency[] | Prisma.ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumHiringPayFrequencyNullableFilter<$PrismaModel> | $Enums.HiringPayFrequency | null
+}
+
+export type EnumHiringJobTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringJobType | Prisma.EnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.HiringJobType[] | Prisma.ListEnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.HiringJobType[] | Prisma.ListEnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumHiringJobTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.HiringJobType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringJobTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringJobTypeNullableFilter<$PrismaModel>
+}
+
+export type EnumHiringPayFrequencyNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringPayFrequency | Prisma.EnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  in?: $Enums.HiringPayFrequency[] | Prisma.ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.HiringPayFrequency[] | Prisma.ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumHiringPayFrequencyNullableWithAggregatesFilter<$PrismaModel> | $Enums.HiringPayFrequency | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringPayFrequencyNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringPayFrequencyNullableFilter<$PrismaModel>
+}
+
+export type EnumHiringContentSourceTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringContentSourceType | Prisma.EnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringContentSourceType[] | Prisma.ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringContentSourceType[] | Prisma.ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringContentSourceTypeFilter<$PrismaModel> | $Enums.HiringContentSourceType
+}
+
+export type EnumHiringContentSourceTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringContentSourceType | Prisma.EnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringContentSourceType[] | Prisma.ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringContentSourceType[] | Prisma.ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringContentSourceTypeWithAggregatesFilter<$PrismaModel> | $Enums.HiringContentSourceType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringContentSourceTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringContentSourceTypeFilter<$PrismaModel>
+}
+
+export type EnumHiringApplicationStageFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringApplicationStage | Prisma.EnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringApplicationStage[] | Prisma.ListEnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringApplicationStage[] | Prisma.ListEnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringApplicationStageFilter<$PrismaModel> | $Enums.HiringApplicationStage
+}
+
+export type EnumHiringProcessStageFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringProcessStage | Prisma.EnumHiringProcessStageFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringProcessStage[] | Prisma.ListEnumHiringProcessStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringProcessStage[] | Prisma.ListEnumHiringProcessStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringProcessStageFilter<$PrismaModel> | $Enums.HiringProcessStage
+}
+
+export type EnumHiringApplicationStageWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringApplicationStage | Prisma.EnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringApplicationStage[] | Prisma.ListEnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringApplicationStage[] | Prisma.ListEnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringApplicationStageWithAggregatesFilter<$PrismaModel> | $Enums.HiringApplicationStage
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringApplicationStageFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringApplicationStageFilter<$PrismaModel>
+}
+
+export type EnumHiringProcessStageWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringProcessStage | Prisma.EnumHiringProcessStageFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringProcessStage[] | Prisma.ListEnumHiringProcessStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringProcessStage[] | Prisma.ListEnumHiringProcessStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringProcessStageWithAggregatesFilter<$PrismaModel> | $Enums.HiringProcessStage
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringProcessStageFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringProcessStageFilter<$PrismaModel>
+}
+
+export type EnumHiringNotificationTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringNotificationType | Prisma.EnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringNotificationType[] | Prisma.ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringNotificationType[] | Prisma.ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel> | $Enums.HiringNotificationType
+}
+
+export type EnumHiringNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringNotificationType | Prisma.EnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringNotificationType[] | Prisma.ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringNotificationType[] | Prisma.ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringNotificationTypeWithAggregatesFilter<$PrismaModel> | $Enums.HiringNotificationType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -2496,6 +2615,125 @@ export type NestedEnumFinSnapshotSourceWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFinSnapshotSourceFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFinSnapshotSourceFilter<$PrismaModel>
+}
+
+export type NestedEnumHiringPostingStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringPostingStatus | Prisma.EnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringPostingStatus[] | Prisma.ListEnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringPostingStatus[] | Prisma.ListEnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringPostingStatusFilter<$PrismaModel> | $Enums.HiringPostingStatus
+}
+
+export type NestedEnumHiringPostingStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringPostingStatus | Prisma.EnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringPostingStatus[] | Prisma.ListEnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringPostingStatus[] | Prisma.ListEnumHiringPostingStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringPostingStatusWithAggregatesFilter<$PrismaModel> | $Enums.HiringPostingStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringPostingStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringPostingStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumHiringJobTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringJobType | Prisma.EnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.HiringJobType[] | Prisma.ListEnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.HiringJobType[] | Prisma.ListEnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumHiringJobTypeNullableFilter<$PrismaModel> | $Enums.HiringJobType | null
+}
+
+export type NestedEnumHiringPayFrequencyNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringPayFrequency | Prisma.EnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  in?: $Enums.HiringPayFrequency[] | Prisma.ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.HiringPayFrequency[] | Prisma.ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumHiringPayFrequencyNullableFilter<$PrismaModel> | $Enums.HiringPayFrequency | null
+}
+
+export type NestedEnumHiringJobTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringJobType | Prisma.EnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.HiringJobType[] | Prisma.ListEnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.HiringJobType[] | Prisma.ListEnumHiringJobTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumHiringJobTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.HiringJobType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringJobTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringJobTypeNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumHiringPayFrequencyNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringPayFrequency | Prisma.EnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  in?: $Enums.HiringPayFrequency[] | Prisma.ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.HiringPayFrequency[] | Prisma.ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumHiringPayFrequencyNullableWithAggregatesFilter<$PrismaModel> | $Enums.HiringPayFrequency | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringPayFrequencyNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringPayFrequencyNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumHiringContentSourceTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringContentSourceType | Prisma.EnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringContentSourceType[] | Prisma.ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringContentSourceType[] | Prisma.ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringContentSourceTypeFilter<$PrismaModel> | $Enums.HiringContentSourceType
+}
+
+export type NestedEnumHiringContentSourceTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringContentSourceType | Prisma.EnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringContentSourceType[] | Prisma.ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringContentSourceType[] | Prisma.ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringContentSourceTypeWithAggregatesFilter<$PrismaModel> | $Enums.HiringContentSourceType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringContentSourceTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringContentSourceTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumHiringApplicationStageFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringApplicationStage | Prisma.EnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringApplicationStage[] | Prisma.ListEnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringApplicationStage[] | Prisma.ListEnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringApplicationStageFilter<$PrismaModel> | $Enums.HiringApplicationStage
+}
+
+export type NestedEnumHiringProcessStageFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringProcessStage | Prisma.EnumHiringProcessStageFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringProcessStage[] | Prisma.ListEnumHiringProcessStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringProcessStage[] | Prisma.ListEnumHiringProcessStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringProcessStageFilter<$PrismaModel> | $Enums.HiringProcessStage
+}
+
+export type NestedEnumHiringApplicationStageWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringApplicationStage | Prisma.EnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringApplicationStage[] | Prisma.ListEnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringApplicationStage[] | Prisma.ListEnumHiringApplicationStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringApplicationStageWithAggregatesFilter<$PrismaModel> | $Enums.HiringApplicationStage
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringApplicationStageFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringApplicationStageFilter<$PrismaModel>
+}
+
+export type NestedEnumHiringProcessStageWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringProcessStage | Prisma.EnumHiringProcessStageFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringProcessStage[] | Prisma.ListEnumHiringProcessStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringProcessStage[] | Prisma.ListEnumHiringProcessStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringProcessStageWithAggregatesFilter<$PrismaModel> | $Enums.HiringProcessStage
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringProcessStageFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringProcessStageFilter<$PrismaModel>
+}
+
+export type NestedEnumHiringNotificationTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringNotificationType | Prisma.EnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringNotificationType[] | Prisma.ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringNotificationType[] | Prisma.ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel> | $Enums.HiringNotificationType
+}
+
+export type NestedEnumHiringNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HiringNotificationType | Prisma.EnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HiringNotificationType[] | Prisma.ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HiringNotificationType[] | Prisma.ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHiringNotificationTypeWithAggregatesFilter<$PrismaModel> | $Enums.HiringNotificationType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel>
 }
 
 
