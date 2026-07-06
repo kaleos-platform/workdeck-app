@@ -217,6 +217,7 @@ export type BoChannelWhereInput = {
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   variants?: Prisma.BoPostVariantListRelationFilter
   deployments?: Prisma.BoDeploymentListRelationFilter
+  credentials?: Prisma.BoChannelCredentialListRelationFilter
 }
 
 export type BoChannelOrderByWithRelationInput = {
@@ -233,6 +234,7 @@ export type BoChannelOrderByWithRelationInput = {
   space?: Prisma.SpaceOrderByWithRelationInput
   variants?: Prisma.BoPostVariantOrderByRelationAggregateInput
   deployments?: Prisma.BoDeploymentOrderByRelationAggregateInput
+  credentials?: Prisma.BoChannelCredentialOrderByRelationAggregateInput
 }
 
 export type BoChannelWhereUniqueInput = Prisma.AtLeast<{
@@ -253,6 +255,7 @@ export type BoChannelWhereUniqueInput = Prisma.AtLeast<{
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   variants?: Prisma.BoPostVariantListRelationFilter
   deployments?: Prisma.BoDeploymentListRelationFilter
+  credentials?: Prisma.BoChannelCredentialListRelationFilter
 }, "id" | "spaceId_platform_name">
 
 export type BoChannelOrderByWithAggregationInput = {
@@ -300,6 +303,7 @@ export type BoChannelCreateInput = {
   space: Prisma.SpaceCreateNestedOneWithoutBoChannelsInput
   variants?: Prisma.BoPostVariantCreateNestedManyWithoutChannelInput
   deployments?: Prisma.BoDeploymentCreateNestedManyWithoutChannelInput
+  credentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutChannelInput
 }
 
 export type BoChannelUncheckedCreateInput = {
@@ -315,6 +319,7 @@ export type BoChannelUncheckedCreateInput = {
   updatedAt?: Date | string
   variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutChannelInput
   deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutChannelInput
+  credentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type BoChannelUpdateInput = {
@@ -330,6 +335,7 @@ export type BoChannelUpdateInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoChannelsNestedInput
   variants?: Prisma.BoPostVariantUpdateManyWithoutChannelNestedInput
   deployments?: Prisma.BoDeploymentUpdateManyWithoutChannelNestedInput
+  credentials?: Prisma.BoChannelCredentialUpdateManyWithoutChannelNestedInput
 }
 
 export type BoChannelUncheckedUpdateInput = {
@@ -345,6 +351,7 @@ export type BoChannelUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutChannelNestedInput
   deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutChannelNestedInput
+  credentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type BoChannelCreateManyInput = {
@@ -519,6 +526,20 @@ export type BoChannelUpdateOneRequiredWithoutDeploymentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BoChannelUpdateToOneWithWhereWithoutDeploymentsInput, Prisma.BoChannelUpdateWithoutDeploymentsInput>, Prisma.BoChannelUncheckedUpdateWithoutDeploymentsInput>
 }
 
+export type BoChannelCreateNestedOneWithoutCredentialsInput = {
+  create?: Prisma.XOR<Prisma.BoChannelCreateWithoutCredentialsInput, Prisma.BoChannelUncheckedCreateWithoutCredentialsInput>
+  connectOrCreate?: Prisma.BoChannelCreateOrConnectWithoutCredentialsInput
+  connect?: Prisma.BoChannelWhereUniqueInput
+}
+
+export type BoChannelUpdateOneRequiredWithoutCredentialsNestedInput = {
+  create?: Prisma.XOR<Prisma.BoChannelCreateWithoutCredentialsInput, Prisma.BoChannelUncheckedCreateWithoutCredentialsInput>
+  connectOrCreate?: Prisma.BoChannelCreateOrConnectWithoutCredentialsInput
+  upsert?: Prisma.BoChannelUpsertWithoutCredentialsInput
+  connect?: Prisma.BoChannelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BoChannelUpdateToOneWithWhereWithoutCredentialsInput, Prisma.BoChannelUpdateWithoutCredentialsInput>, Prisma.BoChannelUncheckedUpdateWithoutCredentialsInput>
+}
+
 export type BoChannelCreateWithoutSpaceInput = {
   id?: string
   platform: $Enums.BoPlatform
@@ -531,6 +552,7 @@ export type BoChannelCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   variants?: Prisma.BoPostVariantCreateNestedManyWithoutChannelInput
   deployments?: Prisma.BoDeploymentCreateNestedManyWithoutChannelInput
+  credentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutChannelInput
 }
 
 export type BoChannelUncheckedCreateWithoutSpaceInput = {
@@ -545,6 +567,7 @@ export type BoChannelUncheckedCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutChannelInput
   deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutChannelInput
+  credentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type BoChannelCreateOrConnectWithoutSpaceInput = {
@@ -601,6 +624,7 @@ export type BoChannelCreateWithoutVariantsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoChannelsInput
   deployments?: Prisma.BoDeploymentCreateNestedManyWithoutChannelInput
+  credentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutChannelInput
 }
 
 export type BoChannelUncheckedCreateWithoutVariantsInput = {
@@ -615,6 +639,7 @@ export type BoChannelUncheckedCreateWithoutVariantsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutChannelInput
+  credentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type BoChannelCreateOrConnectWithoutVariantsInput = {
@@ -645,6 +670,7 @@ export type BoChannelUpdateWithoutVariantsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoChannelsNestedInput
   deployments?: Prisma.BoDeploymentUpdateManyWithoutChannelNestedInput
+  credentials?: Prisma.BoChannelCredentialUpdateManyWithoutChannelNestedInput
 }
 
 export type BoChannelUncheckedUpdateWithoutVariantsInput = {
@@ -659,6 +685,7 @@ export type BoChannelUncheckedUpdateWithoutVariantsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutChannelNestedInput
+  credentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type BoChannelCreateWithoutDeploymentsInput = {
@@ -673,6 +700,7 @@ export type BoChannelCreateWithoutDeploymentsInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoChannelsInput
   variants?: Prisma.BoPostVariantCreateNestedManyWithoutChannelInput
+  credentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutChannelInput
 }
 
 export type BoChannelUncheckedCreateWithoutDeploymentsInput = {
@@ -687,6 +715,7 @@ export type BoChannelUncheckedCreateWithoutDeploymentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutChannelInput
+  credentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type BoChannelCreateOrConnectWithoutDeploymentsInput = {
@@ -717,6 +746,7 @@ export type BoChannelUpdateWithoutDeploymentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoChannelsNestedInput
   variants?: Prisma.BoPostVariantUpdateManyWithoutChannelNestedInput
+  credentials?: Prisma.BoChannelCredentialUpdateManyWithoutChannelNestedInput
 }
 
 export type BoChannelUncheckedUpdateWithoutDeploymentsInput = {
@@ -731,6 +761,83 @@ export type BoChannelUncheckedUpdateWithoutDeploymentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutChannelNestedInput
+  credentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutChannelNestedInput
+}
+
+export type BoChannelCreateWithoutCredentialsInput = {
+  id?: string
+  platform: $Enums.BoPlatform
+  name: string
+  formatProfile?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  publisherMode?: $Enums.BoPublisherMode
+  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutBoChannelsInput
+  variants?: Prisma.BoPostVariantCreateNestedManyWithoutChannelInput
+  deployments?: Prisma.BoDeploymentCreateNestedManyWithoutChannelInput
+}
+
+export type BoChannelUncheckedCreateWithoutCredentialsInput = {
+  id?: string
+  spaceId: string
+  platform: $Enums.BoPlatform
+  name: string
+  formatProfile?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  publisherMode?: $Enums.BoPublisherMode
+  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  variants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutChannelInput
+  deployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutChannelInput
+}
+
+export type BoChannelCreateOrConnectWithoutCredentialsInput = {
+  where: Prisma.BoChannelWhereUniqueInput
+  create: Prisma.XOR<Prisma.BoChannelCreateWithoutCredentialsInput, Prisma.BoChannelUncheckedCreateWithoutCredentialsInput>
+}
+
+export type BoChannelUpsertWithoutCredentialsInput = {
+  update: Prisma.XOR<Prisma.BoChannelUpdateWithoutCredentialsInput, Prisma.BoChannelUncheckedUpdateWithoutCredentialsInput>
+  create: Prisma.XOR<Prisma.BoChannelCreateWithoutCredentialsInput, Prisma.BoChannelUncheckedCreateWithoutCredentialsInput>
+  where?: Prisma.BoChannelWhereInput
+}
+
+export type BoChannelUpdateToOneWithWhereWithoutCredentialsInput = {
+  where?: Prisma.BoChannelWhereInput
+  data: Prisma.XOR<Prisma.BoChannelUpdateWithoutCredentialsInput, Prisma.BoChannelUncheckedUpdateWithoutCredentialsInput>
+}
+
+export type BoChannelUpdateWithoutCredentialsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  platform?: Prisma.EnumBoPlatformFieldUpdateOperationsInput | $Enums.BoPlatform
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  formatProfile?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  publisherMode?: Prisma.EnumBoPublisherModeFieldUpdateOperationsInput | $Enums.BoPublisherMode
+  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutBoChannelsNestedInput
+  variants?: Prisma.BoPostVariantUpdateManyWithoutChannelNestedInput
+  deployments?: Prisma.BoDeploymentUpdateManyWithoutChannelNestedInput
+}
+
+export type BoChannelUncheckedUpdateWithoutCredentialsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  platform?: Prisma.EnumBoPlatformFieldUpdateOperationsInput | $Enums.BoPlatform
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  formatProfile?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  publisherMode?: Prisma.EnumBoPublisherModeFieldUpdateOperationsInput | $Enums.BoPublisherMode
+  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutChannelNestedInput
+  deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type BoChannelCreateManySpaceInput = {
@@ -757,6 +864,7 @@ export type BoChannelUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   variants?: Prisma.BoPostVariantUpdateManyWithoutChannelNestedInput
   deployments?: Prisma.BoDeploymentUpdateManyWithoutChannelNestedInput
+  credentials?: Prisma.BoChannelCredentialUpdateManyWithoutChannelNestedInput
 }
 
 export type BoChannelUncheckedUpdateWithoutSpaceInput = {
@@ -771,6 +879,7 @@ export type BoChannelUncheckedUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   variants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutChannelNestedInput
   deployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutChannelNestedInput
+  credentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type BoChannelUncheckedUpdateManyWithoutSpaceInput = {
@@ -793,11 +902,13 @@ export type BoChannelUncheckedUpdateManyWithoutSpaceInput = {
 export type BoChannelCountOutputType = {
   variants: number
   deployments: number
+  credentials: number
 }
 
 export type BoChannelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   variants?: boolean | BoChannelCountOutputTypeCountVariantsArgs
   deployments?: boolean | BoChannelCountOutputTypeCountDeploymentsArgs
+  credentials?: boolean | BoChannelCountOutputTypeCountCredentialsArgs
 }
 
 /**
@@ -824,6 +935,13 @@ export type BoChannelCountOutputTypeCountDeploymentsArgs<ExtArgs extends runtime
   where?: Prisma.BoDeploymentWhereInput
 }
 
+/**
+ * BoChannelCountOutputType without action
+ */
+export type BoChannelCountOutputTypeCountCredentialsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BoChannelCredentialWhereInput
+}
+
 
 export type BoChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -839,6 +957,7 @@ export type BoChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   variants?: boolean | Prisma.BoChannel$variantsArgs<ExtArgs>
   deployments?: boolean | Prisma.BoChannel$deploymentsArgs<ExtArgs>
+  credentials?: boolean | Prisma.BoChannel$credentialsArgs<ExtArgs>
   _count?: boolean | Prisma.BoChannelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["boChannel"]>
 
@@ -888,6 +1007,7 @@ export type BoChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   variants?: boolean | Prisma.BoChannel$variantsArgs<ExtArgs>
   deployments?: boolean | Prisma.BoChannel$deploymentsArgs<ExtArgs>
+  credentials?: boolean | Prisma.BoChannel$credentialsArgs<ExtArgs>
   _count?: boolean | Prisma.BoChannelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BoChannelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -903,6 +1023,7 @@ export type $BoChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     space: Prisma.$SpacePayload<ExtArgs>
     variants: Prisma.$BoPostVariantPayload<ExtArgs>[]
     deployments: Prisma.$BoDeploymentPayload<ExtArgs>[]
+    credentials: Prisma.$BoChannelCredentialPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1312,6 +1433,7 @@ export interface Prisma__BoChannelClient<T, Null = never, ExtArgs extends runtim
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   variants<T extends Prisma.BoChannel$variantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoChannel$variantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostVariantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deployments<T extends Prisma.BoChannel$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoChannel$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoDeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  credentials<T extends Prisma.BoChannel$credentialsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoChannel$credentialsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoChannelCredentialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1792,6 +1914,30 @@ export type BoChannel$deploymentsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.BoDeploymentScalarFieldEnum | Prisma.BoDeploymentScalarFieldEnum[]
+}
+
+/**
+ * BoChannel.credentials
+ */
+export type BoChannel$credentialsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BoChannelCredential
+   */
+  select?: Prisma.BoChannelCredentialSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BoChannelCredential
+   */
+  omit?: Prisma.BoChannelCredentialOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BoChannelCredentialInclude<ExtArgs> | null
+  where?: Prisma.BoChannelCredentialWhereInput
+  orderBy?: Prisma.BoChannelCredentialOrderByWithRelationInput | Prisma.BoChannelCredentialOrderByWithRelationInput[]
+  cursor?: Prisma.BoChannelCredentialWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BoChannelCredentialScalarFieldEnum | Prisma.BoChannelCredentialScalarFieldEnum[]
 }
 
 /**

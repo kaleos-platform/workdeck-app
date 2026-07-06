@@ -568,3 +568,32 @@ export const BoDeploymentStatus = {
 } as const
 
 export type BoDeploymentStatus = (typeof BoDeploymentStatus)[keyof typeof BoDeploymentStatus]
+
+
+export const BoJobKind = {
+  CRAWL_HOMEPAGE: 'CRAWL_HOMEPAGE',
+  GENERATE_DRAFT: 'GENERATE_DRAFT',
+  GENERATE_VARIANT: 'GENERATE_VARIANT',
+  PUBLISH: 'PUBLISH'
+} as const
+
+export type BoJobKind = (typeof BoJobKind)[keyof typeof BoJobKind]
+
+
+export const BoJobStatus = {
+  PENDING: 'PENDING',
+  CLAIMED: 'CLAIMED',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type BoJobStatus = (typeof BoJobStatus)[keyof typeof BoJobStatus]
+
+
+export const BoCredentialKind = {
+  COOKIE: 'COOKIE',
+  OAUTH: 'OAUTH',
+  API_KEY: 'API_KEY'
+} as const
+
+export type BoCredentialKind = (typeof BoCredentialKind)[keyof typeof BoCredentialKind]

@@ -159,7 +159,9 @@ export const ModelName = {
   BoPostVersion: 'BoPostVersion',
   BoChannel: 'BoChannel',
   BoPostVariant: 'BoPostVariant',
-  BoDeployment: 'BoDeployment'
+  BoDeployment: 'BoDeployment',
+  BoJob: 'BoJob',
+  BoChannelCredential: 'BoChannelCredential'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1997,6 +1999,43 @@ export const BoDeploymentScalarFieldEnum = {
 } as const
 
 export type BoDeploymentScalarFieldEnum = (typeof BoDeploymentScalarFieldEnum)[keyof typeof BoDeploymentScalarFieldEnum]
+
+
+export const BoJobScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  status: 'status',
+  targetId: 'targetId',
+  payload: 'payload',
+  scheduledAt: 'scheduledAt',
+  claimedAt: 'claimedAt',
+  claimedBy: 'claimedBy',
+  completedAt: 'completedAt',
+  attempts: 'attempts',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoJobScalarFieldEnum = (typeof BoJobScalarFieldEnum)[keyof typeof BoJobScalarFieldEnum]
+
+
+export const BoChannelCredentialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  kind: 'kind',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  expiresAt: 'expiresAt',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoChannelCredentialScalarFieldEnum = (typeof BoChannelCredentialScalarFieldEnum)[keyof typeof BoChannelCredentialScalarFieldEnum]
 
 
 export const SortOrder = {

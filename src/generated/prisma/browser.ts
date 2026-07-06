@@ -562,3 +562,13 @@ export type BoPostVariant = Prisma.BoPostVariantModel
  * 
  */
 export type BoDeployment = Prisma.BoDeploymentModel
+/**
+ * Model BoJob
+ * 
+ */
+export type BoJob = Prisma.BoJobModel
+/**
+ * Model BoChannelCredential
+ * 
+ */
+export type BoChannelCredential = Prisma.BoChannelCredentialModel

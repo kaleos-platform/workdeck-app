@@ -492,7 +492,9 @@ export const ModelName = {
   BoPostVersion: 'BoPostVersion',
   BoChannel: 'BoChannel',
   BoPostVariant: 'BoPostVariant',
-  BoDeployment: 'BoDeployment'
+  BoDeployment: 'BoDeployment',
+  BoJob: 'BoJob',
+  BoChannelCredential: 'BoChannelCredential'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -508,7 +510,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -8578,6 +8580,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BoJob: {
+      payload: Prisma.$BoJobPayload<ExtArgs>
+      fields: Prisma.BoJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BoJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BoJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>
+        }
+        findFirst: {
+          args: Prisma.BoJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BoJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>
+        }
+        findMany: {
+          args: Prisma.BoJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>[]
+        }
+        create: {
+          args: Prisma.BoJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>
+        }
+        createMany: {
+          args: Prisma.BoJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BoJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>[]
+        }
+        delete: {
+          args: Prisma.BoJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>
+        }
+        update: {
+          args: Prisma.BoJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.BoJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BoJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BoJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.BoJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoJobPayload>
+        }
+        aggregate: {
+          args: Prisma.BoJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBoJob>
+        }
+        groupBy: {
+          args: Prisma.BoJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BoJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoJobCountAggregateOutputType> | number
+        }
+      }
+    }
+    BoChannelCredential: {
+      payload: Prisma.$BoChannelCredentialPayload<ExtArgs>
+      fields: Prisma.BoChannelCredentialFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BoChannelCredentialFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BoChannelCredentialFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>
+        }
+        findFirst: {
+          args: Prisma.BoChannelCredentialFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BoChannelCredentialFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>
+        }
+        findMany: {
+          args: Prisma.BoChannelCredentialFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>[]
+        }
+        create: {
+          args: Prisma.BoChannelCredentialCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>
+        }
+        createMany: {
+          args: Prisma.BoChannelCredentialCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BoChannelCredentialCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>[]
+        }
+        delete: {
+          args: Prisma.BoChannelCredentialDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>
+        }
+        update: {
+          args: Prisma.BoChannelCredentialUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>
+        }
+        deleteMany: {
+          args: Prisma.BoChannelCredentialDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BoChannelCredentialUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BoChannelCredentialUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>[]
+        }
+        upsert: {
+          args: Prisma.BoChannelCredentialUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BoChannelCredentialPayload>
+        }
+        aggregate: {
+          args: Prisma.BoChannelCredentialAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBoChannelCredential>
+        }
+        groupBy: {
+          args: Prisma.BoChannelCredentialGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoChannelCredentialGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BoChannelCredentialCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BoChannelCredentialCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -10438,6 +10588,43 @@ export const BoDeploymentScalarFieldEnum = {
 export type BoDeploymentScalarFieldEnum = (typeof BoDeploymentScalarFieldEnum)[keyof typeof BoDeploymentScalarFieldEnum]
 
 
+export const BoJobScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  status: 'status',
+  targetId: 'targetId',
+  payload: 'payload',
+  scheduledAt: 'scheduledAt',
+  claimedAt: 'claimedAt',
+  claimedBy: 'claimedBy',
+  completedAt: 'completedAt',
+  attempts: 'attempts',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoJobScalarFieldEnum = (typeof BoJobScalarFieldEnum)[keyof typeof BoJobScalarFieldEnum]
+
+
+export const BoChannelCredentialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  kind: 'kind',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  expiresAt: 'expiresAt',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoChannelCredentialScalarFieldEnum = (typeof BoChannelCredentialScalarFieldEnum)[keyof typeof BoChannelCredentialScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -11394,6 +11581,48 @@ export type EnumBoDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputTyp
 export type ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoDeploymentStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'BoJobKind'
+ */
+export type EnumBoJobKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoJobKind'>
+    
+
+
+/**
+ * Reference to a field of type 'BoJobKind[]'
+ */
+export type ListEnumBoJobKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoJobKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BoJobStatus'
+ */
+export type EnumBoJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoJobStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BoJobStatus[]'
+ */
+export type ListEnumBoJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoJobStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BoCredentialKind'
+ */
+export type EnumBoCredentialKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoCredentialKind'>
+    
+
+
+/**
+ * Reference to a field of type 'BoCredentialKind[]'
+ */
+export type ListEnumBoCredentialKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoCredentialKind[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -11598,6 +11827,8 @@ export type GlobalOmitConfig = {
   boChannel?: Prisma.BoChannelOmit
   boPostVariant?: Prisma.BoPostVariantOmit
   boDeployment?: Prisma.BoDeploymentOmit
+  boJob?: Prisma.BoJobOmit
+  boChannelCredential?: Prisma.BoChannelCredentialOmit
 }
 
 /* Types for Logging */

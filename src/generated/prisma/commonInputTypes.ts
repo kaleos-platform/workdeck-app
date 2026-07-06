@@ -1401,6 +1401,57 @@ export type EnumBoDeploymentStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel>
 }
 
+export type EnumBoJobKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobKind | Prisma.EnumBoJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel> | $Enums.BoJobKind
+}
+
+export type EnumBoJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobStatus | Prisma.EnumBoJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel> | $Enums.BoJobStatus
+}
+
+export type EnumBoJobKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobKind | Prisma.EnumBoJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobKindWithAggregatesFilter<$PrismaModel> | $Enums.BoJobKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel>
+}
+
+export type EnumBoJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobStatus | Prisma.EnumBoJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel>
+}
+
+export type EnumBoCredentialKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCredentialKind | Prisma.EnumBoCredentialKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel> | $Enums.BoCredentialKind
+}
+
+export type EnumBoCredentialKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCredentialKind | Prisma.EnumBoCredentialKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCredentialKindWithAggregatesFilter<$PrismaModel> | $Enums.BoCredentialKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -2734,6 +2785,57 @@ export type NestedEnumBoDeploymentStatusWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBoJobKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobKind | Prisma.EnumBoJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel> | $Enums.BoJobKind
+}
+
+export type NestedEnumBoJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobStatus | Prisma.EnumBoJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel> | $Enums.BoJobStatus
+}
+
+export type NestedEnumBoJobKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobKind | Prisma.EnumBoJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobKindWithAggregatesFilter<$PrismaModel> | $Enums.BoJobKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel>
+}
+
+export type NestedEnumBoJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobStatus | Prisma.EnumBoJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBoCredentialKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCredentialKind | Prisma.EnumBoCredentialKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel> | $Enums.BoCredentialKind
+}
+
+export type NestedEnumBoCredentialKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCredentialKind | Prisma.EnumBoCredentialKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCredentialKindWithAggregatesFilter<$PrismaModel> | $Enums.BoCredentialKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel>
 }
 
 
