@@ -85,16 +85,21 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (saveAlias && item.order.channelId) {
       const aliasName = normalizeAlias(item.name)
       if (aliasName) {
-        await prisma.channelProductAlias.upsert({
-          where: { channelId_aliasName: { channelId: item.order.channelId, aliasName } },
-          update: { listingId, optionId: null },
-          create: {
-            spaceId: resolved.space.id,
-            channelId: item.order.channelId,
-            aliasName,
-            listingId,
-            optionId: null,
-          },
+        // stale fulfillment가 남으면 임포트 우선순위(fulfillments 우선) 때문에
+        // 새 listing 매칭이 무시되므로 alias 저장 시 반드시 기존 fulfillment를 삭제한다.
+        await prisma.$transaction(async (tx) => {
+          const alias = await tx.channelProductAlias.upsert({
+            where: { channelId_aliasName: { channelId: item.order.channelId!, aliasName } },
+            update: { listingId, optionId: null },
+            create: {
+              spaceId: resolved.space.id,
+              channelId: item.order.channelId!,
+              aliasName,
+              listingId,
+              optionId: null,
+            },
+          })
+          await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
         })
       }
     }
@@ -227,16 +232,21 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (saveAlias && item.order.channelId) {
       const aliasName = normalizeAlias(item.name)
       if (aliasName) {
-        await prisma.channelProductAlias.upsert({
-          where: { channelId_aliasName: { channelId: item.order.channelId, aliasName } },
-          update: { optionId, listingId: null },
-          create: {
-            spaceId: resolved.space.id,
-            channelId: item.order.channelId,
-            aliasName,
-            optionId,
-            listingId: null,
-          },
+        // stale fulfillment가 남으면 임포트 우선순위(fulfillments 우선) 때문에
+        // 새 option 매칭이 무시되므로 alias 저장 시 반드시 기존 fulfillment를 삭제한다.
+        await prisma.$transaction(async (tx) => {
+          const alias = await tx.channelProductAlias.upsert({
+            where: { channelId_aliasName: { channelId: item.order.channelId!, aliasName } },
+            update: { optionId, listingId: null },
+            create: {
+              spaceId: resolved.space.id,
+              channelId: item.order.channelId!,
+              aliasName,
+              optionId,
+              listingId: null,
+            },
+          })
+          await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
         })
       }
     }

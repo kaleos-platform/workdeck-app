@@ -9,7 +9,11 @@ import crypto from 'crypto'
 function encryptPassword(password: string): { encrypted: string; iv: string } {
   const key = process.env.ENCRYPTION_KEY
   if (!key) {
-    // 키 없으면 평문 저장 (개발 환경)
+    if (process.env.VERCEL_ENV === 'production') {
+      throw new Error('ENCRYPTION_KEY가 설정되지 않아 자격증명을 저장할 수 없습니다')
+    }
+    // 비운영 환경: 평문 저장 (개발/preview 전용)
+    console.warn('[credentials] ENCRYPTION_KEY 미설정 — 평문 저장 (비운영 환경 전용)')
     return { encrypted: password, iv: 'none' }
   }
   const iv = crypto.randomBytes(16)
@@ -136,7 +140,13 @@ export async function PUT(request: NextRequest) {
     encryptionIv = body.encryptionIv
   } else {
     // 폼에서 평문 전달 → 암호화
-    const encrypted = encryptPassword(rawPassword)
+    let encrypted: { encrypted: string; iv: string }
+    try {
+      encrypted = encryptPassword(rawPassword)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '자격증명 암호화에 실패했습니다'
+      return errorResponse(msg, 500)
+    }
     loginPassword = encrypted.encrypted
     encryptionIv = encrypted.iv
   }
