@@ -26,11 +26,20 @@ export async function GET(req: NextRequest) {
   const classStatus = sp.get('classStatus')
   const q = sp.get('q')?.trim()
 
+  // 계정과목 필터(현금흐름 상세 → 행 클릭):
+  //  - categoryIds: 콤마 구분 다중(대분류 클릭 시 그 하위 리프 id들). 정확 일치 in.
+  //  - uncategorized=1: 미분류(categoryId null).
+  //  - 둘 다 있으면(leaf 모드 서브그룹에 미분류 리프 혼합) OR로 결합.
+  //  - categoryId(단일, 정확): 기존 전체 거래 탭 하위호환.
+  const categoryIds = sp.get('categoryIds')?.split(',').filter(Boolean) ?? []
+  const wantUncat = sp.get('uncategorized') === '1'
+  const singleCat = sp.get('categoryId')
+
   const where: Prisma.FinTransactionWhereInput = {
     spaceId,
     ...(sp.get('accountId') ? { accountId: sp.get('accountId')! } : {}),
-    ...(sp.get('categoryId') ? { categoryId: sp.get('categoryId')! } : {}),
     ...(direction === 'IN' || direction === 'OUT' ? { direction } : {}),
+    ...(sp.get('excludeTransfer') === '1' ? { isTransfer: false } : {}),
     ...(classStatus === 'CLASSIFIED' || classStatus === 'REVIEW' || classStatus === 'UNCLASSIFIED'
       ? { classStatus }
       : {}),
@@ -43,14 +52,31 @@ export async function GET(req: NextRequest) {
           },
         }
       : {}),
-    ...(q
-      ? {
-          OR: [
-            { description: { contains: q, mode: 'insensitive' } },
-            { counterparty: { contains: q, mode: 'insensitive' } },
-          ],
-        }
-      : {}),
+  }
+
+  // 계정과목 조건 구성.
+  if (categoryIds.length && wantUncat) {
+    where.OR = [{ categoryId: { in: categoryIds } }, { categoryId: null }]
+  } else if (categoryIds.length) {
+    where.categoryId = { in: categoryIds }
+  } else if (wantUncat) {
+    where.categoryId = null
+  } else if (singleCat) {
+    where.categoryId = singleCat
+  }
+
+  // 적요/가맹점 검색 — 위 계정과목 OR와 키 충돌 방지 위해 OR 병존 시 AND로 감쌈.
+  if (q) {
+    const qOr: Prisma.FinTransactionWhereInput[] = [
+      { description: { contains: q, mode: 'insensitive' } },
+      { counterparty: { contains: q, mode: 'insensitive' } },
+    ]
+    if (where.OR) {
+      where.AND = [{ OR: where.OR }, { OR: qOr }]
+      delete where.OR
+    } else {
+      where.OR = qOr
+    }
   }
 
   const [rows, total, sums] = await Promise.all([
