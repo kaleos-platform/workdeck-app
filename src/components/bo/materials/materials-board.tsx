@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -13,6 +14,8 @@ import {
 } from '@/components/ui/select'
 import { AddMaterialDialog } from './add-material-dialog'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { getBlogOpsPostPath } from '@/lib/deck-routes'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
@@ -59,12 +62,14 @@ const STATUS_CLASS: Record<MaterialStatus, string> = {
 // ─── 컴포넌트 ────────────────────────────────────────────────────────────────
 
 export function MaterialsBoard({ products }: MaterialsBoardProps) {
+  const router = useRouter()
   const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<MaterialStatus | 'ALL'>('ALL')
   const [productFilter, setProductFilter] = useState<string>('ALL')
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
+  const [draftingIds, setDraftingIds] = useState<Set<string>>(new Set())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -109,6 +114,30 @@ export function MaterialsBoard({ products }: MaterialsBoardProps) {
       setPendingIds((prev) => {
         const next = new Set(prev)
         next.delete(id)
+        return next
+      })
+    }
+  }
+
+  async function createDraft(materialId: string) {
+    setDraftingIds((prev) => new Set(prev).add(materialId))
+    try {
+      const res = await fetch('/api/bo/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ materialId }),
+      })
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { message?: string }
+        throw new Error(data.message ?? '초안 생성에 실패했습니다')
+      }
+      const data = (await res.json()) as { post: { id: string } }
+      router.push(getBlogOpsPostPath(data.post.id))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '초안 생성 실패')
+      setDraftingIds((prev) => {
+        const next = new Set(prev)
+        next.delete(materialId)
         return next
       })
     }
@@ -271,15 +300,30 @@ export function MaterialsBoard({ products }: MaterialsBoardProps) {
                       </Button>
                     )}
                     {m.status === 'APPROVED' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-muted-foreground"
-                        disabled={isPending}
-                        onClick={() => changeStatus(m.id, 'ARCHIVED')}
-                      >
-                        보관
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950"
+                          disabled={isPending || draftingIds.has(m.id)}
+                          onClick={() => void createDraft(m.id)}
+                        >
+                          {draftingIds.has(m.id) ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            '초안 생성'
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-muted-foreground"
+                          disabled={isPending || draftingIds.has(m.id)}
+                          onClick={() => changeStatus(m.id, 'ARCHIVED')}
+                        >
+                          보관
+                        </Button>
+                      </>
                     )}
                     {isPending && (
                       <Loader2 className="h-4 w-4 animate-spin self-center text-muted-foreground" />

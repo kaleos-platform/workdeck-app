@@ -253,6 +253,7 @@ export type BoMaterialWhereInput = {
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   product?: Prisma.XOR<Prisma.BoProductScalarRelationFilter, Prisma.BoProductWhereInput>
   ideation?: Prisma.XOR<Prisma.BoIdeationNullableScalarRelationFilter, Prisma.BoIdeationWhereInput> | null
+  posts?: Prisma.BoPostListRelationFilter
 }
 
 export type BoMaterialOrderByWithRelationInput = {
@@ -273,6 +274,7 @@ export type BoMaterialOrderByWithRelationInput = {
   space?: Prisma.SpaceOrderByWithRelationInput
   product?: Prisma.BoProductOrderByWithRelationInput
   ideation?: Prisma.BoIdeationOrderByWithRelationInput
+  posts?: Prisma.BoPostOrderByRelationAggregateInput
 }
 
 export type BoMaterialWhereUniqueInput = Prisma.AtLeast<{
@@ -296,6 +298,7 @@ export type BoMaterialWhereUniqueInput = Prisma.AtLeast<{
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   product?: Prisma.XOR<Prisma.BoProductScalarRelationFilter, Prisma.BoProductWhereInput>
   ideation?: Prisma.XOR<Prisma.BoIdeationNullableScalarRelationFilter, Prisma.BoIdeationWhereInput> | null
+  posts?: Prisma.BoPostListRelationFilter
 }, "id">
 
 export type BoMaterialOrderByWithAggregationInput = {
@@ -353,6 +356,7 @@ export type BoMaterialCreateInput = {
   space: Prisma.SpaceCreateNestedOneWithoutBoMaterialsInput
   product: Prisma.BoProductCreateNestedOneWithoutMaterialsInput
   ideation?: Prisma.BoIdeationCreateNestedOneWithoutMaterialsInput
+  posts?: Prisma.BoPostCreateNestedManyWithoutMaterialInput
 }
 
 export type BoMaterialUncheckedCreateInput = {
@@ -370,6 +374,7 @@ export type BoMaterialUncheckedCreateInput = {
   approvedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  posts?: Prisma.BoPostUncheckedCreateNestedManyWithoutMaterialInput
 }
 
 export type BoMaterialUpdateInput = {
@@ -387,6 +392,7 @@ export type BoMaterialUpdateInput = {
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoMaterialsNestedInput
   product?: Prisma.BoProductUpdateOneRequiredWithoutMaterialsNestedInput
   ideation?: Prisma.BoIdeationUpdateOneWithoutMaterialsNestedInput
+  posts?: Prisma.BoPostUpdateManyWithoutMaterialNestedInput
 }
 
 export type BoMaterialUncheckedUpdateInput = {
@@ -404,6 +410,7 @@ export type BoMaterialUncheckedUpdateInput = {
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  posts?: Prisma.BoPostUncheckedUpdateManyWithoutMaterialNestedInput
 }
 
 export type BoMaterialCreateManyInput = {
@@ -511,6 +518,11 @@ export type BoMaterialMinOrderByAggregateInput = {
   approvedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type BoMaterialScalarRelationFilter = {
+  is?: Prisma.BoMaterialWhereInput
+  isNot?: Prisma.BoMaterialWhereInput
 }
 
 export type BoMaterialCreateNestedManyWithoutSpaceInput = {
@@ -643,6 +655,20 @@ export type EnumBoMaterialStatusFieldUpdateOperationsInput = {
   set?: $Enums.BoMaterialStatus
 }
 
+export type BoMaterialCreateNestedOneWithoutPostsInput = {
+  create?: Prisma.XOR<Prisma.BoMaterialCreateWithoutPostsInput, Prisma.BoMaterialUncheckedCreateWithoutPostsInput>
+  connectOrCreate?: Prisma.BoMaterialCreateOrConnectWithoutPostsInput
+  connect?: Prisma.BoMaterialWhereUniqueInput
+}
+
+export type BoMaterialUpdateOneRequiredWithoutPostsNestedInput = {
+  create?: Prisma.XOR<Prisma.BoMaterialCreateWithoutPostsInput, Prisma.BoMaterialUncheckedCreateWithoutPostsInput>
+  connectOrCreate?: Prisma.BoMaterialCreateOrConnectWithoutPostsInput
+  upsert?: Prisma.BoMaterialUpsertWithoutPostsInput
+  connect?: Prisma.BoMaterialWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BoMaterialUpdateToOneWithWhereWithoutPostsInput, Prisma.BoMaterialUpdateWithoutPostsInput>, Prisma.BoMaterialUncheckedUpdateWithoutPostsInput>
+}
+
 export type BoMaterialCreateWithoutSpaceInput = {
   id?: string
   title: string
@@ -657,6 +683,7 @@ export type BoMaterialCreateWithoutSpaceInput = {
   updatedAt?: Date | string
   product: Prisma.BoProductCreateNestedOneWithoutMaterialsInput
   ideation?: Prisma.BoIdeationCreateNestedOneWithoutMaterialsInput
+  posts?: Prisma.BoPostCreateNestedManyWithoutMaterialInput
 }
 
 export type BoMaterialUncheckedCreateWithoutSpaceInput = {
@@ -673,6 +700,7 @@ export type BoMaterialUncheckedCreateWithoutSpaceInput = {
   approvedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  posts?: Prisma.BoPostUncheckedCreateNestedManyWithoutMaterialInput
 }
 
 export type BoMaterialCreateOrConnectWithoutSpaceInput = {
@@ -735,6 +763,7 @@ export type BoMaterialCreateWithoutProductInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoMaterialsInput
   ideation?: Prisma.BoIdeationCreateNestedOneWithoutMaterialsInput
+  posts?: Prisma.BoPostCreateNestedManyWithoutMaterialInput
 }
 
 export type BoMaterialUncheckedCreateWithoutProductInput = {
@@ -751,6 +780,7 @@ export type BoMaterialUncheckedCreateWithoutProductInput = {
   approvedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  posts?: Prisma.BoPostUncheckedCreateNestedManyWithoutMaterialInput
 }
 
 export type BoMaterialCreateOrConnectWithoutProductInput = {
@@ -793,6 +823,7 @@ export type BoMaterialCreateWithoutIdeationInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoMaterialsInput
   product: Prisma.BoProductCreateNestedOneWithoutMaterialsInput
+  posts?: Prisma.BoPostCreateNestedManyWithoutMaterialInput
 }
 
 export type BoMaterialUncheckedCreateWithoutIdeationInput = {
@@ -809,6 +840,7 @@ export type BoMaterialUncheckedCreateWithoutIdeationInput = {
   approvedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  posts?: Prisma.BoPostUncheckedCreateNestedManyWithoutMaterialInput
 }
 
 export type BoMaterialCreateOrConnectWithoutIdeationInput = {
@@ -835,6 +867,90 @@ export type BoMaterialUpdateWithWhereUniqueWithoutIdeationInput = {
 export type BoMaterialUpdateManyWithWhereWithoutIdeationInput = {
   where: Prisma.BoMaterialScalarWhereInput
   data: Prisma.XOR<Prisma.BoMaterialUpdateManyMutationInput, Prisma.BoMaterialUncheckedUpdateManyWithoutIdeationInput>
+}
+
+export type BoMaterialCreateWithoutPostsInput = {
+  id?: string
+  title: string
+  appealPoint: string
+  angle: string
+  outline?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  targetKeyword?: string | null
+  status?: $Enums.BoMaterialStatus
+  approvedByUserId?: string | null
+  approvedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutBoMaterialsInput
+  product: Prisma.BoProductCreateNestedOneWithoutMaterialsInput
+  ideation?: Prisma.BoIdeationCreateNestedOneWithoutMaterialsInput
+}
+
+export type BoMaterialUncheckedCreateWithoutPostsInput = {
+  id?: string
+  spaceId: string
+  productId: string
+  ideationId?: string | null
+  title: string
+  appealPoint: string
+  angle: string
+  outline?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  targetKeyword?: string | null
+  status?: $Enums.BoMaterialStatus
+  approvedByUserId?: string | null
+  approvedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BoMaterialCreateOrConnectWithoutPostsInput = {
+  where: Prisma.BoMaterialWhereUniqueInput
+  create: Prisma.XOR<Prisma.BoMaterialCreateWithoutPostsInput, Prisma.BoMaterialUncheckedCreateWithoutPostsInput>
+}
+
+export type BoMaterialUpsertWithoutPostsInput = {
+  update: Prisma.XOR<Prisma.BoMaterialUpdateWithoutPostsInput, Prisma.BoMaterialUncheckedUpdateWithoutPostsInput>
+  create: Prisma.XOR<Prisma.BoMaterialCreateWithoutPostsInput, Prisma.BoMaterialUncheckedCreateWithoutPostsInput>
+  where?: Prisma.BoMaterialWhereInput
+}
+
+export type BoMaterialUpdateToOneWithWhereWithoutPostsInput = {
+  where?: Prisma.BoMaterialWhereInput
+  data: Prisma.XOR<Prisma.BoMaterialUpdateWithoutPostsInput, Prisma.BoMaterialUncheckedUpdateWithoutPostsInput>
+}
+
+export type BoMaterialUpdateWithoutPostsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  appealPoint?: Prisma.StringFieldUpdateOperationsInput | string
+  angle?: Prisma.StringFieldUpdateOperationsInput | string
+  outline?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBoMaterialStatusFieldUpdateOperationsInput | $Enums.BoMaterialStatus
+  approvedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutBoMaterialsNestedInput
+  product?: Prisma.BoProductUpdateOneRequiredWithoutMaterialsNestedInput
+  ideation?: Prisma.BoIdeationUpdateOneWithoutMaterialsNestedInput
+}
+
+export type BoMaterialUncheckedUpdateWithoutPostsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  appealPoint?: Prisma.StringFieldUpdateOperationsInput | string
+  angle?: Prisma.StringFieldUpdateOperationsInput | string
+  outline?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBoMaterialStatusFieldUpdateOperationsInput | $Enums.BoMaterialStatus
+  approvedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type BoMaterialCreateManySpaceInput = {
@@ -867,6 +983,7 @@ export type BoMaterialUpdateWithoutSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.BoProductUpdateOneRequiredWithoutMaterialsNestedInput
   ideation?: Prisma.BoIdeationUpdateOneWithoutMaterialsNestedInput
+  posts?: Prisma.BoPostUpdateManyWithoutMaterialNestedInput
 }
 
 export type BoMaterialUncheckedUpdateWithoutSpaceInput = {
@@ -883,6 +1000,7 @@ export type BoMaterialUncheckedUpdateWithoutSpaceInput = {
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  posts?: Prisma.BoPostUncheckedUpdateManyWithoutMaterialNestedInput
 }
 
 export type BoMaterialUncheckedUpdateManyWithoutSpaceInput = {
@@ -931,6 +1049,7 @@ export type BoMaterialUpdateWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoMaterialsNestedInput
   ideation?: Prisma.BoIdeationUpdateOneWithoutMaterialsNestedInput
+  posts?: Prisma.BoPostUpdateManyWithoutMaterialNestedInput
 }
 
 export type BoMaterialUncheckedUpdateWithoutProductInput = {
@@ -947,6 +1066,7 @@ export type BoMaterialUncheckedUpdateWithoutProductInput = {
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  posts?: Prisma.BoPostUncheckedUpdateManyWithoutMaterialNestedInput
 }
 
 export type BoMaterialUncheckedUpdateManyWithoutProductInput = {
@@ -995,6 +1115,7 @@ export type BoMaterialUpdateWithoutIdeationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoMaterialsNestedInput
   product?: Prisma.BoProductUpdateOneRequiredWithoutMaterialsNestedInput
+  posts?: Prisma.BoPostUpdateManyWithoutMaterialNestedInput
 }
 
 export type BoMaterialUncheckedUpdateWithoutIdeationInput = {
@@ -1011,6 +1132,7 @@ export type BoMaterialUncheckedUpdateWithoutIdeationInput = {
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  posts?: Prisma.BoPostUncheckedUpdateManyWithoutMaterialNestedInput
 }
 
 export type BoMaterialUncheckedUpdateManyWithoutIdeationInput = {
@@ -1029,6 +1151,35 @@ export type BoMaterialUncheckedUpdateManyWithoutIdeationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type BoMaterialCountOutputType
+ */
+
+export type BoMaterialCountOutputType = {
+  posts: number
+}
+
+export type BoMaterialCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  posts?: boolean | BoMaterialCountOutputTypeCountPostsArgs
+}
+
+/**
+ * BoMaterialCountOutputType without action
+ */
+export type BoMaterialCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BoMaterialCountOutputType
+   */
+  select?: Prisma.BoMaterialCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * BoMaterialCountOutputType without action
+ */
+export type BoMaterialCountOutputTypeCountPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BoPostWhereInput
+}
 
 
 export type BoMaterialSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1049,6 +1200,8 @@ export type BoMaterialSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   product?: boolean | Prisma.BoProductDefaultArgs<ExtArgs>
   ideation?: boolean | Prisma.BoMaterial$ideationArgs<ExtArgs>
+  posts?: boolean | Prisma.BoMaterial$postsArgs<ExtArgs>
+  _count?: boolean | Prisma.BoMaterialCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["boMaterial"]>
 
 export type BoMaterialSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1113,6 +1266,8 @@ export type BoMaterialInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   product?: boolean | Prisma.BoProductDefaultArgs<ExtArgs>
   ideation?: boolean | Prisma.BoMaterial$ideationArgs<ExtArgs>
+  posts?: boolean | Prisma.BoMaterial$postsArgs<ExtArgs>
+  _count?: boolean | Prisma.BoMaterialCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BoMaterialIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1131,6 +1286,7 @@ export type $BoMaterialPayload<ExtArgs extends runtime.Types.Extensions.Internal
     space: Prisma.$SpacePayload<ExtArgs>
     product: Prisma.$BoProductPayload<ExtArgs>
     ideation: Prisma.$BoIdeationPayload<ExtArgs> | null
+    posts: Prisma.$BoPostPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1544,6 +1700,7 @@ export interface Prisma__BoMaterialClient<T, Null = never, ExtArgs extends runti
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   product<T extends Prisma.BoProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoProductDefaultArgs<ExtArgs>>): Prisma.Prisma__BoProductClient<runtime.Types.Result.GetResult<Prisma.$BoProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   ideation<T extends Prisma.BoMaterial$ideationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoMaterial$ideationArgs<ExtArgs>>): Prisma.Prisma__BoIdeationClient<runtime.Types.Result.GetResult<Prisma.$BoIdeationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  posts<T extends Prisma.BoMaterial$postsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoMaterial$postsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1999,6 +2156,30 @@ export type BoMaterial$ideationArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.BoIdeationInclude<ExtArgs> | null
   where?: Prisma.BoIdeationWhereInput
+}
+
+/**
+ * BoMaterial.posts
+ */
+export type BoMaterial$postsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BoPost
+   */
+  select?: Prisma.BoPostSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BoPost
+   */
+  omit?: Prisma.BoPostOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BoPostInclude<ExtArgs> | null
+  where?: Prisma.BoPostWhereInput
+  orderBy?: Prisma.BoPostOrderByWithRelationInput | Prisma.BoPostOrderByWithRelationInput[]
+  cursor?: Prisma.BoPostWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BoPostScalarFieldEnum | Prisma.BoPostScalarFieldEnum[]
 }
 
 /**

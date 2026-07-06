@@ -559,3 +559,13 @@ export type BoIdeation = Prisma.BoIdeationModel
  * 
  */
 export type BoMaterial = Prisma.BoMaterialModel
+/**
+ * Model BoPost
+ * 
+ */
+export type BoPost = Prisma.BoPostModel
+/**
+ * Model BoPostVersion
+ * 
+ */
+export type BoPostVersion = Prisma.BoPostVersionModel

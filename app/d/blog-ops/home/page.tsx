@@ -1,63 +1,52 @@
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { getUser } from '@/hooks/use-user'
+import { resolveDeckContext } from '@/lib/api-helpers'
+import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Package, Lightbulb, Layers, PenSquare, Globe, Send } from 'lucide-react'
+import { Package, Layers, PenSquare } from 'lucide-react'
 import {
   BLOG_OPS_PRODUCTS_PATH,
-  BLOG_OPS_IDEATION_PATH,
   BLOG_OPS_MATERIALS_PATH,
   BLOG_OPS_POSTS_PATH,
-  BLOG_OPS_CHANNELS_PATH,
-  BLOG_OPS_DEPLOYMENTS_PATH,
 } from '@/lib/deck-routes'
-import Link from 'next/link'
 
-// 파이프라인 단계별 카드 데이터
-const PIPELINE_STAGES = [
-  {
-    label: '제품 관리',
-    icon: Package,
-    href: BLOG_OPS_PRODUCTS_PATH,
-    description: '블로그 소개 대상 제품',
-    countLabel: '등록 제품',
-  },
-  {
-    label: '소구점 발굴',
-    icon: Lightbulb,
-    href: BLOG_OPS_IDEATION_PATH,
-    description: 'AI 소구점 후보 · 글감 아이디어',
-    countLabel: '발굴된 소구점',
-  },
-  {
-    label: '소재 관리',
-    icon: Layers,
-    href: BLOG_OPS_MATERIALS_PATH,
-    description: '이미지 · 영상 · 텍스트 소재',
-    countLabel: '등록 소재',
-  },
-  {
-    label: '포스트',
-    icon: PenSquare,
-    href: BLOG_OPS_POSTS_PATH,
-    description: '작성 중 · 검수 · 발행 완료',
-    countLabel: '전체 포스트',
-  },
-  {
-    label: '채널',
-    icon: Globe,
-    href: BLOG_OPS_CHANNELS_PATH,
-    description: '네이버 블로그 · 티스토리 등',
-    countLabel: '연결된 채널',
-  },
-  {
-    label: '배포 이력',
-    icon: Send,
-    href: BLOG_OPS_DEPLOYMENTS_PATH,
-    description: '채널별 발행 이력 · 성과',
-    countLabel: '이번 달 배포',
-  },
-]
+export default async function BlogOpsHomePage() {
+  const user = await getUser()
+  if (!user) redirect('/login')
 
-export default function BlogOpsHomePage() {
+  const resolved = await resolveDeckContext('blog-ops')
+  if ('error' in resolved) redirect('/my-deck')
+
+  const spaceId = resolved.space.id
+
+  // 제품 수
+  const [productCount, materialCounts, postCounts] = await Promise.all([
+    prisma.boProduct.count({ where: { spaceId, isActive: true } }),
+    prisma.boMaterial.groupBy({
+      by: ['status'],
+      where: { spaceId },
+      _count: { _all: true },
+    }),
+    prisma.boPost.groupBy({
+      by: ['status'],
+      where: { spaceId },
+      _count: { _all: true },
+    }),
+  ])
+
+  // 소재 상태별 카운트 맵
+  const matCount = Object.fromEntries(
+    materialCounts.map((r) => [r.status, r._count._all])
+  ) as Record<string, number>
+
+  // 포스트 상태별 카운트 맵
+  const postCount = Object.fromEntries(postCounts.map((r) => [r.status, r._count._all])) as Record<
+    string,
+    number
+  >
+
   return (
     <div className="space-y-6">
       <header className="space-y-1">
@@ -72,25 +61,107 @@ export default function BlogOpsHomePage() {
         </p>
       </header>
 
-      {/* 파이프라인 단계 카운트 카드 */}
+      {/* 파이프라인 현황 */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {PIPELINE_STAGES.map((stage) => {
-          const Icon = stage.icon
-          return (
-            <Link key={stage.href} href={stage.href} className="group block">
-              <Card className="h-full transition-colors hover:border-foreground/20 hover:bg-muted/50 dark:hover:bg-white/[0.03]">
-                <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
-                  <Icon className="h-4 w-4 text-muted-foreground" />
-                  <CardTitle className="text-sm font-medium">{stage.label}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1">
-                  <p className="text-2xl font-bold">—</p>
-                  <p className="text-xs text-muted-foreground">{stage.description}</p>
-                </CardContent>
-              </Card>
-            </Link>
-          )
-        })}
+        {/* 제품 */}
+        <Link href={BLOG_OPS_PRODUCTS_PATH} className="group block">
+          <Card className="h-full transition-colors hover:border-foreground/20 hover:bg-muted/50 dark:hover:bg-white/[0.03]">
+            <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">제품</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums">{productCount}</p>
+              <p className="mt-1 text-xs text-muted-foreground">활성 제품</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 소재 — PROPOSED */}
+        <Link href={`${BLOG_OPS_MATERIALS_PATH}?status=PROPOSED`} className="group block">
+          <Card className="h-full transition-colors hover:border-foreground/20 hover:bg-muted/50 dark:hover:bg-white/[0.03]">
+            <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
+              <Layers className="h-4 w-4 text-amber-500" />
+              <CardTitle className="text-sm font-medium">소재 — 검토 대기</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums">{matCount['PROPOSED'] ?? 0}</p>
+              <p className="mt-1 text-xs text-muted-foreground">승인 전 소재</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 소재 — APPROVED */}
+        <Link href={`${BLOG_OPS_MATERIALS_PATH}?status=APPROVED`} className="group block">
+          <Card className="h-full transition-colors hover:border-foreground/20 hover:bg-muted/50 dark:hover:bg-white/[0.03]">
+            <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
+              <Layers className="h-4 w-4 text-emerald-500" />
+              <CardTitle className="text-sm font-medium">소재 — 승인</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums">{matCount['APPROVED'] ?? 0}</p>
+              <p className="mt-1 text-xs text-muted-foreground">초안 생성 가능 소재</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 포스트 — 초안 */}
+        <Link href={`${BLOG_OPS_POSTS_PATH}?status=DRAFT`} className="group block">
+          <Card className="h-full transition-colors hover:border-foreground/20 hover:bg-muted/50 dark:hover:bg-white/[0.03]">
+            <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
+              <PenSquare className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">포스트 — 초안</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums">{postCount['DRAFT'] ?? 0}</p>
+              <p className="mt-1 text-xs text-muted-foreground">작성 중 포스트</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 포스트 — 검토 중 */}
+        <Link href={`${BLOG_OPS_POSTS_PATH}?status=IN_REVIEW`} className="group block">
+          <Card className="h-full transition-colors hover:border-foreground/20 hover:bg-muted/50 dark:hover:bg-white/[0.03]">
+            <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
+              <PenSquare className="h-4 w-4 text-amber-500" />
+              <CardTitle className="text-sm font-medium">포스트 — 검토 중</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums">{postCount['IN_REVIEW'] ?? 0}</p>
+              <p className="mt-1 text-xs text-muted-foreground">검토 대기 포스트</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 포스트 — 발행 승인 */}
+        <Link href={`${BLOG_OPS_POSTS_PATH}?status=PUBLISH_APPROVED`} className="group block">
+          <Card className="h-full transition-colors hover:border-foreground/20 hover:bg-muted/50 dark:hover:bg-white/[0.03]">
+            <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
+              <PenSquare className="h-4 w-4 text-emerald-500" />
+              <CardTitle className="text-sm font-medium">포스트 — 발행 승인</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums">
+                {postCount['PUBLISH_APPROVED'] ?? 0}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">발행 대기 포스트</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 포스트 — 발행됨 */}
+        <Link href={`${BLOG_OPS_POSTS_PATH}?status=PUBLISHED`} className="group block">
+          <Card className="h-full transition-colors hover:border-foreground/20 hover:bg-muted/50 dark:hover:bg-white/[0.03]">
+            <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
+              <PenSquare className="h-4 w-4 text-emerald-600" />
+              <CardTitle className="text-sm font-medium">포스트 — 발행됨</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums">{postCount['PUBLISHED'] ?? 0}</p>
+              <p className="mt-1 text-xs text-muted-foreground">발행 완료 포스트</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   )

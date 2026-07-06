@@ -249,6 +249,8 @@ export type SpaceWhereInput = {
   boProducts?: Prisma.BoProductListRelationFilter
   boIdeations?: Prisma.BoIdeationListRelationFilter
   boMaterials?: Prisma.BoMaterialListRelationFilter
+  boPosts?: Prisma.BoPostListRelationFilter
+  boPostVersions?: Prisma.BoPostVersionListRelationFilter
 }
 
 export type SpaceOrderByWithRelationInput = {
@@ -317,6 +319,8 @@ export type SpaceOrderByWithRelationInput = {
   boProducts?: Prisma.BoProductOrderByRelationAggregateInput
   boIdeations?: Prisma.BoIdeationOrderByRelationAggregateInput
   boMaterials?: Prisma.BoMaterialOrderByRelationAggregateInput
+  boPosts?: Prisma.BoPostOrderByRelationAggregateInput
+  boPostVersions?: Prisma.BoPostVersionOrderByRelationAggregateInput
 }
 
 export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -388,6 +392,8 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   boProducts?: Prisma.BoProductListRelationFilter
   boIdeations?: Prisma.BoIdeationListRelationFilter
   boMaterials?: Prisma.BoMaterialListRelationFilter
+  boPosts?: Prisma.BoPostListRelationFilter
+  boPostVersions?: Prisma.BoPostVersionListRelationFilter
 }, "id">
 
 export type SpaceOrderByWithAggregationInput = {
@@ -480,6 +486,8 @@ export type SpaceCreateInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateInput = {
@@ -548,6 +556,8 @@ export type SpaceUncheckedCreateInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUpdateInput = {
@@ -616,6 +626,8 @@ export type SpaceUpdateInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateInput = {
@@ -684,6 +696,8 @@ export type SpaceUncheckedUpdateInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateManyInput = {
@@ -1582,6 +1596,34 @@ export type SpaceUpdateOneRequiredWithoutBoMaterialsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoMaterialsInput, Prisma.SpaceUpdateWithoutBoMaterialsInput>, Prisma.SpaceUncheckedUpdateWithoutBoMaterialsInput>
 }
 
+export type SpaceCreateNestedOneWithoutBoPostsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostsInput, Prisma.SpaceUncheckedCreateWithoutBoPostsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutBoPostsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostsInput, Prisma.SpaceUncheckedCreateWithoutBoPostsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostsInput
+  upsert?: Prisma.SpaceUpsertWithoutBoPostsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoPostsInput, Prisma.SpaceUpdateWithoutBoPostsInput>, Prisma.SpaceUncheckedUpdateWithoutBoPostsInput>
+}
+
+export type SpaceCreateNestedOneWithoutBoPostVersionsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVersionsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostVersionsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutBoPostVersionsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVersionsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostVersionsInput
+  upsert?: Prisma.SpaceUpsertWithoutBoPostVersionsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoPostVersionsInput, Prisma.SpaceUpdateWithoutBoPostVersionsInput>, Prisma.SpaceUncheckedUpdateWithoutBoPostVersionsInput>
+}
+
 export type SpaceCreateWithoutMembersInput = {
   id?: string
   name: string
@@ -1647,6 +1689,8 @@ export type SpaceCreateWithoutMembersInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutMembersInput = {
@@ -1714,6 +1758,8 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutMembersInput = {
@@ -1797,6 +1843,8 @@ export type SpaceUpdateWithoutMembersInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutMembersInput = {
@@ -1864,6 +1912,8 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeckInstancesInput = {
@@ -1931,6 +1981,8 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
@@ -1998,6 +2050,8 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeckInstancesInput = {
@@ -2081,6 +2135,8 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
@@ -2148,6 +2204,8 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductGroupsInput = {
@@ -2215,6 +2273,8 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
@@ -2282,6 +2342,8 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductGroupsInput = {
@@ -2365,6 +2427,8 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
@@ -2432,6 +2496,8 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductsInput = {
@@ -2499,6 +2565,8 @@ export type SpaceCreateWithoutInvProductsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductsInput = {
@@ -2566,6 +2634,8 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductsInput = {
@@ -2649,6 +2719,8 @@ export type SpaceUpdateWithoutInvProductsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductsInput = {
@@ -2716,6 +2788,8 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationsInput = {
@@ -2783,6 +2857,8 @@ export type SpaceCreateWithoutInvLocationsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationsInput = {
@@ -2850,6 +2926,8 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationsInput = {
@@ -2933,6 +3011,8 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
@@ -3000,6 +3080,8 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvMovementsInput = {
@@ -3067,6 +3149,8 @@ export type SpaceCreateWithoutInvMovementsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvMovementsInput = {
@@ -3134,6 +3218,8 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvMovementsInput = {
@@ -3217,6 +3303,8 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
@@ -3284,6 +3372,8 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvStockLevelsInput = {
@@ -3351,6 +3441,8 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
@@ -3418,6 +3510,8 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvStockLevelsInput = {
@@ -3501,6 +3595,8 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
@@ -3568,6 +3664,8 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvImportHistoriesInput = {
@@ -3635,6 +3733,8 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
@@ -3702,6 +3802,8 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvImportHistoriesInput = {
@@ -3785,6 +3887,8 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
@@ -3852,6 +3956,8 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvReconciliationsInput = {
@@ -3919,6 +4025,8 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
@@ -3986,6 +4094,8 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvReconciliationsInput = {
@@ -4069,6 +4179,8 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
@@ -4136,6 +4248,8 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationMappingsInput = {
@@ -4203,6 +4317,8 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
@@ -4270,6 +4386,8 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationMappingsInput = {
@@ -4353,6 +4471,8 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
@@ -4420,6 +4540,8 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvSettingsInput = {
@@ -4487,6 +4609,8 @@ export type SpaceCreateWithoutInvSettingsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvSettingsInput = {
@@ -4554,6 +4678,8 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvSettingsInput = {
@@ -4637,6 +4763,8 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
@@ -4704,6 +4832,8 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodsInput = {
@@ -4771,6 +4901,8 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
@@ -4838,6 +4970,8 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodsInput = {
@@ -4921,6 +5055,8 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
@@ -4988,6 +5124,8 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
@@ -5055,6 +5193,8 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
@@ -5122,6 +5262,8 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput = {
@@ -5205,6 +5347,8 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
@@ -5272,6 +5416,8 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelBatchesInput = {
@@ -5339,6 +5485,8 @@ export type SpaceCreateWithoutDelBatchesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelBatchesInput = {
@@ -5406,6 +5554,8 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelBatchesInput = {
@@ -5489,6 +5639,8 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
@@ -5556,6 +5708,8 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelOrdersInput = {
@@ -5623,6 +5777,8 @@ export type SpaceCreateWithoutDelOrdersInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelOrdersInput = {
@@ -5690,6 +5846,8 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelOrdersInput = {
@@ -5773,6 +5931,8 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
@@ -5840,6 +6000,8 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductAliasesInput = {
@@ -5907,6 +6069,8 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
@@ -5974,6 +6138,8 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductAliasesInput = {
@@ -6057,6 +6223,8 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
@@ -6124,6 +6292,8 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
@@ -6191,6 +6361,8 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
@@ -6258,6 +6430,8 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelColumnMappingPresetsInput = {
@@ -6341,6 +6515,8 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
@@ -6408,6 +6584,8 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
@@ -6475,6 +6653,8 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
@@ -6542,6 +6722,8 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelIntegrationHistoriesInput = {
@@ -6625,6 +6807,8 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
@@ -6692,6 +6876,8 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandsInput = {
@@ -6759,6 +6945,8 @@ export type SpaceCreateWithoutBrandsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandsInput = {
@@ -6826,6 +7014,8 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandsInput = {
@@ -6909,6 +7099,8 @@ export type SpaceUpdateWithoutBrandsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandsInput = {
@@ -6976,6 +7168,8 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelTypeDefsInput = {
@@ -7043,6 +7237,8 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
@@ -7110,6 +7306,8 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelTypeDefsInput = {
@@ -7193,6 +7391,8 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
@@ -7260,6 +7460,8 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelsInput = {
@@ -7327,6 +7529,8 @@ export type SpaceCreateWithoutChannelsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelsInput = {
@@ -7394,6 +7598,8 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelsInput = {
@@ -7477,6 +7683,8 @@ export type SpaceUpdateWithoutChannelsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelsInput = {
@@ -7544,6 +7752,8 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductionRunsInput = {
@@ -7611,6 +7821,8 @@ export type SpaceCreateWithoutProductionRunsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductionRunsInput = {
@@ -7678,6 +7890,8 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductionRunsInput = {
@@ -7761,6 +7975,8 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
@@ -7828,6 +8044,8 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutPricingScenariosInput = {
@@ -7895,6 +8113,8 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
@@ -7962,6 +8182,8 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutPricingScenariosInput = {
@@ -8045,6 +8267,8 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
@@ -8112,6 +8336,8 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductPricingSettingsInput = {
@@ -8179,6 +8405,8 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
@@ -8246,6 +8474,8 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductPricingSettingsInput = {
@@ -8329,6 +8559,8 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
@@ -8396,6 +8628,8 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutOptionCodeAliasesInput = {
@@ -8463,6 +8697,8 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
@@ -8530,6 +8766,8 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutOptionCodeAliasesInput = {
@@ -8613,6 +8851,8 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
@@ -8680,6 +8920,8 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductListingsInput = {
@@ -8747,6 +8989,8 @@ export type SpaceCreateWithoutProductListingsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductListingsInput = {
@@ -8814,6 +9058,8 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductListingsInput = {
@@ -8897,6 +9143,8 @@ export type SpaceUpdateWithoutProductListingsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductListingsInput = {
@@ -8964,6 +9212,8 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelStockMovementsInput = {
@@ -9031,6 +9281,8 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
@@ -9098,6 +9350,8 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelStockMovementsInput = {
@@ -9181,6 +9435,8 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
@@ -9248,6 +9504,8 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductsInput = {
@@ -9315,6 +9573,8 @@ export type SpaceCreateWithoutChannelProductsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductsInput = {
@@ -9382,6 +9642,8 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductsInput = {
@@ -9465,6 +9727,8 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
@@ -9532,6 +9796,8 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductsInput = {
@@ -9599,6 +9865,8 @@ export type SpaceCreateWithoutProductsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductsInput = {
@@ -9666,6 +9934,8 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductsInput = {
@@ -9749,6 +10019,8 @@ export type SpaceUpdateWithoutProductsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductsInput = {
@@ -9816,6 +10088,8 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutPersonasInput = {
@@ -9883,6 +10157,8 @@ export type SpaceCreateWithoutPersonasInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutPersonasInput = {
@@ -9950,6 +10226,8 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutPersonasInput = {
@@ -10033,6 +10311,8 @@ export type SpaceUpdateWithoutPersonasInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutPersonasInput = {
@@ -10100,6 +10380,8 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandProfileInput = {
@@ -10167,6 +10449,8 @@ export type SpaceCreateWithoutBrandProfileInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandProfileInput = {
@@ -10234,6 +10518,8 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandProfileInput = {
@@ -10317,6 +10603,8 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
@@ -10384,6 +10672,8 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
@@ -10451,6 +10741,8 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
@@ -10518,6 +10810,8 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutWorkspaceAiCreditsInput = {
@@ -10601,6 +10895,8 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
@@ -10668,6 +10964,8 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutImageGenerationLogsInput = {
@@ -10735,6 +11033,8 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
@@ -10802,6 +11102,8 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutImageGenerationLogsInput = {
@@ -10885,6 +11187,8 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
@@ -10952,6 +11256,8 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTextGenerationLogsInput = {
@@ -11019,6 +11325,8 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
@@ -11086,6 +11394,8 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTextGenerationLogsInput = {
@@ -11169,6 +11479,8 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
@@ -11236,6 +11548,8 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTemplatesInput = {
@@ -11303,6 +11617,8 @@ export type SpaceCreateWithoutTemplatesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTemplatesInput = {
@@ -11370,6 +11686,8 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTemplatesInput = {
@@ -11453,6 +11771,8 @@ export type SpaceUpdateWithoutTemplatesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTemplatesInput = {
@@ -11520,6 +11840,8 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSalesContentChannelsInput = {
@@ -11587,6 +11909,8 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
@@ -11654,6 +11978,8 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentChannelsInput = {
@@ -11737,6 +12063,8 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
@@ -11804,6 +12132,8 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentsInput = {
@@ -11871,6 +12201,8 @@ export type SpaceCreateWithoutContentsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentsInput = {
@@ -11938,6 +12270,8 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentsInput = {
@@ -12021,6 +12355,8 @@ export type SpaceUpdateWithoutContentsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentsInput = {
@@ -12088,6 +12424,8 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentDeploymentsInput = {
@@ -12155,6 +12493,8 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
@@ -12222,6 +12562,8 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentDeploymentsInput = {
@@ -12305,6 +12647,8 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
@@ -12372,6 +12716,8 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentClickEventsInput = {
@@ -12439,6 +12785,8 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
@@ -12506,6 +12854,8 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentClickEventsInput = {
@@ -12589,6 +12939,8 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
@@ -12656,6 +13008,8 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelCredentialsInput = {
@@ -12723,6 +13077,8 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
@@ -12790,6 +13146,8 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelCredentialsInput = {
@@ -12873,6 +13231,8 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
@@ -12940,6 +13300,8 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeploymentMetricsInput = {
@@ -13007,6 +13369,8 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
@@ -13074,6 +13438,8 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeploymentMetricsInput = {
@@ -13157,6 +13523,8 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
@@ -13224,6 +13592,8 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSalesContentJobsInput = {
@@ -13291,6 +13661,8 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
@@ -13358,6 +13730,8 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentJobsInput = {
@@ -13441,6 +13815,8 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
@@ -13508,6 +13884,8 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentVersionsInput = {
@@ -13575,6 +13953,8 @@ export type SpaceCreateWithoutContentVersionsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentVersionsInput = {
@@ -13642,6 +14022,8 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentVersionsInput = {
@@ -13725,6 +14107,8 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
@@ -13792,6 +14176,8 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentAssetsInput = {
@@ -13859,6 +14245,8 @@ export type SpaceCreateWithoutContentAssetsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentAssetsInput = {
@@ -13926,6 +14314,8 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentAssetsInput = {
@@ -14009,6 +14399,8 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
@@ -14076,6 +14468,8 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutIdeationsInput = {
@@ -14143,6 +14537,8 @@ export type SpaceCreateWithoutIdeationsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutIdeationsInput = {
@@ -14210,6 +14606,8 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutIdeationsInput = {
@@ -14293,6 +14691,8 @@ export type SpaceUpdateWithoutIdeationsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutIdeationsInput = {
@@ -14360,6 +14760,8 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutImprovementRulesInput = {
@@ -14427,6 +14829,8 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
@@ -14494,6 +14898,8 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutImprovementRulesInput = {
@@ -14577,6 +14983,8 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
@@ -14644,6 +15052,8 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutReorderPlansInput = {
@@ -14711,6 +15121,8 @@ export type SpaceCreateWithoutReorderPlansInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutReorderPlansInput = {
@@ -14778,6 +15190,8 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutReorderPlansInput = {
@@ -14861,6 +15275,8 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
@@ -14928,6 +15344,8 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinAccountsInput = {
@@ -14995,6 +15413,8 @@ export type SpaceCreateWithoutFinAccountsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinAccountsInput = {
@@ -15062,6 +15482,8 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinAccountsInput = {
@@ -15145,6 +15567,8 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
@@ -15212,6 +15636,8 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinLiabilitiesInput = {
@@ -15279,6 +15705,8 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
@@ -15346,6 +15774,8 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinLiabilitiesInput = {
@@ -15429,6 +15859,8 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
@@ -15496,6 +15928,8 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinCategoriesInput = {
@@ -15563,6 +15997,8 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
@@ -15630,6 +16066,8 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinCategoriesInput = {
@@ -15713,6 +16151,8 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
@@ -15780,6 +16220,8 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinClassRulesInput = {
@@ -15847,6 +16289,8 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
@@ -15914,6 +16358,8 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinClassRulesInput = {
@@ -15997,6 +16443,8 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
@@ -16064,6 +16512,8 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinMappingPresetsInput = {
@@ -16131,6 +16581,8 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
@@ -16198,6 +16650,8 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinMappingPresetsInput = {
@@ -16281,6 +16735,8 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
@@ -16348,6 +16804,8 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinImportsInput = {
@@ -16415,6 +16873,8 @@ export type SpaceCreateWithoutFinImportsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinImportsInput = {
@@ -16482,6 +16942,8 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinImportsInput = {
@@ -16565,6 +17027,8 @@ export type SpaceUpdateWithoutFinImportsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinImportsInput = {
@@ -16632,6 +17096,8 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinStagedRowsInput = {
@@ -16699,6 +17165,8 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
@@ -16766,6 +17234,8 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinStagedRowsInput = {
@@ -16849,6 +17319,8 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
@@ -16916,6 +17388,8 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinTransactionsInput = {
@@ -16983,6 +17457,8 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
@@ -17050,6 +17526,8 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinTransactionsInput = {
@@ -17133,6 +17611,8 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
@@ -17200,6 +17680,8 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
@@ -17267,6 +17749,8 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
@@ -17334,6 +17818,8 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinBalanceSnapshotsInput = {
@@ -17417,6 +17903,8 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
@@ -17484,6 +17972,8 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoProductsInput = {
@@ -17551,6 +18041,8 @@ export type SpaceCreateWithoutBoProductsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoProductsInput = {
@@ -17618,6 +18110,8 @@ export type SpaceUncheckedCreateWithoutBoProductsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoProductsInput = {
@@ -17701,6 +18195,8 @@ export type SpaceUpdateWithoutBoProductsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoProductsInput = {
@@ -17768,6 +18264,8 @@ export type SpaceUncheckedUpdateWithoutBoProductsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoIdeationsInput = {
@@ -17835,6 +18333,8 @@ export type SpaceCreateWithoutBoIdeationsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoIdeationsInput = {
@@ -17902,6 +18402,8 @@ export type SpaceUncheckedCreateWithoutBoIdeationsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoIdeationsInput = {
@@ -17985,6 +18487,8 @@ export type SpaceUpdateWithoutBoIdeationsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoIdeationsInput = {
@@ -18052,6 +18556,8 @@ export type SpaceUncheckedUpdateWithoutBoIdeationsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoMaterialsInput = {
@@ -18119,6 +18625,8 @@ export type SpaceCreateWithoutBoMaterialsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
   boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoMaterialsInput = {
@@ -18186,6 +18694,8 @@ export type SpaceUncheckedCreateWithoutBoMaterialsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
   boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
   boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoMaterialsInput = {
@@ -18269,6 +18779,8 @@ export type SpaceUpdateWithoutBoMaterialsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
   boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoMaterialsInput = {
@@ -18336,6 +18848,592 @@ export type SpaceUncheckedUpdateWithoutBoMaterialsInput = {
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
   boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutBoPostsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutBoPostsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutBoPostsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostsInput, Prisma.SpaceUncheckedCreateWithoutBoPostsInput>
+}
+
+export type SpaceUpsertWithoutBoPostsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostsInput, Prisma.SpaceUncheckedCreateWithoutBoPostsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutBoPostsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostsInput>
+}
+
+export type SpaceUpdateWithoutBoPostsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutBoPostsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutBoPostVersionsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutBoPostVersionsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutBoPostVersionsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVersionsInput>
+}
+
+export type SpaceUpsertWithoutBoPostVersionsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostVersionsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVersionsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutBoPostVersionsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostVersionsInput>
+}
+
+export type SpaceUpdateWithoutBoPostVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutBoPostVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -18400,6 +19498,8 @@ export type SpaceCountOutputType = {
   boProducts: number
   boIdeations: number
   boMaterials: number
+  boPosts: number
+  boPostVersions: number
 }
 
 export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -18459,6 +19559,8 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   boProducts?: boolean | SpaceCountOutputTypeCountBoProductsArgs
   boIdeations?: boolean | SpaceCountOutputTypeCountBoIdeationsArgs
   boMaterials?: boolean | SpaceCountOutputTypeCountBoMaterialsArgs
+  boPosts?: boolean | SpaceCountOutputTypeCountBoPostsArgs
+  boPostVersions?: boolean | SpaceCountOutputTypeCountBoPostVersionsArgs
 }
 
 /**
@@ -18863,6 +19965,20 @@ export type SpaceCountOutputTypeCountBoMaterialsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.BoMaterialWhereInput
 }
 
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountBoPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BoPostWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountBoPostVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BoPostVersionWhereInput
+}
+
 
 export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -18930,6 +20046,8 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   boProducts?: boolean | Prisma.Space$boProductsArgs<ExtArgs>
   boIdeations?: boolean | Prisma.Space$boIdeationsArgs<ExtArgs>
   boMaterials?: boolean | Prisma.Space$boMaterialsArgs<ExtArgs>
+  boPosts?: boolean | Prisma.Space$boPostsArgs<ExtArgs>
+  boPostVersions?: boolean | Prisma.Space$boPostVersionsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["space"]>
 
@@ -19021,6 +20139,8 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   boProducts?: boolean | Prisma.Space$boProductsArgs<ExtArgs>
   boIdeations?: boolean | Prisma.Space$boIdeationsArgs<ExtArgs>
   boMaterials?: boolean | Prisma.Space$boMaterialsArgs<ExtArgs>
+  boPosts?: boolean | Prisma.Space$boPostsArgs<ExtArgs>
+  boPostVersions?: boolean | Prisma.Space$boPostVersionsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -19088,6 +20208,8 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     boProducts: Prisma.$BoProductPayload<ExtArgs>[]
     boIdeations: Prisma.$BoIdeationPayload<ExtArgs>[]
     boMaterials: Prisma.$BoMaterialPayload<ExtArgs>[]
+    boPosts: Prisma.$BoPostPayload<ExtArgs>[]
+    boPostVersions: Prisma.$BoPostVersionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -19549,6 +20671,8 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   boProducts<T extends Prisma.Space$boProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   boIdeations<T extends Prisma.Space$boIdeationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boIdeationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoIdeationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   boMaterials<T extends Prisma.Space$boMaterialsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boMaterialsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  boPosts<T extends Prisma.Space$boPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  boPostVersions<T extends Prisma.Space$boPostVersionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boPostVersionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21370,6 +22494,54 @@ export type Space$boMaterialsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.BoMaterialScalarFieldEnum | Prisma.BoMaterialScalarFieldEnum[]
+}
+
+/**
+ * Space.boPosts
+ */
+export type Space$boPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BoPost
+   */
+  select?: Prisma.BoPostSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BoPost
+   */
+  omit?: Prisma.BoPostOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BoPostInclude<ExtArgs> | null
+  where?: Prisma.BoPostWhereInput
+  orderBy?: Prisma.BoPostOrderByWithRelationInput | Prisma.BoPostOrderByWithRelationInput[]
+  cursor?: Prisma.BoPostWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BoPostScalarFieldEnum | Prisma.BoPostScalarFieldEnum[]
+}
+
+/**
+ * Space.boPostVersions
+ */
+export type Space$boPostVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BoPostVersion
+   */
+  select?: Prisma.BoPostVersionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BoPostVersion
+   */
+  omit?: Prisma.BoPostVersionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BoPostVersionInclude<ExtArgs> | null
+  where?: Prisma.BoPostVersionWhereInput
+  orderBy?: Prisma.BoPostVersionOrderByWithRelationInput | Prisma.BoPostVersionOrderByWithRelationInput[]
+  cursor?: Prisma.BoPostVersionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BoPostVersionScalarFieldEnum | Prisma.BoPostVersionScalarFieldEnum[]
 }
 
 /**

@@ -446,9 +446,11 @@ model Space {
   finBalanceSnapshots FinBalanceSnapshot[]
 
   // ─── 블로그 운영 Deck (Blog Ops) ───
-  boProducts  BoProduct[]
-  boIdeations BoIdeation[]
-  boMaterials BoMaterial[]
+  boProducts      BoProduct[]
+  boIdeations     BoIdeation[]
+  boMaterials     BoMaterial[]
+  boPosts         BoPost[]
+  boPostVersions  BoPostVersion[]
 }
 
 // 공간 멤버십 + 역할
@@ -2961,10 +2963,70 @@ model BoMaterial {
   space    Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   product  BoProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
   ideation BoIdeation? @relation(fields: [ideationId], references: [id], onDelete: SetNull)
+  posts    BoPost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([spaceId, status])
   @@index([productId])
+}
+
+enum BoPostStatus {
+  GENERATING
+  DRAFT
+  IN_REVIEW
+  PUBLISH_APPROVED
+  PUBLISHED
+  FAILED
+  ARCHIVED
+}
+
+// 블로그 포스트. 소재(BoMaterial)를 기반으로 AI가 생성한 실제 글 본문.
+model BoPost {
+  id                      String        @id @default(cuid())
+  spaceId                 String
+  userId                  String?
+  materialId              String
+  title                   String
+  doc                     Json          // TipTap master doc
+  bodyMarkdown            String?
+  status                  BoPostStatus  @default(GENERATING)
+  targetKeyword           String?
+  relatedKeywords         Json          @default("[]")
+  ctaUrl                  String?
+  publishApprovedByUserId String?
+  publishApprovedAt       DateTime?
+  generationTraceHash     String?
+  errorMessage            String?
+
+  space    Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  material BoMaterial     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  versions BoPostVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([materialId])
+}
+
+// 포스트 버전 이력. 수동 저장·AI 재생성 시마다 스냅샷 누적.
+model BoPostVersion {
+  id              String  @id @default(cuid())
+  postId          String
+  spaceId         String
+  versionNumber   Int
+  title           String
+  doc             Json
+  note            String?
+  createdByUserId String?
+
+  post  BoPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  space Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, versionNumber])
+  @@index([spaceId, createdAt])
 }

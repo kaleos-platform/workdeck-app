@@ -154,7 +154,9 @@ export const ModelName = {
   FinBalanceSnapshot: 'FinBalanceSnapshot',
   BoProduct: 'BoProduct',
   BoIdeation: 'BoIdeation',
-  BoMaterial: 'BoMaterial'
+  BoMaterial: 'BoMaterial',
+  BoPost: 'BoPost',
+  BoPostVersion: 'BoPostVersion'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1902,6 +1904,44 @@ export const BoMaterialScalarFieldEnum = {
 } as const
 
 export type BoMaterialScalarFieldEnum = (typeof BoMaterialScalarFieldEnum)[keyof typeof BoMaterialScalarFieldEnum]
+
+
+export const BoPostScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  materialId: 'materialId',
+  title: 'title',
+  doc: 'doc',
+  bodyMarkdown: 'bodyMarkdown',
+  status: 'status',
+  targetKeyword: 'targetKeyword',
+  relatedKeywords: 'relatedKeywords',
+  ctaUrl: 'ctaUrl',
+  publishApprovedByUserId: 'publishApprovedByUserId',
+  publishApprovedAt: 'publishApprovedAt',
+  generationTraceHash: 'generationTraceHash',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoPostScalarFieldEnum = (typeof BoPostScalarFieldEnum)[keyof typeof BoPostScalarFieldEnum]
+
+
+export const BoPostVersionScalarFieldEnum = {
+  id: 'id',
+  postId: 'postId',
+  spaceId: 'spaceId',
+  versionNumber: 'versionNumber',
+  title: 'title',
+  doc: 'doc',
+  note: 'note',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type BoPostVersionScalarFieldEnum = (typeof BoPostVersionScalarFieldEnum)[keyof typeof BoPostVersionScalarFieldEnum]
 
 
 export const SortOrder = {

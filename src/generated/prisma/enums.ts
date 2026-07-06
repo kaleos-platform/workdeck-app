@@ -516,3 +516,16 @@ export const BoMaterialStatus = {
 } as const
 
 export type BoMaterialStatus = (typeof BoMaterialStatus)[keyof typeof BoMaterialStatus]
+
+
+export const BoPostStatus = {
+  GENERATING: 'GENERATING',
+  DRAFT: 'DRAFT',
+  IN_REVIEW: 'IN_REVIEW',
+  PUBLISH_APPROVED: 'PUBLISH_APPROVED',
+  PUBLISHED: 'PUBLISHED',
+  FAILED: 'FAILED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type BoPostStatus = (typeof BoPostStatus)[keyof typeof BoPostStatus]
