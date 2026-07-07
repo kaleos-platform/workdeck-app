@@ -455,6 +455,19 @@ model Space {
   hiringApplications     HiringApplication[]
   hiringBlacklists       HiringBlacklist[]
   hiringMessageTemplates HiringMessageTemplate[]
+
+
+  // ─── 블로그 운영 Deck (Blog Ops) ───
+  boProducts            BoProduct[]
+  boIdeations           BoIdeation[]
+  boMaterials           BoMaterial[]
+  boPosts               BoPost[]
+  boPostVersions        BoPostVersion[]
+  boChannels            BoChannel[]
+  boPostVariants        BoPostVariant[]
+  boDeployments         BoDeployment[]
+  boJobs                BoJob[]
+  boChannelCredentials  BoChannelCredential[]
 }
 
 // 공간 멤버십 + 역할
@@ -3282,5 +3295,330 @@ model HiringMessageTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([spaceId])
+}
+
+
+// ─── 블로그 운영 Deck (Blog Ops) ──────────────────────────────────────────────
+
+enum BoCrawlStatus {
+  NONE
+  PENDING
+  DONE
+  FAILED
+}
+
+enum BoMaterialStatus {
+  PROPOSED
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+// 블로그 소재 발굴 대상 제품. 홈페이지 크롤 결과·AI 소구점 분석의 기준점.
+model BoProduct {
+  id             String        @id @default(cuid())
+  spaceId        String
+  name           String
+  category       String? // B2B / B2C
+  oneLinerPitch  String?
+  homepageUrl    String?
+  crawledText    String?
+  crawledAt      DateTime?
+  crawlStatus    BoCrawlStatus @default(NONE)
+  targetCustomer String?
+  features       Json          @default("[]") // [{ name: string, description: string }]
+  ctaUrl         String?
+  customFields   Json          @default("[]") // [{ key: string, value: string }]
+  isActive       Boolean       @default(true)
+
+  space     Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  ideations BoIdeation[]
+  materials BoMaterial[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// AI 소구점 발굴 실행 단위. 한 번의 생성 호출 결과를 appealPoints Json으로 보관.
+model BoIdeation {
+  id              String  @id @default(cuid())
+  spaceId         String
+  userId          String?
+  productId       String
+  userPromptInput String?
+  appealPoints    Json    @default("[]") // [{ point, evidence, targetPain, priority }]
+  providerName    String?
+  providerModel   String?
+  latencyMs       Int?
+  promptTraceHash String?
+
+  space     Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product   BoProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  materials BoMaterial[]
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId, createdAt])
+  @@index([productId])
+}
+
+// 블로그 포스팅 소재. 소구점 하나를 특정 앵글로 풀어낸 글 골격.
+model BoMaterial {
+  id               String           @id @default(cuid())
+  spaceId          String
+  productId        String
+  ideationId       String?
+  title            String
+  appealPoint      String
+  angle            String
+  outline          Json             @default("[]") // [{ section: string, description: string }]
+  targetKeyword    String?
+  status           BoMaterialStatus @default(PROPOSED)
+  approvedByUserId String?
+  approvedAt       DateTime?
+
+  space    Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product  BoProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ideation BoIdeation? @relation(fields: [ideationId], references: [id], onDelete: SetNull)
+  posts    BoPost[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([productId])
+}
+
+enum BoPostStatus {
+  GENERATING
+  DRAFT
+  IN_REVIEW
+  PUBLISH_APPROVED
+  PUBLISHED
+  FAILED
+  ARCHIVED
+}
+
+enum BoPlatform {
+  NAVER_BLOG
+  TISTORY
+  OWN_HOMEPAGE
+}
+
+enum BoPublisherMode {
+  MANUAL
+  BROWSER
+}
+
+enum BoVariantStatus {
+  GENERATING
+  READY
+  EDITED
+  FAILED
+}
+
+enum BoDeploymentStatus {
+  PENDING
+  PUBLISHING
+  PUBLISHED
+  FAILED
+  CANCELED
+  EXPORTED
+}
+
+// 블로그 포스트. 소재(BoMaterial)를 기반으로 AI가 생성한 실제 글 본문.
+model BoPost {
+  id                      String        @id @default(cuid())
+  spaceId                 String
+  userId                  String?
+  materialId              String
+  title                   String
+  doc                     Json          // TipTap master doc
+  bodyMarkdown            String?
+  status                  BoPostStatus  @default(GENERATING)
+  targetKeyword           String?
+  relatedKeywords         Json          @default("[]")
+  ctaUrl                  String?
+  publishApprovedByUserId String?
+  publishApprovedAt       DateTime?
+  generationTraceHash     String?
+  errorMessage            String?
+
+  space       Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  material    BoMaterial      @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  versions    BoPostVersion[]
+  variants    BoPostVariant[]
+  deployments BoDeployment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([materialId])
+}
+
+// 포스트 버전 이력. 수동 저장·AI 재생성 시마다 스냅샷 누적.
+model BoPostVersion {
+  id              String  @id @default(cuid())
+  postId          String
+  spaceId         String
+  versionNumber   Int
+  title           String
+  doc             Json
+  note            String?
+  createdByUserId String?
+
+  post  BoPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  space Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, versionNumber])
+  @@index([spaceId, createdAt])
+}
+
+// 블로그 배포 채널. 플랫폼(네이버·티스토리·자사 홈페이지)별 설정을 보관한다.
+model BoChannel {
+  id            String          @id @default(cuid())
+  spaceId       String
+  platform      BoPlatform
+  name          String
+  formatProfile Json            @default("{}")
+  publisherMode BoPublisherMode @default(MANUAL)
+  config        Json?
+  isActive      Boolean         @default(true)
+
+  space       Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  variants    BoPostVariant[]
+  deployments BoDeployment[]
+  credentials BoChannelCredential[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, platform, name])
+  @@index([spaceId])
+}
+
+// 포스트 × 채널별 변형. 채널 포맷에 맞춰 변환된 제목·본문·내보내기 결과를 보관한다.
+model BoPostVariant {
+  id               String          @id @default(cuid())
+  spaceId          String
+  postId           String
+  channelId        String
+  title            String
+  doc              Json
+  exportedMarkdown String?
+  exportedHtml     String?
+  status           BoVariantStatus @default(GENERATING)
+  errorMessage     String?
+
+  space       Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  post        BoPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  channel     BoChannel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  deployments BoDeployment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([postId, channelId])
+  @@index([spaceId])
+}
+
+// 포스트 배포 이력. 변형 1건을 채널에 게시한 실행 단위.
+model BoDeployment {
+  id           String             @id @default(cuid())
+  spaceId      String
+  postId       String
+  variantId    String
+  channelId    String
+  status       BoDeploymentStatus @default(PENDING)
+  platformUrl  String?
+  errorCode    String?
+  errorMessage String?
+  publishedAt  DateTime?
+
+  space   Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  post    BoPost        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  variant BoPostVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  channel BoChannel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, status])
+  @@index([postId])
+}
+
+// ─── Blog Ops Deck (자격증명 · 작업 큐) ──────────────────────────────────────
+
+enum BoJobKind {
+  CRAWL_HOMEPAGE
+  GENERATE_DRAFT
+  GENERATE_VARIANT
+  PUBLISH
+}
+
+enum BoJobStatus {
+  PENDING
+  CLAIMED
+  COMPLETED
+  FAILED
+}
+
+enum BoCredentialKind {
+  COOKIE
+  OAUTH
+  API_KEY
+}
+
+// DB-backed 작업 큐. 워커가 주기 polling 해서 claim → 처리 → complete.
+model BoJob {
+  id           String      @id @default(cuid())
+  spaceId      String
+  kind         BoJobKind
+  status       BoJobStatus @default(PENDING)
+  targetId     String? // variantId · deploymentId 등 대상 엔터티 id
+  payload      Json? // kind 별 페이로드
+  scheduledAt  DateTime    @default(now())
+  claimedAt    DateTime?
+  claimedBy    String? // 워커 instance id
+  completedAt  DateTime?
+  attempts     Int         @default(0)
+  errorMessage String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([spaceId, status])
+  @@index([kind, status])
+}
+
+// 채널별 자격증명. AES-256-CBC 암호화 페이로드 보관 (sc/credentials.ts 와 동일 구조).
+model BoChannelCredential {
+  id               String           @id @default(cuid())
+  spaceId          String
+  channelId        String
+  kind             BoCredentialKind
+  encryptedPayload String // hex 인코딩 AES-256-CBC
+  iv               String // hex iv
+  expiresAt        DateTime?
+  lastVerifiedAt   DateTime?
+  lastError        String?
+
+  space   Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel BoChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([channelId, kind])
+  @@index([channelId])
   @@index([spaceId])
 }

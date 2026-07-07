@@ -88,12 +88,10 @@ d('PATCH match — option 모드 stale fulfillment 삭제 (dev DB)', () => {
     const product = await prisma.invProduct.create({
       data: { spaceId: SPACE_ID, name: 'E2E 매칭상품', groupId: group.id, status: 'ACTIVE' },
     })
-    optAId = (
-      await prisma.invProductOption.create({ data: { productId: product.id, name: 'A' } })
-    ).id
-    optBId = (
-      await prisma.invProductOption.create({ data: { productId: product.id, name: 'B' } })
-    ).id
+    optAId = (await prisma.invProductOption.create({ data: { productId: product.id, name: 'A' } }))
+      .id
+    optBId = (await prisma.invProductOption.create({ data: { productId: product.id, name: 'B' } }))
+      .id
 
     // 배송 배치 → 주문 → 아이템
     const batch = await prisma.delBatch.create({ data: { spaceId: SPACE_ID } })
@@ -134,7 +132,6 @@ d('PATCH match — option 모드 stale fulfillment 삭제 (dev DB)', () => {
       },
     })
     aliasId = alias.id
-
     ;(resolveDeckContext as jest.Mock).mockResolvedValue({
       space: { id: SPACE_ID, name: 'E2E AliasFulfillment' },
       user: { id: USER_ID },
@@ -150,6 +147,7 @@ d('PATCH match — option 모드 stale fulfillment 삭제 (dev DB)', () => {
     const res = await PATCH(patchReq({ mode: 'option', optionId: optAId, saveAlias: true }), {
       params: Promise.resolve({ orderId, itemId }),
     })
+    if (!res) throw new Error('응답 없음')
 
     expect(res.status).toBe(200)
     const body = await res.json()

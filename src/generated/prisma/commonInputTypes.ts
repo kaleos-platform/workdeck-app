@@ -1401,6 +1401,176 @@ export type EnumHiringNotificationTypeWithAggregatesFilter<$PrismaModel = never>
   _max?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel>
 }
 
+export type EnumBoCrawlStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCrawlStatus | Prisma.EnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCrawlStatus[] | Prisma.ListEnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCrawlStatus[] | Prisma.ListEnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCrawlStatusFilter<$PrismaModel> | $Enums.BoCrawlStatus
+}
+
+export type EnumBoCrawlStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCrawlStatus | Prisma.EnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCrawlStatus[] | Prisma.ListEnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCrawlStatus[] | Prisma.ListEnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCrawlStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoCrawlStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoCrawlStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoCrawlStatusFilter<$PrismaModel>
+}
+
+export type EnumBoMaterialStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoMaterialStatus | Prisma.EnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoMaterialStatus[] | Prisma.ListEnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoMaterialStatus[] | Prisma.ListEnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoMaterialStatusFilter<$PrismaModel> | $Enums.BoMaterialStatus
+}
+
+export type EnumBoMaterialStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoMaterialStatus | Prisma.EnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoMaterialStatus[] | Prisma.ListEnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoMaterialStatus[] | Prisma.ListEnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoMaterialStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoMaterialStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoMaterialStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoMaterialStatusFilter<$PrismaModel>
+}
+
+export type EnumBoPostStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPostStatus | Prisma.EnumBoPostStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPostStatus[] | Prisma.ListEnumBoPostStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPostStatus[] | Prisma.ListEnumBoPostStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPostStatusFilter<$PrismaModel> | $Enums.BoPostStatus
+}
+
+export type EnumBoPostStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPostStatus | Prisma.EnumBoPostStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPostStatus[] | Prisma.ListEnumBoPostStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPostStatus[] | Prisma.ListEnumBoPostStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPostStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoPostStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoPostStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoPostStatusFilter<$PrismaModel>
+}
+
+export type EnumBoPlatformFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPlatform | Prisma.EnumBoPlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPlatform[] | Prisma.ListEnumBoPlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPlatform[] | Prisma.ListEnumBoPlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPlatformFilter<$PrismaModel> | $Enums.BoPlatform
+}
+
+export type EnumBoPublisherModeFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPublisherMode | Prisma.EnumBoPublisherModeFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPublisherMode[] | Prisma.ListEnumBoPublisherModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPublisherMode[] | Prisma.ListEnumBoPublisherModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPublisherModeFilter<$PrismaModel> | $Enums.BoPublisherMode
+}
+
+export type EnumBoPlatformWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPlatform | Prisma.EnumBoPlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPlatform[] | Prisma.ListEnumBoPlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPlatform[] | Prisma.ListEnumBoPlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPlatformWithAggregatesFilter<$PrismaModel> | $Enums.BoPlatform
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoPlatformFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoPlatformFilter<$PrismaModel>
+}
+
+export type EnumBoPublisherModeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPublisherMode | Prisma.EnumBoPublisherModeFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPublisherMode[] | Prisma.ListEnumBoPublisherModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPublisherMode[] | Prisma.ListEnumBoPublisherModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPublisherModeWithAggregatesFilter<$PrismaModel> | $Enums.BoPublisherMode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoPublisherModeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoPublisherModeFilter<$PrismaModel>
+}
+
+export type EnumBoVariantStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoVariantStatus | Prisma.EnumBoVariantStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoVariantStatus[] | Prisma.ListEnumBoVariantStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoVariantStatus[] | Prisma.ListEnumBoVariantStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoVariantStatusFilter<$PrismaModel> | $Enums.BoVariantStatus
+}
+
+export type EnumBoVariantStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoVariantStatus | Prisma.EnumBoVariantStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoVariantStatus[] | Prisma.ListEnumBoVariantStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoVariantStatus[] | Prisma.ListEnumBoVariantStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoVariantStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoVariantStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoVariantStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoVariantStatusFilter<$PrismaModel>
+}
+
+export type EnumBoDeploymentStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoDeploymentStatus | Prisma.EnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoDeploymentStatus[] | Prisma.ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoDeploymentStatus[] | Prisma.ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel> | $Enums.BoDeploymentStatus
+}
+
+export type EnumBoDeploymentStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoDeploymentStatus | Prisma.EnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoDeploymentStatus[] | Prisma.ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoDeploymentStatus[] | Prisma.ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoDeploymentStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoDeploymentStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel>
+}
+
+export type EnumBoJobKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobKind | Prisma.EnumBoJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel> | $Enums.BoJobKind
+}
+
+export type EnumBoJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobStatus | Prisma.EnumBoJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel> | $Enums.BoJobStatus
+}
+
+export type EnumBoJobKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobKind | Prisma.EnumBoJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobKindWithAggregatesFilter<$PrismaModel> | $Enums.BoJobKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel>
+}
+
+export type EnumBoJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobStatus | Prisma.EnumBoJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel>
+}
+
+export type EnumBoCredentialKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCredentialKind | Prisma.EnumBoCredentialKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel> | $Enums.BoCredentialKind
+}
+
+export type EnumBoCredentialKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCredentialKind | Prisma.EnumBoCredentialKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCredentialKindWithAggregatesFilter<$PrismaModel> | $Enums.BoCredentialKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -2734,6 +2904,176 @@ export type NestedEnumHiringNotificationTypeWithAggregatesFilter<$PrismaModel = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumHiringNotificationTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumBoCrawlStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCrawlStatus | Prisma.EnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCrawlStatus[] | Prisma.ListEnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCrawlStatus[] | Prisma.ListEnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCrawlStatusFilter<$PrismaModel> | $Enums.BoCrawlStatus
+}
+
+export type NestedEnumBoCrawlStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCrawlStatus | Prisma.EnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCrawlStatus[] | Prisma.ListEnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCrawlStatus[] | Prisma.ListEnumBoCrawlStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCrawlStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoCrawlStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoCrawlStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoCrawlStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBoMaterialStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoMaterialStatus | Prisma.EnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoMaterialStatus[] | Prisma.ListEnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoMaterialStatus[] | Prisma.ListEnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoMaterialStatusFilter<$PrismaModel> | $Enums.BoMaterialStatus
+}
+
+export type NestedEnumBoMaterialStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoMaterialStatus | Prisma.EnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoMaterialStatus[] | Prisma.ListEnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoMaterialStatus[] | Prisma.ListEnumBoMaterialStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoMaterialStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoMaterialStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoMaterialStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoMaterialStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBoPostStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPostStatus | Prisma.EnumBoPostStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPostStatus[] | Prisma.ListEnumBoPostStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPostStatus[] | Prisma.ListEnumBoPostStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPostStatusFilter<$PrismaModel> | $Enums.BoPostStatus
+}
+
+export type NestedEnumBoPostStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPostStatus | Prisma.EnumBoPostStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPostStatus[] | Prisma.ListEnumBoPostStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPostStatus[] | Prisma.ListEnumBoPostStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPostStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoPostStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoPostStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoPostStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBoPlatformFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPlatform | Prisma.EnumBoPlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPlatform[] | Prisma.ListEnumBoPlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPlatform[] | Prisma.ListEnumBoPlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPlatformFilter<$PrismaModel> | $Enums.BoPlatform
+}
+
+export type NestedEnumBoPublisherModeFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPublisherMode | Prisma.EnumBoPublisherModeFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPublisherMode[] | Prisma.ListEnumBoPublisherModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPublisherMode[] | Prisma.ListEnumBoPublisherModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPublisherModeFilter<$PrismaModel> | $Enums.BoPublisherMode
+}
+
+export type NestedEnumBoPlatformWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPlatform | Prisma.EnumBoPlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPlatform[] | Prisma.ListEnumBoPlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPlatform[] | Prisma.ListEnumBoPlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPlatformWithAggregatesFilter<$PrismaModel> | $Enums.BoPlatform
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoPlatformFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoPlatformFilter<$PrismaModel>
+}
+
+export type NestedEnumBoPublisherModeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoPublisherMode | Prisma.EnumBoPublisherModeFieldRefInput<$PrismaModel>
+  in?: $Enums.BoPublisherMode[] | Prisma.ListEnumBoPublisherModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoPublisherMode[] | Prisma.ListEnumBoPublisherModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoPublisherModeWithAggregatesFilter<$PrismaModel> | $Enums.BoPublisherMode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoPublisherModeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoPublisherModeFilter<$PrismaModel>
+}
+
+export type NestedEnumBoVariantStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoVariantStatus | Prisma.EnumBoVariantStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoVariantStatus[] | Prisma.ListEnumBoVariantStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoVariantStatus[] | Prisma.ListEnumBoVariantStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoVariantStatusFilter<$PrismaModel> | $Enums.BoVariantStatus
+}
+
+export type NestedEnumBoVariantStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoVariantStatus | Prisma.EnumBoVariantStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoVariantStatus[] | Prisma.ListEnumBoVariantStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoVariantStatus[] | Prisma.ListEnumBoVariantStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoVariantStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoVariantStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoVariantStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoVariantStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBoDeploymentStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoDeploymentStatus | Prisma.EnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoDeploymentStatus[] | Prisma.ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoDeploymentStatus[] | Prisma.ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel> | $Enums.BoDeploymentStatus
+}
+
+export type NestedEnumBoDeploymentStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoDeploymentStatus | Prisma.EnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoDeploymentStatus[] | Prisma.ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoDeploymentStatus[] | Prisma.ListEnumBoDeploymentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoDeploymentStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoDeploymentStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoDeploymentStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBoJobKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobKind | Prisma.EnumBoJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel> | $Enums.BoJobKind
+}
+
+export type NestedEnumBoJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobStatus | Prisma.EnumBoJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel> | $Enums.BoJobStatus
+}
+
+export type NestedEnumBoJobKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobKind | Prisma.EnumBoJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobKind[] | Prisma.ListEnumBoJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobKindWithAggregatesFilter<$PrismaModel> | $Enums.BoJobKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoJobKindFilter<$PrismaModel>
+}
+
+export type NestedEnumBoJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoJobStatus | Prisma.EnumBoJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoJobStatus[] | Prisma.ListEnumBoJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.BoJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoJobStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBoCredentialKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCredentialKind | Prisma.EnumBoCredentialKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel> | $Enums.BoCredentialKind
+}
+
+export type NestedEnumBoCredentialKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BoCredentialKind | Prisma.EnumBoCredentialKindFieldRefInput<$PrismaModel>
+  in?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BoCredentialKind[] | Prisma.ListEnumBoCredentialKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBoCredentialKindWithAggregatesFilter<$PrismaModel> | $Enums.BoCredentialKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBoCredentialKindFilter<$PrismaModel>
 }
 
 

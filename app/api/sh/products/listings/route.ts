@@ -99,7 +99,9 @@ export async function GET(req: NextRequest) {
     },
   }
 
-  let listings: Awaited<ReturnType<typeof prisma.productListing.findMany<{ include: typeof listingInclude }>>>
+  let listings: Awaited<
+    ReturnType<typeof prisma.productListing.findMany<{ include: typeof listingInclude }>>
+  >
   let total: number
 
   if (isSoldOut) {

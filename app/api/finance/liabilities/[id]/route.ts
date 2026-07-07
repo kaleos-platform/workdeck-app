@@ -62,7 +62,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       normalizedBalanceAsOf = null
     } else {
       const parsed = new Date(balanceAsOf)
-      if (Number.isNaN(parsed.getTime())) return errorResponse('balanceAsOf 형식이 올바르지 않습니다', 400)
+      if (Number.isNaN(parsed.getTime()))
+        return errorResponse('balanceAsOf 형식이 올바르지 않습니다', 400)
       normalizedBalanceAsOf = parsed
     }
   }

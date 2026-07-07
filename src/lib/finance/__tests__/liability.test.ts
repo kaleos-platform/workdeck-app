@@ -8,11 +8,11 @@ import {
 
 const dt = (iso: string) => new Date(iso)
 
-const liab = (
-  id: string,
-  createdAt: string,
-  balanceAsOf: string | null
-): LiabilityWatermark => ({ id, createdAt: dt(createdAt), balanceAsOf: balanceAsOf ? dt(balanceAsOf) : null })
+const liab = (id: string, createdAt: string, balanceAsOf: string | null): LiabilityWatermark => ({
+  id,
+  createdAt: dt(createdAt),
+  balanceAsOf: balanceAsOf ? dt(balanceAsOf) : null,
+})
 
 const txn = (
   liabilityId: string | null,

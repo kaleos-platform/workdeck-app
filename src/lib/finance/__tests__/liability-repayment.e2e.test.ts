@@ -139,7 +139,9 @@ d('부채 상환 연결→감지→반영 E2E', () => {
       )
     )
     expect(res.status).toBe(201)
-    const { liability } = (await res.json()) as { liability: { id: string; accountId: string | null } }
+    const { liability } = (await res.json()) as {
+      liability: { id: string; accountId: string | null }
+    }
     expect(liability.accountId).toBe(accountId)
     liabilityId = liability.id
 

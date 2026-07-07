@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const search = searchParams.get('search') ?? ''
   const sortBy = searchParams.get('sortBy') ?? 'productName'
-  const sortOrder = searchParams.get('sortOrder') === 'desc' ? 'desc' as const : 'asc' as const
+  const sortOrder = searchParams.get('sortOrder') === 'desc' ? ('desc' as const) : ('asc' as const)
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
   const limit = Math.min(200, Math.max(1, Number(searchParams.get('limit') ?? 50)))
   const snapshotDate = searchParams.get('snapshotDate')
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     where: { workspaceId: resolved.workspace.id },
     select: { optionId: true },
   })
-  const excludedOptionIds = excludedOptions.map(e => e.optionId)
+  const excludedOptionIds = excludedOptions.map((e) => e.optionId)
 
   // where 절 구성 — INVENTORY_HEALTH 레코드만(VENDOR_ITEM_METRICS 혼입 방지)
   const where: Record<string, unknown> = {
@@ -72,7 +72,13 @@ export async function GET(req: NextRequest) {
     if (excludedOptionIds.length > 0) {
       where.optionId = { in: excludedOptionIds }
     } else {
-      return NextResponse.json({ records: [], total: 0, snapshotDate: targetDate.toISOString(), productNames: [], excludedOptionIds: [] })
+      return NextResponse.json({
+        records: [],
+        total: 0,
+        snapshotDate: targetDate.toISOString(),
+        productNames: [],
+        excludedOptionIds: [],
+      })
     }
   } else if (excludedView === 'active') {
     if (excludedOptionIds.length > 0) {
@@ -80,7 +86,15 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const allowedSorts = ['productName', 'availableStock', 'revenue30d', 'salesQty30d', 'storageFee', 'conversionRate', 'returns30d']
+  const allowedSorts = [
+    'productName',
+    'availableStock',
+    'revenue30d',
+    'salesQty30d',
+    'storageFee',
+    'conversionRate',
+    'returns30d',
+  ]
   const orderField = allowedSorts.includes(sortBy) ? sortBy : 'productName'
 
   // non-nullable 필드(productName)는 plain SortOrder만 허용, nullable은 nulls: 'last' 가능
@@ -99,7 +113,11 @@ export async function GET(req: NextRequest) {
     prisma.inventoryRecord.count({ where }),
     prisma.inventoryRecord.findMany({
       // productNames 목록도 INVENTORY_HEALTH 에서만 집계
-      where: { workspaceId: resolved.workspace.id, snapshotDate: targetDate, fileType: 'INVENTORY_HEALTH' },
+      where: {
+        workspaceId: resolved.workspace.id,
+        snapshotDate: targetDate,
+        fileType: 'INVENTORY_HEALTH',
+      },
       select: { productName: true },
       distinct: ['productName'],
       orderBy: { productName: 'asc' },
@@ -113,6 +131,6 @@ export async function GET(req: NextRequest) {
     limit,
     snapshotDate: targetDate.toISOString(),
     excludedOptionIds,
-    productNames: productNamesResult.map(p => p.productName),
+    productNames: productNamesResult.map((p) => p.productName),
   })
 }

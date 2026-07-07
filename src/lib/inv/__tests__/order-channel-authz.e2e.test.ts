@@ -58,9 +58,13 @@ d('PATCH /shipping/orders/[orderId] — channelId cross-space 인가 검증 (dev
     await cleanup()
 
     // SPACE1 — 테스트 주체 space
-    await prisma.space.create({ data: { id: SPACE1_ID, name: 'E2E ChanAuthz Space1', type: 'PERSONAL' } })
+    await prisma.space.create({
+      data: { id: SPACE1_ID, name: 'E2E ChanAuthz Space1', type: 'PERSONAL' },
+    })
     // SPACE2 — alien 채널 출처
-    await prisma.space.create({ data: { id: SPACE2_ID, name: 'E2E ChanAuthz Space2', type: 'PERSONAL' } })
+    await prisma.space.create({
+      data: { id: SPACE2_ID, name: 'E2E ChanAuthz Space2', type: 'PERSONAL' },
+    })
     await prisma.user.create({ data: { id: USER_ID, email: 'e2e-chan-authz@throwaway.test' } })
 
     // SPACE2 소속 채널 — SPACE1 사용자가 접근 불가
