@@ -19,6 +19,11 @@ export async function PUT(req: NextRequest) {
     return errorResponse('orderedIds가 필요합니다', 400)
   }
 
+  // 대량 트랜잭션 DoS 방지 — 상한 초과 시 즉시 거부
+  if (orderedIds.length > 1000) {
+    return errorResponse('한 번에 최대 1000개까지 정렬할 수 있습니다', 400)
+  }
+
   // 모든 id가 같은 space에 속하는지 검증
   const owned = await prisma.channel.findMany({
     where: { id: { in: orderedIds }, spaceId: resolved.space.id },

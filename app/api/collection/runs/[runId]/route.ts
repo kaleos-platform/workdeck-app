@@ -74,13 +74,31 @@ export async function PATCH(
   const isStarting = body.status === 'RUNNING' && run.status === 'PENDING'
   const isCompleting = body.status === 'COMPLETED' || body.status === 'FAILED'
 
+  // PENDING → RUNNING 전환은 원자적 claim으로 처리 (동시 시작 요청 중 하나만 성공)
+  if (isStarting) {
+    const claimed = await prisma.collectionRun.updateMany({
+      where: { id: runId, status: 'PENDING' },
+      data: {
+        status: 'RUNNING',
+        startedAt: now,
+        ...(body.error !== undefined && { error: body.error }),
+        ...(body.uploadId !== undefined && { uploadId: body.uploadId }),
+      },
+    })
+    if (claimed.count !== 1) {
+      return errorResponse('이미 시작되었거나 완료된 수집입니다', 409)
+    }
+    const updated = await prisma.collectionRun.findUnique({ where: { id: runId } })
+    return NextResponse.json({ run: updated })
+  }
+
+  // COMPLETED/FAILED 등 비-starting 전환은 기존 update 경로 유지
   const updated = await prisma.collectionRun.update({
     where: { id: runId },
     data: {
       ...(body.status && { status: body.status as CollectionStatus }),
       ...(body.error !== undefined && { error: body.error }),
       ...(body.uploadId !== undefined && { uploadId: body.uploadId }),
-      ...(isStarting && { startedAt: now }),
       ...(isCompleting && { completedAt: now }),
     },
   })
