@@ -111,7 +111,7 @@ export default async function PublicPostingPage({ params }: Params) {
         </section>
       )}
 
-      {/* 상세 본문 — Excalidraw export PNG 블록 */}
+      {/* 상세 본문 — image 블록 */}
       {posting.contents.length > 0 && (
         <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
           {posting.contents.map((c) =>

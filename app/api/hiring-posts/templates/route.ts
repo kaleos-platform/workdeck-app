@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       contents: {
         where: { sourceType: 'POSTING_DETAIL' },
         orderBy: { sortOrder: 'asc' },
-        select: { data: true, imagePath: true, sortOrder: true },
+        select: { contentType: true, data: true, imagePath: true, sortOrder: true },
       },
     },
   })
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
           spaceId: resolved.space.id,
           sourceType: 'DETAIL_TEMPLATE' as const,
           templateId: created.id,
-          contentType: 'excalidraw',
+          contentType: c.contentType,
           data: (c.data ?? undefined) as Prisma.InputJsonValue | undefined,
           imagePath: c.imagePath,
           sortOrder: c.sortOrder,

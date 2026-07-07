@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import type { Prisma } from '@/generated/prisma/client'
 import { createContentSchema } from '@/lib/validations/hiring-posts'
 
 type Params = { params: Promise<{ id: string }> }
@@ -25,7 +24,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
   return NextResponse.json({ contents })
 }
 
-// 상세 콘텐츠 블록 추가 (빈 캔버스)
+// 상세 콘텐츠 블록 추가
+// body: { contentType: 'image'|'text', sortOrder? }
+// 생성 직후 data=null; text는 PATCH로 Tiptap JSON 저장, image는 PATCH로 이미지 업로드
 export async function POST(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
@@ -37,11 +38,11 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
   if (!posting) return errorResponse('공고를 찾을 수 없습니다', 404)
 
-  let body: unknown = {}
+  let body: unknown
   try {
     body = await req.json()
   } catch {
-    body = {}
+    return errorResponse('잘못된 요청 형식입니다', 400)
   }
   const parsed = createContentSchema.safeParse(body)
   if (!parsed.success) {
@@ -61,8 +62,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       spaceId: resolved.space.id,
       postingId: id,
       sourceType: 'POSTING_DETAIL',
-      contentType: 'excalidraw',
-      data: (parsed.data.data ?? undefined) as Prisma.InputJsonValue | undefined,
+      contentType: parsed.data.contentType,
       sortOrder,
     },
   })

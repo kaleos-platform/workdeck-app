@@ -2,27 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
 import { Plus, Trash2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import type { ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types'
-import type { ExcalidrawScene } from './excalidraw-canvas'
 import type { WizardContentData } from './build-types'
-
-// Excalidraw 는 브라우저 전용 — 상세 스텝이 활성일 때만 클라이언트에서 마운트
-const ExcalidrawCanvas = dynamic(
-  () => import('./excalidraw-canvas').then((m) => m.ExcalidrawCanvas),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-[480px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
-        캔버스를 불러오는 중…
-      </div>
-    ),
-  }
-)
 
 type Props = {
   postingId: string
@@ -32,7 +16,6 @@ type Props = {
 export function StepDetail({ postingId, initialContents }: Props) {
   const router = useRouter()
   const [contents, setContents] = useState(initialContents)
-  const [savingId, setSavingId] = useState<string | null>(null)
   const [templateName, setTemplateName] = useState('')
   const [savingTemplate, setSavingTemplate] = useState(false)
 
@@ -41,35 +24,14 @@ export function StepDetail({ postingId, initialContents }: Props) {
       const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ contentType: 'text' }),
       })
       if (!res.ok) throw new Error('블록 추가에 실패했습니다')
       const { content } = await res.json()
       setContents((prev) => [...prev, content])
-      // 스텝 이동 시 언마운트되므로 서버 props 최신화
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '블록 추가에 실패했습니다')
-    }
-  }
-
-  async function handleSaveBlock(contentId: string, scene: ExcalidrawScene, imageBase64: string) {
-    setSavingId(contentId)
-    try {
-      const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: scene, imageBase64 }),
-      })
-      if (!res.ok) throw new Error('저장에 실패했습니다')
-      const { content } = await res.json()
-      setContents((prev) => prev.map((c) => (c.id === contentId ? content : c)))
-      toast.success('상세 블록을 저장했습니다')
-      router.refresh()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장에 실패했습니다')
-    } finally {
-      setSavingId(null)
     }
   }
 
@@ -114,7 +76,7 @@ export function StepDetail({ postingId, initialContents }: Props) {
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          공고 상세를 캔버스로 그립니다. 저장 시 이미지가 공개 페이지에 노출됩니다.
+          공고 상세 블록을 편집합니다. 저장 시 공개 페이지에 노출됩니다.
         </p>
         <Button size="sm" onClick={handleAddBlock}>
           <Plus /> 블록 추가
@@ -123,7 +85,7 @@ export function StepDetail({ postingId, initialContents }: Props) {
 
       {contents.length === 0 && (
         <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          상세 블록이 없습니다. “블록 추가”로 캔버스를 만드세요.
+          상세 블록이 없습니다. &quot;블록 추가&quot;로 블록을 만드세요.
         </div>
       )}
 
@@ -136,11 +98,7 @@ export function StepDetail({ postingId, initialContents }: Props) {
                 <Trash2 />
               </Button>
             </div>
-            <ExcalidrawCanvas
-              initialData={(c.data as ExcalidrawInitialDataState | null) ?? null}
-              saving={savingId === c.id}
-              onSave={(scene, image) => handleSaveBlock(c.id, scene, image)}
-            />
+            {/* Phase 3에서 ContentBlockEditor로 대체 */}
           </div>
         ))}
       </div>
