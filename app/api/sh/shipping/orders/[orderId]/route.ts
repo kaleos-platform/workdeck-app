@@ -40,7 +40,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data.shippingMethodId =
       typeof body.shippingMethodId === 'string' ? body.shippingMethodId || null : null
   }
-  if (body?.channelId !== undefined) data.channelId = body.channelId || null
+  if (body?.channelId !== undefined) {
+    // truthy channelId가 이 space 소속인지 검증 — null/''은 채널 해제라 검증 불필요
+    if (body.channelId) {
+      const ch = await prisma.channel.findFirst({
+        where: { id: body.channelId, spaceId: resolved.space.id },
+        select: { id: true },
+      })
+      if (!ch) return errorResponse('채널을 찾을 수 없습니다', 400)
+    }
+    data.channelId = body.channelId || null
+  }
   if (typeof body?.orderDate === 'string') data.orderDate = new Date(body.orderDate)
   if (typeof body?.orderNumber === 'string') data.orderNumber = body.orderNumber || null
   if (body?.paymentAmount !== undefined) {
