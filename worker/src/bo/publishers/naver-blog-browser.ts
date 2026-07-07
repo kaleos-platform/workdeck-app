@@ -5,8 +5,10 @@
 //   3) 임시저장 팝업 있으면 취소
 //   4) 제목 영역 클릭 → keyboard.type(title)
 //   5) 본문 영역 클릭 → paragraph 별 keyboard.type + Enter
-//   6) 발행 버튼 클릭 (iframe DOM click) → 설정 팝업 오픈 → 최종 발행 (iframe DOM click)
-//   7) post URL 이 https://blog.naver.com/{blogId}/{postId} 로 리다이렉트되면 성공
+//   6) 발행 버튼 클릭 (iframe DOM click) → 설정 팝업 오픈
+//   7) [visibility='private' 일 때] 팝업 내 공개설정 라디오에서 '비공개' 선택 (iframe DOM click)
+//   8) 최종 발행 (iframe DOM click)
+//   9) post URL 이 https://blog.naver.com/{blogId}/{postId} 로 리다이렉트되면 성공
 //
 // sc 버전과의 차이: 입력 소스가 content(sc) → variant(bo). credential.payload 구조는 동일.
 // 세션 만료(로그인 페이지로 튕김) 시 AUTH_FAILED 반환.
@@ -158,6 +160,53 @@ export class NaverBlogBrowserPublisher implements BoPublisher {
           errorCode: 'PLATFORM_ERROR',
           errorMessage: '발행 설정 팝업이 오픈되지 않았습니다.',
         }
+      }
+
+      // 비공개 설정 — channel.config.visibility='private' 일 때 팝업 내 공개설정 라디오를 '비공개'로 변경.
+      // Naver SmartEditor ONE 발행 팝업의 공개설정 라디오 그룹(전체공개/이웃공개/서로이웃공개/비공개)에서
+      // '비공개' 텍스트를 가진 label/radio 를 iframe DOM click 으로 선택한다.
+      const visibility = ctx.channel.config.visibility ?? 'public'
+      if (visibility === 'private') {
+        await page.waitForTimeout(300)
+        const privateSelected = await editorFrame.evaluate(() => {
+          const popup =
+            document.querySelector<Element>('[class*="layer_publish"]') ??
+            document.querySelector<Element>('[class*="layer_content_set_publish"]')
+          if (!popup) return 'NO_POPUP'
+
+          // label 텍스트가 '비공개'인 요소를 먼저 탐색 — click() 이 radio 를 선택함
+          const labels = Array.from(popup.querySelectorAll<HTMLElement>('label'))
+          const privateLabel = labels.find((l) => l.textContent?.trim() === '비공개')
+          if (privateLabel) {
+            privateLabel.click()
+            return 'OK'
+          }
+
+          // label[for] → input[id] 매핑으로 radio 직접 탐색
+          const radios = Array.from(popup.querySelectorAll<HTMLInputElement>('input[type="radio"]'))
+          const privateRadio = radios.find((r) => {
+            const lbl = r.id ? popup.querySelector<HTMLElement>(`label[for="${r.id}"]`) : null
+            return lbl?.textContent?.trim() === '비공개'
+          })
+          if (privateRadio) {
+            privateRadio.click()
+            return 'OK'
+          }
+
+          return 'NOT_FOUND'
+        })
+
+        if (privateSelected !== 'OK') {
+          await safeClose(browser)
+          return {
+            ok: false,
+            errorCode: 'PLATFORM_ERROR',
+            errorMessage: `발행 팝업에서 '비공개' 라디오를 찾지 못했습니다 (result: ${privateSelected}).`,
+          }
+        }
+
+        // 선택 후 짧은 대기 — SmartEditor 상태 반영
+        await page.waitForTimeout(200)
       }
 
       // 최종 발행 — 모달 내 confirm 버튼. Playwright locator.click 은 iframe 내 se-help-layer

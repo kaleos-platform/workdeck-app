@@ -17,6 +17,11 @@ export type BoJobMeta = {
 
 export type BoChannelPlatform = 'NAVER_BLOG' | 'TISTORY' | 'OWN_HOMEPAGE'
 
+// NAVER_BLOG 채널 config 추가 설정 타입.
+export type NaverBlogChannelConfig = {
+  visibility?: 'public' | 'private'
+}
+
 // 웹앱 claim 응답의 context 필드 — publisher 가 발행에 필요한 모든 정보를 포함.
 export type BoPublishContext = {
   deployment: {
@@ -28,7 +33,7 @@ export type BoPublishContext = {
   }
   channel: {
     platform: BoChannelPlatform
-    config: Record<string, unknown>
+    config: Record<string, unknown> & NaverBlogChannelConfig
   }
   credential: {
     kind: string

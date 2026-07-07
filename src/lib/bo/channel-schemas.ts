@@ -1,6 +1,16 @@
 // 채널 생성·수정·프로필 검증용 Zod 스키마.
+// naverBlogConfigSchema — NAVER_BLOG 채널 전용 config 항목 (config 필드에 병합 저장됨).
 
 import { z } from 'zod'
+
+// ─── NAVER_BLOG 채널 config 스키마 ───────────────────────────────────────────
+
+export const naverBlogConfigSchema = z.object({
+  /** 공개설정: 'public'(전체공개, 기본값) | 'private'(비공개) */
+  visibility: z.enum(['public', 'private']).optional(),
+})
+
+export type NaverBlogConfig = z.infer<typeof naverBlogConfigSchema>
 
 // ─── 포맷 프로필 스키마 ───────────────────────────────────────────────────────
 

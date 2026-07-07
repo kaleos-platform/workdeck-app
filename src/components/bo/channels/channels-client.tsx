@@ -47,6 +47,7 @@ interface Channel {
   name: string
   formatProfile: FormatProfile
   publisherMode: BoPublisherMode
+  config: Record<string, unknown>
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -836,6 +837,54 @@ function PublisherModeSelect({
   )
 }
 
+// ─── NAVER_BLOG 공개 설정 셀렉트 ─────────────────────────────────────────────
+
+function NaverBlogVisibilitySelect({
+  channel,
+  onChanged,
+}: {
+  channel: Channel
+  onChanged: () => void
+}) {
+  const [saving, setSaving] = useState(false)
+  const current = (channel.config.visibility as string | undefined) ?? 'public'
+
+  async function handleChange(value: string) {
+    setSaving(true)
+    try {
+      await fetch(`/api/bo/channels/${channel.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: { ...channel.config, visibility: value } }),
+      })
+      onChanged()
+    } catch {
+      toast.error('공개 설정 변경에 실패했습니다')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-1 flex items-center gap-1.5">
+      <span className="text-xs text-muted-foreground">공개 설정:</span>
+      {saving ? (
+        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+      ) : (
+        <Select value={current} onValueChange={(v) => void handleChange(v)}>
+          <SelectTrigger className="h-6 w-auto gap-1 border-0 bg-transparent p-0 text-xs shadow-none hover:bg-muted">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="public">전체공개</SelectItem>
+            <SelectItem value="private">비공개</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  )
+}
+
 // ─── 채널 카드 ────────────────────────────────────────────────────────────────
 
 function ChannelCard({ channel, onRefresh }: { channel: Channel; onRefresh: () => void }) {
@@ -884,6 +933,10 @@ function ChannelCard({ channel, onRefresh }: { channel: Channel; onRefresh: () =
             current={channel.publisherMode}
             onChanged={onRefresh}
           />
+          {/* NAVER_BLOG 전용 공개 설정 */}
+          {channel.platform === 'NAVER_BLOG' && (
+            <NaverBlogVisibilitySelect channel={channel} onChanged={onRefresh} />
+          )}
           {/* 자격증명 섹션 (BROWSER 모드일 때 강조) */}
           <CredentialSection channelId={channel.id} />
         </div>
