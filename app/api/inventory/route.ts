@@ -26,7 +26,8 @@ export async function GET(req: NextRequest) {
     targetDate = new Date(snapshotDate)
   } else {
     const latest = await prisma.inventoryUpload.findFirst({
-      where: { workspaceId: resolved.workspace.id },
+      // INVENTORY_HEALTH 업로드만 — VENDOR_ITEM_METRICS 날짜가 잡히지 않도록 fileType 고정
+      where: { workspaceId: resolved.workspace.id, fileType: 'INVENTORY_HEALTH' },
       orderBy: { snapshotDate: 'desc' },
       select: { snapshotDate: true },
     })
@@ -44,10 +45,11 @@ export async function GET(req: NextRequest) {
   })
   const excludedOptionIds = excludedOptions.map(e => e.optionId)
 
-  // where 절 구성
+  // where 절 구성 — INVENTORY_HEALTH 레코드만(VENDOR_ITEM_METRICS 혼입 방지)
   const where: Record<string, unknown> = {
     workspaceId: resolved.workspace.id,
     snapshotDate: targetDate,
+    fileType: 'INVENTORY_HEALTH',
   }
 
   // 상품명 필터 (정확 매칭이 검색보다 우선)
@@ -96,7 +98,8 @@ export async function GET(req: NextRequest) {
     }),
     prisma.inventoryRecord.count({ where }),
     prisma.inventoryRecord.findMany({
-      where: { workspaceId: resolved.workspace.id, snapshotDate: targetDate },
+      // productNames 목록도 INVENTORY_HEALTH 에서만 집계
+      where: { workspaceId: resolved.workspace.id, snapshotDate: targetDate, fileType: 'INVENTORY_HEALTH' },
       select: { productName: true },
       distinct: ['productName'],
       orderBy: { productName: 'asc' },
