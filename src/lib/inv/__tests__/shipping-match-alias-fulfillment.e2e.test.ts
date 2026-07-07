@@ -144,9 +144,10 @@ d('PATCH match — option 모드 stale fulfillment 삭제 (dev DB)', () => {
   })
 
   test('option 모드 매칭 후 alias.optionId 업데이트 + stale fulfillment 삭제', async () => {
-    const res = (await PATCH(patchReq({ mode: 'option', optionId: optAId, saveAlias: true }), {
+    const res = await PATCH(patchReq({ mode: 'option', optionId: optAId, saveAlias: true }), {
       params: Promise.resolve({ orderId, itemId }),
-    }))!
+    })
+    if (!res) throw new Error('응답 없음')
 
     expect(res.status).toBe(200)
     const body = await res.json()

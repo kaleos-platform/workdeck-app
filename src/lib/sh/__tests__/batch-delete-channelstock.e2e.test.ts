@@ -147,9 +147,10 @@ d(
     })
 
     test('PATCH status=COMPLETED → 200, channelStock=7, ChannelStockMovement 1행', async () => {
-      const res = (await PATCH(patchReq({ status: 'COMPLETED' }), {
+      const res = await PATCH(patchReq({ status: 'COMPLETED' }), {
         params: Promise.resolve({ batchId }),
-      }))!
+      })
+      if (!res) throw new Error('응답 없음')
       expect(res.status).toBe(200)
 
       // channelStock: 10 - 3 = 7
@@ -163,9 +164,10 @@ d(
     })
 
     test('DELETE batch → 200, channelStock=10 복원, ChannelStockMovement 0행, DelBatch 삭제됨', async () => {
-      const res = (await DELETE(deleteReq(), {
+      const res = await DELETE(deleteReq(), {
         params: Promise.resolve({ batchId }),
-      }))!
+      })
+      if (!res) throw new Error('응답 없음')
       expect(res.status).toBe(200)
 
       // channelStock 복원: 7 + 3 = 10

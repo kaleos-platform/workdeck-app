@@ -166,7 +166,17 @@ export const ModelName = {
   HiringComment: 'HiringComment',
   HiringApplicationNotification: 'HiringApplicationNotification',
   HiringBlacklist: 'HiringBlacklist',
-  HiringMessageTemplate: 'HiringMessageTemplate'
+  HiringMessageTemplate: 'HiringMessageTemplate',
+  BoProduct: 'BoProduct',
+  BoIdeation: 'BoIdeation',
+  BoMaterial: 'BoMaterial',
+  BoPost: 'BoPost',
+  BoPostVersion: 'BoPostVersion',
+  BoChannel: 'BoChannel',
+  BoPostVariant: 'BoPostVariant',
+  BoDeployment: 'BoDeployment',
+  BoJob: 'BoJob',
+  BoChannelCredential: 'BoChannelCredential'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -2102,6 +2112,192 @@ export const HiringMessageTemplateScalarFieldEnum = {
 } as const
 
 export type HiringMessageTemplateScalarFieldEnum = (typeof HiringMessageTemplateScalarFieldEnum)[keyof typeof HiringMessageTemplateScalarFieldEnum]
+
+
+export const BoProductScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  category: 'category',
+  oneLinerPitch: 'oneLinerPitch',
+  homepageUrl: 'homepageUrl',
+  crawledText: 'crawledText',
+  crawledAt: 'crawledAt',
+  crawlStatus: 'crawlStatus',
+  targetCustomer: 'targetCustomer',
+  features: 'features',
+  ctaUrl: 'ctaUrl',
+  customFields: 'customFields',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoProductScalarFieldEnum = (typeof BoProductScalarFieldEnum)[keyof typeof BoProductScalarFieldEnum]
+
+
+export const BoIdeationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  productId: 'productId',
+  userPromptInput: 'userPromptInput',
+  appealPoints: 'appealPoints',
+  providerName: 'providerName',
+  providerModel: 'providerModel',
+  latencyMs: 'latencyMs',
+  promptTraceHash: 'promptTraceHash',
+  createdAt: 'createdAt'
+} as const
+
+export type BoIdeationScalarFieldEnum = (typeof BoIdeationScalarFieldEnum)[keyof typeof BoIdeationScalarFieldEnum]
+
+
+export const BoMaterialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  productId: 'productId',
+  ideationId: 'ideationId',
+  title: 'title',
+  appealPoint: 'appealPoint',
+  angle: 'angle',
+  outline: 'outline',
+  targetKeyword: 'targetKeyword',
+  status: 'status',
+  approvedByUserId: 'approvedByUserId',
+  approvedAt: 'approvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoMaterialScalarFieldEnum = (typeof BoMaterialScalarFieldEnum)[keyof typeof BoMaterialScalarFieldEnum]
+
+
+export const BoPostScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  materialId: 'materialId',
+  title: 'title',
+  doc: 'doc',
+  bodyMarkdown: 'bodyMarkdown',
+  status: 'status',
+  targetKeyword: 'targetKeyword',
+  relatedKeywords: 'relatedKeywords',
+  ctaUrl: 'ctaUrl',
+  publishApprovedByUserId: 'publishApprovedByUserId',
+  publishApprovedAt: 'publishApprovedAt',
+  generationTraceHash: 'generationTraceHash',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoPostScalarFieldEnum = (typeof BoPostScalarFieldEnum)[keyof typeof BoPostScalarFieldEnum]
+
+
+export const BoPostVersionScalarFieldEnum = {
+  id: 'id',
+  postId: 'postId',
+  spaceId: 'spaceId',
+  versionNumber: 'versionNumber',
+  title: 'title',
+  doc: 'doc',
+  note: 'note',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type BoPostVersionScalarFieldEnum = (typeof BoPostVersionScalarFieldEnum)[keyof typeof BoPostVersionScalarFieldEnum]
+
+
+export const BoChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  platform: 'platform',
+  name: 'name',
+  formatProfile: 'formatProfile',
+  publisherMode: 'publisherMode',
+  config: 'config',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoChannelScalarFieldEnum = (typeof BoChannelScalarFieldEnum)[keyof typeof BoChannelScalarFieldEnum]
+
+
+export const BoPostVariantScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postId: 'postId',
+  channelId: 'channelId',
+  title: 'title',
+  doc: 'doc',
+  exportedMarkdown: 'exportedMarkdown',
+  exportedHtml: 'exportedHtml',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoPostVariantScalarFieldEnum = (typeof BoPostVariantScalarFieldEnum)[keyof typeof BoPostVariantScalarFieldEnum]
+
+
+export const BoDeploymentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postId: 'postId',
+  variantId: 'variantId',
+  channelId: 'channelId',
+  status: 'status',
+  platformUrl: 'platformUrl',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoDeploymentScalarFieldEnum = (typeof BoDeploymentScalarFieldEnum)[keyof typeof BoDeploymentScalarFieldEnum]
+
+
+export const BoJobScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  status: 'status',
+  targetId: 'targetId',
+  payload: 'payload',
+  scheduledAt: 'scheduledAt',
+  claimedAt: 'claimedAt',
+  claimedBy: 'claimedBy',
+  completedAt: 'completedAt',
+  attempts: 'attempts',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoJobScalarFieldEnum = (typeof BoJobScalarFieldEnum)[keyof typeof BoJobScalarFieldEnum]
+
+
+export const BoChannelCredentialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  kind: 'kind',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  expiresAt: 'expiresAt',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoChannelCredentialScalarFieldEnum = (typeof BoChannelCredentialScalarFieldEnum)[keyof typeof BoChannelCredentialScalarFieldEnum]
 
 
 export const SortOrder = {

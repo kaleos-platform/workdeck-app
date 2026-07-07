@@ -33,6 +33,10 @@ import {
   Users,
   UserX,
   MessageSquare,
+  PenSquare,
+  Layers,
+  Globe,
+  Send,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -90,6 +94,13 @@ import {
   RECRUITING_DETAIL_TEMPLATES_PATH,
   RECRUITING_STORES_PATH,
   RECRUITING_POSITIONS_PATH,
+  BLOG_OPS_HOME_PATH,
+  BLOG_OPS_PRODUCTS_PATH,
+  BLOG_OPS_IDEATION_PATH,
+  BLOG_OPS_MATERIALS_PATH,
+  BLOG_OPS_POSTS_PATH,
+  BLOG_OPS_CHANNELS_PATH,
+  BLOG_OPS_DEPLOYMENTS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -155,6 +166,17 @@ const SALES_CONTENT_FLAT_ROUTES = [
   { label: '성과 관리', icon: BarChart3, href: SALES_CONTENT_ANALYTICS_PATH },
   { label: '템플릿 관리', icon: FileText, href: SALES_CONTENT_TEMPLATES_PATH },
   { label: '설정', icon: Settings, href: SALES_CONTENT_SETTINGS_PATH },
+]
+
+// ─── 블로그 운영 평탄 메뉴 데이터 (도메인 탭 금지) ───────────────────────────────
+const BLOG_OPS_FLAT_ROUTES = [
+  { label: '홈', icon: Home, href: BLOG_OPS_HOME_PATH },
+  { label: '제품 관리', icon: Package, href: BLOG_OPS_PRODUCTS_PATH },
+  { label: '소구점 발굴', icon: Lightbulb, href: BLOG_OPS_IDEATION_PATH },
+  { label: '소재 관리', icon: Layers, href: BLOG_OPS_MATERIALS_PATH },
+  { label: '포스트', icon: PenSquare, href: BLOG_OPS_POSTS_PATH },
+  { label: '채널', icon: Globe, href: BLOG_OPS_CHANNELS_PATH },
+  { label: '배포 이력', icon: Send, href: BLOG_OPS_DEPLOYMENTS_PATH },
 ]
 
 // ─── 재무 관리 평탄 메뉴 데이터 (5섹션 + 도메인 탭 금지) ───────────────────────
@@ -287,6 +309,7 @@ export function Sidebar({
   const isSalesContentSidebar = variant === 'sales-content'
   const isFinanceSidebar = variant === 'finance'
   const isRecruitingSidebar = variant === 'recruiting'
+  const isBlogOpsSidebar = variant === 'blog-ops'
   const isMyDeckMode = mode === 'my-deck'
   const meta = DECK_META[variant]
   const BrandIcon = meta.icon
@@ -350,7 +373,7 @@ export function Sidebar({
     return `${basePath}?${query.toString()}`
   }
 
-  const expandedWidth = isSalesContentSidebar ? 'w-56' : 'w-64'
+  const expandedWidth = isSalesContentSidebar || isBlogOpsSidebar ? 'w-56' : 'w-64'
 
   return (
     <div
@@ -550,6 +573,28 @@ export function Sidebar({
           <div className="space-y-0.5">
             {FINANCE_FLAT_ROUTES.map((route) => {
               const isHomeRoute = route.href === FINANCE_DASHBOARD_PATH
+              const isActive = isHomeRoute
+                ? pathname === route.href
+                : pathname === route.href || pathname.startsWith(`${route.href}/`)
+              return (
+                <RailLink
+                  key={route.href}
+                  href={route.href}
+                  icon={route.icon}
+                  label={route.label}
+                  isActive={isActive}
+                  collapsed={collapsed}
+                  size="sm"
+                />
+              )
+            })}
+          </div>
+        )}
+
+        {isBlogOpsSidebar && (
+          <div className="space-y-0.5">
+            {BLOG_OPS_FLAT_ROUTES.map((route) => {
+              const isHomeRoute = route.href === BLOG_OPS_HOME_PATH
               const isActive = isHomeRoute
                 ? pathname === route.href
                 : pathname === route.href || pathname.startsWith(`${route.href}/`)

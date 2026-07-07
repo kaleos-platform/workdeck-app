@@ -15,6 +15,17 @@ export async function GET() {
   return NextResponse.json({ schedule })
 }
 
+/**
+ * 표준 5-필드 cron 형식 경량 검증 (분 시 일 월 요일).
+ * 외부 의존성 없이 기본 토큰 형식만 검사.
+ */
+function isValidCron(expr: string): boolean {
+  const fields = expr.trim().split(/\s+/)
+  if (fields.length !== 5) return false
+  const token = /^(\*|(\d+|\*)(\/\d+)?(-\d+(\/\d+)?)?)(,(\d+|\*)(\/\d+)?(-\d+(\/\d+)?)?)*$/
+  return fields.every((f) => token.test(f))
+}
+
 // PUT /api/collection/schedule — 수집 스케줄 생성/수정
 export async function PUT(request: NextRequest) {
   const resolved = await resolveWorkspace()
@@ -30,6 +41,11 @@ export async function PUT(request: NextRequest) {
     body = await request.json()
   } catch {
     return errorResponse('요청 본문이 올바르지 않습니다', 400)
+  }
+
+  // cronExpression 값이 있을 때만 형식 검증 (선택 필드 — undefined 허용)
+  if (body.cronExpression !== undefined && !isValidCron(body.cronExpression ?? '')) {
+    return errorResponse('cronExpression 형식이 올바르지 않습니다 (분 시 일 월 요일)', 400)
   }
 
   const schedule = await prisma.collectionSchedule.upsert({
