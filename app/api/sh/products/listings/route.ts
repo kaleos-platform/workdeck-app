@@ -63,12 +63,17 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
 
+  // SOLD_OUT은 파생 상태(DB에 직접 저장 안 됨) — 후보는 status='ACTIVE' listing 뿐
+  const isSoldOut = statusFilter === 'SOLD_OUT'
+
   const where: Prisma.ProductListingWhereInput = {
     spaceId: resolved.space.id,
     channel: { channelTypeDef: { isSalesChannel: true } },
   }
   if (channelId) where.channelId = channelId
   if (statusFilter === 'ACTIVE' || statusFilter === 'SUSPENDED') where.status = statusFilter
+  // SOLD_OUT은 ACTIVE listing에서만 발생하므로 후보를 ACTIVE로 한정
+  if (isSoldOut) where.status = 'ACTIVE'
   if (search) {
     where.OR = [
       { searchName: { contains: search, mode: 'insensitive' } },
@@ -78,32 +83,50 @@ export async function GET(req: NextRequest) {
     ]
   }
 
-  const [listings, total] = await Promise.all([
-    prisma.productListing.findMany({
-      where,
-      orderBy: { updatedAt: 'desc' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+  const listingInclude = {
+    items: {
+      orderBy: { sortOrder: 'asc' as const },
       include: {
-        items: {
-          orderBy: { sortOrder: 'asc' },
-          include: {
-            option: {
-              select: {
-                id: true,
-                name: true,
-                retailPrice: true,
-                product: { select: { id: true, name: true, internalName: true, msrp: true } },
-              },
-            },
+        option: {
+          select: {
+            id: true,
+            name: true,
+            retailPrice: true,
+            product: { select: { id: true, name: true, internalName: true, msrp: true } },
           },
         },
       },
-    }),
-    prisma.productListing.count({ where }),
-  ])
+    },
+  }
 
-  // 해당 페이지 listing들의 전체 옵션 id → 재고 배치 조회
+  let listings: Awaited<ReturnType<typeof prisma.productListing.findMany<{ include: typeof listingInclude }>>>
+  let total: number
+
+  if (isSoldOut) {
+    // SOLD_OUT은 파생 상태라 DB 필터 불가 → ACTIVE 후보 전체 계산 후 in-memory 페이지네이션
+    listings = await prisma.productListing.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+      include: listingInclude,
+    })
+    // total/data는 아래 매핑 후 결정 (placeholder; isSoldOut 분기에서 덮어씀)
+    total = 0
+  } else {
+    const [found, count] = await Promise.all([
+      prisma.productListing.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: listingInclude,
+      }),
+      prisma.productListing.count({ where }),
+    ])
+    listings = found
+    total = count
+  }
+
+  // listing들의 옵션 id → 재고 배치 조회
   const optionIds = Array.from(new Set(listings.flatMap((l) => l.items.map((i) => i.optionId))))
   const stockMap = new Map<string, number>()
   if (optionIds.length > 0) {
@@ -186,11 +209,15 @@ export async function GET(req: NextRequest) {
     }
   })
 
-  // SOLD_OUT 필터는 클라이언트 후처리 (effective 기준)
-  const filtered =
-    statusFilter === 'SOLD_OUT' ? rows.filter((r) => r.effectiveStatus === 'SOLD_OUT') : rows
+  if (isSoldOut) {
+    // SOLD_OUT in-memory 페이지네이션: effectiveStatus 기준 필터 후 슬라이스
+    const soldOutRows = rows.filter((r) => r.effectiveStatus === 'SOLD_OUT')
+    total = soldOutRows.length
+    const data = soldOutRows.slice((page - 1) * pageSize, page * pageSize)
+    return NextResponse.json({ data, total, page, pageSize })
+  }
 
-  return NextResponse.json({ data: filtered, total, page, pageSize })
+  return NextResponse.json({ data: rows, total, page, pageSize })
 }
 
 export async function POST(req: NextRequest) {
