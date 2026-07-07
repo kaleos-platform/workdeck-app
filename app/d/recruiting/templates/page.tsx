@@ -5,7 +5,7 @@ import { TemplatesManager, type TemplateRow } from '@/components/hiring-posts/te
 
 // 상세 템플릿 관리 (생성은 위저드 상세 스텝, 여기서는 이름 변경/삭제)
 export default async function TemplatesPage() {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
 
   const rows = await prisma.hiringDetailTemplate.findMany({

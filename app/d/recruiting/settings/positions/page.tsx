@@ -5,7 +5,7 @@ import { PositionsManager, type PositionRow } from '@/components/hiring-posts/po
 
 // 직무 기준정보 관리
 export default async function PositionsSettingsPage() {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
 
   const rows = await prisma.hiringPosition.findMany({

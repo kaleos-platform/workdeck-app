@@ -5,7 +5,7 @@ import { StoresManager, type StoreRow } from '@/components/hiring-posts/stores-m
 
 // 매장 기준정보 관리
 export default async function StoresSettingsPage() {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
 
   const rows = await prisma.hiringStore.findMany({
