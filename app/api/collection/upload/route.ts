@@ -18,6 +18,12 @@ export async function POST(request: NextRequest) {
       return errorResponse('file과 workspaceId가 필요합니다', 400)
     }
 
+    // arrayBuffer 로드 전 크기 검사 — OOM/타임아웃 방지
+    const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+    if (file.size > MAX_SIZE) {
+      return errorResponse('파일이 너무 큽니다 (최대 10MB)', 400)
+    }
+
     const buffer = await file.arrayBuffer()
 
     // 기존 upload-processor 재사용
