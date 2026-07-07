@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Plus, Trash2, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -18,8 +18,9 @@ import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 
 type Props = {
   postingId: string
+  // 최초 시딩 전용 — 이후 파생 fields 는 위로만 흐른다(다시 내부 상태로 되먹이지 않음).
   initialFields: FormFieldInput[]
-  onFieldsChange: (fields: FormFieldInput[]) => void
+  onChange: (fields: FormFieldInput[]) => void
 }
 
 const CUSTOM_TYPE_LABELS: Record<string, string> = {
@@ -41,7 +42,7 @@ function makeKey(): string {
   return `custom_${Math.random().toString(36).slice(2, 9)}`
 }
 
-export function StepForm({ postingId, initialFields, onFieldsChange }: Props) {
+export function StepForm({ postingId, initialFields, onChange }: Props) {
   const [emailEnabled, setEmailEnabled] = useState(initialFields.some((f) => f.key === 'email'))
   const [addressEnabled, setAddressEnabled] = useState(
     initialFields.some((f) => f.key === 'address')
@@ -90,6 +91,13 @@ export function StepForm({ postingId, initialFields, onFieldsChange }: Props) {
     return out
   }, [emailEnabled, addressEnabled, customFields])
 
+  // 파생 fields 를 wizard 로 즉시 동기화(미리보기 라이브 반영). 되먹임 없음.
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+  useEffect(() => {
+    onChangeRef.current(fields)
+  }, [fields])
+
   function addCustom() {
     setCustomFields((prev) => [
       ...prev,
@@ -116,8 +124,7 @@ export function StepForm({ postingId, initialFields, onFieldsChange }: Props) {
         body: JSON.stringify({ fields }),
       })
       if (!res.ok) throw new Error('폼 저장에 실패했습니다')
-      onFieldsChange(fields)
-      toast.success('지원서 폼을 저장했습니다')
+      toast.success('지원서 항목을 저장했습니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '폼 저장에 실패했습니다')
     } finally {
@@ -126,126 +133,91 @@ export function StepForm({ postingId, initialFields, onFieldsChange }: Props) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {/* 편집 */}
-      <div className="space-y-5">
-        <div className="space-y-2">
-          <div className="text-sm font-medium">표준 항목</div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
-              <span>이름 · 연락처</span>
-              <span className="text-xs text-muted-foreground">필수 · 고정</span>
-            </div>
-            <div className="flex items-center justify-between rounded-md border px-3 py-2">
-              <Label htmlFor="email-toggle" className="text-sm">
-                이메일
-              </Label>
-              <Switch id="email-toggle" checked={emailEnabled} onCheckedChange={setEmailEnabled} />
-            </div>
-            <div className="flex items-center justify-between rounded-md border px-3 py-2">
-              <Label htmlFor="addr-toggle" className="text-sm">
-                주소
-              </Label>
-              <Switch
-                id="addr-toggle"
-                checked={addressEnabled}
-                onCheckedChange={setAddressEnabled}
-              />
-            </div>
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <div className="text-sm font-medium">표준 항목</div>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+            <span>이름 · 연락처</span>
+            <span className="text-xs text-muted-foreground">필수 · 고정</span>
+          </div>
+          <div className="flex items-center justify-between rounded-md border px-3 py-2">
+            <Label htmlFor="email-toggle" className="text-sm">
+              이메일
+            </Label>
+            <Switch id="email-toggle" checked={emailEnabled} onCheckedChange={setEmailEnabled} />
+          </div>
+          <div className="flex items-center justify-between rounded-md border px-3 py-2">
+            <Label htmlFor="addr-toggle" className="text-sm">
+              주소
+            </Label>
+            <Switch id="addr-toggle" checked={addressEnabled} onCheckedChange={setAddressEnabled} />
           </div>
         </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">커스텀 항목</div>
-            <Button size="sm" variant="outline" onClick={addCustom}>
-              <Plus /> 항목 추가
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {customFields.map((c, idx) => (
-              <div key={c.key} className="space-y-2 rounded-md border bg-muted/30 p-3">
-                <div className="flex items-center gap-2">
-                  <GripVertical className="size-4 shrink-0 text-muted-foreground" />
-                  <Input
-                    value={c.label}
-                    onChange={(e) => updateCustom(idx, { label: e.target.value })}
-                    placeholder="항목 이름"
-                    className="flex-1"
-                  />
-                  <Button size="icon-sm" variant="ghost" onClick={() => removeCustom(idx)}>
-                    <Trash2 />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2 pl-6">
-                  <Select
-                    value={c.type}
-                    onValueChange={(v) => updateCustom(idx, { type: v as CustomField['type'] })}
-                  >
-                    <SelectTrigger className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(CUSTOM_TYPE_LABELS).map(([k, label]) => (
-                        <SelectItem key={k} value={k}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Switch
-                      checked={c.required}
-                      onCheckedChange={(v) => updateCustom(idx, { required: v })}
-                    />
-                    필수
-                  </label>
-                </div>
-                {c.type === 'select' && (
-                  <Input
-                    value={c.optionsText}
-                    onChange={(e) => updateCustom(idx, { optionsText: e.target.value })}
-                    placeholder="선택지 (쉼표로 구분)"
-                    className="ml-6 w-[calc(100%-1.5rem)]"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <Button onClick={handleSave} disabled={saving}>
-          폼 저장
-        </Button>
       </div>
 
-      {/* 미리보기 */}
-      <div className="space-y-3 rounded-lg border p-4">
-        <div className="text-sm font-medium text-muted-foreground">지원서 미리보기</div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium">커스텀 항목</div>
+          <Button size="sm" variant="outline" onClick={addCustom}>
+            <Plus /> 항목 추가
+          </Button>
+        </div>
         <div className="space-y-3">
-          {fields.map((f) => (
-            <div key={f.key} className="space-y-1">
-              <div className="text-xs font-medium">
-                {f.label}
-                {f.required && <span className="ml-0.5 text-red-500">*</span>}
+          {customFields.map((c, idx) => (
+            <div key={c.key} className="space-y-2 rounded-md border bg-muted/30 p-3">
+              <div className="flex items-center gap-2">
+                <GripVertical className="size-4 shrink-0 text-muted-foreground" />
+                <Input
+                  value={c.label}
+                  onChange={(e) => updateCustom(idx, { label: e.target.value })}
+                  placeholder="항목 이름"
+                  className="flex-1"
+                />
+                <Button size="icon-sm" variant="ghost" onClick={() => removeCustom(idx)}>
+                  <Trash2 />
+                </Button>
               </div>
-              {f.type === 'text' ? (
-                <div className="h-16 rounded-md border bg-muted/40" />
-              ) : f.type === 'select' ? (
-                <div className="h-9 rounded-md border bg-muted/40 px-2 text-xs leading-9 text-muted-foreground">
-                  {(f.options ?? []).join(' / ') || '선택'}
-                </div>
-              ) : f.type === 'file' ? (
-                <div className="h-9 rounded-md border border-dashed bg-muted/40 px-2 text-xs leading-9 text-muted-foreground">
-                  파일 선택
-                </div>
-              ) : (
-                <div className="h-9 rounded-md border bg-muted/40" />
+              <div className="flex items-center gap-2 pl-6">
+                <Select
+                  value={c.type}
+                  onValueChange={(v) => updateCustom(idx, { type: v as CustomField['type'] })}
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CUSTOM_TYPE_LABELS).map(([k, label]) => (
+                      <SelectItem key={k} value={k}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Switch
+                    checked={c.required}
+                    onCheckedChange={(v) => updateCustom(idx, { required: v })}
+                  />
+                  필수
+                </label>
+              </div>
+              {c.type === 'select' && (
+                <Input
+                  value={c.optionsText}
+                  onChange={(e) => updateCustom(idx, { optionsText: e.target.value })}
+                  placeholder="선택지 (쉼표로 구분)"
+                  className="ml-6 w-[calc(100%-1.5rem)]"
+                />
               )}
             </div>
           ))}
         </div>
       </div>
+
+      <Button size="sm" onClick={handleSave} disabled={saving}>
+        지원서 항목 저장
+      </Button>
     </div>
   )
 }

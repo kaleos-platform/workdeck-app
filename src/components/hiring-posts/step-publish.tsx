@@ -84,7 +84,7 @@ export function StepPublish({
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm">
         <span className="text-muted-foreground">현재 상태</span>
         <PostingStatusBadge status={status} />
