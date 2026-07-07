@@ -8,7 +8,7 @@ type Params = { params: Promise<{ id: string }> }
 
 // 지원서 폼 스키마(applicationEntries) 저장
 export async function PUT(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

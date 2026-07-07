@@ -5,7 +5,7 @@ import { PostingsTable, type PostingRow } from '@/components/hiring-posts/postin
 
 // 공고 목록 페이지
 export default async function PostingsPage() {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
 
   const rows = await listPostings(resolved.space.id)

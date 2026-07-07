@@ -2,7 +2,7 @@
  * 채용 Deck Storage 어댑터 — Supabase Storage 버킷 2종.
  * (선례: src/lib/supabase/storage.ts — sales-content)
  *
- * - `hiring-assets`  : 공고 이미지·Excalidraw export PNG. public-read.
+ * - `hiring-assets`  : 공고 이미지(image 블록 업로드 등). public-read.
  * - `hiring-files`   : 지원자 첨부(이력서 등). **비공개** — service-role 업로드 +
  *                      서명 URL 다운로드만 허용. getPublicUrl 사용 금지.
  *

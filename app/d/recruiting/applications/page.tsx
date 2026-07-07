@@ -1,5 +1,5 @@
 // 지원자 교차 목록(server component) — searchParams 로 필터·페이지네이션, 도메인 모듈 직접 조회.
-import { resolveAnyDeckContext } from '@/lib/api-helpers'
+import { resolveDeckContext } from '@/lib/api-helpers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { listApplications } from '@/lib/hiring/applications'
@@ -26,7 +26,7 @@ function parseDate(v?: string): Date | undefined {
 }
 
 export default async function ApplicationsPage({ searchParams }: Props) {
-  const resolved = await resolveAnyDeckContext(['hiring-applicants', 'hiring-posts'])
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
   const spaceId = resolved.space.id
 

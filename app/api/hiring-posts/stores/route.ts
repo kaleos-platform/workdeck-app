@@ -5,7 +5,7 @@ import { storeSchema } from '@/lib/validations/hiring-posts'
 
 // 매장 기준정보 목록 (?activeOnly)
 export async function GET(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const activeOnly = req.nextUrl.searchParams.get('activeOnly') === 'true'
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
 // 매장 기준정보 생성
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   let body: unknown

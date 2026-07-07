@@ -7,15 +7,18 @@ import { uploadContentImage } from '@/lib/hiring/postings'
 
 type Params = { params: Promise<{ id: string; contentId: string }> }
 
-// 콘텐츠 블록 저장 (scene JSON + export PNG 업로드)
+// 콘텐츠 블록 업데이트
+// text 블록: body { data: <Tiptap JSON>, sortOrder? }
+// image 블록: body { imageBase64: string, mimeType?: string, sortOrder? }
+// contentType 별로 허용 필드가 다르며 상대방 필드를 보내면 400 반환.
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id, contentId } = await params
 
   const existing = await prisma.hiringContent.findFirst({
     where: { id: contentId, postingId: id, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, contentType: true },
   })
   if (!existing) return errorResponse('콘텐츠를 찾을 수 없습니다', 404)
 
@@ -30,7 +33,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  // PNG 업로드 (선택) — 실패해도 scene 저장은 진행하지 않고 에러 반환
+  // contentType 별 필드 검증
+  if (existing.contentType === 'text' && parsed.data.imageBase64 !== undefined) {
+    return errorResponse('text 블록에는 imageBase64를 전달할 수 없습니다', 400)
+  }
+  if (existing.contentType === 'image' && parsed.data.data !== undefined) {
+    return errorResponse('image 블록에는 data(Tiptap JSON)를 전달할 수 없습니다', 400)
+  }
+
+  // 이미지 업로드 — 실패 시 DB 저장 없이 에러 반환
   let imagePath: string | undefined
   if (parsed.data.imageBase64) {
     try {
@@ -38,6 +49,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         spaceId: resolved.space.id,
         postingId: id,
         imageBase64: parsed.data.imageBase64,
+        mimeType: parsed.data.mimeType,
       })
     } catch (err) {
       console.error('[hiring-posts content PATCH] 이미지 업로드 실패', err)
@@ -60,7 +72,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // 콘텐츠 블록 삭제
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id, contentId } = await params
 

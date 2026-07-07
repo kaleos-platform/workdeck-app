@@ -10,7 +10,7 @@ type PageProps = { params: Promise<{ id: string }> }
 
 // 공고 빌드 위저드 페이지
 export default async function BuildPage({ params }: PageProps) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
   const { id } = await params
 
@@ -62,6 +62,7 @@ export default async function BuildPage({ params }: PageProps) {
       storeIds: posting.stores.map((s) => s.storeId),
       contents: posting.contents.map((c) => ({
         id: c.id,
+        contentType: c.contentType as 'image' | 'text',
         data: c.data,
         imagePath: c.imagePath,
         sortOrder: c.sortOrder,

@@ -6,7 +6,7 @@ import { createTemplateSchema } from '@/lib/validations/hiring-posts'
 
 // 상세 템플릿 목록
 export async function GET() {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const templates = await prisma.hiringDetailTemplate.findMany({
@@ -19,7 +19,7 @@ export async function GET() {
 
 // 공고 상세 블록을 템플릿으로 저장 (콘텐츠 복제)
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   let body: unknown
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       contents: {
         where: { sourceType: 'POSTING_DETAIL' },
         orderBy: { sortOrder: 'asc' },
-        select: { data: true, imagePath: true, sortOrder: true },
+        select: { contentType: true, data: true, imagePath: true, sortOrder: true },
       },
     },
   })
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
           spaceId: resolved.space.id,
           sourceType: 'DETAIL_TEMPLATE' as const,
           templateId: created.id,
-          contentType: 'excalidraw',
+          contentType: c.contentType,
           data: (c.data ?? undefined) as Prisma.InputJsonValue | undefined,
           imagePath: c.imagePath,
           sortOrder: c.sortOrder,

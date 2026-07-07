@@ -1,45 +1,32 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { PostingStatusBadge, type PostingStatus } from './status-badge'
+
+type BasicValue = {
+  title: string
+  closingDate: string // 'YYYY-MM-DD' 또는 ''
+  notificationEnabled: boolean
+}
 
 type Props = {
   postingId: string
-  initialTitle: string
-  initialClosingDate: string | null
-  initialNotificationEnabled: boolean
-  status: PostingStatus
-  onTitleChange: (title: string) => void
+  value: BasicValue
+  onChange: (patch: Partial<BasicValue>) => void
 }
 
-// "YYYY-MM-DDTHH:mm:ss..." → date input 용 "YYYY-MM-DD"
-function toDateInput(value: string | null): string {
-  if (!value) return ''
-  return value.slice(0, 10)
-}
-
-export function StepBasic({
-  postingId,
-  initialTitle,
-  initialClosingDate,
-  initialNotificationEnabled,
-  status,
-  onTitleChange,
-}: Props) {
+// 기본 정보 섹션 (controlled) — 편집은 wizard 상태로 즉시 반영, 저장은 PATCH.
+export function StepBasic({ postingId, value, onChange }: Props) {
   const router = useRouter()
-  const [title, setTitle] = useState(initialTitle)
-  const [closingDate, setClosingDate] = useState(toDateInput(initialClosingDate))
-  const [notificationEnabled, setNotificationEnabled] = useState(initialNotificationEnabled)
   const [saving, startSave] = useTransition()
 
   function handleSave() {
-    if (!title.trim()) {
+    if (!value.title.trim()) {
       toast.error('제목을 입력하세요')
       return
     }
@@ -49,13 +36,12 @@ export function StepBasic({
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            title: title.trim(),
-            closingDate: closingDate || null,
-            notificationEnabled,
+            title: value.title.trim(),
+            closingDate: value.closingDate || null,
+            notificationEnabled: value.notificationEnabled,
           }),
         })
         if (!res.ok) throw new Error('저장에 실패했습니다')
-        onTitleChange(title.trim())
         toast.success('기본 정보를 저장했습니다')
         router.refresh()
       } catch (err) {
@@ -65,13 +51,13 @@ export function StepBasic({
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="title">공고 제목</Label>
         <Input
           id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={value.title}
+          onChange={(e) => onChange({ title: e.target.value })}
           placeholder="예: 강남점 주말 아르바이트 모집"
         />
       </div>
@@ -81,8 +67,8 @@ export function StepBasic({
         <Input
           id="closingDate"
           type="date"
-          value={closingDate}
-          onChange={(e) => setClosingDate(e.target.value)}
+          value={value.closingDate}
+          onChange={(e) => onChange({ closingDate: e.target.value })}
           className="w-48"
         />
         <p className="text-xs text-muted-foreground">
@@ -97,16 +83,15 @@ export function StepBasic({
             새 지원 발생 시 담당자에게 알림을 보냅니다.
           </p>
         </div>
-        <Switch id="notif" checked={notificationEnabled} onCheckedChange={setNotificationEnabled} />
+        <Switch
+          id="notif"
+          checked={value.notificationEnabled}
+          onCheckedChange={(v) => onChange({ notificationEnabled: v })}
+        />
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span>현재 상태</span>
-        <PostingStatusBadge status={status} />
-      </div>
-
-      <Button onClick={handleSave} disabled={saving}>
-        저장
+      <Button size="sm" onClick={handleSave} disabled={saving}>
+        기본 정보 저장
       </Button>
     </div>
   )

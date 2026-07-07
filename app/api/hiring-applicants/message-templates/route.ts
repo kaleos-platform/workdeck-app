@@ -1,11 +1,11 @@
 // 알림 메시지 템플릿 목록/생성 — 목록은 읽기 권한, 생성은 쓰기 권한. spaceId 스코프.
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveAnyDeckContext, resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { messageTemplateSchema } from '@/lib/validations/hiring-applicants'
 
 export async function GET() {
-  const resolved = await resolveAnyDeckContext(['hiring-applicants', 'hiring-posts'])
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const items = await prisma.hiringMessageTemplate.findMany({
@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-applicants')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => null)

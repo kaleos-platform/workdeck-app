@@ -2,18 +2,13 @@
 // 전화번호는 서버 복호화 후 마스킹(010-****-1234)해서만 반환한다.
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import {
-  resolveAnyDeckContext,
-  resolveDeckContext,
-  errorResponse,
-  assertRole,
-} from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { buildBlacklistPhone } from '@/lib/hiring/pii'
 import { decryptBlacklistPhoneMasked } from '@/lib/hiring/applications'
 import { blacklistCreateSchema } from '@/lib/validations/hiring-applicants'
 
 export async function GET() {
-  const resolved = await resolveAnyDeckContext(['hiring-applicants', 'hiring-posts'])
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const rows = await prisma.hiringBlacklist.findMany({
@@ -40,7 +35,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-applicants')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const roleError = assertRole(resolved.role, 'ADMIN')
