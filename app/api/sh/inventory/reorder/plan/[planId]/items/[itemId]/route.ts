@@ -49,29 +49,34 @@ export async function PATCH(
     return errorResponse('수정할 필드가 없습니다', 400)
   }
 
-  // 아이템 업데이트
-  const updated = await prisma.reorderPlanItem.update({
-    where: { id: itemId },
-    data: {
-      ...(body.finalQty !== undefined && { finalQty: body.finalQty }),
-      ...(body.userNote !== undefined && { userNote: body.userNote }),
-    },
-    select: {
-      id: true,
-      finalQty: true,
-      userNote: true,
-    },
-  })
+  // 아이템 업데이트 + totalFinalQty 재계산을 하나의 트랜잭션으로 원자화
+  // (동시 PATCH 시 lost-update 방지)
+  const updated = await prisma.$transaction(async (tx) => {
+    const item = await tx.reorderPlanItem.update({
+      where: { id: itemId },
+      data: {
+        ...(body.finalQty !== undefined && { finalQty: body.finalQty }),
+        ...(body.userNote !== undefined && { userNote: body.userNote }),
+      },
+      select: {
+        id: true,
+        finalQty: true,
+        userNote: true,
+      },
+    })
 
-  // 계획 totalFinalQty 재계산
-  const allItems = await prisma.reorderPlanItem.findMany({
-    where: { planId },
-    select: { finalQty: true },
-  })
-  const totalFinalQty = allItems.reduce((s, i) => s + i.finalQty, 0)
-  await prisma.reorderPlan.update({
-    where: { id: planId },
-    data: { totalFinalQty },
+    // 계획 totalFinalQty 재계산
+    const allItems = await tx.reorderPlanItem.findMany({
+      where: { planId },
+      select: { finalQty: true },
+    })
+    const totalFinalQty = allItems.reduce((s, i) => s + i.finalQty, 0)
+    await tx.reorderPlan.update({
+      where: { id: planId },
+      data: { totalFinalQty },
+    })
+
+    return item
   })
 
   return NextResponse.json(updated)
