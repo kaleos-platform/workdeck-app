@@ -21,6 +21,7 @@ export async function GET() {
     accounts: accounts.map((a) => ({
       ...a,
       openingBalance: toNumOrNull(a.openingBalance),
+      currentBalance: toNumOrNull(a.currentBalance),
     })),
   })
 }
@@ -32,7 +33,17 @@ export async function POST(req: NextRequest) {
   const spaceId = resolved.space.id
 
   const body = await req.json().catch(() => ({}))
-  const { name, holder, kind, institution, accountNumber, accountType, openingBalance } = body as {
+  const {
+    name,
+    holder,
+    kind,
+    institution,
+    accountNumber,
+    accountType,
+    openingBalance,
+    currentBalance,
+    currentBalanceAsOf,
+  } = body as {
     name?: string
     holder?: string
     kind?: string
@@ -40,6 +51,8 @@ export async function POST(req: NextRequest) {
     accountNumber?: string
     accountType?: string
     openingBalance?: number
+    currentBalance?: number
+    currentBalanceAsOf?: string
   }
 
   if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -72,11 +85,19 @@ export async function POST(req: NextRequest) {
         accountNumber: accountNumber?.trim() ?? null,
         accountType: accountType?.trim() ?? null,
         openingBalance: openingBalance ?? null,
+        currentBalance: currentBalance ?? null,
+        currentBalanceAsOf: currentBalanceAsOf ? new Date(currentBalanceAsOf) : null,
       },
     })
 
     return NextResponse.json(
-      { account: { ...account, openingBalance: toNumOrNull(account.openingBalance) } },
+      {
+        account: {
+          ...account,
+          openingBalance: toNumOrNull(account.openingBalance),
+          currentBalance: toNumOrNull(account.currentBalance),
+        },
+      },
       { status: 201 }
     )
   } catch (e: unknown) {

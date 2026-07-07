@@ -76,6 +76,9 @@ export async function POST(req: NextRequest) {
       monthlyPayment: monthlyPayment ?? null,
       memo: memo?.trim() ?? null,
       accountId: normalizedAccountId,
+      // 입력 잔액은 "지금까지의 상환"이 이미 반영된 값 → 이 시점을 워터마크로.
+      // 이후 연결되는 상환 거래만 "감지" 대상이 되어 이중집계를 막는다.
+      balanceAsOf: new Date(),
     },
   })
 

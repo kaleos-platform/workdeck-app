@@ -1,10 +1,12 @@
 'use client'
 
-import { Fragment, useCallback, useEffect, useState, type CSSProperties } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Pin } from 'lucide-react'
+import { Pin, X, Search, ArrowUp, ArrowDown } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -14,7 +16,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { formatWon, formatPercent, flowRoleBadge } from '@/components/finance/format'
+import {
+  formatWon,
+  formatPercent,
+  flowRoleBadge,
+  accountKindLabel,
+  classStatusBadge,
+} from '@/components/finance/format'
+import type { FinAccountKind, FinClassStatus } from '@/generated/prisma/enums'
 import { FinanceCashflowSankey } from '@/components/finance/cashflow-sankey'
 import { CashflowPeriodPicker } from '@/components/finance/cashflow-period-picker'
 import {
@@ -31,7 +40,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ymOf } from '@/lib/finance/aggregate'
-import { defaultSelectedPeriods, availablePeriods, bucketLabel, type Grain } from '@/lib/finance/periods'
+import {
+  defaultSelectedPeriods,
+  availablePeriods,
+  bucketLabel,
+  type Grain,
+} from '@/lib/finance/periods'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
@@ -83,6 +97,47 @@ interface CashflowData {
     income: CashflowTotalEntry
     expense: CashflowTotalEntry
     net: CashflowTotalEntry
+  }
+}
+
+// ─── 선택(행/그룹 클릭) → 거래내역 조회 대상 ──────────────────────────────────
+
+interface Selection {
+  /** 하이라이트용 키 — group.key 또는 leaf.key. */
+  key: string
+  title: string
+  direction: 'IN' | 'OUT'
+  /** 대상 계정과목 id들(리프=1개, 대분류=하위 리프 전부). 미분류만이면 빈 배열. */
+  categoryIds: string[]
+  /** 미분류 거래 포함 여부(미분류 리프 클릭/혼합 서브그룹). */
+  uncategorized: boolean
+}
+
+/** 리프 key(`${type}:${id}` | `__none_${type}`) → 계정과목 id(미분류면 null). */
+function leafCategoryId(leaf: CashflowLeaf): string | null {
+  if (leaf.key.startsWith('__none_')) return null
+  return leaf.key.split(/:(.+)/)[1] ?? null
+}
+
+function selectionFromLeaf(leaf: CashflowLeaf): Selection {
+  const id = leafCategoryId(leaf)
+  return {
+    key: leaf.key,
+    title: leaf.name,
+    direction: leaf.type === 'INCOME' ? 'IN' : 'OUT',
+    categoryIds: id ? [id] : [],
+    uncategorized: id === null,
+  }
+}
+
+function selectionFromGroup(group: CashflowGroup, section: '수입' | '지출'): Selection {
+  const ids = group.leaves.map(leafCategoryId)
+  return {
+    key: group.key,
+    title: group.label,
+    direction: section === '수입' ? 'IN' : 'OUT',
+    categoryIds: ids.filter((x): x is string => x !== null),
+    uncategorized: ids.some((x) => x === null),
   }
 }
 
@@ -156,20 +211,25 @@ function SegmentGroup<T extends string>({
 export function FinanceCashflowView() {
   const [view, setView] = useState<ViewMode>('table')
   const [grain, setGrain] = useState<Grain>('month')
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('group')
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('hierarchy')
   // 표시 기간(오름차순) — 기본은 직전월까지 최근 N. grain 변경 시 리셋.
   const [selectedPeriods, setSelectedPeriods] = useState<string[]>(() =>
     defaultSelectedPeriods('month', ymOf(new Date()))
   )
   const [pinnedPeriods, setPinnedPeriods] = useState<Set<string>>(new Set())
   // 흐름도 단일 기간(버킷키) — 기본 최신(직전월이 속한 버킷).
-  const [flowPeriod, setFlowPeriod] = useState<string>(() => availablePeriods('month', ymOf(new Date()))[0])
+  const [flowPeriod, setFlowPeriod] = useState<string>(
+    () => availablePeriods('month', ymOf(new Date()))[0]
+  )
   const [data, setData] = useState<CashflowData | null>(null)
   const [loading, setLoading] = useState(true)
+  // 선택된 계정과목/대분류 — 우측 거래내역 패널 대상.
+  const [selected, setSelected] = useState<Selection | null>(null)
 
   const load = useCallback(async (g: Grain, periods: string[]) => {
     if (periods.length === 0) return
     setLoading(true)
+    setSelected(null)
     try {
       const qs = new URLSearchParams({ grain: g, periods: periods.join(',') })
       const res = await fetch(`/api/finance/cashflow?${qs}`)
@@ -243,7 +303,10 @@ export function FinanceCashflowView() {
                 { value: 'leaf', label: '하위만' },
               ]}
               value={displayMode}
-              onChange={setDisplayMode}
+              onChange={(m) => {
+                setDisplayMode(m)
+                setSelected(null)
+              }}
             />
           </>
         )}
@@ -272,12 +335,26 @@ export function FinanceCashflowView() {
       ) : !data || (data.incomeRows.length === 0 && data.expenseRows.length === 0) ? (
         <EmptyState />
       ) : (
-        <CashflowTable
-          data={data}
-          mode={displayMode}
-          pinnedPeriods={pinnedPeriods}
-          onTogglePin={togglePin}
-        />
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+          <div className="min-w-0 flex-1 overflow-x-auto">
+            <CashflowTable
+              data={data}
+              mode={displayMode}
+              pinnedPeriods={pinnedPeriods}
+              onTogglePin={togglePin}
+              selectedKey={selected?.key ?? null}
+              onSelect={setSelected}
+            />
+          </div>
+          {selected && (
+            <CashflowTxnPanel
+              selected={selected}
+              from={data.from}
+              to={data.to}
+              onClose={() => setSelected(null)}
+            />
+          )}
+        </div>
       )}
     </div>
   )
@@ -304,11 +381,15 @@ function CashflowTable({
   mode,
   pinnedPeriods,
   onTogglePin,
+  selectedKey,
+  onSelect,
 }: {
   data: CashflowData
   mode: DisplayMode
   pinnedPeriods: Set<string>
   onTogglePin: (bucket: string) => void
+  selectedKey: string | null
+  onSelect: (sel: Selection) => void
 }) {
   const { buckets, incomeRows, expenseRows, totals } = data
   const incomeGroups = buildCashflowGroups(incomeRows, buckets, mode)
@@ -317,7 +398,13 @@ function CashflowTable({
   const colSpan = columns.length + 2
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm">
+    <div
+      className={cn(
+        'w-max rounded-xl border bg-card shadow-sm',
+        // 미선택(패널 없음): flex-1 래퍼 안에서 표를 가운데로. 표가 넓으면 overflow-x-auto가 스크롤(mx-auto 무효).
+        selectedKey === null && 'mx-auto'
+      )}
+    >
       <Table className="w-max table-fixed">
         {/* 헤더 */}
         <TableHeader>
@@ -359,13 +446,32 @@ function CashflowTable({
         <TableBody>
           {/* ── 수입 섹션 ── */}
           <SectionLabelRow label="수입" colSpan={colSpan} />
-          <SectionBody section="수입" groups={incomeGroups} columns={columns} mode={mode} />
+          <SectionBody
+            section="수입"
+            groups={incomeGroups}
+            columns={columns}
+            mode={mode}
+            selectedKey={selectedKey}
+            onSelect={onSelect}
+          />
           <TotalRow label="수입 합계" entry={totals.income} columns={columns} rowBg="bg-muted/40" />
 
           {/* ── 지출 섹션 ── */}
           <SectionLabelRow label="지출" colSpan={colSpan} />
-          <SectionBody section="지출" groups={expenseGroups} columns={columns} mode={mode} />
-          <TotalRow label="지출 합계" entry={totals.expense} columns={columns} rowBg="bg-muted/40" />
+          <SectionBody
+            section="지출"
+            groups={expenseGroups}
+            columns={columns}
+            mode={mode}
+            selectedKey={selectedKey}
+            onSelect={onSelect}
+          />
+          <TotalRow
+            label="지출 합계"
+            entry={totals.expense}
+            columns={columns}
+            rowBg="bg-muted/40"
+          />
 
           {/* ── 순현금흐름 ── */}
           <NetRow entry={totals.net} columns={columns} />
@@ -420,20 +526,39 @@ function SectionBody({
   groups,
   columns,
   mode,
+  selectedKey,
+  onSelect,
 }: {
   section: '수입' | '지출'
   groups: CashflowGroup[]
   columns: DisplayColumn[]
   mode: DisplayMode
+  selectedKey: string | null
+  onSelect: (sel: Selection) => void
 }) {
   return (
     <>
       {groups.map((g, gi) => (
         <Fragment key={g.key}>
-          <GroupRow group={g} columns={columns} colorIdx={gi} section={section} mode={mode} />
+          <GroupRow
+            group={g}
+            columns={columns}
+            colorIdx={gi}
+            section={section}
+            mode={mode}
+            selected={selectedKey === g.key}
+            onSelect={() => onSelect(selectionFromGroup(g, section))}
+          />
           {mode !== 'group' &&
             g.leaves.map((leaf) => (
-              <DataRow key={leaf.key} row={leaf} columns={columns} indent />
+              <DataRow
+                key={leaf.key}
+                row={leaf}
+                columns={columns}
+                indent
+                selected={selectedKey === leaf.key}
+                onSelect={() => onSelect(selectionFromLeaf(leaf))}
+              />
             ))}
         </Fragment>
       ))}
@@ -449,22 +574,30 @@ function GroupRow({
   colorIdx,
   section,
   mode,
+  selected,
+  onSelect,
 }: {
   group: CashflowGroup
   columns: DisplayColumn[]
   colorIdx: number
   section: '수입' | '지출'
   mode: DisplayMode
+  selected: boolean
+  onSelect: () => void
 }) {
   const dotClass = CHART_BG_CLASSES[colorIdx % CHART_BG_CLASSES.length]
   const label = mode === 'leaf' ? `${section} · ${group.label}` : group.label
   const leafType = group.leaves[0]?.type ?? (section === '수입' ? 'INCOME' : 'EXPENSE')
   const badge = mode !== 'leaf' && group.flowRole ? flowRoleBadge(group.flowRole, leafType) : null
   const isHeader = mode !== 'group'
-  const rowBg = isHeader ? 'bg-muted/20' : 'bg-card'
+  // 선택 시 전 셀(첫 컬럼 + 핀 기간 셀)의 sticky 배경을 accent로 통일.
+  const rowBg = selected ? 'bg-accent' : isHeader ? 'bg-muted/20' : 'bg-card'
 
   return (
-    <TableRow className={cn(isHeader && 'bg-muted/20')}>
+    <TableRow
+      className={cn('cursor-pointer', selected ? 'bg-accent' : isHeader && 'bg-muted/20')}
+      onClick={onSelect}
+    >
       <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4', rowBg)}>
         <div className="flex min-w-0 items-center gap-2">
           <span
@@ -490,7 +623,10 @@ function GroupRow({
       <PeriodCells columns={columns} values={group.values} rowBg={rowBg} cellClass="font-medium" />
 
       <TableCell
-        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(group.changePct))}
+        className={cn(
+          'w-[84px] px-3 text-right text-xs tabular-nums',
+          changePctClass(group.changePct)
+        )}
       >
         {formatPercent(group.changePct, { sign: true })}
       </TableCell>
@@ -519,21 +655,32 @@ function DataRow({
   row,
   columns,
   indent = false,
+  selected = false,
+  onSelect,
 }: {
   row: CashflowRow
   columns: DisplayColumn[]
   indent?: boolean
+  selected?: boolean
+  onSelect?: () => void
 }) {
+  const rowBg = selected ? 'bg-accent' : 'bg-card'
   return (
-    <TableRow>
-      <TableCell className="sticky left-0 z-20 w-[220px] bg-card px-4">
+    <TableRow
+      className={cn(onSelect && 'cursor-pointer', selected && 'bg-accent')}
+      onClick={onSelect}
+    >
+      <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4', rowBg)}>
         <div className={cn('flex min-w-0 items-center gap-2', indent && 'pl-6')}>
           {indent ? (
             <span className="text-xs text-muted-foreground" aria-hidden="true">
               └
             </span>
           ) : (
-            <span className="inline-block size-2 shrink-0 rounded-full bg-chart-1" aria-hidden="true" />
+            <span
+              className="inline-block size-2 shrink-0 rounded-full bg-chart-1"
+              aria-hidden="true"
+            />
           )}
           <span className="truncate text-sm" title={row.name}>
             {row.name}
@@ -544,10 +691,13 @@ function DataRow({
         </div>
       </TableCell>
 
-      <PeriodCells columns={columns} values={row.values} rowBg="bg-card" />
+      <PeriodCells columns={columns} values={row.values} rowBg={rowBg} />
 
       <TableCell
-        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(row.changePct))}
+        className={cn(
+          'w-[84px] px-3 text-right text-xs tabular-nums',
+          changePctClass(row.changePct)
+        )}
       >
         {formatPercent(row.changePct, { sign: true })}
       </TableCell>
@@ -570,12 +720,17 @@ function TotalRow({
 }) {
   return (
     <TableRow className={cn('font-semibold hover:bg-muted/40', rowBg)}>
-      <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4 text-sm', rowBg)}>{label}</TableCell>
+      <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4 text-sm', rowBg)}>
+        {label}
+      </TableCell>
 
       <PeriodCells columns={columns} values={entry.values} rowBg={rowBg} />
 
       <TableCell
-        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(entry.changePct))}
+        className={cn(
+          'w-[84px] px-3 text-right text-xs tabular-nums',
+          changePctClass(entry.changePct)
+        )}
       >
         {formatPercent(entry.changePct, { sign: true })}
       </TableCell>
@@ -601,10 +756,323 @@ function NetRow({ entry, columns }: { entry: CashflowTotalEntry; columns: Displa
       />
 
       <TableCell
-        className={cn('w-[84px] px-3 py-3 text-right text-xs tabular-nums', changePctClass(entry.changePct))}
+        className={cn(
+          'w-[84px] px-3 py-3 text-right text-xs tabular-nums',
+          changePctClass(entry.changePct)
+        )}
       >
         {formatPercent(entry.changePct, { sign: true })}
       </TableCell>
     </TableRow>
+  )
+}
+
+// ─── 우측 거래내역 패널 ───────────────────────────────────────────────────────
+
+interface PanelTxn {
+  id: string
+  txnDate: string
+  direction: 'IN' | 'OUT'
+  amount: number
+  description: string | null
+  counterparty: string | null
+  classStatus: FinClassStatus
+  category: { name: string; parent: { name: string } | null } | null
+  account: { name: string; kind: FinAccountKind }
+}
+
+interface PanelData {
+  rows: PanelTxn[]
+  total: number
+  summary: { incomeTotal: number; expenseTotal: number; net: number }
+}
+
+/** ISO → YYYY-MM-DD(로컬). */
+function fmtDate(iso: string): string {
+  const d = new Date(iso)
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
+/** cashflow from/to(YYYY-MM) → transactions API 일자 경계(YYYY-MM-DD, to는 월말). */
+function monthRangeToDays(from: string, to: string): { fromDay: string; toDay: string } {
+  const [ty, tm] = to.split('-').map(Number)
+  const lastDay = new Date(ty, tm, 0).getDate()
+  return { fromDay: `${from}-01`, toDay: `${to}-${String(lastDay).padStart(2, '0')}` }
+}
+
+/** 패널 정렬 칩(일자/금액) — 활성 시 방향 화살표. */
+function PanelSortChip({
+  label,
+  active,
+  dir,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  dir: 'asc' | 'desc'
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-0.5 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors',
+        active
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+      )}
+    >
+      {label}
+      {active &&
+        (dir === 'asc' ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />)}
+    </button>
+  )
+}
+
+/**
+ * 선택된 계정과목/대분류의 거래내역(읽기 전용). 정확 계정과목 id(들) + 방향 + 기간 + 이체 제외로
+ * 조회해 현금흐름 행 값과 대사되게 한다. 미분류만/혼합은 uncategorized로 처리.
+ */
+function CashflowTxnPanel({
+  selected,
+  from,
+  to,
+  onClose,
+}: {
+  selected: Selection
+  from: string
+  to: string
+  onClose: () => void
+}) {
+  const [data, setData] = useState<PanelData | null>(null)
+  const [loading, setLoading] = useState(true)
+  // 검색·정렬(클라이언트) — 스코프된 조회 결과(≤300)를 즉시 필터/정렬.
+  const [search, setSearch] = useState('')
+  const [sortField, setSortField] = useState<'date' | 'amount'>('date')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  // 대상 계정과목이 바뀌면 검색어 초기화(정렬은 유지).
+  useEffect(() => {
+    setSearch('')
+  }, [selected.key])
+
+  const toggleSort = (f: 'date' | 'amount') => {
+    if (sortField === f) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else {
+      setSortField(f)
+      setSortDir('desc')
+    }
+  }
+
+  const visibleRows = useMemo(() => {
+    if (!data) return []
+    const q = search.trim().toLowerCase()
+    const filtered = q
+      ? data.rows.filter(
+          (r) =>
+            (r.description ?? '').toLowerCase().includes(q) ||
+            (r.counterparty ?? '').toLowerCase().includes(q)
+        )
+      : data.rows
+    const dir = sortDir === 'asc' ? 1 : -1
+    return [...filtered].sort((a, b) =>
+      sortField === 'amount'
+        ? (a.amount - b.amount) * dir
+        : (new Date(a.txnDate).getTime() - new Date(b.txnDate).getTime()) * dir
+    )
+  }, [data, search, sortField, sortDir])
+
+  const load = useCallback(
+    async (signal: AbortSignal) => {
+      setLoading(true)
+      const { fromDay, toDay } = monthRangeToDays(from, to)
+      const params = new URLSearchParams({
+        direction: selected.direction,
+        from: fromDay,
+        to: toDay,
+        excludeTransfer: '1',
+        take: '300',
+      })
+      if (selected.categoryIds.length) params.set('categoryIds', selected.categoryIds.join(','))
+      if (selected.uncategorized) params.set('uncategorized', '1')
+
+      try {
+        const res = await fetch(`/api/finance/transactions?${params.toString()}`, { signal })
+        if (!res.ok) throw new Error('거래내역 조회 실패')
+        const json: PanelData = await res.json()
+        setData(json)
+      } catch (err) {
+        if (signal.aborted) return
+        toast.error(err instanceof Error ? err.message : '거래내역 조회 실패')
+        setData(null)
+      } finally {
+        if (!signal.aborted) setLoading(false)
+      }
+    },
+    [selected.categoryIds, selected.uncategorized, selected.direction, from, to]
+  )
+
+  useEffect(() => {
+    const ctrl = new AbortController()
+    void load(ctrl.signal)
+    return () => ctrl.abort()
+  }, [load])
+
+  const isIncome = selected.direction === 'IN'
+  // 검색 중이면 합계도 필터 결과(visibleRows) 기준 — 건수와 정합. 미검색 시 서버 전체 합계(대사용).
+  const sum = !data
+    ? 0
+    : search.trim()
+      ? visibleRows.reduce((s, r) => s + r.amount, 0)
+      : isIncome
+        ? data.summary.incomeTotal
+        : data.summary.expenseTotal
+
+  return (
+    <div className="w-full shrink-0 rounded-xl border bg-card shadow-sm lg:sticky lg:top-4 lg:flex lg:h-[calc(100vh-5rem)] lg:w-[360px] lg:flex-col">
+      {/* 헤더 */}
+      <div className="flex shrink-0 items-start justify-between gap-2 border-b px-4 py-3">
+        <div className="min-w-0 space-y-1">
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-xs',
+                isIncome
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-400'
+                  : 'border-red-200 bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-400'
+              )}
+            >
+              {isIncome ? '수입' : '지출'}
+            </Badge>
+            <span className="truncate text-sm font-semibold" title={selected.title}>
+              {selected.title}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {from} ~ {to}
+            {data &&
+              (search.trim()
+                ? ` · ${visibleRows.length.toLocaleString('ko-KR')}건`
+                : ` · 총 ${data.total.toLocaleString('ko-KR')}건`)}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 shrink-0"
+          onClick={onClose}
+          aria-label="패널 닫기"
+        >
+          <X className="size-4" />
+        </Button>
+      </div>
+
+      {/* 합계 */}
+      {data && (
+        <div className="flex shrink-0 items-center justify-between border-b px-4 py-2 text-xs">
+          <span className="text-muted-foreground">합계</span>
+          <span
+            className={cn(
+              'font-mono font-medium tabular-nums',
+              isIncome ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+            )}
+          >
+            {isIncome ? '+' : '-'}
+            {formatWon(sum)}
+          </span>
+        </div>
+      )}
+
+      {/* 검색 + 정렬 */}
+      {data && data.rows.length > 0 && (
+        <div className="shrink-0 space-y-2 border-b px-3 py-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="적요·가맹점 검색"
+              className="h-8 pl-7 text-xs"
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-muted-foreground">정렬</span>
+            <PanelSortChip
+              label="일자"
+              active={sortField === 'date'}
+              dir={sortDir}
+              onClick={() => toggleSort('date')}
+            />
+            <PanelSortChip
+              label="금액"
+              active={sortField === 'amount'}
+              dir={sortDir}
+              onClick={() => toggleSort('amount')}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 목록 — lg에선 패널 잔여 높이를 채우고 내부 스크롤(패널 자체는 sticky 고정) */}
+      <div className="max-h-[60vh] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
+        {loading ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">불러오는 중...</p>
+        ) : !data || data.rows.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">거래 내역이 없습니다</p>
+        ) : visibleRows.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">검색 결과가 없습니다</p>
+        ) : (
+          <ul className="divide-y">
+            {visibleRows.map((txn) => {
+              const status = classStatusBadge(txn.classStatus)
+              return (
+                <li key={txn.id} className="px-4 py-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {fmtDate(txn.txnDate)}
+                    </span>
+                    <span
+                      className={cn(
+                        'font-mono text-xs font-medium tabular-nums',
+                        isIncome
+                          ? 'text-emerald-700 dark:text-emerald-400'
+                          : 'text-red-600 dark:text-red-400'
+                      )}
+                    >
+                      {isIncome ? '+' : '-'}
+                      {formatWon(txn.amount)}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 truncate text-xs" title={txn.description ?? ''}>
+                    {txn.description ?? txn.counterparty ?? '-'}
+                  </p>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px]">
+                      <span className="text-muted-foreground">
+                        {accountKindLabel(txn.account.kind)}
+                      </span>
+                      <span className="font-medium">{txn.account.name}</span>
+                    </span>
+                    {txn.category ? (
+                      <span className="truncate text-[10px] text-muted-foreground">
+                        {txn.category.name}
+                      </span>
+                    ) : (
+                      <Badge variant="outline" className={cn('text-[10px]', status.className)}>
+                        {status.label}
+                      </Badge>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
   )
 }

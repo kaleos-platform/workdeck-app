@@ -223,7 +223,7 @@ export async function syncCoupangSalesMovements(params: {
  * lockStockLevel 로 행 잠금. 음수 재고는 허용(입고 미수집 drift, 수동 보정 전제) — warning.
  * 미사용 옵션 OUTBOUND 방지 위해 옵션 ACTIVE/소유권 검증.
  */
-async function upsertOutboundMovement(input: {
+export async function upsertOutboundMovement(input: {
   spaceId: string
   optionId: string
   locationId: string
@@ -235,6 +235,13 @@ async function upsertOutboundMovement(input: {
   const { spaceId, optionId, locationId, channelId, quantity, movementDate, referenceId } = input
 
   return await prisma.$transaction(async (tx) => {
+    // referenceId 단위 직렬화 — findFirst→create 사이 race로 동일 referenceId OUTBOUND가
+    // 중복 생성(재고 이중 차감)되는 것을 방지. referenceId에 유니크 제약을 걸 수 없어
+    // (재고대조·세트이관이 여러 행에 공유) 트랜잭션 스코프 advisory lock으로 대체.
+    // hashtext는 int4 반환 → pg_advisory_xact_lock(bigint) 암시적 캐스트로 동작함.
+    // $queryRaw는 void 반환 컬럼을 역직렬화하지 못하므로 $executeRaw 사용.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${referenceId}))`
+
     const option = await tx.invProductOption.findFirst({
       where: { id: optionId, product: { spaceId, status: 'ACTIVE' } },
       select: { id: true },

@@ -303,7 +303,8 @@ export async function POST(req: NextRequest) {
       })
       created++
     } catch (err) {
-      console.error('[del/import]', { row: rowNum, recipient: first.recipientName, error: err })
+      // 수취인명(PII)은 서버 로그에서 제외 — 행 번호로 위치 식별 가능
+      console.error('[del/import]', { row: rowNum, error: err })
       createErrors.push({
         row: rowNum,
         recipientName: first.recipientName,

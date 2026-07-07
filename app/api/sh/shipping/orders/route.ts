@@ -184,6 +184,20 @@ export async function POST(req: NextRequest) {
     return errorResponse('완료된 배송 묶음에는 주문을 추가할 수 없습니다', 400)
   }
 
+  // channelId 소유권 일괄 검증 — 루프 N쿼리 방지
+  const rawChannelIds = ordersInput
+    .map((o) => o.channelId)
+    .filter((c): c is string => typeof c === 'string' && c.length > 0)
+  const distinctChannelIds = [...new Set(rawChannelIds)]
+  let validChannelIds = new Set<string>()
+  if (distinctChannelIds.length > 0) {
+    const validChannels = await prisma.channel.findMany({
+      where: { id: { in: distinctChannelIds }, spaceId: resolved.space.id },
+      select: { id: true },
+    })
+    validChannelIds = new Set(validChannels.map((c) => c.id))
+  }
+
   // 주문 일괄 생성 — 각 input index에 대해 성공이면 order, 실패면 null
   const resultByIndex: Array<{
     index: number
@@ -199,6 +213,12 @@ export async function POST(req: NextRequest) {
         index: i,
         message: '필수 필드가 누락되었습니다 (받는분, 전화, 주소, 주문일자)',
       })
+      continue
+    }
+
+    // truthy channelId가 이 space 소속인지 검증
+    if (input.channelId && !validChannelIds.has(input.channelId)) {
+      errors.push({ index: i, message: '채널을 찾을 수 없습니다' })
       continue
     }
 

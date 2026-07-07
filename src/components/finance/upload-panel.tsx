@@ -39,6 +39,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+import { formatWon } from '@/components/finance/format'
 import { FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
 import { BANK_FIELDS, CARD_FIELDS } from '@/lib/finance/parser'
 
@@ -84,6 +85,9 @@ type Account = {
   institution: string | null
   holder: string | null
   accountNumber: string | null
+  openingBalance?: number | null
+  currentBalance?: number | null
+  currentBalanceAsOf?: string | null
 }
 
 type PreviewResponse = {
@@ -104,6 +108,21 @@ const NONE_ACCOUNT = '__none__'
 
 /** 다중 컬럼 결합 허용 필드 — 텍스트 필드만(숫자/날짜는 단일 컬럼). */
 const MULTI_COLUMN_FIELDS = new Set<string>(['description'])
+
+/** 계좌번호 정규화(숫자만) — 파일 preamble 계좌번호와 등록 계좌 매칭용. */
+function normalizeAcct(n: string | null | undefined): string {
+  return (n ?? '').replace(/\D/g, '')
+}
+
+/** 파일 preamble 계좌번호와 일치하는 등록 계좌(숫자 4자리+ 일치). 없으면 null. */
+function findMatchedAccount(
+  accounts: Account[],
+  fileAcctNumber: string | null | undefined
+): Account | null {
+  const norm = normalizeAcct(fileAcctNumber)
+  if (norm.length < 4) return null
+  return accounts.find((a) => normalizeAcct(a.accountNumber) === norm) ?? null
+}
 
 /** 필드 value → 라벨(검증 메시지용). */
 function fieldLabel(field: string, kind: FinKind): string {
@@ -221,16 +240,30 @@ export function FinanceUploadPanel() {
       }
       const data: PreviewResponse = await res.json()
       setPreviewRes(data)
-      setKind(data.kind)
 
-      // 매핑 초기값: matchedPreset > suggestedMapping
+      // 파일 계좌번호와 일치하는 등록 계좌 — 적재 계좌·거래 종류 자동 인식에 사용
+      const matched = findMatchedAccount(data.accounts, data.preview.preamble.accountNumber)
+
+      // 거래 종류: 매칭 계좌가 있으면 그 계좌의 종류, 없으면 파일 자동 판별
+      const resolvedKind: FinKind =
+        matched && (matched.kind === 'BANK' || matched.kind === 'CARD')
+          ? (matched.kind as FinKind)
+          : data.kind
+      setKind(resolvedKind)
+
+      // 매핑 초기값: matchedPreset > suggestedMapping. 최종 kind에 맞는 필드만 유지
+      // (매칭 계좌 kind가 파일 자동판별과 다른 드문 경우 CARD/BANK 필드 혼입 방지).
       const source = data.matchedPreset?.mapping ?? data.suggestedMapping
-      const initialMapping = mappingEntriesToState(source, data.preview.headers)
+      const initialMapping = filterMappingForKind(
+        mappingEntriesToState(source, data.preview.headers),
+        resolvedKind
+      )
       setMapping(initialMapping)
 
-      // 계좌 초기 선택: matchedPreset.defaultAccountId > 첫 번째 계좌
+      // 계좌 초기 선택: matchedPreset.defaultAccountId > 파일 계좌번호 매칭 > 계좌 1개
       const defaultAccount =
         data.matchedPreset?.defaultAccountId ??
+        matched?.id ??
         (data.accounts.length === 1 ? data.accounts[0]?.id : null)
       setAccountId(defaultAccount ?? '')
 
@@ -358,14 +391,14 @@ export function FinanceUploadPanel() {
   // ─── 유효성 계산 ──────────────────────────────────────────────────────────
 
   const hasAccounts = (previewRes?.accounts.length ?? 0) > 0
-  // 파일 preamble에서 추출된 계좌번호가 이미 등록된 계좌와 일치하는지 (숫자만 비교)
   const fileAccountNumber = previewRes?.preview.preamble.accountNumber?.trim() ?? ''
-  const normalizedFileAcct = fileAccountNumber.replace(/\D/g, '')
-  const fileAccountMatched =
-    normalizedFileAcct.length >= 4 &&
-    (previewRes?.accounts ?? []).some(
-      (a) => (a.accountNumber ?? '').replace(/\D/g, '') === normalizedFileAcct
-    )
+  // 파일 preamble 계좌번호와 일치하는 등록 계좌(강조·자동선택용, 숫자만 비교)
+  const matchedAccount = previewRes
+    ? findMatchedAccount(previewRes.accounts, fileAccountNumber)
+    : null
+  const fileAccountMatched = !!matchedAccount
+  // 금융 기관 표시: 파일 자동 인식 > 매칭 계좌 기관 > 미인식(계좌 등록 안내)
+  const displayInstitution = previewRes?.institution ?? matchedAccount?.institution ?? null
   const validation = previewRes ? isMappingValid(mapping, kind) : { ok: false }
   const canImport =
     !!file &&
@@ -465,7 +498,19 @@ export function FinanceUploadPanel() {
           {/* 종류 / 기관 / 계좌 */}
           <Card>
             <CardHeader>
-              <CardTitle>파일 정보</CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle>파일 정보</CardTitle>
+                {hasAccounts && !showAccountForm && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 shrink-0"
+                    onClick={() => setShowAccountForm(true)}
+                  >
+                    <Plus className="mr-1 size-3.5" />새 계좌
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* preamble 보조 정보 */}
@@ -487,23 +532,32 @@ export function FinanceUploadPanel() {
                         ` ~ ${previewRes.preview.preamble.periodTo}`}
                     </span>
                   )}
-                  {/* 파일 계좌 등록 상태 / 바로 등록 */}
+                  {/* 파일 계좌 등록 상태 강조 / 미등록 안내 */}
                   {fileAccountNumber &&
-                    (fileAccountMatched ? (
-                      <span className="ml-auto inline-flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+                    (fileAccountMatched && matchedAccount ? (
+                      <span className="ml-auto inline-flex flex-wrap items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400">
                         <CheckCircle2 className="size-3.5 shrink-0" />
-                        등록된 계좌
+                        등록된 계좌 · {matchedAccount.name}
+                        {matchedAccount.institution && (
+                          <span className="opacity-80">· {matchedAccount.institution}</span>
+                        )}
+                        {matchedAccount.currentBalance != null && (
+                          <span className="opacity-80">
+                            · 잔액 {formatWon(matchedAccount.currentBalance)}
+                            {matchedAccount.currentBalanceAsOf &&
+                              ` (${matchedAccount.currentBalanceAsOf.slice(0, 10)} 기준)`}
+                          </span>
+                        )}
                       </span>
                     ) : (
+                      // 계좌가 있는데 파일 계좌가 미등록일 때만 안내(우측 상단 '새 계좌' 버튼이 보이는 경우).
+                      // 계좌가 하나도 없을 땐 아래 적재 계좌 영역의 '계좌를 먼저 등록하세요'가 유도한다.
+                      hasAccounts &&
                       !showAccountForm && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="ml-auto h-7"
-                          onClick={() => setShowAccountForm(true)}
-                        >
-                          <Plus className="mr-1 size-3.5" />이 계좌 등록
-                        </Button>
+                        <span className="ml-auto inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
+                          <AlertTriangle className="size-3.5 shrink-0" />
+                          미등록 계좌 — 우측 상단 &lsquo;새 계좌&rsquo;로 등록
+                        </span>
                       )
                     ))}
                 </div>
@@ -528,8 +582,8 @@ export function FinanceUploadPanel() {
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">금융 기관</Label>
                   <p className="flex h-8 items-center text-sm">
-                    {previewRes.institution ?? (
-                      <span className="text-muted-foreground">자동 인식 불가</span>
+                    {displayInstitution ?? (
+                      <span className="text-muted-foreground">계좌 등록 시 자동 인식</span>
                     )}
                   </p>
                 </div>
@@ -540,14 +594,11 @@ export function FinanceUploadPanel() {
                     <Label className="text-xs text-muted-foreground">
                       적재 계좌 <span className="text-destructive">*</span>
                     </Label>
-                    {hasAccounts && !showAccountForm && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAccountForm(true)}
-                        className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline"
-                      >
-                        <Plus className="size-3" />새 계좌
-                      </button>
+                    {matchedAccount && accountId === matchedAccount.id && (
+                      <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="size-3" />
+                        자동 선택됨
+                      </span>
                     )}
                   </div>
                   {!hasAccounts ? (
@@ -572,19 +623,28 @@ export function FinanceUploadPanel() {
                       value={accountId || NONE_ACCOUNT}
                       onValueChange={(v) => setAccountId(v === NONE_ACCOUNT ? '' : v)}
                     >
-                      <SelectTrigger className="h-8 text-sm">
+                      <SelectTrigger
+                        className={cn(
+                          'h-8 text-sm',
+                          matchedAccount &&
+                            accountId === matchedAccount.id &&
+                            'border-emerald-400 ring-1 ring-emerald-400/40'
+                        )}
+                      >
                         <SelectValue placeholder="계좌 선택" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE_ACCOUNT}>계좌 선택</SelectItem>
                         {previewRes.accounts.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            <span>{a.name}</span>
-                            {a.institution && (
-                              <span className="ml-1.5 text-xs text-muted-foreground">
-                                · {a.institution}
-                              </span>
-                            )}
+                          <SelectItem key={a.id} value={a.id} className="text-sm">
+                            <span className="flex items-center gap-1.5">
+                              {[a.institution, a.name].filter(Boolean).join(' ')}
+                              {a.accountNumber && (
+                                <span className="text-xs text-muted-foreground">
+                                  · {a.accountNumber}
+                                </span>
+                              )}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>

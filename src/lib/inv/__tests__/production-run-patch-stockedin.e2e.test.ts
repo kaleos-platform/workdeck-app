@@ -95,7 +95,7 @@ d('PATCH /production-runs/[runId] — 발주 수정 시 입고 수량 보존 (de
 
   test('발주 수량만 변경해도 stockedInQty 유지 (신규 옵션은 null)', async () => {
     // A 발주 100→120, B 유지 200, C 신규 추가(50). (입고는 payload에 없음 — 서버가 기존값 보존)
-    const res = await PATCH(
+    const res = (await PATCH(
       patchReq({
         runNo: 'E2E-PATCH-001',
         costMode: 'TOTAL',
@@ -106,8 +106,7 @@ d('PATCH /production-runs/[runId] — 발주 수정 시 입고 수량 보존 (de
         ],
       }),
       { params: Promise.resolve({ runId }) }
-    )
-    if (!res) throw new Error('응답 없음')
+    ))!
     expect(res.status).toBe(200)
 
     const items = await prisma.productionRunItem.findMany({

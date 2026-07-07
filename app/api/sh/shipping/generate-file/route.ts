@@ -220,13 +220,15 @@ export async function POST(req: NextRequest) {
   }
 
   const buffer = generateDeliveryFile(ordersForGenerator, formatConfig, { splitMode })
-  const filename = encodeURIComponent(`${method.name}_배송파일.xlsx`)
+  // RFC 5987: ASCII 폴백 + filename* UTF-8 인코딩으로 한글 파일명 정상 노출
+  const rawName = `${method.name}_배송파일.xlsx`
+  const asciiFallback = 'delivery.xlsx'
 
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Disposition': `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodeURIComponent(rawName)}`,
     },
   })
 }

@@ -236,7 +236,18 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   })
   if (!listing) return errorResponse('판매채널 상품을 찾을 수 없습니다', 404)
 
-  await prisma.productListing.delete({ where: { id: listingId } })
+  // FK Restrict(ProductionRunSet 등) 참조 시 P2003 — 연결 해제 전 삭제 불가
+  try {
+    await prisma.productListing.delete({ where: { id: listingId } })
+  } catch (e) {
+    if ((e as { code?: string }).code === 'P2003') {
+      return errorResponse(
+        '생산 차수 등에서 사용 중이라 삭제할 수 없습니다. 연결을 먼저 해제하세요',
+        409
+      )
+    }
+    throw e
+  }
 
   if (listing.channelProductId) {
     const remaining = await prisma.productListing.count({

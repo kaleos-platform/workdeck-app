@@ -109,7 +109,10 @@ export async function POST(req: NextRequest) {
           matchedRuleId: s.matchedRuleId,
           isTransfer,
         }
-        const preserve = classifiedKeys.has(`${s.accountId}|${s.identityKey}`)
+        // 재임포트 자동분류(DUP_CHANGED 포함)가 사용자 분류를 덮어쓰지 않도록 보존.
+        // 단, 사용자가 "유지"로 명시 선택한 중복(DUP_OVERWRITE)은 덮어쓰기 의도이므로 분류를 반영한다.
+        const preserve =
+          classifiedKeys.has(`${s.accountId}|${s.identityKey}`) && s.resolution !== 'DUP_OVERWRITE'
         await tx.finTransaction.upsert({
           where: {
             spaceId_accountId_identityKey: {
@@ -148,6 +151,22 @@ export async function POST(req: NextRequest) {
             update: { balance, source: 'DERIVED' },
             create: { spaceId, accountId, yearMonth: ym, balance, source: 'DERIVED' },
           })
+        }
+
+        // 계좌 기준(현재) 잔액 갱신 — 최신 일자 거래후잔액을 기준잔액으로.
+        // 가드: 기준일 이후 데이터일 때만(오래된 파일 재업로드가 최신 잔액을 되돌리지 않도록).
+        const latest = withBalance[withBalance.length - 1]
+        if (latest?.balanceAfter != null) {
+          const acct = await tx.finAccount.findUnique({
+            where: { id: accountId },
+            select: { currentBalanceAsOf: true },
+          })
+          if (!acct?.currentBalanceAsOf || latest.txnDate > acct.currentBalanceAsOf) {
+            await tx.finAccount.update({
+              where: { id: accountId },
+              data: { currentBalance: latest.balanceAfter, currentBalanceAsOf: latest.txnDate },
+            })
+          }
         }
       }
     },

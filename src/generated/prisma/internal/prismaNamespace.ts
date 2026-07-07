@@ -485,6 +485,21 @@ export const ModelName = {
   FinStagedRow: 'FinStagedRow',
   FinTransaction: 'FinTransaction',
   FinBalanceSnapshot: 'FinBalanceSnapshot',
+  HiringStore: 'HiringStore',
+  HiringPosition: 'HiringPosition',
+  HiringPosting: 'HiringPosting',
+  HiringPostingPosition: 'HiringPostingPosition',
+  HiringPostingStore: 'HiringPostingStore',
+  HiringPostingManager: 'HiringPostingManager',
+  HiringContent: 'HiringContent',
+  HiringDetailTemplate: 'HiringDetailTemplate',
+  HiringApplication: 'HiringApplication',
+  HiringApplicationStore: 'HiringApplicationStore',
+  HiringApplicationFile: 'HiringApplicationFile',
+  HiringComment: 'HiringComment',
+  HiringApplicationNotification: 'HiringApplicationNotification',
+  HiringBlacklist: 'HiringBlacklist',
+  HiringMessageTemplate: 'HiringMessageTemplate',
   BoProduct: 'BoProduct',
   BoIdeation: 'BoIdeation',
   BoMaterial: 'BoMaterial',
@@ -510,7 +525,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -7988,6 +8003,1116 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HiringStore: {
+      payload: Prisma.$HiringStorePayload<ExtArgs>
+      fields: Prisma.HiringStoreFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringStoreFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringStoreFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>
+        }
+        findFirst: {
+          args: Prisma.HiringStoreFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringStoreFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>
+        }
+        findMany: {
+          args: Prisma.HiringStoreFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>[]
+        }
+        create: {
+          args: Prisma.HiringStoreCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>
+        }
+        createMany: {
+          args: Prisma.HiringStoreCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringStoreCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>[]
+        }
+        delete: {
+          args: Prisma.HiringStoreDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>
+        }
+        update: {
+          args: Prisma.HiringStoreUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringStoreDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringStoreUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringStoreUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringStoreUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringStorePayload>
+        }
+        aggregate: {
+          args: Prisma.HiringStoreAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringStore>
+        }
+        groupBy: {
+          args: Prisma.HiringStoreGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringStoreGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringStoreCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringStoreCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringPosition: {
+      payload: Prisma.$HiringPositionPayload<ExtArgs>
+      fields: Prisma.HiringPositionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringPositionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringPositionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringPositionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringPositionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>
+        }
+        findMany: {
+          args: Prisma.HiringPositionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>[]
+        }
+        create: {
+          args: Prisma.HiringPositionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>
+        }
+        createMany: {
+          args: Prisma.HiringPositionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringPositionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringPositionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>
+        }
+        update: {
+          args: Prisma.HiringPositionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringPositionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringPositionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringPositionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringPositionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPositionPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringPositionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringPosition>
+        }
+        groupBy: {
+          args: Prisma.HiringPositionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPositionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringPositionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPositionCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringPosting: {
+      payload: Prisma.$HiringPostingPayload<ExtArgs>
+      fields: Prisma.HiringPostingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringPostingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringPostingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringPostingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringPostingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>
+        }
+        findMany: {
+          args: Prisma.HiringPostingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>[]
+        }
+        create: {
+          args: Prisma.HiringPostingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>
+        }
+        createMany: {
+          args: Prisma.HiringPostingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringPostingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringPostingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>
+        }
+        update: {
+          args: Prisma.HiringPostingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringPostingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringPostingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringPostingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringPostingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringPostingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringPosting>
+        }
+        groupBy: {
+          args: Prisma.HiringPostingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringPostingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringPostingPosition: {
+      payload: Prisma.$HiringPostingPositionPayload<ExtArgs>
+      fields: Prisma.HiringPostingPositionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringPostingPositionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringPostingPositionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringPostingPositionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringPostingPositionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>
+        }
+        findMany: {
+          args: Prisma.HiringPostingPositionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>[]
+        }
+        create: {
+          args: Prisma.HiringPostingPositionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>
+        }
+        createMany: {
+          args: Prisma.HiringPostingPositionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringPostingPositionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringPostingPositionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>
+        }
+        update: {
+          args: Prisma.HiringPostingPositionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringPostingPositionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringPostingPositionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringPostingPositionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringPostingPositionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingPositionPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringPostingPositionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringPostingPosition>
+        }
+        groupBy: {
+          args: Prisma.HiringPostingPositionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingPositionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringPostingPositionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingPositionCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringPostingStore: {
+      payload: Prisma.$HiringPostingStorePayload<ExtArgs>
+      fields: Prisma.HiringPostingStoreFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringPostingStoreFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringPostingStoreFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>
+        }
+        findFirst: {
+          args: Prisma.HiringPostingStoreFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringPostingStoreFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>
+        }
+        findMany: {
+          args: Prisma.HiringPostingStoreFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>[]
+        }
+        create: {
+          args: Prisma.HiringPostingStoreCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>
+        }
+        createMany: {
+          args: Prisma.HiringPostingStoreCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringPostingStoreCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>[]
+        }
+        delete: {
+          args: Prisma.HiringPostingStoreDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>
+        }
+        update: {
+          args: Prisma.HiringPostingStoreUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringPostingStoreDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringPostingStoreUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringPostingStoreUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringPostingStoreUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingStorePayload>
+        }
+        aggregate: {
+          args: Prisma.HiringPostingStoreAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringPostingStore>
+        }
+        groupBy: {
+          args: Prisma.HiringPostingStoreGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingStoreGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringPostingStoreCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingStoreCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringPostingManager: {
+      payload: Prisma.$HiringPostingManagerPayload<ExtArgs>
+      fields: Prisma.HiringPostingManagerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringPostingManagerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringPostingManagerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringPostingManagerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringPostingManagerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>
+        }
+        findMany: {
+          args: Prisma.HiringPostingManagerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>[]
+        }
+        create: {
+          args: Prisma.HiringPostingManagerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>
+        }
+        createMany: {
+          args: Prisma.HiringPostingManagerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringPostingManagerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringPostingManagerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>
+        }
+        update: {
+          args: Prisma.HiringPostingManagerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringPostingManagerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringPostingManagerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringPostingManagerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringPostingManagerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingManagerPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringPostingManagerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringPostingManager>
+        }
+        groupBy: {
+          args: Prisma.HiringPostingManagerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingManagerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringPostingManagerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingManagerCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringContent: {
+      payload: Prisma.$HiringContentPayload<ExtArgs>
+      fields: Prisma.HiringContentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringContentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringContentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringContentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringContentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>
+        }
+        findMany: {
+          args: Prisma.HiringContentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>[]
+        }
+        create: {
+          args: Prisma.HiringContentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>
+        }
+        createMany: {
+          args: Prisma.HiringContentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringContentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringContentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>
+        }
+        update: {
+          args: Prisma.HiringContentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringContentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringContentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringContentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringContentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringContentPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringContentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringContent>
+        }
+        groupBy: {
+          args: Prisma.HiringContentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringContentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringContentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringContentCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringDetailTemplate: {
+      payload: Prisma.$HiringDetailTemplatePayload<ExtArgs>
+      fields: Prisma.HiringDetailTemplateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringDetailTemplateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringDetailTemplateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>
+        }
+        findFirst: {
+          args: Prisma.HiringDetailTemplateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringDetailTemplateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>
+        }
+        findMany: {
+          args: Prisma.HiringDetailTemplateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>[]
+        }
+        create: {
+          args: Prisma.HiringDetailTemplateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>
+        }
+        createMany: {
+          args: Prisma.HiringDetailTemplateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringDetailTemplateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>[]
+        }
+        delete: {
+          args: Prisma.HiringDetailTemplateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>
+        }
+        update: {
+          args: Prisma.HiringDetailTemplateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringDetailTemplateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringDetailTemplateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringDetailTemplateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringDetailTemplateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDetailTemplatePayload>
+        }
+        aggregate: {
+          args: Prisma.HiringDetailTemplateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringDetailTemplate>
+        }
+        groupBy: {
+          args: Prisma.HiringDetailTemplateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringDetailTemplateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringDetailTemplateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringDetailTemplateCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringApplication: {
+      payload: Prisma.$HiringApplicationPayload<ExtArgs>
+      fields: Prisma.HiringApplicationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringApplicationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringApplicationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringApplicationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringApplicationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>
+        }
+        findMany: {
+          args: Prisma.HiringApplicationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>[]
+        }
+        create: {
+          args: Prisma.HiringApplicationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>
+        }
+        createMany: {
+          args: Prisma.HiringApplicationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringApplicationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringApplicationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>
+        }
+        update: {
+          args: Prisma.HiringApplicationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringApplicationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringApplicationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringApplicationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringApplicationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringApplicationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringApplication>
+        }
+        groupBy: {
+          args: Prisma.HiringApplicationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringApplicationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringApplicationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringApplicationCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringApplicationStore: {
+      payload: Prisma.$HiringApplicationStorePayload<ExtArgs>
+      fields: Prisma.HiringApplicationStoreFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringApplicationStoreFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringApplicationStoreFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>
+        }
+        findFirst: {
+          args: Prisma.HiringApplicationStoreFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringApplicationStoreFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>
+        }
+        findMany: {
+          args: Prisma.HiringApplicationStoreFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>[]
+        }
+        create: {
+          args: Prisma.HiringApplicationStoreCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>
+        }
+        createMany: {
+          args: Prisma.HiringApplicationStoreCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringApplicationStoreCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>[]
+        }
+        delete: {
+          args: Prisma.HiringApplicationStoreDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>
+        }
+        update: {
+          args: Prisma.HiringApplicationStoreUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringApplicationStoreDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringApplicationStoreUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringApplicationStoreUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringApplicationStoreUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationStorePayload>
+        }
+        aggregate: {
+          args: Prisma.HiringApplicationStoreAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringApplicationStore>
+        }
+        groupBy: {
+          args: Prisma.HiringApplicationStoreGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringApplicationStoreGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringApplicationStoreCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringApplicationStoreCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringApplicationFile: {
+      payload: Prisma.$HiringApplicationFilePayload<ExtArgs>
+      fields: Prisma.HiringApplicationFileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringApplicationFileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringApplicationFileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>
+        }
+        findFirst: {
+          args: Prisma.HiringApplicationFileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringApplicationFileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>
+        }
+        findMany: {
+          args: Prisma.HiringApplicationFileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>[]
+        }
+        create: {
+          args: Prisma.HiringApplicationFileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>
+        }
+        createMany: {
+          args: Prisma.HiringApplicationFileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringApplicationFileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>[]
+        }
+        delete: {
+          args: Prisma.HiringApplicationFileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>
+        }
+        update: {
+          args: Prisma.HiringApplicationFileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringApplicationFileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringApplicationFileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringApplicationFileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringApplicationFileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationFilePayload>
+        }
+        aggregate: {
+          args: Prisma.HiringApplicationFileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringApplicationFile>
+        }
+        groupBy: {
+          args: Prisma.HiringApplicationFileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringApplicationFileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringApplicationFileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringApplicationFileCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringComment: {
+      payload: Prisma.$HiringCommentPayload<ExtArgs>
+      fields: Prisma.HiringCommentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringCommentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringCommentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringCommentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringCommentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>
+        }
+        findMany: {
+          args: Prisma.HiringCommentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>[]
+        }
+        create: {
+          args: Prisma.HiringCommentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>
+        }
+        createMany: {
+          args: Prisma.HiringCommentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringCommentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringCommentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>
+        }
+        update: {
+          args: Prisma.HiringCommentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringCommentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringCommentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringCommentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringCommentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringCommentPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringCommentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringComment>
+        }
+        groupBy: {
+          args: Prisma.HiringCommentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringCommentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringCommentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringCommentCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringApplicationNotification: {
+      payload: Prisma.$HiringApplicationNotificationPayload<ExtArgs>
+      fields: Prisma.HiringApplicationNotificationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringApplicationNotificationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringApplicationNotificationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringApplicationNotificationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringApplicationNotificationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>
+        }
+        findMany: {
+          args: Prisma.HiringApplicationNotificationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>[]
+        }
+        create: {
+          args: Prisma.HiringApplicationNotificationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>
+        }
+        createMany: {
+          args: Prisma.HiringApplicationNotificationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringApplicationNotificationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringApplicationNotificationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>
+        }
+        update: {
+          args: Prisma.HiringApplicationNotificationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringApplicationNotificationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringApplicationNotificationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringApplicationNotificationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringApplicationNotificationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringApplicationNotificationPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringApplicationNotificationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringApplicationNotification>
+        }
+        groupBy: {
+          args: Prisma.HiringApplicationNotificationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringApplicationNotificationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringApplicationNotificationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringApplicationNotificationCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringBlacklist: {
+      payload: Prisma.$HiringBlacklistPayload<ExtArgs>
+      fields: Prisma.HiringBlacklistFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringBlacklistFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringBlacklistFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringBlacklistFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringBlacklistFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>
+        }
+        findMany: {
+          args: Prisma.HiringBlacklistFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>[]
+        }
+        create: {
+          args: Prisma.HiringBlacklistCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>
+        }
+        createMany: {
+          args: Prisma.HiringBlacklistCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringBlacklistCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringBlacklistDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>
+        }
+        update: {
+          args: Prisma.HiringBlacklistUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringBlacklistDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringBlacklistUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringBlacklistUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringBlacklistUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringBlacklistPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringBlacklistAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringBlacklist>
+        }
+        groupBy: {
+          args: Prisma.HiringBlacklistGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringBlacklistGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringBlacklistCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringBlacklistCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringMessageTemplate: {
+      payload: Prisma.$HiringMessageTemplatePayload<ExtArgs>
+      fields: Prisma.HiringMessageTemplateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringMessageTemplateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringMessageTemplateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>
+        }
+        findFirst: {
+          args: Prisma.HiringMessageTemplateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringMessageTemplateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>
+        }
+        findMany: {
+          args: Prisma.HiringMessageTemplateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>[]
+        }
+        create: {
+          args: Prisma.HiringMessageTemplateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>
+        }
+        createMany: {
+          args: Prisma.HiringMessageTemplateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringMessageTemplateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>[]
+        }
+        delete: {
+          args: Prisma.HiringMessageTemplateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>
+        }
+        update: {
+          args: Prisma.HiringMessageTemplateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringMessageTemplateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringMessageTemplateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringMessageTemplateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringMessageTemplateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMessageTemplatePayload>
+        }
+        aggregate: {
+          args: Prisma.HiringMessageTemplateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringMessageTemplate>
+        }
+        groupBy: {
+          args: Prisma.HiringMessageTemplateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringMessageTemplateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringMessageTemplateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringMessageTemplateCountAggregateOutputType> | number
+        }
+      }
+    }
     BoProduct: {
       payload: Prisma.$BoProductPayload<ExtArgs>
       fields: Prisma.BoProductFieldRefs
@@ -10277,6 +11402,8 @@ export const FinAccountScalarFieldEnum = {
   accountNumber: 'accountNumber',
   accountType: 'accountType',
   openingBalance: 'openingBalance',
+  currentBalance: 'currentBalance',
+  currentBalanceAsOf: 'currentBalanceAsOf',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -10296,6 +11423,7 @@ export const FinLiabilityScalarFieldEnum = {
   monthlyPayment: 'monthlyPayment',
   memo: 'memo',
   accountId: 'accountId',
+  balanceAsOf: 'balanceAsOf',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -10411,6 +11539,7 @@ export const FinTransactionScalarFieldEnum = {
   counterparty: 'counterparty',
   memo: 'memo',
   categoryId: 'categoryId',
+  liabilityId: 'liabilityId',
   isTransfer: 'isTransfer',
   classStatus: 'classStatus',
   matchedRuleId: 'matchedRuleId',
@@ -10437,6 +11566,249 @@ export const FinBalanceSnapshotScalarFieldEnum = {
 } as const
 
 export type FinBalanceSnapshotScalarFieldEnum = (typeof FinBalanceSnapshotScalarFieldEnum)[keyof typeof FinBalanceSnapshotScalarFieldEnum]
+
+
+export const HiringStoreScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  roadAddress: 'roadAddress',
+  detailAddress: 'detailAddress',
+  zipcode: 'zipcode',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringStoreScalarFieldEnum = (typeof HiringStoreScalarFieldEnum)[keyof typeof HiringStoreScalarFieldEnum]
+
+
+export const HiringPositionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  category: 'category',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringPositionScalarFieldEnum = (typeof HiringPositionScalarFieldEnum)[keyof typeof HiringPositionScalarFieldEnum]
+
+
+export const HiringPostingScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  uuid: 'uuid',
+  title: 'title',
+  status: 'status',
+  detail: 'detail',
+  applicationEntries: 'applicationEntries',
+  managerNameEnc: 'managerNameEnc',
+  managerNameIv: 'managerNameIv',
+  managerPhoneEnc: 'managerPhoneEnc',
+  managerPhoneIv: 'managerPhoneIv',
+  closingDate: 'closingDate',
+  publishedAt: 'publishedAt',
+  notificationEnabled: 'notificationEnabled',
+  authorUserId: 'authorUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringPostingScalarFieldEnum = (typeof HiringPostingScalarFieldEnum)[keyof typeof HiringPostingScalarFieldEnum]
+
+
+export const HiringPostingPositionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postingId: 'postingId',
+  positionId: 'positionId',
+  name: 'name',
+  jobType: 'jobType',
+  payFrequency: 'payFrequency',
+  payAmount: 'payAmount',
+  workDays: 'workDays',
+  workStartAt: 'workStartAt',
+  workEndAt: 'workEndAt',
+  headcount: 'headcount',
+  experience: 'experience',
+  education: 'education',
+  jobDescription: 'jobDescription',
+  requiredQualifications: 'requiredQualifications',
+  preferredQualifications: 'preferredQualifications',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringPostingPositionScalarFieldEnum = (typeof HiringPostingPositionScalarFieldEnum)[keyof typeof HiringPostingPositionScalarFieldEnum]
+
+
+export const HiringPostingStoreScalarFieldEnum = {
+  id: 'id',
+  postingId: 'postingId',
+  storeId: 'storeId'
+} as const
+
+export type HiringPostingStoreScalarFieldEnum = (typeof HiringPostingStoreScalarFieldEnum)[keyof typeof HiringPostingStoreScalarFieldEnum]
+
+
+export const HiringPostingManagerScalarFieldEnum = {
+  id: 'id',
+  postingId: 'postingId',
+  userId: 'userId'
+} as const
+
+export type HiringPostingManagerScalarFieldEnum = (typeof HiringPostingManagerScalarFieldEnum)[keyof typeof HiringPostingManagerScalarFieldEnum]
+
+
+export const HiringContentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  sourceType: 'sourceType',
+  postingId: 'postingId',
+  templateId: 'templateId',
+  contentType: 'contentType',
+  data: 'data',
+  imagePath: 'imagePath',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringContentScalarFieldEnum = (typeof HiringContentScalarFieldEnum)[keyof typeof HiringContentScalarFieldEnum]
+
+
+export const HiringDetailTemplateScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  data: 'data',
+  imagePath: 'imagePath',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringDetailTemplateScalarFieldEnum = (typeof HiringDetailTemplateScalarFieldEnum)[keyof typeof HiringDetailTemplateScalarFieldEnum]
+
+
+export const HiringApplicationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postingId: 'postingId',
+  postingPositionId: 'postingPositionId',
+  uuid: 'uuid',
+  applicationEntries: 'applicationEntries',
+  nameEnc: 'nameEnc',
+  nameIv: 'nameIv',
+  nameHash: 'nameHash',
+  maskedName: 'maskedName',
+  phoneEnc: 'phoneEnc',
+  phoneIv: 'phoneIv',
+  phoneHash: 'phoneHash',
+  phoneLastDigitsHash: 'phoneLastDigitsHash',
+  emailEnc: 'emailEnc',
+  emailIv: 'emailIv',
+  emailHash: 'emailHash',
+  addressEnc: 'addressEnc',
+  addressIv: 'addressIv',
+  stage: 'stage',
+  hiringStage: 'hiringStage',
+  referrer: 'referrer',
+  directRegistration: 'directRegistration',
+  duplicated: 'duplicated',
+  memo: 'memo',
+  privacyAgreedAt: 'privacyAgreedAt',
+  canceledAt: 'canceledAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringApplicationScalarFieldEnum = (typeof HiringApplicationScalarFieldEnum)[keyof typeof HiringApplicationScalarFieldEnum]
+
+
+export const HiringApplicationStoreScalarFieldEnum = {
+  id: 'id',
+  applicationId: 'applicationId',
+  storeId: 'storeId'
+} as const
+
+export type HiringApplicationStoreScalarFieldEnum = (typeof HiringApplicationStoreScalarFieldEnum)[keyof typeof HiringApplicationStoreScalarFieldEnum]
+
+
+export const HiringApplicationFileScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  applicationId: 'applicationId',
+  fileName: 'fileName',
+  filePath: 'filePath',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringApplicationFileScalarFieldEnum = (typeof HiringApplicationFileScalarFieldEnum)[keyof typeof HiringApplicationFileScalarFieldEnum]
+
+
+export const HiringCommentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  applicationId: 'applicationId',
+  userId: 'userId',
+  content: 'content',
+  editedAt: 'editedAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringCommentScalarFieldEnum = (typeof HiringCommentScalarFieldEnum)[keyof typeof HiringCommentScalarFieldEnum]
+
+
+export const HiringApplicationNotificationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  applicationId: 'applicationId',
+  senderUserId: 'senderUserId',
+  notiType: 'notiType',
+  detailMessage: 'detailMessage',
+  uuid: 'uuid',
+  tokenHash: 'tokenHash',
+  tokenExpireAt: 'tokenExpireAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringApplicationNotificationScalarFieldEnum = (typeof HiringApplicationNotificationScalarFieldEnum)[keyof typeof HiringApplicationNotificationScalarFieldEnum]
+
+
+export const HiringBlacklistScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  phoneEnc: 'phoneEnc',
+  phoneIv: 'phoneIv',
+  phoneHash: 'phoneHash',
+  reason: 'reason',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringBlacklistScalarFieldEnum = (typeof HiringBlacklistScalarFieldEnum)[keyof typeof HiringBlacklistScalarFieldEnum]
+
+
+export const HiringMessageTemplateScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  title: 'title',
+  content: 'content',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringMessageTemplateScalarFieldEnum = (typeof HiringMessageTemplateScalarFieldEnum)[keyof typeof HiringMessageTemplateScalarFieldEnum]
 
 
 export const BoProductScalarFieldEnum = {
@@ -11485,6 +12857,104 @@ export type ListEnumFinSnapshotSourceFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
+ * Reference to a field of type 'HiringPostingStatus'
+ */
+export type EnumHiringPostingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringPostingStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringPostingStatus[]'
+ */
+export type ListEnumHiringPostingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringPostingStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringJobType'
+ */
+export type EnumHiringJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringJobType'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringJobType[]'
+ */
+export type ListEnumHiringJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringJobType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringPayFrequency'
+ */
+export type EnumHiringPayFrequencyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringPayFrequency'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringPayFrequency[]'
+ */
+export type ListEnumHiringPayFrequencyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringPayFrequency[]'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringContentSourceType'
+ */
+export type EnumHiringContentSourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringContentSourceType'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringContentSourceType[]'
+ */
+export type ListEnumHiringContentSourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringContentSourceType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringApplicationStage'
+ */
+export type EnumHiringApplicationStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringApplicationStage'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringApplicationStage[]'
+ */
+export type ListEnumHiringApplicationStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringApplicationStage[]'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringProcessStage'
+ */
+export type EnumHiringProcessStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringProcessStage'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringProcessStage[]'
+ */
+export type ListEnumHiringProcessStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringProcessStage[]'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringNotificationType'
+ */
+export type EnumHiringNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringNotificationType'>
+    
+
+
+/**
+ * Reference to a field of type 'HiringNotificationType[]'
+ */
+export type ListEnumHiringNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HiringNotificationType[]'>
+    
+
+
+/**
  * Reference to a field of type 'BoCrawlStatus'
  */
 export type EnumBoCrawlStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoCrawlStatus'>
@@ -11819,6 +13289,21 @@ export type GlobalOmitConfig = {
   finStagedRow?: Prisma.FinStagedRowOmit
   finTransaction?: Prisma.FinTransactionOmit
   finBalanceSnapshot?: Prisma.FinBalanceSnapshotOmit
+  hiringStore?: Prisma.HiringStoreOmit
+  hiringPosition?: Prisma.HiringPositionOmit
+  hiringPosting?: Prisma.HiringPostingOmit
+  hiringPostingPosition?: Prisma.HiringPostingPositionOmit
+  hiringPostingStore?: Prisma.HiringPostingStoreOmit
+  hiringPostingManager?: Prisma.HiringPostingManagerOmit
+  hiringContent?: Prisma.HiringContentOmit
+  hiringDetailTemplate?: Prisma.HiringDetailTemplateOmit
+  hiringApplication?: Prisma.HiringApplicationOmit
+  hiringApplicationStore?: Prisma.HiringApplicationStoreOmit
+  hiringApplicationFile?: Prisma.HiringApplicationFileOmit
+  hiringComment?: Prisma.HiringCommentOmit
+  hiringApplicationNotification?: Prisma.HiringApplicationNotificationOmit
+  hiringBlacklist?: Prisma.HiringBlacklistOmit
+  hiringMessageTemplate?: Prisma.HiringMessageTemplateOmit
   boProduct?: Prisma.BoProductOmit
   boIdeation?: Prisma.BoIdeationOmit
   boMaterial?: Prisma.BoMaterialOmit

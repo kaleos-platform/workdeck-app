@@ -78,7 +78,7 @@ describe('/api/finance/accounts', () => {
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     })
 
-    const res = await POST(
+    const res = (await POST(
       jsonRequest({
         name: '기업은행 운영 구분명',
         holder: '주식회사 워크덱',
@@ -86,8 +86,7 @@ describe('/api/finance/accounts', () => {
         institution: '기업은행',
         accountNumber: '123',
       })
-    )
-    if (!res) throw new Error('응답 없음')
+    ))!
     const body = await res.json()
 
     expect(mockFinAccount.create).toHaveBeenCalledWith(
@@ -118,10 +117,9 @@ describe('/api/finance/accounts', () => {
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     })
 
-    const res = await PATCH(jsonRequest({ holder: '워크덱컴퍼니' }), {
+    const res = (await PATCH(jsonRequest({ holder: '워크덱컴퍼니' }), {
       params: Promise.resolve({ id: 'account-1' }),
-    })
-    if (!res) throw new Error('응답 없음')
+    }))!
     const body = await res.json()
 
     expect(mockFinAccount.update).toHaveBeenCalledWith(
@@ -153,8 +151,7 @@ describe('/api/finance/accounts', () => {
       },
     ])
 
-    const res = await GET()
-    if (!res) throw new Error('응답 없음')
+    const res = (await GET())!
     const body = await res.json()
 
     expect(body.accounts[0].name).toBe('기업은행 운영 구분명')

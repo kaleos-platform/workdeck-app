@@ -19,6 +19,7 @@ import {
   aggregateExpenseByCategory,
   type AggRow,
 } from '@/lib/finance/aggregate'
+import { computeLiabilityPending } from '@/lib/finance/liability'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
@@ -64,7 +65,7 @@ export async function GET(req: NextRequest) {
   )
 
   // ── 데이터 로드 ──
-  const [txns, accounts, snapshots, liabilities] = await Promise.all([
+  const [txns, accounts, snapshots, liabilities, repaymentTxns] = await Promise.all([
     prisma.finTransaction.findMany({
       where: { spaceId, txnDate: { gte, lt } },
       select: {
@@ -104,8 +105,17 @@ export async function GET(req: NextRequest) {
         rate: true,
         dueDate: true,
         monthlyPayment: true,
+        memo: true,
+        accountId: true,
+        balanceAsOf: true,
+        createdAt: true,
       },
       orderBy: { createdAt: 'asc' },
+    }),
+    // 부채에 연결된 상환 거래(감지용) — 링크된 것만이라 경량.
+    prisma.finTransaction.findMany({
+      where: { spaceId, liabilityId: { not: null } },
+      select: { liabilityId: true, amount: true, txnDate: true, direction: true },
     }),
   ])
 
@@ -208,11 +218,26 @@ export async function GET(req: NextRequest) {
   }))
 
   // ── 부채 현황 ──
+  // 미반영 상환 감지 = 연결된 OUT 거래 중 txnDate > (balanceAsOf ?? createdAt)
+  const pendingByLiability = computeLiabilityPending(
+    liabilities.map((l) => ({
+      id: l.id,
+      balanceAsOf: l.balanceAsOf,
+      createdAt: l.createdAt,
+    })),
+    repaymentTxns.map((t) => ({
+      liabilityId: t.liabilityId,
+      amount: toNum(t.amount),
+      txnDate: t.txnDate,
+      direction: t.direction,
+    }))
+  )
   const liabilityList = liabilities.map((l) => {
     const principal = toNum(l.principal)
     const balance = toNum(l.balance)
     const repaymentRate =
       principal > 0 ? Math.min(1, Math.max(0, (principal - balance) / principal)) : 0
+    const pending = pendingByLiability.get(l.id) ?? { count: 0, sum: 0, throughDate: null }
     return {
       id: l.id,
       name: l.name,
@@ -222,7 +247,10 @@ export async function GET(req: NextRequest) {
       rate: l.rate,
       dueDate: l.dueDate,
       monthlyPayment: toNumOrNull(l.monthlyPayment),
+      memo: l.memo,
+      accountId: l.accountId,
       repaymentRate: round2(repaymentRate),
+      pending,
     }
   })
   const totalLiability = round2(liabilityList.reduce((acc, l) => acc + l.balance, 0))

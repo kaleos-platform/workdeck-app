@@ -89,15 +89,9 @@ export async function GET(request: NextRequest) {
       if (s.status !== 'ok' || !s.workspaceId) continue
       const outbound = (s.created ?? 0) + (s.updated ?? 0)
       try {
-        const existing = await prisma.coupangBackfillJob.findFirst({
-          where: {
-            workspaceId: s.workspaceId,
-            days: 1,
-            trigger,
-            createdAt: { gte: todayKstStart },
-          },
-          select: { id: true },
-        })
+        const dayKey = nowKst.toISOString().slice(0, 10) // 오늘 KST 날짜 문자열 (예: "2026-07-07")
+        // workspaceId를 const로 추출 — 트랜잭션 콜백 내부에서도 타입 narrowing 보장
+        const workspaceId: string = s.workspaceId
         const data = {
           status: 'DONE' as const,
           claimedAt: new Date(),
@@ -109,13 +103,27 @@ export async function GET(request: NextRequest) {
           orderSum: s.orderCount ?? 0,
           salesQtySum: s.salesQty ?? 0,
         }
-        if (existing) {
-          await prisma.coupangBackfillJob.update({ where: { id: existing.id }, data })
-        } else {
-          await prisma.coupangBackfillJob.create({
-            data: { workspaceId: s.workspaceId, days: 1, trigger, ...data },
+        // advisory lock으로 동시 실행(cron 재시도·수동 겹침) 시 중복 잡 이력 생성 방지.
+        // pg_advisory_xact_lock은 트랜잭션 종료 시 자동 해제된다.
+        await prisma.$transaction(async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`coupang-daily:${workspaceId}:${dayKey}`}))`
+          const existing = await tx.coupangBackfillJob.findFirst({
+            where: {
+              workspaceId,
+              days: 1,
+              trigger,
+              createdAt: { gte: todayKstStart },
+            },
+            select: { id: true },
           })
-        }
+          if (existing) {
+            await tx.coupangBackfillJob.update({ where: { id: existing.id }, data })
+          } else {
+            await tx.coupangBackfillJob.create({
+              data: { workspaceId, days: 1, trigger, ...data },
+            })
+          }
+        })
       } catch (err) {
         console.error(`[sales-sync] 이력 잡 기록 실패 (space ${s.spaceId}):`, err)
       }

@@ -92,12 +92,17 @@ export async function processUpload(params: {
 
   const { periodStart, periodEnd } = detectPeriod(rows)
 
+  // 업로드 파일에 포함된 캠페인 ID 목록 (중복 감지·삭제·삽입 경로 모두 공유)
+  const campaignIds = [...new Set(rows.map((r) => r.campaignId))]
+
   // ── 첫 번째 요청: 중복 감지 단계 ──
   if (overwrite === null) {
+    // campaignId 필터 포함: 업로드 파일과 무관한 다른 캠페인 기간 데이터는 제외
     const existingCount = await prisma.adRecord.count({
       where: {
         workspaceId,
         date: { gte: periodStart, lte: periodEnd },
+        campaignId: { in: campaignIds },
       },
     })
 
@@ -115,34 +120,10 @@ export async function processUpload(params: {
 
   // DB 연결 폭주 방지를 위해 청크를 순차 처리한다.
   const CHUNK_SIZE = 2000
-  let inserted = 0
 
-  // 덮어쓰기·중복제외 모두: 기간 내 기존 레코드 삭제 후 재삽입
-  if (overwrite === true || overwrite === false) {
-    const campaignIds = [...new Set(rows.map((r) => r.campaignId))]
-    await prisma.adRecord.deleteMany({
-      where: {
-        workspaceId,
-        date: { gte: periodStart, lte: periodEnd },
-        campaignId: { in: campaignIds },
-      },
-    })
-  }
-
-  // 업로드 이력 생성
-  const upload = await prisma.reportUpload.create({
-    data: {
-      fileName,
-      periodStart,
-      periodEnd,
-      workspaceId,
-    },
-  })
-
-  // 전체 데이터를 CHUNK_SIZE 단위로 분할
-  const allData = rows.map((row) => ({
+  // 삽입용 행 사전 준비 (reportId 는 트랜잭션 내 업로드 이력 생성 후 채운다)
+  const baseRows = rows.map((row) => ({
     workspaceId,
-    reportId: upload.id,
     date: row.date,
     adType: row.adType,
     campaignId: row.campaignId,
@@ -171,15 +152,43 @@ export async function processUpload(params: {
     engagementRate: row.engagementRate,
   }))
 
-  const chunks: (typeof allData)[] = []
-  for (let i = 0; i < allData.length; i += CHUNK_SIZE) {
-    chunks.push(allData.slice(i, i + CHUNK_SIZE))
-  }
+  // 기존 레코드 삭제 → 업로드 이력 생성 → 청크 삽입을 단일 트랜잭션으로 원자 처리한다.
+  // 삭제 후 삽입 중 실패 시 삭제까지 롤백되어 해당 기간 데이터가 유실되는 것을 방지한다.
+  const { uploadId, inserted } = await prisma.$transaction(
+    async (tx) => {
+      // 덮어쓰기·중복제외 모두: 기간 내 기존 레코드 삭제 후 재삽입
+      if (overwrite === true || overwrite === false) {
+        await tx.adRecord.deleteMany({
+          where: {
+            workspaceId,
+            date: { gte: periodStart, lte: periodEnd },
+            campaignId: { in: campaignIds },
+          },
+        })
+      }
 
-  for (const data of chunks) {
-    const result = await prisma.adRecord.createMany({ data, skipDuplicates: true })
-    inserted += result.count
-  }
+      // 업로드 이력 생성
+      const upload = await tx.reportUpload.create({
+        data: {
+          fileName,
+          periodStart,
+          periodEnd,
+          workspaceId,
+        },
+      })
+
+      // 전체 데이터를 CHUNK_SIZE 단위로 분할 삽입
+      let insertedCount = 0
+      for (let i = 0; i < baseRows.length; i += CHUNK_SIZE) {
+        const data = baseRows.slice(i, i + CHUNK_SIZE).map((r) => ({ ...r, reportId: upload.id }))
+        const result = await tx.adRecord.createMany({ data, skipDuplicates: true })
+        insertedCount += result.count
+      }
+
+      return { uploadId: upload.id, inserted: insertedCount }
+    },
+    { maxWait: 10_000, timeout: 60_000 }
+  )
 
   // ── 캠페인명 변경 감지 ──
   const latestByUpload = new Map<string, { date: Date; name: string }>()
@@ -191,12 +200,12 @@ export async function processUpload(params: {
   }
 
   // DB에서 campaignId별 현재 최신 campaignName 조회 (업로드 전 상태)
-  const campaignIds = [...latestByUpload.keys()]
+  const metaCampaignIds = [...latestByUpload.keys()]
   const dbLatest = await prisma.adRecord.findMany({
     where: {
       workspaceId,
-      campaignId: { in: campaignIds },
-      reportId: { not: upload.id },
+      campaignId: { in: metaCampaignIds },
+      reportId: { not: uploadId },
     },
     orderBy: { date: 'desc' },
     distinct: ['campaignId'],
@@ -255,13 +264,13 @@ export async function processUpload(params: {
 
   // 업로드 이력에 처리 결과 저장
   await prisma.reportUpload.update({
-    where: { id: upload.id },
+    where: { id: uploadId },
     data: { totalRows, insertedRows, duplicateRows, skippedRows },
   })
 
   return {
     success: true,
-    uploadId: upload.id,
+    uploadId,
     inserted,
     skipped: rows.length - inserted,
     totalRows,

@@ -11,18 +11,29 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params
   const body = await req.json().catch(() => ({}))
-  const { name, lender, principal, balance, rate, dueDate, monthlyPayment, memo, accountId } =
-    body as {
-      name?: string
-      lender?: string
-      principal?: number
-      balance?: number
-      rate?: string
-      dueDate?: string
-      monthlyPayment?: number | null
-      memo?: string
-      accountId?: string | null
-    }
+  const {
+    name,
+    lender,
+    principal,
+    balance,
+    rate,
+    dueDate,
+    monthlyPayment,
+    memo,
+    accountId,
+    balanceAsOf,
+  } = body as {
+    name?: string
+    lender?: string
+    principal?: number
+    balance?: number
+    rate?: string
+    dueDate?: string
+    monthlyPayment?: number | null
+    memo?: string
+    accountId?: string | null
+    balanceAsOf?: string | null // ISO 문자열 — 상환 반영 시 워터마크 전진
+  }
 
   // spaceId 소유 검증
   const existing = await prisma.finLiability.findFirst({
@@ -44,6 +55,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
+  // 워터마크 — balanceAsOf가 요청에 포함된 경우에만 처리(ISO 문자열 또는 null)
+  let normalizedBalanceAsOf: Date | null | undefined = undefined
+  if (balanceAsOf !== undefined) {
+    if (balanceAsOf === null) {
+      normalizedBalanceAsOf = null
+    } else {
+      const parsed = new Date(balanceAsOf)
+      if (Number.isNaN(parsed.getTime()))
+        return errorResponse('balanceAsOf 형식이 올바르지 않습니다', 400)
+      normalizedBalanceAsOf = parsed
+    }
+  }
+
   const liability = await prisma.finLiability.update({
     where: { id },
     data: {
@@ -56,6 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(monthlyPayment !== undefined && { monthlyPayment }),
       ...(memo !== undefined && { memo: memo?.trim() ?? null }),
       ...(normalizedAccountId !== undefined && { accountId: normalizedAccountId }),
+      ...(normalizedBalanceAsOf !== undefined && { balanceAsOf: normalizedBalanceAsOf }),
     },
   })
 

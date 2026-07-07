@@ -36,6 +36,8 @@ interface Account {
   accountNumber: string | null
   accountType: string | null
   openingBalance: number | null
+  currentBalance: number | null
+  currentBalanceAsOf: string | null
 }
 
 interface Liability {
@@ -161,6 +163,16 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
                       {acct.accountNumber && ` · ${acct.accountNumber}`}
                       {acct.openingBalance !== null && ` · 기초 ${formatWon(acct.openingBalance)}`}
                     </p>
+                    {acct.currentBalance !== null && (
+                      <p className="text-xs font-medium text-foreground">
+                        잔액 {formatWon(acct.currentBalance)}
+                        {acct.currentBalanceAsOf && (
+                          <span className="ml-1 font-normal text-muted-foreground">
+                            ({acct.currentBalanceAsOf.slice(0, 10)} 기준)
+                          </span>
+                        )}
+                      </p>
+                    )}
                   </div>
                   <div className="flex shrink-0 gap-1">
                     <Button

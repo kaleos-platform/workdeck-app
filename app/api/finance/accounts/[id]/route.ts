@@ -11,13 +11,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params
   const body = await req.json().catch(() => ({}))
-  const { name, holder, institution, accountNumber, accountType, openingBalance } = body as {
+  const {
+    name,
+    holder,
+    institution,
+    accountNumber,
+    accountType,
+    openingBalance,
+    currentBalance,
+    currentBalanceAsOf,
+  } = body as {
     name?: string
     holder?: string | null
     institution?: string
     accountNumber?: string
     accountType?: string
     openingBalance?: number | null
+    currentBalance?: number | null
+    currentBalanceAsOf?: string | null
   }
 
   // spaceId 소유 검증
@@ -51,11 +62,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(accountNumber !== undefined && { accountNumber: accountNumber?.trim() ?? null }),
         ...(accountType !== undefined && { accountType: accountType?.trim() ?? null }),
         ...(openingBalance !== undefined && { openingBalance }),
+        ...(currentBalance !== undefined && { currentBalance }),
+        ...(currentBalanceAsOf !== undefined && {
+          currentBalanceAsOf: currentBalanceAsOf ? new Date(currentBalanceAsOf) : null,
+        }),
       },
     })
 
     return NextResponse.json({
-      account: { ...account, openingBalance: toNumOrNull(account.openingBalance) },
+      account: {
+        ...account,
+        openingBalance: toNumOrNull(account.openingBalance),
+        currentBalance: toNumOrNull(account.currentBalance),
+      },
     })
   } catch (e: unknown) {
     const err = e as { code?: string }

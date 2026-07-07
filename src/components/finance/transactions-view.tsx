@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus, Trash2, Sparkles, Tag } from 'lucide-react'
+import { Plus, Trash2, Sparkles, Tag, X, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -111,6 +111,9 @@ type Transaction = {
   categoryId: string | null
   category: { id: string; name: string; type: string; parent: { name: string } | null } | null
   account: { id: string; name: string; kind: FinAccountKind }
+  /** 연결된 부채 상환 정보 */
+  liabilityId: string | null
+  liability: { id: string; name: string } | null
 }
 
 type TransactionSummary = {
@@ -130,6 +133,16 @@ function fmtDate(iso: string): string {
 
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
+// 전체 거래 정렬 가능한 컬럼 키(API sort 파라미터와 1:1).
+type TxnSortField =
+  | 'txnDate'
+  | 'account'
+  | 'description'
+  | 'amount'
+  | 'balanceAfter'
+  | 'category'
+  | 'classStatus'
+
 export function TransactionsView() {
   const searchParams = useSearchParams()
   const importIdParam = searchParams.get('importId') ?? undefined
@@ -139,7 +152,15 @@ export function TransactionsView() {
   const leafTargets = useMemo(() => buildClassifyOptions(categoryTree), [categoryTree])
 
   // 계좌 목록 (전체 거래 출처 필터)
-  const [accounts, setAccounts] = useState<{ id: string; name: string; kind: FinAccountKind }[]>([])
+  const [accounts, setAccounts] = useState<
+    {
+      id: string
+      name: string
+      kind: FinAccountKind
+      institution: string | null
+      accountNumber: string | null
+    }[]
+  >([])
 
   // 스테이징 상태
   const [stagingRows, setStagingRows] = useState<StagedRow[]>([])
@@ -166,10 +187,13 @@ export function TransactionsView() {
   // 필터 (전체 거래) — 'all'은 파라미터 미포함 센티넬
   const [filterQ, setFilterQ] = useState('')
   const [filterAccountId, setFilterAccountId] = useState('')
+  const [filterCategoryId, setFilterCategoryId] = useState('')
   const [filterDirection, setFilterDirection] = useState<'all' | 'IN' | 'OUT'>('all')
-  const [filterClassStatus, setFilterClassStatus] = useState<
-    'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED'
-  >('all')
+  // 정렬(전체 거래) — 컬럼 헤더 클릭. 서버사이드(전체 데이터셋 정확).
+  const [txnSort, setTxnSort] = useState<{ field: TxnSortField; order: 'asc' | 'desc' }>({
+    field: 'txnDate',
+    order: 'desc',
+  })
 
   // 메인 탭 — 초기값은 로드 후 결정
   const [mainTab, setMainTab] = useState<'staging' | 'transactions'>('staging')
@@ -206,11 +230,21 @@ export function TransactionsView() {
       if (!res.ok) return
       const data = await res.json()
       setAccounts(
-        (data.accounts ?? []).map((a: { id: string; name: string; kind: FinAccountKind }) => ({
-          id: a.id,
-          name: a.name,
-          kind: a.kind,
-        }))
+        (data.accounts ?? []).map(
+          (a: {
+            id: string
+            name: string
+            kind: FinAccountKind
+            institution: string | null
+            accountNumber: string | null
+          }) => ({
+            id: a.id,
+            name: a.name,
+            kind: a.kind,
+            institution: a.institution ?? null,
+            accountNumber: a.accountNumber ?? null,
+          })
+        )
       )
     } catch {
       // 조용히 실패
@@ -247,8 +281,10 @@ export function TransactionsView() {
       const params = new URLSearchParams()
       if (filterQ) params.set('q', filterQ)
       if (filterAccountId) params.set('accountId', filterAccountId)
+      if (filterCategoryId) params.set('categoryId', filterCategoryId)
       if (filterDirection !== 'all') params.set('direction', filterDirection)
-      if (filterClassStatus !== 'all') params.set('classStatus', filterClassStatus)
+      params.set('sort', txnSort.field)
+      params.set('order', txnSort.order)
       const res = await fetch(`/api/finance/transactions?${params}`)
       if (!res.ok) throw new Error('거래 내역 조회 실패')
       const data = await res.json()
@@ -260,7 +296,7 @@ export function TransactionsView() {
     } finally {
       setTxnLoading(false)
     }
-  }, [filterQ, filterAccountId, filterDirection, filterClassStatus])
+  }, [filterQ, filterAccountId, filterCategoryId, filterDirection, txnSort.field, txnSort.order])
 
   // 초기 로드
   useEffect(() => {
@@ -284,6 +320,28 @@ export function TransactionsView() {
       void loadTransactions()
     }
   }, [mainTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 정렬 변경 시 재조회(전체 거래 탭에서만). 필터는 검색 버튼으로 명시 조회하지만 정렬은 즉시 반영.
+  useEffect(() => {
+    if (mainTab === 'transactions') {
+      void loadTransactions()
+    }
+  }, [txnSort.field, txnSort.order]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 컬럼 헤더 클릭: 같은 컬럼이면 방향 토글, 다른 컬럼이면 기본 방향(일자·금액·잔액=desc, 텍스트=asc).
+  const handleTxnSort = useCallback((field: TxnSortField) => {
+    setTxnSort((prev) =>
+      prev.field === field
+        ? { field, order: prev.order === 'asc' ? 'desc' : 'asc' }
+        : {
+            field,
+            order:
+              field === 'txnDate' || field === 'amount' || field === 'balanceAfter'
+                ? 'desc'
+                : 'asc',
+          }
+    )
+  }, [])
 
   // 스테이징 하위 탭 변경
   const handleStagingTabChange = (tab: string) => {
@@ -359,7 +417,7 @@ export function TransactionsView() {
     }
   }
 
-  // 중복 처리: 유지 → NEW, 제외 → DUP_SAME
+  // 중복 처리: 유지 → DUP_OVERWRITE(확정 시 계정과목 덮어쓰기), 제외 → DUP_SAME
   const handleDupResolution = async (rowId: string, resolution: FinStagedResolution) => {
     try {
       const res = await fetch(`/api/finance/staging/${rowId}`, {
@@ -459,6 +517,26 @@ export function TransactionsView() {
     [loadTransactions]
   )
 
+  // 확정 거래 부채 상환 일괄 연결/해제
+  const handleTxnBulkLinkLiability = useCallback(
+    async (ids: string[], liabilityId: string | null) => {
+      try {
+        const res = await fetch('/api/finance/transactions/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids, liabilityId }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.message ?? '연결 실패')
+        toast.success(liabilityId ? '부채 상환으로 연결했습니다' : '부채 연결이 해제되었습니다')
+        void loadTransactions()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '연결 실패')
+      }
+    },
+    [loadTransactions]
+  )
+
   // 필터 검색 실행
   const handleTxnSearch = useCallback(() => {
     void loadTransactions()
@@ -512,20 +590,23 @@ export function TransactionsView() {
           loading={txnLoading}
           filterQ={filterQ}
           filterAccountId={filterAccountId}
+          filterCategoryId={filterCategoryId}
           filterDirection={filterDirection}
-          filterClassStatus={filterClassStatus}
           accounts={accounts}
           leafTargets={leafTargets}
           categoryTree={categoryTree}
           reloadCategories={loadCategories}
           onFilterQChange={setFilterQ}
           onFilterAccountIdChange={setFilterAccountId}
+          onFilterCategoryIdChange={setFilterCategoryId}
           onFilterDirectionChange={setFilterDirection}
-          onFilterClassStatusChange={setFilterClassStatus}
           onSearch={handleTxnSearch}
+          sort={txnSort}
+          onSort={handleTxnSort}
           onClassify={handleTxnClassify}
           onBulkClassify={handleTxnBulkClassify}
           onBulkDelete={handleTxnBulkDelete}
+          onBulkLinkLiability={handleTxnBulkLinkLiability}
         />
       </TabsContent>
 
@@ -718,6 +799,7 @@ function StagingPanel({
                 <TableHead className="w-28">출처</TableHead>
                 <TableHead>적요</TableHead>
                 <TableHead className="w-28 text-right">금액</TableHead>
+                <TableHead className="w-28 text-right">거래후잔액</TableHead>
                 <TableHead className="w-44">계정과목</TableHead>
                 <TableHead className="w-24">상태</TableHead>
                 <TableHead className="w-28">중복 처리</TableHead>
@@ -847,7 +929,7 @@ function StagingBulkBar({
             size="sm"
             variant="ghost"
             className={floatingActionButtonClass}
-            onClick={() => void run(() => onResolution('NEW'))}
+            onClick={() => void run(() => onResolution('DUP_OVERWRITE'))}
             disabled={busy}
           >
             유지
@@ -881,7 +963,10 @@ function StagingRow({
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
 }) {
-  const isDup = row.resolution === 'DUP_SAME' || row.resolution === 'DUP_CHANGED'
+  const isDup =
+    row.resolution === 'DUP_SAME' ||
+    row.resolution === 'DUP_CHANGED' ||
+    row.resolution === 'DUP_OVERWRITE'
   const statusBadge = classStatusBadge(row.classStatus)
 
   return (
@@ -924,6 +1009,11 @@ function StagingRow({
           {row.direction === 'OUT' ? '-' : '+'}
           {formatWon(row.amount)}
         </span>
+      </TableCell>
+
+      {/* 거래후잔액 (은행 임포트만 존재, 없으면 —) */}
+      <TableCell className="text-right font-mono text-xs text-muted-foreground">
+        {row.balanceAfter != null ? formatWon(row.balanceAfter) : '—'}
       </TableCell>
 
       {/* 계정과목 inline Select (+ 계정과목 추가 팝업) + 미분류 시 AI 추천 */}
@@ -974,7 +1064,7 @@ function StagingRow({
               <Button
                 size="xs"
                 variant="outline"
-                onClick={() => onDupResolution(row.id, 'DUP_CHANGED')}
+                onClick={() => onDupResolution(row.id, 'DUP_OVERWRITE')}
                 className="h-6 px-2 text-xs"
               >
                 유지
@@ -984,7 +1074,7 @@ function StagingRow({
                 <Button
                   size="xs"
                   variant="outline"
-                  onClick={() => onDupResolution(row.id, 'DUP_CHANGED')}
+                  onClick={() => onDupResolution(row.id, 'DUP_OVERWRITE')}
                   className="h-6 px-2 text-xs"
                 >
                   유지
@@ -1008,6 +1098,49 @@ function StagingRow({
 
 // ─── 전체 거래 패널 ───────────────────────────────────────────────────────────
 
+// ─── 정렬 가능한 컬럼 헤더 ─────────────────────────────────────────────────────
+
+function SortHeader({
+  label,
+  field,
+  sort,
+  onSort,
+  className,
+  align = 'left',
+}: {
+  label: string
+  field: TxnSortField
+  sort: { field: TxnSortField; order: 'asc' | 'desc' }
+  onSort: (field: TxnSortField) => void
+  className?: string
+  align?: 'left' | 'right'
+}) {
+  const active = sort.field === field
+  return (
+    <TableHead className={className}>
+      <button
+        type="button"
+        onClick={() => onSort(field)}
+        className={`inline-flex w-full items-center gap-1 hover:text-foreground ${
+          align === 'right' ? 'justify-end' : ''
+        }`}
+        aria-label={`${label} 정렬`}
+      >
+        <span>{label}</span>
+        {active ? (
+          sort.order === 'asc' ? (
+            <ArrowUp className="size-3" />
+          ) : (
+            <ArrowDown className="size-3" />
+          )
+        ) : (
+          <ChevronsUpDown className="size-3 text-muted-foreground/40" />
+        )}
+      </button>
+    </TableHead>
+  )
+}
+
 function TransactionsPanel({
   rows,
   total,
@@ -1015,20 +1148,23 @@ function TransactionsPanel({
   loading,
   filterQ,
   filterAccountId,
+  filterCategoryId,
   filterDirection,
-  filterClassStatus,
   accounts,
   leafTargets,
   categoryTree,
   reloadCategories,
   onFilterQChange,
   onFilterAccountIdChange,
+  onFilterCategoryIdChange,
   onFilterDirectionChange,
-  onFilterClassStatusChange,
   onSearch,
+  sort,
+  onSort,
   onClassify,
   onBulkClassify,
   onBulkDelete,
+  onBulkLinkLiability,
 }: {
   rows: Transaction[]
   total: number
@@ -1036,20 +1172,29 @@ function TransactionsPanel({
   loading: boolean
   filterQ: string
   filterAccountId: string
+  filterCategoryId: string
   filterDirection: 'all' | 'IN' | 'OUT'
-  filterClassStatus: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED'
-  accounts: { id: string; name: string; kind: FinAccountKind }[]
+  sort: { field: TxnSortField; order: 'asc' | 'desc' }
+  onSort: (field: TxnSortField) => void
+  accounts: {
+    id: string
+    name: string
+    kind: FinAccountKind
+    institution: string | null
+    accountNumber: string | null
+  }[]
   leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onFilterQChange: (v: string) => void
   onFilterAccountIdChange: (v: string) => void
+  onFilterCategoryIdChange: (v: string) => void
   onFilterDirectionChange: (v: 'all' | 'IN' | 'OUT') => void
-  onFilterClassStatusChange: (v: 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED') => void
   onSearch: () => void
   onClassify: (txnId: string, categoryId: string) => void
   onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
   onBulkDelete: (ids: string[]) => Promise<void>
+  onBulkLinkLiability: (ids: string[], liabilityId: string | null) => Promise<void>
 }) {
   // 다중 선택 — selectedInView가 현재 행으로 스코프하므로 필터/조회 후 자연히 정리된다.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -1081,11 +1226,36 @@ function TransactionsPanel({
     setDeleteOpen(false)
     clearSelection()
   }
+  const runBulkLinkLiability = async (liabilityId: string | null) => {
+    await onBulkLinkLiability(selectedInView, liabilityId)
+    clearSelection()
+  }
+  const handleUnlinkLiability = async (txnId: string) => {
+    await onBulkLinkLiability([txnId], null)
+  }
+
+  // 부채 목록 — 연결 드롭다운용 (첫 렌더 시 로드)
+  const [liabilities, setLiabilities] = useState<{ id: string; name: string }[]>([])
+  const [liabilitiesLoaded, setLiabilitiesLoaded] = useState(false)
+
+  async function loadLiabilities() {
+    if (liabilitiesLoaded) return
+    try {
+      const res = await fetch('/api/finance/liabilities')
+      if (!res.ok) return
+      const data = (await res.json()) as { liabilities: { id: string; name: string }[] }
+      setLiabilities(data.liabilities ?? [])
+    } catch {
+      // 조용히 실패
+    } finally {
+      setLiabilitiesLoaded(true)
+    }
+  }
 
   return (
     <div className="space-y-3">
-      {/* 필터 바 */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* 필터 바 — 각 컨트롤 앞에 필드 라벨을 붙여 무엇을 거르는지 명시 */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Input
           value={filterQ}
           onChange={(e) => onFilterQChange(e.target.value)}
@@ -1096,52 +1266,71 @@ function TransactionsPanel({
           className="h-8 max-w-52 text-xs"
         />
         {accounts.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">계좌</span>
+            <Select
+              value={filterAccountId || 'all'}
+              onValueChange={(v) => onFilterAccountIdChange(v === 'all' ? '' : v)}
+            >
+              <SelectTrigger className="h-8 w-52 text-xs">
+                <SelectValue placeholder="전체 계좌" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 계좌</SelectItem>
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id} className="text-xs">
+                    <span className="flex items-center gap-1.5">
+                      {[a.institution, a.name].filter(Boolean).join(' ')}
+                      {a.accountNumber && (
+                        <span className="text-muted-foreground">· {a.accountNumber}</span>
+                      )}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">계정과목</span>
+          <CategoryCombobox
+            options={leafTargets}
+            value={filterCategoryId || null}
+            onChange={onFilterCategoryIdChange}
+            groupByType
+            defaultType="EXPENSE"
+            placeholder="전체 계정과목"
+            searchPlaceholder="계정과목 검색..."
+            triggerClassName="h-8 w-44 text-xs"
+          />
+          {filterCategoryId && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => onFilterCategoryIdChange('')}
+              className="h-8 w-8 shrink-0 text-muted-foreground"
+              aria-label="계정과목 필터 해제"
+            >
+              <X className="size-3.5" />
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">방향</span>
           <Select
-            value={filterAccountId || 'all'}
-            onValueChange={(v) => onFilterAccountIdChange(v === 'all' ? '' : v)}
+            value={filterDirection}
+            onValueChange={(v) => onFilterDirectionChange(v as 'all' | 'IN' | 'OUT')}
           >
-            <SelectTrigger className="h-8 w-36 text-xs">
-              <SelectValue placeholder="출처" />
+            <SelectTrigger className="h-8 w-24 text-xs">
+              <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체 출처</SelectItem>
-              {accounts.map((a) => (
-                <SelectItem key={a.id} value={a.id} className="text-xs">
-                  {a.name}
-                </SelectItem>
-              ))}
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="IN">수입</SelectItem>
+              <SelectItem value="OUT">지출</SelectItem>
             </SelectContent>
           </Select>
-        )}
-        <Select
-          value={filterDirection}
-          onValueChange={(v) => onFilterDirectionChange(v as 'all' | 'IN' | 'OUT')}
-        >
-          <SelectTrigger className="h-8 w-24 text-xs">
-            <SelectValue placeholder="방향" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">전체</SelectItem>
-            <SelectItem value="IN">수입</SelectItem>
-            <SelectItem value="OUT">지출</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={filterClassStatus}
-          onValueChange={(v) =>
-            onFilterClassStatusChange(v as 'all' | 'CLASSIFIED' | 'REVIEW' | 'UNCLASSIFIED')
-          }
-        >
-          <SelectTrigger className="h-8 w-28 text-xs">
-            <SelectValue placeholder="분류 상태" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">전체</SelectItem>
-            <SelectItem value="CLASSIFIED">분류완료</SelectItem>
-            <SelectItem value="REVIEW">검토 필요</SelectItem>
-            <SelectItem value="UNCLASSIFIED">미분류</SelectItem>
-          </SelectContent>
-        </Select>
+        </div>
         <Button size="sm" variant="outline" onClick={onSearch} className="h-8">
           검색
         </Button>
@@ -1184,12 +1373,51 @@ function TransactionsPanel({
                     aria-label="전체 선택"
                   />
                 </TableHead>
-                <TableHead className="w-24">날짜</TableHead>
-                <TableHead className="w-28">출처</TableHead>
-                <TableHead>적요</TableHead>
-                <TableHead className="w-28 text-right">금액</TableHead>
-                <TableHead className="w-44">계정과목</TableHead>
-                <TableHead className="w-24">상태</TableHead>
+                <SortHeader
+                  label="날짜"
+                  field="txnDate"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-24"
+                />
+                <SortHeader
+                  label="출처"
+                  field="account"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-28"
+                />
+                <SortHeader label="적요" field="description" sort={sort} onSort={onSort} />
+                <SortHeader
+                  label="금액"
+                  field="amount"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-28"
+                  align="right"
+                />
+                <SortHeader
+                  label="거래후잔액"
+                  field="balanceAfter"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-28"
+                  align="right"
+                />
+                <SortHeader
+                  label="계정과목"
+                  field="category"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-44"
+                />
+                <SortHeader
+                  label="상태"
+                  field="classStatus"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-24"
+                />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1203,6 +1431,7 @@ function TransactionsPanel({
                   categoryTree={categoryTree}
                   reloadCategories={reloadCategories}
                   onClassify={onClassify}
+                  onUnlinkLiability={handleUnlinkLiability}
                 />
               ))}
             </TableBody>
@@ -1210,12 +1439,15 @@ function TransactionsPanel({
         </div>
       )}
 
-      {/* 다중 선택 일괄 처리 바 — 계정과목 분류 / 삭제 */}
+      {/* 다중 선택 일괄 처리 바 — 계정과목 분류 / 부채 연결 / 삭제 */}
       <TransactionsBulkBar
         selectedCount={selectedInView.length}
         leafTargets={leafTargets}
         blockType={uniformBlockType(rows, selectedIds)}
+        liabilities={liabilities}
         onClassify={runBulkClassify}
+        onLinkLiability={runBulkLinkLiability}
+        onLoadLiabilities={loadLiabilities}
         onDeleteRequest={() => setDeleteOpen(true)}
         onClear={clearSelection}
       />
@@ -1250,18 +1482,28 @@ function TransactionsBulkBar({
   selectedCount,
   leafTargets,
   blockType,
+  liabilities,
   onClassify,
+  onLinkLiability,
+  onLoadLiabilities,
   onDeleteRequest,
   onClear,
 }: {
   selectedCount: number
   leafTargets: ComboOption[]
   blockType: FinCategoryType | null
+  liabilities: { id: string; name: string }[]
   onClassify: (categoryId: string) => Promise<void>
+  onLinkLiability: (liabilityId: string | null) => Promise<void>
+  onLoadLiabilities: () => Promise<void>
   onDeleteRequest: () => void
   onClear: () => void
 }) {
   const [busy, setBusy] = useState(false)
+  // 상환 연결 Select는 "액션 트리거"라 선택 후 플레이스홀더로 복귀해야 함.
+  // Radix SelectItem이 빈 문자열 value를 허용하지 않으므로 센티넬 사용.
+  const LINK_PLACEHOLDER = '__lp__'
+  const [linkSelectVal, setLinkSelectVal] = useState(LINK_PLACEHOLDER)
   const run = async (fn: () => Promise<void>) => {
     setBusy(true)
     try {
@@ -1290,6 +1532,44 @@ function TransactionsBulkBar({
               defaultType={blockType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
               blockType={blockType}
             />
+          </div>
+          {/* 부채 상환 연결 */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-background/70">상환 연결</span>
+            <Select
+              value={linkSelectVal}
+              onValueChange={(v) => {
+                if (!v || v === LINK_PLACEHOLDER) return
+                setLinkSelectVal(LINK_PLACEHOLDER) // 선택 후 플레이스홀더로 복귀
+                void run(() => onLinkLiability(v === '__unlink__' ? null : v))
+              }}
+              onOpenChange={(open) => {
+                if (open) void onLoadLiabilities()
+              }}
+            >
+              <SelectTrigger
+                className="h-8 w-40 border-background/20 bg-background/10 text-xs text-background"
+                disabled={busy}
+              >
+                <SelectValue placeholder="부채 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {liabilities.length === 0 ? (
+                  <SelectItem value="__empty__" disabled>
+                    등록된 부채 없음
+                  </SelectItem>
+                ) : (
+                  liabilities.map((lb) => (
+                    <SelectItem key={lb.id} value={lb.id} className="text-xs">
+                      {lb.name}
+                    </SelectItem>
+                  ))
+                )}
+                <SelectItem value="__unlink__" className="text-xs text-muted-foreground">
+                  연결 해제
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button
             type="button"
@@ -1320,6 +1600,7 @@ function TransactionRow({
   categoryTree,
   reloadCategories,
   onClassify,
+  onUnlinkLiability,
 }: {
   txn: Transaction
   selected: boolean
@@ -1328,6 +1609,7 @@ function TransactionRow({
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onClassify: (txnId: string, categoryId: string) => void
+  onUnlinkLiability: (txnId: string) => Promise<void>
 }) {
   const statusBadge = classStatusBadge(txn.classStatus)
 
@@ -1349,11 +1631,24 @@ function TransactionRow({
         </span>
       </TableCell>
 
-      {/* 적요 */}
+      {/* 적요 + 부채 연결 배지 */}
       <TableCell>
         <span className="block max-w-[280px] truncate text-xs" title={txn.description ?? ''}>
           {txn.description ?? txn.counterparty ?? '-'}
         </span>
+        {txn.liability && (
+          <span className="mt-0.5 inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0 text-[10px] text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
+            상환→{txn.liability.name}
+            <button
+              type="button"
+              onClick={() => void onUnlinkLiability(txn.id)}
+              aria-label="부채 연결 해제"
+              className="ml-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900"
+            >
+              <X className="size-2.5" />
+            </button>
+          </span>
+        )}
       </TableCell>
 
       {/* 금액 */}
@@ -1368,6 +1663,11 @@ function TransactionRow({
           {txn.direction === 'OUT' ? '-' : '+'}
           {formatWon(txn.amount)}
         </span>
+      </TableCell>
+
+      {/* 거래후잔액 (은행 임포트만 존재, 없으면 —) */}
+      <TableCell className="text-right font-mono text-xs text-muted-foreground">
+        {txn.balanceAfter != null ? formatWon(txn.balanceAfter) : '—'}
       </TableCell>
 
       {/* 계정과목 inline Select (+ 계정과목 추가 팝업) */}

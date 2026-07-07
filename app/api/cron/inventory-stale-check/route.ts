@@ -81,18 +81,22 @@ export async function GET(request: NextRequest) {
           console.error(`[cron/inventory-stale-check] Slack 실패 (${row.workspaceId}):`, err)
         }
 
-        await prisma.inventoryAnalysis.create({
-          data: {
-            workspaceId: row.workspaceId,
-            snapshotDate: row.snapshotDate,
-            triggeredBy: 'stale-skip',
-            results: {} as object,
-            shortageCount: 0,
-            returnRateCount: 0,
-            storageFeeCount: 0,
-            winnerIssueCount: 0,
-          },
-        })
+        // Slack 전송 성공 시에만 dedupe 마커 기록.
+        // 실패 시 마커 없음 → 다음 cron 실행에서 재시도(영구 침묵 방지).
+        if (notified) {
+          await prisma.inventoryAnalysis.create({
+            data: {
+              workspaceId: row.workspaceId,
+              snapshotDate: row.snapshotDate,
+              triggeredBy: 'stale-skip',
+              results: {} as object,
+              shortageCount: 0,
+              returnRateCount: 0,
+              storageFeeCount: 0,
+              winnerIssueCount: 0,
+            },
+          })
+        }
       }
     }
 

@@ -1,8 +1,9 @@
 /**
  * POST /api/finance/transactions/bulk
  * 선택한 확정 거래(FinTransaction)들을 일괄 처리한다.
- *   - { ids, categoryId }      → 일괄 계정과목 분류(CLASSIFIED, isTransfer 반영, 자동 학습 안 함)
- *   - { ids, action: 'delete' } → 일괄 삭제 + 영향 계좌의 DERIVED 월말 스냅샷 재계산(MANUAL 보존)
+ *   - { ids, categoryId }         → 일괄 계정과목 분류(CLASSIFIED, isTransfer 반영, 자동 학습 안 함)
+ *   - { ids, liabilityId }        → 일괄 부채 상환 연결(문자열=연결, null=연결 해제)
+ *   - { ids, action: 'delete' }   → 일괄 삭제 + 영향 계좌의 DERIVED 월말 스냅샷 재계산(MANUAL 보존)
  * 보안: 서버에서 spaceId 스코프로만 처리(클라이언트 id 신뢰 안 함).
  */
 import { NextRequest, NextResponse } from 'next/server'
@@ -87,6 +88,29 @@ export async function POST(req: NextRequest) {
         // 일괄 분류는 규칙 학습을 하지 않으므로 기존 규칙 힌트를 정리한다.
         matchedRuleId: null,
       },
+    })
+    return NextResponse.json({ updated: result.count })
+  }
+
+  // ── 일괄 부채 상환 연결/해제 ──
+  if ('liabilityId' in body) {
+    let targetLiabilityId: string | null
+    if (body.liabilityId === null || body.liabilityId === '') {
+      targetLiabilityId = null
+    } else if (typeof body.liabilityId === 'string') {
+      const liability = await prisma.finLiability.findFirst({
+        where: { id: body.liabilityId, spaceId },
+        select: { id: true },
+      })
+      if (!liability) return errorResponse('부채를 찾을 수 없습니다', 400)
+      targetLiabilityId = liability.id
+    } else {
+      return errorResponse('liabilityId 형식이 올바르지 않습니다', 400)
+    }
+
+    const result = await prisma.finTransaction.updateMany({
+      where: { id: { in: ids }, spaceId },
+      data: { liabilityId: targetLiabilityId },
     })
     return NextResponse.json({ updated: result.count })
   }

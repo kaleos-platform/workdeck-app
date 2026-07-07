@@ -17,19 +17,18 @@ export async function POST(
 
   const { reportId } = await params
 
-  const report = await prisma.analysisReport.findFirst({
+  // 원자적 claim: PENDING인 경우에만 PROCESSING 전환 (동시 요청 중 하나만 성공)
+  const claimed = await prisma.analysisReport.updateMany({
     where: { id: reportId, status: 'PENDING' },
+    data: { status: 'PROCESSING' },
   })
-
-  if (!report) {
+  if (claimed.count !== 1) {
     return errorResponse('PENDING 상태의 리포트를 찾을 수 없습니다', 404)
   }
 
-  // PROCESSING으로 변경
-  await prisma.analysisReport.update({
-    where: { id: reportId },
-    data: { status: 'PROCESSING' },
-  })
+  // claim 후 downstream에서 report 객체 사용을 위해 재조회
+  const report = await prisma.analysisReport.findUnique({ where: { id: reportId } })
+  if (!report) return errorResponse('리포트를 찾을 수 없습니다', 404)
 
   try {
     // 분석 컨텍스트 빌드 (DB 쿼리만 — 빠름)
@@ -37,7 +36,7 @@ export async function POST(
       report.workspaceId,
       report.periodStart,
       report.periodEnd,
-      report.reportType,
+      report.reportType
     )
 
     // 시스템 프롬프트 + 사용자 프롬프트 생성

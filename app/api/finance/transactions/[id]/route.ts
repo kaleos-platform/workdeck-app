@@ -26,7 +26,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     classStatus?: 'CLASSIFIED'
     matchedRuleId?: string | null
     isTransfer?: boolean
+    liabilityId?: string | null
   } = {}
+
+  // 부채 연결/해제 — 상환 거래를 특정 부채에 귀속(감지·잔액반영의 근거)
+  if (body?.liabilityId !== undefined) {
+    if (body.liabilityId === null || body.liabilityId === '') {
+      data.liabilityId = null
+    } else if (typeof body.liabilityId === 'string') {
+      const liability = await prisma.finLiability.findFirst({
+        where: { id: body.liabilityId, spaceId },
+        select: { id: true },
+      })
+      if (!liability) return errorResponse('부채를 찾을 수 없습니다', 400)
+      data.liabilityId = body.liabilityId
+    }
+  }
 
   if (typeof body?.categoryId === 'string' && body.categoryId) {
     const category = await prisma.finCategory.findFirst({
@@ -61,6 +76,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       classStatus: true,
       isTransfer: true,
       matchedRuleId: true,
+      liabilityId: true,
       category: {
         select: { id: true, name: true, type: true, parent: { select: { name: true } } },
       },

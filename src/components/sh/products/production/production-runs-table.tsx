@@ -172,7 +172,13 @@ function StatusTransitionMenu({
   run: RunRow
   onSelect: (target: ProductionRunStatus) => void
 }) {
-  const others = TRANSITION_TARGETS.filter((t) => t !== run.status)
+  // 입고 완료(STOCKED_IN)는 종료 상태 — 역행 전환 시 이미 반영된 재고가 역산되지 않아
+  // 재전환 시 이중 입고가 발생하므로 되돌리기 항목을 노출하지 않는다(서버도 409 로 차단).
+  const others =
+    run.status === 'STOCKED_IN' ? [] : TRANSITION_TARGETS.filter((t) => t !== run.status)
+  if (others.length === 0) {
+    return <StatusBadge status={run.status} />
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -152,6 +152,21 @@ export const ModelName = {
   FinStagedRow: 'FinStagedRow',
   FinTransaction: 'FinTransaction',
   FinBalanceSnapshot: 'FinBalanceSnapshot',
+  HiringStore: 'HiringStore',
+  HiringPosition: 'HiringPosition',
+  HiringPosting: 'HiringPosting',
+  HiringPostingPosition: 'HiringPostingPosition',
+  HiringPostingStore: 'HiringPostingStore',
+  HiringPostingManager: 'HiringPostingManager',
+  HiringContent: 'HiringContent',
+  HiringDetailTemplate: 'HiringDetailTemplate',
+  HiringApplication: 'HiringApplication',
+  HiringApplicationStore: 'HiringApplicationStore',
+  HiringApplicationFile: 'HiringApplicationFile',
+  HiringComment: 'HiringComment',
+  HiringApplicationNotification: 'HiringApplicationNotification',
+  HiringBlacklist: 'HiringBlacklist',
+  HiringMessageTemplate: 'HiringMessageTemplate',
   BoProduct: 'BoProduct',
   BoIdeation: 'BoIdeation',
   BoMaterial: 'BoMaterial',
@@ -1690,6 +1705,8 @@ export const FinAccountScalarFieldEnum = {
   accountNumber: 'accountNumber',
   accountType: 'accountType',
   openingBalance: 'openingBalance',
+  currentBalance: 'currentBalance',
+  currentBalanceAsOf: 'currentBalanceAsOf',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1709,6 +1726,7 @@ export const FinLiabilityScalarFieldEnum = {
   monthlyPayment: 'monthlyPayment',
   memo: 'memo',
   accountId: 'accountId',
+  balanceAsOf: 'balanceAsOf',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1824,6 +1842,7 @@ export const FinTransactionScalarFieldEnum = {
   counterparty: 'counterparty',
   memo: 'memo',
   categoryId: 'categoryId',
+  liabilityId: 'liabilityId',
   isTransfer: 'isTransfer',
   classStatus: 'classStatus',
   matchedRuleId: 'matchedRuleId',
@@ -1850,6 +1869,249 @@ export const FinBalanceSnapshotScalarFieldEnum = {
 } as const
 
 export type FinBalanceSnapshotScalarFieldEnum = (typeof FinBalanceSnapshotScalarFieldEnum)[keyof typeof FinBalanceSnapshotScalarFieldEnum]
+
+
+export const HiringStoreScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  roadAddress: 'roadAddress',
+  detailAddress: 'detailAddress',
+  zipcode: 'zipcode',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringStoreScalarFieldEnum = (typeof HiringStoreScalarFieldEnum)[keyof typeof HiringStoreScalarFieldEnum]
+
+
+export const HiringPositionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  category: 'category',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringPositionScalarFieldEnum = (typeof HiringPositionScalarFieldEnum)[keyof typeof HiringPositionScalarFieldEnum]
+
+
+export const HiringPostingScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  uuid: 'uuid',
+  title: 'title',
+  status: 'status',
+  detail: 'detail',
+  applicationEntries: 'applicationEntries',
+  managerNameEnc: 'managerNameEnc',
+  managerNameIv: 'managerNameIv',
+  managerPhoneEnc: 'managerPhoneEnc',
+  managerPhoneIv: 'managerPhoneIv',
+  closingDate: 'closingDate',
+  publishedAt: 'publishedAt',
+  notificationEnabled: 'notificationEnabled',
+  authorUserId: 'authorUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringPostingScalarFieldEnum = (typeof HiringPostingScalarFieldEnum)[keyof typeof HiringPostingScalarFieldEnum]
+
+
+export const HiringPostingPositionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postingId: 'postingId',
+  positionId: 'positionId',
+  name: 'name',
+  jobType: 'jobType',
+  payFrequency: 'payFrequency',
+  payAmount: 'payAmount',
+  workDays: 'workDays',
+  workStartAt: 'workStartAt',
+  workEndAt: 'workEndAt',
+  headcount: 'headcount',
+  experience: 'experience',
+  education: 'education',
+  jobDescription: 'jobDescription',
+  requiredQualifications: 'requiredQualifications',
+  preferredQualifications: 'preferredQualifications',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringPostingPositionScalarFieldEnum = (typeof HiringPostingPositionScalarFieldEnum)[keyof typeof HiringPostingPositionScalarFieldEnum]
+
+
+export const HiringPostingStoreScalarFieldEnum = {
+  id: 'id',
+  postingId: 'postingId',
+  storeId: 'storeId'
+} as const
+
+export type HiringPostingStoreScalarFieldEnum = (typeof HiringPostingStoreScalarFieldEnum)[keyof typeof HiringPostingStoreScalarFieldEnum]
+
+
+export const HiringPostingManagerScalarFieldEnum = {
+  id: 'id',
+  postingId: 'postingId',
+  userId: 'userId'
+} as const
+
+export type HiringPostingManagerScalarFieldEnum = (typeof HiringPostingManagerScalarFieldEnum)[keyof typeof HiringPostingManagerScalarFieldEnum]
+
+
+export const HiringContentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  sourceType: 'sourceType',
+  postingId: 'postingId',
+  templateId: 'templateId',
+  contentType: 'contentType',
+  data: 'data',
+  imagePath: 'imagePath',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringContentScalarFieldEnum = (typeof HiringContentScalarFieldEnum)[keyof typeof HiringContentScalarFieldEnum]
+
+
+export const HiringDetailTemplateScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  data: 'data',
+  imagePath: 'imagePath',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringDetailTemplateScalarFieldEnum = (typeof HiringDetailTemplateScalarFieldEnum)[keyof typeof HiringDetailTemplateScalarFieldEnum]
+
+
+export const HiringApplicationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postingId: 'postingId',
+  postingPositionId: 'postingPositionId',
+  uuid: 'uuid',
+  applicationEntries: 'applicationEntries',
+  nameEnc: 'nameEnc',
+  nameIv: 'nameIv',
+  nameHash: 'nameHash',
+  maskedName: 'maskedName',
+  phoneEnc: 'phoneEnc',
+  phoneIv: 'phoneIv',
+  phoneHash: 'phoneHash',
+  phoneLastDigitsHash: 'phoneLastDigitsHash',
+  emailEnc: 'emailEnc',
+  emailIv: 'emailIv',
+  emailHash: 'emailHash',
+  addressEnc: 'addressEnc',
+  addressIv: 'addressIv',
+  stage: 'stage',
+  hiringStage: 'hiringStage',
+  referrer: 'referrer',
+  directRegistration: 'directRegistration',
+  duplicated: 'duplicated',
+  memo: 'memo',
+  privacyAgreedAt: 'privacyAgreedAt',
+  canceledAt: 'canceledAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringApplicationScalarFieldEnum = (typeof HiringApplicationScalarFieldEnum)[keyof typeof HiringApplicationScalarFieldEnum]
+
+
+export const HiringApplicationStoreScalarFieldEnum = {
+  id: 'id',
+  applicationId: 'applicationId',
+  storeId: 'storeId'
+} as const
+
+export type HiringApplicationStoreScalarFieldEnum = (typeof HiringApplicationStoreScalarFieldEnum)[keyof typeof HiringApplicationStoreScalarFieldEnum]
+
+
+export const HiringApplicationFileScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  applicationId: 'applicationId',
+  fileName: 'fileName',
+  filePath: 'filePath',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringApplicationFileScalarFieldEnum = (typeof HiringApplicationFileScalarFieldEnum)[keyof typeof HiringApplicationFileScalarFieldEnum]
+
+
+export const HiringCommentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  applicationId: 'applicationId',
+  userId: 'userId',
+  content: 'content',
+  editedAt: 'editedAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringCommentScalarFieldEnum = (typeof HiringCommentScalarFieldEnum)[keyof typeof HiringCommentScalarFieldEnum]
+
+
+export const HiringApplicationNotificationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  applicationId: 'applicationId',
+  senderUserId: 'senderUserId',
+  notiType: 'notiType',
+  detailMessage: 'detailMessage',
+  uuid: 'uuid',
+  tokenHash: 'tokenHash',
+  tokenExpireAt: 'tokenExpireAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringApplicationNotificationScalarFieldEnum = (typeof HiringApplicationNotificationScalarFieldEnum)[keyof typeof HiringApplicationNotificationScalarFieldEnum]
+
+
+export const HiringBlacklistScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  phoneEnc: 'phoneEnc',
+  phoneIv: 'phoneIv',
+  phoneHash: 'phoneHash',
+  reason: 'reason',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringBlacklistScalarFieldEnum = (typeof HiringBlacklistScalarFieldEnum)[keyof typeof HiringBlacklistScalarFieldEnum]
+
+
+export const HiringMessageTemplateScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  title: 'title',
+  content: 'content',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringMessageTemplateScalarFieldEnum = (typeof HiringMessageTemplateScalarFieldEnum)[keyof typeof HiringMessageTemplateScalarFieldEnum]
 
 
 export const BoProductScalarFieldEnum = {
