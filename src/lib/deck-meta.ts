@@ -4,6 +4,7 @@ import {
   ShoppingBag,
   Sparkles,
   Landmark,
+  PenSquare,
   Briefcase,
   Users,
   type LucideIcon,
@@ -13,6 +14,7 @@ import {
   SELLER_HUB_BASE_PATH,
   SALES_CONTENT_BASE_PATH,
   FINANCE_DASHBOARD_PATH,
+  BLOG_OPS_HOME_PATH,
   HIRING_POSTS_HOME_PATH,
   HIRING_APPLICANTS_HOME_PATH,
 } from './deck-routes'
@@ -23,6 +25,7 @@ export type DeckVariant =
   | 'seller-hub'
   | 'sales-content'
   | 'finance'
+  | 'blog-ops'
   | 'hiring-posts'
   | 'hiring-applicants'
 
@@ -74,6 +77,12 @@ export const DECK_META: Record<DeckVariant, DeckMeta> = {
     href: HIRING_APPLICANTS_HOME_PATH,
     icon: Users,
     gradient: 'from-rose-500 to-pink-700',
+  },
+  'blog-ops': {
+    name: '블로그 운영',
+    href: BLOG_OPS_HOME_PATH,
+    icon: PenSquare,
+    gradient: 'from-sky-500 to-cyan-600',
   },
   workdeck: {
     name: 'Workdeck',

@@ -180,9 +180,7 @@ export async function processUpload(params: {
       // 전체 데이터를 CHUNK_SIZE 단위로 분할 삽입
       let insertedCount = 0
       for (let i = 0; i < baseRows.length; i += CHUNK_SIZE) {
-        const data = baseRows
-          .slice(i, i + CHUNK_SIZE)
-          .map((r) => ({ ...r, reportId: upload.id }))
+        const data = baseRows.slice(i, i + CHUNK_SIZE).map((r) => ({ ...r, reportId: upload.id }))
         const result = await tx.adRecord.createMany({ data, skipDuplicates: true })
         insertedCount += result.count
       }

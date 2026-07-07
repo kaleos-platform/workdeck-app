@@ -8,6 +8,7 @@
     "start": "tsx src/index.ts",
     "collect": "tsx src/collect-once.ts",
     "sc": "tsx src/sc/index.ts",
+    "bo": "tsx src/bo/index.ts",
     "backfill-sales": "tsx src/backfill-sales-vendor.ts"
   },
   "dependencies": {

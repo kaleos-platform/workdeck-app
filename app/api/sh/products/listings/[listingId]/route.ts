@@ -241,7 +241,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     await prisma.productListing.delete({ where: { id: listingId } })
   } catch (e) {
     if ((e as { code?: string }).code === 'P2003') {
-      return errorResponse('생산 차수 등에서 사용 중이라 삭제할 수 없습니다. 연결을 먼저 해제하세요', 409)
+      return errorResponse(
+        '생산 차수 등에서 사용 중이라 삭제할 수 없습니다. 연결을 먼저 해제하세요',
+        409
+      )
     }
     throw e
   }

@@ -115,7 +115,10 @@ function normalizeAcct(n: string | null | undefined): string {
 }
 
 /** 파일 preamble 계좌번호와 일치하는 등록 계좌(숫자 4자리+ 일치). 없으면 null. */
-function findMatchedAccount(accounts: Account[], fileAcctNumber: string | null | undefined): Account | null {
+function findMatchedAccount(
+  accounts: Account[],
+  fileAcctNumber: string | null | undefined
+): Account | null {
   const norm = normalizeAcct(fileAcctNumber)
   if (norm.length < 4) return null
   return accounts.find((a) => normalizeAcct(a.accountNumber) === norm) ?? null

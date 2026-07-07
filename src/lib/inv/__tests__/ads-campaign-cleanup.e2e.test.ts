@@ -101,7 +101,9 @@ d('coupang-ads 캠페인 삭제·중복감지 버그 e2e (dev DB)', () => {
   beforeAll(async () => {
     await cleanup()
     await prisma.user.create({ data: { id: USER_ID, email: 'e2e-adscampclean@throwaway.test' } })
-    await prisma.workspace.create({ data: { id: WS_ID, ownerId: USER_ID, name: 'E2E AdsCampClean' } })
+    await prisma.workspace.create({
+      data: { id: WS_ID, ownerId: USER_ID, name: 'E2E AdsCampClean' },
+    })
 
     // resolveWorkspace → throwaway workspace 반환
     ;(resolveWorkspace as jest.Mock).mockResolvedValue({ workspace: { id: WS_ID } })
@@ -233,7 +235,10 @@ d('coupang-ads 캠페인 삭제·중복감지 버그 e2e (dev DB)', () => {
         },
       ]
       ;(parseExcelBuffer as jest.Mock).mockReturnValue(mockRows)
-      ;(detectPeriod as jest.Mock).mockReturnValue({ periodStart: PERIOD_START, periodEnd: PERIOD_END })
+      ;(detectPeriod as jest.Mock).mockReturnValue({
+        periodStart: PERIOD_START,
+        periodEnd: PERIOD_END,
+      })
 
       // overwrite=null로 호출 — 중복 감지 단계
       const result = await processUpload({
@@ -249,7 +254,10 @@ d('coupang-ads 캠페인 삭제·중복감지 버그 e2e (dev DB)', () => {
         expect(result.requiresConfirmation).toBe(false)
       } else {
         // success:true 또는 다른 결과 — 오탐 없음 확인
-        expect('requiresConfirmation' in result && (result as { requiresConfirmation: boolean }).requiresConfirmation).toBeFalsy()
+        expect(
+          'requiresConfirmation' in result &&
+            (result as { requiresConfirmation: boolean }).requiresConfirmation
+        ).toBeFalsy()
       }
     })
   })

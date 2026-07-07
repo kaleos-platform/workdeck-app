@@ -64,7 +64,10 @@ export async function POST(req: NextRequest, { params }: Params) {
   // 맹목적 역산은 재고를 음수로 만든다), 재전환 시 INBOUND 가 재실행돼 재고가 이중 계상된다.
   // 정정이 필요하면 재고 조정(ADJUSTMENT)으로 처리한다.
   if (existing.status === 'STOCKED_IN') {
-    return errorResponse('이미 입고 완료된 차수는 되돌릴 수 없습니다. 재고 조정으로 처리하세요', 409)
+    return errorResponse(
+      '이미 입고 완료된 차수는 되돌릴 수 없습니다. 재고 조정으로 처리하세요',
+      409
+    )
   }
 
   const transitionDate = new Date(input.transitionDate)
@@ -187,7 +190,10 @@ export async function POST(req: NextRequest, { params }: Params) {
             },
           })
           if (claimed.count !== 1) {
-            throw new MovementError('차수 상태가 이미 변경되었습니다. 새로고침 후 다시 시도하세요', 409)
+            throw new MovementError(
+              '차수 상태가 이미 변경되었습니다. 새로고침 후 다시 시도하세요',
+              409
+            )
           }
 
           const results = await applyBatchInbound(tx, resolved.space.id, batchItems, transitionDate)

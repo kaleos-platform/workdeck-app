@@ -1,0 +1,316 @@
+import dns from 'dns/promises'
+import http from 'node:http'
+import https from 'node:https'
+import type { IncomingMessage } from 'node:http'
+import { isIP, isIPv4, isIPv6 } from 'net'
+
+// ─── 오류 타입 ─────────────────────────────────────────────────────────────────
+
+export type CrawlErrorCode = 'INVALID_URL' | 'BLOCKED_HOST' | 'FETCH_FAILED' | 'EMPTY_CONTENT'
+
+export class CrawlError extends Error {
+  constructor(
+    public readonly code: CrawlErrorCode,
+    message: string
+  ) {
+    super(message)
+    this.name = 'CrawlError'
+  }
+}
+
+// ─── SSRF 방어 ────────────────────────────────────────────────────────────────
+
+// IPv4 주소를 숫자로 변환
+function ipv4ToInt(ip: string): number {
+  return ip.split('.').reduce((acc, octet) => (acc << 8) | parseInt(octet, 10), 0) >>> 0
+}
+
+// 사설·루프백·링크로컬 IPv4 대역 차단
+function isPrivateIPv4(ip: string): boolean {
+  const n = ipv4ToInt(ip)
+  const ranges: [string, number][] = [
+    ['127.0.0.0', 8], // 루프백
+    ['10.0.0.0', 8], // 사설망
+    ['172.16.0.0', 12], // 사설망
+    ['192.168.0.0', 16], // 사설망
+    ['169.254.0.0', 16], // 링크로컬 (AWS 메타데이터 포함)
+    ['100.64.0.0', 10], // Shared Address Space (RFC 6598)
+    ['0.0.0.0', 8], // "이 네트워크"
+    ['192.0.0.0', 24], // IETF Protocol Assignments
+    ['198.18.0.0', 15], // 벤치마크 테스트
+    ['198.51.100.0', 24], // Documentation
+    ['203.0.113.0', 24], // Documentation
+    ['240.0.0.0', 4], // 미래 예약
+    ['255.255.255.255', 32], // 브로드캐스트
+  ]
+  for (const [base, prefix] of ranges) {
+    const mask = prefix === 0 ? 0 : ~((1 << (32 - prefix)) - 1) >>> 0
+    if ((n & mask) === (ipv4ToInt(base) & mask)) return true
+  }
+  return false
+}
+
+// 사설·루프백·링크로컬 IPv6 대역 차단
+function isPrivateIPv6(ip: string): boolean {
+  const lower = ip.toLowerCase()
+  // 루프백
+  if (lower === '::1') return true
+  // 로컬 유니캐스트 fc00::/7 (fc00:: ~ fdff::)
+  if (/^f[cd]/i.test(lower)) return true
+  // 링크로컬 fe80::/10
+  if (/^fe[89ab]/i.test(lower)) return true
+  // IPv4-mapped ::ffff:x.x.x.x
+  const mapped = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)
+  if (mapped) return isPrivateIPv4(mapped[1])
+  // 멀티캐스트 ff00::/8
+  if (/^ff/i.test(lower)) return true
+  return false
+}
+
+export function isBlockedIp(ip: string): boolean {
+  if (isIPv4(ip)) return isPrivateIPv4(ip)
+  if (isIPv6(ip)) return isPrivateIPv6(ip)
+  return true // 알 수 없는 형식은 차단
+}
+
+// 호스트명을 DNS로 조회해 모든 IP를 검증한 후 반환.
+// SSRF 방어의 1단계 — 2단계는 makePinnedLookup 으로 연결 시점에도 재검사.
+async function resolveAndValidateIps(hostname: string): Promise<string[]> {
+  // 이미 IP 리터럴이면 바로 검사
+  if (isIP(hostname)) {
+    if (isBlockedIp(hostname)) {
+      throw new CrawlError('BLOCKED_HOST', `차단된 IP 주소입니다: ${hostname}`)
+    }
+    return [hostname]
+  }
+
+  // DNS A + AAAA 조회 — resolve4/resolve6 은 시스템 resolver 를 거치지 않아
+  // /etc/hosts 조작 우회를 막는다.
+  const [v4Results, v6Results] = await Promise.allSettled([
+    dns.resolve4(hostname),
+    dns.resolve6(hostname),
+  ])
+
+  const ips: string[] = []
+  if (v4Results.status === 'fulfilled') ips.push(...v4Results.value)
+  if (v6Results.status === 'fulfilled') ips.push(...v6Results.value)
+
+  if (ips.length === 0) {
+    throw new CrawlError('BLOCKED_HOST', `호스트를 확인할 수 없습니다: ${hostname}`)
+  }
+
+  for (const ip of ips) {
+    if (isBlockedIp(ip)) {
+      throw new CrawlError('BLOCKED_HOST', `차단된 호스트입니다: ${hostname} → ${ip}`)
+    }
+  }
+
+  return ips
+}
+
+// 연결 시점 DNS 핀 고정용 lookup 함수.
+// validatedIps 에 있는 IP 만 반환하고 isBlockedIp 를 한 번 더 실행해 TOCTOU 를 막는다.
+// autoSelectFamily: false 와 함께 사용해 단일 주소 콜백 형태(address, family)를 보장한다.
+function makePinnedLookup(
+  validatedIps: string[]
+): (
+  hostname: string,
+  options: unknown,
+  callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void
+) => void {
+  return function pinnedLookup(_hostname, _options, callback) {
+    for (const ip of validatedIps) {
+      if (!isBlockedIp(ip)) {
+        callback(null, ip, isIPv6(ip) ? 6 : 4)
+        return
+      }
+    }
+    const err = Object.assign(new Error('차단된 호스트: 안전한 주소가 없습니다'), {
+      code: 'ENOTFOUND',
+    }) as NodeJS.ErrnoException
+    callback(err, '', 0)
+  }
+}
+
+// IncomingMessage 를 fetch Response 와 호환되는 최소 인터페이스로 래핑.
+type PinnedResponse = {
+  status: number
+  ok: boolean
+  headers: { get(name: string): string | null }
+  text(): Promise<string>
+}
+
+function wrapIncomingMessage(incoming: IncomingMessage): PinnedResponse {
+  const status = incoming.statusCode ?? 0
+  return {
+    status,
+    ok: status >= 200 && status < 300,
+    headers: {
+      get(name: string): string | null {
+        const v = incoming.headers[name.toLowerCase()]
+        if (!v) return null
+        return Array.isArray(v) ? (v[0] ?? null) : v
+      },
+    },
+    text(): Promise<string> {
+      return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = []
+        incoming.on('data', (chunk: Buffer) => chunks.push(chunk))
+        incoming.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+        incoming.on('error', reject)
+      })
+    },
+  }
+}
+
+// ─── HTML 처리 ────────────────────────────────────────────────────────────────
+
+function stripHtml(html: string): string {
+  // script / style / nav / header / footer / aside 태그와 내용 제거
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+    .replace(/<header[\s\S]*?<\/header>/gi, '')
+    .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+    .replace(/<aside[\s\S]*?<\/aside>/gi, '')
+    // HTML 태그 제거
+    .replace(/<[^>]+>/g, ' ')
+    // HTML 엔티티 기본 변환
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    // 공백 정규화
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return text
+}
+
+// ─── 크롤러 ──────────────────────────────────────────────────────────────────
+
+const FETCH_TIMEOUT_MS = 10_000
+const MAX_TEXT_CHARS = 20_000
+const MAX_REDIRECTS = 5
+
+const USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+
+export type CrawlResult = {
+  text: string
+  fetchedAt: Date
+}
+
+// 리다이렉트를 직접 처리해 SSRF 방어 (Location 헤더도 hop 마다 재검증).
+// fetch() 대신 node:http/https 를 사용해 DNS 해석을 핀 고정한다 —
+// fetch() 는 connect 시점에 DNS 를 재조회하므로 DNS 리바인딩 TOCTOU 위험이 있다.
+async function fetchWithSsrfGuard(
+  url: string,
+  remainingRedirects: number
+): Promise<PinnedResponse> {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    throw new CrawlError('INVALID_URL', '올바르지 않은 URL입니다')
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new CrawlError('INVALID_URL', 'http/https URL만 허용합니다')
+  }
+
+  // 1단계: DNS 조회 + 전체 IP 목록 검증
+  const validatedIps = await resolveAndValidateIps(parsed.hostname)
+
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+
+  const port = parsed.port ? parseInt(parsed.port, 10) : parsed.protocol === 'https:' ? 443 : 80
+  const path = (parsed.pathname || '/') + parsed.search
+
+  const incoming = await new Promise<IncomingMessage>((resolve, reject) => {
+    // autoSelectFamily: false — lookup 콜백을 단일 주소 형태(address, family)로 고정
+    const reqOptions = {
+      hostname: parsed.hostname,
+      port,
+      path,
+      method: 'GET' as const,
+      headers: { 'User-Agent': USER_AGENT },
+      lookup: makePinnedLookup(validatedIps) as never,
+      autoSelectFamily: false,
+    }
+    const lib = parsed.protocol === 'https:' ? https : http
+    const req = lib.request(reqOptions, resolve)
+    req.on('error', (err: Error) => {
+      if (controller.signal.aborted) {
+        reject(new CrawlError('FETCH_FAILED', '요청 타임아웃'))
+      } else {
+        reject(new CrawlError('FETCH_FAILED', `가져오기 실패: ${err.message}`))
+      }
+    })
+    controller.signal.addEventListener('abort', () => req.destroy())
+    req.end()
+  }).finally(() => clearTimeout(timer))
+
+  const res = wrapIncomingMessage(incoming)
+
+  // 3xx 리다이렉트 처리 — 각 hop 을 resolveAndValidateIps 로 재검증
+  if (res.status >= 300 && res.status < 400) {
+    incoming.resume() // 소켓 누수 방지 — 본문 폐기
+    if (remainingRedirects <= 0) {
+      throw new CrawlError('FETCH_FAILED', '리다이렉트 한도를 초과했습니다')
+    }
+    const location = res.headers.get('location')
+    if (!location) {
+      throw new CrawlError('FETCH_FAILED', '리다이렉트 Location 헤더가 없습니다')
+    }
+    // 상대 경로 → 절대 경로 변환 후 재귀 — 새 hostname 도 재검증됨
+    const nextUrl = new URL(location, url).toString()
+    return fetchWithSsrfGuard(nextUrl, remainingRedirects - 1)
+  }
+
+  return res
+}
+
+export async function crawlHomepage(url: string): Promise<CrawlResult> {
+  // 1. URL 유효성 검사 (scheme 먼저)
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    throw new CrawlError('INVALID_URL', '올바르지 않은 URL입니다')
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new CrawlError('INVALID_URL', 'http/https URL만 허용합니다')
+  }
+
+  // 2. SSRF 가드 + fetch (리다이렉트 직접 처리)
+  const res = await fetchWithSsrfGuard(url, MAX_REDIRECTS)
+
+  if (!res.ok) {
+    throw new CrawlError('FETCH_FAILED', `HTTP ${res.status} 응답`)
+  }
+
+  // 3. 본문 처리
+  let html: string
+  try {
+    html = await res.text()
+  } catch (err) {
+    throw new CrawlError(
+      'FETCH_FAILED',
+      `응답 읽기 실패: ${err instanceof Error ? err.message : String(err)}`
+    )
+  }
+
+  const text = stripHtml(html).slice(0, MAX_TEXT_CHARS)
+
+  if (!text.trim()) {
+    throw new CrawlError('EMPTY_CONTENT', '페이지에서 텍스트를 추출하지 못했습니다')
+  }
+
+  return { text, fetchedAt: new Date() }
+}

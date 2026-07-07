@@ -40,7 +40,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ymOf } from '@/lib/finance/aggregate'
-import { defaultSelectedPeriods, availablePeriods, bucketLabel, type Grain } from '@/lib/finance/periods'
+import {
+  defaultSelectedPeriods,
+  availablePeriods,
+  bucketLabel,
+  type Grain,
+} from '@/lib/finance/periods'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
@@ -213,7 +218,9 @@ export function FinanceCashflowView() {
   )
   const [pinnedPeriods, setPinnedPeriods] = useState<Set<string>>(new Set())
   // 흐름도 단일 기간(버킷키) — 기본 최신(직전월이 속한 버킷).
-  const [flowPeriod, setFlowPeriod] = useState<string>(() => availablePeriods('month', ymOf(new Date()))[0])
+  const [flowPeriod, setFlowPeriod] = useState<string>(
+    () => availablePeriods('month', ymOf(new Date()))[0]
+  )
   const [data, setData] = useState<CashflowData | null>(null)
   const [loading, setLoading] = useState(true)
   // 선택된 계정과목/대분류 — 우측 거래내역 패널 대상.
@@ -459,7 +466,12 @@ function CashflowTable({
             selectedKey={selectedKey}
             onSelect={onSelect}
           />
-          <TotalRow label="지출 합계" entry={totals.expense} columns={columns} rowBg="bg-muted/40" />
+          <TotalRow
+            label="지출 합계"
+            entry={totals.expense}
+            columns={columns}
+            rowBg="bg-muted/40"
+          />
 
           {/* ── 순현금흐름 ── */}
           <NetRow entry={totals.net} columns={columns} />
@@ -611,7 +623,10 @@ function GroupRow({
       <PeriodCells columns={columns} values={group.values} rowBg={rowBg} cellClass="font-medium" />
 
       <TableCell
-        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(group.changePct))}
+        className={cn(
+          'w-[84px] px-3 text-right text-xs tabular-nums',
+          changePctClass(group.changePct)
+        )}
       >
         {formatPercent(group.changePct, { sign: true })}
       </TableCell>
@@ -651,7 +666,10 @@ function DataRow({
 }) {
   const rowBg = selected ? 'bg-accent' : 'bg-card'
   return (
-    <TableRow className={cn(onSelect && 'cursor-pointer', selected && 'bg-accent')} onClick={onSelect}>
+    <TableRow
+      className={cn(onSelect && 'cursor-pointer', selected && 'bg-accent')}
+      onClick={onSelect}
+    >
       <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4', rowBg)}>
         <div className={cn('flex min-w-0 items-center gap-2', indent && 'pl-6')}>
           {indent ? (
@@ -659,7 +677,10 @@ function DataRow({
               └
             </span>
           ) : (
-            <span className="inline-block size-2 shrink-0 rounded-full bg-chart-1" aria-hidden="true" />
+            <span
+              className="inline-block size-2 shrink-0 rounded-full bg-chart-1"
+              aria-hidden="true"
+            />
           )}
           <span className="truncate text-sm" title={row.name}>
             {row.name}
@@ -673,7 +694,10 @@ function DataRow({
       <PeriodCells columns={columns} values={row.values} rowBg={rowBg} />
 
       <TableCell
-        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(row.changePct))}
+        className={cn(
+          'w-[84px] px-3 text-right text-xs tabular-nums',
+          changePctClass(row.changePct)
+        )}
       >
         {formatPercent(row.changePct, { sign: true })}
       </TableCell>
@@ -696,12 +720,17 @@ function TotalRow({
 }) {
   return (
     <TableRow className={cn('font-semibold hover:bg-muted/40', rowBg)}>
-      <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4 text-sm', rowBg)}>{label}</TableCell>
+      <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4 text-sm', rowBg)}>
+        {label}
+      </TableCell>
 
       <PeriodCells columns={columns} values={entry.values} rowBg={rowBg} />
 
       <TableCell
-        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(entry.changePct))}
+        className={cn(
+          'w-[84px] px-3 text-right text-xs tabular-nums',
+          changePctClass(entry.changePct)
+        )}
       >
         {formatPercent(entry.changePct, { sign: true })}
       </TableCell>
@@ -727,7 +756,10 @@ function NetRow({ entry, columns }: { entry: CashflowTotalEntry; columns: Displa
       />
 
       <TableCell
-        className={cn('w-[84px] px-3 py-3 text-right text-xs tabular-nums', changePctClass(entry.changePct))}
+        className={cn(
+          'w-[84px] px-3 py-3 text-right text-xs tabular-nums',
+          changePctClass(entry.changePct)
+        )}
       >
         {formatPercent(entry.changePct, { sign: true })}
       </TableCell>
@@ -959,7 +991,7 @@ function CashflowTxnPanel({
       {data && data.rows.length > 0 && (
         <div className="shrink-0 space-y-2 border-b px-3 py-2">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}

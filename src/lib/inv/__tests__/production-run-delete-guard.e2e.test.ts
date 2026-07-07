@@ -83,7 +83,6 @@ d('DELETE /production-runs/[runId] — STOCKED_IN 삭제 차단 (dev DB)', () =>
       },
     })
     plannedRunId = plannedRun.id
-
     ;(resolveDeckContext as jest.Mock).mockResolvedValue({
       space: { id: SPACE_ID, name: 'E2E DeleteGuard' },
       user: { id: USER_ID },

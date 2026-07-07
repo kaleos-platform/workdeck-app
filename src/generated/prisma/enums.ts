@@ -567,3 +567,104 @@ export const HiringNotificationType = {
 } as const
 
 export type HiringNotificationType = (typeof HiringNotificationType)[keyof typeof HiringNotificationType]
+
+
+export const BoCrawlStatus = {
+  NONE: 'NONE',
+  PENDING: 'PENDING',
+  DONE: 'DONE',
+  FAILED: 'FAILED'
+} as const
+
+export type BoCrawlStatus = (typeof BoCrawlStatus)[keyof typeof BoCrawlStatus]
+
+
+export const BoMaterialStatus = {
+  PROPOSED: 'PROPOSED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type BoMaterialStatus = (typeof BoMaterialStatus)[keyof typeof BoMaterialStatus]
+
+
+export const BoPostStatus = {
+  GENERATING: 'GENERATING',
+  DRAFT: 'DRAFT',
+  IN_REVIEW: 'IN_REVIEW',
+  PUBLISH_APPROVED: 'PUBLISH_APPROVED',
+  PUBLISHED: 'PUBLISHED',
+  FAILED: 'FAILED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type BoPostStatus = (typeof BoPostStatus)[keyof typeof BoPostStatus]
+
+
+export const BoPlatform = {
+  NAVER_BLOG: 'NAVER_BLOG',
+  TISTORY: 'TISTORY',
+  OWN_HOMEPAGE: 'OWN_HOMEPAGE'
+} as const
+
+export type BoPlatform = (typeof BoPlatform)[keyof typeof BoPlatform]
+
+
+export const BoPublisherMode = {
+  MANUAL: 'MANUAL',
+  BROWSER: 'BROWSER'
+} as const
+
+export type BoPublisherMode = (typeof BoPublisherMode)[keyof typeof BoPublisherMode]
+
+
+export const BoVariantStatus = {
+  GENERATING: 'GENERATING',
+  READY: 'READY',
+  EDITED: 'EDITED',
+  FAILED: 'FAILED'
+} as const
+
+export type BoVariantStatus = (typeof BoVariantStatus)[keyof typeof BoVariantStatus]
+
+
+export const BoDeploymentStatus = {
+  PENDING: 'PENDING',
+  PUBLISHING: 'PUBLISHING',
+  PUBLISHED: 'PUBLISHED',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED',
+  EXPORTED: 'EXPORTED'
+} as const
+
+export type BoDeploymentStatus = (typeof BoDeploymentStatus)[keyof typeof BoDeploymentStatus]
+
+
+export const BoJobKind = {
+  CRAWL_HOMEPAGE: 'CRAWL_HOMEPAGE',
+  GENERATE_DRAFT: 'GENERATE_DRAFT',
+  GENERATE_VARIANT: 'GENERATE_VARIANT',
+  PUBLISH: 'PUBLISH'
+} as const
+
+export type BoJobKind = (typeof BoJobKind)[keyof typeof BoJobKind]
+
+
+export const BoJobStatus = {
+  PENDING: 'PENDING',
+  CLAIMED: 'CLAIMED',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type BoJobStatus = (typeof BoJobStatus)[keyof typeof BoJobStatus]
+
+
+export const BoCredentialKind = {
+  COOKIE: 'COOKIE',
+  OAUTH: 'OAUTH',
+  API_KEY: 'API_KEY'
+} as const
+
+export type BoCredentialKind = (typeof BoCredentialKind)[keyof typeof BoCredentialKind]

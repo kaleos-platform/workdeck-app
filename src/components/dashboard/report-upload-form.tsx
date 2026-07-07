@@ -478,9 +478,7 @@ export function ReportUploadForm({ onComplete }: { onComplete?: () => void } = {
               <li>쿠팡 셀러센터 광고 관리 메뉴에서 리포트를 다운로드할 수 있습니다</li>
               <li>Excel (.xlsx) 및 CSV (.csv) 형식의 파일을 업로드할 수 있습니다</li>
               <li>여러 파일을 동시에 선택하여 일괄 업로드할 수 있습니다</li>
-              <li>
-                동일 기간 데이터 재업로드 시 기존 데이터는 이 파일 내용으로 교체됩니다
-              </li>
+              <li>동일 기간 데이터 재업로드 시 기존 데이터는 이 파일 내용으로 교체됩니다</li>
             </ul>
           </CardContent>
         </Card>

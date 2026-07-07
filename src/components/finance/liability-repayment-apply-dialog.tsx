@@ -101,7 +101,7 @@ export function LiabilityRepaymentApplyDialog({
 
         <div className="space-y-3">
           {/* 현재 잔액 / 감지 상환 요약 */}
-          <div className="rounded-md border bg-muted/30 px-3 py-2.5 text-xs space-y-1.5">
+          <div className="space-y-1.5 rounded-md border bg-muted/30 px-3 py-2.5 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">현재 잔액</span>
               <span className="font-mono font-semibold text-red-600 dark:text-red-400">
@@ -116,7 +116,7 @@ export function LiabilityRepaymentApplyDialog({
                 -{formatWon(liability.pending.sum)}
               </span>
             </div>
-            <div className="border-t pt-1.5 flex justify-between">
+            <div className="flex justify-between border-t pt-1.5">
               <span className="text-muted-foreground">제안 잔액</span>
               <span className="font-mono font-semibold">{formatWon(suggestedBalance)}</span>
             </div>
@@ -133,7 +133,7 @@ export function LiabilityRepaymentApplyDialog({
                 if (e.key === 'Enter') void handleConfirm()
               }}
               min={0}
-              className="h-8 text-sm font-mono"
+              className="h-8 font-mono text-sm"
               autoFocus
             />
             <p className="text-[11px] text-muted-foreground">

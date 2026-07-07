@@ -336,7 +336,9 @@ export function TransactionsView() {
         : {
             field,
             order:
-              field === 'txnDate' || field === 'amount' || field === 'balanceAfter' ? 'desc' : 'asc',
+              field === 'txnDate' || field === 'amount' || field === 'balanceAfter'
+                ? 'desc'
+                : 'asc',
           }
     )
   }, [])
@@ -1371,13 +1373,51 @@ function TransactionsPanel({
                     aria-label="전체 선택"
                   />
                 </TableHead>
-                <SortHeader label="날짜" field="txnDate" sort={sort} onSort={onSort} className="w-24" />
-                <SortHeader label="출처" field="account" sort={sort} onSort={onSort} className="w-28" />
+                <SortHeader
+                  label="날짜"
+                  field="txnDate"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-24"
+                />
+                <SortHeader
+                  label="출처"
+                  field="account"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-28"
+                />
                 <SortHeader label="적요" field="description" sort={sort} onSort={onSort} />
-                <SortHeader label="금액" field="amount" sort={sort} onSort={onSort} className="w-28" align="right" />
-                <SortHeader label="거래후잔액" field="balanceAfter" sort={sort} onSort={onSort} className="w-28" align="right" />
-                <SortHeader label="계정과목" field="category" sort={sort} onSort={onSort} className="w-44" />
-                <SortHeader label="상태" field="classStatus" sort={sort} onSort={onSort} className="w-24" />
+                <SortHeader
+                  label="금액"
+                  field="amount"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-28"
+                  align="right"
+                />
+                <SortHeader
+                  label="거래후잔액"
+                  field="balanceAfter"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-28"
+                  align="right"
+                />
+                <SortHeader
+                  label="계정과목"
+                  field="category"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-44"
+                />
+                <SortHeader
+                  label="상태"
+                  field="classStatus"
+                  sort={sort}
+                  onSort={onSort}
+                  className="w-24"
+                />
               </TableRow>
             </TableHeader>
             <TableBody>

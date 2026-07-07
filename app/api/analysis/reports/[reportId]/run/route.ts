@@ -36,7 +36,7 @@ export async function POST(
       report.workspaceId,
       report.periodStart,
       report.periodEnd,
-      report.reportType,
+      report.reportType
     )
 
     // 시스템 프롬프트 + 사용자 프롬프트 생성
