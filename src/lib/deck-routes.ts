@@ -107,32 +107,73 @@ export const FINANCE_UPLOAD_PATH = `${FINANCE_BASE_PATH}/upload`
 export const FINANCE_ACCOUNTS_PATH = `${FINANCE_BASE_PATH}/accounts`
 export const FINANCE_BALANCES_PATH = `${FINANCE_BASE_PATH}/balances`
 
+// ─── 모집 관리 (Recruiting) ───────────────────────────────────────────────────
+export const RECRUITING_DECK_ID = 'recruiting'
+export const RECRUITING_BASE_PATH = '/d/recruiting'
+export const RECRUITING_HOME_PATH = `${RECRUITING_BASE_PATH}/home`
+export const RECRUITING_POSTINGS_PATH = `${RECRUITING_BASE_PATH}/postings`
+export const RECRUITING_APPLICATIONS_PATH = `${RECRUITING_BASE_PATH}/applications`
+export const RECRUITING_BLACKLIST_PATH = `${RECRUITING_BASE_PATH}/blacklist`
+export const RECRUITING_MESSAGE_TEMPLATES_PATH = `${RECRUITING_BASE_PATH}/message-templates`
+export const RECRUITING_DETAIL_TEMPLATES_PATH = `${RECRUITING_BASE_PATH}/templates`
+export const RECRUITING_STORES_PATH = `${RECRUITING_BASE_PATH}/settings/stores`
+export const RECRUITING_POSITIONS_PATH = `${RECRUITING_BASE_PATH}/settings/positions`
+
+export function getRecruitingPostingPath(id: string): string {
+  return `${RECRUITING_POSTINGS_PATH}/${id}`
+}
+
+export function getRecruitingPostingBuildPath(id: string, step?: string): string {
+  const base = `${RECRUITING_POSTINGS_PATH}/${id}/build`
+  return step ? `${base}/${step}` : base
+}
+
+export function getRecruitingApplicationPath(id: string): string {
+  return `${RECRUITING_APPLICATIONS_PATH}/${id}`
+}
+
 // ─── 채용 관리 ① 공고 제작 (Hiring Posts) ─────────────────────────────────────
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_POSTS_DECK_ID = 'hiring-posts'
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_POSTS_BASE_PATH = '/d/hiring-posts'
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_POSTS_HOME_PATH = `${HIRING_POSTS_BASE_PATH}/home`
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_POSTS_POSTINGS_PATH = `${HIRING_POSTS_BASE_PATH}/postings`
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_POSTS_TEMPLATES_PATH = `${HIRING_POSTS_BASE_PATH}/templates`
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_POSTS_STORES_PATH = `${HIRING_POSTS_BASE_PATH}/settings/stores`
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_POSTS_POSITIONS_PATH = `${HIRING_POSTS_BASE_PATH}/settings/positions`
 
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export function getHiringPostingPath(id: string): string {
   return `${HIRING_POSTS_POSTINGS_PATH}/${id}`
 }
 
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export function getHiringPostingBuildPath(id: string, step?: string): string {
   const base = `${HIRING_POSTS_POSTINGS_PATH}/${id}/build`
   return step ? `${base}/${step}` : base
 }
 
 // ─── 채용 관리 ② 지원자 관리 (Hiring Applicants) ──────────────────────────────
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_APPLICANTS_DECK_ID = 'hiring-applicants'
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_APPLICANTS_BASE_PATH = '/d/hiring-applicants'
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_APPLICANTS_HOME_PATH = `${HIRING_APPLICANTS_BASE_PATH}/home`
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_APPLICANTS_LIST_PATH = `${HIRING_APPLICANTS_BASE_PATH}/applications`
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_APPLICANTS_BLACKLIST_PATH = `${HIRING_APPLICANTS_BASE_PATH}/blacklist`
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export const HIRING_APPLICANTS_TEMPLATES_PATH = `${HIRING_APPLICANTS_BASE_PATH}/message-templates`
 
+/** @deprecated recruiting 통합으로 대체 — 리다이렉트 전용 */
 export function getHiringApplicationPath(id: string): string {
   return `${HIRING_APPLICANTS_LIST_PATH}/${id}`
 }

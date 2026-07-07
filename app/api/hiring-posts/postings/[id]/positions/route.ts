@@ -7,7 +7,7 @@ type Params = { params: Promise<{ id: string }> }
 
 // 공고의 직무 목록
 export async function GET(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id } = await params
 
@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 // 직무 추가
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

@@ -7,7 +7,7 @@ import { messageTemplateSchema } from '@/lib/validations/hiring-applicants'
 type Params = { params: Promise<{ id: string }> }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-applicants')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id } = await params
 
@@ -24,7 +24,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-applicants')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

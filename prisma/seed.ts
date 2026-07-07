@@ -24,8 +24,9 @@ async function main() {
     { id: 'inventory-mgmt', name: '통합 재고 관리', isActive: false },
     { id: 'osmu', name: 'OSMU 광고 제작', isActive: false },
     { id: 'commerce-ops', name: '이커머스 운영 자동화', isActive: false },
-    { id: 'hiring-posts', name: '공고 제작', isActive: true },
-    { id: 'hiring-applicants', name: '지원자 관리', isActive: true },
+    { id: 'hiring-posts', name: '공고 제작', isActive: false },
+    { id: 'hiring-applicants', name: '지원자 관리', isActive: false },
+    { id: 'recruiting', name: '모집 관리', isActive: true },
   ]
 
   for (const app of deckApps) {

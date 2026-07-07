@@ -9,7 +9,7 @@ type Params = { params: Promise<{ id: string; contentId: string }> }
 
 // 콘텐츠 블록 저장 (scene JSON + export PNG 업로드)
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id, contentId } = await params
 
@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // 콘텐츠 블록 삭제
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id, contentId } = await params
 

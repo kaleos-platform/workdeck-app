@@ -8,7 +8,7 @@ const VALID_STATUS = new Set(['DRAFT', 'ACTIVE', 'CLOSED', 'ARCHIVED'])
 
 // 공고 목록 (?status 필터)
 export async function GET(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const statusParam = req.nextUrl.searchParams.get('status')
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
 // 새 공고 생성 (DRAFT) — 기본 제목·기본 폼으로 시작
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   let body: unknown = {}

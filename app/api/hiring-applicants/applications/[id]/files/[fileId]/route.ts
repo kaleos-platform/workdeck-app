@@ -8,7 +8,7 @@ import { getApplicantFileSignedUrl } from '@/lib/hiring/storage'
 type Params = { params: Promise<{ id: string; fileId: string }> }
 
 export async function GET(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-applicants')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id, fileId } = await params
 
