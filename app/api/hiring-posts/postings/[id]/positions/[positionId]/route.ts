@@ -7,7 +7,7 @@ type Params = { params: Promise<{ id: string; positionId: string }> }
 
 // 공고 직무 수정
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id, positionId } = await params
 
@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // 공고 직무 삭제
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id, positionId } = await params
 

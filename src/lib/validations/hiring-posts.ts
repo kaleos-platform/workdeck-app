@@ -101,18 +101,26 @@ export const positionSchema = z.object({
 })
 export type PositionInput = z.infer<typeof positionSchema>
 
-// ─── 상세 콘텐츠 (Excalidraw 블록) ─────────────────────────────────────────────
+// ─── 상세 콘텐츠 블록 ──────────────────────────────────────────────────────────
+// contentType: 'text' — Tiptap JSON, 'image' — Supabase 업로드 이미지
+export const contentTypeEnum = z.enum(['image', 'text'])
+
 export const createContentSchema = z.object({
-  data: z.unknown().optional(), // excalidraw scene JSON
+  contentType: contentTypeEnum,
   sortOrder: z.number().int().optional(),
 })
 export type CreateContentInput = z.infer<typeof createContentSchema>
 
 export const updateContentSchema = z.object({
+  // text 블록 전용 — Tiptap doc JSON. z.record/z.any 대신 z.unknown() 사용:
+  // Tiptap JSON 형태는 { type, content, ... } 이지만 버전별 shape 변동이 있으므로
+  // 서버는 저장만 담당하고 구조 검증은 하지 않는다.
   data: z.unknown().optional(),
+  // image 블록 전용 — base64 data URL 또는 순수 base64. MAX_ASSET_BYTES(10MB) 기준
+  // base64 인코딩 오버헤드(~33%)를 감안해 13.5MB 문자 길이 상한 적용
+  imageBase64: emptyToUndefined.pipe(z.string().max(Math.ceil(10 * 1024 * 1024 * 1.35))).optional(),
+  mimeType: emptyToUndefined.pipe(z.string()).optional(),
   sortOrder: z.number().int().optional(),
-  // exportToBlob PNG 를 base64(data URL 또는 순수 base64) 로 전달 — 서버가 업로드
-  imageBase64: emptyToUndefined.pipe(z.string()).optional(),
 })
 export type UpdateContentInput = z.infer<typeof updateContentSchema>
 

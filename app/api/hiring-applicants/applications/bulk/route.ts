@@ -5,7 +5,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { bulkStageSchema } from '@/lib/validations/hiring-applicants'
 
 export async function PATCH(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-applicants')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => null)

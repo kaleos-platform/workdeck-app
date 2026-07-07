@@ -86,15 +86,14 @@ import {
   FINANCE_UPLOAD_PATH,
   FINANCE_ACCOUNTS_PATH,
   FINANCE_BALANCES_PATH,
-  HIRING_POSTS_HOME_PATH,
-  HIRING_POSTS_POSTINGS_PATH,
-  HIRING_POSTS_TEMPLATES_PATH,
-  HIRING_POSTS_STORES_PATH,
-  HIRING_POSTS_POSITIONS_PATH,
-  HIRING_APPLICANTS_HOME_PATH,
-  HIRING_APPLICANTS_LIST_PATH,
-  HIRING_APPLICANTS_BLACKLIST_PATH,
-  HIRING_APPLICANTS_TEMPLATES_PATH,
+  RECRUITING_HOME_PATH,
+  RECRUITING_POSTINGS_PATH,
+  RECRUITING_APPLICATIONS_PATH,
+  RECRUITING_BLACKLIST_PATH,
+  RECRUITING_MESSAGE_TEMPLATES_PATH,
+  RECRUITING_DETAIL_TEMPLATES_PATH,
+  RECRUITING_STORES_PATH,
+  RECRUITING_POSITIONS_PATH,
   BLOG_OPS_HOME_PATH,
   BLOG_OPS_PRODUCTS_PATH,
   BLOG_OPS_IDEATION_PATH,
@@ -190,20 +189,16 @@ const FINANCE_FLAT_ROUTES = [
   { label: '계좌 관리', icon: Landmark, href: FINANCE_BALANCES_PATH },
 ]
 
-// ─── 채용 관리 평탄 메뉴 데이터 (도메인 탭 금지 규칙 준수) ─────────────────────
-const HIRING_POSTS_FLAT_ROUTES = [
-  { label: '홈', icon: Home, href: HIRING_POSTS_HOME_PATH },
-  { label: '공고 관리', icon: Briefcase, href: HIRING_POSTS_POSTINGS_PATH },
-  { label: '상세 템플릿', icon: FileText, href: HIRING_POSTS_TEMPLATES_PATH },
-  { label: '매장 관리', icon: Store, href: HIRING_POSTS_STORES_PATH },
-  { label: '직무 관리', icon: Tags, href: HIRING_POSTS_POSITIONS_PATH },
-]
-
-const HIRING_APPLICANTS_FLAT_ROUTES = [
-  { label: '홈', icon: Home, href: HIRING_APPLICANTS_HOME_PATH },
-  { label: '지원자', icon: Users, href: HIRING_APPLICANTS_LIST_PATH },
-  { label: '블랙리스트', icon: UserX, href: HIRING_APPLICANTS_BLACKLIST_PATH },
-  { label: '메시지 템플릿', icon: MessageSquare, href: HIRING_APPLICANTS_TEMPLATES_PATH },
+// ─── 모집 관리 평탄 메뉴 데이터 (도메인 탭 금지 규칙 준수) ─────────────────────
+const RECRUITING_FLAT_ROUTES = [
+  { label: '홈', icon: Home, href: RECRUITING_HOME_PATH },
+  { label: '공고 관리', icon: Briefcase, href: RECRUITING_POSTINGS_PATH },
+  { label: '지원자', icon: Users, href: RECRUITING_APPLICATIONS_PATH },
+  { label: '블랙리스트', icon: UserX, href: RECRUITING_BLACKLIST_PATH },
+  { label: '메시지 템플릿', icon: MessageSquare, href: RECRUITING_MESSAGE_TEMPLATES_PATH },
+  { label: '상세 템플릿', icon: FileText, href: RECRUITING_DETAIL_TEMPLATES_PATH },
+  { label: '매장 관리', icon: Store, href: RECRUITING_STORES_PATH },
+  { label: '직무 관리', icon: Tags, href: RECRUITING_POSITIONS_PATH },
 ]
 
 const COUPANG_MAIN_ROUTES = [
@@ -313,8 +308,7 @@ export function Sidebar({
   const isSellerHubSidebar = variant === 'seller-hub'
   const isSalesContentSidebar = variant === 'sales-content'
   const isFinanceSidebar = variant === 'finance'
-  const isHiringPostsSidebar = variant === 'hiring-posts'
-  const isHiringApplicantsSidebar = variant === 'hiring-applicants'
+  const isRecruitingSidebar = variant === 'recruiting'
   const isBlogOpsSidebar = variant === 'blog-ops'
   const isMyDeckMode = mode === 'my-deck'
   const meta = DECK_META[variant]
@@ -619,32 +613,10 @@ export function Sidebar({
           </div>
         )}
 
-        {isHiringPostsSidebar && (
+        {isRecruitingSidebar && (
           <div className="space-y-0.5">
-            {HIRING_POSTS_FLAT_ROUTES.map((route) => {
-              const isHomeRoute = route.href === HIRING_POSTS_HOME_PATH
-              const isActive = isHomeRoute
-                ? pathname === route.href
-                : pathname === route.href || pathname.startsWith(`${route.href}/`)
-              return (
-                <RailLink
-                  key={route.href}
-                  href={route.href}
-                  icon={route.icon}
-                  label={route.label}
-                  isActive={isActive}
-                  collapsed={collapsed}
-                  size="sm"
-                />
-              )
-            })}
-          </div>
-        )}
-
-        {isHiringApplicantsSidebar && (
-          <div className="space-y-0.5">
-            {HIRING_APPLICANTS_FLAT_ROUTES.map((route) => {
-              const isHomeRoute = route.href === HIRING_APPLICANTS_HOME_PATH
+            {RECRUITING_FLAT_ROUTES.map((route) => {
+              const isHomeRoute = route.href === RECRUITING_HOME_PATH
               const isActive = isHomeRoute
                 ? pathname === route.href
                 : pathname === route.href || pathname.startsWith(`${route.href}/`)

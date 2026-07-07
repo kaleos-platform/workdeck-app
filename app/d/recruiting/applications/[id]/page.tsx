@@ -2,10 +2,10 @@
 // 상호작용(상태 변경·코멘트·알림·블랙리스트·다운로드)은 PII 없는 client island 로 분리.
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { resolveAnyDeckContext } from '@/lib/api-helpers'
+import { resolveDeckContext } from '@/lib/api-helpers'
 import { getApplicationDetail } from '@/lib/hiring/applications'
 import type { ApplicationEntryValue } from '@/lib/hiring/pii'
-import { HIRING_APPLICANTS_LIST_PATH } from '@/lib/deck-routes'
+import { RECRUITING_APPLICATIONS_PATH } from '@/lib/deck-routes'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DuplicatedBadge, BlacklistBadge } from '@/components/hiring-applicants/badges'
 import { StageControls } from '@/components/hiring-applicants/stage-controls'
@@ -19,7 +19,7 @@ type Params = { params: Promise<{ id: string }> }
 const STANDARD_KEYS = new Set(['name', 'phone', 'email', 'address'])
 
 export default async function ApplicationDetailPage({ params }: Params) {
-  const resolved = await resolveAnyDeckContext(['hiring-applicants', 'hiring-posts'])
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
   const { id } = await params
 
@@ -37,7 +37,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
   return (
     <div className="space-y-4 p-6">
       <Link
-        href={HIRING_APPLICANTS_LIST_PATH}
+        href={RECRUITING_APPLICATIONS_PATH}
         className="text-xs text-muted-foreground hover:text-foreground"
       >
         ← 목록으로

@@ -26,9 +26,9 @@ import {
 
 type Props = {
   postingId: string
-  initialPositions: WizardPositionData[]
+  positions: WizardPositionData[]
   spacePositions: WizardPosition[]
-  onCountChange: (count: number) => void
+  onChange: (positions: WizardPositionData[]) => void
 }
 
 type FormState = {
@@ -80,14 +80,8 @@ function toForm(p: WizardPositionData): FormState {
 
 const NONE = '__none__'
 
-export function StepPositions({
-  postingId,
-  initialPositions,
-  spacePositions,
-  onCountChange,
-}: Props) {
+export function StepPositions({ postingId, positions, spacePositions, onChange }: Props) {
   const router = useRouter()
-  const [positions, setPositions] = useState(initialPositions)
   const [editingId, setEditingId] = useState<string | null>(null) // null=닫힘, 'new'=신규
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
@@ -135,9 +129,8 @@ export function StepPositions({
     const res = await fetch(`/api/hiring-posts/postings/${postingId}/positions`)
     if (res.ok) {
       const { positions: next } = await res.json()
-      setPositions(next)
-      onCountChange(next.length)
-      // 스텝 이동 시 언마운트되므로 서버 props 를 최신화해 재마운트 재시딩 대비
+      onChange(next)
+      // 서버 props 최신화(발행 검증·재마운트 재시딩 대비)
       router.refresh()
     }
   }
@@ -184,7 +177,7 @@ export function StepPositions({
   }
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">모집 직무와 근무 조건을 등록합니다.</p>
         {editingId === null && (

@@ -11,7 +11,7 @@ type Params = { params: Promise<{ id: string }> }
 const schema = z.object({ reason: z.string().max(500).optional() })
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-applicants')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const roleError = assertRole(resolved.role, 'ADMIN')

@@ -3,8 +3,14 @@
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus } from 'lucide-react'
+import { Copy, Loader2, MoreHorizontal, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Table,
   TableBody,
@@ -15,7 +21,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PostingStatusBadge, STATUS_LABELS, type PostingStatus } from './status-badge'
-import { getHiringPostingBuildPath } from '@/lib/deck-routes'
+import { getHiringPostingBuildPath, getRecruitingPostingBuildPath } from '@/lib/deck-routes'
 
 export type PostingRow = {
   id: string
@@ -48,11 +54,29 @@ export function PostingsTable({ postings }: { postings: PostingRow[] }) {
   const router = useRouter()
   const [tab, setTab] = useState<'ALL' | PostingStatus>('ALL')
   const [creating, startCreate] = useTransition()
+  const [copyingId, setCopyingId] = useState<string | null>(null)
 
   const filtered = useMemo(
     () => (tab === 'ALL' ? postings : postings.filter((p) => p.status === tab)),
     [postings, tab]
   )
+
+  async function handleCopy(postingId: string) {
+    setCopyingId(postingId)
+    try {
+      const res = await fetch(`/api/hiring-posts/postings/${postingId}/copy`, {
+        method: 'POST',
+      })
+      if (!res.ok) throw new Error('공고 복사에 실패했습니다')
+      const { posting } = await res.json()
+      toast.success('공고를 복사했습니다')
+      router.push(getRecruitingPostingBuildPath(posting.id))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '공고 복사에 실패했습니다')
+    } finally {
+      setCopyingId(null)
+    }
+  }
 
   function handleCreate() {
     startCreate(async () => {
@@ -97,13 +121,14 @@ export function PostingsTable({ postings }: { postings: PostingRow[] }) {
               <TableHead className="w-24 text-right">지원자</TableHead>
               <TableHead className="w-32">마감일</TableHead>
               <TableHead className="w-32">작성일</TableHead>
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-sm text-muted-foreground">
-                  공고가 없습니다. “새 공고”로 첫 공고를 만들어 보세요.
+                <TableCell colSpan={6} className="h-24 text-center text-sm text-muted-foreground">
+                  공고가 없습니다. &quot;새 공고&quot;로 첫 공고를 만들어 보세요.
                 </TableCell>
               </TableRow>
             ) : (
@@ -122,6 +147,29 @@ export function PostingsTable({ postings }: { postings: PostingRow[] }) {
                     {formatDate(p.closingDate)}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(p.createdAt)}</TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="size-7 rounded-md">
+                          <MoreHorizontal className="size-4" />
+                          <span className="sr-only">행 메뉴</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          disabled={copyingId === p.id}
+                          onSelect={() => handleCopy(p.id)}
+                        >
+                          {copyingId === p.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <Copy className="size-4" />
+                          )}
+                          복사
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               ))
             )}

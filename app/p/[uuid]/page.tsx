@@ -15,6 +15,7 @@ import {
   formatWorkTime,
   hiringAssetPublicUrl,
 } from '@/components/hiring-public/posting-labels'
+import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
 
 type Params = { params: Promise<{ uuid: string }> }
 
@@ -25,9 +26,8 @@ async function loadPosting(uuid: string) {
       positions: { orderBy: { createdAt: 'asc' } },
       stores: { include: { store: { select: { name: true, roadAddress: true } } } },
       contents: {
-        where: { imagePath: { not: null } },
         orderBy: { sortOrder: 'asc' },
-        select: { id: true, imagePath: true },
+        select: { id: true, contentType: true, data: true, imagePath: true, sortOrder: true },
       },
     },
   })
@@ -111,7 +111,7 @@ export default async function PublicPostingPage({ params }: Params) {
         </section>
       )}
 
-      {/* 상세 본문 — Excalidraw export PNG 블록 */}
+      {/* 상세 본문 — image / text 블록 */}
       {posting.contents.length > 0 && (
         <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
           {posting.contents.map((c) =>
@@ -124,6 +124,12 @@ export default async function PublicPostingPage({ params }: Params) {
                 height={1600}
                 unoptimized
                 className="h-auto w-full"
+              />
+            ) : c.contentType === 'text' && c.data ? (
+              <div
+                key={c.id}
+                className="p-6 [&_a]:text-primary [&_a]:underline [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-sm [&_p]:mb-2 [&_p]:text-sm [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-sm"
+                dangerouslySetInnerHTML={{ __html: renderTiptapHtml(c.data) }}
               />
             ) : null
           )}

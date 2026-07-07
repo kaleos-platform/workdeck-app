@@ -7,7 +7,7 @@ type Params = { params: Promise<{ id: string }> }
 
 // 공고에 연결된 매장 id 목록
 export async function GET(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id } = await params
 
@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 // 공고 매장 연결 전체 교체 (set semantics)
 export async function PUT(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('hiring-posts')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

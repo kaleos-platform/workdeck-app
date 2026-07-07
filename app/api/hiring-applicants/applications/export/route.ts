@@ -15,7 +15,7 @@ const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
 const EXPORT_ROW_CAP = 2000
 
 export async function GET(req: NextRequest) {
-  const resolved = await resolveDeckContext('hiring-applicants')
+  const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
 
   const roleError = assertRole(resolved.role, 'ADMIN')
