@@ -13,7 +13,12 @@ export type ConfirmOptions = {
   manualMappings: { externalCode: string; items: ManualMappingItem[] }[]
 }
 
-export type ConfirmResult = { adjustedCount: number; status: string }
+export type ConfirmResult = {
+  adjustedCount: number
+  status: string
+  /** best-effort 루프에서 실패한 항목 목록. 성공 시 undefined 또는 빈 배열. */
+  failed?: { optionId: string; locationId: string; reason: string }[]
+}
 
 /**
  * 적용 가능한 총 항목 수를 산출한다.
@@ -146,18 +151,23 @@ export async function confirmReconciliation(
       mapId = created.id
     }
 
-    // items 교체: 기존 items 삭제 후 새 items 삽입
-    await prisma.invLocationProductMapItem.deleteMany({ where: { mapId } })
+    // items 교체: deleteMany + createMany를 배열형 트랜잭션으로 원자화
+    // — deleteMany 성공 후 createMany 실패 시 items 소실을 방지한다.
     const validItems = mm.items.filter((i) => validOptionIds.has(i.optionId))
-    if (validItems.length > 0) {
-      await prisma.invLocationProductMapItem.createMany({
-        data: validItems.map((i) => ({
-          mapId,
-          optionId: i.optionId,
-          quantity: i.quantity ?? 1,
-        })),
-      })
-    }
+    await prisma.$transaction([
+      prisma.invLocationProductMapItem.deleteMany({ where: { mapId } }),
+      ...(validItems.length > 0
+        ? [
+            prisma.invLocationProductMapItem.createMany({
+              data: validItems.map((i) => ({
+                mapId,
+                optionId: i.optionId,
+                quantity: i.quantity ?? 1,
+              })),
+            }),
+          ]
+        : []),
+    ])
 
     // 선택된 optionId가 items 중 하나라도 포함되면 전체 items 적용
     const itemOptionIds = validItems.map((i) => i.optionId)
@@ -190,7 +200,25 @@ export async function confirmReconciliation(
   const movementDate = snapshotDate.toISOString()
   const snapshotStr = snapshotDate.toISOString().slice(0, 10)
 
+  // 수정 3: PARTIAL 재시도 시 이미 적용된 (optionId, locationId) 건을 재조회해 건너뜀.
+  // — ADJUSTMENT는 절대량(스냅샷 fileQuantity) set이라, 재적용 시 중간 INBOUND/OUTBOUND를
+  //   스냅샷 값으로 덮어쓰는 무음 재고 손상이 발생한다.
+  // 주의: 동시 최초 확정 2건(더블클릭)은 둘 다 빈 set을 보는 sub-second 창이 남는다.
+  //       processMovement 내부 advisory lock이 중첩 tx를 감쌀 수 없어 미수정 사항.
+  //       단, ADJUSTMENT는 절대량 set이라 멱등성이 있어 재고 손상은 없다.
+  const preApplied = await prisma.invMovement.findMany({
+    where: { referenceId: reconciliationId, type: 'ADJUSTMENT' },
+    select: { optionId: true, locationId: true },
+  })
+  const preAppliedKeys = new Set(preApplied.map((m) => `${m.locationId}|${m.optionId}`))
+
+  // 실패 항목 추적 — best-effort는 유지하되(첫 실패에 throw 금지) 실패를 표면화
+  const failed: { optionId: string; locationId: string; reason: string }[] = []
+
   for (const adj of all) {
+    // 이미 적용된 건 건너뜀 — 재적용 금지
+    if (preAppliedKeys.has(`${adj.locationId}|${adj.optionId}`)) continue
+
     try {
       await processMovement(spaceId, {
         type: 'ADJUSTMENT',
@@ -203,6 +231,11 @@ export async function confirmReconciliation(
       })
     } catch (err) {
       console.error('[confirmReconciliation] adjustment 실패', adj, err)
+      failed.push({
+        optionId: adj.optionId,
+        locationId: adj.locationId,
+        reason: err instanceof Error ? err.message : String(err),
+      })
     }
   }
 
@@ -231,5 +264,9 @@ export async function confirmReconciliation(
     },
   })
 
-  return { adjustedCount: cumulativeApplied, status: newStatus }
+  return {
+    adjustedCount: cumulativeApplied,
+    status: newStatus,
+    ...(failed.length ? { failed } : {}),
+  }
 }
