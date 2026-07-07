@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { deleteBatchWithMovements } from '@/lib/sh/batch-delete'
+import { getTodayStrKst } from '@/lib/date-range'
 
 type Params = { params: Promise<{ batchId: string }> }
 
@@ -50,11 +51,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (batch.status !== 'DRAFT') {
       return errorResponse('이미 완료된 배송 묶음입니다', 400)
     }
-    // 자동 라벨 생성
+    // 자동 라벨 생성 — KST 기준 날짜·오전오후
     const now = new Date()
-    const hour = now.getHours()
-    const ampm = hour < 12 ? '오전' : '오후'
-    const autoLabel = `${now.toISOString().split('T')[0]} ${ampm}`
+    const kstDateStr = getTodayStrKst()                                               // KST YYYY-MM-DD
+    const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()      // KST 시각(0~23)
+    const ampm = kstHour < 12 ? '오전' : '오후'
+    const autoLabel = `${kstDateStr} ${ampm}`
     const label =
       typeof body?.label === 'string' && body.label.trim() ? body.label.trim() : autoLabel
 
