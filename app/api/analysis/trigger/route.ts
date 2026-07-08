@@ -29,6 +29,9 @@ export async function POST(request: NextRequest) {
       return errorResponse('workspaceId가 필요합니다', 400)
     }
     workspaceId = parsed.workspaceId
+    // 워크스페이스 실재 검증 — 유효 워커 키만으로 임의 UUID 트리거 방지
+    const ws = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true } })
+    if (!ws) return errorResponse('워크스페이스를 찾을 수 없습니다', 404)
     // body를 다시 사용할 수 있도록 저장
     bodyData = parsed
   } else {
