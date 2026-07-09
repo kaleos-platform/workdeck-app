@@ -220,7 +220,6 @@ export function FinanceUploadPanel() {
   // ─── preview 요청 ──────────────────────────────────────────────────────────
 
   const handleFile = useCallback(async (selectedFile: File) => {
-    setFile(selectedFile)
     setPreviewRes(null)
     setMapping({})
     setSavePreset(false)
@@ -229,8 +228,16 @@ export function FinanceUploadPanel() {
     setPreviewing(true)
 
     try {
+      // 파일 바이트를 선택 즉시 메모리로 스냅샷 — 매핑/계좌 등록 중 디스크 파일이
+      // 변경(엑셀 저장·재다운로드·클라우드 sync)되면 원본 File 핸들 재전송이
+      // ERR_UPLOAD_FILE_CHANGED 로 실패한다. 이후 preview/commit 요청은 스냅샷 사용.
+      const snapshot = new File([await selectedFile.arrayBuffer()], selectedFile.name, {
+        type: selectedFile.type,
+      })
+      setFile(snapshot)
+
       const fd = new FormData()
-      fd.append('file', selectedFile)
+      fd.append('file', snapshot)
       const res = await fetch('/api/finance/imports/preview', { method: 'POST', body: fd })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -949,19 +956,21 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
             />
           </div>
 
-          {/* 종류 */}
-          <div className="space-y-1">
-            <Label className="text-xs">종류 *</Label>
-            <Select value={accKind} onValueChange={(v) => setAccKind(v as FinKind)}>
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="BANK">은행</SelectItem>
-                <SelectItem value="CARD">카드</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* 종류 — 카드 등록은 업로드 종류(카드) 고정이라 숨김 */}
+          {!isCard && (
+            <div className="space-y-1">
+              <Label className="text-xs">종류 *</Label>
+              <Select value={accKind} onValueChange={(v) => setAccKind(v as FinKind)}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BANK">은행</SelectItem>
+                  <SelectItem value="CARD">카드</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* 금융기관/카드사 */}
           <div className="space-y-1">
@@ -987,30 +996,32 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
             />
           </div>
 
-          {/* 유형 */}
-          <div className="space-y-1">
-            <Label className="text-xs">{isCard ? '카드 유형' : '계좌 유형'}</Label>
-            <Input
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value)}
-              onKeyDown={handleEnter}
-              placeholder={isCard ? '예: 법인카드' : '예: 보통예금'}
-              className="h-8 text-sm"
-            />
-          </div>
-
-          {/* 기초 잔액 */}
-          <div className="col-span-2 space-y-1">
-            <Label className="text-xs">기초 잔액 (원)</Label>
-            <Input
-              type="number"
-              value={openingBalance}
-              onChange={(e) => setOpeningBalance(e.target.value)}
-              onKeyDown={handleEnter}
-              placeholder="선택 입력"
-              className="h-8 text-sm"
-            />
-          </div>
+          {/* 계좌 유형·기초 잔액 — 카드에는 불필요 */}
+          {!isCard && (
+            <>
+              <div className="space-y-1">
+                <Label className="text-xs">계좌 유형</Label>
+                <Input
+                  value={accountType}
+                  onChange={(e) => setAccountType(e.target.value)}
+                  onKeyDown={handleEnter}
+                  placeholder="예: 보통예금"
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="col-span-2 space-y-1">
+                <Label className="text-xs">기초 잔액 (원)</Label>
+                <Input
+                  type="number"
+                  value={openingBalance}
+                  onChange={(e) => setOpeningBalance(e.target.value)}
+                  onKeyDown={handleEnter}
+                  placeholder="선택 입력"
+                  className="h-8 text-sm"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <DialogFooter>
