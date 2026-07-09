@@ -13,6 +13,7 @@ import {
   guessInstitution,
   autoMapFinHeaders,
   findBestPreset,
+  extractCardNumberColumn,
   type PresetLike,
 } from '@/lib/finance/automap'
 
@@ -36,6 +37,11 @@ export async function POST(req: NextRequest) {
   }
 
   const kind = detectKind(preview.headers)
+  // 카드 export는 카드번호가 preamble이 아닌 행 컬럼인 경우가 많다 — 컬럼에서 보강
+  if (kind === 'CARD' && !preview.preamble.accountNumber) {
+    const cardNo = extractCardNumberColumn(preview.headers, preview.sampleRows)
+    if (cardNo) preview.preamble.accountNumber = cardNo
+  }
   const institution = guessInstitution(file.name)
   const suggestedMapping = autoMapFinHeaders(preview.headers, kind)
 

@@ -59,6 +59,44 @@ export function guessInstitution(fileName: string): string | undefined {
   return undefined
 }
 
+// ─── 계좌/카드번호 매칭 ─────────────────────────────────────────────────────────
+
+/**
+ * 파일에서 추출한 계좌/카드번호와 등록된 번호를 비교한다.
+ * 카드 export는 마스킹(5107-****-****-1234)이 일반적이라 '*'를 와일드카드로 취급:
+ *   - 둘 다 숫자만이면 완전일치
+ *   - 마스킹 포함이면 자리수 동일 + 위치별 비교('*'는 어느 쪽이든 통과)
+ */
+export function matchesAccountNumber(a: string, b: string): boolean {
+  const na = a.replace(/[^0-9*]/g, '')
+  const nb = b.replace(/[^0-9*]/g, '')
+  if (na.length < 4 || nb.length < 4) return false
+  const masked = na.includes('*') || nb.includes('*')
+  if (!masked) return na === nb
+  if (na.length !== nb.length) return false
+  for (let i = 0; i < na.length; i++) {
+    if (na[i] !== '*' && nb[i] !== '*' && na[i] !== nb[i]) return false
+  }
+  return true
+}
+
+/**
+ * 카드 export는 카드번호가 preamble이 아닌 행 컬럼인 경우가 많다.
+ * "카드번호" 헤더 컬럼을 찾아 샘플 행의 첫 비어있지 않은 값을 돌려준다(없으면 undefined).
+ */
+export function extractCardNumberColumn(
+  headers: string[],
+  sampleRows: string[][]
+): string | undefined {
+  const idx = headers.findIndex((h) => norm(h).includes('카드번호'))
+  if (idx < 0) return undefined
+  for (const row of sampleRows) {
+    const v = (row[idx] ?? '').trim()
+    if (v) return v
+  }
+  return undefined
+}
+
 // ─── 헤더 → 필드 자동 매핑 ──────────────────────────────────────────────────────
 
 /** 필드별 헤더 힌트(부분 포함). 우선순위 = 배열 순서(구체적인 것 먼저). */
