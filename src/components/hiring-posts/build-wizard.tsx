@@ -97,9 +97,9 @@ export function BuildWizard({ data }: { data: WizardData }) {
 
       {/* STEP 1 — 공고 기본 정보 */}
       {step === 'basic' && (
-        <div className={gridCls}>
+        <div className="mx-auto w-full max-w-3xl">
           <div className="space-y-8">
-            <Section title="공고 제목">
+            <Section title="기본 정보">
               <StepBasic
                 postingId={data.posting.id}
                 value={{ title: state.title }}
@@ -123,17 +123,6 @@ export function BuildWizard({ data }: { data: WizardData }) {
                 ) => patch(p)}
               />
             </Section>
-          </div>
-          <div className="lg:sticky lg:top-6 lg:self-start">
-            <PostingPreview
-              status={state.status}
-              title={state.title}
-              positions={state.positions}
-              stores={state.stores}
-              storeIds={state.storeIds}
-              noStores={state.noStores}
-              contents={state.contents}
-            />
           </div>
         </div>
       )}
