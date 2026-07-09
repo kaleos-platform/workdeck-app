@@ -1,12 +1,12 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { AutoSaveIndicator } from './autosave-indicator'
 
 type FormSettingsValue = {
   closingDate: string // 'YYYY-MM-DD' 또는 ''
@@ -22,26 +22,46 @@ type Props = {
 // 지원서 폼 설정 섹션 — 마감일 + 지원 알림. 지원서 폼 제작 스텝에 배치.
 export function StepFormSettings({ postingId, value, onChange }: Props) {
   const router = useRouter()
-  const [saving, startSave] = useTransition()
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const savingRef = useRef(false)
 
-  function handleSave() {
-    startSave(async () => {
-      try {
-        const res = await fetch(`/api/hiring-posts/postings/${postingId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            closingDate: value.closingDate || null,
-            notificationEnabled: value.notificationEnabled,
-          }),
-        })
-        if (!res.ok) throw new Error('저장에 실패했습니다')
-        toast.success('지원서 설정을 저장했습니다')
-        router.refresh()
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : '저장에 실패했습니다')
-      }
-    })
+  async function doSave(patch: Partial<FormSettingsValue>) {
+    if (savingRef.current) return
+    savingRef.current = true
+    setStatus('saving')
+    const merged = { ...value, ...patch }
+    try {
+      const res = await fetch(`/api/hiring-posts/postings/${postingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          closingDate: merged.closingDate || null,
+          notificationEnabled: merged.notificationEnabled,
+        }),
+      })
+      if (!res.ok) throw new Error('저장에 실패했습니다')
+      setStatus('saved')
+      router.refresh()
+      setTimeout(() => setStatus('idle'), 2000)
+    } catch (err) {
+      setStatus('idle')
+      toast.error(err instanceof Error ? err.message : '저장에 실패했습니다')
+    } finally {
+      savingRef.current = false
+    }
+  }
+
+  function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
+    onChange({ closingDate: e.target.value })
+  }
+
+  function handleDateBlur() {
+    doSave({ closingDate: value.closingDate })
+  }
+
+  function handleNotifChange(v: boolean) {
+    onChange({ notificationEnabled: v })
+    doSave({ notificationEnabled: v })
   }
 
   return (
@@ -52,7 +72,8 @@ export function StepFormSettings({ postingId, value, onChange }: Props) {
           id="closingDate"
           type="date"
           value={value.closingDate}
-          onChange={(e) => onChange({ closingDate: e.target.value })}
+          onChange={handleDateChange}
+          onBlur={handleDateBlur}
           className="w-48"
         />
         <p className="text-xs text-muted-foreground">
@@ -70,13 +91,13 @@ export function StepFormSettings({ postingId, value, onChange }: Props) {
         <Switch
           id="notif"
           checked={value.notificationEnabled}
-          onCheckedChange={(v) => onChange({ notificationEnabled: v })}
+          onCheckedChange={handleNotifChange}
         />
       </div>
 
-      <Button size="sm" onClick={handleSave} disabled={saving}>
-        지원서 설정 저장
-      </Button>
+      <div className="flex justify-end">
+        <AutoSaveIndicator status={status} />
+      </div>
     </div>
   )
 }

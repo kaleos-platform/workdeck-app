@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import type { WizardStore } from './build-types'
+import { AutoSaveIndicator } from './autosave-indicator'
 
 type StoresValue = {
   stores: WizardStore[]
@@ -26,38 +27,54 @@ type Props = {
 // 모집 장소 섹션 (controlled) — 매장 체크리스트 + "모집 장소 없음" 스위치.
 export function StepStores({ postingId, value, onChange }: Props) {
   const router = useRouter()
-  const [saving, setSaving] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const [newAddress, setNewAddress] = useState('')
+  const savingRef = useRef(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { stores, storeIds, noStores } = value
 
-  function toggle(id: string) {
-    const next = storeIds.includes(id) ? storeIds.filter((s) => s !== id) : [...storeIds, id]
-    onChange({ storeIds: next })
-  }
-
-  function toggleNoStores(on: boolean) {
-    onChange(on ? { noStores: true, storeIds: [] } : { noStores: false })
-  }
-
-  async function handleSave() {
-    setSaving(true)
+  async function doSave(nextStoreIds: string[], nextNoStores: boolean) {
+    if (savingRef.current) return
+    savingRef.current = true
+    setStatus('saving')
     try {
       const res = await fetch(`/api/hiring-posts/postings/${postingId}/stores`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storeIds: noStores ? [] : storeIds }),
+        body: JSON.stringify({ storeIds: nextNoStores ? [] : nextStoreIds }),
       })
       if (!res.ok) throw new Error('매장 연결 저장에 실패했습니다')
-      toast.success('매장 연결을 저장했습니다')
+      setStatus('saved')
       router.refresh()
+      setTimeout(() => setStatus('idle'), 2000)
     } catch (err) {
+      setStatus('idle')
       toast.error(err instanceof Error ? err.message : '매장 연결 저장에 실패했습니다')
     } finally {
-      setSaving(false)
+      savingRef.current = false
     }
+  }
+
+  function debouncedSave(nextStoreIds: string[], nextNoStores: boolean) {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      doSave(nextStoreIds, nextNoStores)
+    }, 600)
+  }
+
+  function toggle(id: string) {
+    const next = storeIds.includes(id) ? storeIds.filter((s) => s !== id) : [...storeIds, id]
+    onChange({ storeIds: next })
+    debouncedSave(next, noStores)
+  }
+
+  function toggleNoStores(on: boolean) {
+    const nextStoreIds = on ? [] : storeIds
+    onChange(on ? { noStores: true, storeIds: [] } : { noStores: false })
+    debouncedSave(nextStoreIds, on)
   }
 
   async function handleCreate() {
@@ -162,9 +179,9 @@ export function StepStores({ postingId, value, onChange }: Props) {
         </>
       )}
 
-      <Button size="sm" onClick={handleSave} disabled={saving}>
-        매장 연결 저장
-      </Button>
+      <div className="flex justify-end">
+        <AutoSaveIndicator status={status} />
+      </div>
     </div>
   )
 }

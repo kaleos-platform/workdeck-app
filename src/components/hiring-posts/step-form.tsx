@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
+import { AutoSaveIndicator } from './autosave-indicator'
 
 type Props = {
   postingId: string
@@ -62,7 +63,9 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
         optionsText: (f.options ?? []).join(', '),
       }))
   )
-  const [saving, setSaving] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const savingRef = useRef(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 최종 폼 필드 배열 (표준 순서 → 커스텀)
   const fields = useMemo<FormFieldInput[]>(() => {
@@ -98,38 +101,170 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
     onChangeRef.current(fields)
   }, [fields])
 
-  function addCustom() {
-    setCustomFields((prev) => [
-      ...prev,
-      { key: makeKey(), type: 'string', label: '', required: false, optionsText: '' },
-    ])
-  }
-  function updateCustom(idx: number, patch: Partial<CustomField>) {
-    setCustomFields((prev) => prev.map((c, i) => (i === idx ? { ...c, ...patch } : c)))
-  }
-  function removeCustom(idx: number) {
-    setCustomFields((prev) => prev.filter((_, i) => i !== idx))
-  }
+  const fieldsRef = useRef(fields)
+  fieldsRef.current = fields
 
-  async function handleSave() {
-    if (customFields.some((c) => !c.label.trim())) {
+  async function doSave(currentFields: FormFieldInput[]) {
+    if (
+      currentFields.some(
+        (f) => !['name', 'phone', 'email', 'address'].includes(f.key) && !f.label.trim()
+      )
+    ) {
       toast.error('모든 커스텀 항목의 이름을 입력하세요')
       return
     }
-    setSaving(true)
+    if (savingRef.current) return
+    savingRef.current = true
+    setStatus('saving')
     try {
       const res = await fetch(`/api/hiring-posts/postings/${postingId}/form`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fields }),
+        body: JSON.stringify({ fields: currentFields }),
       })
       if (!res.ok) throw new Error('폼 저장에 실패했습니다')
-      toast.success('지원서 항목을 저장했습니다')
+      setStatus('saved')
+      setTimeout(() => setStatus('idle'), 2000)
     } catch (err) {
+      setStatus('idle')
       toast.error(err instanceof Error ? err.message : '폼 저장에 실패했습니다')
     } finally {
-      setSaving(false)
+      savingRef.current = false
     }
+  }
+
+  // Immediate save — used for toggle/add/remove actions
+  function saveNow(currentFields: FormFieldInput[]) {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    doSave(currentFields)
+  }
+
+  // Debounced save — used for text edits (blur triggers this)
+  function saveOnBlur() {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      doSave(fieldsRef.current)
+    }, 600)
+  }
+
+  function handleEmailToggle(v: boolean) {
+    setEmailEnabled(v)
+    // fields memo updates async; compute next fields directly
+    const nextFields: FormFieldInput[] = [
+      { key: 'name', type: 'string', label: '이름', required: true },
+      { key: 'phone', type: 'phone', label: '연락처', required: true },
+    ]
+    if (v) nextFields.push({ key: 'email', type: 'email', label: '이메일', required: false })
+    if (addressEnabled)
+      nextFields.push({ key: 'address', type: 'string', label: '주소', required: false })
+    for (const c of customFields) {
+      nextFields.push({
+        key: c.key,
+        type: c.type,
+        label: c.label,
+        required: c.required,
+        ...(c.type === 'select'
+          ? {
+              options: c.optionsText
+                .split(',')
+                .map((o) => o.trim())
+                .filter(Boolean),
+            }
+          : {}),
+      })
+    }
+    saveNow(nextFields)
+  }
+
+  function handleAddressToggle(v: boolean) {
+    setAddressEnabled(v)
+    const nextFields: FormFieldInput[] = [
+      { key: 'name', type: 'string', label: '이름', required: true },
+      { key: 'phone', type: 'phone', label: '연락처', required: true },
+    ]
+    if (emailEnabled)
+      nextFields.push({ key: 'email', type: 'email', label: '이메일', required: false })
+    if (v) nextFields.push({ key: 'address', type: 'string', label: '주소', required: false })
+    for (const c of customFields) {
+      nextFields.push({
+        key: c.key,
+        type: c.type,
+        label: c.label,
+        required: c.required,
+        ...(c.type === 'select'
+          ? {
+              options: c.optionsText
+                .split(',')
+                .map((o) => o.trim())
+                .filter(Boolean),
+            }
+          : {}),
+      })
+    }
+    saveNow(nextFields)
+  }
+
+  function buildFieldsFromCustom(
+    nextCustom: CustomField[],
+    email = emailEnabled,
+    addr = addressEnabled
+  ): FormFieldInput[] {
+    const out: FormFieldInput[] = [
+      { key: 'name', type: 'string', label: '이름', required: true },
+      { key: 'phone', type: 'phone', label: '연락처', required: true },
+    ]
+    if (email) out.push({ key: 'email', type: 'email', label: '이메일', required: false })
+    if (addr) out.push({ key: 'address', type: 'string', label: '주소', required: false })
+    for (const c of nextCustom) {
+      out.push({
+        key: c.key,
+        type: c.type,
+        label: c.label,
+        required: c.required,
+        ...(c.type === 'select'
+          ? {
+              options: c.optionsText
+                .split(',')
+                .map((o) => o.trim())
+                .filter(Boolean),
+            }
+          : {}),
+      })
+    }
+    return out
+  }
+
+  function addCustom() {
+    const next: CustomField[] = [
+      ...customFields,
+      { key: makeKey(), type: 'string', label: '', required: false, optionsText: '' },
+    ]
+    setCustomFields(next)
+    saveNow(buildFieldsFromCustom(next))
+  }
+
+  function updateCustom(idx: number, patch: Partial<CustomField>) {
+    setCustomFields((prev) => prev.map((c, i) => (i === idx ? { ...c, ...patch } : c)))
+  }
+
+  function removeCustom(idx: number) {
+    const next = customFields.filter((_, i) => i !== idx)
+    setCustomFields(next)
+    saveNow(buildFieldsFromCustom(next))
+  }
+
+  function handleCustomRequiredToggle(idx: number, v: boolean) {
+    const next = customFields.map((c, i) => (i === idx ? { ...c, required: v } : c))
+    setCustomFields(next)
+    saveNow(buildFieldsFromCustom(next))
+  }
+
+  function handleCustomTypeChange(idx: number, v: string) {
+    const next = customFields.map((c, i) =>
+      i === idx ? { ...c, type: v as CustomField['type'] } : c
+    )
+    setCustomFields(next)
+    saveNow(buildFieldsFromCustom(next))
   }
 
   return (
@@ -145,13 +280,17 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
             <Label htmlFor="email-toggle" className="text-sm">
               이메일
             </Label>
-            <Switch id="email-toggle" checked={emailEnabled} onCheckedChange={setEmailEnabled} />
+            <Switch id="email-toggle" checked={emailEnabled} onCheckedChange={handleEmailToggle} />
           </div>
           <div className="flex items-center justify-between rounded-md border px-3 py-2">
             <Label htmlFor="addr-toggle" className="text-sm">
               주소
             </Label>
-            <Switch id="addr-toggle" checked={addressEnabled} onCheckedChange={setAddressEnabled} />
+            <Switch
+              id="addr-toggle"
+              checked={addressEnabled}
+              onCheckedChange={handleAddressToggle}
+            />
           </div>
         </div>
       </div>
@@ -171,6 +310,7 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
                 <Input
                   value={c.label}
                   onChange={(e) => updateCustom(idx, { label: e.target.value })}
+                  onBlur={saveOnBlur}
                   placeholder="항목 이름"
                   className="flex-1"
                 />
@@ -179,10 +319,7 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
                 </Button>
               </div>
               <div className="flex items-center gap-2 pl-6">
-                <Select
-                  value={c.type}
-                  onValueChange={(v) => updateCustom(idx, { type: v as CustomField['type'] })}
-                >
+                <Select value={c.type} onValueChange={(v) => handleCustomTypeChange(idx, v)}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
@@ -197,7 +334,7 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
                 <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Switch
                     checked={c.required}
-                    onCheckedChange={(v) => updateCustom(idx, { required: v })}
+                    onCheckedChange={(v) => handleCustomRequiredToggle(idx, v)}
                   />
                   필수
                 </label>
@@ -206,6 +343,7 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
                 <Input
                   value={c.optionsText}
                   onChange={(e) => updateCustom(idx, { optionsText: e.target.value })}
+                  onBlur={saveOnBlur}
                   placeholder="선택지 (쉼표로 구분)"
                   className="ml-6 w-[calc(100%-1.5rem)]"
                 />
@@ -215,9 +353,9 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
         </div>
       </div>
 
-      <Button size="sm" onClick={handleSave} disabled={saving}>
-        지원서 항목 저장
-      </Button>
+      <div className="flex justify-end">
+        <AutoSaveIndicator status={status} />
+      </div>
     </div>
   )
 }
