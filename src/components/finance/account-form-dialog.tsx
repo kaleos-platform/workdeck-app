@@ -45,15 +45,17 @@ interface AccountFormDialogProps {
   onOpenChange: (open: boolean) => void
   /** null = 추가, 레코드 = 수정 */
   account: Account | null
+  /** 추가 시 기본 종류 (카드 패널에서 열면 CARD) */
+  defaultKind?: AccountKind
   /** 저장 성공 후 목록 재조회 콜백 */
   onSaved: () => void
 }
 
-function emptyForm() {
+function emptyForm(kind: AccountKind = 'BANK') {
   return {
     name: '',
     holder: '',
-    kind: 'BANK' as AccountKind,
+    kind,
     institution: '',
     accountNumber: '',
     accountType: '',
@@ -82,26 +84,28 @@ export function AccountFormDialog({
   open,
   onOpenChange,
   account,
+  defaultKind = 'BANK',
   onSaved,
 }: AccountFormDialogProps) {
-  const [form, setForm] = useState(emptyForm())
+  const [form, setForm] = useState(emptyForm(defaultKind))
   const [saving, setSaving] = useState(false)
   const editingId = account?.id ?? null
+  const isCard = form.kind === 'CARD'
 
-  // 열릴 때 폼 초기화 — 수정이면 레코드 hydrate, 추가면 빈 폼
+  // 열릴 때 폼 초기화 — 수정이면 레코드 hydrate, 추가면 빈 폼(패널 기본 종류)
   useEffect(() => {
     if (open) {
-      setForm(account ? toFormState(account) : emptyForm())
+      setForm(account ? toFormState(account) : emptyForm(defaultKind))
     }
-  }, [open, account])
+  }, [open, account, defaultKind])
 
   async function handleSave() {
     if (!form.name.trim()) {
-      toast.error('계좌 이름을 입력해 주세요')
+      toast.error(isCard ? '카드 이름을 입력해 주세요' : '계좌 이름을 입력해 주세요')
       return
     }
     if (!form.institution.trim()) {
-      toast.error('금융기관명을 입력해 주세요')
+      toast.error(isCard ? '카드사명을 입력해 주세요' : '금융기관명을 입력해 주세요')
       return
     }
     // 현재 잔액을 입력했으면 기준일도 함께 입력해야 한다.
@@ -137,7 +141,15 @@ export function AccountFormDialog({
       })
       const data = (await res.json().catch(() => ({}))) as { message?: string }
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
-      toast.success(editingId ? '계좌가 수정되었습니다' : '계좌가 추가되었습니다')
+      toast.success(
+        editingId
+          ? isCard
+            ? '카드가 수정되었습니다'
+            : '계좌가 수정되었습니다'
+          : isCard
+            ? '카드가 추가되었습니다'
+            : '계좌가 추가되었습니다'
+      )
       onOpenChange(false)
       onSaved()
     } catch (err) {
@@ -158,26 +170,36 @@ export function AccountFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editingId ? '계좌 수정' : '새 계좌 추가'}</DialogTitle>
-          <DialogDescription>은행·카드 계좌 정보를 입력하세요.</DialogDescription>
+          <DialogTitle>
+            {editingId
+              ? isCard
+                ? '카드 수정'
+                : '계좌 수정'
+              : isCard
+                ? '새 카드 추가'
+                : '새 계좌 추가'}
+          </DialogTitle>
+          <DialogDescription>
+            {isCard ? '카드 정보를 입력하세요.' : '은행 계좌 정보를 입력하세요.'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-3">
-          {/* 계좌 이름 */}
+          {/* 이름 */}
           <div className="col-span-2 space-y-1">
-            <Label className="text-xs">계좌 이름 *</Label>
+            <Label className="text-xs">{isCard ? '카드 이름' : '계좌 이름'} *</Label>
             <Input
               autoFocus
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               onKeyDown={handleEnter}
-              placeholder="예: 기업은행 사업용"
+              placeholder={isCard ? '예: 하나카드 법인' : '예: 기업은행 사업용'}
               className="h-8 text-sm"
             />
           </div>
-          {/* 예금주 */}
+          {/* 예금주/명의자 */}
           <div className="col-span-2 space-y-1">
-            <Label className="text-xs">예금주</Label>
+            <Label className="text-xs">{isCard ? '명의자' : '예금주'}</Label>
             <Input
               value={form.holder}
               onChange={(e) => setForm((f) => ({ ...f, holder: e.target.value }))}
@@ -203,20 +225,20 @@ export function AccountFormDialog({
               </SelectContent>
             </Select>
           </div>
-          {/* 금융기관 */}
+          {/* 금융기관/카드사 */}
           <div className="space-y-1">
-            <Label className="text-xs">금융기관 *</Label>
+            <Label className="text-xs">{isCard ? '카드사' : '금융기관'} *</Label>
             <Input
               value={form.institution}
               onChange={(e) => setForm((f) => ({ ...f, institution: e.target.value }))}
               onKeyDown={handleEnter}
-              placeholder="예: 기업은행"
+              placeholder={isCard ? '예: 하나카드' : '예: 기업은행'}
               className="h-8 text-sm"
             />
           </div>
-          {/* 계좌번호 */}
+          {/* 계좌/카드번호 */}
           <div className="space-y-1">
-            <Label className="text-xs">계좌번호</Label>
+            <Label className="text-xs">{isCard ? '카드번호' : '계좌번호'}</Label>
             <Input
               value={form.accountNumber}
               onChange={(e) => setForm((f) => ({ ...f, accountNumber: e.target.value }))}
@@ -225,14 +247,14 @@ export function AccountFormDialog({
               className="h-8 font-mono text-sm"
             />
           </div>
-          {/* 계좌 유형 */}
+          {/* 유형 */}
           <div className="space-y-1">
-            <Label className="text-xs">계좌 유형</Label>
+            <Label className="text-xs">{isCard ? '카드 유형' : '계좌 유형'}</Label>
             <Input
               value={form.accountType}
               onChange={(e) => setForm((f) => ({ ...f, accountType: e.target.value }))}
               onKeyDown={handleEnter}
-              placeholder="예: 보통예금"
+              placeholder={isCard ? '예: 법인카드' : '예: 보통예금'}
               className="h-8 text-sm"
             />
           </div>

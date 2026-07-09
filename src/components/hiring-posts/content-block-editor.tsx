@@ -1,11 +1,22 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus, Trash2, ArrowUp, ArrowDown, Type, ImageIcon, Upload, Save } from 'lucide-react'
+import {
+  Plus,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  Type,
+  ImageIcon,
+  Upload,
+  Save,
+  MousePointerClick,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Editor } from '@/components/sc/editor/editor'
 import { getPostingAssetPublicUrl, type WizardContentData } from './build-types'
+import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
 
 type Props = {
   postingId: string
@@ -39,7 +51,7 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
     return (await res.json()).content as WizardContentData
   }
 
-  async function handleAdd(contentType: 'text' | 'image') {
+  async function handleAdd(contentType: 'text' | 'image' | 'button') {
     setBusy(true)
     try {
       const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents`, {
@@ -160,10 +172,17 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
               <div className="flex items-center gap-2 text-sm font-medium">
                 {c.contentType === 'image' ? (
                   <ImageIcon className="size-4 text-muted-foreground" />
+                ) : c.contentType === 'button' ? (
+                  <MousePointerClick className="size-4 text-muted-foreground" />
                 ) : (
                   <Type className="size-4 text-muted-foreground" />
                 )}
-                {c.contentType === 'image' ? '이미지' : '텍스트'} 블록
+                {c.contentType === 'image'
+                  ? '이미지'
+                  : c.contentType === 'button'
+                    ? '버튼'
+                    : '텍스트'}{' '}
+                블록
               </div>
               <div className="flex items-center gap-1">
                 <Button
@@ -195,6 +214,14 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
                 editable
                 onChange={(doc) => handleTextChange(c.id, doc)}
               />
+            ) : c.contentType === 'button' ? (
+              <ButtonBlock
+                data={c.data as ButtonData | null}
+                onSave={(data) => {
+                  patchContent(c.id, { data }).catch(() => toast.error('버튼 저장에 실패했습니다'))
+                  onChange(contents.map((item) => (item.id === c.id ? { ...item, data } : item)))
+                }}
+              />
             ) : (
               <ImageBlock
                 imagePath={c.imagePath}
@@ -217,6 +244,9 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleAdd('image')}>
             <ImageIcon /> 이미지 블록
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleAdd('button')}>
+            <MousePointerClick /> 버튼 블록
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -244,6 +274,87 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
           </Button>
         </div>
       )}
+    </div>
+  )
+}
+
+function ButtonBlock({
+  data,
+  onSave,
+}: {
+  data: ButtonData | null
+  onSave: (data: ButtonData) => void
+}) {
+  const [title, setTitle] = useState(data?.title ?? '')
+  const [linkType, setLinkType] = useState<'form' | 'url'>(data?.linkType ?? 'form')
+  const [url, setUrl] = useState(data?.url ?? '')
+  const [error, setError] = useState<string | null>(null)
+
+  function handleSave() {
+    const result = buttonDataSchema.safeParse({ title, linkType, url: url || undefined })
+    if (!result.success) {
+      const first = result.error.issues[0]
+      setError(first?.message ?? '입력 값을 확인하세요')
+      return
+    }
+    setError(null)
+    onSave(result.data)
+  }
+
+  const uid = useId()
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1.5">
+        <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
+        <Input
+          id={`${uid}-btn-title`}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="예: 지금 바로 지원하기"
+          maxLength={50}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label>링크 유형</Label>
+        <div className="flex gap-4 text-sm">
+          <label className="flex cursor-pointer items-center gap-1.5">
+            <input
+              type="radio"
+              name={`${uid}-btn-linktype`}
+              value="form"
+              checked={linkType === 'form'}
+              onChange={() => setLinkType('form')}
+            />
+            지원서 폼 연결
+          </label>
+          <label className="flex cursor-pointer items-center gap-1.5">
+            <input
+              type="radio"
+              name={`${uid}-btn-linktype`}
+              value="url"
+              checked={linkType === 'url'}
+              onChange={() => setLinkType('url')}
+            />
+            URL 직접 입력
+          </label>
+        </div>
+      </div>
+      {linkType === 'url' && (
+        <div className="space-y-1.5">
+          <Label htmlFor="btn-url">URL</Label>
+          <Input
+            id="btn-url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://example.com"
+          />
+        </div>
+      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
+      <Button size="sm" variant="outline" onClick={handleSave}>
+        <Save /> 버튼 저장
+      </Button>
     </div>
   )
 }

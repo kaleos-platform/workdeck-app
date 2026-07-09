@@ -42,6 +42,7 @@ import { cn } from '@/lib/utils'
 import { formatWon } from '@/components/finance/format'
 import { FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
 import { BANK_FIELDS, CARD_FIELDS } from '@/lib/finance/parser'
+import { matchesAccountNumber } from '@/lib/finance/automap'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -109,19 +110,16 @@ const NONE_ACCOUNT = '__none__'
 /** 다중 컬럼 결합 허용 필드 — 텍스트 필드만(숫자/날짜는 단일 컬럼). */
 const MULTI_COLUMN_FIELDS = new Set<string>(['description'])
 
-/** 계좌번호 정규화(숫자만) — 파일 preamble 계좌번호와 등록 계좌 매칭용. */
-function normalizeAcct(n: string | null | undefined): string {
-  return (n ?? '').replace(/\D/g, '')
-}
-
-/** 파일 preamble 계좌번호와 일치하는 등록 계좌(숫자 4자리+ 일치). 없으면 null. */
+/** 파일 preamble 계좌/카드번호와 일치하는 등록 계좌·카드(마스킹 와일드카드 허용). 없으면 null. */
 function findMatchedAccount(
   accounts: Account[],
   fileAcctNumber: string | null | undefined
 ): Account | null {
-  const norm = normalizeAcct(fileAcctNumber)
-  if (norm.length < 4) return null
-  return accounts.find((a) => normalizeAcct(a.accountNumber) === norm) ?? null
+  const fileNo = (fileAcctNumber ?? '').trim()
+  if (!fileNo) return null
+  return (
+    accounts.find((a) => a.accountNumber && matchesAccountNumber(a.accountNumber, fileNo)) ?? null
+  )
 }
 
 /** 필드 value → 라벨(검증 메시지용). */
@@ -260,11 +258,11 @@ export function FinanceUploadPanel() {
       )
       setMapping(initialMapping)
 
-      // 계좌 초기 선택: matchedPreset.defaultAccountId > 파일 계좌번호 매칭 > 계좌 1개
+      // 계좌 초기 선택(종류 일치 후보만): 파일 계좌/카드번호 매칭 > 프리셋 기본 계좌 > 유일 후보
+      const candidates = data.accounts.filter((a) => a.kind === resolvedKind)
+      const presetAccount = candidates.find((a) => a.id === data.matchedPreset?.defaultAccountId)
       const defaultAccount =
-        data.matchedPreset?.defaultAccountId ??
-        matched?.id ??
-        (data.accounts.length === 1 ? data.accounts[0]?.id : null)
+        matched?.id ?? presetAccount?.id ?? (candidates.length === 1 ? candidates[0]?.id : null)
       setAccountId(defaultAccount ?? '')
 
       // 프리셋 이름 초기값
@@ -282,6 +280,11 @@ export function FinanceUploadPanel() {
   function handleKindChange(newKind: FinKind) {
     setKind(newKind)
     setMapping((prev) => filterMappingForKind(prev, newKind))
+    // 종류가 바뀌면 다른 종류 계좌/카드 선택은 무효 — 리셋
+    setAccountId((prev) => {
+      const acct = previewRes?.accounts.find((a) => a.id === prev)
+      return acct && acct.kind === newKind ? prev : ''
+    })
   }
 
   // ─── 컬럼 매핑 변경 (시스템 필드 → 파일 컬럼) ──────────────────────────────
@@ -319,9 +322,13 @@ export function FinanceUploadPanel() {
 
   // ─── 계좌 등록 (파일 정보 영역 인라인) ──────────────────────────────────────
 
-  /** 인라인 폼에서 계좌 생성 성공 시: 후보 목록에 추가하고 적재 계좌로 자동 선택 */
+  /** 인라인 폼에서 계좌/카드 생성 성공 시: 후보 목록에 추가하고 자동 선택 */
   function handleAccountCreated(account: Account) {
     setPreviewRes((prev) => (prev ? { ...prev, accounts: [...prev.accounts, account] } : prev))
+    // 사용자가 폼에서 종류를 바꿔 등록했으면 거래 종류도 따라간다(불일치 시 commit 400 방지)
+    if ((account.kind === 'BANK' || account.kind === 'CARD') && account.kind !== kind) {
+      handleKindChange(account.kind as FinKind)
+    }
     setAccountId(account.id)
     setShowAccountForm(false)
   }
@@ -334,7 +341,7 @@ export function FinanceUploadPanel() {
       return
     }
     if (!accountId || accountId === NONE_ACCOUNT) {
-      toast.error('계좌를 선택해 주세요')
+      toast.error(kind === 'CARD' ? '카드를 선택해 주세요' : '계좌를 선택해 주세요')
       return
     }
 
@@ -390,15 +397,20 @@ export function FinanceUploadPanel() {
 
   // ─── 유효성 계산 ──────────────────────────────────────────────────────────
 
-  const hasAccounts = (previewRes?.accounts.length ?? 0) > 0
+  const isCard = kind === 'CARD'
+  // 업로드 종류와 일치하는 계좌/카드만 선택 후보
+  const kindAccounts = (previewRes?.accounts ?? []).filter((a) => a.kind === kind)
+  const hasAccounts = kindAccounts.length > 0
+  const selectedAccount = kindAccounts.find((a) => a.id === accountId)
   const fileAccountNumber = previewRes?.preview.preamble.accountNumber?.trim() ?? ''
-  // 파일 preamble 계좌번호와 일치하는 등록 계좌(강조·자동선택용, 숫자만 비교)
+  // 파일 preamble 계좌/카드번호와 일치하는 등록 계좌(강조·자동선택용, 마스킹 와일드카드 허용)
   const matchedAccount = previewRes
     ? findMatchedAccount(previewRes.accounts, fileAccountNumber)
     : null
   const fileAccountMatched = !!matchedAccount
-  // 금융 기관 표시: 파일 자동 인식 > 매칭 계좌 기관 > 미인식(계좌 등록 안내)
-  const displayInstitution = previewRes?.institution ?? matchedAccount?.institution ?? null
+  // 금융 기관 표시: 선택된 계좌/카드 기관 > 파일 자동 인식 > 매칭 계좌 기관 > 미인식(등록 안내)
+  const displayInstitution =
+    selectedAccount?.institution ?? previewRes?.institution ?? matchedAccount?.institution ?? null
   const validation = previewRes ? isMappingValid(mapping, kind) : { ok: false }
   const canImport =
     !!file &&
@@ -507,7 +519,8 @@ export function FinanceUploadPanel() {
                     className="h-7 shrink-0"
                     onClick={() => setShowAccountForm(true)}
                   >
-                    <Plus className="mr-1 size-3.5" />새 계좌
+                    <Plus className="mr-1 size-3.5" />
+                    {isCard ? '새 카드' : '새 계좌'}
                   </Button>
                 )}
               </div>
@@ -523,7 +536,9 @@ export function FinanceUploadPanel() {
                     <span>예금주: {previewRes.preview.preamble.holder}</span>
                   )}
                   {previewRes.preview.preamble.accountNumber && (
-                    <span>계좌: {previewRes.preview.preamble.accountNumber}</span>
+                    <span>
+                      {isCard ? '카드' : '계좌'}: {previewRes.preview.preamble.accountNumber}
+                    </span>
                   )}
                   {previewRes.preview.preamble.periodFrom && (
                     <span>
@@ -537,7 +552,7 @@ export function FinanceUploadPanel() {
                     (fileAccountMatched && matchedAccount ? (
                       <span className="ml-auto inline-flex flex-wrap items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400">
                         <CheckCircle2 className="size-3.5 shrink-0" />
-                        등록된 계좌 · {matchedAccount.name}
+                        {isCard ? '등록된 카드' : '등록된 계좌'} · {matchedAccount.name}
                         {matchedAccount.institution && (
                           <span className="opacity-80">· {matchedAccount.institution}</span>
                         )}
@@ -556,7 +571,9 @@ export function FinanceUploadPanel() {
                       !showAccountForm && (
                         <span className="ml-auto inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
                           <AlertTriangle className="size-3.5 shrink-0" />
-                          미등록 계좌 — 우측 상단 &lsquo;새 계좌&rsquo;로 등록
+                          {isCard
+                            ? '미등록 카드 — 우측 상단 ‘새 카드’로 등록'
+                            : '미등록 계좌 — 우측 상단 ‘새 계좌’로 등록'}
                         </span>
                       )
                     ))}
@@ -583,7 +600,9 @@ export function FinanceUploadPanel() {
                   <Label className="text-xs text-muted-foreground">금융 기관</Label>
                   <p className="flex h-8 items-center text-sm">
                     {displayInstitution ?? (
-                      <span className="text-muted-foreground">계좌 등록 시 자동 인식</span>
+                      <span className="text-muted-foreground">
+                        {isCard ? '카드 등록 시 자동 인식' : '계좌 등록 시 자동 인식'}
+                      </span>
                     )}
                   </p>
                 </div>
@@ -592,7 +611,8 @@ export function FinanceUploadPanel() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
                     <Label className="text-xs text-muted-foreground">
-                      적재 계좌 <span className="text-destructive">*</span>
+                      {isCard ? '연결 카드' : '적재 계좌'}{' '}
+                      <span className="text-destructive">*</span>
                     </Label>
                     {matchedAccount && accountId === matchedAccount.id && (
                       <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
@@ -605,7 +625,7 @@ export function FinanceUploadPanel() {
                     showAccountForm ? (
                       <p className="flex h-8 items-center gap-1 text-xs text-muted-foreground">
                         <Info className="size-3.5 shrink-0" />
-                        아래에서 계좌 정보를 입력하세요
+                        아래에서 {isCard ? '카드' : '계좌'} 정보를 입력하세요
                       </p>
                     ) : (
                       <Button
@@ -615,7 +635,7 @@ export function FinanceUploadPanel() {
                         onClick={() => setShowAccountForm(true)}
                       >
                         <AlertTriangle className="mr-1 size-3.5 shrink-0" />
-                        계좌를 먼저 등록하세요
+                        {isCard ? '카드를 먼저 등록하세요' : '계좌를 먼저 등록하세요'}
                       </Button>
                     )
                   ) : (
@@ -631,11 +651,13 @@ export function FinanceUploadPanel() {
                             'border-emerald-400 ring-1 ring-emerald-400/40'
                         )}
                       >
-                        <SelectValue placeholder="계좌 선택" />
+                        <SelectValue placeholder={isCard ? '카드 선택' : '계좌 선택'} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={NONE_ACCOUNT}>계좌 선택</SelectItem>
-                        {previewRes.accounts.map((a) => (
+                        <SelectItem value={NONE_ACCOUNT}>
+                          {isCard ? '카드 선택' : '계좌 선택'}
+                        </SelectItem>
+                        {kindAccounts.map((a) => (
                           <SelectItem key={a.id} value={a.id} className="text-sm">
                             <span className="flex items-center gap-1.5">
                               {[a.institution, a.name].filter(Boolean).join(' ')}
@@ -774,7 +796,7 @@ export function FinanceUploadPanel() {
                 )}
                 {!hasAccounts && (
                   <span className="text-xs text-destructive">
-                    계좌 등록 후 가져오기가 가능합니다
+                    {isCard ? '카드' : '계좌'} 등록 후 가져오기가 가능합니다
                   </span>
                 )}
                 <Button onClick={handleImport} disabled={!canImport}>
@@ -815,13 +837,15 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
   const [openingBalance, setOpeningBalance] = useState('')
   const [saving, setSaving] = useState(false)
 
+  const isCard = accKind === 'CARD'
+
   async function handleSave() {
     if (!name.trim()) {
-      toast.error('계좌 이름을 입력해 주세요')
+      toast.error(isCard ? '카드 이름을 입력해 주세요' : '계좌 이름을 입력해 주세요')
       return
     }
     if (!institution.trim()) {
-      toast.error('금융기관명을 입력해 주세요')
+      toast.error(isCard ? '카드사명을 입력해 주세요' : '금융기관명을 입력해 주세요')
       return
     }
 
@@ -853,8 +877,13 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
           accountNumber: string | null
         }
       }
-      if (!res.ok || !data.account) throw new Error(data?.message ?? '계좌 등록 실패')
-      toast.success('계좌가 등록되어 적재 계좌로 선택되었습니다')
+      if (!res.ok || !data.account)
+        throw new Error(data?.message ?? (isCard ? '카드 등록 실패' : '계좌 등록 실패'))
+      toast.success(
+        isCard
+          ? '카드가 등록되어 연결 카드로 선택되었습니다'
+          : '계좌가 등록되어 적재 계좌로 선택되었습니다'
+      )
       onCreated({
         id: data.account.id,
         name: data.account.name,
@@ -864,7 +893,7 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
         accountNumber: data.account.accountNumber,
       })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '계좌 등록 실패')
+      toast.error(err instanceof Error ? err.message : isCard ? '카드 등록 실패' : '계좌 등록 실패')
     } finally {
       setSaving(false)
     }
@@ -886,27 +915,31 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
     >
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>새 계좌 등록</DialogTitle>
-          <DialogDescription>파일 정보를 확인한 뒤 적재 계좌로 등록하세요.</DialogDescription>
+          <DialogTitle>{isCard ? '새 카드 등록' : '새 계좌 등록'}</DialogTitle>
+          <DialogDescription>
+            {isCard
+              ? '파일 정보를 확인한 뒤 연결 카드로 등록하세요.'
+              : '파일 정보를 확인한 뒤 적재 계좌로 등록하세요.'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-3">
           {/* 이름 */}
           <div className="col-span-2 space-y-1">
-            <Label className="text-xs">계좌 이름 *</Label>
+            <Label className="text-xs">{isCard ? '카드 이름' : '계좌 이름'} *</Label>
             <Input
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={handleEnter}
-              placeholder="예: 기업은행 사업용"
+              placeholder={isCard ? '예: 하나카드 법인' : '예: 기업은행 사업용'}
               className="h-8 text-sm"
             />
           </div>
 
-          {/* 예금주 */}
+          {/* 예금주/명의자 */}
           <div className="col-span-2 space-y-1">
-            <Label className="text-xs">예금주</Label>
+            <Label className="text-xs">{isCard ? '명의자' : '예금주'}</Label>
             <Input
               value={holder}
               onChange={(e) => setHolder(e.target.value)}
@@ -930,21 +963,21 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
             </Select>
           </div>
 
-          {/* 금융기관 */}
+          {/* 금융기관/카드사 */}
           <div className="space-y-1">
-            <Label className="text-xs">금융기관 *</Label>
+            <Label className="text-xs">{isCard ? '카드사' : '금융기관'} *</Label>
             <Input
               value={institution}
               onChange={(e) => setInstitution(e.target.value)}
               onKeyDown={handleEnter}
-              placeholder="예: 기업은행"
+              placeholder={isCard ? '예: 하나카드' : '예: 기업은행'}
               className="h-8 text-sm"
             />
           </div>
 
-          {/* 계좌번호 */}
+          {/* 계좌/카드번호 */}
           <div className="space-y-1">
-            <Label className="text-xs">계좌번호</Label>
+            <Label className="text-xs">{isCard ? '카드번호' : '계좌번호'}</Label>
             <Input
               value={accountNumber}
               onChange={(e) => setAccountNumber(e.target.value)}
@@ -954,14 +987,14 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
             />
           </div>
 
-          {/* 계좌 유형 */}
+          {/* 유형 */}
           <div className="space-y-1">
-            <Label className="text-xs">계좌 유형</Label>
+            <Label className="text-xs">{isCard ? '카드 유형' : '계좌 유형'}</Label>
             <Input
               value={accountType}
               onChange={(e) => setAccountType(e.target.value)}
               onKeyDown={handleEnter}
-              placeholder="예: 보통예금"
+              placeholder={isCard ? '예: 법인카드' : '예: 보통예금'}
               className="h-8 text-sm"
             />
           </div>
@@ -985,7 +1018,7 @@ function AccountRegisterDialog({ prefill, onCancel, onCreated }: AccountRegister
             취소
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? '등록 중...' : '계좌 등록'}
+            {saving ? '등록 중...' : isCard ? '카드 등록' : '계좌 등록'}
           </Button>
         </DialogFooter>
       </DialogContent>
