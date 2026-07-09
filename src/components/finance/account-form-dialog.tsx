@@ -208,23 +208,25 @@ export function AccountFormDialog({
               className="h-8 text-sm"
             />
           </div>
-          {/* 종류 */}
-          <div className="space-y-1">
-            <Label className="text-xs">종류 *</Label>
-            <Select
-              value={form.kind}
-              onValueChange={(v) => setForm((f) => ({ ...f, kind: v as AccountKind }))}
-              disabled={!!editingId}
-            >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="BANK">은행</SelectItem>
-                <SelectItem value="CARD">카드</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* 종류 — 카드 폼은 패널 종류(카드) 고정이라 숨김 */}
+          {!isCard && (
+            <div className="space-y-1">
+              <Label className="text-xs">종류 *</Label>
+              <Select
+                value={form.kind}
+                onValueChange={(v) => setForm((f) => ({ ...f, kind: v as AccountKind }))}
+                disabled={!!editingId}
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BANK">은행</SelectItem>
+                  <SelectItem value="CARD">카드</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {/* 금융기관/카드사 */}
           <div className="space-y-1">
             <Label className="text-xs">{isCard ? '카드사' : '금융기관'} *</Label>
@@ -247,29 +249,32 @@ export function AccountFormDialog({
               className="h-8 font-mono text-sm"
             />
           </div>
-          {/* 유형 */}
-          <div className="space-y-1">
-            <Label className="text-xs">{isCard ? '카드 유형' : '계좌 유형'}</Label>
-            <Input
-              value={form.accountType}
-              onChange={(e) => setForm((f) => ({ ...f, accountType: e.target.value }))}
-              onKeyDown={handleEnter}
-              placeholder={isCard ? '예: 법인카드' : '예: 보통예금'}
-              className="h-8 text-sm"
-            />
-          </div>
-          {/* 기초 잔액 */}
-          <div className="col-span-2 space-y-1">
-            <Label className="text-xs">기초 잔액 (원)</Label>
-            <Input
-              type="number"
-              value={form.openingBalance}
-              onChange={(e) => setForm((f) => ({ ...f, openingBalance: e.target.value }))}
-              onKeyDown={handleEnter}
-              placeholder="거래 이전 시작 잔액 (선택)"
-              className="h-8 text-sm"
-            />
-          </div>
+          {/* 계좌 유형·기초 잔액 — 카드에는 불필요 */}
+          {!isCard && (
+            <>
+              <div className="space-y-1">
+                <Label className="text-xs">계좌 유형</Label>
+                <Input
+                  value={form.accountType}
+                  onChange={(e) => setForm((f) => ({ ...f, accountType: e.target.value }))}
+                  onKeyDown={handleEnter}
+                  placeholder="예: 보통예금"
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="col-span-2 space-y-1">
+                <Label className="text-xs">기초 잔액 (원)</Label>
+                <Input
+                  type="number"
+                  value={form.openingBalance}
+                  onChange={(e) => setForm((f) => ({ ...f, openingBalance: e.target.value }))}
+                  onKeyDown={handleEnter}
+                  placeholder="거래 이전 시작 잔액 (선택)"
+                  className="h-8 text-sm"
+                />
+              </div>
+            </>
+          )}
 
           {/* 현재 잔액 + 기준일 — 은행 거래 확정 시 자동 갱신되며, 여기서 수동 지정도 가능 */}
           <div className="space-y-1">
