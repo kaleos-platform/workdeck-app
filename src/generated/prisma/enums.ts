@@ -635,7 +635,9 @@ export const BoDeploymentStatus = {
   PUBLISHED: 'PUBLISHED',
   FAILED: 'FAILED',
   CANCELED: 'CANCELED',
-  EXPORTED: 'EXPORTED'
+  EXPORTED: 'EXPORTED',
+  DELETING: 'DELETING',
+  DELETED: 'DELETED'
 } as const
 
 export type BoDeploymentStatus = (typeof BoDeploymentStatus)[keyof typeof BoDeploymentStatus]
@@ -645,7 +647,8 @@ export const BoJobKind = {
   CRAWL_HOMEPAGE: 'CRAWL_HOMEPAGE',
   GENERATE_DRAFT: 'GENERATE_DRAFT',
   GENERATE_VARIANT: 'GENERATE_VARIANT',
-  PUBLISH: 'PUBLISH'
+  PUBLISH: 'PUBLISH',
+  DELETE_POST: 'DELETE_POST'
 } as const
 
 export type BoJobKind = (typeof BoJobKind)[keyof typeof BoJobKind]

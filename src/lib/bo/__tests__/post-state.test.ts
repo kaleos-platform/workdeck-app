@@ -21,6 +21,7 @@ describe('assertBoPostTransition', () => {
     ['PUBLISH_APPROVED', 'PUBLISHED'],
     ['PUBLISH_APPROVED', 'ARCHIVED'],
     ['PUBLISHED', 'ARCHIVED'],
+    ['PUBLISHED', 'PUBLISH_APPROVED'],
     ['FAILED', 'GENERATING'],
     ['FAILED', 'ARCHIVED'],
   ])('허용: %s → %s', (from, to) => {
@@ -41,6 +42,7 @@ describe('assertBoPostTransition', () => {
     ['PUBLISH_APPROVED', 'DRAFT'],
     ['PUBLISH_APPROVED', 'FAILED'],
     ['PUBLISHED', 'DRAFT'],
+    ['PUBLISHED', 'GENERATING'],
     ['PUBLISHED', 'IN_REVIEW'],
     ['ARCHIVED', 'DRAFT'],
     ['ARCHIVED', 'PUBLISHED'],
@@ -86,5 +88,13 @@ describe('getAllowedPostTransitions', () => {
     const allowed = getAllowedPostTransitions('IN_REVIEW')
     expect(allowed).toContain('PUBLISH_APPROVED')
     expect(allowed).toContain('DRAFT')
+  })
+
+  it('PUBLISHED 에서 PUBLISH_APPROVED 와 ARCHIVED 로 이동 가능하다', () => {
+    const allowed = getAllowedPostTransitions('PUBLISHED')
+    expect(allowed).toContain('PUBLISH_APPROVED')
+    expect(allowed).toContain('ARCHIVED')
+    // DRAFT 는 허용되지 않음
+    expect(allowed).not.toContain('DRAFT')
   })
 })

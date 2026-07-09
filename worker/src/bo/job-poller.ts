@@ -7,7 +7,13 @@
 //   BO_WORKER_ID           — 워커 식별자 (기본 bo-worker-{pid})
 //   BO_WORKER_FETCH_TIMEOUT_MS — fetch 타임아웃 ms (기본 15000)
 
-import type { BoJobKind, BoJobMeta, BoPublishContext, BoClaimResponse } from './contracts.js'
+import type {
+  BoJobKind,
+  BoJobMeta,
+  BoPublishContext,
+  BoDeleteContext,
+  BoClaimResponse,
+} from './contracts.js'
 
 const WEB_APP_URL = process.env.WEB_APP_URL ?? 'http://127.0.0.1:3000'
 const WORKER_API_KEY = process.env.WORKER_API_KEY
@@ -27,7 +33,9 @@ async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<
   }
 }
 
-export type BoClaimedJob = { job: BoJobMeta; context: BoPublishContext }
+export type BoClaimedJob =
+  | { job: BoJobMeta & { kind: 'PUBLISH' }; context: BoPublishContext }
+  | { job: BoJobMeta & { kind: 'DELETE_POST' }; context: BoDeleteContext }
 
 /**
  * 웹앱에 job 을 claim 요청한다 (POST).
@@ -52,7 +60,7 @@ export async function claimJob(params: { kinds?: BoJobKind[] } = {}): Promise<Bo
   }
   const data = (await res.json()) as BoClaimResponse
   if (!data.job) return null
-  return data as BoClaimedJob
+  return data as unknown as BoClaimedJob
 }
 
 /**
@@ -107,7 +115,7 @@ export type PollResult = {
 export async function pollOnce(
   handleJob: (c: BoClaimedJob) => Promise<PollResult>
 ): Promise<{ processed: number; failed: number }> {
-  const claimed = await claimJob({ kinds: ['PUBLISH'] })
+  const claimed = await claimJob({ kinds: ['PUBLISH', 'DELETE_POST'] })
   if (!claimed) return { processed: 0, failed: 0 }
 
   try {

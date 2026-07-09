@@ -3,7 +3,24 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Download, Clipboard, Check, ExternalLink, Send, RotateCcw } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
+import {
+  Loader2,
+  Download,
+  Clipboard,
+  Check,
+  ExternalLink,
+  Send,
+  RotateCcw,
+  CalendarClock,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
@@ -30,11 +47,21 @@ type BoDeploymentInfo = {
   id: string
   variantId: string
   channelId: string
-  status: 'PENDING' | 'PUBLISHING' | 'PUBLISHED' | 'FAILED' | 'CANCELED' | 'EXPORTED'
+  status:
+    | 'PENDING'
+    | 'PUBLISHING'
+    | 'PUBLISHED'
+    | 'FAILED'
+    | 'CANCELED'
+    | 'EXPORTED'
+    | 'DELETING'
+    | 'DELETED'
   platformUrl: string | null
   errorCode: string | null
   errorMessage: string | null
   createdAt: string
+  scheduledAt: string | null
+  deletedAt: string | null
 }
 
 type Props = {
@@ -55,6 +82,17 @@ function platformLabel(platform: string): string {
     default:
       return platform
   }
+}
+
+// ─── 날짜 MM/DD HH:mm 포맷 ────────────────────────────────────────────────────
+
+function formatShortDate(iso: string): string {
+  const d = new Date(iso)
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const min = String(d.getMinutes()).padStart(2, '0')
+  return `${mm}/${dd} ${hh}:${min}`
 }
 
 // ─── 상태 배지 ─────────────────────────────────────────────────────────────────
@@ -93,7 +131,19 @@ function VariantStatusBadge({ status }: { status: string | null }) {
 
 // ─── 배포 상태 배지 ────────────────────────────────────────────────────────────
 
-function DeploymentStatusBadge({ status }: { status: string }) {
+function DeploymentStatusBadge({
+  status,
+  scheduledAt,
+}: {
+  status: string
+  scheduledAt?: string | null
+}) {
+  const isScheduled = status === 'PENDING' && scheduledAt && new Date(scheduledAt) > new Date()
+
+  if (isScheduled) {
+    return <Badge className="bg-blue-100 text-xs text-blue-700 hover:bg-blue-100">예약됨</Badge>
+  }
+
   switch (status) {
     case 'PENDING':
       return (
@@ -121,6 +171,19 @@ function DeploymentStatusBadge({ status }: { status: string }) {
       return (
         <Badge variant="secondary" className="text-xs">
           취소됨
+        </Badge>
+      )
+    case 'DELETING':
+      return (
+        <Badge className="bg-amber-100 text-xs text-amber-700 hover:bg-amber-100">
+          <Loader2 className="mr-1 h-2.5 w-2.5 animate-spin" />
+          삭제 중
+        </Badge>
+      )
+    case 'DELETED':
+      return (
+        <Badge variant="secondary" className="text-xs">
+          삭제됨
         </Badge>
       )
     default:
@@ -280,11 +343,20 @@ function ExportButtons({ variantId }: { variantId: string }) {
 function DeploymentStatusRow({
   deployment,
   onRetry,
+  onCancel,
 }: {
   deployment: BoDeploymentInfo
   onRetry: () => void
+  onCancel: () => void
 }) {
   const [retrying, setRetrying] = useState(false)
+  const [canceling, setCanceling] = useState(false)
+
+  const isScheduled =
+    deployment.status === 'PENDING' &&
+    deployment.scheduledAt !== null &&
+    deployment.scheduledAt !== undefined &&
+    new Date(deployment.scheduledAt) > new Date()
 
   async function handleRetry() {
     setRetrying(true)
@@ -303,9 +375,32 @@ function DeploymentStatusRow({
     }
   }
 
+  async function handleCancel() {
+    setCanceling(true)
+    try {
+      const res = await fetch(`/api/bo/deployments/${deployment.id}/cancel`, { method: 'POST' })
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { message?: string }
+        throw new Error(data.message ?? '취소 실패')
+      }
+      toast.success('예약이 취소되었습니다')
+      onCancel()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '취소 실패')
+    } finally {
+      setCanceling(false)
+    }
+  }
+
   return (
     <div className="flex items-center gap-1.5 rounded-md bg-muted/50 px-2 py-1.5">
-      <DeploymentStatusBadge status={deployment.status} />
+      <DeploymentStatusBadge status={deployment.status} scheduledAt={deployment.scheduledAt} />
+
+      {isScheduled && deployment.scheduledAt && (
+        <span className="text-xs text-muted-foreground">
+          {formatShortDate(deployment.scheduledAt)}
+        </span>
+      )}
 
       {deployment.status === 'PUBLISHED' && deployment.platformUrl && (
         <a
@@ -345,7 +440,90 @@ function DeploymentStatusRow({
           </Button>
         </>
       )}
+
+      {isScheduled && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 gap-0.5 px-1.5 text-xs text-muted-foreground hover:text-destructive"
+          disabled={canceling}
+          onClick={() => void handleCancel()}
+        >
+          {canceling ? <Loader2 className="h-3 w-3 animate-spin" /> : '취소'}
+        </Button>
+      )}
     </div>
+  )
+}
+
+// ─── 날짜 유틸 ────────────────────────────────────────────────────────────────
+
+function toDatetimeLocal(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function getMinDatetimeLocal(): string {
+  return toDatetimeLocal(new Date(Date.now() + 5 * 60 * 1000))
+}
+
+// 서버 상한(90일)을 미러링 — 서버 validation 과 일치
+function getMaxDatetimeLocal(): string {
+  return toDatetimeLocal(new Date(Date.now() + 90 * 24 * 60 * 60 * 1000))
+}
+
+// ─── 예약 발행 다이얼로그 ──────────────────────────────────────────────────────
+
+function ScheduleDialog({
+  open,
+  onOpenChange,
+  onConfirm,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  onConfirm: (isoString: string) => void
+}) {
+  const [value, setValue] = useState('')
+
+  const minDatetime = open ? getMinDatetimeLocal() : ''
+  const maxDatetime = open ? getMaxDatetimeLocal() : ''
+
+  function handleConfirm() {
+    if (!value) return
+    onConfirm(new Date(value).toISOString())
+    setValue('')
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>발행 예약</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">선택한 시각에 자동 발행됩니다.</p>
+          <input
+            type="datetime-local"
+            min={minDatetime}
+            max={maxDatetime}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
+          />
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" size="sm">
+              취소
+            </Button>
+          </DialogClose>
+          <Button size="sm" disabled={!value} onClick={handleConfirm}>
+            예약 확인
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -373,6 +551,7 @@ function ChannelRow({
   const [generating, setGenerating] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [scheduleOpen, setScheduleOpen] = useState(false)
 
   const isGenerating = variant?.status === 'GENERATING'
   const canExport = variant?.status === 'READY' || variant?.status === 'EDITED'
@@ -413,16 +592,26 @@ function ChannelRow({
     }
   }
 
-  async function handlePublish() {
+  async function handlePublish(scheduledAt?: string) {
     if (!variant) return
     setPublishing(true)
     try {
-      const res = await fetch(`/api/bo/variants/${variant.id}/publish`, { method: 'POST' })
+      const body: { scheduledAt?: string } = {}
+      if (scheduledAt) body.scheduledAt = scheduledAt
+      const res = await fetch(`/api/bo/variants/${variant.id}/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { message?: string }
         throw new Error(data.message ?? '발행 요청 실패')
       }
-      toast.success('발행을 시작했습니다')
+      if (scheduledAt) {
+        toast.success('예약되었습니다')
+      } else {
+        toast.success('발행을 시작했습니다')
+      }
       onPublished()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '발행 요청 실패')
@@ -475,23 +664,36 @@ function ChannelRow({
             </Button>
           ) : null}
 
-          {/* 발행 버튼 — BROWSER 모드 채널 + 자격증명 있을 때 활성 */}
+          {/* 발행 버튼 + 예약 버튼 — BROWSER 모드 채널 + 자격증명 있을 때 활성 */}
           {channel.publisherMode === 'BROWSER' && variant && (
-            <Button
-              size="sm"
-              variant={canPublish ? 'default' : 'outline'}
-              className="h-7 gap-1 px-2 text-xs"
-              disabled={!canPublish || publishing || isDeployingActive}
-              onClick={() => void handlePublish()}
-              title={publishDisabledTitle()}
-            >
-              {publishing || isDeployingActive ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Send className="h-3 w-3" />
-              )}
-              발행
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant={canPublish ? 'default' : 'outline'}
+                className="h-7 gap-1 px-2 text-xs"
+                disabled={!canPublish || publishing || isDeployingActive}
+                onClick={() => void handlePublish()}
+                title={publishDisabledTitle()}
+              >
+                {publishing || isDeployingActive ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Send className="h-3 w-3" />
+                )}
+                발행
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 gap-1 px-2 text-xs"
+                disabled={!canPublish || publishing || isDeployingActive}
+                onClick={() => setScheduleOpen(true)}
+                title={publishDisabledTitle()}
+              >
+                <CalendarClock className="h-3 w-3" />
+                예약
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -503,7 +705,9 @@ function ChannelRow({
       {canExport && variant && !isDeployingActive && <ExportButtons variantId={variant.id} />}
 
       {/* 배포 상태 인라인 표시 */}
-      {deployment && <DeploymentStatusRow deployment={deployment} onRetry={onPublished} />}
+      {deployment && (
+        <DeploymentStatusRow deployment={deployment} onRetry={onPublished} onCancel={onPublished} />
+      )}
 
       {/* 변형 생성 중 안내 */}
       {isGenerating && (
@@ -512,6 +716,13 @@ function ChannelRow({
           AI가 채널에 맞는 변형을 생성하고 있습니다…
         </p>
       )}
+
+      {/* 예약 다이얼로그 */}
+      <ScheduleDialog
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+        onConfirm={(iso) => void handlePublish(iso)}
+      />
     </div>
   )
 }
@@ -555,6 +766,8 @@ export function VariantsTabPanel({ postId, postStatus }: Props) {
             id: string
             status: string
             platformUrl: string | null
+            scheduledAt: string | null
+            deletedAt: string | null
             variant: { id: string }
             channel: { id: string }
             post: { id: string }
@@ -573,6 +786,8 @@ export function VariantsTabPanel({ postId, postStatus }: Props) {
             errorCode: null,
             errorMessage: null,
             createdAt: d.createdAt,
+            scheduledAt: d.scheduledAt,
+            deletedAt: d.deletedAt,
           }))
         )
       }
@@ -617,9 +832,11 @@ export function VariantsTabPanel({ postId, postStatus }: Props) {
     return () => clearTimeout(timer)
   }, [variants, fetchData])
 
-  // PENDING/PUBLISHING 배포 폴링 (5초)
+  // PENDING/PUBLISHING/DELETING 배포 폴링 (5초)
   useEffect(() => {
-    const hasActive = deployments.some((d) => d.status === 'PENDING' || d.status === 'PUBLISHING')
+    const hasActive = deployments.some(
+      (d) => d.status === 'PENDING' || d.status === 'PUBLISHING' || d.status === 'DELETING'
+    )
     if (!hasActive) return
     const timer = setTimeout(() => void fetchData(), 5000)
     return () => clearTimeout(timer)

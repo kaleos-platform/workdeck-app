@@ -154,6 +154,7 @@ export const BO_WORKER_ERROR_CODES = [
   'EDITOR_NOT_FOUND', // 에디터 DOM 미검출 — 플랫폼 구조 변경, 재시도 불필요
   'PUBLISH_FAILED', // 발행 버튼 실패 — 일시 오류, 재시도 가능
   'URL_CAPTURE_FAILED', // 발행 후 URL 미추출 — 포스트가 발행됐을 수 있어 맹목적 재시도 금지
+  'DELETE_FAILED', // 삭제 버튼 실패 — 일시 오류, 재시도 가능
 ] as const
 export type BoWorkerErrorCode = (typeof BO_WORKER_ERROR_CODES)[number]
 
@@ -161,6 +162,7 @@ const RETRYABLE_ERROR_CODES = new Set<BoWorkerErrorCode>([
   'NETWORK',
   'PLATFORM_ERROR',
   'PUBLISH_FAILED', // 일시적 에디터 오류 — 재시도 허용
+  'DELETE_FAILED', // 일시적 삭제 오류 — 재시도 허용
 ])
 
 export function isBoRetryableErrorCode(errorCode: string | null | undefined): boolean {

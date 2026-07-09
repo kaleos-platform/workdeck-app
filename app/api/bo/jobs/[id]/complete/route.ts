@@ -89,6 +89,50 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
+    if (job.kind === 'DELETE_POST' && job.targetId) {
+      // deployment DELETED 갱신 (status 가드 — DELETING 인 경우만)
+      await prisma.boDeployment.updateMany({
+        where: { id: job.targetId, status: 'DELETING' },
+        data: {
+          status: 'DELETED',
+          deletedAt: new Date(),
+          errorCode: null,
+          errorMessage: null,
+        },
+      })
+
+      // 포스트 롤업 — 남은 PUBLISHED 배포 0건이면 PUBLISH_APPROVED 로 회귀
+      const deployment = await prisma.boDeployment.findUnique({
+        where: { id: job.targetId },
+        select: { postId: true },
+      })
+      if (deployment) {
+        const post = await prisma.boPost.findUnique({
+          where: { id: deployment.postId },
+          select: { id: true, status: true },
+        })
+        if (post && post.status === 'PUBLISHED') {
+          const remainingPublished = await prisma.boDeployment.count({
+            where: { postId: deployment.postId, status: 'PUBLISHED' },
+          })
+          if (remainingPublished === 0) {
+            try {
+              assertBoPostTransition(post.status, 'PUBLISH_APPROVED')
+              await prisma.boPost.update({
+                where: { id: post.id },
+                data: { status: 'PUBLISH_APPROVED' },
+              })
+            } catch {
+              // 전환 불가 — 조용히 스킵, 로그만 기록
+              console.warn(
+                `[bo-jobs-complete] 포스트 ${post.id} PUBLISH_APPROVED 롤업 불가: status=${post.status}`
+              )
+            }
+          }
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true })
   }
 
@@ -116,6 +160,22 @@ export async function POST(req: NextRequest, { params }: Params) {
       })
     } catch (err) {
       console.error('[bo-jobs-complete] BoDeployment 업데이트 실패:', err)
+    }
+  }
+
+  // DELETE_POST 최종 실패 — 플랫폼에 글이 살아있으므로 FAILED 가 아닌 PUBLISHED 가 진실
+  if (finalized && job.kind === 'DELETE_POST' && job.targetId) {
+    try {
+      await prisma.boDeployment.updateMany({
+        where: { id: job.targetId, status: 'DELETING' },
+        data: {
+          status: 'PUBLISHED',
+          errorCode: parsed.data.errorCode ?? null,
+          errorMessage: errorMessage.slice(0, 1000),
+        },
+      })
+    } catch (err) {
+      console.error('[bo-jobs-complete] BoDeployment DELETE_POST 실패 복귀 오류:', err)
     }
   }
 
