@@ -11953,6 +11953,8 @@ export const BoDeploymentScalarFieldEnum = {
   errorCode: 'errorCode',
   errorMessage: 'errorMessage',
   publishedAt: 'publishedAt',
+  scheduledAt: 'scheduledAt',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

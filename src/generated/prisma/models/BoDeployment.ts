@@ -35,6 +35,8 @@ export type BoDeploymentMinAggregateOutputType = {
   errorCode: string | null
   errorMessage: string | null
   publishedAt: Date | null
+  scheduledAt: Date | null
+  deletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +52,8 @@ export type BoDeploymentMaxAggregateOutputType = {
   errorCode: string | null
   errorMessage: string | null
   publishedAt: Date | null
+  scheduledAt: Date | null
+  deletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -65,6 +69,8 @@ export type BoDeploymentCountAggregateOutputType = {
   errorCode: number
   errorMessage: number
   publishedAt: number
+  scheduledAt: number
+  deletedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -82,6 +88,8 @@ export type BoDeploymentMinAggregateInputType = {
   errorCode?: true
   errorMessage?: true
   publishedAt?: true
+  scheduledAt?: true
+  deletedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -97,6 +105,8 @@ export type BoDeploymentMaxAggregateInputType = {
   errorCode?: true
   errorMessage?: true
   publishedAt?: true
+  scheduledAt?: true
+  deletedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +122,8 @@ export type BoDeploymentCountAggregateInputType = {
   errorCode?: true
   errorMessage?: true
   publishedAt?: true
+  scheduledAt?: true
+  deletedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -200,6 +212,8 @@ export type BoDeploymentGroupByOutputType = {
   errorCode: string | null
   errorMessage: string | null
   publishedAt: Date | null
+  scheduledAt: Date | null
+  deletedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: BoDeploymentCountAggregateOutputType | null
@@ -236,6 +250,8 @@ export type BoDeploymentWhereInput = {
   errorCode?: Prisma.StringNullableFilter<"BoDeployment"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"BoDeployment"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
+  scheduledAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
+  deletedAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"BoDeployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BoDeployment"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -255,6 +271,8 @@ export type BoDeploymentOrderByWithRelationInput = {
   errorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -277,6 +295,8 @@ export type BoDeploymentWhereUniqueInput = Prisma.AtLeast<{
   errorCode?: Prisma.StringNullableFilter<"BoDeployment"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"BoDeployment"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
+  scheduledAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
+  deletedAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"BoDeployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BoDeployment"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -296,6 +316,8 @@ export type BoDeploymentOrderByWithAggregationInput = {
   errorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.BoDeploymentCountOrderByAggregateInput
@@ -317,6 +339,8 @@ export type BoDeploymentScalarWhereWithAggregatesInput = {
   errorCode?: Prisma.StringNullableWithAggregatesFilter<"BoDeployment"> | string | null
   errorMessage?: Prisma.StringNullableWithAggregatesFilter<"BoDeployment"> | string | null
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BoDeployment"> | Date | string | null
+  scheduledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BoDeployment"> | Date | string | null
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BoDeployment"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BoDeployment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BoDeployment"> | Date | string
 }
@@ -328,6 +352,8 @@ export type BoDeploymentCreateInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoDeploymentsInput
@@ -347,6 +373,8 @@ export type BoDeploymentUncheckedCreateInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -358,6 +386,8 @@ export type BoDeploymentUpdateInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoDeploymentsNestedInput
@@ -377,6 +407,8 @@ export type BoDeploymentUncheckedUpdateInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -392,6 +424,8 @@ export type BoDeploymentCreateManyInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -403,6 +437,8 @@ export type BoDeploymentUpdateManyMutationInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -418,6 +454,8 @@ export type BoDeploymentUncheckedUpdateManyInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -443,6 +481,8 @@ export type BoDeploymentCountOrderByAggregateInput = {
   errorCode?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
+  scheduledAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -458,6 +498,8 @@ export type BoDeploymentMaxOrderByAggregateInput = {
   errorCode?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
+  scheduledAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -473,6 +515,8 @@ export type BoDeploymentMinOrderByAggregateInput = {
   errorCode?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
+  scheduledAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -656,6 +700,8 @@ export type BoDeploymentCreateWithoutSpaceInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   post: Prisma.BoPostCreateNestedOneWithoutDeploymentsInput
@@ -673,6 +719,8 @@ export type BoDeploymentUncheckedCreateWithoutSpaceInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -717,6 +765,8 @@ export type BoDeploymentScalarWhereInput = {
   errorCode?: Prisma.StringNullableFilter<"BoDeployment"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"BoDeployment"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
+  scheduledAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
+  deletedAt?: Prisma.DateTimeNullableFilter<"BoDeployment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"BoDeployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BoDeployment"> | Date | string
 }
@@ -728,6 +778,8 @@ export type BoDeploymentCreateWithoutPostInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoDeploymentsInput
@@ -745,6 +797,8 @@ export type BoDeploymentUncheckedCreateWithoutPostInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -782,6 +836,8 @@ export type BoDeploymentCreateWithoutChannelInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoDeploymentsInput
@@ -799,6 +855,8 @@ export type BoDeploymentUncheckedCreateWithoutChannelInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -836,6 +894,8 @@ export type BoDeploymentCreateWithoutVariantInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutBoDeploymentsInput
@@ -853,6 +913,8 @@ export type BoDeploymentUncheckedCreateWithoutVariantInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -893,6 +955,8 @@ export type BoDeploymentCreateManySpaceInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -904,6 +968,8 @@ export type BoDeploymentUpdateWithoutSpaceInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   post?: Prisma.BoPostUpdateOneRequiredWithoutDeploymentsNestedInput
@@ -921,6 +987,8 @@ export type BoDeploymentUncheckedUpdateWithoutSpaceInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -935,6 +1003,8 @@ export type BoDeploymentUncheckedUpdateManyWithoutSpaceInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -949,6 +1019,8 @@ export type BoDeploymentCreateManyPostInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -960,6 +1032,8 @@ export type BoDeploymentUpdateWithoutPostInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoDeploymentsNestedInput
@@ -977,6 +1051,8 @@ export type BoDeploymentUncheckedUpdateWithoutPostInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -991,6 +1067,8 @@ export type BoDeploymentUncheckedUpdateManyWithoutPostInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1005,6 +1083,8 @@ export type BoDeploymentCreateManyChannelInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1016,6 +1096,8 @@ export type BoDeploymentUpdateWithoutChannelInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoDeploymentsNestedInput
@@ -1033,6 +1115,8 @@ export type BoDeploymentUncheckedUpdateWithoutChannelInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1047,6 +1131,8 @@ export type BoDeploymentUncheckedUpdateManyWithoutChannelInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1061,6 +1147,8 @@ export type BoDeploymentCreateManyVariantInput = {
   errorCode?: string | null
   errorMessage?: string | null
   publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1072,6 +1160,8 @@ export type BoDeploymentUpdateWithoutVariantInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutBoDeploymentsNestedInput
@@ -1089,6 +1179,8 @@ export type BoDeploymentUncheckedUpdateWithoutVariantInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1103,6 +1195,8 @@ export type BoDeploymentUncheckedUpdateManyWithoutVariantInput = {
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1120,6 +1214,8 @@ export type BoDeploymentSelect<ExtArgs extends runtime.Types.Extensions.Internal
   errorCode?: boolean
   errorMessage?: boolean
   publishedAt?: boolean
+  scheduledAt?: boolean
+  deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1139,6 +1235,8 @@ export type BoDeploymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   errorCode?: boolean
   errorMessage?: boolean
   publishedAt?: boolean
+  scheduledAt?: boolean
+  deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1158,6 +1256,8 @@ export type BoDeploymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   errorCode?: boolean
   errorMessage?: boolean
   publishedAt?: boolean
+  scheduledAt?: boolean
+  deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1177,11 +1277,13 @@ export type BoDeploymentSelectScalar = {
   errorCode?: boolean
   errorMessage?: boolean
   publishedAt?: boolean
+  scheduledAt?: boolean
+  deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BoDeploymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "postId" | "variantId" | "channelId" | "status" | "platformUrl" | "errorCode" | "errorMessage" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["boDeployment"]>
+export type BoDeploymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "postId" | "variantId" | "channelId" | "status" | "platformUrl" | "errorCode" | "errorMessage" | "publishedAt" | "scheduledAt" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["boDeployment"]>
 export type BoDeploymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   post?: boolean | Prisma.BoPostDefaultArgs<ExtArgs>
@@ -1220,6 +1322,8 @@ export type $BoDeploymentPayload<ExtArgs extends runtime.Types.Extensions.Intern
     errorCode: string | null
     errorMessage: string | null
     publishedAt: Date | null
+    scheduledAt: Date | null
+    deletedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["boDeployment"]>
@@ -1659,6 +1763,8 @@ export interface BoDeploymentFieldRefs {
   readonly errorCode: Prisma.FieldRef<"BoDeployment", 'String'>
   readonly errorMessage: Prisma.FieldRef<"BoDeployment", 'String'>
   readonly publishedAt: Prisma.FieldRef<"BoDeployment", 'DateTime'>
+  readonly scheduledAt: Prisma.FieldRef<"BoDeployment", 'DateTime'>
+  readonly deletedAt: Prisma.FieldRef<"BoDeployment", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"BoDeployment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BoDeployment", 'DateTime'>
 }
