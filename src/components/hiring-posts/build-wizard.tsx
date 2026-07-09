@@ -195,24 +195,24 @@ export function BuildWizard({ data }: { data: WizardData }) {
       )}
 
       {/* 하단 CTA */}
-      <div className="flex gap-3 border-t pt-6">
-        <Button variant="outline" className="flex-1" disabled={isFirst} onClick={goPrev}>
+      <div className="flex items-center justify-between border-t pt-6">
+        <Button variant="outline" className="min-w-28" disabled={isFirst} onClick={goPrev}>
           <ArrowLeft /> 이전
         </Button>
-        {step === 'form' && (
-          <Button variant="ghost" className="flex-1" onClick={goNext}>
-            건너뛰기
-          </Button>
-        )}
-        {!isLast ? (
-          <Button className="flex-[2]" onClick={goNext}>
-            다음 <ArrowRight />
-          </Button>
-        ) : (
-          <div className="flex flex-[2] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-            우측 발행 카드에서 공고를 발행하세요.
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {step === 'form' && (
+            <Button variant="ghost" className="min-w-24" onClick={goNext}>
+              건너뛰기
+            </Button>
+          )}
+          {!isLast ? (
+            <Button className="min-w-28" onClick={goNext}>
+              다음 <ArrowRight />
+            </Button>
+          ) : (
+            <p className="text-sm text-muted-foreground">우측 발행 카드에서 공고를 발행하세요.</p>
+          )}
+        </div>
       </div>
     </div>
   )
