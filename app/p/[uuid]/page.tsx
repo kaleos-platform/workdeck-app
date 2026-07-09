@@ -111,7 +111,7 @@ export default async function PublicPostingPage({ params }: Params) {
         </section>
       )}
 
-      {/* 상세 본문 — image / text 블록 */}
+      {/* 상세 본문 — image / text / button 블록 */}
       {posting.contents.length > 0 && (
         <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
           {posting.contents.map((c) =>
@@ -131,6 +131,27 @@ export default async function PublicPostingPage({ params }: Params) {
                 className="p-6 [&_a]:text-primary [&_a]:underline [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-sm [&_p]:mb-2 [&_p]:text-sm [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-sm"
                 dangerouslySetInnerHTML={{ __html: renderTiptapHtml(c.data) }}
               />
+            ) : c.contentType === 'button' && c.data ? (
+              (() => {
+                const btn = c.data as { title?: string; linkType?: string; url?: string }
+                if (!btn.title) return null
+                const isForm = btn.linkType === 'form'
+                return (
+                  <div key={c.id} className="p-6">
+                    {isForm ? (
+                      <Button asChild size="lg" className="w-full">
+                        <Link href={getHiringPublicApplyPath(uuid)}>{btn.title}</Link>
+                      </Button>
+                    ) : (
+                      <Button asChild size="lg" className="w-full">
+                        <a href={btn.url} target="_blank" rel="noopener noreferrer">
+                          {btn.title}
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                )
+              })()
             ) : null
           )}
         </section>

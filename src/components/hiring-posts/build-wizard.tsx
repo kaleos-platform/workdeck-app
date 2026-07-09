@@ -6,8 +6,9 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RECRUITING_POSTINGS_PATH } from '@/lib/deck-routes'
 import { PostingStatusBadge, type PostingStatus } from './status-badge'
-import { WizardStepper, type WizardStepKey } from './wizard-stepper'
+import { WizardStepper, WIZARD_STEPS, type WizardStepKey } from './wizard-stepper'
 import { StepBasic } from './step-basic'
+import { StepFormSettings } from './step-form-settings'
 import { StepPositions } from './step-positions'
 import { StepStores } from './step-stores'
 import { StepForm } from './step-form'
@@ -39,8 +40,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
+const STEP_ORDER: WizardStepKey[] = ['basic', 'form', 'decorate']
+
 export function BuildWizard({ data }: { data: WizardData }) {
-  const [step, setStep] = useState<WizardStepKey>('application')
+  const [step, setStep] = useState<WizardStepKey>('basic')
   const [state, setState] = useState<WizardState>(() => ({
     title: data.posting.title,
     closingDate: toDateInput(data.posting.closingDate),
@@ -56,6 +59,17 @@ export function BuildWizard({ data }: { data: WizardData }) {
 
   function patch(p: Partial<WizardState>) {
     setState((prev) => ({ ...prev, ...p }))
+  }
+
+  const currentIndex = STEP_ORDER.indexOf(step)
+  const isFirst = currentIndex === 0
+  const isLast = currentIndex === STEP_ORDER.length - 1
+
+  function goPrev() {
+    if (!isFirst) setStep(STEP_ORDER[currentIndex - 1])
+  }
+  function goNext() {
+    if (!isLast) setStep(STEP_ORDER[currentIndex + 1])
   }
 
   const gridCls = 'grid gap-8 lg:grid-cols-[38fr_62fr] xl:gap-[50px]'
@@ -81,18 +95,14 @@ export function BuildWizard({ data }: { data: WizardData }) {
 
       <WizardStepper current={step} onSelect={setStep} />
 
-      {/* STEP 1 — 지원서 만들기 */}
-      {step === 'application' && (
+      {/* STEP 1 — 공고 기본 정보 */}
+      {step === 'basic' && (
         <div className={gridCls}>
           <div className="space-y-8">
-            <Section title="기본 정보">
+            <Section title="공고 제목">
               <StepBasic
                 postingId={data.posting.id}
-                value={{
-                  title: state.title,
-                  closingDate: state.closingDate,
-                  notificationEnabled: state.notificationEnabled,
-                }}
+                value={{ title: state.title }}
                 onChange={patch}
               />
             </Section>
@@ -113,6 +123,35 @@ export function BuildWizard({ data }: { data: WizardData }) {
                 ) => patch(p)}
               />
             </Section>
+          </div>
+          <div className="lg:sticky lg:top-6 lg:self-start">
+            <PostingPreview
+              status={state.status}
+              title={state.title}
+              positions={state.positions}
+              stores={state.stores}
+              storeIds={state.storeIds}
+              noStores={state.noStores}
+              contents={state.contents}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* STEP 2 — 지원서 폼 제작 */}
+      {step === 'form' && (
+        <div className={gridCls}>
+          <div className="space-y-8">
+            <Section title="지원서 마감일">
+              <StepFormSettings
+                postingId={data.posting.id}
+                value={{
+                  closingDate: state.closingDate,
+                  notificationEnabled: state.notificationEnabled,
+                }}
+                onChange={patch}
+              />
+            </Section>
             <Section title="지원서 항목">
               <StepForm
                 postingId={data.posting.id}
@@ -131,7 +170,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
         </div>
       )}
 
-      {/* STEP 2 — 공고 꾸미기 */}
+      {/* STEP 3 — 공고 꾸미기 */}
       {step === 'decorate' && (
         <div className={gridCls}>
           <div>
@@ -168,17 +207,17 @@ export function BuildWizard({ data }: { data: WizardData }) {
 
       {/* 하단 CTA */}
       <div className="flex gap-3 border-t pt-6">
-        <Button
-          variant="outline"
-          className="flex-1"
-          disabled={step === 'application'}
-          onClick={() => setStep('application')}
-        >
-          <ArrowLeft /> 이전: 지원서 만들기
+        <Button variant="outline" className="flex-1" disabled={isFirst} onClick={goPrev}>
+          <ArrowLeft /> 이전
         </Button>
-        {step === 'application' ? (
-          <Button className="flex-[2]" onClick={() => setStep('decorate')}>
-            다음: 공고 꾸미기 <ArrowRight />
+        {step === 'form' && (
+          <Button variant="ghost" className="flex-1" onClick={goNext}>
+            건너뛰기
+          </Button>
+        )}
+        {!isLast ? (
+          <Button className="flex-[2]" onClick={goNext}>
+            다음 <ArrowRight />
           </Button>
         ) : (
           <div className="flex flex-[2] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">

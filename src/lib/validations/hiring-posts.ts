@@ -102,8 +102,41 @@ export const positionSchema = z.object({
 export type PositionInput = z.infer<typeof positionSchema>
 
 // ─── 상세 콘텐츠 블록 ──────────────────────────────────────────────────────────
-// contentType: 'text' — Tiptap JSON, 'image' — Supabase 업로드 이미지
-export const contentTypeEnum = z.enum(['image', 'text'])
+// contentType: 'text' — Tiptap JSON, 'image' — Supabase 업로드 이미지, 'button' — CTA 버튼
+export const contentTypeEnum = z.enum(['image', 'text', 'button'])
+
+// 버튼 블록 data 스키마
+export const buttonDataSchema = z
+  .object({
+    title: z.string().min(1, '버튼 제목을 입력하세요').max(50, '버튼 제목은 50자 이내여야 합니다'),
+    linkType: z.enum(['form', 'url']),
+    url: z.string().optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.linkType === 'url') {
+      if (!val.url || val.url.trim() === '') {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'URL을 입력하세요', path: ['url'] })
+      } else {
+        try {
+          const parsed = new URL(val.url)
+          if (!['http:', 'https:'].includes(parsed.protocol)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'http 또는 https URL을 입력하세요',
+              path: ['url'],
+            })
+          }
+        } catch {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: '유효한 URL을 입력하세요',
+            path: ['url'],
+          })
+        }
+      }
+    }
+  })
+export type ButtonData = z.infer<typeof buttonDataSchema>
 
 export const createContentSchema = z.object({
   contentType: contentTypeEnum,

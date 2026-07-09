@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
-import { updateContentSchema } from '@/lib/validations/hiring-posts'
+import { buttonDataSchema, updateContentSchema } from '@/lib/validations/hiring-posts'
 import { uploadContentImage } from '@/lib/hiring/postings'
 
 type Params = { params: Promise<{ id: string; contentId: string }> }
@@ -39,6 +39,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
   if (existing.contentType === 'image' && parsed.data.data !== undefined) {
     return errorResponse('image 블록에는 data(Tiptap JSON)를 전달할 수 없습니다', 400)
+  }
+  // button 블록: imageBase64 불허 + data는 buttonDataSchema로 서버 검증
+  // (url에 javascript: 등 비 http(s) 스킴이 저장되면 공개 페이지 <a href>로 렌더되므로 차단)
+  if (existing.contentType === 'button') {
+    if (parsed.data.imageBase64 !== undefined) {
+      return errorResponse('button 블록에는 imageBase64를 전달할 수 없습니다', 400)
+    }
+    if (parsed.data.data !== undefined) {
+      const btn = buttonDataSchema.safeParse(parsed.data.data)
+      if (!btn.success) {
+        return errorResponse('invalid input', 400, { errors: btn.error.flatten() })
+      }
+    }
   }
 
   // 이미지 업로드 — 실패 시 DB 저장 없이 에러 반환
