@@ -116,7 +116,6 @@ d('PATCH /reorder/plan/[planId]/items/[itemId] — totalFinalQty 트랜잭션 �
       data: { ...itemBase, optionId: optB.id, finalQty: 20 },
     })
     item1Id = i1.id
-
     ;(resolveDeckContext as jest.Mock).mockResolvedValue({
       space: { id: SPACE_ID, name: 'E2E ReorderItemTx Throwaway' },
       user: { id: USER_ID },
@@ -129,9 +128,9 @@ d('PATCH /reorder/plan/[planId]/items/[itemId] — totalFinalQty 트랜잭션 �
   })
 
   test('아이템1 finalQty 10→50 PATCH 후 plan.totalFinalQty === 70', async () => {
-    const res = await PATCH(patchReq(planId, item1Id, { finalQty: 50 }), {
+    const res = (await PATCH(patchReq(planId, item1Id, { finalQty: 50 }), {
       params: Promise.resolve({ planId, itemId: item1Id }),
-    })
+    }))!
     expect(res.status).toBe(200)
 
     const json = await res.json()

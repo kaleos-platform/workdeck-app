@@ -3427,6 +3427,8 @@ enum BoDeploymentStatus {
   FAILED
   CANCELED
   EXPORTED
+  DELETING
+  DELETED
 }
 
 // 블로그 포스트. 소재(BoMaterial)를 기반으로 AI가 생성한 실제 글 본문.
@@ -3540,6 +3542,8 @@ model BoDeployment {
   errorCode    String?
   errorMessage String?
   publishedAt  DateTime?
+  scheduledAt  DateTime? // 예약 발행 시각 (null = 즉시 발행)
+  deletedAt    DateTime? // 플랫폼에서 글 삭제 완료 시각
 
   space   Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   post    BoPost        @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -3560,6 +3564,7 @@ enum BoJobKind {
   GENERATE_DRAFT
   GENERATE_VARIANT
   PUBLISH
+  DELETE_POST
 }
 
 enum BoJobStatus {
