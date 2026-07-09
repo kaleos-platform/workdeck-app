@@ -113,6 +113,22 @@ export function PostingPreview({
                     className="w-full rounded-md"
                   />
                 ) : null
+              ) : c.contentType === 'button' ? (
+                (() => {
+                  const btn = c.data as { title?: string; linkType?: string; url?: string } | null
+                  if (!btn?.title) return null
+                  return (
+                    <a
+                      key={c.id}
+                      href={btn.linkType === 'url' && btn.url ? btn.url : '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                    >
+                      {btn.title}
+                    </a>
+                  )
+                })()
               ) : (
                 <Editor
                   key={`${c.id}:${hashDoc(c.data)}`}

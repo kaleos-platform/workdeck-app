@@ -3,10 +3,11 @@
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export type WizardStepKey = 'application' | 'decorate'
+export type WizardStepKey = 'basic' | 'form' | 'decorate'
 
 export const WIZARD_STEPS: Array<{ key: WizardStepKey; label: string }> = [
-  { key: 'application', label: '지원서 만들기' },
+  { key: 'basic', label: '공고 기본 정보' },
+  { key: 'form', label: '지원서 폼 제작' },
   { key: 'decorate', label: '공고 꾸미기' },
 ]
 
@@ -15,7 +16,7 @@ type Props = {
   onSelect: (key: WizardStepKey) => void
 }
 
-// 원형 번호 배지 스텝퍼 (2단계). 완료 단계는 체크, 현재 단계는 primary 채움.
+// 원형 번호 배지 스텝퍼 (3단계). 완료 단계는 체크, 현재 단계는 primary 채움.
 export function WizardStepper({ current, onSelect }: Props) {
   const currentIndex = WIZARD_STEPS.findIndex((s) => s.key === current)
 
