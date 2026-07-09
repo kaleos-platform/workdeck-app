@@ -2,8 +2,9 @@
 
 /**
  * 계좌 관리 페이지 메인 매니저
- * 상단 2패널: 자산(계좌) | 부채 (나란히)
- *   - 자산: 계좌 CRUD — GET/POST/PATCH/DELETE /api/finance/accounts
+ * 상단 그리드: 자산(은행 계좌) | 부채 | 카드 — 같은 FinAccount API, kind로 패널 분리
+ *   - 자산: 은행 계좌 CRUD — GET/POST/PATCH/DELETE /api/finance/accounts (kind=BANK)
+ *   - 카드: 카드 CRUD — 동일 API (kind=CARD), 카드 이용내역 업로드의 "연결 카드" 후보
  *   - 부채: 부채 CRUD — GET/POST/PATCH/DELETE /api/finance/liabilities
  *           부채는 등록된 계좌를 "대출 계좌"로 연결 가능 → 자산 패널에 배지 표시
  * 하단: 자산·부채 계정과목 관리 (전체 폭) — GET/POST/PATCH/DELETE /api/finance/categories
@@ -63,9 +64,10 @@ interface CategoryNode {
   children: CategoryNode[]
 }
 
-// ─── 패널 A — 자산(계좌) ───────────────────────────────────────────────────────
+// ─── 패널 A — 자산(은행 계좌) ──────────────────────────────────────────────────
 
 interface AssetsPanelProps {
+  /** 은행 계좌만 (카드는 카드 패널) */
   accounts: Account[]
   loading: boolean
   /** 대출 연결된 계좌 id 집합 (배지 표시용) */
@@ -112,7 +114,7 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
         <div className="flex items-start justify-between gap-3">
           <div>
             <CardTitle className="text-sm font-semibold">자산 (계좌)</CardTitle>
-            <CardDescription className="text-xs">은행·카드 계좌를 관리합니다</CardDescription>
+            <CardDescription className="text-xs">은행 계좌를 관리합니다</CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={startAdd} className="shrink-0">
             <Plus className="mr-1 size-3.5" />
@@ -132,24 +134,10 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
               const isLoan = linkedAccountIds.has(acct.id)
               return (
                 <div key={acct.id} className="flex items-center gap-3 py-2.5">
-                  {acct.kind === 'BANK' ? (
-                    <Landmark className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
-                  ) : (
-                    <CreditCard className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                  )}
+                  <Landmark className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-sm font-medium">{acct.name}</span>
-                      <span
-                        className={cn(
-                          'inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]',
-                          acct.kind === 'BANK'
-                            ? 'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400'
-                            : 'border-amber-200 text-amber-700 dark:border-amber-800 dark:text-amber-400'
-                        )}
-                      >
-                        {acct.kind === 'BANK' ? '은행' : '카드'}
-                      </span>
                       {isLoan && (
                         <span className="inline-flex items-center gap-0.5 rounded-full border border-red-200 px-1.5 py-0 text-[10px] text-red-700 dark:border-red-800 dark:text-red-400">
                           <Wallet className="size-2.5" />
@@ -203,6 +191,119 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           account={editingAccount}
+          onSaved={onReload}
+        />
+      </CardContent>
+    </Card>
+  )
+}
+
+// ─── 패널 A-2 — 카드 ──────────────────────────────────────────────────────────
+
+interface CardsPanelProps {
+  /** 카드만 (kind=CARD) */
+  cards: Account[]
+  loading: boolean
+  /** 계좌·부채 목록 재조회 */
+  onReload: () => Promise<void>
+}
+
+function CardsPanel({ cards, loading, onReload }: CardsPanelProps) {
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingCard, setEditingCard] = useState<Account | null>(null)
+
+  function startAdd() {
+    setEditingCard(null)
+    setDialogOpen(true)
+  }
+
+  function startEdit(card: Account) {
+    setEditingCard(card)
+    setDialogOpen(true)
+  }
+
+  async function handleDelete(card: Account) {
+    if (!confirm(`"${card.name}" 카드를 삭제하시겠습니까?\n연결된 이용 내역도 함께 삭제됩니다.`))
+      return
+    try {
+      const res = await fetch(`/api/finance/accounts/${card.id}`, { method: 'DELETE' })
+      const data = (await res.json().catch(() => ({}))) as {
+        message?: string
+        deletedTransactions?: number
+      }
+      if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
+      const cnt = data.deletedTransactions ?? 0
+      toast.success(`카드가 삭제되었습니다${cnt > 0 ? ` (거래 ${cnt}건 포함)` : ''}`)
+      await onReload()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '삭제 실패')
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-sm font-semibold">카드</CardTitle>
+            <CardDescription className="text-xs">
+              카드 이용내역 업로드 시 연결할 카드를 관리합니다
+            </CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={startAdd} className="shrink-0">
+            <Plus className="mr-1 size-3.5" />
+            카드 추가
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* 카드 목록 */}
+        {loading ? (
+          <p className="text-xs text-muted-foreground">불러오는 중...</p>
+        ) : cards.length === 0 ? (
+          <p className="text-xs text-muted-foreground">등록된 카드가 없습니다</p>
+        ) : (
+          <div className="divide-y">
+            {cards.map((card) => (
+              <div key={card.id} className="flex items-center gap-3 py-2.5">
+                <CreditCard className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-medium">{card.name}</span>
+                  <p className="text-xs text-muted-foreground">
+                    {card.institution}
+                    {card.holder && ` · 명의자 ${card.holder}`}
+                    {card.accountNumber && ` · ${card.accountNumber}`}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => startEdit(card)}
+                    aria-label="수정"
+                  >
+                    <Pencil className="size-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => handleDelete(card)}
+                    aria-label="삭제"
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <AccountFormDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          account={editingCard}
+          defaultKind="CARD"
           onSaved={onReload}
         />
       </CardContent>
@@ -682,11 +783,14 @@ export function FinanceBalancesManager() {
     [liabilities]
   )
 
+  const bankAccounts = useMemo(() => accounts.filter((a) => a.kind === 'BANK'), [accounts])
+  const cardAccounts = useMemo(() => accounts.filter((a) => a.kind === 'CARD'), [accounts])
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <AssetsPanel
-          accounts={accounts}
+          accounts={bankAccounts}
           loading={accountsLoading}
           linkedAccountIds={linkedAccountIds}
           onReload={reloadAll}
@@ -697,6 +801,7 @@ export function FinanceBalancesManager() {
           loading={liabilitiesLoading}
           onReload={reloadAll}
         />
+        <CardsPanel cards={cardAccounts} loading={accountsLoading} onReload={reloadAll} />
       </div>
       <CategoriesSection />
     </div>
