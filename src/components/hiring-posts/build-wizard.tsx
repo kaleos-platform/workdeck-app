@@ -40,7 +40,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-const STEP_ORDER: WizardStepKey[] = ['basic', 'form', 'decorate']
+const STEP_ORDER: WizardStepKey[] = WIZARD_STEPS.map((s) => s.key)
 
 export function BuildWizard({ data }: { data: WizardData }) {
   const [step, setStep] = useState<WizardStepKey>('basic')

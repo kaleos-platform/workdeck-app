@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -301,12 +301,14 @@ function ButtonBlock({
     onSave(result.data)
   }
 
+  const uid = useId()
+
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
-        <Label htmlFor="btn-title">버튼 제목</Label>
+        <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
         <Input
-          id="btn-title"
+          id={`${uid}-btn-title`}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="예: 지금 바로 지원하기"
@@ -319,7 +321,7 @@ function ButtonBlock({
           <label className="flex cursor-pointer items-center gap-1.5">
             <input
               type="radio"
-              name={`btn-linktype-${title}`}
+              name={`${uid}-btn-linktype`}
               value="form"
               checked={linkType === 'form'}
               onChange={() => setLinkType('form')}
@@ -329,7 +331,7 @@ function ButtonBlock({
           <label className="flex cursor-pointer items-center gap-1.5">
             <input
               type="radio"
-              name={`btn-linktype-${title}`}
+              name={`${uid}-btn-linktype`}
               value="url"
               checked={linkType === 'url'}
               onChange={() => setLinkType('url')}
