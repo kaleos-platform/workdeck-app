@@ -99,6 +99,7 @@ export async function resolveSpaceContext() {
 
   const membership = await prisma.spaceMember.findFirst({
     where: { userId: user.id },
+    orderBy: { createdAt: 'asc' }, // 결정적 최고참 멤버십
     include: { space: { select: { id: true, name: true } } },
   })
   if (!membership) return { error: errorResponse('공간이 없습니다', 404) }

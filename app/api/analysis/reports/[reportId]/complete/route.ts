@@ -52,11 +52,11 @@ export async function POST(
       data: { lastAnalyzedAt: new Date() },
     })
 
-    // 활성 규칙의 appliedCount 증가
+    // 활성 규칙의 appliedCount 증가 — 리포트 소속 워크스페이스 내 규칙만 허용 (cross-workspace 방어)
     const activeRuleIds = (body.metadata?.activeRuleIds as string[]) ?? []
     if (activeRuleIds.length > 0) {
       await prisma.analysisRule.updateMany({
-        where: { id: { in: activeRuleIds } },
+        where: { id: { in: activeRuleIds }, workspaceId: report.workspaceId },
         data: { appliedCount: { increment: 1 } },
       })
     }
