@@ -109,6 +109,21 @@ export async function POST(req: NextRequest, { params }: Params) {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
+    // 실패 로그 기록 — generate-text 라우트와 동일 패턴
+    try {
+      await prisma.textGenerationLog.create({
+        data: {
+          spaceId: resolved.space.id,
+          userId: resolved.user.id,
+          provider: 'unknown',
+          responseFormat: 'text',
+          status: 'FAILED',
+          errorMessage: message.slice(0, 500),
+        },
+      })
+    } catch {
+      // 로그 기록 실패는 응답에 영향 없음
+    }
     return errorResponse('섹션 생성에 실패했습니다', 502, { detail: message })
   }
 }

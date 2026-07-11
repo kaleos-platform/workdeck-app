@@ -84,9 +84,16 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id } = await params
   const existing = await prisma.content.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, status: true },
   })
   if (!existing) return errorResponse('콘텐츠를 찾을 수 없습니다', 404)
+
+  if (existing.status === 'PUBLISHED' || existing.status === 'ANALYZED') {
+    return errorResponse(
+      '게시된 콘텐츠는 삭제할 수 없습니다 — 먼저 보관 처리하세요',
+      409,
+    )
+  }
 
   await prisma.content.delete({ where: { id } })
   return NextResponse.json({ ok: true })

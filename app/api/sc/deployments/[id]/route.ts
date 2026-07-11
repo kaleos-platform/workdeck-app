@@ -3,6 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { deploymentUpdateSchema } from '@/lib/sc/schemas'
 import { normalizeKebab } from '@/lib/sc/utm'
+import { ALLOWED_DEPLOYMENT_TRANSITIONS } from '@/lib/sc/deployment-transitions'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -31,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params
   const existing = await prisma.contentDeployment.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, status: true },
   })
   if (!existing) return errorResponse('배포를 찾을 수 없습니다', 404)
 
@@ -44,6 +45,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const parsed = deploymentUpdateSchema.safeParse(body)
   if (!parsed.success) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
+  }
+
+  // 상태 전이 검증 — 허용 맵에 없는 전이는 거부
+  if (parsed.data.status !== undefined) {
+    const allowed = ALLOWED_DEPLOYMENT_TRANSITIONS[existing.status] ?? []
+    if (!allowed.includes(parsed.data.status)) {
+      return errorResponse(
+        `${existing.status} → ${parsed.data.status} 전이는 허용되지 않습니다`,
+        409,
+      )
+    }
   }
 
   const updated = await prisma.contentDeployment.update({
