@@ -172,10 +172,15 @@ export function AccountDialog({ open, onOpenChange, onChanged }: AccountDialogPr
       const data = (await res.json().catch(() => ({}))) as {
         message?: string
         deletedTransactions?: number
+        stagedCount?: number
       }
       if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
-      const cnt = data.deletedTransactions ?? 0
-      toast.success(`계좌가 삭제되었습니다${cnt > 0 ? ` (거래 ${cnt}건 포함)` : ''}`)
+      const txCnt = data.deletedTransactions ?? 0
+      const stageCnt = data.stagedCount ?? 0
+      const parts: string[] = []
+      if (txCnt > 0) parts.push(`확정 거래 ${txCnt}건`)
+      if (stageCnt > 0) parts.push(`미확정 스테이징 ${stageCnt}건`)
+      toast.success(`계좌가 삭제되었습니다${parts.length > 0 ? ` (${parts.join('·')} 포함)` : ''}`)
       await loadAccounts()
       onChanged()
     } catch (err) {

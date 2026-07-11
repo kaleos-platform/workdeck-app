@@ -99,10 +99,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   })
   if (!existing) return errorResponse('계좌를 찾을 수 없습니다', 404)
 
-  // 삭제 전 연결된 거래 수 집계
-  const txCount = await prisma.finTransaction.count({ where: { accountId: id } })
+  // 삭제 전 연결된 거래·스테이징 수 집계 (cascade로 함께 삭제됨)
+  const [txCount, stagedCount] = await Promise.all([
+    prisma.finTransaction.count({ where: { accountId: id } }),
+    prisma.finStagedRow.count({ where: { accountId: id } }),
+  ])
 
   await prisma.finAccount.delete({ where: { id } })
 
-  return NextResponse.json({ ok: true, deletedTransactions: txCount })
+  return NextResponse.json({ ok: true, deletedTransactions: txCount, stagedCount })
 }
