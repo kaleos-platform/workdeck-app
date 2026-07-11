@@ -39,8 +39,16 @@ function clientIp(req: NextRequest): string {
 
 export async function POST(req: NextRequest) {
   // 레이트리밋(IP 해시 키)
+  // hashIp 는 production 에서 CLICK_EVENT_SALT 미설정 시 throw — 동기 호출이므로
+  // try/catch 로 감싼다. 해시 실패 시 raw IP 대신 'unknown' 으로 폴백(IP 미노출 유지).
   const ip = clientIp(req)
-  const ipKey = ip !== 'unknown' ? hashIp(ip) : 'unknown'
+  let ipKey: string
+  try {
+    ipKey = ip !== 'unknown' ? hashIp(ip) : 'unknown'
+  } catch (e) {
+    console.warn('[hiring-public] hashIp 실패 — 레이트리밋 키를 unknown 으로 폴백:', e)
+    ipKey = 'unknown'
+  }
   if (!checkRateLimit(ipKey)) {
     return errorResponse('요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요', 429)
   }

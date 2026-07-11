@@ -48,12 +48,21 @@ export async function GET(req: NextRequest, { params }: Params) {
   const userAgent = req.headers.get('user-agent') ?? null
   const referrer = req.headers.get('referer') ?? null
 
+  // hashIp 는 production 에서 CLICK_EVENT_SALT 미설정 시 throw — 동기 호출이므로
+  // data 객체 생성 전에 분리해 try/catch 로 감싼다 (클릭 기록은 best-effort).
+  let ipHash: string | null = null
+  try {
+    ipHash = ip !== 'unknown' ? hashIp(ip) : null
+  } catch (e) {
+    console.warn('[c/slug] hashIp 실패 — 클릭 기록에서 IP 해시 생략:', e)
+  }
+
   void prisma.contentClickEvent
     .create({
       data: {
         spaceId: deployment.spaceId,
         deploymentId: deployment.id,
-        ipHash: ip !== 'unknown' ? hashIp(ip) : null,
+        ipHash,
         userAgent: userAgent?.slice(0, 500) ?? null,
         referrer: referrer?.slice(0, 500) ?? null,
       },
