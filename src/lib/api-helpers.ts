@@ -39,7 +39,24 @@ export async function resolveWorkspace() {
       })
       if (workspace) return { workspace }
     }
-    // workspace ID 미지정 시 첫 번째 워크스페이스 사용 (단일 테넌트)
+    // 폴백 체인:
+    //  1. x-workspace-id 헤더 (위에서 처리)
+    //  2. WORKER_DEFAULT_WORKSPACE_ID 환경 변수 — 설정된 경우 findUnique로 결정적 조회
+    //  3. findFirst 폴백 — 다중 워크스페이스 환경에서 비결정적이므로 권장하지 않음
+    const defaultId = process.env.WORKER_DEFAULT_WORKSPACE_ID
+    if (defaultId) {
+      const workspace = await prisma.workspace.findUnique({
+        where: { id: defaultId },
+        select: { id: true },
+      })
+      if (workspace) return { workspace }
+      console.warn(
+        `[resolveWorkspace] WORKER_DEFAULT_WORKSPACE_ID="${defaultId}" 에 해당하는 워크스페이스가 없습니다 — findFirst 폴백으로 진행`
+      )
+    }
+    console.warn(
+      '[resolveWorkspace] x-workspace-id 헤더와 WORKER_DEFAULT_WORKSPACE_ID 없이 findFirst 폴백 사용 — 다중 워크스페이스 환경에서 비결정적'
+    )
     const workspace = await prisma.workspace.findFirst({ select: { id: true } })
     if (workspace) return { workspace }
   }
