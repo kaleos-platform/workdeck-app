@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Paperclip } from 'lucide-react'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 
 type Props = {
@@ -61,9 +62,23 @@ function FieldPreview({ field }: { field: FormFieldInput }) {
         <div className="h-9 rounded-md border bg-muted/40 px-2 text-xs leading-9 text-muted-foreground">
           {(field.options ?? []).join(' / ') || '선택'}
         </div>
+      ) : field.type === 'multiselect' ? (
+        <div className="space-y-1.5">
+          {(field.options ?? []).length > 0 ? (
+            (field.options ?? []).map((opt) => (
+              <label key={opt} className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Checkbox disabled />
+                {opt}
+              </label>
+            ))
+          ) : (
+            <span className="text-xs text-muted-foreground">선택지 없음</span>
+          )}
+        </div>
       ) : field.type === 'file' ? (
-        <div className="h-9 rounded-md border border-dashed bg-muted/40 px-2 text-xs leading-9 text-muted-foreground">
-          파일 선택
+        <div className="flex flex-col items-center justify-center gap-1 rounded-md border border-dashed bg-muted/40 py-4 text-muted-foreground">
+          <Paperclip className="size-4" />
+          <span className="text-xs">파일을 첨부하세요</span>
         </div>
       ) : (
         <div className="h-9 rounded-md border bg-muted/40" />

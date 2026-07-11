@@ -21,7 +21,7 @@ export function WizardStepper({ current, onSelect }: Props) {
   const currentIndex = WIZARD_STEPS.findIndex((s) => s.key === current)
 
   return (
-    <nav className="flex items-center gap-2">
+    <nav className="flex items-center justify-center gap-2">
       {WIZARD_STEPS.map((s, idx) => {
         const active = idx === currentIndex
         const done = idx < currentIndex

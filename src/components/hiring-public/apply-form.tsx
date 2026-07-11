@@ -267,33 +267,32 @@ export function ApplyForm({ postingUuid, fields, positions, stores }: Props) {
               {f.label}
               {f.required && <span className="ml-0.5 text-destructive">*</span>}
             </Label>
-            <div className="flex items-center gap-2">
-              <Button asChild type="button" variant="outline" size="sm">
-                <label className="cursor-pointer">
-                  <Paperclip className="mr-1 size-3.5" />
-                  파일 선택
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) =>
-                      setFiles((prev) => ({ ...prev, [f.key]: e.target.files?.[0] ?? null }))
-                    }
-                  />
-                </label>
-              </Button>
-              {selected && (
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  {selected.name}
-                  <button
-                    type="button"
-                    onClick={() => setFiles((prev) => ({ ...prev, [f.key]: null }))}
-                    aria-label="첨부 제거"
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </span>
-              )}
-            </div>
+            {selected ? (
+              <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs text-muted-foreground">
+                <Paperclip className="size-3.5 shrink-0" />
+                <span className="flex-1 truncate">{selected.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setFiles((prev) => ({ ...prev, [f.key]: null }))}
+                  aria-label="첨부 제거"
+                  className="shrink-0"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed text-sm text-muted-foreground hover:bg-accent">
+                <Paperclip className="size-4" />
+                파일 선택
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) =>
+                    setFiles((prev) => ({ ...prev, [f.key]: e.target.files?.[0] ?? null }))
+                  }
+                />
+              </label>
+            )}
           </div>
         )
       })}
