@@ -177,7 +177,7 @@ export function StepStores({ postingId, value, onChange }: Props) {
               <DialogHeader>
                 <DialogTitle>매장 추가</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="store-name">매장명</Label>
                   <Input
