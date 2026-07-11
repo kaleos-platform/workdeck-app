@@ -35,6 +35,10 @@ export async function ensureWorkspaceForUser(
   const fallbackName = name?.trim() || user.email?.split('@')[0]?.trim() || '내 워크스페이스'
 
   return prisma.$transaction(async (tx) => {
+    // 동시 최초 가입 / 레거시 계정 동시 접근 레이스 방지.
+    // $queryRaw는 void 반환 컬럼을 역직렬화하지 못하므로 $executeRaw 사용.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${user.id}))`
+
     const existing = await tx.workspace.findUnique({
       where: { ownerId: user.id },
       select: { id: true, name: true },
