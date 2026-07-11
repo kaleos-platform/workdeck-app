@@ -440,7 +440,11 @@ export function TransactionsView() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '저장 처리 실패')
-      toast.success(`분류완료 ${data.committed}건을 저장했습니다`)
+      toast.success(
+        data.dupCleaned > 0
+          ? `분류완료 ${data.committed}건 저장 · 중복 제외 ${data.dupCleaned}건 정리`
+          : `분류완료 ${data.committed}건을 저장했습니다`
+      )
       setCommitDialogOpen(false)
       void loadStaging(stagingTab) // 잔여(미분류·검토) 갱신
       // 전체 거래 탭으로 전환
@@ -539,17 +543,20 @@ export function TransactionsView() {
       onValueChange={(v) => setMainTab(v as 'staging' | 'transactions')}
       className="space-y-4"
     >
-      <TabsList>
-        <TabsTrigger value="staging">
-          확인·처리
-          {stagingCounts.total > 0 && (
-            <Badge variant="secondary" className="ml-1.5 text-xs">
-              {stagingCounts.total}
-            </Badge>
-          )}
-        </TabsTrigger>
-        <TabsTrigger value="transactions">전체 거래</TabsTrigger>
-      </TabsList>
+      {/* 긴 목록 스크롤 중에도 탭 전환이 가능하도록 상단 고정 */}
+      <div className="sticky top-0 z-30 -mb-2 bg-background pb-2">
+        <TabsList>
+          <TabsTrigger value="staging">
+            확인·처리
+            {stagingCounts.total > 0 && (
+              <Badge variant="secondary" className="ml-1.5 text-xs">
+                {stagingCounts.total}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="transactions">전체 거래</TabsTrigger>
+        </TabsList>
+      </div>
 
       {/* ── 확인·처리(스테이징) ── */}
       <TabsContent value="staging" className="space-y-3">
@@ -607,7 +614,8 @@ export function TransactionsView() {
           <DialogHeader>
             <DialogTitle>저장 처리 확인</DialogTitle>
             <DialogDescription>
-              분류완료 건만 확정 거래로 저장합니다. 미분류·검토 행은 보류됩니다.
+              분류완료 건만 확정 거래로 저장합니다. 미분류·검토 행은 보류되고, 중복 제외(중복 탭)
+              행은 자동 정리됩니다.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 text-sm">
@@ -732,8 +740,8 @@ function StagingPanel({
 
   return (
     <div className="space-y-3">
-      {/* 하위 탭 */}
-      <div className="flex items-center gap-1.5 border-b pb-2">
+      {/* 하위 탭 — 상단 메인 탭(높이 44px) 바로 아래 고정 */}
+      <div className="sticky top-11 z-20 flex items-center gap-1.5 border-b bg-background pb-2">
         {[
           { value: 'all', label: '전체', count: counts.total },
           { value: 'unclassified', label: '미분류', count: counts.unclassified },
@@ -815,8 +823,8 @@ function StagingPanel({
         </div>
       )}
 
-      {/* 하단 저장 처리 버튼 — 분류완료 행만 확정 저장(임포트 무관) */}
-      <div className="flex items-center justify-between pt-1">
+      {/* 하단 저장 처리 버튼 — 스크롤 위치와 무관하게 접근 가능하도록 하단 고정 */}
+      <div className="sticky bottom-0 z-20 -mx-1 flex items-center justify-between border-t bg-background px-1 py-2">
         <p className="text-xs text-muted-foreground">
           분류완료 <span className="font-medium text-foreground">{classifiedCount}</span>건 저장
           가능
