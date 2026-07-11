@@ -4,14 +4,11 @@ import { prisma } from '@/lib/prisma'
 import { calculateReorder } from '@/lib/inv/reorder-calculator'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
+import { formatDateToYmdKst } from '@/lib/date-range'
 
-// 로컬 일자 YYYY-MM-DD (loadOptionDemand 의 KST 키와 윈도우 절단 비교용).
-function toDateStr(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+// KST 기준 YYYY-MM-DD — loadOptionDemand의 toKstDateKey 키와 타임존 일치.
+// Vercel(UTC) 서버에서 로컬 getter(getFullYear 등)를 쓰면 KST 자정~09시에 전날로 계산되므로 KST 변환 필수.
+const toDateStr = formatDateToYmdKst
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_LEAD_TIME_DAYS = 7

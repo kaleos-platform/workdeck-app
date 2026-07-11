@@ -536,7 +536,9 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
         )
       )
     expect((await patch({ resolution: 'DUP_OVERWRITE' })).status).toBe(200)
-    expect((await patch({ categoryId: incomeLeafId })).status).toBe(200)
+    // 방향 가드(OUT 행에 INCOME 계정 400) 도입으로 행 방향에 맞는 계정과목 사용
+    const overwriteLeafId = target.direction === 'OUT' ? expenseLeafId : incomeLeafId
+    expect((await patch({ categoryId: overwriteLeafId })).status).toBe(200)
 
     // 계정과목 PATCH 후에도 resolution 이 DUP_OVERWRITE 로 보존돼야 함(회귀 가드)
     const mid = await prisma.finStagedRow.findUnique({
@@ -555,7 +557,7 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(res.status).toBe(200)
 
     const after = await prisma.finTransaction.findUnique({ where: { id: target.id } })
-    expect(after?.categoryId).toBe(incomeLeafId) // 덮어쓰기(income으로 변경됨)
+    expect(after?.categoryId).toBe(overwriteLeafId) // 덮어쓰기(사용자 지정 계정으로 변경됨)
     expect(after?.description).toBe('변경된적요B') // 콘텐츠도 갱신
     expect(after?.contentHash).toBe('changedB')
   }, 30000)

@@ -74,7 +74,7 @@ type StagedRow = {
   description: string | null
   counterparty: string | null
   approvalNo: string | null
-  cancelFlag: boolean
+  cancelFlag: string | null
   classStatus: FinClassStatus
   resolution: FinStagedResolution
   matchedRuleId: string | null
@@ -103,7 +103,7 @@ type Transaction = {
   description: string | null
   counterparty: string | null
   approvalNo: string | null
-  cancelFlag: boolean
+  cancelFlag: string | null
   isTransfer: boolean
   classStatus: FinClassStatus
   matchedRuleId: string | null
@@ -173,6 +173,7 @@ export function TransactionsView() {
   // 확정 거래 상태
   const [txnRows, setTxnRows] = useState<Transaction[]>([])
   const [txnTotal, setTxnTotal] = useState(0)
+  const [txnLoadingMore, setTxnLoadingMore] = useState(false)
   const [txnSummary, setTxnSummary] = useState<TransactionSummary>({
     incomeTotal: 0,
     expenseTotal: 0,
@@ -266,29 +267,45 @@ export function TransactionsView() {
     }
   }, [])
 
-  // 확정 거래 조회
-  const loadTransactions = useCallback(async () => {
-    setTxnLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (filterQ) params.set('q', filterQ)
-      if (filterAccountId) params.set('accountId', filterAccountId)
-      if (filterCategoryId) params.set('categoryId', filterCategoryId)
-      if (filterDirection !== 'all') params.set('direction', filterDirection)
-      params.set('sort', txnSort.field)
-      params.set('order', txnSort.order)
-      const res = await fetch(`/api/finance/transactions?${params}`)
-      if (!res.ok) throw new Error('거래 내역 조회 실패')
-      const data = await res.json()
-      setTxnRows(data.rows ?? [])
-      setTxnTotal(data.total ?? 0)
-      setTxnSummary(data.summary ?? { incomeTotal: 0, expenseTotal: 0, net: 0 })
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '거래 내역 조회 실패')
-    } finally {
-      setTxnLoading(false)
-    }
-  }, [filterQ, filterAccountId, filterCategoryId, filterDirection, txnSort.field, txnSort.order])
+  // 확정 거래 조회 (skip=0이면 초기/리셋, skip>0이면 추가 로드)
+  const loadTransactions = useCallback(
+    async (skip = 0) => {
+      if (skip === 0) {
+        setTxnLoading(true)
+      } else {
+        setTxnLoadingMore(true)
+      }
+      try {
+        const params = new URLSearchParams()
+        if (filterQ) params.set('q', filterQ)
+        if (filterAccountId) params.set('accountId', filterAccountId)
+        if (filterCategoryId) params.set('categoryId', filterCategoryId)
+        if (filterDirection !== 'all') params.set('direction', filterDirection)
+        params.set('sort', txnSort.field)
+        params.set('order', txnSort.order)
+        if (skip > 0) params.set('skip', String(skip))
+        const res = await fetch(`/api/finance/transactions?${params}`)
+        if (!res.ok) throw new Error('거래 내역 조회 실패')
+        const data = await res.json()
+        if (skip === 0) {
+          setTxnRows(data.rows ?? [])
+        } else {
+          setTxnRows((prev) => [...prev, ...(data.rows ?? [])])
+        }
+        setTxnTotal(data.total ?? 0)
+        setTxnSummary(data.summary ?? { incomeTotal: 0, expenseTotal: 0, net: 0 })
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '거래 내역 조회 실패')
+      } finally {
+        if (skip === 0) {
+          setTxnLoading(false)
+        } else {
+          setTxnLoadingMore(false)
+        }
+      }
+    },
+    [filterQ, filterAccountId, filterCategoryId, filterDirection, txnSort.field, txnSort.order]
+  )
 
   // 초기 로드
   useEffect(() => {
@@ -316,7 +333,7 @@ export function TransactionsView() {
   // 정렬 변경 시 재조회(전체 거래 탭에서만). 필터는 검색 버튼으로 명시 조회하지만 정렬은 즉시 반영.
   useEffect(() => {
     if (mainTab === 'transactions') {
-      void loadTransactions()
+      void loadTransactions(0)
     }
   }, [txnSort.field, txnSort.order]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -532,10 +549,15 @@ export function TransactionsView() {
     [loadTransactions]
   )
 
-  // 필터 검색 실행
+  // 필터 검색 실행 (skip 리셋)
   const handleTxnSearch = useCallback(() => {
-    void loadTransactions()
+    void loadTransactions(0)
   }, [loadTransactions])
+
+  // 더 보기 — 현재 로드된 수 기준으로 다음 페이지 추가 로드
+  const handleTxnLoadMore = useCallback(() => {
+    void loadTransactions(txnRows.length)
+  }, [loadTransactions, txnRows.length])
 
   return (
     <Tabs
@@ -584,6 +606,7 @@ export function TransactionsView() {
         <TransactionsPanel
           rows={txnRows}
           total={txnTotal}
+          loadingMore={txnLoadingMore}
           summary={txnSummary}
           loading={txnLoading}
           filterQ={filterQ}
@@ -599,6 +622,7 @@ export function TransactionsView() {
           onFilterCategoryIdChange={setFilterCategoryId}
           onFilterDirectionChange={setFilterDirection}
           onSearch={handleTxnSearch}
+          onLoadMore={handleTxnLoadMore}
           sort={txnSort}
           onSort={handleTxnSort}
           onClassify={handleTxnClassify}
@@ -1143,6 +1167,7 @@ function SortHeader({
 function TransactionsPanel({
   rows,
   total,
+  loadingMore,
   summary,
   loading,
   filterQ,
@@ -1158,6 +1183,7 @@ function TransactionsPanel({
   onFilterCategoryIdChange,
   onFilterDirectionChange,
   onSearch,
+  onLoadMore,
   sort,
   onSort,
   onClassify,
@@ -1167,6 +1193,7 @@ function TransactionsPanel({
 }: {
   rows: Transaction[]
   total: number
+  loadingMore: boolean
   summary: TransactionSummary
   loading: boolean
   filterQ: string
@@ -1190,6 +1217,7 @@ function TransactionsPanel({
   onFilterCategoryIdChange: (v: string) => void
   onFilterDirectionChange: (v: 'all' | 'IN' | 'OUT') => void
   onSearch: () => void
+  onLoadMore: () => void
   onClassify: (txnId: string, categoryId: string) => void
   onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
   onBulkDelete: (ids: string[]) => Promise<void>
@@ -1198,6 +1226,7 @@ function TransactionsPanel({
   // 다중 선택 — selectedInView가 현재 행으로 스코프하므로 필터/조회 후 자연히 정리된다.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const rowIds = rows.map((r) => r.id)
   const selectedInView = rowIds.filter((id) => selectedIds.has(id))
   const allSelected = rowIds.length > 0 && selectedInView.length === rowIds.length
@@ -1221,9 +1250,15 @@ function TransactionsPanel({
     clearSelection()
   }
   const runBulkDelete = async () => {
-    await onBulkDelete(selectedInView)
-    setDeleteOpen(false)
-    clearSelection()
+    if (deleting) return
+    setDeleting(true)
+    try {
+      await onBulkDelete(selectedInView)
+      setDeleteOpen(false)
+      clearSelection()
+    } finally {
+      setDeleting(false)
+    }
   }
   const runBulkLinkLiability = async (liabilityId: string | null) => {
     await onBulkLinkLiability(selectedInView, liabilityId)
@@ -1438,6 +1473,25 @@ function TransactionsPanel({
         </div>
       )}
 
+      {/* 더 보기 — 로드된 행 수 < 전체 건수일 때 */}
+      {rows.length > 0 && rows.length < total && (
+        <div className="flex items-center justify-center gap-3 py-2 text-xs text-muted-foreground">
+          <span>
+            전체 {total.toLocaleString('ko-KR')}건 중 {rows.length.toLocaleString('ko-KR')}건 표시
+            중
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={onLoadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? '불러오는 중...' : '더 보기'}
+          </Button>
+        </div>
+      )}
+
       {/* 다중 선택 일괄 처리 바 — 계정과목 분류 / 부채 연결 / 삭제 */}
       <TransactionsBulkBar
         selectedCount={selectedInView.length}
@@ -1462,11 +1516,11 @@ function TransactionsPanel({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={deleting}>
               취소
             </Button>
-            <Button variant="destructive" onClick={() => void runBulkDelete()}>
-              {selectedInView.length}건 삭제
+            <Button variant="destructive" onClick={() => void runBulkDelete()} disabled={deleting}>
+              {deleting ? '삭제 중...' : `${selectedInView.length}건 삭제`}
             </Button>
           </DialogFooter>
         </DialogContent>

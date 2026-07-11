@@ -96,8 +96,20 @@ export async function POST(req: NextRequest) {
   )
 
   const affectedAccounts = [...new Set(staged.map((s) => s.accountId))]
+
+  // 계좌별 staged 행의 최소 txnDate — 스냅샷 재계산 범위 한정에 사용.
+  // 불변식: 이 커밋이 건드리는 월 이전 스냅샷은 확정 거래 집합이 변하지 않으므로 불변.
+  // 안전 마진: minMonth 보다 한 달 앞까지 포함(tzoffset 엣지케이스 방어).
+  const minTxnDateByAccount = new Map<string, Date>()
+  for (const s of staged) {
+    const prev = minTxnDateByAccount.get(s.accountId)
+    if (!prev || s.txnDate < prev) minTxnDateByAccount.set(s.accountId, s.txnDate)
+  }
+
   let committed = 0
   let dupCleaned = 0
+  // 커밋 성공한 staged row id를 모아 마지막에 1회 deleteMany
+  const committedIds: string[] = []
 
   await prisma.$transaction(
     async (tx) => {
@@ -142,9 +154,13 @@ export async function POST(req: NextRequest) {
             ...classification,
           },
         })
-        // 큐에서 제거 — 확정 거래가 source of truth
-        await tx.finStagedRow.delete({ where: { id: s.id } })
+        committedIds.push(s.id)
         committed++
+      }
+
+      // 커밋된 staged 행 일괄 삭제 — 행별 delete 대신 1회 deleteMany로 쿼리 수 절감
+      if (committedIds.length > 0) {
+        await tx.finStagedRow.deleteMany({ where: { id: { in: committedIds } } })
       }
 
       // 중복 제외(DUP_SAME) 행 정리 — 저장과 함께 소멸. 동일 내용 중복이라 보존 가치 없음
@@ -154,8 +170,19 @@ export async function POST(req: NextRequest) {
 
       // 영향 계좌별 월말 잔고 스냅샷(은행만 balanceAfter 존재)
       for (const accountId of affectedAccounts) {
+        // 전체 이력 대신 이번 커밋의 영향 월(minTxnDate의 월초 - 1달 안전마진) 이후만 조회.
+        // 그 이전 스냅샷은 이 커밋으로 변하지 않으므로 재계산 불필요.
+        const minDate = minTxnDateByAccount.get(accountId)
+        const rangeStart = minDate
+          ? new Date(Date.UTC(minDate.getUTCFullYear(), minDate.getUTCMonth() - 1, 1))
+          : undefined
         const withBalance = await tx.finTransaction.findMany({
-          where: { spaceId, accountId, balanceAfter: { not: null } },
+          where: {
+            spaceId,
+            accountId,
+            balanceAfter: { not: null },
+            ...(rangeStart ? { txnDate: { gte: rangeStart } } : {}),
+          },
           select: { txnDate: true, balanceAfter: true },
           orderBy: { txnDate: 'asc' },
         })

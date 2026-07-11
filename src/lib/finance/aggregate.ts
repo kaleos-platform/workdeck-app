@@ -16,9 +16,25 @@ export type AggRow = {
   categoryId?: string | null
 }
 
-/** Date → "YYYY-MM" (로컬). */
+/** Date → "YYYY-MM" (UTC getter).
+ *
+ * 【저장 규약】txnDate는 KST 벽시계 자릿수를 UTC로 저장한다(commit-staging toDate가 TZ 없는
+ * 로컬 ISO 문자열로 new Date() 처리 → Vercel=UTC 환경에서 UTC 인스턴트로 저장).
+ * 따라서 UTC getter로 읽으면 KST 달력 월이 그대로 복원된다. +9h 변환 불필요·금지.
+ *
+ * 【주의】현재 시각(new Date())은 진짜 UTC 인스턴트이므로 ymOf(new Date())는 틀림.
+ * 현재 KST 월이 필요할 때는 nowYmKst()를 사용한다.
+ */
 export function ymOf(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
+}
+
+/** 현재 KST 기준 "YYYY-MM".
+ * KST = UTC+9이므로 +9h 후 UTC getter로 읽는다.
+ * ymOf(new Date()) 대신 이 함수를 쓸 것 — Vercel UTC 서버에서 자정~09시에 이전 달로 틀림.
+ */
+export function nowYmKst(): string {
+  return ymOf(new Date(Date.now() + 9 * 60 * 60 * 1000))
 }
 
 function parseYm(ym: string): { y: number; m: number } {

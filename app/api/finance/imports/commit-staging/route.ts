@@ -140,21 +140,6 @@ export async function POST(req: NextRequest) {
     const periodFrom = preamble.periodFrom ? toDate(preamble.periodFrom) : dates[0]
     const periodTo = preamble.periodTo ? toDate(preamble.periodTo) : dates[dates.length - 1]
 
-    const importRow = await prisma.finImport.create({
-      data: {
-        spaceId,
-        accountId,
-        fileName: file.name,
-        institution: String(form.get('institution') ?? '') || '미지정',
-        kind,
-        status: 'DRAFT',
-        periodFrom,
-        periodTo,
-        totalRows: parsed.rows.length,
-      },
-      select: { id: true },
-    })
-
     // 배치 내 중복도 추적(동일 identityKey 2회 → 두번째는 DUP_SAME)
     const seenInBatch = new Set<string>()
     let cNew = 0
@@ -164,7 +149,8 @@ export async function POST(req: NextRequest) {
     let cReview = 0
     let cUnclassified = 0
 
-    const stagedData = parsed.rows.map((r) => {
+    // importId를 placeholder로 빌드 후 $transaction 내에서 교체
+    const stagedDataWithoutImportId = parsed.rows.map((r) => {
       const cls = classifyRow(
         { description: r.description, counterparty: r.counterparty },
         rules,
@@ -195,7 +181,6 @@ export async function POST(req: NextRequest) {
       seenInBatch.add(r.identityKey)
 
       return {
-        importId: importRow.id,
         spaceId,
         accountId,
         raw: {
@@ -225,7 +210,27 @@ export async function POST(req: NextRequest) {
       }
     })
 
-    await prisma.finStagedRow.createMany({ data: stagedData })
+    // FinImport create + FinStagedRow createMany를 단일 트랜잭션으로 묶어 원자화.
+    // 중간 실패 시 고아 FinImport가 남지 않는다.
+    const importRow = await prisma.$transaction(async (tx) => {
+      const imp = await tx.finImport.create({
+        data: {
+          spaceId,
+          accountId,
+          fileName: file.name,
+          institution: String(form.get('institution') ?? '') || '미지정',
+          kind,
+          status: 'DRAFT',
+          periodFrom,
+          periodTo,
+          totalRows: parsed.rows.length,
+        },
+        select: { id: true },
+      })
+      const stagedData = stagedDataWithoutImportId.map((d) => ({ ...d, importId: imp.id }))
+      await tx.finStagedRow.createMany({ data: stagedData })
+      return imp
+    })
 
     // 매핑 프리셋 저장(선택)
     if (form.get('savePreset') === 'true') {
