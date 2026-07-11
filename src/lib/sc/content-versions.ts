@@ -5,6 +5,11 @@
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
 
+type TransactionClient = Omit<
+  typeof prisma,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>
+
 // ─── 순수 유틸 ───────────────────────────────────────────────────────────────
 
 /**
@@ -22,50 +27,69 @@ export interface SnapshotOptions {
   contentId: string
   userId?: string
   note?: string
+  /** 외부 트랜잭션 클라이언트. 제공 시 독립 $transaction 없이 해당 tx에서 실행 (호출자가 원자성 보장). */
+  tx?: TransactionClient
+}
+
+/** 스냅샷 핵심 로직 — tx 클라이언트에서 직접 실행. P2002 재시도는 호출자 담당. */
+async function snapshotContentCore(
+  db: TransactionClient,
+  contentId: string,
+  userId: string | undefined,
+  note: string | undefined
+): Promise<{ id: string; versionNumber: number }> {
+  const content = await db.content.findUnique({
+    where: { id: contentId },
+    select: { title: true, doc: true, snapshotHash: true, spaceId: true },
+  })
+  if (!content) throw new Error(`Content not found: ${contentId}`)
+
+  const agg = await db.contentVersion.aggregate({
+    where: { contentId },
+    _max: { versionNumber: true },
+  })
+  const nextNum = (agg._max.versionNumber ?? 0) + 1
+
+  const version = await db.contentVersion.create({
+    data: {
+      contentId,
+      spaceId: content.spaceId,
+      versionNumber: nextNum,
+      title: content.title,
+      doc: content.doc as Prisma.InputJsonValue,
+      snapshotHash: content.snapshotHash ?? undefined,
+      createdByUserId: userId ?? null,
+      note: note ?? null,
+    },
+    select: { id: true, versionNumber: true },
+  })
+  return version
 }
 
 /**
  * 현재 Content row를 읽어 새 ContentVersion으로 INSERT한다.
  * versionNumber 는 MAX(versionNumber)+1 로 결정. 동시성 충돌(P2002) 시 1회 재시도.
  * 반환값: 생성된 ContentVersion.id 와 versionNumber.
+ *
+ * `tx` 옵션: 외부 트랜잭션 클라이언트를 전달하면 독립 $transaction 없이 해당 tx에서만 실행.
+ * P2002 재시도는 외부 $transaction을 재시작하는 호출자가 담당한다.
  */
 export async function snapshotContent({
   contentId,
   userId,
   note,
+  tx,
 }: SnapshotOptions): Promise<{ id: string; versionNumber: number }> {
-  // 재시도 래퍼 — 동시 PATCH 로 인한 P2002 unique 충돌을 1회 흡수
+  // tx 제공 시 — 호출자가 이미 트랜잭션 안에 있음, 재시도 없이 직접 실행
+  if (tx) {
+    return snapshotContentCore(tx, contentId, userId, note)
+  }
+
+  // 독립 실행 시 — 재시도 래퍼 (동시 PATCH P2002 unique 충돌 1회 흡수)
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const result = await prisma.$transaction(async (tx) => {
-        // 현재 Content 전체 필드 읽기 (title, doc, snapshotHash, spaceId 필요)
-        const content = await tx.content.findUnique({
-          where: { id: contentId },
-          select: { title: true, doc: true, snapshotHash: true, spaceId: true },
-        })
-        if (!content) throw new Error(`Content not found: ${contentId}`)
-
-        // 현재 max versionNumber 조회
-        const agg = await tx.contentVersion.aggregate({
-          where: { contentId },
-          _max: { versionNumber: true },
-        })
-        const nextNum = (agg._max.versionNumber ?? 0) + 1
-
-        const version = await tx.contentVersion.create({
-          data: {
-            contentId,
-            spaceId: content.spaceId,
-            versionNumber: nextNum,
-            title: content.title,
-            doc: content.doc as Prisma.InputJsonValue,
-            snapshotHash: content.snapshotHash ?? undefined,
-            createdByUserId: userId ?? null,
-            note: note ?? null,
-          },
-          select: { id: true, versionNumber: true },
-        })
-        return version
+      const result = await prisma.$transaction(async (innerTx) => {
+        return snapshotContentCore(innerTx, contentId, userId, note)
       })
       return result
     } catch (err: unknown) {

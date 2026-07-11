@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { selectImageProvider } from '@/lib/ai/providers'
 import {
@@ -8,12 +7,9 @@ import {
   refundImageCredit,
   CreditExceededError,
 } from '@/lib/ai/credit'
+import { aiImageBaseSchema } from '@/lib/sc/schemas'
 
-const bodySchema = z.object({
-  prompt: z.string().min(1).max(4000),
-  negativePrompt: z.string().max(2000).optional(),
-  aspectRatio: z.enum(['1:1', '3:4', '4:3', '9:16', '16:9']).optional(),
-})
+const bodySchema = aiImageBaseSchema
 
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('sales-content')

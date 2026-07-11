@@ -32,13 +32,23 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ message: '링크가 비활성화되었습니다' }, { status: 410 })
   }
 
-  const destination = buildTargetUrl(deployment.targetUrl, {
-    utmSource: deployment.utmSource,
-    utmMedium: deployment.utmMedium,
-    utmCampaign: deployment.utmCampaign,
-    utmContent: deployment.utmContent,
-    utmTerm: deployment.utmTerm,
-  })
+  let destination: string
+  try {
+    destination = buildTargetUrl(deployment.targetUrl, {
+      utmSource: deployment.utmSource,
+      utmMedium: deployment.utmMedium,
+      utmCampaign: deployment.utmCampaign,
+      utmContent: deployment.utmContent,
+      utmTerm: deployment.utmTerm,
+    })
+  } catch {
+    // targetUrl 이 잘못된 URL 이면 UTM 없이 원본으로 리다이렉트 시도; 그것도 불가하면 410.
+    try {
+      return NextResponse.redirect(deployment.targetUrl, 302)
+    } catch {
+      return NextResponse.json({ message: '링크 대상 URL 이 올바르지 않습니다' }, { status: 410 })
+    }
+  }
 
   // fire-and-forget: await 하지 않음
   const ip =

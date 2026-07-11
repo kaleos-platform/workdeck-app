@@ -94,7 +94,7 @@ export default async function ContentDetailPage({ params }: Props) {
         _count: { select: { clickEvents: true } },
       },
     }),
-    getContentMetricsTotal(id),
+    getContentMetricsTotal(id, resolved.space.id),
   ])
   if (!content) notFound()
 
