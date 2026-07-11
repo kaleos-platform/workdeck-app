@@ -1,5 +1,43 @@
 // 가격 시뮬레이션 계산 라이브러리
 
+// ─── 프로모션 ─────────────────────────────────────────────────────────────────
+
+/**
+ * 시나리오 프로모션 입력 (서버 경로용).
+ * - PERCENT: value는 0~1. DB/API 모두 0~1로 저장·전송
+ *   (클라이언트가 UI값 0~100을 저장 전 /100 변환 — 레거시 pricing-sim-main 확인)
+ * - FLAT / COUPON: value는 원(절대값)
+ * - MIN_PRICE: value는 최소 판매가 상한(원)
+ * - minThreshold: DB에 미저장(시나리오 레벨 컬럼 없음) — 서버 경로에서는 항상 undefined, 무조건 적용.
+ */
+export type PricingPromotion = {
+  type: 'NONE' | 'FLAT' | 'PERCENT' | 'COUPON' | 'MIN_PRICE'
+  /** PERCENT: 0~1 / FLAT·COUPON: 원 / MIN_PRICE: 원 */
+  value: number
+  minThreshold?: number
+}
+
+/**
+ * 컬럼 할인 후 가격에 시나리오 프로모션을 누적 적용한다.
+ * pricing-matrix-calc.ts calcCell 의 step 2 와 동일 로직.
+ * 최종 반환값은 Math.max(0, ...) 클램프 적용.
+ */
+export function applyPromotionToPrice(priceAfterDiscount: number, promotion: PricingPromotion): number {
+  let p = priceAfterDiscount
+  const minThreshold = promotion.minThreshold ?? 0
+  const conditionMet = minThreshold <= 0 || p >= minThreshold
+  if (promotion.type === 'PERCENT') {
+    if (conditionMet) p = p * (1 - promotion.value)
+  } else if (promotion.type === 'FLAT') {
+    if (conditionMet) p = p - promotion.value
+  } else if (promotion.type === 'COUPON') {
+    p = p - promotion.value
+  } else if (promotion.type === 'MIN_PRICE') {
+    p = Math.min(p, promotion.value)
+  }
+  return Math.max(0, Math.round(p * 100) / 100)
+}
+
 export type PricingInputs = {
   costPrice: number // 옵션 원가 (없으면 0)
   salePrice: number
@@ -11,6 +49,12 @@ export type PricingInputs = {
   operatingCostPct: number // 0~1
   includeVat: boolean
   vatRate: number // 0.1 = 10%
+  /**
+   * 시나리오 프로모션 (선택).
+   * PERCENT.value는 0~1 (DB 저장값 0~100을 /100 변환 후 전달).
+   * 미전달 시 프로모션 없음(=기존 동작 동일).
+   */
+  promotion?: PricingPromotion
 }
 
 export type PricingResult = {
@@ -43,8 +87,13 @@ export function calculatePricing(inputs: PricingInputs): PricingResult {
   const { includeVat } = inputs
   const vatRate = n(inputs.vatRate)
 
-  // 할인 후 최종 판매가
-  const finalPrice = Number((salePrice * (1 - discountRate)).toFixed(2))
+  // 컬럼 할인 후 가격
+  const priceAfterDiscount = Number((salePrice * (1 - discountRate)).toFixed(2))
+
+  // 시나리오 프로모션 누적 적용 (미전달 시 그대로 — 기존 동작 보장)
+  const finalPrice = inputs.promotion && inputs.promotion.type !== 'NONE'
+    ? applyPromotionToPrice(priceAfterDiscount, inputs.promotion)
+    : priceAfterDiscount
 
   // VAT 제외 매출
   const revenueExVat = includeVat ? Number((finalPrice / (1 + vatRate)).toFixed(2)) : finalPrice

@@ -173,7 +173,7 @@ export function PricingChannelBoardCard({
             </Badge>
           </div>
           <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
-            공급가 ₩{fmt(cell.revenue)} · VAT 포함 · 마진 ₩{fmt(cell.netProfit)} / 건
+            공급가 ₩{fmt(cell.revenue)} · VAT {globals.includeVat ? '포함' : '미포함'} · 마진 ₩{fmt(cell.netProfit)} / 건
           </p>
         </div>
       </div>
