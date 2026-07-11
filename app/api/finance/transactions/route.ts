@@ -106,6 +106,10 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // 요약 집계(incomeTotal/expenseTotal)는 이체를 제외한다 — 대시보드·현금흐름과 정의 일치.
+  // 행 목록(where)은 변경 없이 이체 행을 계속 표시하며, excludeTransfer=1 파라미터로 별도 제어.
+  const sumWhere = { ...where, isTransfer: false }
+
   const [rows, total, sums] = await Promise.all([
     prisma.finTransaction.findMany({
       where,
@@ -138,7 +142,7 @@ export async function GET(req: NextRequest) {
     prisma.finTransaction.count({ where }),
     prisma.finTransaction.groupBy({
       by: ['direction'],
-      where,
+      where: sumWhere,
       _sum: { amount: true },
     }),
   ])

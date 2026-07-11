@@ -33,9 +33,26 @@ export async function POST(req: NextRequest) {
   if (typeof body?.categoryId === 'string' && body.categoryId) {
     const category = await prisma.finCategory.findFirst({
       where: { id: body.categoryId, spaceId },
-      select: { id: true },
+      select: { id: true, type: true },
     })
     if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
+
+    // 방향↔계정과목 type 불일치 차단 — OUT 행에 INCOME 계정 지정 방지.
+    // 일괄 선택은 방향이 혼재할 수 있으므로 대상 행의 direction을 조회 후 판정.
+    // IN 행에 EXPENSE 계정은 환불 등 합법 케이스가 있어 허용. TRANSFER type은 스킵.
+    if (category.type === 'INCOME') {
+      const outRows = await prisma.finStagedRow.findMany({
+        where: { id: { in: ids }, spaceId, direction: 'OUT' },
+        select: { id: true },
+      })
+      if (outRows.length > 0) {
+        return errorResponse(
+          `선택한 행 중 지출(OUT) 거래가 포함되어 있어 수입 계정과목을 지정할 수 없습니다(${outRows.length}건). 지출 계정과목을 선택하세요`,
+          400
+        )
+      }
+    }
+
     data.categoryId = body.categoryId
     data.classStatus = 'CLASSIFIED'
     // 일괄 분류는 규칙 학습을 하지 않으므로 기존 규칙 힌트(matchedRuleId)를 정리한다.
