@@ -387,6 +387,29 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(body.counts.new).toBe(0)
   }, 30000)
 
+  // 저장 처리 시 중복 제외(DUP_SAME) 행은 자동 정리 — 큐에 영구 잔류하지 않는다.
+  test('staging/commit: DUP_SAME 행 자동 정리(dupCleaned)', async () => {
+    const dupBefore = await prisma.finStagedRow.count({
+      where: { spaceId: SPACE_ID, resolution: 'DUP_SAME' },
+    })
+    expect(dupBefore).toBeGreaterThan(0) // 직전 재임포트로 쌓인 중복
+
+    const req = new NextRequest('http://localhost/api/finance/staging/commit', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+    const res = await call(stagingCommit(req))
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.dupCleaned).toBe(dupBefore)
+
+    const dupAfter = await prisma.finStagedRow.count({
+      where: { spaceId: SPACE_ID, resolution: 'DUP_SAME' },
+    })
+    expect(dupAfter).toBe(0)
+  }, 30000)
+
   test('Fix A: DUP_CHANGED 재임포트가 사용자 분류를 덮어쓰지 않음', async () => {
     // 사용자가 직접 분류한 확정 거래
     const txn = await prisma.finTransaction.findFirst({

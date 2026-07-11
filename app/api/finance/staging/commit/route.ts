@@ -2,7 +2,7 @@
  * POST /api/finance/staging/commit
  * 분류완료(CLASSIFIED) 스테이징 행만 확정 거래(FinTransaction)로 저장한다(임포트 무관·행 단위).
  *   - 대상: classStatus=CLASSIFIED && resolution!=DUP_SAME (isStagedRowCommittable)
- *   - 미분류·검토·DUP_SAME 행은 보류(큐에 남김).
+ *   - 미분류·검토 행은 보류(큐에 남김). DUP_SAME(중복 제외) 행은 저장과 함께 정리(삭제).
  *   - 커밋된 staged 행은 delete(확정 거래가 source of truth). 임포트 status는 건드리지 않는다.
  *   - 영향 계좌별 월말 잔고 스냅샷 파생.
  *
@@ -58,7 +58,18 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  if (staged.length === 0) return NextResponse.json({ committed: 0 })
+  // 중복 제외(DUP_SAME) 행 정리 조건 — 저장 대상이 없어도 호출 시점에 함께 정리한다.
+  const dupCleanupWhere: Prisma.FinStagedRowWhereInput = {
+    spaceId,
+    import: { status: 'DRAFT' },
+    resolution: 'DUP_SAME',
+    ...(importId ? { importId } : {}),
+  }
+
+  if (staged.length === 0) {
+    const cleaned = await prisma.finStagedRow.deleteMany({ where: dupCleanupWhere })
+    return NextResponse.json({ committed: 0, dupCleaned: cleaned.count })
+  }
 
   // TRANSFER 계정과목은 isTransfer=true (수입/지출 집계 제외)
   const categoryIds = [...new Set(staged.map((s) => s.categoryId).filter((v): v is string => !!v))]
@@ -86,6 +97,7 @@ export async function POST(req: NextRequest) {
 
   const affectedAccounts = [...new Set(staged.map((s) => s.accountId))]
   let committed = 0
+  let dupCleaned = 0
 
   await prisma.$transaction(
     async (tx) => {
@@ -135,6 +147,11 @@ export async function POST(req: NextRequest) {
         committed++
       }
 
+      // 중복 제외(DUP_SAME) 행 정리 — 저장과 함께 소멸. 동일 내용 중복이라 보존 가치 없음
+      // (남겨두면 큐에 영구 잔류해 중복 탭이 계속 누적된다).
+      const cleaned = await tx.finStagedRow.deleteMany({ where: dupCleanupWhere })
+      dupCleaned = cleaned.count
+
       // 영향 계좌별 월말 잔고 스냅샷(은행만 balanceAfter 존재)
       for (const accountId of affectedAccounts) {
         const withBalance = await tx.finTransaction.findMany({
@@ -173,5 +190,5 @@ export async function POST(req: NextRequest) {
     { timeout: 30000, maxWait: 10000 }
   )
 
-  return NextResponse.json({ committed })
+  return NextResponse.json({ committed, dupCleaned })
 }
