@@ -131,7 +131,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   // 기존 시나리오 소속 확인
   const existing = await prisma.pricingScenario.findFirst({
     where: { id: scenarioId, spaceId: resolved.space.id },
-    select: { id: true, includeVat: true, vatRate: true },
+    select: { id: true, includeVat: true, vatRate: true, promotionType: true, promotionValue: true },
   })
   if (!existing) return errorResponse('시나리오를 찾을 수 없습니다', 404)
 
@@ -191,9 +191,16 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     }
   }
 
-  // 계산에 사용할 vatRate / includeVat — 입력값 우선, 없으면 기존값 사용
+  // 계산에 사용할 vatRate / includeVat / promotion — 입력값 우선, 없으면 기존값 사용
   const effectiveIncludeVat = input.includeVat ?? existing.includeVat
   const effectiveVatRate = input.vatRate ?? Number(existing.vatRate.toString())
+  const effectivePromotionType = input.promotionType ?? existing.promotionType
+  const effectivePromotionValue =
+    input.promotionValue !== undefined
+      ? (input.promotionValue ?? 0)
+      : existing.promotionValue != null
+        ? d(existing.promotionValue)
+        : 0
 
   await prisma.$transaction(async (tx) => {
     // 메타 업데이트
@@ -232,6 +239,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       await tx.pricingScenarioItem.deleteMany({ where: { scenarioId } })
       await tx.pricingScenarioItem.createMany({
         data: input.items.map((it, idx) => {
+          // promotionValue는 DB에 0~1로 저장됨 (PERCENT 포함 — 저장 전 클라이언트가 /100)
           const result = calculatePricing({
             costPrice: it.costPrice ?? 0,
             salePrice: it.salePrice,
@@ -243,6 +251,10 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
             operatingCostPct: it.operatingCostPct,
             includeVat: effectiveIncludeVat,
             vatRate: effectiveVatRate,
+            promotion: {
+              type: effectivePromotionType,
+              value: effectivePromotionValue, // 0~1 (PERCENT 포함)
+            },
           })
           return {
             scenarioId,

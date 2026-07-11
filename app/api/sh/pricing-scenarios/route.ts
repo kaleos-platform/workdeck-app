@@ -192,6 +192,9 @@ export async function POST(req: NextRequest) {
 
     await tx.pricingScenarioItem.createMany({
       data: input.items.map((it, idx) => {
+        // promotionValue는 API 경유 시 0~1로 수신됨
+        // (클라이언트가 저장 전 PERCENT UI값 0~100을 /100 변환해서 전송 — 레거시 코드 확인)
+        const promotionValue = input.promotionValue ?? 0
         const result = calculatePricing({
           costPrice: it.costPrice ?? 0,
           salePrice: it.salePrice,
@@ -203,6 +206,10 @@ export async function POST(req: NextRequest) {
           operatingCostPct: it.operatingCostPct,
           includeVat: input.includeVat,
           vatRate: input.vatRate,
+          promotion: {
+            type: input.promotionType,
+            value: promotionValue, // 0~1 (PERCENT 포함 — 클라이언트가 /100 후 전송)
+          },
         })
         return {
           scenarioId: created.id,

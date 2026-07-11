@@ -21,7 +21,11 @@ import { cn } from '@/lib/utils'
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
 export type PricingFullSettings = {
-  // 기본 비용 (0~100 % 단위 그대로 DB 저장)
+  // ⚠️ 단위 혼재 주의:
+  //   defaultAdCostPct · defaultOperatingCostPct 는 0~100 단위로 DB 저장.
+  //   아래 defaultChannelFeePct 등 나머지 비율 필드는 0~1 단위.
+  //   이 두 필드를 직접 계산에 사용할 때는 반드시 /100 변환 필요.
+  //   변환 예시: liveFromSettings() — adCostPct: s.defaultAdCostPct / 100
   defaultOperatingCostPct: number
   defaultAdCostPct: number
   defaultPackagingCost: number
