@@ -12,15 +12,30 @@ export async function scheduleDailyMetricCollection(spaceId?: string) {
 
   const deployments = await prisma.contentDeployment.findMany({
     where,
-    select: { id: true, spaceId: true, channelId: true },
+    select: {
+      id: true,
+      spaceId: true,
+      channel: { select: { collectorMode: true } },
+    },
   })
 
+  // 중복 enqueue 방지: 같은 배포에 PENDING/CLAIMED COLLECT_METRIC 잡이 이미 있으면 스킵.
+  const deploymentIds = deployments.map((d) => d.id)
+  const existingJobs = await prisma.salesContentJob.findMany({
+    where: {
+      kind: 'COLLECT_METRIC',
+      status: { in: ['PENDING', 'CLAIMED'] },
+      targetId: { in: deploymentIds },
+    },
+    select: { targetId: true },
+  })
+  const enqueuedIds = new Set(existingJobs.map((j) => j.targetId).filter(Boolean) as string[])
+
   for (const d of deployments) {
-    const channel = await prisma.salesContentChannel.findUnique({
-      where: { id: d.channelId },
-      select: { collectorMode: true },
-    })
-    if (!channel || channel.collectorMode === 'NONE' || channel.collectorMode === 'MANUAL') {
+    if (!d.channel || d.channel.collectorMode === 'NONE' || d.channel.collectorMode === 'MANUAL') {
+      continue
+    }
+    if (enqueuedIds.has(d.id)) {
       continue
     }
     await enqueueJob({

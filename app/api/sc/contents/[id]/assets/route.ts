@@ -2,6 +2,7 @@
 // DELETE: ?assetId=xxx  — Storage 객체까지 함께 제거.
 
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import {
@@ -17,6 +18,7 @@ import {
   refundImageCredit,
   reserveImageCredit,
 } from '@/lib/ai/credit'
+import { aiImageBaseSchema } from '@/lib/sc/schemas'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -99,16 +101,17 @@ export async function POST(req: NextRequest, { params }: Params) {
   } catch {
     return errorResponse('잘못된 요청 형식입니다', 400)
   }
-  const input = body as {
-    mode?: string
-    prompt?: string
-    negativePrompt?: string
-    aspectRatio?: '1:1' | '3:4' | '4:3' | '9:16' | '16:9'
-    slotKey?: string
-    alt?: string
-  } | null
-  if (input?.mode !== 'ai') return errorResponse('mode 는 ai 여야 합니다', 400)
-  if (!input.prompt || input.prompt.length < 1) return errorResponse('prompt 가 필요합니다', 400)
+  // mode·slotKey·alt 는 assets 전용 필드 — aiImageBaseSchema 를 확장
+  const aiAssetsSchema = aiImageBaseSchema.extend({
+    mode: z.literal('ai'),
+    slotKey: z.string().optional(),
+    alt: z.string().optional(),
+  })
+  const parsed = aiAssetsSchema.safeParse(body)
+  if (!parsed.success) {
+    return errorResponse('요청 본문이 올바르지 않습니다', 400, { issues: parsed.error.flatten() })
+  }
+  const input = parsed.data
 
   let provider
   try {

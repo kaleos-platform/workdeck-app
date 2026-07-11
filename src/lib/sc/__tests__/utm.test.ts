@@ -18,6 +18,12 @@ describe('normalizeKebab', () => {
 })
 
 describe('buildTargetUrl', () => {
+  it('잘못된 URL 입력 시 TypeError 를 던진다', () => {
+    expect(() => buildTargetUrl('not-a-url', {})).toThrow()
+    expect(() => buildTargetUrl('', {})).toThrow()
+    expect(() => buildTargetUrl('ftp//missing-colon', {})).toThrow()
+  })
+
   it('UTM 파라미터를 덧붙인다', () => {
     const url = buildTargetUrl('https://example.com/landing', {
       utmSource: 'Naver Blog',
