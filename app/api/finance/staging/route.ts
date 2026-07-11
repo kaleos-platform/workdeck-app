@@ -33,18 +33,22 @@ export async function GET(req: NextRequest) {
     ...(accountId ? { accountId } : {}),
   }
 
+  // DUP_SAME(동일 중복 → 건너뜀)은 중복 탭 전용 — 활성 큐(전체/미분류/검토/분류완료)에는
+  // 대표 행 한 벌만 보이도록 제외한다. DUP_CHANGED/DUP_OVERWRITE는 확정 대상이므로 유지.
+  const activeQueue: Prisma.FinStagedRowWhereInput = { resolution: { not: 'DUP_SAME' } }
+
   const tabWhere: Prisma.FinStagedRowWhereInput = (() => {
     switch (tab) {
       case 'unclassified':
-        return { classStatus: 'UNCLASSIFIED' }
+        return { classStatus: 'UNCLASSIFIED', ...activeQueue }
       case 'review':
-        return { classStatus: 'REVIEW' }
+        return { classStatus: 'REVIEW', ...activeQueue }
       case 'dup':
         return { resolution: { in: [...DUP] } }
       case 'classified':
-        return { classStatus: 'CLASSIFIED' }
+        return { classStatus: 'CLASSIFIED', ...activeQueue }
       default:
-        return {}
+        return activeQueue
     }
   })()
 
@@ -74,11 +78,11 @@ export async function GET(req: NextRequest) {
         account: { select: { id: true, name: true, kind: true } },
       },
     }),
-    prisma.finStagedRow.count({ where: base }),
-    prisma.finStagedRow.count({ where: { ...base, classStatus: 'UNCLASSIFIED' } }),
-    prisma.finStagedRow.count({ where: { ...base, classStatus: 'REVIEW' } }),
+    prisma.finStagedRow.count({ where: { ...base, ...activeQueue } }),
+    prisma.finStagedRow.count({ where: { ...base, classStatus: 'UNCLASSIFIED', ...activeQueue } }),
+    prisma.finStagedRow.count({ where: { ...base, classStatus: 'REVIEW', ...activeQueue } }),
     prisma.finStagedRow.count({ where: { ...base, resolution: { in: [...DUP] } } }),
-    prisma.finStagedRow.count({ where: { ...base, classStatus: 'CLASSIFIED' } }),
+    prisma.finStagedRow.count({ where: { ...base, classStatus: 'CLASSIFIED', ...activeQueue } }),
     prisma.finCategory.findMany({
       where: { spaceId, isActive: true },
       select: { id: true, name: true, type: true },
