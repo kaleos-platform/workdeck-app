@@ -138,6 +138,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     throw error
   }
 
+  // uploadedStoragePath 를 catch 스코프에서 접근할 수 있도록 외부에 선언.
+  // generate() 실패 시 아직 업로드 전이므로 null 이 유지된다.
+  let uploadedStoragePath: string | null = null
+
   try {
     const result = await provider.generate({
       prompt: input.prompt,
@@ -152,6 +156,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       bytes: first.bytes,
       mimeType: first.mimeType,
     })
+    uploadedStoragePath = uploaded.storagePath
+
     await commitImageCredit(reservation.reservationId, { outputCount: 1 })
 
     const asset = await prisma.contentAsset.create({
@@ -180,6 +186,16 @@ export async function POST(req: NextRequest, { params }: Params) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     await refundImageCredit(reservation.reservationId, { errorMessage: message })
+
+    // commit/create 실패 시 Storage 에 업로드된 파일이 고아로 남지 않도록 best-effort 삭제.
+    if (uploadedStoragePath) {
+      try {
+        await deleteAsset(uploadedStoragePath)
+      } catch (deleteErr) {
+        console.warn('[assets] 고아 Storage 파일 삭제 실패 — 수동 정리 필요:', uploadedStoragePath, deleteErr)
+      }
+    }
+
     return errorResponse('AI 이미지 생성/저장에 실패했습니다', 502, { detail: message })
   }
 }

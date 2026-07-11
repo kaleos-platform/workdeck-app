@@ -11,6 +11,9 @@ import type {
   ContentMetricsTotal,
   ContentCompareRow,
 } from './metrics-types'
+// source 우선순위 dedup — 순수 함수 (Prisma 비의존, 유닛 테스트 가능)
+export { pickDailyMetrics } from './metrics-dedup'
+import { pickDailyMetrics } from './metrics-dedup'
 
 // ─── 구현 ─────────────────────────────────────────────────────────────────────
 
@@ -39,29 +42,32 @@ function buildDateSpine14(): string[] {
  * - 배포가 1개 이상 있는 콘텐츠만 포함 (최대 200건, 최신순)
  * - N+1 방지: DeploymentMetric 은 groupBy 로 한 번에 조회
  * - 각 행에 sparkline (최근 14일 일별 조회, 14개 고정 spine 포함)
+ * - 200건 초과 시 hasMore=true, totalCount 메타 반환
  */
 export async function getSpaceContentAnalytics(
   spaceId: string
-): Promise<SpaceContentAnalyticsRow[]> {
-  // 1. 배포가 있는 콘텐츠 fetch (channel 정보 + clickEvents 건수 포함)
-  const contents = await prisma.content.findMany({
-    where: {
-      spaceId,
-      deployments: { some: {} },
-    },
-    include: {
-      deployments: {
-        include: {
-          channel: { select: { id: true, name: true, kind: true, platform: true } },
-          _count: { select: { clickEvents: true } },
+): Promise<{ rows: SpaceContentAnalyticsRow[]; totalCount: number; hasMore: boolean }> {
+  const where = { spaceId, deployments: { some: {} } } as const
+
+  // 1. 배포가 있는 콘텐츠 fetch (channel 정보 + clickEvents 건수 포함) + 전체 건수 병행
+  const [contents, totalCount] = await Promise.all([
+    prisma.content.findMany({
+      where,
+      include: {
+        deployments: {
+          include: {
+            channel: { select: { id: true, name: true, kind: true, platform: true } },
+            _count: { select: { clickEvents: true } },
+          },
         },
       },
-    },
-    orderBy: { updatedAt: 'desc' },
-    take: 200,
-  })
+      orderBy: { updatedAt: 'desc' },
+      take: 200,
+    }),
+    prisma.content.count({ where }),
+  ])
 
-  if (contents.length === 0) return []
+  if (contents.length === 0) return { rows: [], totalCount: 0, hasMore: false }
 
   // 2. 모든 deployment ID 를 모아 metrics groupBy 한 번에 조회
   const deploymentIds = contents.flatMap((c) => c.deployments.map((d) => d.id))
@@ -106,7 +112,7 @@ export async function getSpaceContentAnalytics(
   const dateSpine = buildDateSpine14()
 
   // 4. 콘텐츠 단위 집계
-  return contents.map((c) => {
+  const rows = contents.map((c) => {
     // internalClicks: ContentClickEvent 건수 합산
     const internalClicks = c.deployments.reduce((acc, d) => acc + d._count.clickEvents, 0)
 
@@ -158,6 +164,8 @@ export async function getSpaceContentAnalytics(
       sparkline,
     }
   })
+
+  return { rows, totalCount, hasMore: totalCount > 200 }
 }
 
 /**
@@ -539,15 +547,24 @@ export function startOfDayUTC(d: Date): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
 }
 
-// 배포 단위 누적 합 (source 무관). 가장 최근에 기록된 externalClicks 등을 선호하는 대신,
-// 단순 합계로 시작한다. Unit 13 에서 분석 시 source 별 구분 필요 시 이 쪽을 세분화.
+// 배포 단위 누적 합. 같은 날짜에 여러 source 가 공존할 경우 이중 합산을 방지하기 위해
+// pickDailyMetrics 로 날짜별 최우선 source 행만 채택한다 (MANUAL > BROWSER > API > INTERNAL).
+// 반환 rows 는 원본 전체(호출처 디버깅용), total 은 dedup 된 집계.
+//
+// NOTE: getSpaceContentAnalytics / getContentMetricsTotal / getContentsCompareData 는
+// DB 레벨 groupBy + _sum 으로 같은 이중합산 문제가 잠재. 해당 함수들은 source 컬럼을
+// groupBy 키에 포함하지 않아 pickDailyMetrics 헬퍼를 직접 적용할 수 없으며,
+// source 별 findMany 쿼리로 재작성하는 별도 개선이 필요하다.
 export async function getDeploymentMetricsTotal(deploymentId: string) {
   const rows = await prisma.deploymentMetric.findMany({
     where: { deploymentId },
     orderBy: { date: 'desc' },
   })
 
-  const total = rows.reduce(
+  // 날짜별 단일 source 채택 후 합산 (이중 합산 방지)
+  const deduped = pickDailyMetrics(rows)
+
+  const total = deduped.reduce(
     (acc, r) => ({
       impressions: acc.impressions + (r.impressions ?? 0),
       views: acc.views + (r.views ?? 0),
