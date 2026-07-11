@@ -402,7 +402,12 @@ export function parseWithMapping(
     } else {
       const orderDateRaw = get(orderDateMapping as number | number[] | undefined)
       if (!orderDateRaw) {
-        orderDate = formatDateLocal(new Date())
+        errors.push({
+          row: rowNumber,
+          message:
+            '주문일자가 없습니다 — 주문일자 컬럼을 매핑하거나 고정 날짜를 지정해 주세요',
+        })
+        continue
       } else if (/^\d{4,6}$/.test(orderDateRaw)) {
         const serial = Number(orderDateRaw)
         const parsed = XLSX.SSF.parse_date_code(serial)
