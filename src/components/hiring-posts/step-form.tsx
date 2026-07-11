@@ -3,6 +3,23 @@
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, X } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -121,6 +138,12 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
   const pendingRef = useRef<EditorField[] | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // dnd-kit 센서: PointerSensor distance 6px(실수 드래그 방지) + KeyboardSensor
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
   // 파생 fields 를 wizard 로 즉시 동기화(미리보기 라이브 반영). 되먹임 없음.
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
@@ -176,6 +199,18 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
     debounceRef.current = setTimeout(() => {
       doSave(fieldsRef.current)
     }, 600)
+  }
+
+  // 드래그 종료 — arrayMove 후 saveNow(위/아래 버튼과 동일한 저장 경로)
+  function handleDragEnd(e: DragEndEvent) {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+    const oldIdx = editorFields.findIndex((f) => f.key === active.id)
+    const newIdx = editorFields.findIndex((f) => f.key === over.id)
+    if (oldIdx < 0 || newIdx < 0) return
+    const next = arrayMove(editorFields, oldIdx, newIdx)
+    setEditorFields(next)
+    saveNow(next)
   }
 
   function moveField(idx: number, dir: -1 | 1) {
@@ -311,26 +346,33 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
           </div>
         </div>
 
-        <div className="space-y-2">
-          {editorFields.map((f, idx) => (
-            <FieldRow
-              key={f.key}
-              field={f}
-              idx={idx}
-              total={editorFields.length}
-              onMove={moveField}
-              onRemove={removeField}
-              onUpdate={updateField}
-              onTypeChange={handleTypeChange}
-              onRequiredToggle={handleRequiredToggle}
-              onMultiselectToggle={handleMultiselectToggle}
-              onAddOption={addOption}
-              onUpdateOption={updateOption}
-              onRemoveOption={removeOption}
-              onBlurSave={saveOnBlur}
-            />
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext
+            items={editorFields.map((f) => f.key)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-2">
+              {editorFields.map((f, idx) => (
+                <SortableFieldRow
+                  key={f.key}
+                  field={f}
+                  idx={idx}
+                  total={editorFields.length}
+                  onMove={moveField}
+                  onRemove={removeField}
+                  onUpdate={updateField}
+                  onTypeChange={handleTypeChange}
+                  onRequiredToggle={handleRequiredToggle}
+                  onMultiselectToggle={handleMultiselectToggle}
+                  onAddOption={addOption}
+                  onUpdateOption={updateOption}
+                  onRemoveOption={removeOption}
+                  onBlurSave={saveOnBlur}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       </div>
 
       <div className="flex justify-end">
@@ -356,7 +398,31 @@ type FieldRowProps = {
   onBlurSave: () => void
 }
 
-function FieldRow({
+function SortableFieldRow(props: FieldRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.field.key,
+  })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    boxShadow: isDragging ? '0 4px 12px rgba(0,0,0,0.12)' : undefined,
+    position: isDragging ? ('relative' as const) : undefined,
+    zIndex: isDragging ? 10 : undefined,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <FieldRowContent {...props} dragHandleProps={{ ...attributes, ...listeners }} />
+    </div>
+  )
+}
+
+type FieldRowContentProps = FieldRowProps & {
+  dragHandleProps: React.HTMLAttributes<HTMLButtonElement>
+}
+
+function FieldRowContent({
   field,
   idx,
   total,
@@ -370,14 +436,23 @@ function FieldRow({
   onUpdateOption,
   onRemoveOption,
   onBlurSave,
-}: FieldRowProps) {
+  dragHandleProps,
+}: FieldRowContentProps) {
   const isSelectLike = field.type === 'select' || field.type === 'multiselect'
 
   return (
     <div className="space-y-2 rounded-md border bg-muted/30 p-3">
-      {/* 행 헤더: 그립 + 이름/라벨 + 이동/삭제 */}
+      {/* 행 헤더: 그립(드래그 핸들) + 이름/라벨 + 이동/삭제 */}
       <div className="flex items-center gap-2">
-        <GripVertical className="size-4 shrink-0 text-muted-foreground" />
+        {/* GripVertical 에만 listeners 부착 — Input/Select/Switch 조작 방해 없음 */}
+        <button
+          type="button"
+          aria-label="순서 이동"
+          className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
+          {...dragHandleProps}
+        >
+          <GripVertical className="size-4 shrink-0" />
+        </button>
 
         {field.kind === 'locked' ? (
           <div className="flex flex-1 items-center justify-between rounded-md border bg-background px-3 py-2 text-sm">
@@ -396,7 +471,7 @@ function FieldRow({
           />
         )}
 
-        {/* 위/아래 이동 버튼 */}
+        {/* 위/아래 이동 버튼 — 기존 유지 */}
         <Button size="icon-sm" variant="ghost" onClick={() => onMove(idx, -1)} disabled={idx === 0}>
           <ArrowUp />
         </Button>
