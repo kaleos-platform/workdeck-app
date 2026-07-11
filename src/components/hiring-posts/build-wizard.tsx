@@ -149,7 +149,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
               />
             </Section>
           </div>
-          <div className="lg:sticky lg:top-6 lg:self-start">
+          <div className="lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto">
             <div className="mx-auto w-full max-w-sm">
               <ApplicationFormPreview
                 title={state.title}
@@ -171,7 +171,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
               onChange={(contents: WizardContentData[]) => patch({ contents })}
             />
           </div>
-          <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+          <div className="space-y-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto">
             <div className="rounded-xl border p-4">
               <StepPublish
                 postingId={data.posting.id}
