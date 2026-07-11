@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { Editor } from '@/components/sc/editor/editor'
+import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
 import { PostingStatusBadge, type PostingStatus } from './status-badge'
 import {
   getPostingAssetPublicUrl,
@@ -21,14 +21,6 @@ type Props = {
   storeIds: string[]
   noStores: boolean
   contents: WizardContentData[]
-}
-
-// 문자열 djb2 해시 — 텍스트 블록 data 변경 시 read-only Editor 를 remount 하기 위한 key.
-function hashDoc(data: unknown): string {
-  const str = JSON.stringify(data ?? null)
-  let h = 5381
-  for (let i = 0; i < str.length; i++) h = (h * 33) ^ str.charCodeAt(i)
-  return (h >>> 0).toString(36)
 }
 
 // 공개 공고 페이지 미러 — wizard 로컬 상태에서 즉시 렌더.
@@ -129,13 +121,14 @@ export function PostingPreview({
                     </a>
                   )
                 })()
-              ) : (
-                <Editor
-                  key={`${c.id}:${hashDoc(c.data)}`}
-                  initialDoc={c.data ?? undefined}
-                  editable={false}
+              ) : c.data ? (
+                // 공개 페이지(app/p/[uuid])와 동일한 렌더 — 에디터 박스 없이 본문만 표시
+                <div
+                  key={c.id}
+                  className="[&_a]:text-primary [&_a]:underline [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-sm [&_p]:mb-2 [&_p]:text-sm [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-sm"
+                  dangerouslySetInnerHTML={{ __html: renderTiptapHtml(c.data) }}
                 />
-              )
+              ) : null
             )}
           </div>
         )}

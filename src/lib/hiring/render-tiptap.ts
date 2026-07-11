@@ -1,5 +1,4 @@
-// 서버 전용 — 'use client' 없음.
-// generateHTML: @tiptap/html (SSR-safe, DOM 불필요).
+// 서버/클라이언트 겸용 — generateHTML: @tiptap/html (DOM 불필요, isomorphic).
 // Placeholder/CharacterCount는 에디터 전용이므로 제외.
 import { generateHTML } from '@tiptap/html'
 import StarterKit from '@tiptap/starter-kit'
