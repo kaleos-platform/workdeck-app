@@ -11,7 +11,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, round2 } from '@/lib/finance/serialize'
-import { ymOf, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
+import { ymOf, nowYmKst, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
 import {
   bucketOf,
   bucketMonthRange,
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
   const grain: Grain =
     sp.get('grain') === 'quarter' ? 'quarter' : sp.get('grain') === 'year' ? 'year' : 'month'
 
-  const nowYm = ymOf(new Date())
+  const nowYm = nowYmKst()
   // 표시 버킷 = periods 파라미터(검증·정렬·캡) 또는 기본값(직전월까지 최근 N). 항상 오름차순.
   const requested = sp.get('periods')?.split(',') ?? []
   const buckets = normalizeSelectedPeriods(requested, grain) ?? defaultSelectedPeriods(grain, nowYm)

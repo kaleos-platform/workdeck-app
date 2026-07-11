@@ -12,6 +12,7 @@ import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, toNumOrNull, round2 } from '@/lib/finance/serialize'
 import {
   ymOf,
+  nowYmKst,
   addMonths,
   monthList,
   rangeBounds,
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams
   const period = sp.get('period') === 'year' ? 'year' : 'month'
   const now = new Date()
-  const nowYm = ymOf(now)
+  const nowYm = nowYmKst()
 
   // ── 기간 산정 ──
   let curMonths: string[]

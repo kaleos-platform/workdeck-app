@@ -42,9 +42,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (typeof body?.categoryId === 'string' && body.categoryId) {
     const category = await prisma.finCategory.findFirst({
       where: { id: body.categoryId, spaceId },
-      select: { id: true },
+      select: { id: true, type: true },
     })
     if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
+
+    // 방향↔계정과목 type 불일치 차단 — 과거 실버그(OUT 거래를 수입 계정으로 오분류)방지.
+    // OUT 행에 INCOME 계정: 차단. IN 행에 EXPENSE 계정: 환불·반품 등 합법 케이스가 있으므로 허용.
+    // TRANSFER 등 다른 type은 검증 스킵.
+    if (category.type === 'INCOME' && row.direction === 'OUT') {
+      return errorResponse(
+        '지출(OUT) 거래에 수입 계정과목을 지정할 수 없습니다. 지출 계정과목을 선택하세요',
+        400
+      )
+    }
+
     data.categoryId = body.categoryId
     data.classStatus = 'CLASSIFIED'
 

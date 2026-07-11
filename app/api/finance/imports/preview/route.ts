@@ -28,6 +28,11 @@ export async function POST(req: NextRequest) {
     typeof form?.get('sheetName') === 'string' ? String(form.get('sheetName')) : undefined
   if (!(file instanceof File)) return errorResponse('파일이 필요합니다', 400)
 
+  // 파일 크기 제한(10MB) — arrayBuffer() 로드 전에 체크해 OOM/타임아웃 방지.
+  if (file.size > 10 * 1024 * 1024) {
+    return errorResponse('파일 크기가 10MB를 초과합니다. 더 작은 파일을 사용하세요', 413)
+  }
+
   let preview
   try {
     const buffer = await file.arrayBuffer()

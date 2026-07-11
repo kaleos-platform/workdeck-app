@@ -19,7 +19,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, round2 } from '@/lib/finance/serialize'
-import { ymOf, addMonths, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
+import { nowYmKst, addMonths, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
 import { bucketOf, bucketMonthRange, bucketLabel, isValidBucket, type Grain } from '@/lib/finance/periods'
 import type { FinFlowRole } from '@/generated/prisma/enums'
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
   // 표시 버킷 = period 파라미터(검증) 또는 기본(직전월이 속한 버킷). 진행 중인 현재월 제외.
   const reqPeriod = sp.get('period') ?? ''
-  const defaultBucket = bucketOf(addMonths(ymOf(new Date()), -1), grain)
+  const defaultBucket = bucketOf(addMonths(nowYmKst(), -1), grain)
   const bucket = isValidBucket(reqPeriod, grain) ? reqPeriod : defaultBucket
   const { firstYm, lastYm } = bucketMonthRange(bucket, grain)
   const periodLabel = bucketLabel(bucket, grain)
