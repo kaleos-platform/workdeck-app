@@ -291,10 +291,11 @@ export function MovementForm({ onCreated }: Props) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           })
+          const data = await res.json().catch(() => ({}))
           if (!res.ok) {
-            const data = await res.json().catch(() => ({}))
             throw new Error(data?.error ?? '실패')
           }
+          return data
         })
       )
 
@@ -307,8 +308,19 @@ export function MovementForm({ onCreated }: Props) {
         .filter((x) => x.result.status === 'rejected')
       const ng = failures.length
 
+      // 성공 응답에서 재고 부족 경고 수집
+      const allWarnings: string[] = results.flatMap((r) => {
+        if (r.status !== 'fulfilled') return []
+        const w = (r.value as { warnings?: string[] } | undefined)?.warnings
+        return Array.isArray(w) ? w : []
+      })
+
       if (ng === 0) {
         toast.success(`${ok}건 등록 완료`)
+        if (allWarnings.length > 0) {
+          const extra = allWarnings.length > 1 ? ` 외 ${allWarnings.length - 1}건` : ''
+          toast.warning(`재고 부족 경고 ${allWarnings.length}건: ${allWarnings[0]}${extra}`)
+        }
         setOpen(false)
         resetForm()
         onCreated?.()
@@ -316,6 +328,10 @@ export function MovementForm({ onCreated }: Props) {
         toast.error(`전체 실패 (${ng}건): ${failures.map((f) => f.name).join(', ')}`)
       } else {
         toast.warning(`${ok}건 성공 / ${ng}건 실패: ${failures.map((f) => f.name).join(', ')}`)
+        if (allWarnings.length > 0) {
+          const extra = allWarnings.length > 1 ? ` 외 ${allWarnings.length - 1}건` : ''
+          toast.warning(`재고 부족 경고 ${allWarnings.length}건: ${allWarnings[0]}${extra}`)
+        }
         onCreated?.()
       }
     } finally {

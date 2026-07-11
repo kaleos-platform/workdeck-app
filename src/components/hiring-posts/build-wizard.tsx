@@ -150,11 +150,13 @@ export function BuildWizard({ data }: { data: WizardData }) {
             </Section>
           </div>
           <div className="lg:sticky lg:top-6 lg:self-start">
-            <ApplicationFormPreview
-              title={state.title}
-              closingDate={state.closingDate}
-              fields={state.formFields}
-            />
+            <div className="mx-auto w-full max-w-sm">
+              <ApplicationFormPreview
+                title={state.title}
+                closingDate={state.closingDate}
+                fields={state.formFields}
+              />
+            </div>
           </div>
         </div>
       )}

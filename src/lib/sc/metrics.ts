@@ -191,10 +191,10 @@ function buildDateSpine(startDate: Date, maxDays = 90): string[] {
  * - N+1 방지: DeploymentMetric 은 groupBy 로 한 번에 조회
  * - 배포가 0개면 빈 데이터 반환
  */
-export async function getContentMetricsTotal(contentId: string): Promise<ContentMetricsTotal> {
+export async function getContentMetricsTotal(contentId: string, spaceId: string): Promise<ContentMetricsTotal> {
   // 1. 콘텐츠의 모든 배포 fetch (channel 정보 + clickEvents 건수 포함)
   const deployments = await prisma.contentDeployment.findMany({
-    where: { contentId },
+    where: { contentId, spaceId },
     include: {
       channel: { select: { id: true, name: true, platform: true, kind: true } },
       _count: { select: { clickEvents: true } },

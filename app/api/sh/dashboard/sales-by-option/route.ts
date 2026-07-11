@@ -16,6 +16,12 @@ export async function GET(req: NextRequest) {
   const toParam = searchParams.get('to')
   const channelIdsParam = searchParams.get('channelIds')
 
+  // groupBy 계약 명시 — 현재 'date' 단위만 지원. 다른 값이 오면 400.
+  const groupBy = searchParams.get('groupBy') ?? 'date'
+  if (groupBy !== 'date') {
+    return errorResponse('지원하지 않는 groupBy 입니다 (현재 date만 지원)', 400)
+  }
+
   if (!fromParam || !toParam) {
     return errorResponse('from, to 쿼리 파라미터가 필요합니다', 400)
   }

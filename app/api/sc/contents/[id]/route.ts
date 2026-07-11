@@ -51,30 +51,46 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  // 변경 직전 스냅샷 보존
-  await snapshotContent({
-    contentId: id,
-    userId: resolved.user?.id,
-    note: '자동 스냅샷 (PATCH)',
-  })
+  // 스냅샷 + 업데이트를 원자적으로 실행 — update 실패 시 고아 스냅샷 방지.
+  // P2002(versionNumber unique 충돌) 발생 시 전체 트랜잭션을 1회 재시도.
+  let updated: Awaited<ReturnType<typeof prisma.content.update>>
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      updated = await prisma.$transaction(async (tx) => {
+        // 변경 직전 스냅샷 보존 (tx 전달 — 외부 트랜잭션에서 실행)
+        await snapshotContent({
+          contentId: id,
+          userId: resolved.user?.id,
+          note: '자동 스냅샷 (PATCH)',
+          tx,
+        })
 
-  const updated = await prisma.content.update({
-    where: { id },
-    data: {
-      title: parsed.data.title ?? undefined,
-      doc: (parsed.data.doc ?? undefined) as never,
-      channelId: parsed.data.channelId ?? undefined,
-      scheduledAt: parsed.data.scheduledAt ? new Date(parsed.data.scheduledAt) : undefined,
-      body: parsed.data.body ?? undefined,
-      urlSlug: parsed.data.urlSlug ?? undefined,
-      targetKeyword: parsed.data.targetKeyword ?? undefined,
-      relatedKeywords:
-        parsed.data.relatedKeywords !== undefined
-          ? (parsed.data.relatedKeywords as never)
-          : undefined,
-    },
-  })
-  return NextResponse.json({ content: updated })
+        return tx.content.update({
+          where: { id },
+          data: {
+            title: parsed.data.title ?? undefined,
+            doc: (parsed.data.doc ?? undefined) as never,
+            channelId: parsed.data.channelId ?? undefined,
+            scheduledAt: parsed.data.scheduledAt ? new Date(parsed.data.scheduledAt) : undefined,
+            body: parsed.data.body ?? undefined,
+            urlSlug: parsed.data.urlSlug ?? undefined,
+            targetKeyword: parsed.data.targetKeyword ?? undefined,
+            relatedKeywords:
+              parsed.data.relatedKeywords !== undefined
+                ? (parsed.data.relatedKeywords as never)
+                : undefined,
+          },
+        })
+      })
+      break
+    } catch (err: unknown) {
+      const isUniqueViolation =
+        err instanceof Error && 'code' in err && (err as { code?: string }).code === 'P2002'
+      if (isUniqueViolation && attempt === 0) continue
+      throw err
+    }
+  }
+  return NextResponse.json({ content: updated! })
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Info } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -79,6 +79,21 @@ function PromotionContent({
   // 입력 중 string 상태 (number 전환 전)
   const [rawVal, setRawVal] = useState(String(value.value || ''))
   const [rawMinThr, setRawMinThr] = useState(String(value.minThreshold || ''))
+
+  // 부모 value 변경(타입 초기화, 시나리오 전환 등) 시 로컬 string 상태 동기화.
+  // 에코 루프 방지: 현재 rawVal이 이미 같은 숫자를 나타내면 setRawVal을 건너뛴다.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRawVal((prev) => (parseFloat(prev) === value.value ? prev : String(value.value || '')))
+  }, [value.value])
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setRawMinThr((prev) =>
+      parseFloat(prev) === (value.minThreshold ?? 0) ? prev : String(value.minThreshold || '')
+    )
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [value.minThreshold])
 
   const isPercent = value.type === 'PERCENT'
   const hasValue = value.type !== 'NONE'

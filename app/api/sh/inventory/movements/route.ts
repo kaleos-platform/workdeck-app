@@ -62,7 +62,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await processMovement(resolved.space.id, input)
-    return NextResponse.json(result, { status: 201 })
+    return NextResponse.json(
+      { ...result, hasWarnings: (result.warnings?.length ?? 0) > 0 },
+      { status: 201 }
+    )
   } catch (err) {
     if (err instanceof MovementError) {
       return errorResponse(err.message, err.status)

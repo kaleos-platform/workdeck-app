@@ -161,6 +161,19 @@ async function upsertStockLevel(
     where: { optionId_locationId: { optionId, locationId } },
   })
   if (!existing) {
+    // FOR UPDATE는 미존재 행을 잠글 수 없어 동시 첫 INSERT가 P2002를 일으킬 수 있다.
+    // advisory lock으로 직렬화한 뒤 재조회 — 다른 tx가 먼저 생성했을 수 있으므로 반드시 재확인.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${optionId} || ':' || ${locationId}))`
+    const refetched = await tx.invStockLevel.findUnique({
+      where: { optionId_locationId: { optionId, locationId } },
+    })
+    if (refetched) {
+      const updated = await tx.invStockLevel.update({
+        where: { id: refetched.id },
+        data: { quantity: refetched.quantity + delta },
+      })
+      return updated.quantity
+    }
     const created = await tx.invStockLevel.create({
       data: { spaceId, optionId, locationId, quantity: delta },
     })

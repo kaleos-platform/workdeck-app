@@ -118,6 +118,18 @@ export async function POST(req: NextRequest) {
     })
     const existingMap = new Map(existing.map((e) => [e.identityKey, e.contentHash]))
 
+    // 미확정(DRAFT) 스테이징 행과도 중복 판정 — 같은 파일 재업로드가 큐에 두 벌 쌓이지 않도록
+    const existingStaged = await prisma.finStagedRow.findMany({
+      where: {
+        spaceId,
+        accountId,
+        identityKey: { in: identityKeys },
+        import: { status: 'DRAFT' },
+      },
+      select: { identityKey: true, contentHash: true },
+    })
+    const stagedMap = new Map(existingStaged.map((e) => [e.identityKey, e.contentHash]))
+
     // 규칙 로드 후 분류
     const rules = await loadSpaceRules(spaceId)
 
@@ -163,7 +175,8 @@ export async function POST(req: NextRequest) {
       else cUnclassified++
 
       let resolution: FinStagedResolution
-      const priorHash = existingMap.get(r.identityKey)
+      // 확정 거래 우선, 없으면 미확정 스테이징 행과 비교
+      const priorHash = existingMap.get(r.identityKey) ?? stagedMap.get(r.identityKey)
       if (seenInBatch.has(r.identityKey)) {
         resolution = 'DUP_SAME'
         cDupSame++

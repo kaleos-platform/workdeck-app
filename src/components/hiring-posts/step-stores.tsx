@@ -9,6 +9,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import type { WizardStore } from './build-types'
 import { AutoSaveIndicator } from './autosave-indicator'
 
@@ -28,6 +35,7 @@ type Props = {
 export function StepStores({ postingId, value, onChange }: Props) {
   const router = useRouter()
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const [newAddress, setNewAddress] = useState('')
@@ -99,6 +107,7 @@ export function StepStores({ postingId, value, onChange }: Props) {
       onChange({ stores: [...stores, created], storeIds: [...storeIds, created.id] })
       setNewName('')
       setNewAddress('')
+      setDialogOpen(false)
       toast.success('매장을 추가했습니다')
       router.refresh()
     } catch (err) {
@@ -127,7 +136,7 @@ export function StepStores({ postingId, value, onChange }: Props) {
           <div className="space-y-1">
             {stores.length === 0 ? (
               <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                등록된 매장이 없습니다. 아래에서 추가하세요.
+                등록된 매장이 없습니다. 매장 추가 버튼으로 추가하세요.
               </div>
             ) : (
               stores.map((s) => (
@@ -150,32 +159,63 @@ export function StepStores({ postingId, value, onChange }: Props) {
             )}
           </div>
 
-          <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
-            <div className="text-sm font-medium">매장 추가</div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="store-name">매장명</Label>
-                <Input
-                  id="store-name"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="예: 강남점"
-                />
+          <Button size="sm" variant="outline" onClick={() => setDialogOpen(true)}>
+            <Plus /> 매장 추가
+          </Button>
+
+          <Dialog
+            open={dialogOpen}
+            onOpenChange={(open) => {
+              if (!open) {
+                setDialogOpen(false)
+                setNewName('')
+                setNewAddress('')
+              }
+            }}
+          >
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>매장 추가</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="store-name">매장명</Label>
+                  <Input
+                    id="store-name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="예: 강남점"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="store-addr">도로명 주소</Label>
+                  <Input
+                    id="store-addr"
+                    value={newAddress}
+                    onChange={(e) => setNewAddress(e.target.value)}
+                    placeholder="예: 서울 강남구 테헤란로 1"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="store-addr">도로명 주소</Label>
-                <Input
-                  id="store-addr"
-                  value={newAddress}
-                  onChange={(e) => setNewAddress(e.target.value)}
-                  placeholder="예: 서울 강남구 테헤란로 1"
-                />
-              </div>
-            </div>
-            <Button size="sm" variant="outline" onClick={handleCreate} disabled={creating}>
-              <Plus /> 매장 추가
-            </Button>
-          </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDialogOpen(false)
+                    setNewName('')
+                    setNewAddress('')
+                  }}
+                  disabled={creating}
+                >
+                  취소
+                </Button>
+                <Button size="sm" onClick={handleCreate} disabled={creating}>
+                  <Plus /> 추가
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
 

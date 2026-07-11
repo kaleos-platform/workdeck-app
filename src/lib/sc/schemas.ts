@@ -188,6 +188,14 @@ export const deploymentUpdateSchema = deploymentCreateSchema.partial().extend({
   platformUrl: emptyToUndefined.pipe(z.string().url().max(2000)).optional(),
 })
 
+// ─── AI 이미지 생성 공통 스키마 (assets POST ai 모드 + /api/sc/ai/generate-image 공유) ──
+export const aiImageBaseSchema = z.object({
+  prompt: z.string().min(1).max(4000),
+  negativePrompt: z.string().max(2000).optional(),
+  aspectRatio: z.enum(['1:1', '3:4', '4:3', '9:16', '16:9']).optional(),
+})
+export type AiImageBaseInput = z.infer<typeof aiImageBaseSchema>
+
 // ─── ImprovementRule ────────────────────────────────────────────────────────
 
 export const improvementRuleInputSchema = z.object({

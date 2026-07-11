@@ -83,8 +83,11 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 
   const { id: channelId } = await params
   const url = new URL(req.url)
-  const kind = url.searchParams.get('kind') as 'COOKIE' | 'OAUTH' | 'API_KEY' | null
-  if (!kind) return errorResponse('kind 가 필요합니다', 400)
+  const kindRaw = url.searchParams.get('kind')
+  if (!kindRaw) return errorResponse('kind 가 필요합니다', 400)
+  const kindParsed = z.enum(['COOKIE', 'OAUTH', 'API_KEY']).safeParse(kindRaw)
+  if (!kindParsed.success) return errorResponse('유효하지 않은 kind 입니다', 400)
+  const kind = kindParsed.data
 
   const channel = await prisma.salesContentChannel.findFirst({
     where: { id: channelId, spaceId: resolved.space.id },
