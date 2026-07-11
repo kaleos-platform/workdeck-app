@@ -6,7 +6,6 @@
  * 탭 2: 전체 거래(확정 FinTransaction)
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus, Trash2, Sparkles, Tag, X, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -144,9 +143,6 @@ type TxnSortField =
   | 'classStatus'
 
 export function TransactionsView() {
-  const searchParams = useSearchParams()
-  const importIdParam = searchParams.get('importId') ?? undefined
-
   // 카테고리 트리 + 잎 목록
   const [categoryTree, setCategoryTree] = useState<CategoryNode[]>([])
   const leafTargets = useMemo(() => buildClassifyOptions(categoryTree), [categoryTree])
@@ -252,27 +248,23 @@ export function TransactionsView() {
   }, [])
 
   // 스테이징 조회
-  const loadStaging = useCallback(
-    async (tab: string = 'all') => {
-      setStagingLoading(true)
-      try {
-        const params = new URLSearchParams({ tab })
-        if (importIdParam) params.set('importId', importIdParam)
-        const res = await fetch(`/api/finance/staging?${params}`)
-        if (!res.ok) throw new Error('스테이징 조회 실패')
-        const data = await res.json()
-        setStagingRows(data.rows ?? [])
-        setStagingCounts(
-          data.counts ?? { total: 0, unclassified: 0, review: 0, dup: 0, classified: 0 }
-        )
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : '스테이징 조회 실패')
-      } finally {
-        setStagingLoading(false)
-      }
-    },
-    [importIdParam]
-  )
+  const loadStaging = useCallback(async (tab: string = 'all') => {
+    setStagingLoading(true)
+    try {
+      const params = new URLSearchParams({ tab })
+      const res = await fetch(`/api/finance/staging?${params}`)
+      if (!res.ok) throw new Error('스테이징 조회 실패')
+      const data = await res.json()
+      setStagingRows(data.rows ?? [])
+      setStagingCounts(
+        data.counts ?? { total: 0, unclassified: 0, review: 0, dup: 0, classified: 0 }
+      )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '스테이징 조회 실패')
+    } finally {
+      setStagingLoading(false)
+    }
+  }, [])
 
   // 확정 거래 조회
   const loadTransactions = useCallback(async () => {
@@ -443,9 +435,8 @@ export function TransactionsView() {
       const res = await fetch('/api/finance/staging/commit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // importId 있으면(업로드 후 진입) 그 임포트로 한정, 없으면(네비 진입) 전체 분류완료.
-        // 어느 쪽이든 분류완료 행만 저장 — 표시된 카운트와 일치.
-        body: JSON.stringify(importIdParam ? { importId: importIdParam } : {}),
+        // 미확정(DRAFT) 임포트 전체의 분류완료 행을 저장 — 표시된 카운트와 일치.
+        body: JSON.stringify({}),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '저장 처리 실패')

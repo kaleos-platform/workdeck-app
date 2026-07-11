@@ -376,8 +376,7 @@ export function FinanceUploadPanel() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '가져오기 실패')
 
-      const { importId, counts } = data as {
-        importId: string
+      const { counts } = data as {
         counts: {
           total: number
           new: number
@@ -394,7 +393,9 @@ export function FinanceUploadPanel() {
       toast.success(
         `신규 ${counts.new}건 · 중복 ${dupTotal}건 · 검토 ${counts.review}건 (총 ${counts.total}건)`
       )
-      router.push(`${FINANCE_TRANSACTIONS_PATH}?importId=${importId}`)
+      // 스테이징은 미확정 임포트 전체를 표시하므로 importId 스코프 없이 이동 —
+      // 이전에 등록했지만 미저장인 데이터와 함께 일괄 처리.
+      router.push(FINANCE_TRANSACTIONS_PATH)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '가져오기 실패')
     } finally {
