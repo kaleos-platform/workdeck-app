@@ -241,6 +241,46 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(preset).not.toBeNull()
   }, 30000)
 
+  // 같은 파일 재업로드 — 미확정(DRAFT) 스테이징 행과도 dedup 되어 큐에 두 벌 쌓이지 않아야 한다.
+  test('commit-staging: 같은 파일 재업로드 → 전부 DUP(신규 0)', async () => {
+    // 한 행의 contentHash를 오염시켜 DUP_CHANGED 경로도 함께 검증.
+    // identityKey가 배치 내에서 고유한 행을 골라야 stagedMap(Map, 마지막 값 유지)에 확실히 반영된다.
+    const allRows = await prisma.finStagedRow.findMany({
+      where: { importId },
+      select: { id: true, contentHash: true, identityKey: true },
+    })
+    const keyCounts = new Map<string, number>()
+    for (const row of allRows)
+      keyCounts.set(row.identityKey, (keyCounts.get(row.identityKey) ?? 0) + 1)
+    const victim = allRows.find((row) => keyCounts.get(row.identityKey) === 1)
+    expect(victim).toBeDefined()
+    await prisma.finStagedRow.update({
+      where: { id: victim!.id },
+      data: { contentHash: 'e2e-bogus-hash' },
+    })
+
+    const req = uploadRequest(BANK_FILE, {
+      accountId,
+      kind: 'BANK',
+      mapping: mappingJson(BANK_FILE, 'BANK'),
+      institution: '기업은행',
+    })
+    const res = await call(commitStaging(req))
+    expect(res.status).toBe(201)
+    const body = await res.json()
+    expect(body.counts.new).toBe(0) // 전 행이 기존 DRAFT 스테이징과 중복
+    expect(body.counts.dupChanged).toBeGreaterThanOrEqual(1) // 오염 행 = content 상이
+    expect(body.counts.dupSame + body.counts.dupChanged).toBe(body.counts.total)
+
+    // 재업로드분은 검증 후 제거 + 오염 복원 — 이후 테스트 상태 오염 방지
+    await prisma.finStagedRow.deleteMany({ where: { importId: body.importId } })
+    await prisma.finImport.deleteMany({ where: { id: body.importId } })
+    await prisma.finStagedRow.update({
+      where: { id: victim!.id },
+      data: { contentHash: victim!.contentHash },
+    })
+  }, 30000)
+
   test('staging GET: 대기열 + 탭 카운트', async () => {
     const req = new NextRequest(`http://localhost/api/finance/staging?importId=${importId}`)
     const res = await call(stagingGet(req))
