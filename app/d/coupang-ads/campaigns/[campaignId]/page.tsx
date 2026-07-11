@@ -388,6 +388,7 @@ export default function CampaignDetailPage({
       .catch(() => {
         setMetricSeries([])
         setPrevMetricSeries([])
+        toast.error('캠페인 데이터를 불러오지 못했습니다 — 네트워크 확인 후 다시 시도해 주세요')
       })
   }, [campaignId, from, to, adTypeFilter, isDateRangeReady])
 
@@ -410,7 +411,13 @@ export default function CampaignDetailPage({
     if (placementFilter && placementFilter !== 'all') q.set('placement', placementFilter)
 
     fetch(`/api/campaigns/${campaignId}/records?${q}`)
-      .then((r) => (r.ok ? r.json() : { items: [], total: 0, placements: [] }))
+      .then((r) => {
+        if (!r.ok) {
+          toast.error('광고 데이터를 불러오지 못했습니다 — 네트워크 확인 후 다시 시도해 주세요')
+          return { items: [], total: 0, placements: [] }
+        }
+        return r.json()
+      })
       .then((d: { items: AdRecord[]; total: number; placements: string[] }) => {
         setRecords(d.items)
         setTotal(d.total)
@@ -426,6 +433,7 @@ export default function CampaignDetailPage({
         setRecords([])
         setTotal(0)
         setPlacementOptions([])
+        toast.error('광고 데이터를 불러오지 못했습니다 — 네트워크 확인 후 다시 시도해 주세요')
       })
   }, [
     activeTab,

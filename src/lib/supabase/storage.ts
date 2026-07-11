@@ -20,10 +20,16 @@ let cached: SupabaseClient | null = null
 function serviceClient(): SupabaseClient {
   if (cached) return cached
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.SUPABASE_SERVICE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const serviceKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY
+  // 운영 환경에서 서비스 키가 없으면 anon 키 폴백 없이 즉시 실패 — 권한 부족으로 인한
+  // 무음 Storage 오류를 방지한다. 비운영 환경(preview/local)은 anon 키 폴백 허용.
+  if (process.env.VERCEL_ENV === 'production' && !serviceKey) {
+    throw new Error(
+      'SUPABASE_SERVICE_ROLE_KEY (또는 SUPABASE_SERVICE_KEY) 가 운영 환경에 설정되지 않았습니다'
+    )
+  }
+  const key = serviceKey ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key) throw new Error('Supabase 환경변수가 설정되지 않았습니다')
   cached = createClient(url, key, { auth: { persistSession: false } })
   return cached
