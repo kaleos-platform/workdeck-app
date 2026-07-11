@@ -159,7 +159,15 @@ export type UpdateContentInput = z.infer<typeof updateContentSchema>
 
 // ─── 지원서 폼 스키마 (applicationEntries) ─────────────────────────────────────
 // ⚠️ 표준 PII 키는 pii.ts 의 PII_ENTRY_KEYS 와 정확히 일치해야 한다: name/phone/email/address
-export const formFieldTypeEnum = z.enum(['string', 'text', 'select', 'file', 'email', 'phone'])
+export const formFieldTypeEnum = z.enum([
+  'string',
+  'text',
+  'select',
+  'multiselect',
+  'file',
+  'email',
+  'phone',
+])
 
 export const formFieldSchema = z.object({
   key: z.string().min(1).max(64),

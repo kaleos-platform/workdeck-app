@@ -15,6 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import {
   JOB_TYPE_LABELS,
@@ -180,16 +187,14 @@ export function StepPositions({ postingId, positions, spacePositions, onChange }
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">모집 직무와 근무 조건을 등록합니다.</p>
-        {editingId === null && (
-          <Button size="sm" onClick={openNew}>
-            <Plus /> 직무 추가
-          </Button>
-        )}
+        <Button size="sm" onClick={openNew}>
+          <Plus /> 직무 추가
+        </Button>
       </div>
 
       {/* 등록된 직무 목록 */}
       <div className="space-y-2">
-        {positions.length === 0 && editingId === null && (
+        {positions.length === 0 && (
           <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
             등록된 직무가 없습니다.
           </div>
@@ -227,171 +232,186 @@ export function StepPositions({ postingId, positions, spacePositions, onChange }
         ))}
       </div>
 
-      {/* 추가/편집 폼 */}
-      {editingId !== null && (
-        <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>직무명</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="예: 홀 서빙"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>기준정보 직무 연결 (선택)</Label>
-              <Select
-                value={form.positionId || NONE}
-                onValueChange={(v) => setForm((f) => ({ ...f, positionId: v === NONE ? '' : v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="연결 안 함" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>연결 안 함</SelectItem>
-                  {spacePositions.map((sp) => (
-                    <SelectItem key={sp.id} value={sp.id}>
-                      {sp.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>고용 형태</Label>
-              <Select
-                value={form.jobType || NONE}
-                onValueChange={(v) => setForm((f) => ({ ...f, jobType: v === NONE ? '' : v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>선택 안 함</SelectItem>
-                  {Object.entries(JOB_TYPE_LABELS).map(([k, label]) => (
-                    <SelectItem key={k} value={k}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>모집 인원</Label>
-              <Input
-                type="number"
-                min={0}
-                value={form.headcount}
-                onChange={(e) => setForm((f) => ({ ...f, headcount: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>급여 형태</Label>
-              <Select
-                value={form.payFrequency || NONE}
-                onValueChange={(v) => setForm((f) => ({ ...f, payFrequency: v === NONE ? '' : v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>선택 안 함</SelectItem>
-                  {Object.entries(PAY_FREQUENCY_LABELS).map(([k, label]) => (
-                    <SelectItem key={k} value={k}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>급여액 (원)</Label>
-              <Input
-                type="number"
-                min={0}
-                value={form.payAmount}
-                onChange={(e) => setForm((f) => ({ ...f, payAmount: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>근무 시작</Label>
-              <Input
-                type="time"
-                value={form.workStartAt}
-                onChange={(e) => setForm((f) => ({ ...f, workStartAt: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>근무 종료</Label>
-              <Input
-                type="time"
-                value={form.workEndAt}
-                onChange={(e) => setForm((f) => ({ ...f, workEndAt: e.target.value }))}
-              />
-            </div>
-          </div>
+      {/* 추가/편집 Dialog */}
+      <Dialog
+        open={editingId !== null}
+        onOpenChange={(open) => {
+          if (!open) close()
+        }}
+      >
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingId === 'new' ? '직무 추가' : '직무 편집'}</DialogTitle>
+          </DialogHeader>
 
-          <div className="space-y-2">
-            <Label>근무 요일</Label>
-            <div className="flex gap-1">
-              {WEEKDAYS.map((label, day) => (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => toggleDay(day)}
-                  className={cn(
-                    'flex size-8 items-center justify-center rounded-md border text-xs font-medium transition',
-                    form.workDays.includes(day)
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent'
-                  )}
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>직무명</Label>
+                <Input
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="예: 홀 서빙"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>기준정보 직무 연결 (선택)</Label>
+                <Select
+                  value={form.positionId || NONE}
+                  onValueChange={(v) => setForm((f) => ({ ...f, positionId: v === NONE ? '' : v }))}
                 >
-                  {label}
-                </button>
-              ))}
+                  <SelectTrigger>
+                    <SelectValue placeholder="연결 안 함" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>연결 안 함</SelectItem>
+                    {spacePositions.map((sp) => (
+                      <SelectItem key={sp.id} value={sp.id}>
+                        {sp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>고용 형태</Label>
+                <Select
+                  value={form.jobType || NONE}
+                  onValueChange={(v) => setForm((f) => ({ ...f, jobType: v === NONE ? '' : v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>선택 안 함</SelectItem>
+                    {Object.entries(JOB_TYPE_LABELS).map(([k, label]) => (
+                      <SelectItem key={k} value={k}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>모집 인원</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.headcount}
+                  onChange={(e) => setForm((f) => ({ ...f, headcount: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>급여 형태</Label>
+                <Select
+                  value={form.payFrequency || NONE}
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, payFrequency: v === NONE ? '' : v }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>선택 안 함</SelectItem>
+                    {Object.entries(PAY_FREQUENCY_LABELS).map(([k, label]) => (
+                      <SelectItem key={k} value={k}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>급여액 (원)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.payAmount}
+                  onChange={(e) => setForm((f) => ({ ...f, payAmount: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>근무 시작</Label>
+                <Input
+                  type="time"
+                  value={form.workStartAt}
+                  onChange={(e) => setForm((f) => ({ ...f, workStartAt: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>근무 종료</Label>
+                <Input
+                  type="time"
+                  value={form.workEndAt}
+                  onChange={(e) => setForm((f) => ({ ...f, workEndAt: e.target.value }))}
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label>담당 업무</Label>
-            <Textarea
-              value={form.jobDescription}
-              onChange={(e) => setForm((f) => ({ ...f, jobDescription: e.target.value }))}
-              rows={3}
-            />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>자격 요건</Label>
+              <Label>근무 요일</Label>
+              <div className="flex gap-1">
+                {WEEKDAYS.map((label, day) => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => toggleDay(day)}
+                    className={cn(
+                      'flex size-8 items-center justify-center rounded-md border text-xs font-medium transition',
+                      form.workDays.includes(day)
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-accent'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>담당 업무</Label>
               <Textarea
-                value={form.requiredQualifications}
-                onChange={(e) => setForm((f) => ({ ...f, requiredQualifications: e.target.value }))}
+                value={form.jobDescription}
+                onChange={(e) => setForm((f) => ({ ...f, jobDescription: e.target.value }))}
                 rows={3}
               />
             </div>
-            <div className="space-y-2">
-              <Label>우대 사항</Label>
-              <Textarea
-                value={form.preferredQualifications}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, preferredQualifications: e.target.value }))
-                }
-                rows={3}
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>자격 요건</Label>
+                <Textarea
+                  value={form.requiredQualifications}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, requiredQualifications: e.target.value }))
+                  }
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>우대 사항</Label>
+                <Textarea
+                  value={form.preferredQualifications}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, preferredQualifications: e.target.value }))
+                  }
+                  rows={3}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <DialogFooter>
             <Button variant="outline" size="sm" onClick={close} disabled={saving}>
               취소
             </Button>
             <Button size="sm" onClick={handleSubmit} disabled={saving}>
               저장
             </Button>
-          </div>
-        </div>
-      )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
