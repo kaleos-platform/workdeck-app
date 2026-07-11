@@ -393,6 +393,13 @@ export function FinanceUploadPanel() {
       toast.success(
         `신규 ${counts.new}건 · 중복 ${dupTotal}건 · 검토 ${counts.review}건 (총 ${counts.total}건)`
       )
+      // 동일 중복(DUP_SAME)이 발생한 경우 별도 경고 — 거래탭 중복 탭에서 확인 안내
+      if (counts.dupSame > 0) {
+        toast.warning(
+          `중복 판정 ${counts.dupSame}건 — 확인·처리 탭 중복에서 확인하세요`,
+          { duration: 6000 }
+        )
+      }
       // 스테이징은 미확정 임포트 전체를 표시하므로 importId 스코프 없이 이동 —
       // 이전에 등록했지만 미저장인 데이터와 함께 일괄 처리.
       router.push(FINANCE_TRANSACTIONS_PATH)
@@ -798,18 +805,26 @@ export function FinanceUploadPanel() {
               </div>
 
               {/* 검증 메시지 + 가져오기 버튼 */}
-              <div className="flex items-center gap-3">
-                {!validation.ok && previewRes && (
-                  <span className="text-xs text-destructive">{validation.reason}</span>
+              <div className="flex flex-col items-end gap-2">
+                {/* 거래후잔액 미매핑 경고 — 같은 날·같은 금액 거래 중복 판정 위험 */}
+                {(mapping['balanceAfter']?.length ?? 0) === 0 && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    거래후잔액 미매핑 시 같은 날 같은 금액 거래가 중복으로 건너뛰어질 수 있습니다
+                  </p>
                 )}
-                {!hasAccounts && (
-                  <span className="text-xs text-destructive">
-                    {isCard ? '카드' : '계좌'} 등록 후 가져오기가 가능합니다
-                  </span>
-                )}
-                <Button onClick={handleImport} disabled={!canImport}>
-                  {importing ? '가져오는 중...' : `${previewRes.preview.totalRows}건 가져오기`}
-                </Button>
+                <div className="flex items-center gap-3">
+                  {!validation.ok && previewRes && (
+                    <span className="text-xs text-destructive">{validation.reason}</span>
+                  )}
+                  {!hasAccounts && (
+                    <span className="text-xs text-destructive">
+                      {isCard ? '카드' : '계좌'} 등록 후 가져오기가 가능합니다
+                    </span>
+                  )}
+                  <Button onClick={handleImport} disabled={!canImport}>
+                    {importing ? '가져오는 중...' : `${previewRes.preview.totalRows}건 가져오기`}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
