@@ -704,6 +704,10 @@ export function UploadDialog({ open, onOpenChange, batchId, onImported }: Props)
       toast.error('받는분, 전화, 주소는 필수 매핑입니다')
       return
     }
+    if ((mapping.orderDate?.length ?? 0) === 0 && !orderDateFixed) {
+      toast.error('주문일자 컬럼을 매핑하거나 고정 날짜를 지정해 주세요')
+      return
+    }
     if (!selectedChannelId) {
       toast.error('판매채널을 지정해 주세요')
       return
