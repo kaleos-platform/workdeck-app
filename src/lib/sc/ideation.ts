@@ -213,7 +213,8 @@ export async function runIdeation(input: RunIdeationInput): Promise<RunIdeationR
       }
 
       // Ideation 생성 + IdeationProduct M:N rows 를 트랜잭션으로 저장
-      const productIds = input.productIds?.filter(Boolean) ?? []
+      // DB 검증된 상품 ID 만 사용 — 타 스페이스 productId 삽입 방지
+      const verifiedProductIds = ctx.products.map((p) => p.id)
       const saved = await prisma.$transaction(async (tx) => {
         const ideation = await tx.ideation.create({
           data: {
@@ -231,9 +232,9 @@ export async function runIdeation(input: RunIdeationInput): Promise<RunIdeationR
           },
           select: { id: true },
         })
-        if (productIds.length > 0) {
+        if (verifiedProductIds.length > 0) {
           await tx.ideationProduct.createMany({
-            data: productIds.map((productId) => ({ ideationId: ideation.id, productId })),
+            data: verifiedProductIds.map((productId) => ({ ideationId: ideation.id, productId })),
             skipDuplicates: true,
           })
         }
@@ -280,7 +281,18 @@ export async function saveUserIdeation(input: {
   ideas: IdeaItem[]
   userPromptInput?: string | null
 }): Promise<{ ideationId: string }> {
-  const productIds = input.productIds?.filter(Boolean) ?? []
+  const rawProductIds = input.productIds?.filter(Boolean) ?? []
+
+  // DB 검증된 상품 ID 만 사용 — 타 스페이스 productId 삽입 방지
+  const verifiedProducts =
+    rawProductIds.length > 0
+      ? await prisma.product.findMany({
+          where: { id: { in: rawProductIds }, spaceId: input.spaceId },
+          select: { id: true },
+        })
+      : []
+  const productIds = verifiedProducts.map((p) => p.id)
+
   const saved = await prisma.$transaction(async (tx) => {
     const ideation = await tx.ideation.create({
       data: {

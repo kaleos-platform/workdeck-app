@@ -11,7 +11,7 @@ export default async function AnalyticsPage() {
   const resolved = await resolveDeckContext('sales-content')
   if ('error' in resolved) redirect('/my-deck')
 
-  const [contents, rawChannels] = await Promise.all([
+  const [analytics, rawChannels] = await Promise.all([
     getSpaceContentAnalytics(resolved.space.id),
     prisma.salesContentChannel.findMany({
       where: { spaceId: resolved.space.id, isActive: true },
@@ -20,6 +20,7 @@ export default async function AnalyticsPage() {
     }),
   ])
 
+  const { rows: contents, totalCount, hasMore } = analytics
   const channels: ChannelOption[] = rawChannels
 
   return (
@@ -40,6 +41,13 @@ export default async function AnalyticsPage() {
           개선 규칙 관리
         </Link>
       </div>
+
+      {/* 200건 초과 시 절단 안내 */}
+      {hasMore && (
+        <p className="text-xs text-muted-foreground">
+          최신 200건만 표시 중 (전체 {totalCount.toLocaleString()}건)
+        </p>
+      )}
 
       {/* 콘텐츠 단위 성과 + 비교 (클라이언트 래퍼) */}
       <AnalyticsView contents={contents} channels={channels} />

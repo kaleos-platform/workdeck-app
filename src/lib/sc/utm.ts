@@ -68,5 +68,10 @@ export function generateShortSlug(length = 8): string {
 // ─── IP 익명화 ─────────────────────────────────────────────────────────────
 
 export function hashIp(ip: string, salt = process.env.CLICK_EVENT_SALT ?? 'sc-salt'): string {
+  // 운영 환경에서 CLICK_EVENT_SALT 가 미설정이면 예측 가능한 기본값('sc-salt')으로
+  // rainbow table IP 역추적이 가능해진다. 비프로덕션은 기존 fallback 유지 (preview QA 정책).
+  if (!process.env.CLICK_EVENT_SALT && process.env.VERCEL_ENV === 'production') {
+    throw new Error('CLICK_EVENT_SALT 환경 변수가 production 에서 설정되지 않았습니다.')
+  }
   return crypto.createHash('sha256').update(`${salt}:${ip}`).digest('hex')
 }
