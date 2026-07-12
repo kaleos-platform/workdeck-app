@@ -38,6 +38,9 @@ export type HiringPostingMinAggregateOutputType = {
   publishedAt: Date | null
   notificationEnabled: boolean | null
   authorUserId: string | null
+  appliedTemplateName: string | null
+  appliedTemplateId: string | null
+  appliedTemplateAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +59,9 @@ export type HiringPostingMaxAggregateOutputType = {
   publishedAt: Date | null
   notificationEnabled: boolean | null
   authorUserId: string | null
+  appliedTemplateName: string | null
+  appliedTemplateId: string | null
+  appliedTemplateAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -76,6 +82,9 @@ export type HiringPostingCountAggregateOutputType = {
   publishedAt: number
   notificationEnabled: number
   authorUserId: number
+  appliedTemplateName: number
+  appliedTemplateId: number
+  appliedTemplateAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -96,6 +105,9 @@ export type HiringPostingMinAggregateInputType = {
   publishedAt?: true
   notificationEnabled?: true
   authorUserId?: true
+  appliedTemplateName?: true
+  appliedTemplateId?: true
+  appliedTemplateAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -114,6 +126,9 @@ export type HiringPostingMaxAggregateInputType = {
   publishedAt?: true
   notificationEnabled?: true
   authorUserId?: true
+  appliedTemplateName?: true
+  appliedTemplateId?: true
+  appliedTemplateAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -134,6 +149,9 @@ export type HiringPostingCountAggregateInputType = {
   publishedAt?: true
   notificationEnabled?: true
   authorUserId?: true
+  appliedTemplateName?: true
+  appliedTemplateId?: true
+  appliedTemplateAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -227,6 +245,9 @@ export type HiringPostingGroupByOutputType = {
   publishedAt: Date | null
   notificationEnabled: boolean
   authorUserId: string | null
+  appliedTemplateName: string | null
+  appliedTemplateId: string | null
+  appliedTemplateAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: HiringPostingCountAggregateOutputType | null
@@ -268,6 +289,9 @@ export type HiringPostingWhereInput = {
   publishedAt?: Prisma.DateTimeNullableFilter<"HiringPosting"> | Date | string | null
   notificationEnabled?: Prisma.BoolFilter<"HiringPosting"> | boolean
   authorUserId?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateName?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateId?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateAt?: Prisma.DateTimeNullableFilter<"HiringPosting"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"HiringPosting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HiringPosting"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -294,6 +318,9 @@ export type HiringPostingOrderByWithRelationInput = {
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   notificationEnabled?: Prisma.SortOrder
   authorUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  appliedTemplateName?: Prisma.SortOrderInput | Prisma.SortOrder
+  appliedTemplateId?: Prisma.SortOrderInput | Prisma.SortOrder
+  appliedTemplateAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -323,6 +350,9 @@ export type HiringPostingWhereUniqueInput = Prisma.AtLeast<{
   publishedAt?: Prisma.DateTimeNullableFilter<"HiringPosting"> | Date | string | null
   notificationEnabled?: Prisma.BoolFilter<"HiringPosting"> | boolean
   authorUserId?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateName?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateId?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateAt?: Prisma.DateTimeNullableFilter<"HiringPosting"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"HiringPosting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HiringPosting"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -349,6 +379,9 @@ export type HiringPostingOrderByWithAggregationInput = {
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   notificationEnabled?: Prisma.SortOrder
   authorUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  appliedTemplateName?: Prisma.SortOrderInput | Prisma.SortOrder
+  appliedTemplateId?: Prisma.SortOrderInput | Prisma.SortOrder
+  appliedTemplateAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.HiringPostingCountOrderByAggregateInput
@@ -375,6 +408,9 @@ export type HiringPostingScalarWhereWithAggregatesInput = {
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"HiringPosting"> | Date | string | null
   notificationEnabled?: Prisma.BoolWithAggregatesFilter<"HiringPosting"> | boolean
   authorUserId?: Prisma.StringNullableWithAggregatesFilter<"HiringPosting"> | string | null
+  appliedTemplateName?: Prisma.StringNullableWithAggregatesFilter<"HiringPosting"> | string | null
+  appliedTemplateId?: Prisma.StringNullableWithAggregatesFilter<"HiringPosting"> | string | null
+  appliedTemplateAt?: Prisma.DateTimeNullableWithAggregatesFilter<"HiringPosting"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"HiringPosting"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"HiringPosting"> | Date | string
 }
@@ -394,6 +430,9 @@ export type HiringPostingCreateInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutHiringPostingsInput
@@ -420,6 +459,9 @@ export type HiringPostingUncheckedCreateInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   positions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutPostingInput
@@ -444,6 +486,9 @@ export type HiringPostingUpdateInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutHiringPostingsNestedInput
@@ -470,6 +515,9 @@ export type HiringPostingUncheckedUpdateInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   positions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutPostingNestedInput
@@ -495,6 +543,9 @@ export type HiringPostingCreateManyInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -514,6 +565,9 @@ export type HiringPostingUpdateManyMutationInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -534,6 +588,9 @@ export type HiringPostingUncheckedUpdateManyInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -564,6 +621,9 @@ export type HiringPostingCountOrderByAggregateInput = {
   publishedAt?: Prisma.SortOrder
   notificationEnabled?: Prisma.SortOrder
   authorUserId?: Prisma.SortOrder
+  appliedTemplateName?: Prisma.SortOrder
+  appliedTemplateId?: Prisma.SortOrder
+  appliedTemplateAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -582,6 +642,9 @@ export type HiringPostingMaxOrderByAggregateInput = {
   publishedAt?: Prisma.SortOrder
   notificationEnabled?: Prisma.SortOrder
   authorUserId?: Prisma.SortOrder
+  appliedTemplateName?: Prisma.SortOrder
+  appliedTemplateId?: Prisma.SortOrder
+  appliedTemplateAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -600,6 +663,9 @@ export type HiringPostingMinOrderByAggregateInput = {
   publishedAt?: Prisma.SortOrder
   notificationEnabled?: Prisma.SortOrder
   authorUserId?: Prisma.SortOrder
+  appliedTemplateName?: Prisma.SortOrder
+  appliedTemplateId?: Prisma.SortOrder
+  appliedTemplateAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -747,6 +813,9 @@ export type HiringPostingCreateWithoutSpaceInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   positions?: Prisma.HiringPostingPositionCreateNestedManyWithoutPostingInput
@@ -771,6 +840,9 @@ export type HiringPostingUncheckedCreateWithoutSpaceInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   positions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutPostingInput
@@ -825,6 +897,9 @@ export type HiringPostingScalarWhereInput = {
   publishedAt?: Prisma.DateTimeNullableFilter<"HiringPosting"> | Date | string | null
   notificationEnabled?: Prisma.BoolFilter<"HiringPosting"> | boolean
   authorUserId?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateName?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateId?: Prisma.StringNullableFilter<"HiringPosting"> | string | null
+  appliedTemplateAt?: Prisma.DateTimeNullableFilter<"HiringPosting"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"HiringPosting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HiringPosting"> | Date | string
 }
@@ -844,6 +919,9 @@ export type HiringPostingCreateWithoutPositionsInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutHiringPostingsInput
@@ -869,6 +947,9 @@ export type HiringPostingUncheckedCreateWithoutPositionsInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   stores?: Prisma.HiringPostingStoreUncheckedCreateNestedManyWithoutPostingInput
@@ -908,6 +989,9 @@ export type HiringPostingUpdateWithoutPositionsInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutHiringPostingsNestedInput
@@ -933,6 +1017,9 @@ export type HiringPostingUncheckedUpdateWithoutPositionsInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stores?: Prisma.HiringPostingStoreUncheckedUpdateManyWithoutPostingNestedInput
@@ -956,6 +1043,9 @@ export type HiringPostingCreateWithoutStoresInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutHiringPostingsInput
@@ -981,6 +1071,9 @@ export type HiringPostingUncheckedCreateWithoutStoresInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   positions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutPostingInput
@@ -1020,6 +1113,9 @@ export type HiringPostingUpdateWithoutStoresInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutHiringPostingsNestedInput
@@ -1045,6 +1141,9 @@ export type HiringPostingUncheckedUpdateWithoutStoresInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   positions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutPostingNestedInput
@@ -1068,6 +1167,9 @@ export type HiringPostingCreateWithoutManagersInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutHiringPostingsInput
@@ -1093,6 +1195,9 @@ export type HiringPostingUncheckedCreateWithoutManagersInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   positions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutPostingInput
@@ -1132,6 +1237,9 @@ export type HiringPostingUpdateWithoutManagersInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutHiringPostingsNestedInput
@@ -1157,6 +1265,9 @@ export type HiringPostingUncheckedUpdateWithoutManagersInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   positions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutPostingNestedInput
@@ -1180,6 +1291,9 @@ export type HiringPostingCreateWithoutContentsInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutHiringPostingsInput
@@ -1205,6 +1319,9 @@ export type HiringPostingUncheckedCreateWithoutContentsInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   positions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutPostingInput
@@ -1244,6 +1361,9 @@ export type HiringPostingUpdateWithoutContentsInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutHiringPostingsNestedInput
@@ -1269,6 +1389,9 @@ export type HiringPostingUncheckedUpdateWithoutContentsInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   positions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutPostingNestedInput
@@ -1292,6 +1415,9 @@ export type HiringPostingCreateWithoutApplicationsInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutHiringPostingsInput
@@ -1317,6 +1443,9 @@ export type HiringPostingUncheckedCreateWithoutApplicationsInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   positions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutPostingInput
@@ -1356,6 +1485,9 @@ export type HiringPostingUpdateWithoutApplicationsInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutHiringPostingsNestedInput
@@ -1381,6 +1513,9 @@ export type HiringPostingUncheckedUpdateWithoutApplicationsInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   positions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutPostingNestedInput
@@ -1404,6 +1539,9 @@ export type HiringPostingCreateManySpaceInput = {
   publishedAt?: Date | string | null
   notificationEnabled?: boolean
   authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1423,6 +1561,9 @@ export type HiringPostingUpdateWithoutSpaceInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   positions?: Prisma.HiringPostingPositionUpdateManyWithoutPostingNestedInput
@@ -1447,6 +1588,9 @@ export type HiringPostingUncheckedUpdateWithoutSpaceInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   positions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutPostingNestedInput
@@ -1471,6 +1615,9 @@ export type HiringPostingUncheckedUpdateManyWithoutSpaceInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1558,6 +1705,9 @@ export type HiringPostingSelect<ExtArgs extends runtime.Types.Extensions.Interna
   publishedAt?: boolean
   notificationEnabled?: boolean
   authorUserId?: boolean
+  appliedTemplateName?: boolean
+  appliedTemplateId?: boolean
+  appliedTemplateAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1585,6 +1735,9 @@ export type HiringPostingSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   publishedAt?: boolean
   notificationEnabled?: boolean
   authorUserId?: boolean
+  appliedTemplateName?: boolean
+  appliedTemplateId?: boolean
+  appliedTemplateAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1606,6 +1759,9 @@ export type HiringPostingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   publishedAt?: boolean
   notificationEnabled?: boolean
   authorUserId?: boolean
+  appliedTemplateName?: boolean
+  appliedTemplateId?: boolean
+  appliedTemplateAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1627,11 +1783,14 @@ export type HiringPostingSelectScalar = {
   publishedAt?: boolean
   notificationEnabled?: boolean
   authorUserId?: boolean
+  appliedTemplateName?: boolean
+  appliedTemplateId?: boolean
+  appliedTemplateAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type HiringPostingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "uuid" | "title" | "status" | "detail" | "applicationEntries" | "managerNameEnc" | "managerNameIv" | "managerPhoneEnc" | "managerPhoneIv" | "closingDate" | "publishedAt" | "notificationEnabled" | "authorUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["hiringPosting"]>
+export type HiringPostingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "uuid" | "title" | "status" | "detail" | "applicationEntries" | "managerNameEnc" | "managerNameIv" | "managerPhoneEnc" | "managerPhoneIv" | "closingDate" | "publishedAt" | "notificationEnabled" | "authorUserId" | "appliedTemplateName" | "appliedTemplateId" | "appliedTemplateAt" | "createdAt" | "updatedAt", ExtArgs["result"]["hiringPosting"]>
 export type HiringPostingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   positions?: boolean | Prisma.HiringPosting$positionsArgs<ExtArgs>
@@ -1674,6 +1833,9 @@ export type $HiringPostingPayload<ExtArgs extends runtime.Types.Extensions.Inter
     publishedAt: Date | null
     notificationEnabled: boolean
     authorUserId: string | null
+    appliedTemplateName: string | null
+    appliedTemplateId: string | null
+    appliedTemplateAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["hiringPosting"]>
@@ -2120,6 +2282,9 @@ export interface HiringPostingFieldRefs {
   readonly publishedAt: Prisma.FieldRef<"HiringPosting", 'DateTime'>
   readonly notificationEnabled: Prisma.FieldRef<"HiringPosting", 'Boolean'>
   readonly authorUserId: Prisma.FieldRef<"HiringPosting", 'String'>
+  readonly appliedTemplateName: Prisma.FieldRef<"HiringPosting", 'String'>
+  readonly appliedTemplateId: Prisma.FieldRef<"HiringPosting", 'String'>
+  readonly appliedTemplateAt: Prisma.FieldRef<"HiringPosting", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"HiringPosting", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"HiringPosting", 'DateTime'>
 }
