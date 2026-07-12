@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Check, X, Copy, Send, Lock, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { PostingStatusBadge, type PostingStatus } from './status-badge'
+import { Badge } from '@/components/ui/badge'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import type { PostingStatus } from './status-badge'
 import { getHiringPublicPostingPath } from '@/lib/deck-routes'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 
@@ -20,7 +21,7 @@ type Props = {
   onStatusChange: (status: PostingStatus) => void
 }
 
-export function StepPublish({
+export function PublishBar({
   postingId,
   uuid,
   title,
@@ -31,6 +32,7 @@ export function StepPublish({
 }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
+  const [checklistOpen, setChecklistOpen] = useState(false)
 
   const checks = useMemo(() => {
     const keys = new Set(formFields.map((f) => f.key))
@@ -41,7 +43,8 @@ export function StepPublish({
     ]
   }, [title, positionCount, formFields])
 
-  const canPublish = checks.every((c) => c.ok)
+  const passedCount = checks.filter((c) => c.ok).length
+  const canPublish = passedCount === checks.length
 
   const publicPath = getHiringPublicPostingPath(uuid)
   const publicUrl =
@@ -83,67 +86,74 @@ export function StepPublish({
     )
   }
 
+  function handlePublishClick() {
+    if (canPublish) {
+      runAction('publish')
+    } else {
+      setChecklistOpen(true)
+    }
+  }
+
+  const publishLabel = status === 'CLOSED' ? '재발행' : '발행'
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">현재 상태</span>
-        <PostingStatusBadge status={status} />
-      </div>
-
-      {/* 발행 요건 체크리스트 */}
-      <div className="space-y-2 rounded-lg border p-4">
-        <div className="text-sm font-medium">발행 요건</div>
-        <ul className="space-y-1.5">
-          {checks.map((c) => (
-            <li key={c.label} className="flex items-center gap-2 text-sm">
-              {c.ok ? (
-                <Check className="size-4 text-emerald-600 dark:text-emerald-400" />
-              ) : (
-                <X className="size-4 text-red-500" />
-              )}
-              <span className={c.ok ? '' : 'text-muted-foreground'}>{c.label}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* 공개 URL (발행됨 상태) */}
-      {status === 'ACTIVE' && (
-        <div className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-400/30 dark:bg-emerald-900/20">
-          <div className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-            공개 지원 페이지가 활성화되었습니다
-          </div>
-          <div className="flex gap-2">
-            <Input readOnly value={publicUrl} className="bg-background" />
-            <Button size="sm" variant="outline" onClick={copyUrl}>
-              <Copy /> 복사
-            </Button>
-          </div>
-        </div>
+    <div className="flex flex-wrap items-center gap-2">
+      {status !== 'ACTIVE' && (
+        <>
+          {/* 열기는 handlePublishClick(요건 미충족 시)만 허용 — 요건 충족 발행 클릭 시
+              trigger 기본 토글로 팝오버가 같이 열리는 것을 방지 */}
+          <Popover
+            open={checklistOpen}
+            onOpenChange={(open) => {
+              if (!open) setChecklistOpen(false)
+            }}
+          >
+            <PopoverTrigger asChild>
+              <Button onClick={handlePublishClick} disabled={busy}>
+                <Send /> {publishLabel}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-72">
+              <div className="space-y-2">
+                <div className="text-sm font-medium">발행 요건</div>
+                <ul className="space-y-1.5">
+                  {checks.map((c) => (
+                    <li key={c.label} className="flex items-center gap-2 text-sm">
+                      {c.ok ? (
+                        <Check className="size-4 text-emerald-600 dark:text-emerald-400" />
+                      ) : (
+                        <X className="size-4 text-red-500" />
+                      )}
+                      <span className={c.ok ? '' : 'text-muted-foreground'}>{c.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </PopoverContent>
+          </Popover>
+          {!canPublish && (
+            <Badge variant="outline" className="text-muted-foreground">
+              {passedCount}/{checks.length}
+            </Badge>
+          )}
+        </>
       )}
 
-      {/* 액션 */}
-      <div className="flex flex-wrap gap-2">
-        {status !== 'ACTIVE' && (
-          <Button onClick={() => runAction('publish')} disabled={busy || !canPublish}>
-            <Send /> {status === 'CLOSED' ? '재발행' : '발행'}
-          </Button>
-        )}
-        {status === 'ACTIVE' && (
+      {status === 'ACTIVE' && (
+        <>
           <Button variant="outline" onClick={() => runAction('close')} disabled={busy}>
             <Lock /> 마감
           </Button>
-        )}
-        {status === 'CLOSED' && (
-          <Button variant="outline" onClick={() => runAction('reopen')} disabled={busy}>
-            <RotateCcw /> 재개
+          <Button variant="outline" onClick={copyUrl}>
+            <Copy /> URL 복사
           </Button>
-        )}
-      </div>
-      {!canPublish && status !== 'ACTIVE' && (
-        <p className="text-xs text-muted-foreground">
-          발행 요건을 모두 충족해야 발행할 수 있습니다.
-        </p>
+        </>
+      )}
+
+      {status === 'CLOSED' && (
+        <Button variant="outline" onClick={() => runAction('reopen')} disabled={busy}>
+          <RotateCcw /> 재개
+        </Button>
       )}
     </div>
   )

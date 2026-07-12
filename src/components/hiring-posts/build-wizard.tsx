@@ -2,9 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { RECRUITING_POSTINGS_PATH } from '@/lib/deck-routes'
+import {
+  RECRUITING_POSTINGS_PATH,
+  getHiringPublicApplyPath,
+  getHiringPublicPostingPath,
+} from '@/lib/deck-routes'
 import { PostingStatusBadge, type PostingStatus } from './status-badge'
 import { WizardStepper, WIZARD_STEPS, type WizardStepKey } from './wizard-stepper'
 import { StepBasic } from './step-basic'
@@ -12,7 +16,7 @@ import { StepFormSettings } from './step-form-settings'
 import { StepPositions } from './step-positions'
 import { StepStores } from './step-stores'
 import { StepForm } from './step-form'
-import { StepPublish } from './step-publish'
+import { PublishBar } from './step-publish'
 import { ApplicationFormPreview } from './application-form-preview'
 import { ContentBlockEditor } from './content-block-editor'
 import { PostingPreview } from './posting-preview'
@@ -73,131 +77,164 @@ export function BuildWizard({ data }: { data: WizardData }) {
   }
 
   const gridCls = 'grid gap-8 lg:grid-cols-[38fr_62fr] xl:gap-[50px]'
+  // 상단/하단 고정 바 실측 높이 반영 — 우측 sticky 컬럼 top/max-h 계산에 사용
+  const TOP_BAR_OFFSET = 'lg:top-[6.5rem]'
+  const RIGHT_COL_MAX_H = 'lg:max-h-[calc(100vh-6.5rem-5rem-2rem)]'
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link
-            href={RECRUITING_POSTINGS_PATH}
-            className="text-muted-foreground transition hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-          </Link>
-          <div>
-            <h1 className="text-xl font-semibold">{state.title || '제목 없는 공고'}</h1>
-            <p className="text-xs text-muted-foreground">공고 빌드 위저드</p>
+    <div className="flex flex-col p-6">
+      {/* 고정 상단: 헤더 + 스테퍼 */}
+      <div className="sticky top-0 z-20 -mx-6 space-y-4 border-b bg-background/95 px-6 pb-4 backdrop-blur">
+        <div className="flex items-center justify-between gap-4 pt-6">
+          <div className="flex items-center gap-3">
+            <Link
+              href={RECRUITING_POSTINGS_PATH}
+              className="text-muted-foreground transition hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-semibold">{state.title || '제목 없는 공고'}</h1>
+              <p className="text-xs text-muted-foreground">공고 빌드 위저드</p>
+            </div>
           </div>
+          <PostingStatusBadge status={state.status} />
         </div>
-        <PostingStatusBadge status={state.status} />
+
+        <WizardStepper current={step} onSelect={setStep} />
       </div>
 
-      <WizardStepper current={step} onSelect={setStep} />
+      <div className="flex flex-col gap-6 py-6">
+        {/* STEP 1 — 공고 기본 정보 */}
+        {step === 'basic' && (
+          <div className="mx-auto w-full max-w-3xl">
+            <div className="space-y-8">
+              <Section title="기본 정보">
+                <StepBasic
+                  postingId={data.posting.id}
+                  value={{ title: state.title }}
+                  onChange={patch}
+                />
+              </Section>
+              <Section title="모집 직무">
+                <StepPositions
+                  postingId={data.posting.id}
+                  positions={state.positions}
+                  spacePositions={data.spacePositions}
+                  onChange={(positions: WizardPositionData[]) => patch({ positions })}
+                />
+              </Section>
+              <Section title="모집 장소">
+                <StepStores
+                  postingId={data.posting.id}
+                  value={{
+                    stores: state.stores,
+                    storeIds: state.storeIds,
+                    noStores: state.noStores,
+                  }}
+                  onChange={(
+                    p: Partial<{ stores: WizardStore[]; storeIds: string[]; noStores: boolean }>
+                  ) => patch(p)}
+                />
+              </Section>
+            </div>
+          </div>
+        )}
 
-      {/* STEP 1 — 공고 기본 정보 */}
-      {step === 'basic' && (
-        <div className="mx-auto w-full max-w-3xl">
-          <div className="space-y-8">
-            <Section title="기본 정보">
-              <StepBasic
+        {/* STEP 2 — 지원서 폼 제작 */}
+        {step === 'form' && (
+          <div className={gridCls}>
+            <div className="space-y-8">
+              <Section title="지원서 마감일">
+                <StepFormSettings
+                  postingId={data.posting.id}
+                  value={{
+                    closingDate: state.closingDate,
+                    notificationEnabled: state.notificationEnabled,
+                  }}
+                  onChange={patch}
+                />
+              </Section>
+              <Section title="지원서 항목">
+                <StepForm
+                  postingId={data.posting.id}
+                  initialFields={data.posting.formFields}
+                  onChange={(formFields: FormFieldInput[]) => patch({ formFields })}
+                />
+              </Section>
+            </div>
+            <div
+              className={`space-y-3 lg:sticky ${TOP_BAR_OFFSET} ${RIGHT_COL_MAX_H} lg:self-start lg:overflow-y-auto`}
+            >
+              <div className="mx-auto flex w-full max-w-sm justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    window.open(
+                      `${getHiringPublicApplyPath(data.posting.uuid)}?preview=1`,
+                      '_blank'
+                    )
+                  }
+                >
+                  <ExternalLink /> 새 탭 미리보기
+                </Button>
+              </div>
+              <div className="mx-auto w-full max-w-sm">
+                <ApplicationFormPreview
+                  title={state.title}
+                  closingDate={state.closingDate}
+                  fields={state.formFields}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3 — 공고 꾸미기 */}
+        {step === 'decorate' && (
+          <div className={gridCls}>
+            <div>
+              <ContentBlockEditor
                 postingId={data.posting.id}
-                value={{ title: state.title }}
-                onChange={patch}
-              />
-            </Section>
-            <Section title="모집 직무">
-              <StepPositions
-                postingId={data.posting.id}
+                contents={state.contents}
                 positions={state.positions}
-                spacePositions={data.spacePositions}
-                onChange={(positions: WizardPositionData[]) => patch({ positions })}
-              />
-            </Section>
-            <Section title="모집 장소">
-              <StepStores
-                postingId={data.posting.id}
-                value={{ stores: state.stores, storeIds: state.storeIds, noStores: state.noStores }}
-                onChange={(
-                  p: Partial<{ stores: WizardStore[]; storeIds: string[]; noStores: boolean }>
-                ) => patch(p)}
-              />
-            </Section>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 2 — 지원서 폼 제작 */}
-      {step === 'form' && (
-        <div className={gridCls}>
-          <div className="space-y-8">
-            <Section title="지원서 마감일">
-              <StepFormSettings
-                postingId={data.posting.id}
-                value={{
-                  closingDate: state.closingDate,
-                  notificationEnabled: state.notificationEnabled,
-                }}
-                onChange={patch}
-              />
-            </Section>
-            <Section title="지원서 항목">
-              <StepForm
-                postingId={data.posting.id}
-                initialFields={data.posting.formFields}
-                onChange={(formFields: FormFieldInput[]) => patch({ formFields })}
-              />
-            </Section>
-          </div>
-          <div className="lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto">
-            <div className="mx-auto w-full max-w-sm">
-              <ApplicationFormPreview
-                title={state.title}
-                closingDate={state.closingDate}
-                fields={state.formFields}
+                onChange={(contents: WizardContentData[]) => patch({ contents })}
               />
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3 — 공고 꾸미기 */}
-      {step === 'decorate' && (
-        <div className={gridCls}>
-          <div>
-            <ContentBlockEditor
-              postingId={data.posting.id}
-              contents={state.contents}
-              onChange={(contents: WizardContentData[]) => patch({ contents })}
-            />
-          </div>
-          <div className="space-y-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto">
-            <div className="rounded-xl border p-4">
-              <StepPublish
-                postingId={data.posting.id}
-                uuid={data.posting.uuid}
-                title={state.title}
+            <div
+              className={`space-y-3 lg:sticky ${TOP_BAR_OFFSET} ${RIGHT_COL_MAX_H} lg:self-start lg:overflow-y-auto`}
+            >
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    window.open(
+                      `${getHiringPublicPostingPath(data.posting.uuid)}?preview=1`,
+                      '_blank'
+                    )
+                  }
+                >
+                  <ExternalLink /> 새 탭 미리보기
+                </Button>
+              </div>
+              <PostingPreview
                 status={state.status}
-                positionCount={state.positions.length}
-                formFields={state.formFields}
-                onStatusChange={(status: PostingStatus) => patch({ status })}
+                title={state.title}
+                positions={state.positions}
+                stores={state.stores}
+                storeIds={state.storeIds}
+                noStores={state.noStores}
+                contents={state.contents}
               />
             </div>
-            <PostingPreview
-              status={state.status}
-              title={state.title}
-              positions={state.positions}
-              stores={state.stores}
-              storeIds={state.storeIds}
-              noStores={state.noStores}
-              contents={state.contents}
-            />
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* 하단 CTA */}
-      <div className="flex items-center justify-between border-t pt-6">
+      {/* 고정 하단 CTA */}
+      <div className="sticky bottom-0 z-20 -mx-6 flex items-center justify-between border-t bg-background/95 px-6 py-4 backdrop-blur">
         <Button variant="outline" className="min-w-28" disabled={isFirst} onClick={goPrev}>
           <ArrowLeft /> 이전
         </Button>
@@ -207,12 +244,20 @@ export function BuildWizard({ data }: { data: WizardData }) {
               건너뛰기
             </Button>
           )}
-          {!isLast ? (
+          {step === 'decorate' ? (
+            <PublishBar
+              postingId={data.posting.id}
+              uuid={data.posting.uuid}
+              title={state.title}
+              status={state.status}
+              positionCount={state.positions.length}
+              formFields={state.formFields}
+              onStatusChange={(status: PostingStatus) => patch({ status })}
+            />
+          ) : (
             <Button className="min-w-28" onClick={goNext}>
               다음 <ArrowRight />
             </Button>
-          ) : (
-            <p className="text-sm text-muted-foreground">우측 발행 카드에서 공고를 발행하세요.</p>
           )}
         </div>
       </div>
