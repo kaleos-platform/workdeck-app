@@ -196,3 +196,9 @@ export const createTemplateSchema = z.object({
   postingId: idLike,
 })
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
+
+// "템플릿 불러오기" — 템플릿 블록으로 공고 상세 블록 전체 교체
+export const applyTemplateSchema = z.object({
+  templateId: idLike,
+})
+export type ApplyTemplateInput = z.infer<typeof applyTemplateSchema>
