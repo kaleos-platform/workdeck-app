@@ -37,7 +37,13 @@ type CoverageMatrixProps = {
   /** 값이 바뀌면 재조회 — 업로드 완료 후 갱신용 */
   refreshToken?: number
   /** 셀/행 클릭 시 이동 대신 커스텀 동작 */
-  onCellClick?: (accountId: string, month: string) => void
+  onCellClick?: (cell: {
+    accountId: string
+    accountLabel: string
+    month: string
+    confirmed: number
+    staged: number
+  }) => void
   className?: string
 }
 
@@ -168,7 +174,15 @@ export function CoverageMatrix({
                         <button
                           type="button"
                           className="w-full cursor-pointer"
-                          onClick={() => onCellClick(acct.id, m)}
+                          onClick={() =>
+                            onCellClick({
+                              accountId: acct.id,
+                              accountLabel: [acct.institution, acct.name].filter(Boolean).join(' '),
+                              month: m,
+                              confirmed,
+                              staged,
+                            })
+                          }
                         >
                           {inner}
                         </button>
