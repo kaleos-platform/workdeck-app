@@ -52,8 +52,42 @@ export async function resolveMcpDeckContext(
   return ctx
 }
 
-/** coupang-ads용 — 사용자가 소유한 Workspace를 조회한다. 없으면 throw. */
+/**
+ * coupang-ads용 — 웹 route의 resolveWorkspace()와 동일한 게이트 의미로 워크스페이스를 조회한다.
+ *
+ * 웹 resolveWorkspace()는 resolveDeckContext('coupang-ads')를 호출해서:
+ *  - deck 비활성(403 계열, 404 아님)이면 거부하고,
+ *  - Space 멤버십 없음(404)이면 관용하고 workspace.findUnique({ ownerId })로 폴백한다.
+ *
+ * 이 함수는 그 의미를 인라인으로 재현한다(resolveMcpDeckContext는 "Space 없음"과
+ * "deck 비활성"을 둘 다 throw로 뭉개서 관용 케이스를 구분 못 하므로 재사용하지 않는다).
+ *
+ * 세 분기:
+ *  1. Space 없음(레거시) → 관용, workspace 폴백으로 진행
+ *  2. Space 있음 + deck 비활성 → throw(거부)
+ *  3. Space 있음 + deck 활성 → workspace 폴백으로 진행
+ */
 export async function resolveMcpWorkspace(userId: string): Promise<{ workspace: { id: string } }> {
+  const membership = await prisma.spaceMember.findFirst({
+    where: { userId },
+    orderBy: { createdAt: 'asc' }, // 결정적 최고참 멤버십
+    include: { space: { select: { id: true } } },
+  })
+
+  // Space가 있으면 coupang-ads deck 활성 여부를 검증한다.
+  // Space가 없으면(레거시) 검증을 건너뛰고 관용한다.
+  if (membership) {
+    const deckInstance = await prisma.deckInstance.findUnique({
+      where: {
+        spaceId_deckAppId: { spaceId: membership.space.id, deckAppId: 'coupang-ads' },
+      },
+      select: { isActive: true },
+    })
+    if (!deckInstance?.isActive) {
+      throw new Error('쿠팡 광고 카드가 활성화되지 않았습니다')
+    }
+  }
+
   const workspace = await prisma.workspace.findUnique({
     where: { ownerId: userId },
     select: { id: true },
