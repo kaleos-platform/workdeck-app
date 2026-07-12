@@ -71,6 +71,20 @@ export default async function PublicPostingPage({ params, searchParams }: Params
 
   const isClosed = posting.status === 'CLOSED'
 
+  // 마감일 D-day (KST 기준 날짜 비교 — closingDate는 UTC 자정으로 저장된 날짜값)
+  const closingLabel = (() => {
+    if (!posting.closingDate) return null
+    const closing = posting.closingDate
+    const todayKst = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date())
+    const closingStr = closing.toISOString().slice(0, 10)
+    const diffDays = Math.round(
+      (Date.parse(closingStr) - Date.parse(todayKst)) / (24 * 60 * 60 * 1000)
+    )
+    const dateText = `${closing.getUTCFullYear()}. ${closing.getUTCMonth() + 1}. ${closing.getUTCDate()}. 마감`
+    if (diffDays < 0) return dateText
+    return `${diffDays === 0 ? 'D-DAY' : `D-${diffDays}`} · ${dateText}`
+  })()
+
   return (
     <article className="space-y-6">
       {isPreview && (
@@ -80,7 +94,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
       )}
 
       <header className="space-y-3 rounded-lg border bg-card p-6 shadow-sm">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isClosed ? (
             <Badge className="bg-muted text-muted-foreground">마감</Badge>
           ) : (
@@ -88,6 +102,14 @@ export default async function PublicPostingPage({ params, searchParams }: Params
               모집 중
             </Badge>
           )}
+          {!isClosed &&
+            (closingLabel ? (
+              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                {closingLabel}
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">상시 모집</span>
+            ))}
         </div>
         {posting.stores.length > 0 && (
           <p className="text-sm text-muted-foreground">
@@ -95,6 +117,14 @@ export default async function PublicPostingPage({ params, searchParams }: Params
           </p>
         )}
       </header>
+
+      {/* 마감 안내 — 헤더 바로 아래 */}
+      {isClosed && (
+        <div className="rounded-lg border bg-muted/50 p-4 text-center text-sm text-muted-foreground">
+          마감된 공고입니다. 지원을 받지 않습니다.
+          {closingLabel && <span className="ml-1">({closingLabel})</span>}
+        </div>
+      )}
 
       {/* 상세 본문 — image / text / button / positions 블록을 순서대로 렌더 */}
       {posting.contents.length > 0 && (
@@ -198,13 +228,6 @@ export default async function PublicPostingPage({ params, searchParams }: Params
             ) : null
           )}
         </section>
-      )}
-
-      {/* 마감 안내 — 일반 섹션 (지원 CTA는 버튼 블록으로만 제공) */}
-      {isClosed && (
-        <div className="rounded-lg border bg-card p-4 text-center text-sm text-muted-foreground shadow-sm">
-          마감된 공고입니다. 지원을 받지 않습니다.
-        </div>
       )}
     </article>
   )
