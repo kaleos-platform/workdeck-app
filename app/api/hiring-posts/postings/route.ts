@@ -36,15 +36,51 @@ export async function POST(req: NextRequest) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  const posting = await prisma.hiringPosting.create({
-    data: {
-      spaceId: resolved.space.id,
-      title: parsed.data.title?.trim() || '제목 없는 공고',
-      status: 'DRAFT',
-      authorUserId: resolved.user.id,
-      applicationEntries: DEFAULT_FORM_FIELDS,
-    },
-    select: { id: true, uuid: true, title: true, status: true },
+  const title = parsed.data.title?.trim() || '제목 없는 공고'
+
+  const posting = await prisma.$transaction(async (tx) => {
+    const created = await tx.hiringPosting.create({
+      data: {
+        spaceId: resolved.space.id,
+        title,
+        status: 'DRAFT',
+        authorUserId: resolved.user.id,
+        applicationEntries: DEFAULT_FORM_FIELDS,
+      },
+      select: { id: true, uuid: true, title: true, status: true },
+    })
+
+    // 기본 블록 시드: 제목 텍스트 블록(sortOrder 0) + 직무 정보 블록(sortOrder 1)
+    const titleDoc = title
+      ? {
+          type: 'doc',
+          content: [
+            { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: title }] },
+          ],
+        }
+      : { type: 'doc', content: [] }
+
+    await tx.hiringContent.create({
+      data: {
+        spaceId: resolved.space.id,
+        postingId: created.id,
+        sourceType: 'POSTING_DETAIL',
+        contentType: 'text',
+        sortOrder: 0,
+        data: titleDoc,
+      },
+    })
+    await tx.hiringContent.create({
+      data: {
+        spaceId: resolved.space.id,
+        postingId: created.id,
+        sourceType: 'POSTING_DETAIL',
+        contentType: 'positions',
+        sortOrder: 1,
+      },
+    })
+
+    return created
   })
 
   return NextResponse.json({ posting }, { status: 201 })

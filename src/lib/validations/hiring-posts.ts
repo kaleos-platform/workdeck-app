@@ -102,8 +102,9 @@ export const positionSchema = z.object({
 export type PositionInput = z.infer<typeof positionSchema>
 
 // ─── 상세 콘텐츠 블록 ──────────────────────────────────────────────────────────
-// contentType: 'text' — Tiptap JSON, 'image' — Supabase 업로드 이미지, 'button' — CTA 버튼
-export const contentTypeEnum = z.enum(['image', 'text', 'button'])
+// contentType: 'text' — Tiptap JSON, 'image' — Supabase 업로드 이미지, 'button' — CTA 버튼,
+// 'positions' — 모집 부문·근무조건 카드(직무 데이터는 HiringPostingPosition 참조, data는 null)
+export const contentTypeEnum = z.enum(['image', 'text', 'button', 'positions'])
 
 // 버튼 블록 data 스키마
 export const buttonDataSchema = z
@@ -195,3 +196,9 @@ export const createTemplateSchema = z.object({
   postingId: idLike,
 })
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
+
+// "템플릿 불러오기" — 템플릿 블록으로 공고 상세 블록 전체 교체
+export const applyTemplateSchema = z.object({
+  templateId: idLike,
+})
+export type ApplyTemplateInput = z.infer<typeof applyTemplateSchema>

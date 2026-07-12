@@ -1,7 +1,12 @@
 /**
  * @jest-environment node
  */
-import { buildClassifyOptions, comboOptionLabel, type CategoryTreeNode } from '../category-options'
+import {
+  buildClassifyOptions,
+  buildParentOptions,
+  comboOptionLabel,
+  type CategoryTreeNode,
+} from '../category-options'
 
 // 분류 타깃(리프) 빌더 — 대분류/리프 구분이 자식 유무가 아니라 루트 타입으로 결정되는지 검증.
 // 회귀 핵심: 자식 없는 빈 대분류(신규 추가 직후)가 분류 타깃으로 새지 않아야 한다.
@@ -126,5 +131,31 @@ describe('buildClassifyOptions — isActive 플래그/전파', () => {
     ]
     const opts = buildClassifyOptions(tree)
     expect(comboOptionLabel(opts, 'l2')).toBe('매출 › 비활성잎')
+  })
+})
+
+// 회귀 방지: 상위 계정과목 옵션에 type이 빠지면 콤보박스 blockType 필터에서
+// `undefined !== undefined = false`로 전 옵션이 탈락해 "계정과목 추가" 팝업의
+// 상위 선택이 항상 빈 목록이 된다(거래내역 실버그).
+describe('buildParentOptions — 옵션 type 필수', () => {
+  const node = (
+    id: string,
+    name: string,
+    type: string,
+    children: CategoryTreeNode[] = []
+  ): CategoryTreeNode => ({ id, name, type, children })
+
+  test('root·lvl1 전 옵션에 루트 타입이 설정된다', () => {
+    const tree = [
+      node('inc', '수입', 'INCOME', [node('g1', 'B2C 수익', 'INCOME')]),
+      node('exp', '지출', 'EXPENSE', [node('g2', '판관비', 'EXPENSE')]),
+      node('trf', '이체', 'TRANSFER', [node('g3', '내계좌이체', 'TRANSFER')]),
+    ]
+    const opts = buildParentOptions(tree)
+    expect(opts).toHaveLength(6)
+    for (const o of opts) expect(o.type).toBeDefined()
+    expect(opts.find((o) => o.id === 'g1')?.type).toBe('INCOME')
+    expect(opts.find((o) => o.id === 'g2')?.type).toBe('EXPENSE')
+    expect(opts.find((o) => o.id === 'trf')?.type).toBe('TRANSFER')
   })
 })

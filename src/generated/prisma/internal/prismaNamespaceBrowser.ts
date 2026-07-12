@@ -1762,6 +1762,7 @@ export const FinClassRuleScalarFieldEnum = {
   categoryId: 'categoryId',
   direction: 'direction',
   learnedFrom: 'learnedFrom',
+  memo: 'memo',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

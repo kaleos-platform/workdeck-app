@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -13,10 +13,20 @@ import {
   Upload,
   Save,
   MousePointerClick,
+  Briefcase,
+  Maximize2,
+  FolderOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,22 +34,50 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Editor } from '@/components/sc/editor/editor'
+import { AutoSaveIndicator } from './autosave-indicator'
 import { getPostingAssetPublicUrl, type WizardContentData } from './build-types'
 import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
+
+type ContentType = 'text' | 'image' | 'button' | 'positions'
+
+type TemplateItem = {
+  id: string
+  name: string
+  updatedAt: string
+  _count: { contents: number }
+}
 
 type Props = {
   postingId: string
   contents: WizardContentData[]
+  positions: { id: string; name: string }[]
   onChange: (contents: WizardContentData[]) => void
 }
 
-export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
+const CONTENT_TYPE_META: Record<ContentType, { icon: typeof Type; label: string }> = {
+  text: { icon: Type, label: '텍스트' },
+  image: { icon: ImageIcon, label: '이미지' },
+  button: { icon: MousePointerClick, label: '버튼' },
+  positions: { icon: Briefcase, label: '직무 정보' },
+}
+
+export function ContentBlockEditor({ postingId, contents, positions, onChange }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [savingTemplate, setSavingTemplate] = useState(false)
   // 텍스트 블록별 debounce 타이머 (data 저장)
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const [focusBlockId, setFocusBlockId] = useState<string | null>(null)
+  const [remountTick, setRemountTick] = useState(0)
+  // 템플릿 저장/불러오기 다이얼로그
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false)
+  const [loadDialogOpen, setLoadDialogOpen] = useState(false)
+  const [templates, setTemplates] = useState<TemplateItem[] | null>(null)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  const [applyingTemplate, setApplyingTemplate] = useState(false)
+
+  const hasPositionsBlock = contents.some((c) => c.contentType === 'positions')
 
   async function patchContent(contentId: string, body: Record<string, unknown>) {
     const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
@@ -51,7 +89,7 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
     return (await res.json()).content as WizardContentData
   }
 
-  async function handleAdd(contentType: 'text' | 'image' | 'button') {
+  async function handleAdd(contentType: ContentType) {
     setBusy(true)
     try {
       const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents`, {
@@ -135,6 +173,11 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
     }
   }
 
+  function handleButtonSave(contentId: string, data: ButtonData) {
+    onChange(contents.map((c) => (c.id === contentId ? { ...c, data } : c)))
+    return patchContent(contentId, { data })
+  }
+
   async function handleSaveTemplate() {
     if (!templateName.trim()) {
       toast.error('템플릿 이름을 입력하세요')
@@ -149,6 +192,7 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
       })
       if (!res.ok) throw new Error('템플릿 저장에 실패했습니다')
       setTemplateName('')
+      setSaveDialogOpen(false)
       toast.success('현재 상세를 템플릿으로 저장했습니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '템플릿 저장에 실패했습니다')
@@ -157,8 +201,64 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
     }
   }
 
+  async function openLoadDialog() {
+    setLoadDialogOpen(true)
+    setSelectedTemplateId(null)
+    setTemplates(null)
+    try {
+      const res = await fetch('/api/hiring-posts/templates')
+      if (!res.ok) throw new Error('템플릿 목록을 불러오지 못했습니다')
+      const { templates } = await res.json()
+      setTemplates(templates)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '템플릿 목록을 불러오지 못했습니다')
+      setTemplates([])
+    }
+  }
+
+  // 템플릿 적용 — 기존 블록 전체 교체
+  async function handleApplyTemplate() {
+    if (!selectedTemplateId) return
+    setApplyingTemplate(true)
+    try {
+      const res = await fetch(`/api/hiring-posts/postings/${postingId}/apply-template`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId: selectedTemplateId }),
+      })
+      if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
+      const { contents: next } = await res.json()
+      onChange(next)
+      setRemountTick((t) => t + 1)
+      setLoadDialogOpen(false)
+      toast.success('템플릿을 적용했습니다')
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '템플릿 적용에 실패했습니다')
+    } finally {
+      setApplyingTemplate(false)
+    }
+  }
+
+  const focusBlock = focusBlockId ? contents.find((c) => c.id === focusBlockId) : null
+
   return (
     <div className="space-y-4">
+      {/* 템플릿 툴바 */}
+      <div className="flex justify-end gap-2">
+        <Button size="sm" variant="outline" onClick={openLoadDialog}>
+          <FolderOpen /> 템플릿 불러오기
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setSaveDialogOpen(true)}
+          disabled={contents.length === 0}
+        >
+          <Save /> 템플릿으로 저장
+        </Button>
+      </div>
+
       {contents.length === 0 && (
         <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
           공고를 꾸밀 블록이 없습니다. 아래에서 블록을 추가하세요.
@@ -166,70 +266,72 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
       )}
 
       <div className="space-y-4">
-        {contents.map((c, idx) => (
-          <div key={c.id} className="space-y-3 rounded-lg border p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                {c.contentType === 'image' ? (
-                  <ImageIcon className="size-4 text-muted-foreground" />
-                ) : c.contentType === 'button' ? (
-                  <MousePointerClick className="size-4 text-muted-foreground" />
-                ) : (
-                  <Type className="size-4 text-muted-foreground" />
-                )}
-                {c.contentType === 'image'
-                  ? '이미지'
-                  : c.contentType === 'button'
-                    ? '버튼'
-                    : '텍스트'}{' '}
-                블록
+        {contents.map((c, idx) => {
+          const meta = CONTENT_TYPE_META[c.contentType]
+          const Icon = meta.icon
+          return (
+            <div key={c.id} className="space-y-3 rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Icon className="size-4 text-muted-foreground" />
+                  {meta.label} 블록
+                </div>
+                <div className="flex items-center gap-1">
+                  {c.contentType === 'text' && (
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      aria-label="크게 작성"
+                      onClick={() => setFocusBlockId(c.id)}
+                    >
+                      <Maximize2 />
+                    </Button>
+                  )}
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => handleMove(idx, -1)}
+                    disabled={idx === 0}
+                  >
+                    <ArrowUp />
+                  </Button>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => handleMove(idx, 1)}
+                    disabled={idx === contents.length - 1}
+                  >
+                    <ArrowDown />
+                  </Button>
+                  <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(c.id)}>
+                    <Trash2 />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => handleMove(idx, -1)}
-                  disabled={idx === 0}
-                >
-                  <ArrowUp />
-                </Button>
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => handleMove(idx, 1)}
-                  disabled={idx === contents.length - 1}
-                >
-                  <ArrowDown />
-                </Button>
-                <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(c.id)}>
-                  <Trash2 />
-                </Button>
-              </div>
-            </div>
 
-            {c.contentType === 'text' ? (
-              <Editor
-                key={c.id}
-                initialDoc={c.data ?? undefined}
-                editable
-                onChange={(doc) => handleTextChange(c.id, doc)}
-              />
-            ) : c.contentType === 'button' ? (
-              <ButtonBlock
-                data={c.data as ButtonData | null}
-                onSave={(data) => {
-                  patchContent(c.id, { data }).catch(() => toast.error('버튼 저장에 실패했습니다'))
-                  onChange(contents.map((item) => (item.id === c.id ? { ...item, data } : item)))
-                }}
-              />
-            ) : (
-              <ImageBlock
-                imagePath={c.imagePath}
-                onSelect={(file) => handleImageSelect(c.id, file)}
-              />
-            )}
-          </div>
-        ))}
+              {c.contentType === 'text' ? (
+                <Editor
+                  key={`${c.id}-${remountTick}`}
+                  initialDoc={c.data ?? undefined}
+                  editable
+                  onChange={(doc) => handleTextChange(c.id, doc)}
+                />
+              ) : c.contentType === 'button' ? (
+                <ButtonBlock
+                  data={c.data as ButtonData | null}
+                  onSave={(data) => handleButtonSave(c.id, data)}
+                />
+              ) : c.contentType === 'positions' ? (
+                <PositionsBlock positions={positions} />
+              ) : (
+                <ImageBlock
+                  imagePath={c.imagePath}
+                  onSelect={(file) => handleImageSelect(c.id, file)}
+                />
+              )}
+            </div>
+          )
+        })}
       </div>
 
       <DropdownMenu>
@@ -248,32 +350,147 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
           <DropdownMenuItem onClick={() => handleAdd('button')}>
             <MousePointerClick /> 버튼 블록
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleAdd('positions')} disabled={hasPositionsBlock}>
+            <Briefcase /> 직무 정보 블록
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {contents.length > 0 && (
-        <div className="flex items-end gap-2 rounded-lg border bg-muted/30 p-4">
-          <div className="flex-1 space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="tpl-name">
-              템플릿으로 저장
-            </label>
+      {/* 템플릿으로 저장 다이얼로그 */}
+      <Dialog
+        open={saveDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSaveDialogOpen(false)
+            setTemplateName('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>템플릿으로 저장</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label htmlFor="tpl-name">템플릿 이름</Label>
             <Input
               id="tpl-name"
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
-              placeholder="템플릿 이름"
+              placeholder="예: 매장 알바 기본 상세"
+              maxLength={200}
             />
+            <p className="text-xs text-muted-foreground">
+              현재 블록 {contents.length}개를 템플릿으로 저장합니다.
+            </p>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleSaveTemplate}
-            disabled={savingTemplate}
-          >
-            <Save /> 저장
-          </Button>
-        </div>
-      )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSaveDialogOpen(false)
+                setTemplateName('')
+              }}
+              disabled={savingTemplate}
+            >
+              취소
+            </Button>
+            <Button size="sm" onClick={handleSaveTemplate} disabled={savingTemplate}>
+              <Save /> 저장
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 템플릿 불러오기 다이얼로그 */}
+      <Dialog
+        open={loadDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) setLoadDialogOpen(false)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>템플릿 불러오기</DialogTitle>
+          </DialogHeader>
+          {templates === null ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">불러오는 중…</p>
+          ) : templates.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              저장된 템플릿이 없습니다. 템플릿으로 저장 버튼으로 먼저 만들어 보세요.
+            </p>
+          ) : (
+            <div className="max-h-72 space-y-1 overflow-y-auto">
+              {templates.map((t) => (
+                <label
+                  key={t.id}
+                  className="flex cursor-pointer items-center gap-3 rounded-md border px-4 py-2.5 hover:bg-accent/50 has-checked:border-primary"
+                >
+                  <input
+                    type="radio"
+                    name="load-template"
+                    checked={selectedTemplateId === t.id}
+                    onChange={() => setSelectedTemplateId(t.id)}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium">{t.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      블록 {t._count.contents}개 ·{' '}
+                      {new Date(t.updatedAt).toLocaleDateString('ko-KR')}
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+          {selectedTemplateId && contents.length > 0 && (
+            <p className="text-xs text-destructive">
+              적용하면 기존 블록 {contents.length}개가 모두 교체됩니다.
+            </p>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLoadDialogOpen(false)}
+              disabled={applyingTemplate}
+            >
+              취소
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleApplyTemplate}
+              disabled={!selectedTemplateId || applyingTemplate}
+            >
+              <FolderOpen /> 적용
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={focusBlockId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setFocusBlockId(null)
+            setRemountTick((t) => t + 1)
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>본문 작성</DialogTitle>
+          </DialogHeader>
+          {focusBlock && (
+            <Editor
+              initialDoc={focusBlock.data ?? undefined}
+              editable
+              variant="full"
+              onChange={(doc) => handleTextChange(focusBlock.id, doc)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -283,34 +500,90 @@ function ButtonBlock({
   onSave,
 }: {
   data: ButtonData | null
-  onSave: (data: ButtonData) => void
+  onSave: (data: ButtonData) => Promise<unknown>
 }) {
-  const [title, setTitle] = useState(data?.title ?? '')
+  const [title, setTitle] = useState(data?.title ?? '지원하기')
   const [linkType, setLinkType] = useState<'form' | 'url'>(data?.linkType ?? 'form')
   const [url, setUrl] = useState(data?.url ?? '')
   const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const uid = useId()
 
-  function handleSave() {
-    const result = buttonDataSchema.safeParse({ title, linkType, url: url || undefined })
+  function attemptSave(next: { title: string; linkType: 'form' | 'url'; url: string }) {
+    const result = buttonDataSchema.safeParse({
+      title: next.title,
+      linkType: next.linkType,
+      url: next.url || undefined,
+    })
     if (!result.success) {
       const first = result.error.issues[0]
       setError(first?.message ?? '입력 값을 확인하세요')
       return
     }
     setError(null)
+    setStatus('saving')
     onSave(result.data)
+      .then(() => setStatus('saved'))
+      .catch(() => {
+        toast.error('버튼 저장에 실패했습니다')
+        setStatus('idle')
+      })
   }
 
-  const uid = useId()
+  function debouncedSave(next: { title: string; linkType: 'form' | 'url'; url: string }) {
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => attemptSave(next), 600)
+  }
+
+  useEffect(() => {
+    return () => clearTimeout(timer.current)
+  }, [])
+
+  function handleTitleChange(value: string) {
+    setTitle(value)
+    debouncedSave({ title: value, linkType, url })
+  }
+  function handleTitleBlur() {
+    clearTimeout(timer.current)
+    attemptSave({ title, linkType, url })
+  }
+  function handleUrlChange(value: string) {
+    setUrl(value)
+    debouncedSave({ title, linkType, url: value })
+  }
+  function handleUrlBlur() {
+    clearTimeout(timer.current)
+    attemptSave({ title, linkType, url })
+  }
+  function handleLinkTypeChange(value: 'form' | 'url') {
+    setLinkType(value)
+    clearTimeout(timer.current)
+    // url 전환 직후 빈 URL로 즉시 검증하면 에러가 뜨므로 입력을 기다린다
+    if (value === 'url' && !url.trim()) {
+      setError(null)
+      return
+    }
+    attemptSave({ title, linkType: value, url })
+  }
 
   return (
     <div className="space-y-3">
+      {/* 실제 버튼 UI 미리보기 */}
+      <div className="pointer-events-none flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow">
+        {title || '버튼 제목'}
+      </div>
+
       <div className="space-y-1.5">
-        <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
+          <AutoSaveIndicator status={status} />
+        </div>
         <Input
           id={`${uid}-btn-title`}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          onBlur={handleTitleBlur}
           placeholder="예: 지금 바로 지원하기"
           maxLength={50}
         />
@@ -324,7 +597,7 @@ function ButtonBlock({
               name={`${uid}-btn-linktype`}
               value="form"
               checked={linkType === 'form'}
-              onChange={() => setLinkType('form')}
+              onChange={() => handleLinkTypeChange('form')}
             />
             지원서 폼 연결
           </label>
@@ -334,7 +607,7 @@ function ButtonBlock({
               name={`${uid}-btn-linktype`}
               value="url"
               checked={linkType === 'url'}
-              onChange={() => setLinkType('url')}
+              onChange={() => handleLinkTypeChange('url')}
             />
             URL 직접 입력
           </label>
@@ -342,19 +615,40 @@ function ButtonBlock({
       </div>
       {linkType === 'url' && (
         <div className="space-y-1.5">
-          <Label htmlFor="btn-url">URL</Label>
+          <Label htmlFor={`${uid}-btn-url`}>URL</Label>
           <Input
-            id="btn-url"
+            id={`${uid}-btn-url`}
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => handleUrlChange(e.target.value)}
+            onBlur={handleUrlBlur}
             placeholder="https://example.com"
           />
         </div>
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}
-      <Button size="sm" variant="outline" onClick={handleSave}>
-        <Save /> 버튼 저장
-      </Button>
+    </div>
+  )
+}
+
+function PositionsBlock({ positions }: { positions: { id: string; name: string }[] }) {
+  return (
+    <div className="space-y-2">
+      {positions.length > 0 ? (
+        <ul className="space-y-1">
+          {positions.map((p) => (
+            <li key={p.id} className="rounded-md border px-3 py-2 text-sm">
+              {p.name}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
+          등록된 직무가 없습니다
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">
+        1단계 기본 정보에서 직무를 편집하세요. 공개 페이지에는 이 위치에 근무조건 카드가 표시됩니다.
+      </p>
     </div>
   )
 }

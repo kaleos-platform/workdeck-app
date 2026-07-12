@@ -83,8 +83,10 @@ export function CategoryCombobox({
   const selectedLabel = comboOptionLabel(options, value)
   // 목록은 비활성 항목을 숨겨 새 선택을 막되, 현재 선택값은 유지(라벨·체크 표시).
   // 방향과 어긋난 타입(blockType)은 목록·검색에서도 제외해 검색 우회 선택을 막는다(현재 값은 유지).
+  // blockType 미지정이면 타입 비교를 건너뛴다 — type 없는 옵션(undefined !== undefined = false)이
+  // 통째로 탈락하는 회귀 방지(상위 계정과목 콤보가 항상 빈 목록이 됐던 버그).
   const base = options.filter(
-    (o) => (o.isActive !== false && o.type !== blockType) || o.id === value
+    (o) => (o.isActive !== false && (blockType == null || o.type !== blockType)) || o.id === value
   )
   // groupByType + 검색어 없음 → 활성 탭만. 검색 중엔 전 타입 교차 검색(탭 필터 우회).
   const visibleOptions =

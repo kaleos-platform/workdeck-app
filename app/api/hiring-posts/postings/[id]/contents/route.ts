@@ -49,6 +49,17 @@ export async function POST(req: NextRequest, { params }: Params) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
+  // 직무 정보 블록은 공고당 하나만 허용
+  if (parsed.data.contentType === 'positions') {
+    const existing = await prisma.hiringContent.findFirst({
+      where: { postingId: id, sourceType: 'POSTING_DETAIL', contentType: 'positions' },
+      select: { id: true },
+    })
+    if (existing) {
+      return errorResponse('직무 정보 블록은 하나만 추가할 수 있습니다', 409)
+    }
+  }
+
   // sortOrder 미지정 시 마지막 뒤에 배치
   const last = await prisma.hiringContent.findFirst({
     where: { postingId: id, sourceType: 'POSTING_DETAIL' },
@@ -64,6 +75,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       sourceType: 'POSTING_DETAIL',
       contentType: parsed.data.contentType,
       sortOrder,
+      data:
+        parsed.data.contentType === 'button' ? { title: '지원하기', linkType: 'form' } : undefined,
     },
   })
   return NextResponse.json({ content }, { status: 201 })

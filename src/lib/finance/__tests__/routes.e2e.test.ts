@@ -42,6 +42,8 @@ import {
 import { PATCH as accountPatch } from '../../../../app/api/finance/accounts/[id]/route'
 import { GET as stagingGet } from '../../../../app/api/finance/staging/route'
 import { PATCH as stagingPatch } from '../../../../app/api/finance/staging/[id]/route'
+import { POST as stagingBulk } from '../../../../app/api/finance/staging/bulk/route'
+import { loadSpaceRules, classifyRow, matchKeyOf } from '@/lib/finance/classify'
 import { PATCH as transactionPatch } from '../../../../app/api/finance/transactions/[id]/route'
 import { GET as transactionsGet } from '../../../../app/api/finance/transactions/route'
 import { POST as stagingCommit } from '../../../../app/api/finance/staging/commit/route'
@@ -619,6 +621,166 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect((await patch({ memo: 'a'.repeat(501) })).status).toBe(400)
 
     await prisma.finStagedRow.delete({ where: { id: staged.id } })
+    await prisma.finImport.delete({ where: { id: imp.id } })
+  }, 20000)
+
+  test('분류 확인: learn=false → 규칙 미생성 + 분류·메모만 반영(완료 처리)', async () => {
+    const imp = await prisma.finImport.create({
+      data: {
+        spaceId: SPACE_ID,
+        accountId,
+        fileName: 'classify-nolearn',
+        institution: '기업은행',
+        kind: 'BANK',
+        status: 'DRAFT',
+        totalRows: 1,
+      },
+      select: { id: true },
+    })
+    const staged = await prisma.finStagedRow.create({
+      data: {
+        importId: imp.id,
+        spaceId: SPACE_ID,
+        accountId,
+        raw: {},
+        txnDate: new Date('2026-07-02T00:00:00Z'),
+        direction: 'OUT',
+        amount: 7000,
+        description: '규칙미학습분류행',
+        classStatus: 'UNCLASSIFIED',
+        identityKey: 'classify-nolearn-1',
+        contentHash: 'classify-nolearn-1',
+      },
+      select: { id: true },
+    })
+    const rulesBefore = await prisma.finClassRule.count({ where: { spaceId: SPACE_ID } })
+
+    const req = new NextRequest(`http://localhost/api/finance/staging/${staged.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ categoryId: expenseLeafId, learn: false, memo: '일회성 지출' }),
+    })
+    const res = await call(stagingPatch(req, { params: Promise.resolve({ id: staged.id }) }))
+    expect(res.status).toBe(200)
+
+    const after = await prisma.finStagedRow.findUnique({ where: { id: staged.id } })
+    expect(after?.classStatus).toBe('CLASSIFIED')
+    expect(after?.categoryId).toBe(expenseLeafId)
+    expect(after?.memo).toBe('일회성 지출')
+    // 규칙 미생성
+    expect(await prisma.finClassRule.count({ where: { spaceId: SPACE_ID } })).toBe(rulesBefore)
+
+    await prisma.finStagedRow.delete({ where: { id: staged.id } })
+    await prisma.finImport.delete({ where: { id: imp.id } })
+  }, 20000)
+
+  test('분류 확인: learn=true + memo → 규칙에 memo 저장, 자동분류 시 ruleMemo 반환', async () => {
+    const DESC = '규칙메모학습행'
+    const imp = await prisma.finImport.create({
+      data: {
+        spaceId: SPACE_ID,
+        accountId,
+        fileName: 'classify-learn-memo',
+        institution: '기업은행',
+        kind: 'BANK',
+        status: 'DRAFT',
+        totalRows: 1,
+      },
+      select: { id: true },
+    })
+    const staged = await prisma.finStagedRow.create({
+      data: {
+        importId: imp.id,
+        spaceId: SPACE_ID,
+        accountId,
+        raw: {},
+        txnDate: new Date('2026-07-02T00:00:00Z'),
+        direction: 'OUT',
+        amount: 8000,
+        description: DESC,
+        classStatus: 'UNCLASSIFIED',
+        identityKey: 'classify-learn-memo-1',
+        contentHash: 'classify-learn-memo-1',
+      },
+      select: { id: true },
+    })
+
+    const req = new NextRequest(`http://localhost/api/finance/staging/${staged.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ categoryId: expenseLeafId, learn: true, memo: '정기 구독료' }),
+    })
+    const res = await call(stagingPatch(req, { params: Promise.resolve({ id: staged.id }) }))
+    expect(res.status).toBe(200)
+
+    // 규칙에 memo 저장 확인
+    const learned = await prisma.finClassRule.findFirst({
+      where: { spaceId: SPACE_ID, matchKey: matchKeyOf({ description: DESC }), direction: 'OUT' },
+    })
+    expect(learned?.memo).toBe('정기 구독료')
+
+    // 자동분류 체인(loadSpaceRules → classifyRow)이 ruleMemo를 반환 — 업로드 시 이 값이 행 memo로 복사됨
+    const rules = await loadSpaceRules(SPACE_ID)
+    const cls = classifyRow({ description: DESC }, rules, 'OUT')
+    expect(cls.classStatus).toBe('CLASSIFIED')
+    expect(cls.ruleMemo).toBe('정기 구독료')
+
+    await prisma.finStagedRow.delete({ where: { id: staged.id } })
+    await prisma.finClassRule.deleteMany({ where: { id: learned!.id } })
+    await prisma.finImport.delete({ where: { id: imp.id } })
+  }, 20000)
+
+  test('staging/bulk: memo 일괄 적용 + 규칙 미생성 (동일 적요 자동 적용 경로)', async () => {
+    const imp = await prisma.finImport.create({
+      data: {
+        spaceId: SPACE_ID,
+        accountId,
+        fileName: 'bulk-memo',
+        institution: '기업은행',
+        kind: 'BANK',
+        status: 'DRAFT',
+        totalRows: 2,
+      },
+      select: { id: true },
+    })
+    const mk = (n: number) =>
+      prisma.finStagedRow.create({
+        data: {
+          importId: imp.id,
+          spaceId: SPACE_ID,
+          accountId,
+          raw: {},
+          txnDate: new Date('2026-07-03T00:00:00Z'),
+          direction: 'OUT',
+          amount: 100 * n,
+          description: `벌크메모행${n}`,
+          classStatus: 'UNCLASSIFIED',
+          identityKey: `bulk-memo-${n}`,
+          contentHash: `bulk-memo-${n}`,
+        },
+        select: { id: true },
+      })
+    const r1 = await mk(1)
+    const r2 = await mk(2)
+    const rulesBefore = await prisma.finClassRule.count({ where: { spaceId: SPACE_ID } })
+
+    const req = new NextRequest('http://localhost/api/finance/staging/bulk', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ids: [r1.id, r2.id], categoryId: expenseLeafId, memo: '형제 메모' }),
+    })
+    const res = await call(stagingBulk(req))
+    expect(res.status).toBe(200)
+    expect((await res.json()).updated).toBe(2)
+
+    const rows = await prisma.finStagedRow.findMany({ where: { id: { in: [r1.id, r2.id] } } })
+    for (const row of rows) {
+      expect(row.classStatus).toBe('CLASSIFIED')
+      expect(row.memo).toBe('형제 메모')
+    }
+    expect(await prisma.finClassRule.count({ where: { spaceId: SPACE_ID } })).toBe(rulesBefore)
+
+    await prisma.finStagedRow.deleteMany({ where: { id: { in: [r1.id, r2.id] } } })
     await prisma.finImport.delete({ where: { id: imp.id } })
   }, 20000)
 

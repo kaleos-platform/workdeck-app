@@ -8,20 +8,33 @@ const rule = (
   matchKey: string,
   matchType: 'EXACT' | 'KEYWORD',
   categoryId: string,
-  direction: FinTxnDirection | null = null
+  direction: FinTxnDirection | null = null,
+  memo: string | null = null
 ): ClassRuleLite => ({
   id,
   matchKey,
   matchType,
   categoryId,
   direction,
+  memo,
 })
 
 describe('classifyRow — 결정적 규칙 매칭', () => {
   test('EXACT 전체 일치 → CLASSIFIED', () => {
     const rules = [rule('r1', '스마트스토어 정산', 'EXACT', 'cat-sales')]
     const res = classifyRow({ description: '스마트스토어 정산' }, rules, 'IN')
-    expect(res).toEqual({ categoryId: 'cat-sales', classStatus: 'CLASSIFIED', matchedRuleId: 'r1' })
+    expect(res).toEqual({
+      categoryId: 'cat-sales',
+      classStatus: 'CLASSIFIED',
+      matchedRuleId: 'r1',
+      ruleMemo: null,
+    })
+  })
+
+  test('매칭 규칙의 memo가 ruleMemo로 반환된다 (EXACT)', () => {
+    const rules = [rule('r1', '스마트스토어 정산', 'EXACT', 'cat-sales', 'IN', '정산 메모')]
+    const res = classifyRow({ description: '스마트스토어 정산' }, rules, 'IN')
+    expect(res.ruleMemo).toBe('정산 메모')
   })
 
   test('KEYWORD 부분 포함 → REVIEW', () => {
@@ -60,7 +73,12 @@ describe('classifyRow — 결정적 규칙 매칭', () => {
   test('무매칭 → UNCLASSIFIED', () => {
     const rules = [rule('r', '존재하지않는키', 'EXACT', 'cat-x')]
     const res = classifyRow({ description: '알수없는거래' }, rules, 'IN')
-    expect(res).toEqual({ categoryId: null, classStatus: 'UNCLASSIFIED', matchedRuleId: null })
+    expect(res).toEqual({
+      categoryId: null,
+      classStatus: 'UNCLASSIFIED',
+      matchedRuleId: null,
+      ruleMemo: null,
+    })
   })
 
   test('빈 적요 → UNCLASSIFIED', () => {
