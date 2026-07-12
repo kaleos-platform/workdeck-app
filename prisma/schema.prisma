@@ -2831,6 +2831,7 @@ model FinStagedRow {
   counterparty  String?
   approvalNo    String?
   cancelFlag    String?
+  memo          String? // 사용자 메모 — 저장 처리 시 확정 거래로 이관
   categoryId    String?
   classStatus   FinClassStatus      @default(UNCLASSIFIED)
   matchedRuleId String? // soft ref — 규칙 재학습/삭제 가능

@@ -1,12 +1,13 @@
 /**
  * PATCH /api/finance/transactions/[id]
- * 확정 거래의 계정과목을 재분류한다(+ 규칙 학습). isTransfer 토글 지원.
- *   body: { categoryId?, learn?(기본 true), isTransfer? }
+ * 확정 거래의 계정과목을 재분류한다(+ 규칙 학습). isTransfer 토글·메모 수정 지원.
+ *   body: { categoryId?, learn?(기본 true), isTransfer?, memo? }
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { learnRule } from '@/lib/finance/classify'
+import { normalizeMemoInput } from '@/lib/finance/memo'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const resolved = await resolveDeckContext('finance')
@@ -27,6 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     matchedRuleId?: string | null
     isTransfer?: boolean
     liabilityId?: string | null
+    memo?: string | null
   } = {}
 
   // 부채 연결/해제 — 상환 거래를 특정 부채에 귀속(감지·잔액반영의 근거)
@@ -65,6 +67,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (typeof body?.isTransfer === 'boolean') data.isTransfer = body.isTransfer
 
+  // 메모
+  if (body?.memo !== undefined) {
+    const m = normalizeMemoInput(body.memo)
+    if (!m.ok) return errorResponse(m.error, 400)
+    data.memo = m.value ?? null
+  }
+
   if (Object.keys(data).length === 0) return errorResponse('변경할 내용이 없습니다', 400)
 
   const updated = await prisma.finTransaction.update({
@@ -77,6 +86,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       isTransfer: true,
       matchedRuleId: true,
       liabilityId: true,
+      memo: true,
       category: {
         select: { id: true, name: true, type: true, parent: { select: { name: true } } },
       },

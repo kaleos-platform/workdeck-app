@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -39,6 +41,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { classStatusBadge, accountKindLabel, formatWon } from '@/components/finance/format'
+import { MEMO_MAX } from '@/lib/finance/memo'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
 import {
   buildClassifyOptions,
@@ -75,6 +78,7 @@ type StagedRow = {
   counterparty: string | null
   approvalNo: string | null
   cancelFlag: string | null
+  memo: string | null
   classStatus: FinClassStatus
   resolution: FinStagedResolution
   matchedRuleId: string | null
@@ -104,6 +108,7 @@ type Transaction = {
   counterparty: string | null
   approvalNo: string | null
   cancelFlag: string | null
+  memo: string | null
   isTransfer: boolean
   classStatus: FinClassStatus
   matchedRuleId: string | null
@@ -442,6 +447,34 @@ export function TransactionsView() {
     }
   }
 
+  // 스테이징 메모 저장/삭제(null) → PATCH. 성공 시 로컬 상태만 갱신(재조회 불필요).
+  const handleStagingMemo = async (rowId: string, memo: string | null) => {
+    const res = await fetch(`/api/finance/staging/${rowId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memo }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data?.message ?? '메모 저장 실패')
+    }
+    setStagingRows((prev) => prev.map((r) => (r.id === rowId ? { ...r, memo } : r)))
+  }
+
+  // 확정 거래 메모 저장/삭제(null) → PATCH
+  const handleTxnMemo = async (txnId: string, memo: string | null) => {
+    const res = await fetch(`/api/finance/transactions/${txnId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memo }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data?.message ?? '메모 저장 실패')
+    }
+    setTxnRows((prev) => prev.map((r) => (r.id === txnId ? { ...r, memo } : r)))
+  }
+
   // 저장 처리 — 분류완료(CLASSIFIED) 행만 확정 저장(임포트 무관). 미분류·검토는 보류.
   const classifiedCount = stagingCounts.classified
   const heldBack = stagingCounts.unclassified + stagingCounts.review
@@ -595,6 +628,7 @@ export function TransactionsView() {
           onTabChange={handleStagingTabChange}
           onClassify={handleStagingClassify}
           onDupResolution={handleDupResolution}
+          onMemoSave={handleStagingMemo}
           onBulkClassify={handleBulkClassify}
           onBulkResolution={handleBulkResolution}
           onCommitRequest={() => setCommitDialogOpen(true)}
@@ -626,6 +660,7 @@ export function TransactionsView() {
           sort={txnSort}
           onSort={handleTxnSort}
           onClassify={handleTxnClassify}
+          onMemoSave={handleTxnMemo}
           onBulkClassify={handleTxnBulkClassify}
           onBulkDelete={handleTxnBulkDelete}
           onBulkLinkLiability={handleTxnBulkLinkLiability}
@@ -711,6 +746,7 @@ function StagingPanel({
   onTabChange,
   onClassify,
   onDupResolution,
+  onMemoSave,
   onBulkClassify,
   onBulkResolution,
   onCommitRequest,
@@ -727,6 +763,7 @@ function StagingPanel({
   onTabChange: (tab: string) => void
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
+  onMemoSave: (rowId: string, memo: string | null) => Promise<void>
   onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
   onBulkResolution: (ids: string[], resolution: FinStagedResolution) => Promise<void>
   onCommitRequest: () => void
@@ -826,6 +863,7 @@ function StagingPanel({
                 <TableHead className="w-44">계정과목</TableHead>
                 <TableHead className="w-24">상태</TableHead>
                 <TableHead className="w-28">중복 처리</TableHead>
+                <TableHead className="w-40">메모</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -840,6 +878,7 @@ function StagingPanel({
                   reloadCategories={reloadCategories}
                   onClassify={onClassify}
                   onDupResolution={onDupResolution}
+                  onMemoSave={onMemoSave}
                 />
               ))}
             </TableBody>
@@ -976,6 +1015,7 @@ function StagingRow({
   reloadCategories,
   onClassify,
   onDupResolution,
+  onMemoSave,
 }: {
   row: StagedRow
   selected: boolean
@@ -985,6 +1025,7 @@ function StagingRow({
   reloadCategories: () => Promise<void>
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
+  onMemoSave: (rowId: string, memo: string | null) => Promise<void>
 }) {
   const isDup =
     row.resolution === 'DUP_SAME' ||
@@ -1115,6 +1156,11 @@ function StagingRow({
           </div>
         ) : null}
       </TableCell>
+
+      {/* 메모 */}
+      <TableCell>
+        <MemoCell memo={row.memo} onSave={(m) => onMemoSave(row.id, m)} />
+      </TableCell>
     </TableRow>
   )
 }
@@ -1187,6 +1233,7 @@ function TransactionsPanel({
   sort,
   onSort,
   onClassify,
+  onMemoSave,
   onBulkClassify,
   onBulkDelete,
   onBulkLinkLiability,
@@ -1219,6 +1266,7 @@ function TransactionsPanel({
   onSearch: () => void
   onLoadMore: () => void
   onClassify: (txnId: string, categoryId: string) => void
+  onMemoSave: (txnId: string, memo: string | null) => Promise<void>
   onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
   onBulkDelete: (ids: string[]) => Promise<void>
   onBulkLinkLiability: (ids: string[], liabilityId: string | null) => Promise<void>
@@ -1452,6 +1500,7 @@ function TransactionsPanel({
                   onSort={onSort}
                   className="w-24"
                 />
+                <TableHead className="w-40">메모</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1465,6 +1514,7 @@ function TransactionsPanel({
                   categoryTree={categoryTree}
                   reloadCategories={reloadCategories}
                   onClassify={onClassify}
+                  onMemoSave={onMemoSave}
                   onUnlinkLiability={handleUnlinkLiability}
                 />
               ))}
@@ -1653,6 +1703,7 @@ function TransactionRow({
   categoryTree,
   reloadCategories,
   onClassify,
+  onMemoSave,
   onUnlinkLiability,
 }: {
   txn: Transaction
@@ -1662,6 +1713,7 @@ function TransactionRow({
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onClassify: (txnId: string, categoryId: string) => void
+  onMemoSave: (txnId: string, memo: string | null) => Promise<void>
   onUnlinkLiability: (txnId: string) => Promise<void>
 }) {
   const statusBadge = classStatusBadge(txn.classStatus)
@@ -1746,7 +1798,110 @@ function TransactionRow({
           {statusBadge.label}
         </Badge>
       </TableCell>
+
+      {/* 메모 */}
+      <TableCell>
+        <MemoCell memo={txn.memo} onSave={(m) => onMemoSave(txn.id, m)} />
+      </TableCell>
     </TableRow>
+  )
+}
+
+// ─── 메모 셀 (스테이징·확정 공용) ───────────────────────────────────────────────
+
+/**
+ * 메모 팝오버 편집 셀. 메모가 있으면 truncate 요약(클릭=편집), 없으면 '＋메모' 버튼.
+ * 저장=trim 후 빈 문자열이면 삭제(null). 스테이징 메모는 저장 처리 시 확정 거래로 이관된다.
+ */
+function MemoCell({
+  memo,
+  onSave,
+}: {
+  memo: string | null
+  onSave: (memo: string | null) => Promise<void>
+}) {
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const save = async (value: string | null) => {
+    setSaving(true)
+    try {
+      await onSave(value)
+      setOpen(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '메모 저장 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o)
+        if (o) setDraft(memo ?? '')
+      }}
+    >
+      <PopoverTrigger asChild>
+        {memo ? (
+          <button
+            type="button"
+            className="block max-w-[150px] truncate text-left text-xs hover:underline"
+            title={memo}
+          >
+            {memo}
+          </button>
+        ) : (
+          <Button
+            size="xs"
+            variant="ghost"
+            className="h-6 px-1.5 text-xs text-muted-foreground"
+            aria-label="메모 추가"
+          >
+            ＋메모
+          </Button>
+        )}
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 space-y-2">
+        <Textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          maxLength={MEMO_MAX}
+          rows={3}
+          placeholder="메모 입력"
+          className="text-xs"
+          autoFocus
+        />
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-muted-foreground">
+            {draft.length}/{MEMO_MAX}
+          </span>
+          <div className="flex gap-1.5">
+            {memo && (
+              <Button
+                size="xs"
+                variant="ghost"
+                className="h-6 px-2 text-xs text-muted-foreground"
+                disabled={saving}
+                onClick={() => void save(null)}
+              >
+                삭제
+              </Button>
+            )}
+            <Button
+              size="xs"
+              className="h-6 px-2 text-xs"
+              disabled={saving}
+              onClick={() => void save(draft.trim() === '' ? null : draft.trim())}
+            >
+              {saving ? '저장 중...' : '저장'}
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 

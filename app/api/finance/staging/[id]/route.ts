@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { learnRule, matchKeyOf } from '@/lib/finance/classify'
+import { normalizeMemoInput } from '@/lib/finance/memo'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
 const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED', 'DUP_OVERWRITE']
@@ -36,6 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     classStatus?: 'CLASSIFIED'
     matchedRuleId?: string | null
     resolution?: FinStagedResolution
+    memo?: string | null
   } = {}
 
   // 분류 확정 + 학습
@@ -77,6 +79,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data.resolution = body.resolution
   }
 
+  // 메모 — 저장 처리 시 확정 거래로 이관
+  if (body?.memo !== undefined) {
+    const m = normalizeMemoInput(body.memo)
+    if (!m.ok) return errorResponse(m.error, 400)
+    data.memo = m.value ?? null
+  }
+
   if (Object.keys(data).length === 0) return errorResponse('변경할 내용이 없습니다', 400)
 
   const updated = await prisma.finStagedRow.update({
@@ -88,6 +97,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       classStatus: true,
       resolution: true,
       matchedRuleId: true,
+      memo: true,
       category: { select: { id: true, name: true, parent: { select: { name: true } } } },
     },
   })

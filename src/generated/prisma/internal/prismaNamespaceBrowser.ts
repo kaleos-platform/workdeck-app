@@ -1817,6 +1817,7 @@ export const FinStagedRowScalarFieldEnum = {
   counterparty: 'counterparty',
   approvalNo: 'approvalNo',
   cancelFlag: 'cancelFlag',
+  memo: 'memo',
   categoryId: 'categoryId',
   classStatus: 'classStatus',
   matchedRuleId: 'matchedRuleId',
