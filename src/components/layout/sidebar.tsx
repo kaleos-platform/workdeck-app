@@ -189,7 +189,7 @@ const FINANCE_FLAT_ROUTES = [
   { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
   { label: '등록 이력', icon: History, href: FINANCE_IMPORTS_PATH },
   { label: '계정과목 관리', icon: FolderTree, href: FINANCE_ACCOUNTS_PATH },
-  { label: '계좌 관리', icon: Landmark, href: FINANCE_BALANCES_PATH },
+  { label: '자산·부채 관리', icon: Landmark, href: FINANCE_BALANCES_PATH },
 ]
 
 // ─── 모집 관리 평탄 메뉴 데이터 (도메인 탭 금지 규칙 준수) ─────────────────────

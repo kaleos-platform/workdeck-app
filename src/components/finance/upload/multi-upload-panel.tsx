@@ -37,6 +37,7 @@ let fileItemSeq = 0
 export function MultiUploadPanel() {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
+  const dropzoneRef = useRef<HTMLDivElement>(null)
 
   const [items, setItems] = useState<UploadFileItem[]>([])
   // 전체 계좌 목록 — preview 응답들에서 병합, 새 계좌 등록 시 추가(모든 파일 후보에 반영)
@@ -288,6 +289,7 @@ export function MultiUploadPanel() {
       <Card>
         <CardContent className={cn(items.length > 0 ? 'py-4' : 'pt-6')}>
           <div
+            ref={dropzoneRef}
             className={cn(
               'flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-8 text-center transition-colors',
               items.length > 0 ? 'py-5' : 'py-10',
@@ -417,7 +419,21 @@ export function MultiUploadPanel() {
           </div>
         </CardHeader>
         <CardContent>
-          <CoverageMatrix months={6} refreshToken={coverageToken} />
+          <CoverageMatrix
+            months={6}
+            refreshToken={coverageToken}
+            onCellClick={({ accountId, accountLabel, month, confirmed, staged }) => {
+              // 미등록 셀 → 드롭존으로 유도, 데이터 있는 셀 → 해당 계좌 등록 이력으로
+              if (confirmed === 0 && staged === 0) {
+                dropzoneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                toast.info(
+                  `${accountLabel}의 ${Number(month.slice(5, 7))}월 데이터가 없습니다 — 파일을 올려 등록하세요`
+                )
+              } else {
+                router.push(`${FINANCE_IMPORTS_PATH}?accountId=${accountId}`)
+              }
+            }}
+          />
         </CardContent>
       </Card>
     </div>
