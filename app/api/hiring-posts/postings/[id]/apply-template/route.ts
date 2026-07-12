@@ -60,10 +60,14 @@ export async function POST(req: NextRequest, { params }: Params) {
         })),
       })
     }
-    // 표시용 템플릿 이름 스냅샷 기록
+    // 표시용 템플릿 스냅샷 기록
     await tx.hiringPosting.update({
       where: { id },
-      data: { appliedTemplateName: template.name },
+      data: {
+        appliedTemplateId: template.id,
+        appliedTemplateName: template.name,
+        appliedTemplateAt: new Date(),
+      },
     })
   })
 

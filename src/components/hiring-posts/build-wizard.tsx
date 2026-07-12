@@ -199,7 +199,15 @@ export function BuildWizard({ data }: { data: WizardData }) {
                 postingId={data.posting.id}
                 contents={state.contents}
                 positions={state.positions}
-                appliedTemplateName={data.posting.appliedTemplateName}
+                appliedTemplate={
+                  data.posting.appliedTemplateName
+                    ? {
+                        id: data.posting.appliedTemplateId,
+                        name: data.posting.appliedTemplateName,
+                        at: data.posting.appliedTemplateAt,
+                      }
+                    : null
+                }
                 onChange={(contents: WizardContentData[]) => patch({ contents })}
               />
             </div>

@@ -194,10 +194,12 @@ export const updateTemplateSchema = z.object({
 })
 export type UpdateTemplateInput = z.infer<typeof updateTemplateSchema>
 
-// 위저드 상세 스텝에서 "템플릿으로 저장" — 공고의 콘텐츠 블록을 복제해 템플릿 생성
+// 위저드 상세 스텝에서 "템플릿으로 저장" — 공고의 콘텐츠 블록을 복제해 템플릿 생성.
+// templateId 지정 시 해당 템플릿을 덮어쓴다(이름·콘텐츠 교체).
 export const createTemplateSchema = z.object({
   name: z.string().min(1, '템플릿 이름을 입력하세요').max(200),
   postingId: idLike,
+  templateId: idLike.optional(),
 })
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
 
