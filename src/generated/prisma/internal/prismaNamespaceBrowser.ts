@@ -1917,6 +1917,9 @@ export const HiringPostingScalarFieldEnum = {
   publishedAt: 'publishedAt',
   notificationEnabled: 'notificationEnabled',
   authorUserId: 'authorUserId',
+  appliedTemplateName: 'appliedTemplateName',
+  appliedTemplateId: 'appliedTemplateId',
+  appliedTemplateAt: 'appliedTemplateAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
