@@ -40,6 +40,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     memo?: string | null
   } = {}
 
+  // 메모 — 저장 처리 시 확정 거래로 이관. 규칙 학습(learnRule)이 정규화된 memo를 함께
+  // 저장하므로 분류 블록보다 먼저 파싱한다(순서 바꾸면 규칙 memo가 항상 undefined).
+  if (body?.memo !== undefined) {
+    const m = normalizeMemoInput(body.memo)
+    if (!m.ok) return errorResponse(m.error, 400)
+    data.memo = m.value ?? null
+  }
+
   // 분류 확정 + 학습
   if (typeof body?.categoryId === 'string' && body.categoryId) {
     const category = await prisma.finCategory.findFirst({
@@ -66,7 +74,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         spaceId,
         { description: row.description, counterparty: row.counterparty },
         body.categoryId,
-        row.direction
+        row.direction,
+        // 메모가 함께 오면 규칙에도 저장(자동분류 시 행 memo로 복사). 미전달이면 규칙 memo 유지.
+        body.memo !== undefined ? (data.memo ?? null) : undefined
       )
       data.matchedRuleId = ruleId
     }
@@ -77,13 +87,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!RESOLUTIONS.includes(body.resolution))
       return errorResponse('유효하지 않은 처리 값입니다', 400)
     data.resolution = body.resolution
-  }
-
-  // 메모 — 저장 처리 시 확정 거래로 이관
-  if (body?.memo !== undefined) {
-    const m = normalizeMemoInput(body.memo)
-    if (!m.ok) return errorResponse(m.error, 400)
-    data.memo = m.value ?? null
   }
 
   if (Object.keys(data).length === 0) return errorResponse('변경할 내용이 없습니다', 400)

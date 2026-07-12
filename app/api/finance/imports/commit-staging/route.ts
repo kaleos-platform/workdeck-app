@@ -204,6 +204,8 @@ export async function POST(req: NextRequest) {
         categoryId: cls.categoryId,
         classStatus: cls.classStatus,
         matchedRuleId: cls.matchedRuleId,
+        // 규칙 메모는 확정(EXACT) 자동분류에만 복사 — REVIEW는 제안 단계라 미복사
+        memo: cls.classStatus === 'CLASSIFIED' ? (cls.ruleMemo ?? null) : null,
         identityKey: r.identityKey,
         contentHash: r.contentHash,
         resolution,
