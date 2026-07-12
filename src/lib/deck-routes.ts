@@ -148,6 +148,10 @@ export function getRecruitingPostingBuildPath(id: string, step?: string): string
   return step ? `${base}/${step}` : base
 }
 
+export function getRecruitingPostingDetailPath(id: string): string {
+  return `${RECRUITING_POSTINGS_PATH}/${id}`
+}
+
 export function getRecruitingApplicationPath(id: string): string {
   return `${RECRUITING_APPLICATIONS_PATH}/${id}`
 }
