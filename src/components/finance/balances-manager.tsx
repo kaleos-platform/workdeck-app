@@ -14,12 +14,14 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Check, CreditCard, Landmark, Pencil, Plus, Trash2, Wallet, X } from 'lucide-react'
+import Link from 'next/link'
+import { Check, CreditCard, History, Landmark, Pencil, Plus, Trash2, Wallet, X } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
+import { FINANCE_IMPORTS_PATH } from '@/lib/deck-routes'
 import { formatPercent, formatWon } from '@/components/finance/format'
 import { AccountFormDialog } from '@/components/finance/account-form-dialog'
 import { LiabilityFormDialog } from '@/components/finance/liability-form-dialog'
@@ -91,11 +93,7 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
   }
 
   async function handleDelete(acct: Account) {
-    if (
-      !confirm(
-        `"${acct.name}" 계좌를 삭제하시겠습니까?\n연결된 거래 내역도 함께 삭제됩니다.`
-      )
-    )
+    if (!confirm(`"${acct.name}" 계좌를 삭제하시겠습니까?\n연결된 거래 내역도 함께 삭제됩니다.`))
       return
     try {
       const res = await fetch(`/api/finance/accounts/${acct.id}`, { method: 'DELETE' })
@@ -172,6 +170,11 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
                     )}
                   </div>
                   <div className="flex shrink-0 gap-1">
+                    <Button variant="ghost" size="icon-xs" asChild aria-label="등록 이력">
+                      <Link href={`${FINANCE_IMPORTS_PATH}?accountId=${acct.id}`}>
+                        <History className="size-3.5" />
+                      </Link>
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon-xs"
@@ -285,6 +288,11 @@ function CardsPanel({ cards, loading, onReload }: CardsPanelProps) {
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-1">
+                  <Button variant="ghost" size="icon-xs" asChild aria-label="등록 이력">
+                    <Link href={`${FINANCE_IMPORTS_PATH}?accountId=${card.id}`}>
+                      <History className="size-3.5" />
+                    </Link>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon-xs"
