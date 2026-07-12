@@ -19,10 +19,17 @@ type Props = {
   onChange: (patch: Partial<FormSettingsValue>) => void
 }
 
+// 로컬(KST) 기준 오늘 'YYYY-MM-DD'
+function todayStr(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 // 지원서 폼 설정 섹션 — 마감일 + 지원 알림. 지원서 폼 제작 스텝에 배치.
 export function StepFormSettings({ postingId, value, onChange }: Props) {
   const router = useRouter()
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [dateError, setDateError] = useState<string | null>(null)
   const savingRef = useRef(false)
 
   async function doSave(patch: Partial<FormSettingsValue>) {
@@ -52,10 +59,14 @@ export function StepFormSettings({ postingId, value, onChange }: Props) {
   }
 
   function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
-    onChange({ closingDate: e.target.value })
+    const next = e.target.value
+    onChange({ closingDate: next })
+    setDateError(next && next < todayStr() ? '오늘 이전 날짜는 선택할 수 없습니다' : null)
   }
 
   function handleDateBlur() {
+    // 과거 날짜는 저장하지 않음 (에러 표시 유지)
+    if (value.closingDate && value.closingDate < todayStr()) return
     doSave({ closingDate: value.closingDate })
   }
 
@@ -72,10 +83,12 @@ export function StepFormSettings({ postingId, value, onChange }: Props) {
           id="closingDate"
           type="date"
           value={value.closingDate}
+          min={todayStr()}
           onChange={handleDateChange}
           onBlur={handleDateBlur}
           className="w-48"
         />
+        {dateError && <p className="text-xs text-destructive">{dateError}</p>}
         <p className="text-xs text-muted-foreground">
           비워두면 마감일 없이 상시 모집으로 운영됩니다.
         </p>
