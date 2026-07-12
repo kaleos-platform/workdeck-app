@@ -28,10 +28,11 @@ type Props = {
   fields: HiringFieldDef[]
   positions: Array<{ id: string; name: string }>
   stores: Array<{ id: string; name: string }>
+  preview?: boolean
 }
 
 // 파일 타입은 별도 state 로 관리(zod/RHF 직렬화 대상에서 제외)
-export function ApplyForm({ postingUuid, fields, positions, stores }: Props) {
+export function ApplyForm({ postingUuid, fields, positions, stores, preview = false }: Props) {
   const valueFields = useMemo(() => fields.filter((f) => f.type !== 'file'), [fields])
   const fileFields = useMemo(() => fields.filter((f) => f.type === 'file'), [fields])
 
@@ -62,6 +63,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores }: Props) {
   })
 
   async function onSubmit(values: FormValues) {
+    if (preview) return
     setSubmitError(null)
     setFileError(null)
 
@@ -333,10 +335,15 @@ export function ApplyForm({ postingUuid, fields, positions, stores }: Props) {
         </p>
       )}
 
-      <Button type="submit" className="w-full" disabled={submitting}>
+      <Button type="submit" className="w-full" disabled={submitting || preview}>
         {submitting && <Loader2 className="mr-1 size-4 animate-spin" />}
         지원서 제출
       </Button>
+      {preview && (
+        <p className="text-center text-xs text-muted-foreground">
+          미리보기에서는 제출할 수 없습니다
+        </p>
+      )}
     </form>
   )
 }

@@ -44,37 +44,7 @@ export function PostingPreview({
             <div className="text-xs font-medium text-muted-foreground">공고 미리보기</div>
             <PostingStatusBadge status={status} />
           </div>
-          <h2 className="text-lg font-semibold">{title || '제목 없는 공고'}</h2>
         </div>
-
-        {positions.length > 0 && (
-          <div className="space-y-2">
-            <div className="text-sm font-medium">모집 직무</div>
-            {positions.map((p) => (
-              <div key={p.id} className="space-y-1 rounded-lg border px-4 py-3">
-                <div className="text-sm font-medium">{p.name}</div>
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  {p.jobType && <span>{JOB_TYPE_LABELS[p.jobType]}</span>}
-                  {p.payFrequency && (
-                    <span>
-                      {PAY_FREQUENCY_LABELS[p.payFrequency]}
-                      {p.payAmount != null && ` ${p.payAmount.toLocaleString('ko-KR')}원`}
-                    </span>
-                  )}
-                  {p.headcount != null && <span>{p.headcount}명</span>}
-                  {p.workDays && p.workDays.length > 0 && (
-                    <span>{p.workDays.map((d) => WEEKDAYS[d]).join('·')}</span>
-                  )}
-                  {p.workStartAt && p.workEndAt && (
-                    <span>
-                      {p.workStartAt}~{p.workEndAt}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {!noStores && linkedStores.length > 0 && (
           <div className="space-y-2">
@@ -121,6 +91,39 @@ export function PostingPreview({
                     </a>
                   )
                 })()
+              ) : c.contentType === 'positions' ? (
+                <div key={c.id} className="space-y-2">
+                  <div className="text-sm font-medium">모집 직무</div>
+                  {positions.length > 0 ? (
+                    positions.map((p) => (
+                      <div key={p.id} className="space-y-1 rounded-lg border px-4 py-3">
+                        <div className="text-sm font-medium">{p.name}</div>
+                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                          {p.jobType && <span>{JOB_TYPE_LABELS[p.jobType]}</span>}
+                          {p.payFrequency && (
+                            <span>
+                              {PAY_FREQUENCY_LABELS[p.payFrequency]}
+                              {p.payAmount != null && ` ${p.payAmount.toLocaleString('ko-KR')}원`}
+                            </span>
+                          )}
+                          {p.headcount != null && <span>{p.headcount}명</span>}
+                          {p.workDays && p.workDays.length > 0 && (
+                            <span>{p.workDays.map((d) => WEEKDAYS[d]).join('·')}</span>
+                          )}
+                          {p.workStartAt && p.workEndAt && (
+                            <span>
+                              {p.workStartAt}~{p.workEndAt}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-lg border border-dashed px-4 py-6 text-center text-xs text-muted-foreground">
+                      등록된 직무가 없습니다
+                    </div>
+                  )}
+                </div>
               ) : c.data ? (
                 // 공개 페이지(app/p/[uuid])와 동일한 렌더 — 에디터 박스 없이 본문만 표시
                 <div

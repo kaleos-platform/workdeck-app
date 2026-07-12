@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -13,10 +13,13 @@ import {
   Upload,
   Save,
   MousePointerClick,
+  Briefcase,
+  Maximize2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,22 +27,37 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Editor } from '@/components/sc/editor/editor'
+import { AutoSaveIndicator } from './autosave-indicator'
 import { getPostingAssetPublicUrl, type WizardContentData } from './build-types'
 import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
+
+type ContentType = 'text' | 'image' | 'button' | 'positions'
 
 type Props = {
   postingId: string
   contents: WizardContentData[]
+  positions: { id: string; name: string }[]
   onChange: (contents: WizardContentData[]) => void
 }
 
-export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
+const CONTENT_TYPE_META: Record<ContentType, { icon: typeof Type; label: string }> = {
+  text: { icon: Type, label: '텍스트' },
+  image: { icon: ImageIcon, label: '이미지' },
+  button: { icon: MousePointerClick, label: '버튼' },
+  positions: { icon: Briefcase, label: '직무 정보' },
+}
+
+export function ContentBlockEditor({ postingId, contents, positions, onChange }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [savingTemplate, setSavingTemplate] = useState(false)
   // 텍스트 블록별 debounce 타이머 (data 저장)
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const [focusBlockId, setFocusBlockId] = useState<string | null>(null)
+  const [remountTick, setRemountTick] = useState(0)
+
+  const hasPositionsBlock = contents.some((c) => c.contentType === 'positions')
 
   async function patchContent(contentId: string, body: Record<string, unknown>) {
     const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
@@ -51,7 +69,7 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
     return (await res.json()).content as WizardContentData
   }
 
-  async function handleAdd(contentType: 'text' | 'image' | 'button') {
+  async function handleAdd(contentType: ContentType) {
     setBusy(true)
     try {
       const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents`, {
@@ -135,6 +153,11 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
     }
   }
 
+  function handleButtonSave(contentId: string, data: ButtonData) {
+    onChange(contents.map((c) => (c.id === contentId ? { ...c, data } : c)))
+    return patchContent(contentId, { data })
+  }
+
   async function handleSaveTemplate() {
     if (!templateName.trim()) {
       toast.error('템플릿 이름을 입력하세요')
@@ -157,6 +180,8 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
     }
   }
 
+  const focusBlock = focusBlockId ? contents.find((c) => c.id === focusBlockId) : null
+
   return (
     <div className="space-y-4">
       {contents.length === 0 && (
@@ -166,70 +191,72 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
       )}
 
       <div className="space-y-4">
-        {contents.map((c, idx) => (
-          <div key={c.id} className="space-y-3 rounded-lg border p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                {c.contentType === 'image' ? (
-                  <ImageIcon className="size-4 text-muted-foreground" />
-                ) : c.contentType === 'button' ? (
-                  <MousePointerClick className="size-4 text-muted-foreground" />
-                ) : (
-                  <Type className="size-4 text-muted-foreground" />
-                )}
-                {c.contentType === 'image'
-                  ? '이미지'
-                  : c.contentType === 'button'
-                    ? '버튼'
-                    : '텍스트'}{' '}
-                블록
+        {contents.map((c, idx) => {
+          const meta = CONTENT_TYPE_META[c.contentType]
+          const Icon = meta.icon
+          return (
+            <div key={c.id} className="space-y-3 rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Icon className="size-4 text-muted-foreground" />
+                  {meta.label} 블록
+                </div>
+                <div className="flex items-center gap-1">
+                  {c.contentType === 'text' && (
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      aria-label="크게 작성"
+                      onClick={() => setFocusBlockId(c.id)}
+                    >
+                      <Maximize2 />
+                    </Button>
+                  )}
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => handleMove(idx, -1)}
+                    disabled={idx === 0}
+                  >
+                    <ArrowUp />
+                  </Button>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => handleMove(idx, 1)}
+                    disabled={idx === contents.length - 1}
+                  >
+                    <ArrowDown />
+                  </Button>
+                  <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(c.id)}>
+                    <Trash2 />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => handleMove(idx, -1)}
-                  disabled={idx === 0}
-                >
-                  <ArrowUp />
-                </Button>
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => handleMove(idx, 1)}
-                  disabled={idx === contents.length - 1}
-                >
-                  <ArrowDown />
-                </Button>
-                <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(c.id)}>
-                  <Trash2 />
-                </Button>
-              </div>
-            </div>
 
-            {c.contentType === 'text' ? (
-              <Editor
-                key={c.id}
-                initialDoc={c.data ?? undefined}
-                editable
-                onChange={(doc) => handleTextChange(c.id, doc)}
-              />
-            ) : c.contentType === 'button' ? (
-              <ButtonBlock
-                data={c.data as ButtonData | null}
-                onSave={(data) => {
-                  patchContent(c.id, { data }).catch(() => toast.error('버튼 저장에 실패했습니다'))
-                  onChange(contents.map((item) => (item.id === c.id ? { ...item, data } : item)))
-                }}
-              />
-            ) : (
-              <ImageBlock
-                imagePath={c.imagePath}
-                onSelect={(file) => handleImageSelect(c.id, file)}
-              />
-            )}
-          </div>
-        ))}
+              {c.contentType === 'text' ? (
+                <Editor
+                  key={`${c.id}-${remountTick}`}
+                  initialDoc={c.data ?? undefined}
+                  editable
+                  onChange={(doc) => handleTextChange(c.id, doc)}
+                />
+              ) : c.contentType === 'button' ? (
+                <ButtonBlock
+                  data={c.data as ButtonData | null}
+                  onSave={(data) => handleButtonSave(c.id, data)}
+                />
+              ) : c.contentType === 'positions' ? (
+                <PositionsBlock positions={positions} />
+              ) : (
+                <ImageBlock
+                  imagePath={c.imagePath}
+                  onSelect={(file) => handleImageSelect(c.id, file)}
+                />
+              )}
+            </div>
+          )
+        })}
       </div>
 
       <DropdownMenu>
@@ -247,6 +274,9 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleAdd('button')}>
             <MousePointerClick /> 버튼 블록
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleAdd('positions')} disabled={hasPositionsBlock}>
+            <Briefcase /> 직무 정보 블록
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -274,6 +304,30 @@ export function ContentBlockEditor({ postingId, contents, onChange }: Props) {
           </Button>
         </div>
       )}
+
+      <Dialog
+        open={focusBlockId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setFocusBlockId(null)
+            setRemountTick((t) => t + 1)
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>본문 작성</DialogTitle>
+          </DialogHeader>
+          {focusBlock && (
+            <Editor
+              initialDoc={focusBlock.data ?? undefined}
+              editable
+              variant="full"
+              onChange={(doc) => handleTextChange(focusBlock.id, doc)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -283,34 +337,90 @@ function ButtonBlock({
   onSave,
 }: {
   data: ButtonData | null
-  onSave: (data: ButtonData) => void
+  onSave: (data: ButtonData) => Promise<unknown>
 }) {
-  const [title, setTitle] = useState(data?.title ?? '')
+  const [title, setTitle] = useState(data?.title ?? '지원하기')
   const [linkType, setLinkType] = useState<'form' | 'url'>(data?.linkType ?? 'form')
   const [url, setUrl] = useState(data?.url ?? '')
   const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const uid = useId()
 
-  function handleSave() {
-    const result = buttonDataSchema.safeParse({ title, linkType, url: url || undefined })
+  function attemptSave(next: { title: string; linkType: 'form' | 'url'; url: string }) {
+    const result = buttonDataSchema.safeParse({
+      title: next.title,
+      linkType: next.linkType,
+      url: next.url || undefined,
+    })
     if (!result.success) {
       const first = result.error.issues[0]
       setError(first?.message ?? '입력 값을 확인하세요')
       return
     }
     setError(null)
+    setStatus('saving')
     onSave(result.data)
+      .then(() => setStatus('saved'))
+      .catch(() => {
+        toast.error('버튼 저장에 실패했습니다')
+        setStatus('idle')
+      })
   }
 
-  const uid = useId()
+  function debouncedSave(next: { title: string; linkType: 'form' | 'url'; url: string }) {
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => attemptSave(next), 600)
+  }
+
+  useEffect(() => {
+    return () => clearTimeout(timer.current)
+  }, [])
+
+  function handleTitleChange(value: string) {
+    setTitle(value)
+    debouncedSave({ title: value, linkType, url })
+  }
+  function handleTitleBlur() {
+    clearTimeout(timer.current)
+    attemptSave({ title, linkType, url })
+  }
+  function handleUrlChange(value: string) {
+    setUrl(value)
+    debouncedSave({ title, linkType, url: value })
+  }
+  function handleUrlBlur() {
+    clearTimeout(timer.current)
+    attemptSave({ title, linkType, url })
+  }
+  function handleLinkTypeChange(value: 'form' | 'url') {
+    setLinkType(value)
+    clearTimeout(timer.current)
+    // url 전환 직후 빈 URL로 즉시 검증하면 에러가 뜨므로 입력을 기다린다
+    if (value === 'url' && !url.trim()) {
+      setError(null)
+      return
+    }
+    attemptSave({ title, linkType: value, url })
+  }
 
   return (
     <div className="space-y-3">
+      {/* 실제 버튼 UI 미리보기 */}
+      <div className="pointer-events-none flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow">
+        {title || '버튼 제목'}
+      </div>
+
       <div className="space-y-1.5">
-        <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
+          <AutoSaveIndicator status={status} />
+        </div>
         <Input
           id={`${uid}-btn-title`}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          onBlur={handleTitleBlur}
           placeholder="예: 지금 바로 지원하기"
           maxLength={50}
         />
@@ -324,7 +434,7 @@ function ButtonBlock({
               name={`${uid}-btn-linktype`}
               value="form"
               checked={linkType === 'form'}
-              onChange={() => setLinkType('form')}
+              onChange={() => handleLinkTypeChange('form')}
             />
             지원서 폼 연결
           </label>
@@ -334,7 +444,7 @@ function ButtonBlock({
               name={`${uid}-btn-linktype`}
               value="url"
               checked={linkType === 'url'}
-              onChange={() => setLinkType('url')}
+              onChange={() => handleLinkTypeChange('url')}
             />
             URL 직접 입력
           </label>
@@ -342,19 +452,40 @@ function ButtonBlock({
       </div>
       {linkType === 'url' && (
         <div className="space-y-1.5">
-          <Label htmlFor="btn-url">URL</Label>
+          <Label htmlFor={`${uid}-btn-url`}>URL</Label>
           <Input
-            id="btn-url"
+            id={`${uid}-btn-url`}
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => handleUrlChange(e.target.value)}
+            onBlur={handleUrlBlur}
             placeholder="https://example.com"
           />
         </div>
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}
-      <Button size="sm" variant="outline" onClick={handleSave}>
-        <Save /> 버튼 저장
-      </Button>
+    </div>
+  )
+}
+
+function PositionsBlock({ positions }: { positions: { id: string; name: string }[] }) {
+  return (
+    <div className="space-y-2">
+      {positions.length > 0 ? (
+        <ul className="space-y-1">
+          {positions.map((p) => (
+            <li key={p.id} className="rounded-md border px-3 py-2 text-sm">
+              {p.name}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
+          등록된 직무가 없습니다
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">
+        1단계 기본 정보에서 직무를 편집하세요. 공개 페이지에는 이 위치에 근무조건 카드가 표시됩니다.
+      </p>
     </div>
   )
 }
