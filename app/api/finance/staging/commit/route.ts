@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
       counterparty: true,
       approvalNo: true,
       cancelFlag: true,
+      memo: true,
       categoryId: true,
       classStatus: true,
       matchedRuleId: true,
@@ -137,6 +138,11 @@ export async function POST(req: NextRequest) {
         // 단, 사용자가 "유지"로 명시 선택한 중복(DUP_OVERWRITE)은 덮어쓰기 의도이므로 분류를 반영한다.
         const preserve =
           classifiedKeys.has(`${s.accountId}|${s.identityKey}`) && s.resolution !== 'DUP_OVERWRITE'
+        // 메모는 content/classification 어느 쪽도 아닌 조건부 필드 — staged에 메모가 있을 때만
+        // 반영한다. content에 넣으면 재업로드분(memo=null) 재커밋이 기존 확정 거래 메모를 지우고,
+        // classification에 넣으면 preserve 시 유실된다. 의도된 제약: 스테이징 단계에서 기존
+        // 확정 거래의 메모를 삭제할 수는 없다(삭제는 전체 거래 탭에서).
+        const memoPatch = s.memo != null ? { memo: s.memo } : {}
         await tx.finTransaction.upsert({
           where: {
             spaceId_accountId_identityKey: {
@@ -145,13 +151,16 @@ export async function POST(req: NextRequest) {
               identityKey: s.identityKey,
             },
           },
-          update: preserve ? content : { ...content, ...classification },
+          update: preserve
+            ? { ...content, ...memoPatch }
+            : { ...content, ...classification, ...memoPatch },
           create: {
             spaceId,
             accountId: s.accountId,
             identityKey: s.identityKey,
             ...content,
             ...classification,
+            memo: s.memo,
           },
         })
         committedIds.push(s.id)

@@ -42,6 +42,8 @@ import {
 import { PATCH as accountPatch } from '../../../../app/api/finance/accounts/[id]/route'
 import { GET as stagingGet } from '../../../../app/api/finance/staging/route'
 import { PATCH as stagingPatch } from '../../../../app/api/finance/staging/[id]/route'
+import { PATCH as transactionPatch } from '../../../../app/api/finance/transactions/[id]/route'
+import { GET as transactionsGet } from '../../../../app/api/finance/transactions/route'
 import { POST as stagingCommit } from '../../../../app/api/finance/staging/commit/route'
 import { GET as dashboardGet } from '../../../../app/api/finance/dashboard/route'
 import { GET as cashflowGet } from '../../../../app/api/finance/cashflow/route'
@@ -561,6 +563,184 @@ d('finance 라우트 E2E (실제 핸들러)', () => {
     expect(after?.description).toBe('변경된적요B') // 콘텐츠도 갱신
     expect(after?.contentHash).toBe('changedB')
   }, 30000)
+
+  test('메모: staging PATCH 저장(trim)·빈 문자열 삭제·길이 초과 400', async () => {
+    const imp = await prisma.finImport.create({
+      data: {
+        spaceId: SPACE_ID,
+        accountId,
+        fileName: 'memo-staging',
+        institution: '기업은행',
+        kind: 'BANK',
+        status: 'DRAFT',
+        totalRows: 1,
+      },
+      select: { id: true },
+    })
+    const staged = await prisma.finStagedRow.create({
+      data: {
+        importId: imp.id,
+        spaceId: SPACE_ID,
+        accountId,
+        raw: {},
+        txnDate: new Date('2026-07-01T00:00:00Z'),
+        direction: 'OUT',
+        amount: 1000,
+        description: '메모테스트행',
+        classStatus: 'UNCLASSIFIED',
+        identityKey: 'memo-staged-1',
+        contentHash: 'memo-staged-1',
+      },
+      select: { id: true },
+    })
+    const patch = (payload: object) =>
+      call(
+        stagingPatch(
+          new NextRequest(`http://localhost/api/finance/staging/${staged.id}`, {
+            method: 'PATCH',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+          }),
+          { params: Promise.resolve({ id: staged.id }) }
+        )
+      )
+
+    // 저장 — trim 검증
+    expect((await patch({ memo: '  회식비 처리 ' })).status).toBe(200)
+    let row = await prisma.finStagedRow.findUnique({ where: { id: staged.id } })
+    expect(row?.memo).toBe('회식비 처리')
+
+    // 빈 문자열 → 삭제(null)
+    expect((await patch({ memo: '' })).status).toBe(200)
+    row = await prisma.finStagedRow.findUnique({ where: { id: staged.id } })
+    expect(row?.memo).toBeNull()
+
+    // 길이 초과 → 400
+    expect((await patch({ memo: 'a'.repeat(501) })).status).toBe(400)
+
+    await prisma.finStagedRow.delete({ where: { id: staged.id } })
+    await prisma.finImport.delete({ where: { id: imp.id } })
+  }, 20000)
+
+  test('메모: commit 이관 + staged memo=null은 기존 확정 거래 메모 미덮어쓰기', async () => {
+    // 기존 거래·집계 테스트를 오염시키지 않도록 격리: 신규 identityKey + 과거 날짜(집계 범위 밖)
+    // + balanceAfter 없음(스냅샷·기준잔액 무영향). 테스트 끝에 생성 거래 삭제로 0-state 복원.
+    const IDENTITY = 'memo-commit-isolated'
+    const TXN_DATE = new Date('2020-01-15T00:00:00Z')
+
+    const mkImport = (name: string) =>
+      prisma.finImport.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId,
+          fileName: name,
+          institution: '기업은행',
+          kind: 'BANK',
+          status: 'DRAFT',
+          totalRows: 1,
+        },
+        select: { id: true },
+      })
+    const mkStaged = (importId: string, memo: string | null, resolution: 'NEW' | 'DUP_OVERWRITE') =>
+      prisma.finStagedRow.create({
+        data: {
+          importId,
+          spaceId: SPACE_ID,
+          accountId,
+          raw: {},
+          txnDate: TXN_DATE,
+          direction: 'OUT',
+          amount: 1000,
+          description: '메모이관행',
+          categoryId: expenseLeafId,
+          classStatus: 'CLASSIFIED' as const,
+          identityKey: IDENTITY,
+          contentHash: 'memo-commit',
+          resolution,
+          memo,
+        },
+        select: { id: true },
+      })
+    const commit = (importId: string) =>
+      call(
+        stagingCommit(
+          new NextRequest('http://localhost/api/finance/staging/commit', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ importId }),
+          })
+        )
+      )
+    const findTxn = () =>
+      prisma.finTransaction.findUnique({
+        where: {
+          spaceId_accountId_identityKey: { spaceId: SPACE_ID, accountId, identityKey: IDENTITY },
+        },
+      })
+
+    // ① staged memo 있음 → 신규 확정 거래 생성 시 이관
+    const imp1 = await mkImport('memo-commit-1')
+    await mkStaged(imp1.id, '이관될 메모', 'NEW')
+    expect((await commit(imp1.id)).status).toBe(200)
+    let txn = await findTxn()
+    expect(txn?.memo).toBe('이관될 메모')
+
+    // ② staged memo=null(재업로드분) 재커밋 → 기존 메모 보존 (DUP_OVERWRITE=분류 덮어쓰기여도)
+    const imp2 = await mkImport('memo-commit-2')
+    await mkStaged(imp2.id, null, 'DUP_OVERWRITE')
+    expect((await commit(imp2.id)).status).toBe(200)
+    txn = await findTxn()
+    expect(txn?.memo).toBe('이관될 메모')
+
+    // 격리 정리 — 생성 거래·임포트 제거(집계 테스트 무영향 보장)
+    await prisma.finTransaction.deleteMany({
+      where: { spaceId: SPACE_ID, identityKey: IDENTITY },
+    })
+    await prisma.finImport.deleteMany({ where: { id: { in: [imp1.id, imp2.id] } } })
+  }, 30000)
+
+  test('메모: transactions PATCH 저장/삭제 + GET 응답 포함', async () => {
+    const target = await prisma.finTransaction.findFirst({
+      where: { spaceId: SPACE_ID, accountId },
+      select: { id: true },
+    })
+    expect(target).not.toBeNull()
+    const patch = (payload: object) =>
+      call(
+        transactionPatch(
+          new NextRequest(`http://localhost/api/finance/transactions/${target!.id}`, {
+            method: 'PATCH',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+          }),
+          { params: Promise.resolve({ id: target!.id }) }
+        )
+      )
+
+    // 저장 + 응답 body 포함
+    const saveRes = await patch({ memo: '확정 거래 메모' })
+    expect(saveRes.status).toBe(200)
+    const saveBody = await saveRes.json()
+    expect(saveBody.transaction.memo).toBe('확정 거래 메모')
+
+    // GET 목록 응답에 memo 포함
+    const listRes = await call(
+      transactionsGet(
+        new NextRequest(`http://localhost/api/finance/transactions?accountId=${accountId}`)
+      )
+    )
+    expect(listRes.status).toBe(200)
+    const listBody = await listRes.json()
+    const found = (listBody.rows as { id: string; memo: string | null }[]).find(
+      (r) => r.id === target!.id
+    )
+    expect(found?.memo).toBe('확정 거래 메모')
+
+    // null → 삭제
+    expect((await patch({ memo: null })).status).toBe(200)
+    const after = await prisma.finTransaction.findUnique({ where: { id: target!.id } })
+    expect(after?.memo).toBeNull()
+  }, 20000)
 
   test('dashboard: KPI + 계좌 스냅샷 집계', async () => {
     const req = new NextRequest(
