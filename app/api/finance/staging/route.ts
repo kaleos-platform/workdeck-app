@@ -68,6 +68,7 @@ export async function GET(req: NextRequest) {
         balanceAfter: true,
         description: true,
         counterparty: true,
+        memo: true,
         approvalNo: true,
         cancelFlag: true,
         classStatus: true,
