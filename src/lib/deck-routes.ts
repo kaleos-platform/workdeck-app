@@ -123,6 +123,7 @@ export const FINANCE_DASHBOARD_PATH = `${FINANCE_BASE_PATH}/dashboard`
 export const FINANCE_CASHFLOW_PATH = `${FINANCE_BASE_PATH}/cashflow`
 export const FINANCE_TRANSACTIONS_PATH = `${FINANCE_BASE_PATH}/transactions`
 export const FINANCE_UPLOAD_PATH = `${FINANCE_BASE_PATH}/upload`
+export const FINANCE_IMPORTS_PATH = `${FINANCE_BASE_PATH}/imports`
 export const FINANCE_ACCOUNTS_PATH = `${FINANCE_BASE_PATH}/accounts`
 export const FINANCE_BALANCES_PATH = `${FINANCE_BASE_PATH}/balances`
 

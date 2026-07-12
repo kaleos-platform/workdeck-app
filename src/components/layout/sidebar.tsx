@@ -23,6 +23,7 @@ import {
   Rocket,
   TrendingUp,
   ListChecks,
+  History,
   FolderTree,
   Landmark,
   PanelLeftClose,
@@ -84,6 +85,7 @@ import {
   FINANCE_CASHFLOW_PATH,
   FINANCE_TRANSACTIONS_PATH,
   FINANCE_UPLOAD_PATH,
+  FINANCE_IMPORTS_PATH,
   FINANCE_ACCOUNTS_PATH,
   FINANCE_BALANCES_PATH,
   RECRUITING_HOME_PATH,
@@ -185,6 +187,7 @@ const FINANCE_FLAT_ROUTES = [
   { label: '현금흐름 상세', icon: TrendingUp, href: FINANCE_CASHFLOW_PATH },
   { label: '거래 내역', icon: ListChecks, href: FINANCE_TRANSACTIONS_PATH },
   { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
+  { label: '등록 이력', icon: History, href: FINANCE_IMPORTS_PATH },
   { label: '계정과목 관리', icon: FolderTree, href: FINANCE_ACCOUNTS_PATH },
   { label: '계좌 관리', icon: Landmark, href: FINANCE_BALANCES_PATH },
 ]
