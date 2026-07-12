@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Copy, Loader2, MoreHorizontal, Plus } from 'lucide-react'
+import { Copy, Loader2, MoreHorizontal, Pencil, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PostingStatusBadge, STATUS_LABELS, type PostingStatus } from './status-badge'
-import { getHiringPostingBuildPath, getRecruitingPostingBuildPath } from '@/lib/deck-routes'
+import { getRecruitingPostingBuildPath, getRecruitingPostingDetailPath } from '@/lib/deck-routes'
 
 export type PostingRow = {
   id: string
@@ -88,7 +88,7 @@ export function PostingsTable({ postings }: { postings: PostingRow[] }) {
         })
         if (!res.ok) throw new Error('공고 생성에 실패했습니다')
         const { posting } = await res.json()
-        router.push(getHiringPostingBuildPath(posting.id))
+        router.push(getRecruitingPostingBuildPath(posting.id))
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '공고 생성에 실패했습니다')
       }
@@ -136,7 +136,7 @@ export function PostingsTable({ postings }: { postings: PostingRow[] }) {
                 <TableRow
                   key={p.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(getHiringPostingBuildPath(p.id))}
+                  onClick={() => router.push(getRecruitingPostingDetailPath(p.id))}
                 >
                   <TableCell className="font-medium">{p.title}</TableCell>
                   <TableCell>
@@ -156,6 +156,12 @@ export function PostingsTable({ postings }: { postings: PostingRow[] }) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onSelect={() => router.push(getRecruitingPostingBuildPath(p.id))}
+                        >
+                          <Pencil className="size-4" />
+                          수정
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           disabled={copyingId === p.id}
                           onSelect={() => handleCopy(p.id)}
