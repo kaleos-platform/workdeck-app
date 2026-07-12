@@ -106,11 +106,13 @@ export function buildParentOptions(tree: CategoryTreeNode[]): ComboOption[] {
   const out: ComboOption[] = []
   for (const root of tree) {
     if (!allow.has(root.type as FinCategoryType)) continue
-    const badge = categoryTypeBadge(root.type as FinCategoryType)
+    const rootType = root.type as FinCategoryType
+    const badge = categoryTypeBadge(rootType)
     out.push({
       id: root.id,
       label: root.name,
       hint: null,
+      type: rootType,
       badge: { label: badge.label, className: badge.className },
       indent: false,
       keywords: [root.name, badge.label],
@@ -120,6 +122,7 @@ export function buildParentOptions(tree: CategoryTreeNode[]): ComboOption[] {
         id: lvl1.id,
         label: lvl1.name,
         hint: root.name,
+        type: rootType,
         badge: null,
         indent: true,
         keywords: [lvl1.name, root.name],
